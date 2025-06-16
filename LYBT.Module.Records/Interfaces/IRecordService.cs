@@ -21,16 +21,16 @@ namespace LYBT.Module.Records.Interfaces {
         /// <summary>
         /// 新增病历
         /// </summary>
-        Task<bool> AddAsync(RecordCreateDto recordCreateDto);
+        Task<bool> AddAsync(RecordCreateDto recordCreateDto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 编辑病历
         /// </summary>
-        Task<bool> UpdateAsync(RecordEditDto recordEditDto);
+        Task<bool> UpdateAsync(RecordEditDto recordEditDto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 删除病历
         /// </summary>
-        Task<bool> DeleteAsync(Guid id);
+        Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName);
     }
 }

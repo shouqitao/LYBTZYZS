@@ -6,6 +6,10 @@ using LYBT.Module.Records.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Module.Logs.Interfaces;
+using LYBT.Module.Logs.Dtos;
+using LYBT.Common.Enums.Logs;
+using System.Text.Json;
 
 namespace LYBT.Module.Records.Services {
     /// <summary>
@@ -14,13 +18,15 @@ namespace LYBT.Module.Records.Services {
     public class RecordService : IRecordService {
         private readonly IRecordRepository _recordRepository;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
 
         /// <summary>
         /// 构造方法，注入仓储和映射服务
         /// </summary>
-        public RecordService(IRecordRepository recordRepository, IMapper mapper) {
+        public RecordService(IRecordRepository recordRepository, IMapper mapper, ILogService logService) {
             _recordRepository = recordRepository;
             _mapper = mapper;
+            _logService = logService;
         }
 
         /// <summary>
@@ -42,20 +48,38 @@ namespace LYBT.Module.Records.Services {
         /// <summary>
         /// 新增病历记录
         /// </summary>
-        public async Task<bool> AddAsync(RecordCreateDto recordCreateDto) {
+        public async Task<bool> AddAsync(RecordCreateDto recordCreateDto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<RecordModel>(recordCreateDto);
             model.Id = Guid.NewGuid();
             model.RecordTime = DateTime.Now;
-            return await _recordRepository.AddAsync(model);
+            var result = await _recordRepository.AddAsync(model);
+
+            if (result) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Record,
+                    ObjectId = model.Id,
+                    ActionType = ActionType.Create,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    LogTime = DateTime.Now,
+                    Content = "新增病历",
+                    NewValue = JsonSerializer.Serialize(model)
+                });
+            }
+
+            return result;
         }
 
         /// <summary>
         /// 编辑病历记录
         /// </summary>
-        public async Task<bool> UpdateAsync(RecordEditDto recordEditDto) {
+        public async Task<bool> UpdateAsync(RecordEditDto recordEditDto, Guid operatorId, string operatorName) {
             var model = await _recordRepository.GetByIdAsync(recordEditDto.Id);
             if (model == null)
                 return false;
+
+            var oldJson = JsonSerializer.Serialize(model);
 
             model.Diagnosis = recordEditDto.Diagnosis;
             model.ChiefComplaint = recordEditDto.ChiefComplaint ?? model.ChiefComplaint;
@@ -64,14 +88,48 @@ namespace LYBT.Module.Records.Services {
             model.PrescriptionId = recordEditDto.PrescriptionId;
             model.RecordTime = recordEditDto.RecordTime;
 
-            return await _recordRepository.UpdateAsync(model);
+            var result = await _recordRepository.UpdateAsync(model);
+
+            if (result) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Record,
+                    ObjectId = model.Id,
+                    ActionType = ActionType.Edit,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    LogTime = DateTime.Now,
+                    Content = "编辑病历",
+                    OldValue = oldJson,
+                    NewValue = JsonSerializer.Serialize(recordEditDto)
+                });
+            }
+
+            return result;
         }
 
         /// <summary>
         /// 删除病历记录
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id) {
-            return await _recordRepository.DeleteAsync(id);
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
+            var record = await _recordRepository.GetByIdAsync(id);
+            var result = await _recordRepository.DeleteAsync(id);
+
+            if (result && record != null) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Record,
+                    ObjectId = id,
+                    ActionType = ActionType.Other,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    LogTime = DateTime.Now,
+                    Content = "删除病历",
+                    OldValue = JsonSerializer.Serialize(record)
+                });
+            }
+
+            return result;
         }
     }
 }
