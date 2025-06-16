@@ -29,7 +29,7 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 删除病人记录
         /// </summary>
-        Task<bool> DeleteAsync(string id);
+        Task<bool> DeleteAsync(Guid id);
 
         /// <summary>
         /// 通过身份证号查找病人
