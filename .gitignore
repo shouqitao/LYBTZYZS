@@ -4,6 +4,7 @@
 
 /.vs/LYBTZYZS
 /BIN/Debug
+**/bin/
 /LYBT.Common/obj
 /LYBT.Infrastructure/obj
 /LYBT.Models/obj
