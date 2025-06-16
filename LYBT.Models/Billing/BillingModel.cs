@@ -19,12 +19,12 @@ namespace LYBT.Models.Billing {
         /// <summary>
         /// 病人ID
         /// </summary>
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>
         /// 对应处方ID
         /// </summary>
-        public string PrescriptionId { get; set; } = string.Empty;
+        public Guid PrescriptionId { get; set; }
 
         /// <summary>
         /// 账单明细项目（建议用 Json 字段保存）
@@ -54,7 +54,7 @@ namespace LYBT.Models.Billing {
         /// <summary>
         /// 开单医生ID
         /// </summary>
-        public string DoctorId { get; set; } = string.Empty;
+        public Guid DoctorId { get; set; }
 
         /// <summary>
         /// 创建时间

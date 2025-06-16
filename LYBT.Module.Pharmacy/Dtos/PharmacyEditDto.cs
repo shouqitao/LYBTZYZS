@@ -13,7 +13,7 @@ namespace LYBT.Module.Pharmacy.Dtos {
 
         /// <summary>药房操作员ID</summary>
         [Required(ErrorMessage = "药房操作员ID不能为空")]
-        public string OperatorId { get; set; } = string.Empty;
+        public Guid OperatorId { get; set; }
 
         /// <summary>抓药时间</summary>
         public DateTime DispenseTime { get; set; }

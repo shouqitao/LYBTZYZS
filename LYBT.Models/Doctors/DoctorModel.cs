@@ -8,7 +8,7 @@ namespace LYBT.Models.Doctors {
         /// <summary>
         /// 医生ID
         /// </summary>
-        public string Id { get; set; } = string.Empty;
+        public Guid Id { get; set; }
 
         /// <summary>
         /// 医生姓名

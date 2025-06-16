@@ -14,7 +14,7 @@ namespace LYBT.Models.DiagnosisTreatment {
         /// <summary>
         /// 病人ID（外键）
         /// </summary>
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>
         /// 主诉

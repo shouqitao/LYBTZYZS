@@ -13,7 +13,7 @@ namespace LYBT.Models.Queueing {
         /// <summary>
         /// 病人ID
         /// </summary>
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>
         /// 排队类型（如“普通”、“急诊”）

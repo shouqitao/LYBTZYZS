@@ -6,7 +6,7 @@ namespace LYBT.Module.Patients.Dtos {
     /// </summary>
     public class PatientDetailDto {
         /// <summary>病人ID</summary>
-        public string Id { get; set; } = string.Empty;
+        public Guid Id { get; set; }
 
         /// <summary>姓名</summary>
         public string Name { get; set; } = string.Empty;

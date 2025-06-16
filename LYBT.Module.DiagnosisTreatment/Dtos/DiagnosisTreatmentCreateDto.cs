@@ -9,7 +9,7 @@ namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
     public class DiagnosisTreatmentCreateDto {
         /// <summary>病人ID</summary>
         [Required(ErrorMessage = "病人ID不能为空")]
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>主诉</summary>
         public string? ChiefComplaint { get; set; }

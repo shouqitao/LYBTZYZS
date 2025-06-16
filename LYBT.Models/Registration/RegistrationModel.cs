@@ -14,7 +14,7 @@ public class RegistrationModel {
     /// <summary>
     /// 病人 ID（外键，关联 Patients 表）
     /// </summary>
-    public string PatientId { get; set; } = string.Empty;
+    public Guid PatientId { get; set; }
 
     /// <summary>
     /// 病人姓名（用于列表显示）
@@ -24,7 +24,7 @@ public class RegistrationModel {
     /// <summary>
     /// 医生 ID（外键，关联 Doctors 表）
     /// </summary>
-    public string DoctorId { get; set; } = string.Empty;
+    public Guid DoctorId { get; set; }
 
     /// <summary>
     /// 医生姓名（用于列表显示）

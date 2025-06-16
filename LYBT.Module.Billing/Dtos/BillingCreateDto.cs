@@ -9,14 +9,14 @@ namespace LYBT.Module.Billing.Dtos {
     public class BillingCreateDto {
         /// <summary>病人ID</summary>
         [Required(ErrorMessage = "病人ID不能为空")]
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>处方ID（可选）</summary>
-        public string? PrescriptionId { get; set; }
+        public Guid? PrescriptionId { get; set; }
 
         /// <summary>开单医生ID</summary>
         [Required(ErrorMessage = "开单医生ID不能为空")]
-        public string DoctorId { get; set; } = string.Empty;
+        public Guid DoctorId { get; set; }
 
         /// <summary>账单明细列表</summary>
         public List<BillingItemDto> Items { get; set; } = new();

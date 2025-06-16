@@ -10,7 +10,7 @@ namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
         public Guid Id { get; set; }
 
         /// <summary>病人ID</summary>
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>病人姓名</summary>
         public string PatientName { get; set; } = string.Empty;

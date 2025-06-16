@@ -45,7 +45,7 @@ namespace LYBT.Module.Doctors.Services {
         /// </summary>
         public async Task<bool> AddAsync(DoctorCreateDto doctorCreateDto) {
             var model = _mapper.Map<DoctorModel>(doctorCreateDto);
-            model.Id = Guid.NewGuid().ToString();
+            model.Id = Guid.NewGuid();
             model.Status = DoctorStatus.Active;
             return await _doctorRepository.AddAsync(model);
         }
