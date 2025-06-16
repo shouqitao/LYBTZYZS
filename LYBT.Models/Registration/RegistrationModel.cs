@@ -1,11 +1,10 @@
 ﻿using LYBT.Common.Enums;
 
-namespace LYBT.Models.Registration;
-
-/// <summary>
-/// 挂号核心数据模型，用于在模块内部处理完整数据记录
-/// </summary>
-public class RegistrationModel {
+namespace LYBT.Models.Registration {
+    /// <summary>
+    /// 挂号核心数据模型，用于在模块内部处理完整数据记录
+    /// </summary>
+    public class RegistrationModel {
     /// <summary>
     /// 唯一标识符（主键，GUID 格式）
     /// </summary>
@@ -56,3 +55,5 @@ public class RegistrationModel {
     /// </summary>
     public string Remark { get; set; } = string.Empty;
 }
+}
+
