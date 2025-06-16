@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 using LYBT.Module.Users.Dtos;
-using LYBT.Module.Users.Interfaces;
 
 /// <summary>
 /// 用户管理控制器，提供RESTful API接口
