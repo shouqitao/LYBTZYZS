@@ -1,8 +1,13 @@
-﻿using LYBT.Common.Enums.Logs;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using LYBT.Common.Enums;
+using LYBT.Common.Enums.Logs;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
+using LYBT.Module.Users.Interfaces;
 
 /// <summary>
 /// 用户服务实现类（集成日志模块）
@@ -169,5 +174,86 @@ public class UserService : IUserService {
             });
         }
         return result;
+    }
+
+    /// <summary>
+    /// 批量禁用用户
+    /// </summary>
+    public async Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
+        int count = 0;
+        foreach (var id in ids) {
+            if (await DisableAsync(id, operatorId, operatorName))
+                count++;
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// 批量启用用户
+    /// </summary>
+    public async Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
+        int count = 0;
+        foreach (var id in ids) {
+            if (await EnableAsync(id, operatorId, operatorName))
+                count++;
+        }
+        return count;
+    }
+
+    private static string HashPassword(string password) {
+        using var sha = System.Security.Cryptography.SHA256.Create();
+        return Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)));
+    }
+
+    /// <summary>
+    /// 管理员重置密码
+    /// </summary>
+    public async Task<bool> ResetPasswordAsync(Guid id, string newPassword, Guid operatorId, string operatorName) {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null)
+            throw new Exception("用户不存在");
+
+        user.PasswordHash = HashPassword(newPassword);
+        var result = await _userRepository.UpdateAsync(user);
+        if (result) {
+            await _logService.AddLogAsync(new LogDto {
+                LogType = LogType.Operation,
+                ObjectType = ObjectType.User,
+                ObjectId = id,
+                ActionType = ActionType.ResetPassword,
+                OperatorId = operatorId,
+                OperatorName = operatorName,
+                LogTime = DateTime.Now,
+                Content = $"重置用户密码：{user.UserName}"
+            });
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// 用户修改密码
+    /// </summary>
+    public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null)
+            return false;
+        if (user.PasswordHash != HashPassword(oldPassword))
+            return false;
+        user.PasswordHash = HashPassword(newPassword);
+        return await _userRepository.UpdateAsync(user);
+    }
+
+    public List<UserRole> GetRoles() {
+        return Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToList();
+    }
+
+    public async Task<(IList<LogDto> logs, int total)> GetLogsAsync(Guid id, int page, int pageSize) {
+        var query = new LogQueryDto {
+            ObjectType = ObjectType.User,
+            ObjectId = id,
+            Page = page,
+            PageSize = pageSize
+        };
+        return await _logService.GetLogsAsync(query);
     }
 }

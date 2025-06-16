@@ -108,4 +108,28 @@ public class UserRepository : IUserRepository {
     public async Task<bool> ExistsByUsernameAsync(string userName) {
         return await _dbContext.Users.AnyAsync(u => u.UserName == userName);
     }
+
+    /// <summary>
+    /// 更新用户密码
+    /// </summary>
+    public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash) {
+        var user = await _dbContext.Users.FindAsync(id);
+        if (user == null)
+            return false;
+        user.PasswordHash = passwordHash;
+        _dbContext.Users.Update(user);
+        return await _dbContext.SaveChangesAsync() > 0;
+    }
+
+    /// <summary>
+    /// 批量更新启用状态
+    /// </summary>
+    public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive) {
+        var users = await _dbContext.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+        foreach (var u in users) {
+            u.IsActive = isActive;
+        }
+        _dbContext.Users.UpdateRange(users);
+        return await _dbContext.SaveChangesAsync();
+    }
 }
