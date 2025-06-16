@@ -1,10 +1,11 @@
 ﻿using LYBT.Common.Enums.Logs;
 using System;
 
-/// <summary>
-/// 操作日志分页/条件查询DTO
-/// </summary>
-public class LogQueryDto {
+namespace LYBT.Module.Logs.Dtos {
+    /// <summary>
+    /// 操作日志分页/条件查询DTO
+    /// </summary>
+    public class LogQueryDto {
     /// <summary>
     /// 对象类型（可选条件）
     /// </summary>
@@ -48,5 +49,7 @@ public class LogQueryDto {
     /// <summary>
     /// 每页条数（默认20）
     /// </summary>
-    public int PageSize { get; set; } = 20;
+        public int PageSize { get; set; } = 20;
+    }
 }
+
