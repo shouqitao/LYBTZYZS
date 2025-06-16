@@ -38,49 +38,49 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =========== 1. ×¢²áËùÓĞÄ£¿éµÄ Service ºÍ Repository ===========
+// =========== 1. æ³¨å†Œæ‰€æœ‰æ¨¡å—çš„ Service å’Œ Repository ===========
 
-// ÓÃ»§¹ÜÀí
+// ç”¨æˆ·ç®¡ç†
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-// ²¡ÈË¹ÜÀí
+// ç—…äººç®¡ç†
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 
-// Ò½Éú¹ÜÀí
+// åŒ»ç”Ÿç®¡ç†
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 
-// ¹ÒºÅ¹ÜÀí
+// æŒ‚å·ç®¡ç†
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
 
-// ÅÅ¶Ó¹ÜÀí
+// æ’é˜Ÿç®¡ç†
 builder.Services.AddScoped<IQueueingService, QueueingService>();
 builder.Services.AddScoped<IQueueingRepository, QueueingRepository>();
 
-// ÕïÁÆ¹ÜÀí
+// è¯Šç–—ç®¡ç†
 builder.Services.AddScoped<IDiagnosisTreatmentService, DiagnosisTreatmentService>();
 builder.Services.AddScoped<IDiagnosisTreatmentRepository, DiagnosisTreatmentRepository>();
 
-// Ò©²Ä¹ÜÀí
+// è¯æç®¡ç†
 builder.Services.AddScoped<IHerbService, HerbService>();
 builder.Services.AddScoped<IHerbRepository, HerbRepository>();
 
-// ¾­Ñé·½Ä£°å¹ÜÀí
+// ç»éªŒæ–¹æ¨¡æ¿ç®¡ç†
 builder.Services.AddScoped<IFormulaTemplateService, FormulaTemplateService>();
 builder.Services.AddScoped<IFormulaTemplateRepository, FormulaTemplateRepository>();
 
-// ÈÕÖ¾¹ÜÀí
+// æ—¥å¿—ç®¡ç†
 builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 
-// Í¬²½¹ÜÀí
+// åŒæ­¥ç®¡ç†
 builder.Services.AddScoped<ISyncService, SyncService>();
 builder.Services.AddScoped<ISyncRepository, SyncRepository>();
 
-// =========== 2. ×¢²áËùÓĞÄ£¿éµÄ AutoMapper ÅäÖÃÎÄ¼ş ===========
+// =========== 2. æ³¨å†Œæ‰€æœ‰æ¨¡å—çš„ AutoMapper é…ç½®æ–‡ä»¶ ===========
 
 builder.Services.AddAutoMapper(
     typeof(UserMappingProfile),
@@ -95,7 +95,7 @@ builder.Services.AddAutoMapper(
     typeof(SyncMappingProfile)
 );
 
-// =========== 3. ×¢²á¿ØÖÆÆ÷ºÍSwagger ===========
+// =========== 3. æ³¨å†Œæ§åˆ¶å™¨å’ŒSwagger ===========
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -103,12 +103,12 @@ builder.Services.AddSwaggerGen(options => {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "LYBT.WebAPI", Version = "v1" });
 });
 
-// =========== 4. ×¢²áÊı¾İ¿âÉÏÏÂÎÄ ===========
+// =========== 4. æ³¨å†Œæ•°æ®åº“ä¸Šä¸‹æ–‡ ===========
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// =========== 5. Æô¶¯WebÓ¦ÓÃ ===========
+// =========== 5. å¯åŠ¨Webåº”ç”¨ ===========
 
 var app = builder.Build();
 
@@ -120,3 +120,4 @@ if (app.Environment.IsDevelopment()) {
 app.MapControllers();
 
 app.Run();
+
