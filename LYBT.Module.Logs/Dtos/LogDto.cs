@@ -1,10 +1,11 @@
 ﻿using LYBT.Common.Enums.Logs;
 using System;
 
-/// <summary>
-/// 操作日志数据传输对象（用于日志写入与查询）
-/// </summary>
-public class LogDto {
+namespace LYBT.Module.Logs.Dtos {
+    /// <summary>
+    /// 操作日志数据传输对象（用于日志写入与查询）
+    /// </summary>
+    public class LogDto {
     /// <summary>
     /// 日志ID（主键，查询返回时用）
     /// </summary>
@@ -68,5 +69,7 @@ public class LogDto {
     /// <summary>
     /// 备注
     /// </summary>
-    public string? Remark { get; set; }
+        public string? Remark { get; set; }
+    }
 }
+
