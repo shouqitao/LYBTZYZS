@@ -26,3 +26,9 @@
 /LYBT.Module.Users/obj
 /LYBT.UI.WPF/obj
 /LYBT.WebAPI/obj
+
+# User-specific and build artifacts
+*.csproj.user
+.vs/
+bin/
+obj/
