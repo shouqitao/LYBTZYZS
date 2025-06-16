@@ -51,6 +51,11 @@ LYBT.Module.Users
 └─ README.md
 ```
 
+## 接口说明
+
+- `IUserService`：用户业务服务接口
+- `IUserRepository`：用户数据库仓储接口，使用 `AppDbContext` 持久化
+
 ------
 
 ## 依赖说明

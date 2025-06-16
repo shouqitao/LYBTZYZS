@@ -14,3 +14,10 @@ Example:
 ```bash
 export ConnectionStrings__DefaultConnection="Server=<host>;Database=<db>;User Id=<user>;Password=<pwd>;Encrypt=True;TrustServerCertificate=True"
 ```
+
+## Services and repositories
+
+Modules expose service and repository interfaces such as `IRegistrationService`,
+`IDoctorRepository` and `IUserService`. Most repositories use Entity Framework
+Core through `AppDbContext` for database persistence. The prescriptions module
+is the only part that stores data in memory by default.
