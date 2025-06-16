@@ -49,7 +49,9 @@ namespace LYBT.Module.Records.Controllers {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _recordService.AddAsync(recordCreateDto);
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var result = await _recordService.AddAsync(recordCreateDto, operatorId, operatorName);
             if (!result)
                 return BadRequest("新增病历失败");
 
@@ -64,7 +66,9 @@ namespace LYBT.Module.Records.Controllers {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _recordService.UpdateAsync(recordEditDto);
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var result = await _recordService.UpdateAsync(recordEditDto, operatorId, operatorName);
             if (!result)
                 return BadRequest("编辑病历失败");
 
@@ -76,7 +80,9 @@ namespace LYBT.Module.Records.Controllers {
         /// </summary>
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id) {
-            var result = await _recordService.DeleteAsync(id);
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var result = await _recordService.DeleteAsync(id, operatorId, operatorName);
             if (!result)
                 return NotFound();
             return Ok("删除病历成功");

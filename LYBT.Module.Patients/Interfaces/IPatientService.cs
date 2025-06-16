@@ -11,17 +11,17 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 新增病人
         /// </summary>
-        Task<bool> AddAsync(PatientCreateDto dto);
+        Task<bool> AddAsync(PatientCreateDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 编辑病人
         /// </summary>
-        Task<bool> UpdateAsync(PatientEditDto dto);
+        Task<bool> UpdateAsync(PatientEditDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 删除单个病人
         /// </summary>
-        Task<bool> DeleteAsync(string id);
+        Task<bool> DeleteAsync(string id, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 根据Id获取病人信息
@@ -41,6 +41,6 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 批量删除病人
         /// </summary>
-        Task<int> BatchDeleteAsync(List<string> ids);
+        Task<int> BatchDeleteAsync(List<string> ids, Guid operatorId, string operatorName);
     }
 }

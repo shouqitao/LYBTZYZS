@@ -23,7 +23,9 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] PatientCreateDto dto) {
-            var result = await _patientService.AddAsync(dto);
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var result = await _patientService.AddAsync(dto, operatorId, operatorName);
             return result ? Ok() : BadRequest("新增失败，必填项不完整或已存在。");
         }
 
@@ -32,7 +34,9 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPut]
         public async Task<IActionResult> Edit([FromBody] PatientEditDto dto) {
-            var result = await _patientService.UpdateAsync(dto);
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var result = await _patientService.UpdateAsync(dto, operatorId, operatorName);
             return result ? Ok() : BadRequest("更新失败，必填项不完整或病人不存在。");
         }
 
@@ -41,7 +45,9 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id) {
-            var result = await _patientService.DeleteAsync(id);
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var result = await _patientService.DeleteAsync(id, operatorId, operatorName);
             return result ? Ok() : NotFound("指定病人不存在。");
         }
 
@@ -77,7 +83,9 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPost("batchDelete")]
         public async Task<IActionResult> BatchDelete([FromBody] List<string> ids) {
-            var count = await _patientService.BatchDeleteAsync(ids);
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var count = await _patientService.BatchDeleteAsync(ids, operatorId, operatorName);
             return Ok(new { DeletedCount = count });
         }
     }
