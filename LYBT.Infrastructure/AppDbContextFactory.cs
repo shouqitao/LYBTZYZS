@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace LYBT.Infrastructure {
     /// <summary>
@@ -10,9 +12,14 @@ namespace LYBT.Infrastructure {
         /// 创建数据库上下文实例
         /// </summary>
         public AppDbContext CreateDbContext(string[] args) {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
+
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            // 下面请填写你的连接字符串（与 appsettings.json 里一致）
-            optionsBuilder.UseSqlServer("Server=60.190.215.86;Database=LYBTDB;User Id=sa;Password=Shou@850528;Encrypt=True;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             return new AppDbContext(optionsBuilder.Options);
         }
     }
