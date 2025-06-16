@@ -44,7 +44,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 删除单个病人
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id) {
+        public async Task<IActionResult> Delete(Guid id) {
             Guid operatorId = Guid.NewGuid();
             string operatorName = "管理员A";
             var result = await _patientService.DeleteAsync(id, operatorId, operatorName);

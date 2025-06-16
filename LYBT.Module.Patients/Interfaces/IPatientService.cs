@@ -21,7 +21,7 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 删除单个病人
         /// </summary>
-        Task<bool> DeleteAsync(string id, Guid operatorId, string operatorName);
+        Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 根据Id获取病人信息

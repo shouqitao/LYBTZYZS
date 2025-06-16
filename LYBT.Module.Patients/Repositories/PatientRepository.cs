@@ -43,7 +43,7 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> DeleteAsync(string id) {
+        public async Task<bool> DeleteAsync(Guid id) {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
                 return false;

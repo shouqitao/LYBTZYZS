@@ -77,8 +77,8 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
-        public async Task<bool> DeleteAsync(string id, Guid operatorId, string operatorName) {
-            var patient = await _patientRepository.GetByIdAsync(Guid.Parse(id));
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
+            var patient = await _patientRepository.GetByIdAsync(id);
             var result = await _patientRepository.DeleteAsync(id);
 
             if (result && patient != null) {
@@ -121,7 +121,7 @@ namespace LYBT.Module.Patients.Services {
         public async Task<int> BatchDeleteAsync(List<string> ids, Guid operatorId, string operatorName) {
             int count = 0;
             foreach (var id in ids) {
-                if (await DeleteAsync(id, operatorId, operatorName))
+                if (Guid.TryParse(id, out var guid) && await DeleteAsync(guid, operatorId, operatorName))
                     count++;
             }
             return count;
