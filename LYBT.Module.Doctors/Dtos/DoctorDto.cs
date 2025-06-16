@@ -1,0 +1,23 @@
+﻿using System;
+
+namespace LYBT.Module.Doctors.Dtos {
+    /// <summary>
+    /// 医生列表 DTO
+    /// </summary>
+    public class DoctorDto {
+        /// <summary>医生ID</summary>
+        public Guid Id { get; set; }
+
+        /// <summary>医生姓名</summary>
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>职称</summary>
+        public string? Title { get; set; }
+
+        /// <summary>联系电话</summary>
+        public string Phone { get; set; } = string.Empty;
+
+        /// <summary>状态</summary>
+        public string Status { get; set; } = string.Empty;
+    }
+}

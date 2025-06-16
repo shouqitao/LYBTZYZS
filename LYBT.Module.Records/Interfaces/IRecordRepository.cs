@@ -1,0 +1,37 @@
+﻿using LYBT.Models; // RecordModel 实体统一存放在 LYBT.Models
+using LYBT.Models.Records;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace LYBT.Module.Records.Interfaces {
+    /// <summary>
+    /// 病历仓储接口，定义病历数据操作方法
+    /// </summary>
+    public interface IRecordRepository {
+        /// <summary>
+        /// 根据病历ID获取病历记录
+        /// </summary>
+        Task<RecordModel?> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// 获取所有病历记录列表
+        /// </summary>
+        Task<List<RecordModel>> GetListAsync();
+
+        /// <summary>
+        /// 新增病历记录
+        /// </summary>
+        Task<bool> AddAsync(RecordModel recordModel);
+
+        /// <summary>
+        /// 更新病历记录
+        /// </summary>
+        Task<bool> UpdateAsync(RecordModel recordModel);
+
+        /// <summary>
+        /// 删除病历记录
+        /// </summary>
+        Task<bool> DeleteAsync(Guid id);
+    }
+}

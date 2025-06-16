@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LYBT.Common\LYBT.Common.csproj" />
+    <ProjectReference Include="..\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Billing\LYBT.Module.Billing.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Doctors\LYBT.Module.Doctors.csproj" />
+    <ProjectReference Include="..\LYBT.Module.FormulaTemplates\LYBT.Module.FormulaTemplates.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Pharmacy\LYBT.Module.Pharmacy.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Queueing\LYBT.Module.Queueing.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Records\LYBT.Module.Records.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Settings\LYBT.Module.Settings.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,26 @@
+﻿using System.ComponentModel;
+
+namespace LYBT.Common.Enums.Logs {
+    /// <summary>
+    /// 操作类型枚举（用于系统日志记录）
+    /// </summary>
+    public enum LogActionType {
+        [Description("新增")]
+        Create = 0,
+
+        [Description("修改")]
+        Update = 1,
+
+        [Description("删除")]
+        Delete = 2,
+
+        [Description("查询")]
+        Query = 3,
+
+        [Description("登录")]
+        Login = 4,
+
+        [Description("同步")]
+        Sync = 5
+    }
+}

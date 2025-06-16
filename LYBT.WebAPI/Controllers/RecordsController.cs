@@ -1,0 +1,85 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using LYBT.Module.Records.Interfaces;
+using LYBT.Module.Records.Dtos;
+
+namespace LYBT.Module.Records.Controllers {
+    /// <summary>
+    /// 病历 API 控制器
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    public class RecordController : ControllerBase {
+        private readonly IRecordService _recordService;
+
+        /// <summary>
+        /// 构造方法，注入病历服务
+        /// </summary>
+        public RecordController(IRecordService recordService) {
+            _recordService = recordService;
+        }
+
+        /// <summary>
+        /// 获取病历列表
+        /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<List<RecordDto>>> GetList() {
+            var list = await _recordService.GetListAsync();
+            return Ok(list);
+        }
+
+        /// <summary>
+        /// 获取病历详情
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<RecordDetailDto>> GetById(Guid id) {
+            var detail = await _recordService.GetByIdAsync(id);
+            if (detail == null)
+                return NotFound();
+            return Ok(detail);
+        }
+
+        /// <summary>
+        /// 新增病历
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult> Add([FromBody] RecordCreateDto recordCreateDto) {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _recordService.AddAsync(recordCreateDto);
+            if (!result)
+                return BadRequest("新增病历失败");
+
+            return Ok("新增病历成功");
+        }
+
+        /// <summary>
+        /// 编辑病历
+        /// </summary>
+        [HttpPut]
+        public async Task<ActionResult> Update([FromBody] RecordEditDto recordEditDto) {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _recordService.UpdateAsync(recordEditDto);
+            if (!result)
+                return BadRequest("编辑病历失败");
+
+            return Ok("编辑病历成功");
+        }
+
+        /// <summary>
+        /// 删除病历
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(Guid id) {
+            var result = await _recordService.DeleteAsync(id);
+            if (!result)
+                return NotFound();
+            return Ok("删除病历成功");
+        }
+    }
+}

@@ -1,0 +1,27 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/LYBTZYZS
+/BIN/Debug
+/LYBT.Common/obj
+/LYBT.Infrastructure/obj
+/LYBT.Models/obj
+/LYBT.Module.Billing/obj
+/LYBT.Module.DiagnosisTreatment/obj
+/LYBT.Module.Doctors/obj
+/LYBT.Module.FormulaTemplates/obj
+/LYBT.Module.Herbs/obj
+/LYBT.Module.Logs/obj
+/LYBT.Module.Patients/obj
+/LYBT.Module.Pharmacy/obj
+/LYBT.Module.Prescriptions/obj
+/LYBT.Module.Queueing/obj
+/LYBT.Module.Records/obj
+/LYBT.Module.Registration/obj
+/LYBT.Module.Settings/obj
+/LYBT.Module.Sync/obj
+/LYBT.Module.TreatmentRoom/obj
+/LYBT.Module.Users/obj
+/LYBT.UI.WPF/obj
+/LYBT.WebAPI/obj
