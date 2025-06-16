@@ -1,10 +1,11 @@
 ﻿using LYBT.Common.Enums.Logs;
 using System;
 
-/// <summary>
-/// 操作日志表实体类（结构化，适配多模块日志记录需求）
-/// </summary>
-public class LogModel {
+namespace LYBT.Models.Logs {
+    /// <summary>
+    /// 操作日志表实体类（结构化，适配多模块日志记录需求）
+    /// </summary>
+    public class LogModel {
     /// <summary>
     /// 日志ID（主键，唯一标识一条日志）
     /// </summary>
@@ -70,3 +71,5 @@ public class LogModel {
     /// </summary>
     public string? Remark { get; set; }
 }
+}
+

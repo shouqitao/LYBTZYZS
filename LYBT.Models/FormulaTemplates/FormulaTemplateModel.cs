@@ -1,9 +1,10 @@
 ﻿using LYBT.Models;
 
-/// <summary>
-/// 经验方模板主表实体
-/// </summary>
-public class FormulaTemplateModel {
+namespace LYBT.Models.FormulaTemplates {
+    /// <summary>
+    /// 经验方模板主表实体
+    /// </summary>
+    public class FormulaTemplateModel {
     /// <summary>
     /// 模板ID（主键）
     /// </summary>
@@ -22,5 +23,6 @@ public class FormulaTemplateModel {
     /// <summary>
     /// 备注
     /// </summary>
-    public string? Remark { get; set; }
+        public string? Remark { get; set; }
+    }
 }
