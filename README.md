@@ -34,7 +34,3 @@ dotnet build
 dotnet run --project LYBT.WebAPI
 ```
 
-
-## Configuration
-
-

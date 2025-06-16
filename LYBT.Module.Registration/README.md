@@ -14,3 +14,8 @@
 - Services/           业务逻辑服务
 - Repositories/       数据持久化实现
 - Extensions/         实体与 DTO 映射扩展
+
+## 接口说明
+
+- `IRegistrationService`：挂号业务逻辑接口
+- `IRegistrationRepository`：数据库仓储接口，基于 `AppDbContext`

@@ -16,6 +16,11 @@
 - Extensions：实体DTO映射扩展
 - DoctorsModule.cs：模块注册入口
 
+## 接口说明
+
+- `IDoctorService`：医生业务逻辑接口
+- `IDoctorRepository`：数据库操作接口，使用 `AppDbContext` 实现
+
 ## 特别说明
 
 - 性别字段已统一调用 LYBT.Common.Enums.Gender 枚举。

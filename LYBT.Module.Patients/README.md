@@ -13,10 +13,15 @@
 - `Enums/`：枚举类（性别）
 - `Interfaces/`：服务与仓储接口
 - `Models/`：领域模型与 DTO 数据传输对象
-- `Repositories/`：仓储实现（当前为内存模拟）
+- `Repositories/`：仓储实现，使用 EF Core 进行数据库持久化
 - `Services/`：业务实现（校验、转换、逻辑）
 - `Extensions/`：DTO 与模型的映射转换器
 - `PatientsModule.cs`：模块注册类（用于 Prism 注入）
+
+## 接口说明
+
+- `IPatientService`：患者业务服务接口
+- `IPatientRepository`：数据库仓储接口，基于 `AppDbContext`
 
 ## ✅ 特性
 
