@@ -38,6 +38,9 @@ using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using LYBT.Module.Logs.Interfaces;
+using LYBT.Module.Logs.Services;
+using LYBT.Module.Logs.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

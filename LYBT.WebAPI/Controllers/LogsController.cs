@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LYBT.Module.Logs.Dtos;
+using LYBT.Module.Logs.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 

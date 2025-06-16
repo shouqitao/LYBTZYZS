@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using LYBT.Module.Logs.Interfaces;
+using LYBT.Module.Logs.Repositories;
+using LYBT.Module.Logs.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Logs {
     /// <summary>
