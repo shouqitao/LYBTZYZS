@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Models;
+using LYBT.Models.FormulaTemplates;
 using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.Module.Herbs.Dtos;
 

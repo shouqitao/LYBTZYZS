@@ -1,4 +1,5 @@
 ﻿using LYBT.Infrastructure;
+using LYBT.Models.Logs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

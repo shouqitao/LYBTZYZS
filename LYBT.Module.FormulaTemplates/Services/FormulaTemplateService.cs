@@ -5,6 +5,7 @@ using AutoMapper;
 using LYBT.Models;
 using LYBT.Module.FormulaTemplates.Interfaces;
 using LYBT.Module.FormulaTemplates.Dtos;
+using LYBT.Models.FormulaTemplates;
 
 namespace LYBT.Module.FormulaTemplates.Services {
     /// <summary>

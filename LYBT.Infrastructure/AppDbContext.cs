@@ -14,6 +14,8 @@ using LYBT.Models.Settings;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Module.Users.Models;
 using LYBT.Module.Patients.Models;
+using LYBT.Models.FormulaTemplates;
+using LYBT.Models.Logs;
 
 namespace LYBT.Infrastructure {
     /// <summary>

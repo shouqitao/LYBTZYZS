@@ -1,5 +1,6 @@
 ﻿using LYBT.Infrastructure;
 using LYBT.Models;
+using LYBT.Models.FormulaTemplates;
 using LYBT.Module.FormulaTemplates.Interfaces;
 
 namespace LYBT.Module.FormulaTemplates.Repositories {

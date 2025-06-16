@@ -1,4 +1,5 @@
 ﻿using LYBT.Models;
+using LYBT.Models.FormulaTemplates;
 
 namespace LYBT.Module.FormulaTemplates.Interfaces {
     /// <summary>
