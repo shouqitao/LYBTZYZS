@@ -1,4 +1,6 @@
-﻿using LYBT.Module.Users.Dtos;
+﻿using System;
+using System.Collections.Generic;
+using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
 
 /// <summary>
@@ -44,4 +46,14 @@ public interface IUserRepository {
     /// 校验用户名是否存在
     /// </summary>
     Task<bool> ExistsByUsernameAsync(string userName);
+
+    /// <summary>
+    /// 更新用户密码
+    /// </summary>
+    Task<bool> UpdatePasswordAsync(Guid id, string passwordHash);
+
+    /// <summary>
+    /// 批量更新启用状态
+    /// </summary>
+    Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive);
 }

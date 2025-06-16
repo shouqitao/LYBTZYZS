@@ -2,16 +2,17 @@
 using System;
 using System.Threading.Tasks;
 using LYBT.Module.Users.Dtos;
+using LYBT.Module.Users.Interfaces;
 
 /// <summary>
 /// 用户管理控制器，提供RESTful API接口
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class UserController : ControllerBase {
+public class UsersController : ControllerBase {
     private readonly IUserService _userService;
 
-    public UserController(IUserService userService) {
+    public UsersController(IUserService userService) {
         _userService = userService;
     }
 
@@ -27,7 +28,7 @@ public class UserController : ControllerBase {
     /// <summary>
     /// 新增用户
     /// </summary>
-    [HttpPost("AddUser")]
+    [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] UserCreateDto dto) {
         // 从Token/Session等获取操作人信息
         Guid operatorId = Guid.NewGuid(); // 实际开发应取登录管理员ID
@@ -39,11 +40,10 @@ public class UserController : ControllerBase {
     /// <summary>
     /// 编辑用户
     /// </summary>
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UserEditDto dto) {
+    [HttpPut("update")]
+    public async Task<IActionResult> Update([FromBody] UserEditDto dto) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
-        dto.Id = id;
         var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
         return result ? Ok(new { success = true }) : BadRequest(new { success = false });
     }
@@ -51,7 +51,7 @@ public class UserController : ControllerBase {
     /// <summary>
     /// 禁用用户
     /// </summary>
-    [HttpPut("{id:guid}/disable")]
+    [HttpPost("disable/{id}")]
     public async Task<IActionResult> Disable(Guid id) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
@@ -62,11 +62,81 @@ public class UserController : ControllerBase {
     /// <summary>
     /// 启用用户
     /// </summary>
-    [HttpPut("{id:guid}/enable")]
+    [HttpPost("enable/{id}")]
     public async Task<IActionResult> Enable(Guid id) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
         var result = await _userService.EnableAsync(id, operatorId, operatorName);
         return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+    }
+
+    /// <summary>
+    /// 批量禁用
+    /// </summary>
+    [HttpPost("batchDisable")]
+    public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
+        Guid operatorId = Guid.NewGuid();
+        string operatorName = "管理员A";
+        var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
+        return Ok(new { success = true, count });
+    }
+
+    /// <summary>
+    /// 批量启用
+    /// </summary>
+    [HttpPost("batchEnable")]
+    public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
+        Guid operatorId = Guid.NewGuid();
+        string operatorName = "管理员A";
+        var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
+        return Ok(new { success = true, count });
+    }
+
+    /// <summary>
+    /// 管理员重置密码
+    /// </summary>
+    [HttpPost("resetPassword/{id}")]
+    public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordDto dto) {
+        Guid operatorId = Guid.NewGuid();
+        string operatorName = "管理员A";
+        var password = string.IsNullOrWhiteSpace(dto.NewPassword) ? "123456" : dto.NewPassword;
+        var result = await _userService.ResetPasswordAsync(id, password, operatorId, operatorName);
+        return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+    }
+
+    /// <summary>
+    /// 用户修改密码
+    /// </summary>
+    [HttpPost("changePassword")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto) {
+        var result = await _userService.ChangePasswordAsync(dto.UserId, dto.OldPassword, dto.NewPassword);
+        return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+    }
+
+    /// <summary>
+    /// 获取所有角色
+    /// </summary>
+    [HttpGet("getRoles")]
+    public IActionResult GetRoles() {
+        var roles = _userService.GetRoles();
+        return Ok(roles);
+    }
+
+    /// <summary>
+    /// 根据Id获取用户详情
+    /// </summary>
+    [HttpGet("getById/{id}")]
+    public async Task<IActionResult> GetById(Guid id) {
+        var user = await _userService.GetByIdAsync(id);
+        return user == null ? NotFound() : Ok(user);
+    }
+
+    /// <summary>
+    /// 获取用户操作日志
+    /// </summary>
+    [HttpGet("getLogs/{id}")]
+    public async Task<IActionResult> GetLogs(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
+        var (logs, total) = await _userService.GetLogsAsync(id, page, pageSize);
+        return Ok(new { total, logs });
     }
 }
