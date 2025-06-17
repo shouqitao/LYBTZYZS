@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Module.Auth.Dtos;
+using LYBT.UI.WPF.Services;
 
 namespace LYBT.UI.WPF.ViewModels {
     /// <summary>
@@ -43,11 +44,9 @@ namespace LYBT.UI.WPF.ViewModels {
                 var response = await _authApi.LoginAsync(dto);
                 _tokenService.SetToken(response.Token);
                 LoginSucceeded?.Invoke();
-            }
-            catch (ApiException ex) {
+            } catch (ApiException ex) {
                 MessageBox.Show(ex.Content ?? "用户名或密码错误", "登录失败", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            catch (System.Exception ex) {
+            } catch (System.Exception ex) {
                 MessageBox.Show($"无法连接到服务器: {ex.Message}", "登录失败", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
