@@ -14,6 +14,17 @@ namespace LYBT.Module.Settings {
         public static void Register(IServiceCollection services) {
             services.AddScoped<ISettingsRepository, SettingsRepository>();
             services.AddScoped<ISettingsService, SettingsService>();
+
+            services.AddScoped<IDiagnosisCatalogRepository, DiagnosisCatalogRepository>();
+            services.AddScoped<IDiagnosisCatalogService, DiagnosisCatalogService>();
+
+            services.AddScoped<ITreatmentCatalogRepository, TreatmentCatalogRepository>();
+            services.AddScoped<ITreatmentCatalogService, TreatmentCatalogService>();
+
+            services.AddScoped<IGlobalSettingsRepository, GlobalSettingsRepository>();
+            services.AddScoped<IGlobalSettingsService, GlobalSettingsService>();
+
+            services.AddScoped<IEnumMappingsService, EnumMappingsService>();
         }
     }
 }

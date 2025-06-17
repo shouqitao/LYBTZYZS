@@ -41,6 +41,9 @@ namespace LYBT.Infrastructure {
         public DbSet<PharmacyModel> Pharmacies { get; set; }
         public DbSet<RecordModel> Records { get; set; }
         public DbSet<SettingsModel> Settings { get; set; }
+        public DbSet<DiagnosisCatalogModel> DiagnosisCatalogs { get; set; }
+        public DbSet<TreatmentCatalogModel> TreatmentCatalogs { get; set; }
+        public DbSet<GlobalSettingsModel> GlobalSettings { get; set; }
         public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; }
         public DbSet<SpecialPatientDoctor> SpecialPatientDoctors { get; set; }
 
