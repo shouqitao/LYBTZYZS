@@ -819,6 +819,25 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("LYBT.Module.Users.Models.AdminSecretModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AdminSecrets");
+                });
+
             modelBuilder.Entity("LYBT.Models.HerbModel", b =>
                 {
                     b.HasOne("LYBT.Models.Pharmacy.PharmacyModel", null)

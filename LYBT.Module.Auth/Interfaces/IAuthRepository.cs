@@ -16,5 +16,10 @@ namespace LYBT.Module.Auth.Interfaces {
         /// 更新最后登录时间
         /// </summary>
         Task UpdateLastLoginTimeAsync(Guid id, DateTime loginTime);
+
+        /// <summary>
+        /// 获取管理员密码哈希
+        /// </summary>
+        Task<string?> GetAdminPasswordHashAsync(string userName);
     }
 }

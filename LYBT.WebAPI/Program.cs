@@ -47,6 +47,7 @@ using LYBT.Module.Logs.Repositories;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
+using LYBT.Infrastructure.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -133,6 +134,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // =========== 5. 启动Web应用 ===========
 
 var app = builder.Build();
+
+// ensure default admin user exists
+using (var scope = app.Services.CreateScope()) {
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    AdminSeeder.Seed(context);
+}
 
 if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
