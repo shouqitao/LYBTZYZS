@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using LYBT.Common.Enums;
-using LYBT.Module.DiagnosisTreatment.Models.Dtos;
+using LYBT.Models.DiagnosisTreatment;
 
 namespace LYBT.Models.TreatmentTask {
     /// <summary>
@@ -13,7 +13,7 @@ namespace LYBT.Models.TreatmentTask {
         public string DoctorId { get; set; } = string.Empty;
         public string TreatmentRoomId { get; set; } = string.Empty;
 
-        public List<TreatmentItemDto> TreatmentItems { get; set; } = new();
+        public List<TreatmentItemModel> TreatmentItems { get; set; } = new();
         public TreatmentTaskStatus Status { get; set; } = TreatmentTaskStatus.Pending;
 
         public DateTime CreatedTime { get; set; }
