@@ -57,7 +57,11 @@ namespace LYBT.Module.Doctors.Services {
             var model = _mapper.Map<DoctorModel>(doctorCreateDto);
             model.Id = Guid.NewGuid();
             model.Status = DoctorStatus.Active;
+<<<<<<< codex/replace-custom-hashpassword-with-passwordhasher
             model.PasswordHash = PasswordHelper.Hash("123456");
+=======
+            model.PasswordHash = HashPassword(doctorCreateDto.Password);
+>>>>>>> master
             return await _doctorRepository.AddAsync(model);
         }
 

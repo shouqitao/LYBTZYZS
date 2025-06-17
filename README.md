@@ -28,9 +28,14 @@ The solution is composed of many projects under the `LYBT.Module.*` namespace. E
 
 ## Build and Run
 
-Use the standard .NET CLI commands to build and start the Web API:
+Use the standard .NET CLI commands to build and start the Web API. The JWT 
+secret used for authentication should be supplied via an environment variable 
+instead of being hard coded in configuration files. Set `JWT__SECRET` before
+running the project. The value in `appsettings.json` is only a placeholder and
+should never be committed with real secrets:
 
 ```bash
+export JWT__SECRET="<your_jwt_secret>"
 dotnet build
 dotnet run --project LYBT.WebAPI
 ```
@@ -45,3 +50,8 @@ provided to set this. Restore NuGet packages before launching the client:
 ```bash
 dotnet restore
 ```
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
