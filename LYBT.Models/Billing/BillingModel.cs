@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using LYBT.Common.Enums;
 
 namespace LYBT.Models.Billing {
     /// <summary>
@@ -42,9 +43,9 @@ namespace LYBT.Models.Billing {
         public decimal PaidAmount { get; set; }
 
         /// <summary>
-        /// 缴费状态（未缴费、已缴费、已取消等）
+        /// 当前状态
         /// </summary>
-        public string PaymentStatus { get; set; } = "未缴费";
+        public BillingStatus Status { get; set; } = BillingStatus.Pending;
 
         /// <summary>
         /// 缴费方式（现金、微信等）
@@ -59,7 +60,32 @@ namespace LYBT.Models.Billing {
         /// <summary>
         /// 创建时间
         /// </summary>
-        public DateTime CreateTime { get; set; } = DateTime.Now;
+        public DateTime CreatedTime { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// 支付时间
+        /// </summary>
+        public DateTime? PaidTime { get; set; }
+
+        /// <summary>
+        /// 完成时间
+        /// </summary>
+        public DateTime? CompletedTime { get; set; }
+
+        /// <summary>
+        /// 退款时间
+        /// </summary>
+        public DateTime? RefundTime { get; set; }
+
+        /// <summary>
+        /// 退款理由
+        /// </summary>
+        public string? RefundReason { get; set; }
+
+        /// <summary>
+        /// 是否删除
+        /// </summary>
+        public bool IsDeleted { get; set; } = false;
 
         /// <summary>
         /// 账单时间（如有二次缴费等场景可与 CreateTime 区分）

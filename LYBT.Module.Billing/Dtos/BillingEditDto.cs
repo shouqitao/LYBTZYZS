@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Common.Enums;
 
 namespace LYBT.Module.Billing.Dtos {
     /// <summary>
@@ -20,8 +21,8 @@ namespace LYBT.Module.Billing.Dtos {
         /// <summary>已缴金额</summary>
         public decimal PaidAmount { get; set; }
 
-        /// <summary>缴费状态</summary>
-        public string PaymentStatus { get; set; } = "未缴费";
+        /// <summary>账单状态</summary>
+        public BillingStatus Status { get; set; } = BillingStatus.Pending;
 
         /// <summary>
         /// 账单时间（如有二次缴费等场景可与 CreateTime 区分）

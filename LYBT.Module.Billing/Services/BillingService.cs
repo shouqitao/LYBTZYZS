@@ -3,6 +3,8 @@ using LYBT.Models;
 using LYBT.Models.Billing;
 using LYBT.Module.Billing.Dtos;
 using LYBT.Module.Billing.Interfaces;
+using LYBT.Common.Enums;
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -60,6 +62,7 @@ namespace LYBT.Module.Billing.Services {
             model.PaidAmount = billingEditDto.PaidAmount;
             model.BillingTime = billingEditDto.BillingTime;
             model.Remark = billingEditDto.Remark;
+            model.Status = billingEditDto.Status;
             return await _billingRepository.UpdateAsync(model);
         }
 
@@ -68,6 +71,70 @@ namespace LYBT.Module.Billing.Services {
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
             return await _billingRepository.DeleteAsync(id);
+        }
+
+        public async Task<bool> MarkAsPaidAsync(Guid id) {
+            var model = await _billingRepository.GetByIdAsync(id);
+            if (model == null) return false;
+            model.Status = BillingStatus.Paid;
+            model.PaidTime = DateTime.Now;
+            return await _billingRepository.UpdateAsync(model);
+        }
+
+        public async Task<bool> MarkAsCompletedAsync(Guid id) {
+            var model = await _billingRepository.GetByIdAsync(id);
+            if (model == null) return false;
+            model.Status = BillingStatus.Completed;
+            model.CompletedTime = DateTime.Now;
+            return await _billingRepository.UpdateAsync(model);
+        }
+
+        public async Task<bool> RequestRefundAsync(Guid id, string reason) {
+            var model = await _billingRepository.GetByIdAsync(id);
+            if (model == null) return false;
+            model.Status = BillingStatus.RefundRequested;
+            model.RefundReason = reason;
+            return await _billingRepository.UpdateAsync(model);
+        }
+
+        public async Task<bool> ApproveRefundAsync(Guid id) {
+            var model = await _billingRepository.GetByIdAsync(id);
+            if (model == null) return false;
+            model.Status = BillingStatus.Refunded;
+            model.RefundTime = DateTime.Now;
+            return await _billingRepository.UpdateAsync(model);
+        }
+
+        public async Task<bool> RejectRefundAsync(Guid id) {
+            var model = await _billingRepository.GetByIdAsync(id);
+            if (model == null) return false;
+            model.Status = BillingStatus.Paid;
+            model.RefundReason = null;
+            return await _billingRepository.UpdateAsync(model);
+        }
+
+        public async Task<bool> CancelAsync(Guid id) {
+            var model = await _billingRepository.GetByIdAsync(id);
+            if (model == null) return false;
+            model.Status = BillingStatus.Cancelled;
+            model.IsDeleted = true;
+            return await _billingRepository.UpdateAsync(model);
+        }
+
+        public async Task<List<BillingDto>> GetByPatientIdAsync(Guid patientId) {
+            var list = await _billingRepository.GetByPatientIdAsync(patientId);
+            return _mapper.Map<List<BillingDto>>(list);
+        }
+
+        public async Task<List<BillingDto>> SearchAsync(string keyword) {
+            var list = await _billingRepository.SearchAsync(keyword);
+            return _mapper.Map<List<BillingDto>>(list);
+        }
+
+        public async Task<List<BillingDto>> GetRefundableBillsAsync() {
+            var list = await _billingRepository.SearchAsync(string.Empty);
+            var refundable = list.Where(b => b.Status == BillingStatus.Paid).ToList();
+            return _mapper.Map<List<BillingDto>>(refundable);
         }
     }
 }

@@ -61,5 +61,23 @@ namespace LYBT.Module.Billing.Repositories {
             _appDbContext.Billings.Remove(billingModel);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
+
+        /// <summary>
+        /// 根据病人ID获取账单列表
+        /// </summary>
+        public async Task<List<BillingModel>> GetByPatientIdAsync(Guid patientId) {
+            var list = _appDbContext.Billings.Where(b => b.PatientId == patientId && !b.IsDeleted).ToList();
+            return await Task.FromResult(list);
+        }
+
+        /// <summary>
+        /// 关键字搜索（病人名、订单号等）
+        /// </summary>
+        public async Task<List<BillingModel>> SearchAsync(string keyword) {
+            var list = _appDbContext.Billings
+                .Where(b => (b.BillingId.Contains(keyword) || b.Remark!.Contains(keyword)) && !b.IsDeleted)
+                .ToList();
+            return await Task.FromResult(list);
+        }
     }
 }
