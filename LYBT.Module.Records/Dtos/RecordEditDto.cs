@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using LYBT.Models.DiagnosisTreatment;
 
 namespace LYBT.Module.Records.Dtos {
     /// <summary>
@@ -25,6 +27,21 @@ namespace LYBT.Module.Records.Dtos {
 
         /// <summary>开方信息（如药方ID）</summary>
         public Guid? PrescriptionId { get; set; }
+
+        /// <summary>辩证结果列表</summary>
+        public List<string> DiagnosisResults { get; set; } = new();
+
+        /// <summary>药材组成</summary>
+        public List<HerbItemModel>? HerbalFormula { get; set; }
+
+        /// <summary>辅助治疗方案</summary>
+        public List<TreatmentItemModel>? TreatmentPlans { get; set; }
+
+        /// <summary>是否共享</summary>
+        public bool IsShared { get; set; }
+
+        /// <summary>共享给医生ID列表</summary>
+        public List<string> SharedToDoctorIds { get; set; } = new();
 
         /// <summary>病历修改时间</summary>
         public DateTime RecordTime { get; set; } = DateTime.Now;

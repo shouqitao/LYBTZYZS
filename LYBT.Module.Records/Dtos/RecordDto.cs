@@ -16,5 +16,8 @@ namespace LYBT.Module.Records.Dtos {
 
         /// <summary>病历时间</summary>
         public DateTime RecordTime { get; set; }
+
+        /// <summary>是否共享</summary>
+        public bool IsShared { get; set; }
     }
 }

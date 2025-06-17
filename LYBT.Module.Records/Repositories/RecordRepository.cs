@@ -69,5 +69,12 @@ namespace LYBT.Module.Records.Repositories {
                 .OrderByDescending(r => r.RecordTime)
                 .ToListAsync();
         }
+
+        public async Task<List<RecordModel>> GetSharedRecordsAsync(Guid doctorId) {
+            var list = await _appDbContext.Records
+                .Where(r => r.IsShared)
+                .ToListAsync();
+            return list.Where(r => r.SharedToDoctorIds.Contains(doctorId.ToString())).ToList();
+        }
     }
 }

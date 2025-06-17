@@ -30,6 +30,12 @@ namespace LYBT.Module.Records.Controllers {
             return Ok(list);
         }
 
+        [HttpGet("patient/{patientId}")]
+        public async Task<ActionResult<List<RecordDto>>> GetByPatient(Guid patientId) {
+            var list = await _recordService.GetByPatientIdAsync(patientId);
+            return Ok(list);
+        }
+
         /// <summary>
         /// 获取病历详情
         /// </summary>
@@ -86,6 +92,28 @@ namespace LYBT.Module.Records.Controllers {
             if (!result)
                 return NotFound();
             return Ok("删除病历成功");
+        }
+
+        [HttpPost("share/{id}")]
+        public async Task<ActionResult> MarkAsShared(Guid id, [FromBody] List<string> doctorIds) {
+            var result = await _recordService.MarkAsSharedAsync(id, doctorIds);
+            if (!result)
+                return NotFound();
+            return Ok();
+        }
+
+        [HttpPost("unshare/{id}")]
+        public async Task<ActionResult> RevokeSharing(Guid id) {
+            var result = await _recordService.RevokeSharingAsync(id);
+            if (!result)
+                return NotFound();
+            return Ok();
+        }
+
+        [HttpGet("shared/{doctorId}")]
+        public async Task<ActionResult<List<RecordDto>>> GetShared(Guid doctorId) {
+            var list = await _recordService.GetSharedRecordsAsync(doctorId);
+            return Ok(list);
         }
     }
 }
