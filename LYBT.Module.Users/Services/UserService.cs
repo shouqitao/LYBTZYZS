@@ -4,6 +4,7 @@ using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
+using LYBT.Common.Helpers;
 
 /// <summary>
 /// 用户服务实现类（集成日志模块）
@@ -69,7 +70,11 @@ public class UserService : IUserService {
             Role = dto.Role,
             IsActive = dto.IsActive,
             CreatedTime = DateTime.Now,
+<<<<<<< codex/replace-custom-hashpassword-with-passwordhasher
+            PasswordHash = PasswordHelper.Hash(dto.Password)
+=======
             PasswordHash = HashPassword(dto.Password)
+>>>>>>> master
         };
         var result = await _userRepository.AddAsync(user);
 
@@ -196,10 +201,6 @@ public class UserService : IUserService {
         return count;
     }
 
-    private static string HashPassword(string password) {
-        using var sha = System.Security.Cryptography.SHA256.Create();
-        return Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)));
-    }
 
     /// <summary>
     /// 管理员重置密码
@@ -209,7 +210,7 @@ public class UserService : IUserService {
         if (user == null)
             throw new Exception("用户不存在");
 
-        user.PasswordHash = HashPassword(newPassword);
+        user.PasswordHash = PasswordHelper.Hash(newPassword);
         var result = await _userRepository.UpdateAsync(user);
         if (result) {
             await _logService.AddLogAsync(new LogDto {
@@ -233,9 +234,9 @@ public class UserService : IUserService {
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null)
             return false;
-        if (user.PasswordHash != HashPassword(oldPassword))
+        if (!PasswordHelper.Verify(user.PasswordHash, oldPassword))
             return false;
-        user.PasswordHash = HashPassword(newPassword);
+        user.PasswordHash = PasswordHelper.Hash(newPassword);
         return await _userRepository.UpdateAsync(user);
     }
 

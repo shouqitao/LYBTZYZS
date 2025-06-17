@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums;
+using LYBT.Common.Helpers;
 using LYBT.Models;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
@@ -56,7 +57,11 @@ namespace LYBT.Module.Doctors.Services {
             var model = _mapper.Map<DoctorModel>(doctorCreateDto);
             model.Id = Guid.NewGuid();
             model.Status = DoctorStatus.Active;
+<<<<<<< codex/replace-custom-hashpassword-with-passwordhasher
+            model.PasswordHash = PasswordHelper.Hash("123456");
+=======
             model.PasswordHash = HashPassword(doctorCreateDto.Password);
+>>>>>>> master
             return await _doctorRepository.AddAsync(model);
         }
 
@@ -99,20 +104,16 @@ namespace LYBT.Module.Doctors.Services {
         }
 
         public async Task<bool> ResetPasswordAsync(Guid id, string newPassword) {
-            var hash = HashPassword(newPassword);
+            var hash = PasswordHelper.Hash(newPassword);
             return await _doctorRepository.UpdatePasswordAsync(id, hash);
         }
 
         public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
             var model = await _doctorRepository.GetByIdAsync(id);
             if (model == null) return false;
-            if (model.PasswordHash != HashPassword(oldPassword)) return false;
-            return await _doctorRepository.UpdatePasswordAsync(id, HashPassword(newPassword));
+            if (!PasswordHelper.Verify(model.PasswordHash, oldPassword)) return false;
+            return await _doctorRepository.UpdatePasswordAsync(id, PasswordHelper.Hash(newPassword));
         }
 
-        private static string HashPassword(string password) {
-            using var sha = System.Security.Cryptography.SHA256.Create();
-            return Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)));
-        }
     }
 }
