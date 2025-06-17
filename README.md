@@ -20,7 +20,7 @@ The solution is composed of many projects under the `LYBT.Module.*` namespace. E
 - **LYBT.Module.Pharmacy** – processes dispensing at the pharmacy.
 - **LYBT.Module.FormulaTemplates** – saves reusable prescription templates.
 - **LYBT.Module.Prescriptions** – creates and edits patient prescriptions.
-- **LYBT.Module.TreatmentRoom** – schedules and tracks treatment rooms.
+- **LYBT.Module.TreatmentRoom** – manages treatment rooms and executes assisted treatment tasks.
 - **LYBT.Module.Users** – manages user accounts, roles, and authentication.
 - **LYBT.Module.Settings** – stores system configuration values.
 - **LYBT.Module.Sync** – synchronizes data with external systems.
