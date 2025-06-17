@@ -4,6 +4,7 @@ using LYBT.Models;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
+using LYBT.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -33,11 +34,19 @@ namespace LYBT.Module.Doctors.Services {
         }
 
         /// <summary>
-        /// 获取医生列表
+        /// 关键词搜索
         /// </summary>
-        public async Task<List<DoctorDto>> GetListAsync() {
-            var list = await _doctorRepository.GetListAsync();
+        public async Task<List<DoctorDto>> SearchAsync(string keyword) {
+            var list = await _doctorRepository.SearchAsync(keyword);
             return _mapper.Map<List<DoctorDto>>(list);
+        }
+
+        public async Task<PagedResultDto<DoctorDto>> GetPagedAsync(DoctorQueryDto query) {
+            var (models, total) = await _doctorRepository.GetPagedAsync(query);
+            return new PagedResultDto<DoctorDto> {
+                TotalCount = total,
+                Items = _mapper.Map<List<DoctorDto>>(models)
+            };
         }
 
         /// <summary>
@@ -47,6 +56,7 @@ namespace LYBT.Module.Doctors.Services {
             var model = _mapper.Map<DoctorModel>(doctorCreateDto);
             model.Id = Guid.NewGuid();
             model.Status = DoctorStatus.Active;
+            model.PasswordHash = HashPassword("123456");
             return await _doctorRepository.AddAsync(model);
         }
 
@@ -61,6 +71,7 @@ namespace LYBT.Module.Doctors.Services {
             model.Gender = doctorEditDto.Gender;
             model.Birthday = doctorEditDto.Birthday;
             model.Phone = doctorEditDto.Phone;
+            model.PinyinCode = doctorEditDto.PinyinCode;
             model.LicenseNumber = doctorEditDto.LicenseNumber;
             model.Title = doctorEditDto.Title;
             model.Status = doctorEditDto.Status;
@@ -69,10 +80,39 @@ namespace LYBT.Module.Doctors.Services {
         }
 
         /// <summary>
-        /// 删除医生
+        /// 禁用医生
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id) {
-            return await _doctorRepository.DeleteAsync(id);
+        public async Task<bool> DisableAsync(Guid id) {
+            return await _doctorRepository.DisableAsync(id);
+        }
+
+        public async Task<bool> EnableAsync(Guid id) {
+            return await _doctorRepository.EnableAsync(id);
+        }
+
+        public async Task<int> BatchDisableAsync(List<Guid> ids) {
+            return await _doctorRepository.BatchDisableAsync(ids);
+        }
+
+        public async Task<int> BatchEnableAsync(List<Guid> ids) {
+            return await _doctorRepository.BatchEnableAsync(ids);
+        }
+
+        public async Task<bool> ResetPasswordAsync(Guid id, string newPassword) {
+            var hash = HashPassword(newPassword);
+            return await _doctorRepository.UpdatePasswordAsync(id, hash);
+        }
+
+        public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
+            var model = await _doctorRepository.GetByIdAsync(id);
+            if (model == null) return false;
+            if (model.PasswordHash != HashPassword(oldPassword)) return false;
+            return await _doctorRepository.UpdatePasswordAsync(id, HashPassword(newPassword));
+        }
+
+        private static string HashPassword(string password) {
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            return Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)));
         }
     }
 }

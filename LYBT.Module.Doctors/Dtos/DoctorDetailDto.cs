@@ -20,6 +20,9 @@ namespace LYBT.Module.Doctors.Dtos {
         /// <summary>联系电话</summary>
         public string Phone { get; set; } = string.Empty;
 
+        /// <summary>姓名拼音码</summary>
+        public string PinyinCode { get; set; } = string.Empty;
+
         /// <summary>执业证书号</summary>
         public string? LicenseNumber { get; set; }
 

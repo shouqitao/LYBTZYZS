@@ -64,5 +64,15 @@ namespace LYBT.Models.Doctors {
 
         /// <summary>执业证书号</summary>
         public string? LicenseNumber { get; set; }
+
+        /// <summary>
+        /// 医生姓名拼音码，用于快捷搜索
+        /// </summary>
+        public string PinyinCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 登录密码哈希值
+        /// </summary>
+        public string PasswordHash { get; set; } = string.Empty;
     }
 }

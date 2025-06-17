@@ -3,6 +3,7 @@ using LYBT.Models.Doctors;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Module.Doctors.Dtos;
 
 namespace LYBT.Module.Doctors.Interfaces {
     /// <summary>
@@ -15,9 +16,19 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<DoctorModel?> GetByIdAsync(Guid id);
 
         /// <summary>
-        /// 获取所有医生列表
+        /// 获取所有医生列表（不分页）
         /// </summary>
         Task<List<DoctorModel>> GetListAsync();
+
+        /// <summary>
+        /// 搜索医生
+        /// </summary>
+        Task<List<DoctorModel>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 分页获取医生
+        /// </summary>
+        Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query);
 
         /// <summary>
         /// 新增医生
@@ -30,8 +41,28 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<bool> UpdateAsync(DoctorModel doctorModel);
 
         /// <summary>
-        /// 删除医生
+        /// 禁用医生
         /// </summary>
-        Task<bool> DeleteAsync(Guid id);
+        Task<bool> DisableAsync(Guid id);
+
+        /// <summary>
+        /// 启用医生
+        /// </summary>
+        Task<bool> EnableAsync(Guid id);
+
+        /// <summary>
+        /// 批量禁用
+        /// </summary>
+        Task<int> BatchDisableAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 批量启用
+        /// </summary>
+        Task<int> BatchEnableAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 更新密码
+        /// </summary>
+        Task<bool> UpdatePasswordAsync(Guid id, string passwordHash);
     }
 }
