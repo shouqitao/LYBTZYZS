@@ -5,6 +5,9 @@ using LYBT.Module.Auth.Dtos;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
+using LYBT.Module.Logs.Interfaces;
+using LYBT.Module.Logs.Dtos;
+using LYBT.Common.Enums.Logs;
 
 namespace LYBT.Module.Auth.Services {
     /// <summary>
@@ -13,23 +16,43 @@ namespace LYBT.Module.Auth.Services {
     public class AuthService : IAuthService {
         private readonly IAuthRepository _authRepository;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
 
-        public AuthService(IAuthRepository authRepository, IMapper mapper) {
+        public AuthService(IAuthRepository authRepository, IMapper mapper, ILogService logService) {
             _authRepository = authRepository;
             _mapper = mapper;
+            _logService = logService;
         }
 
         public async Task<UserDto?> LoginAsync(LoginRequestDto dto) {
             var user = await _authRepository.GetByUsernameAsync(dto.Username);
-            if (user == null)
+            if (user == null || !user.IsActive || user.PasswordHash != HashPassword(dto.Password)) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Login,
+                    ObjectType = ObjectType.User,
+                    ObjectId = user?.Id ?? Guid.Empty,
+                    ActionType = ActionType.Login,
+                    OperatorId = user?.Id ?? Guid.Empty,
+                    OperatorName = user?.RealName ?? dto.Username,
+                    Content = "Login failed",
+                    LogTime = DateTime.Now
+                });
                 return null;
-            if (!user.IsActive)
-                return null;
-            if (user.PasswordHash != HashPassword(dto.Password))
-                return null;
+            }
 
             user.LastLoginTime = DateTime.Now;
             await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
+
+            await _logService.AddLogAsync(new LogDto {
+                LogType = LogType.Login,
+                ObjectType = ObjectType.User,
+                ObjectId = user.Id,
+                ActionType = ActionType.Login,
+                OperatorId = user.Id,
+                OperatorName = user.RealName,
+                Content = "Login success",
+                LogTime = user.LastLoginTime.Value
+            });
 
             return _mapper.Map<UserDto>(user);
         }
