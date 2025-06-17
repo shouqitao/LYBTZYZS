@@ -19,6 +19,15 @@ namespace LYBT.Module.Pharmacy.Controllers {
         }
 
         /// <summary>
+        /// 获取待抓药的处方列表
+        /// </summary>
+        [HttpGet("waiting")]
+        public async Task<ActionResult<List<PharmacyDto>>> GetWaitingList() {
+            var list = await _pharmacyService.GetWaitingListAsync();
+            return Ok(list);
+        }
+
+        /// <summary>
         /// 获取药房单列表
         /// </summary>
         [HttpGet]
@@ -77,6 +86,17 @@ namespace LYBT.Module.Pharmacy.Controllers {
             if (!result)
                 return NotFound();
             return Ok("删除药房单成功");
+        }
+
+        /// <summary>
+        /// 标记处方为已抓药
+        /// </summary>
+        [HttpPost("{id}/prepared")]
+        public async Task<ActionResult> MarkAsPrepared(Guid id) {
+            var result = await _pharmacyService.MarkAsPreparedAsync(id);
+            if (!result)
+                return NotFound();
+            return Ok();
         }
     }
 }

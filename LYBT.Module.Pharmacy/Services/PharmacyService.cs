@@ -3,6 +3,7 @@ using LYBT.Models;
 using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Dtos;
 using LYBT.Module.Pharmacy.Interfaces;
+using LYBT.Common.Enums;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -68,6 +69,25 @@ namespace LYBT.Module.Pharmacy.Services {
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
             return await _pharmacyRepository.DeleteAsync(id);
+        }
+
+        /// <summary>
+        /// 获取待抓药处方列表
+        /// </summary>
+        public async Task<List<PharmacyDto>> GetWaitingListAsync() {
+            var list = await _pharmacyRepository.GetByStatusAsync(PharmacyStatus.Waiting);
+            return _mapper.Map<List<PharmacyDto>>(list);
+        }
+
+        /// <summary>
+        /// 将处方标记为已抓药
+        /// </summary>
+        public async Task<bool> MarkAsPreparedAsync(Guid id) {
+            var model = await _pharmacyRepository.GetByIdAsync(id);
+            if (model == null)
+                return false;
+            model.Status = PharmacyStatus.Prepared;
+            return await _pharmacyRepository.UpdateAsync(model);
         }
     }
 }

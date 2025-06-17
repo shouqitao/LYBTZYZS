@@ -1,5 +1,6 @@
 ﻿using LYBT.Models; // PharmacyModel 统一存放在 LYBT.Models
 using LYBT.Models.Pharmacy;
+using LYBT.Common.Enums;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -33,5 +34,10 @@ namespace LYBT.Module.Pharmacy.Interfaces {
         /// 删除药房记录
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 根据状态获取药房记录列表
+        /// </summary>
+        Task<List<PharmacyModel>> GetByStatusAsync(PharmacyStatus status);
     }
 }
