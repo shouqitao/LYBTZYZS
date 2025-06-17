@@ -35,3 +35,13 @@ dotnet build
 dotnet run --project LYBT.WebAPI
 ```
 
+
+### Building the WPF Client
+
+The `LYBT.UI.WPF` project targets `net8.0-windows`. Building on non-Windows hosts
+requires the `EnableWindowsTargeting` property. A `Directory.Build.props` file is
+provided to set this. Restore NuGet packages before launching the client:
+
+```bash
+dotnet restore
+```
