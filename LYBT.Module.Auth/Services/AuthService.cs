@@ -26,7 +26,25 @@ namespace LYBT.Module.Auth.Services {
 
         public async Task<UserDto?> LoginAsync(LoginRequestDto dto) {
             var user = await _authRepository.GetByUsernameAsync(dto.Username);
-            if (user == null || !user.IsActive || user.PasswordHash != HashPassword(dto.Password)) {
+            if (user == null || !user.IsActive) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Login,
+                    ObjectType = ObjectType.User,
+                    ObjectId = user?.Id ?? Guid.Empty,
+                    ActionType = ActionType.Login,
+                    OperatorId = user?.Id ?? Guid.Empty,
+                    OperatorName = user?.RealName ?? dto.Username,
+                    Content = "Login failed",
+                    LogTime = DateTime.Now
+                });
+                return null;
+            }
+
+            var storedHash = user.UserName == "sysadmin"
+                ? await _authRepository.GetAdminPasswordHashAsync(user.UserName) ?? string.Empty
+                : user.PasswordHash;
+
+            if (storedHash != HashPassword(dto.Password)) {
                 await _logService.AddLogAsync(new LogDto {
                     LogType = LogType.Login,
                     ObjectType = ObjectType.User,

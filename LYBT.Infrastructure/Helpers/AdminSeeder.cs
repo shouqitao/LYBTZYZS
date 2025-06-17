@@ -17,9 +17,7 @@ namespace LYBT.Infrastructure.Helpers {
                     Role = UserRole.Admin,
                     IsActive = true,
                     CreatedTime = DateTime.Now,
-                    PasswordHash = HashPassword("1")
-                };
-                context.Users.Add(admin);
+
                 context.SaveChanges();
             }
         }
