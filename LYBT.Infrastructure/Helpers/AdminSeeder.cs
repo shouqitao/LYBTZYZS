@@ -17,7 +17,20 @@ namespace LYBT.Infrastructure.Helpers {
                     Role = UserRole.Admin,
                     IsActive = true,
                     CreatedTime = DateTime.Now,
+                    PasswordHash = string.Empty
+                };
+                context.Users.Add(admin);
+            }
 
+            if (!context.AdminSecrets.Any(s => s.UserName == "sysadmin")) {
+                context.AdminSecrets.Add(new AdminSecretModel {
+                    Id = Guid.NewGuid(),
+                    UserName = "sysadmin",
+                    PasswordHash = HashPassword("1")
+                });
+            }
+
+            if (context.ChangeTracker.HasChanges()) {
                 context.SaveChanges();
             }
         }
