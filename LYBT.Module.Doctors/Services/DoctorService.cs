@@ -57,11 +57,9 @@ namespace LYBT.Module.Doctors.Services {
             var model = _mapper.Map<DoctorModel>(doctorCreateDto);
             model.Id = Guid.NewGuid();
             model.Status = DoctorStatus.Active;
-<<<<<<< codex/replace-custom-hashpassword-with-passwordhasher
-            model.PasswordHash = PasswordHelper.Hash("123456");
-=======
-            model.PasswordHash = HashPassword(doctorCreateDto.Password);
->>>>>>> master
+
+            model.PasswordHash = PasswordHelper.Hash(doctorCreateDto.Password);
+
             return await _doctorRepository.AddAsync(model);
         }
 
@@ -110,8 +108,10 @@ namespace LYBT.Module.Doctors.Services {
 
         public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
             var model = await _doctorRepository.GetByIdAsync(id);
-            if (model == null) return false;
-            if (!PasswordHelper.Verify(model.PasswordHash, oldPassword)) return false;
+            if (model == null)
+                return false;
+            if (!PasswordHelper.Verify(model.PasswordHash, oldPassword))
+                return false;
             return await _doctorRepository.UpdatePasswordAsync(id, PasswordHelper.Hash(newPassword));
         }
 

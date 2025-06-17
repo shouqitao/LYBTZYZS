@@ -70,11 +70,9 @@ public class UserService : IUserService {
             Role = dto.Role,
             IsActive = dto.IsActive,
             CreatedTime = DateTime.Now,
-<<<<<<< codex/replace-custom-hashpassword-with-passwordhasher
+
             PasswordHash = PasswordHelper.Hash(dto.Password)
-=======
-            PasswordHash = HashPassword(dto.Password)
->>>>>>> master
+
         };
         var result = await _userRepository.AddAsync(user);
 
