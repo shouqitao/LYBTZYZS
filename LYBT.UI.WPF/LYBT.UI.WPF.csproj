@@ -26,4 +26,11 @@
     <ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Prism.Wpf" Version="8.2.1" />
+    <PackageReference Include="Prism.Unity" Version="8.2.1" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.2.0" />
+    <PackageReference Include="MaterialDesignColors" Version="2.5.0" />
+  </ItemGroup>
+
 </Project>
