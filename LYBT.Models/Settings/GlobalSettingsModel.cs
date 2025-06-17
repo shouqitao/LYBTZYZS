@@ -1,4 +1,5 @@
 using System;
+using LYBT.Common.Enums;
 
 namespace LYBT.Models.Settings {
     /// <summary>
@@ -7,6 +8,6 @@ namespace LYBT.Models.Settings {
     public class GlobalSettingsModel {
         public Guid Id { get; set; }
         public string DefaultRecordSharing { get; set; } = "Private"; // Private or Public
-        public string SyncMode { get; set; } = "Auto"; // Auto or Manual
+        public SyncMode SyncMode { get; set; } = SyncMode.Auto;
     }
 }

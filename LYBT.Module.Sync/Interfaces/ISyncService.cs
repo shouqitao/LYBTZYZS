@@ -23,7 +23,27 @@ namespace LYBT.Module.Sync.Interfaces {
         /// <summary>
         /// 删除同步日志
         /// </summary>
-        Task<bool> DeleteLogAsync(Guid id);
+        Task<bool> DeleteLogAsync(string id);
+
+        /// <summary>
+        /// 获取最近一次同步信息
+        /// </summary>
+        Task<SyncLogDto?> GetLastSyncInfoAsync();
+
+        /// <summary>
+        /// 分页查询同步历史日志
+        /// </summary>
+        Task<List<SyncLogDto>> GetSyncLogPagedAsync(int page, int pageSize);
+
+        /// <summary>
+        /// 检测中心数据库是否可连接
+        /// </summary>
+        Task<bool> CheckConnectionStatusAsync();
+
+        /// <summary>
+        /// 手动触发同步
+        /// </summary>
+        Task<bool> TriggerManualSyncAsync();
 
         // ========== 任务相关 ==========
 

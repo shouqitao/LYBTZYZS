@@ -50,6 +50,21 @@ namespace LYBT.Module.Sync.Interfaces {
         /// <summary>
         /// 删除同步日志
         /// </summary>
-        Task<bool> DeleteLogAsync(Guid id);
+        Task<bool> DeleteLogAsync(string id);
+
+        /// <summary>
+        /// 获取最新一条同步日志
+        /// </summary>
+        Task<SyncLogModel?> GetLastLogAsync();
+
+        /// <summary>
+        /// 分页获取同步日志
+        /// </summary>
+        Task<List<SyncLogModel>> GetLogPagedAsync(int page, int pageSize);
+
+        /// <summary>
+        /// 检测数据库连接是否可用
+        /// </summary>
+        Task<bool> CanConnectAsync();
     }
 }

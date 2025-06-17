@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Dtos;
+using LYBT.Module.Settings.Interfaces;
+using LYBT.Common.Enums;
 
 namespace LYBT.Module.Sync.Controllers {
     /// <summary>
@@ -13,12 +15,14 @@ namespace LYBT.Module.Sync.Controllers {
     [Route("api/[controller]")]
     public class SyncController : ControllerBase {
         private readonly ISyncService _syncService;
+        private readonly IGlobalSettingsService _settingsService;
 
         /// <summary>
         /// 构造方法，注入同步服务
         /// </summary>
-        public SyncController(ISyncService syncService) {
+        public SyncController(ISyncService syncService, IGlobalSettingsService settingsService) {
             _syncService = syncService;
+            _settingsService = settingsService;
         }
 
         // ================= 日志相关 ===================
@@ -28,6 +32,24 @@ namespace LYBT.Module.Sync.Controllers {
         [HttpGet("logs")]
         public async Task<ActionResult<List<SyncLogDto>>> GetLogList() {
             var list = await _syncService.GetLogListAsync();
+            return Ok(list);
+        }
+
+        /// <summary>
+        /// 获取最近一次同步信息
+        /// </summary>
+        [HttpGet("logs/last")]
+        public async Task<ActionResult<SyncLogDto?>> GetLastLog() {
+            var info = await _syncService.GetLastSyncInfoAsync();
+            return Ok(info);
+        }
+
+        /// <summary>
+        /// 分页查询同步日志
+        /// </summary>
+        [HttpGet("logs/paged")]
+        public async Task<ActionResult<List<SyncLogDto>>> GetLogPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
+            var list = await _syncService.GetSyncLogPagedAsync(page, pageSize);
             return Ok(list);
         }
 
@@ -48,11 +70,51 @@ namespace LYBT.Module.Sync.Controllers {
         /// 删除同步日志
         /// </summary>
         [HttpDelete("logs/{id}")]
-        public async Task<ActionResult> DeleteLog(Guid id) {
+        public async Task<ActionResult> DeleteLog(string id) {
             var result = await _syncService.DeleteLogAsync(id);
             if (!result)
                 return NotFound();
             return Ok("删除同步日志成功");
+        }
+
+        /// <summary>
+        /// 检测中心数据库是否可连接
+        /// </summary>
+        [HttpGet("connection-status")]
+        public async Task<ActionResult<bool>> CheckConnection() {
+            var can = await _syncService.CheckConnectionStatusAsync();
+            return Ok(can);
+        }
+
+        /// <summary>
+        /// 手动触发同步
+        /// </summary>
+        [HttpPost("manual-sync")]
+        public async Task<ActionResult> ManualSync() {
+            var result = await _syncService.TriggerManualSyncAsync();
+            if (!result) return BadRequest();
+            return Ok();
+        }
+
+        /// <summary>
+        /// 获取当前同步模式
+        /// </summary>
+        [HttpGet("mode")]
+        public async Task<ActionResult<SyncMode>> GetSyncMode() {
+            var settings = await _settingsService.GetAsync();
+            return Ok(settings?.SyncMode ?? SyncMode.Auto);
+        }
+
+        /// <summary>
+        /// 设置同步模式
+        /// </summary>
+        [HttpPost("mode")]
+        public async Task<ActionResult> SetSyncMode([FromBody] SyncMode mode) {
+            var settings = await _settingsService.GetAsync() ?? new Settings.Dtos.GlobalSettingsDto();
+            settings.SyncMode = mode;
+            var result = await _settingsService.SaveAsync(settings);
+            if (!result) return BadRequest();
+            return Ok();
         }
 
         // ================ 任务相关 ===================
