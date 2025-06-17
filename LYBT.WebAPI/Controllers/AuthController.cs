@@ -28,5 +28,18 @@ namespace LYBT.WebAPI.Controllers {
                 return Unauthorized(new { success = false, message = "用户名或密码错误" });
             return Ok(user);
         }
+
+
+        /// <summary>
+        /// 用户登出
+        /// </summary>
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequestDto dto) {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            await _authService.LogoutAsync(dto);
+            return Ok(new { success = true });
+        }
+
     }
 }

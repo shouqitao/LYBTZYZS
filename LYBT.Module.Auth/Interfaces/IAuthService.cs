@@ -11,5 +11,10 @@ namespace LYBT.Module.Auth.Interfaces {
         /// 验证用户名和密码
         /// </summary>
         Task<UserDto?> LoginAsync(LoginRequestDto dto);
+
+        /// <summary>
+        /// 用户登出
+        /// </summary>
+        Task<bool> LogoutAsync(LogoutRequestDto dto);
     }
 }
