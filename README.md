@@ -45,3 +45,23 @@ provided to set this. Restore NuGet packages before launching the client:
 ```bash
 dotnet restore
 ```
+
+## Configuration
+
+The API reads settings from `appsettings.json` and environment variables. An example configuration file is available at `LYBT.WebAPI/appsettings.example.json`.
+Copy this file to `LYBT.WebAPI/appsettings.json` (or `appsettings.Development.json`) and update the values for your environment.
+
+### Required environment variables
+
+The following settings can be provided via environment variables using the `__` separator:
+
+- `ConnectionStrings__DefaultConnection` – database connection string.
+- `Jwt__Secret` – secret key used to sign JWT tokens.
+- `Jwt__Issuer` – issuing authority for generated tokens.
+- `Jwt__Audience` – expected audience for tokens.
+- `Jwt__ExpireMinutes` – token expiration in minutes.
+- `AppSettings__WorkerId` – Snowflake worker ID (optional).
+- `AppSettings__DatacenterId` – Snowflake datacenter ID (optional).
+
+These variables override values in `appsettings.json` when present.
+
