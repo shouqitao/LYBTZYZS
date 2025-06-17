@@ -8,6 +8,7 @@ using LYBT.Module.Users.Models;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Common.Enums.Logs;
+using LYBT.Common.Helpers;
 
 namespace LYBT.Module.Auth.Services {
     /// <summary>
@@ -44,7 +45,7 @@ namespace LYBT.Module.Auth.Services {
                 ? await _authRepository.GetAdminPasswordHashAsync(user.UserName) ?? string.Empty
                 : user.PasswordHash;
 
-            if (storedHash != HashPassword(dto.Password)) {
+            if (!PasswordHelper.Verify(storedHash, dto.Password)) {
                 await _logService.AddLogAsync(new LogDto {
                     LogType = LogType.Login,
                     ObjectType = ObjectType.User,
@@ -90,9 +91,5 @@ namespace LYBT.Module.Auth.Services {
             return true;
         }
 
-        private static string HashPassword(string password) {
-            using var sha = System.Security.Cryptography.SHA256.Create();
-            return Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)));
-        }
     }
 }

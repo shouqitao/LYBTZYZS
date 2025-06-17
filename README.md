@@ -28,9 +28,14 @@ The solution is composed of many projects under the `LYBT.Module.*` namespace. E
 
 ## Build and Run
 
-Use the standard .NET CLI commands to build and start the Web API:
+Use the standard .NET CLI commands to build and start the Web API. The JWT 
+secret used for authentication should be supplied via an environment variable 
+instead of being hard coded in configuration files. Set `JWT__SECRET` before
+running the project. The value in `appsettings.json` is only a placeholder and
+should never be committed with real secrets:
 
 ```bash
+export JWT__SECRET="<your_jwt_secret>"
 dotnet build
 dotnet run --project LYBT.WebAPI
 ```
@@ -46,22 +51,4 @@ provided to set this. Restore NuGet packages before launching the client:
 dotnet restore
 ```
 
-## Configuration
-
-The API reads settings from `appsettings.json` and environment variables. An example configuration file is available at `LYBT.WebAPI/appsettings.example.json`.
-Copy this file to `LYBT.WebAPI/appsettings.json` (or `appsettings.Development.json`) and update the values for your environment.
-
-### Required environment variables
-
-The following settings can be provided via environment variables using the `__` separator:
-
-- `ConnectionStrings__DefaultConnection` – database connection string.
-- `Jwt__Secret` – secret key used to sign JWT tokens.
-- `Jwt__Issuer` – issuing authority for generated tokens.
-- `Jwt__Audience` – expected audience for tokens.
-- `Jwt__ExpireMinutes` – token expiration in minutes.
-- `AppSettings__WorkerId` – Snowflake worker ID (optional).
-- `AppSettings__DatacenterId` – Snowflake datacenter ID (optional).
-
-These variables override values in `appsettings.json` when present.
 
