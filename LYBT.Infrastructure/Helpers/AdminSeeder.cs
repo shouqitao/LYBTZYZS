@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using LYBT.Module.Users.Models;
 using LYBT.Common.Enums.Users;
+using LYBT.Common.Helpers;
 
 namespace LYBT.Infrastructure.Helpers {
     /// <summary>
@@ -26,7 +27,7 @@ namespace LYBT.Infrastructure.Helpers {
                 context.AdminSecrets.Add(new AdminSecretModel {
                     Id = Guid.NewGuid(),
                     UserName = "sysadmin",
-                    PasswordHash = HashPassword("SuperSecretKey12345")
+                    PasswordHash = PasswordHelper.Hash("SuperSecretKey12345")
                 });
             }
 
@@ -35,9 +36,5 @@ namespace LYBT.Infrastructure.Helpers {
             }
         }
 
-        private static string HashPassword(string password) {
-            using var sha = System.Security.Cryptography.SHA256.Create();
-            return Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)));
-        }
     }
 }

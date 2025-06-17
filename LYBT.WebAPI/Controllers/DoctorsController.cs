@@ -76,10 +76,12 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(new { count });
         }
 
+        /// <summary>
+        /// 重置医生密码，必须提供新密码
+        /// </summary>
         [HttpPut("reset-password/{id}")]
         public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordDto dto) {
-            var pwd = string.IsNullOrWhiteSpace(dto.NewPassword) ? "123456" : dto.NewPassword;
-            var ok = await _doctorService.ResetPasswordAsync(id, pwd);
+            var ok = await _doctorService.ResetPasswordAsync(id, dto.NewPassword);
             return ok ? Ok() : NotFound();
         }
 

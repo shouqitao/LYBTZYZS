@@ -28,12 +28,26 @@ The solution is composed of many projects under the `LYBT.Module.*` namespace. E
 
 ## Build and Run
 
-Use the standard .NET CLI commands to build and start the Web API:
+Use the standard .NET CLI commands to build and start the Web API. The JWT 
+secret used for authentication should be supplied via an environment variable 
+instead of being hard coded in configuration files. Set `JWT__SECRET` before
+running the project. The value in `appsettings.json` is only a placeholder and
+should never be committed with real secrets:
 
 ```bash
+export JWT__SECRET="<your_jwt_secret>"
 dotnet build
 dotnet run --project LYBT.WebAPI
 ```
+
+### Configuration
+
+Use the `ConnectionStrings__DefaultConnection` environment variable to supply the production connection string:
+
+```bash
+export ConnectionStrings__DefaultConnection="Server=prod;Database=prod;User Id=user;Password=secret"
+```
+
 
 
 ### Building the WPF Client
@@ -46,6 +60,7 @@ provided to set this. Restore NuGet packages before launching the client:
 dotnet restore
 ```
 
+
 ## Configuration
 
 The application reads the `ConnectionStrings:DefaultConnection` setting from `appsettings.json`. For production deployments, specify the database connection using the `ConnectionStrings__DefaultConnection` environment variable instead of storing credentials in the repository.
@@ -55,3 +70,6 @@ Example connection string format:
 ```
 Server=...;Database=...;User Id=...;Password=...
 ```
+=======
+
+
