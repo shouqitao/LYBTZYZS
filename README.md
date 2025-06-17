@@ -40,6 +40,15 @@ dotnet build
 dotnet run --project LYBT.WebAPI
 ```
 
+### Configuration
+
+Use the `ConnectionStrings__DefaultConnection` environment variable to supply the production connection string:
+
+```bash
+export ConnectionStrings__DefaultConnection="Server=prod;Database=prod;User Id=user;Password=secret"
+```
+
+
 
 ### Building the WPF Client
 
