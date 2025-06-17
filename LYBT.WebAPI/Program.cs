@@ -44,6 +44,9 @@ using Microsoft.OpenApi.Models;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Logs.Services;
 using LYBT.Module.Logs.Repositories;
+using LYBT.Module.Auth.Interfaces;
+using LYBT.Module.Auth.Repositories;
+using LYBT.Module.Auth.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +55,8 @@ var builder = WebApplication.CreateBuilder(args);
 // 用户管理
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // 病人管理
 builder.Services.AddScoped<IPatientService, PatientService>();
