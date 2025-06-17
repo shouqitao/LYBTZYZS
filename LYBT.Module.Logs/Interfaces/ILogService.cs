@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Logs.Dtos;
+using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Logs.Interfaces {
     /// <summary>
@@ -21,6 +22,15 @@ namespace LYBT.Module.Logs.Interfaces {
         /// <param name="query">查询条件</param>
         /// <returns>分页结果，含总数</returns>
         Task<(IList<LogDto> logs, int total)> GetLogsAsync(LogQueryDto query);
+
+        /// <summary>
+        /// 根据当前用户角色过滤日志
+        /// </summary>
+        /// <param name="query">查询条件</param>
+        /// <param name="role">当前用户角色</param>
+        /// <param name="userId">当前用户Id</param>
+        /// <returns>分页结果</returns>
+        Task<(IList<LogDto> logs, int total)> GetLogsAsync(LogQueryDto query, UserRole role, Guid userId);
 
         /// <summary>
         /// 获取指定用户的操作日志

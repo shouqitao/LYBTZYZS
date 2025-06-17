@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Common.Enums.Logs;
+using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Logs.Services {
     /// <summary>
@@ -64,6 +65,14 @@ namespace LYBT.Module.Logs.Services {
                 });
             }
             return (list, total);
+        }
+
+        /// <inheritdoc />
+        public async Task<(IList<LogDto> logs, int total)> GetLogsAsync(LogQueryDto query, UserRole role, Guid userId) {
+            if (role != UserRole.Admin) {
+                query.OperatorId = userId;
+            }
+            return await GetLogsAsync(query);
         }
 
         /// <inheritdoc />
