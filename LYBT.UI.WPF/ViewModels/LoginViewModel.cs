@@ -1,8 +1,7 @@
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
-using System.Net.Http;
-using System.Net.Http.Json;
+using Refit;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -27,25 +26,28 @@ namespace LYBT.UI.WPF.ViewModels {
 
         public event Action? LoginSucceeded;
 
+        private readonly IAuthApi _authApi;
+        private readonly Services.TokenService _tokenService;
+
         public ICommand LoginCommand { get; }
 
-        public LoginViewModel() {
+        public LoginViewModel(IAuthApi authApi, Services.TokenService tokenService) {
+            _authApi = authApi;
+            _tokenService = tokenService;
             LoginCommand = new DelegateCommand(async () => await OnLoginAsync());
         }
 
         private async Task OnLoginAsync() {
-            using var http = new HttpClient { BaseAddress = new System.Uri("http://localhost:5297/") };
             var dto = new LoginRequestDto { Username = Username, Password = Password };
             try {
-                var response = await http.PostAsJsonAsync("api/auth/login", dto);
-                if (response.IsSuccessStatusCode) {
-                    LoginSucceeded?.Invoke();
-                }
-                else {
-                    MessageBox.Show("用户名或密码错误", "登录失败", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
+                var response = await _authApi.LoginAsync(dto);
+                _tokenService.SetToken(response.Token);
+                LoginSucceeded?.Invoke();
             }
-            catch (HttpRequestException ex) {
+            catch (ApiException ex) {
+                MessageBox.Show(ex.Content ?? "用户名或密码错误", "登录失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (System.Exception ex) {
                 MessageBox.Show($"无法连接到服务器: {ex.Message}", "登录失败", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

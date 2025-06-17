@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Dtos;
 using System.Threading.Tasks;
+using LYBT.WebAPI.Services;
 
 namespace LYBT.WebAPI.Controllers {
     /// <summary>
@@ -11,9 +12,11 @@ namespace LYBT.WebAPI.Controllers {
     [Route("api/[controller]")]
     public class AuthController : ControllerBase {
         private readonly IAuthService _authService;
+        private readonly JwtTokenService _jwtTokenService;
 
-        public AuthController(IAuthService authService) {
+        public AuthController(IAuthService authService, JwtTokenService jwtTokenService) {
             _authService = authService;
+            _jwtTokenService = jwtTokenService;
         }
 
         /// <summary>
@@ -26,7 +29,9 @@ namespace LYBT.WebAPI.Controllers {
             var user = await _authService.LoginAsync(dto);
             if (user == null)
                 return Unauthorized(new { success = false, message = "用户名或密码错误" });
-            return Ok(user);
+
+            var token = _jwtTokenService.GenerateToken(user);
+            return Ok(new LoginResponseDto { Token = token, User = user });
         }
 
 
