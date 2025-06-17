@@ -24,7 +24,7 @@ public class UsersController : ControllerBase {
     }
 
     /// <summary>
-    /// 新增用户
+    /// 新增用户，需要设置初始密码
     /// </summary>
     [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] UserCreateDto dto) {
@@ -91,14 +91,13 @@ public class UsersController : ControllerBase {
     }
 
     /// <summary>
-    /// 管理员重置密码
+    /// 管理员重置密码，需要明确提供新密码
     /// </summary>
     [HttpPost("resetPassword/{id}")]
     public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordDto dto) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
-        var password = string.IsNullOrWhiteSpace(dto.NewPassword) ? "123456" : dto.NewPassword;
-        var result = await _userService.ResetPasswordAsync(id, password, operatorId, operatorName);
+        var result = await _userService.ResetPasswordAsync(id, dto.NewPassword, operatorId, operatorName);
         return result ? Ok(new { success = true }) : BadRequest(new { success = false });
     }
 

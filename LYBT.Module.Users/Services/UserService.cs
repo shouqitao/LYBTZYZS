@@ -69,7 +69,7 @@ public class UserService : IUserService {
             Role = dto.Role,
             IsActive = dto.IsActive,
             CreatedTime = DateTime.Now,
-            // 密码等其它属性赋值
+            PasswordHash = HashPassword(dto.Password)
         };
         var result = await _userRepository.AddAsync(user);
 
