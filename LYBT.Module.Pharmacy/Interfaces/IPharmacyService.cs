@@ -32,5 +32,15 @@ namespace LYBT.Module.Pharmacy.Interfaces {
         /// 删除药房单
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 获取待抓药处方列表
+        /// </summary>
+        Task<List<PharmacyDto>> GetWaitingListAsync();
+
+        /// <summary>
+        /// 将指定处方标记为已抓药
+        /// </summary>
+        Task<bool> MarkAsPreparedAsync(Guid id);
     }
 }

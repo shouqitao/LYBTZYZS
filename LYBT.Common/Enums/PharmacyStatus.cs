@@ -1,13 +1,25 @@
 ﻿namespace LYBT.Common.Enums {
 
     /// <summary>
-    /// 药房订单状态枚举
+    /// 药房处方状态枚举
     /// </summary>
     public enum PharmacyStatus {
-        待收费 = 0,
-        已收费 = 1,
-        抓药中 = 2,
-        已完成 = 3,
-        已作废 = 9
+        /// <summary>待抓药</summary>
+        Waiting = 0,
+
+        /// <summary>抓药中</summary>
+        Preparing = 1,
+
+        /// <summary>已抓药</summary>
+        Prepared = 2,
+
+        /// <summary>待代煎</summary>
+        DecoctionWaiting = 3,
+
+        /// <summary>代煎完成</summary>
+        DecoctionCompleted = 4,
+
+        /// <summary>抓药完毕</summary>
+        Completed = 5
     }
 }

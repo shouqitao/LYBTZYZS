@@ -2,6 +2,7 @@
 using LYBT.Models;
 using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Interfaces;
+using LYBT.Common.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,6 +61,15 @@ namespace LYBT.Module.Pharmacy.Repositories {
                 return false;
             _appDbContext.Pharmacies.Remove(pharmacyModel);
             return await _appDbContext.SaveChangesAsync() > 0;
+        }
+
+        /// <summary>
+        /// 根据状态获取药房记录列表
+        /// </summary>
+        public async Task<List<PharmacyModel>> GetByStatusAsync(PharmacyStatus status) {
+            return await Task.FromResult(_appDbContext.Pharmacies
+                .Where(p => p.Status == status)
+                .ToList());
         }
     }
 }
