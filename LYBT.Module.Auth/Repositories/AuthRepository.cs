@@ -28,5 +28,10 @@ namespace LYBT.Module.Auth.Repositories {
                 await _dbContext.SaveChangesAsync();
             }
         }
+
+        public async Task<string?> GetAdminPasswordHashAsync(string userName) {
+            var secret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(s => s.UserName == userName);
+            return secret?.PasswordHash;
+        }
     }
 }

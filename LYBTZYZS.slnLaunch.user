@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "LYBT.UI.WPF\\LYBT.UI.WPF.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "LYBT.WebAPI\\LYBT.WebAPI.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

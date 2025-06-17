@@ -12,6 +12,19 @@ namespace LYBT.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AdminSecrets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AdminSecrets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Billings",
                 columns: table => new
                 {
@@ -416,6 +429,9 @@ namespace LYBT.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AdminSecrets");
+
             migrationBuilder.DropTable(
                 name: "Billings");
 
