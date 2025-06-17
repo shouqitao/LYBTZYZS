@@ -32,3 +32,7 @@
 .vs/
 bin/
 obj/
+
+# Local configuration
+LYBT.WebAPI/appsettings*.json
+!LYBT.WebAPI/appsettings.example.json
