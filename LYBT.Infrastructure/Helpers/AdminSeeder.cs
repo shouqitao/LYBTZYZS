@@ -26,7 +26,7 @@ namespace LYBT.Infrastructure.Helpers {
                 context.AdminSecrets.Add(new AdminSecretModel {
                     Id = Guid.NewGuid(),
                     UserName = "sysadmin",
-                    PasswordHash = HashPassword("1")
+                    PasswordHash = HashPassword("SuperSecretKey12345")
                 });
             }
 
