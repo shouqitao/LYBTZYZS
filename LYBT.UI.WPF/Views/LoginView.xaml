@@ -7,9 +7,13 @@
     <Grid>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="350">
             <TextBlock Text="凌隐宝堂中医诊所" FontSize="24" Margin="0,0,0,40" HorizontalAlignment="Center"/>
-            <TextBox Margin="0,0,0,20" Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
-                     materialDesign:HintAssist.Hint="用户名" 
+            <TextBox Margin="0,0,0,20" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     materialDesign:HintAssist.Hint="用户名"
                      Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <PasswordBox Margin="0,0,0,20" Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                         materialDesign:HintAssist.Hint="密码"
+                         PasswordChanged="PasswordBox_PasswordChanged"/>
 
             <Button Content="登录" Command="{Binding LoginCommand}" Style="{StaticResource MaterialDesignRaisedButton}" />
         </StackPanel>
