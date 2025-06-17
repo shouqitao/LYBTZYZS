@@ -383,6 +383,19 @@ namespace LYBT.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AdminSecrets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AdminSecrets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Herbs",
                 columns: table => new
                 {
@@ -472,6 +485,9 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "AdminSecrets");
 
             migrationBuilder.DropTable(
                 name: "Pharmacies");
