@@ -1,3 +1,7 @@
+using Prism.Commands;
+using Prism.Mvvm;
+using Prism.Regions;
+using LYBT.UI.WPF.Views;
 using System.Windows.Input;
 
 namespace LYBT.UI.WPF.ViewModels {
@@ -11,6 +15,7 @@ namespace LYBT.UI.WPF.ViewModels {
         public ShellViewModel(IRegionManager regionManager) {
             _regionManager = regionManager;
             NavigateCommand = new DelegateCommand<string?>(Navigate);
+            _regionManager.RequestNavigate("MainRegion", nameof(LoginView));
         }
 
         private void Navigate(string? view) {
