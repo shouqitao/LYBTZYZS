@@ -1,6 +1,3 @@
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
 using System.Windows.Input;
 
 namespace LYBT.UI.WPF.ViewModels {
