@@ -26,7 +26,7 @@ namespace LYBT.Module.Users.Dtos {
         /// </summary>
         [Required(ErrorMessage = "用户角色不能为空")]
         [EnumDataType(typeof(UserRole), ErrorMessage = "用户角色无效")]
-        public UserRole Role { get; set; } = UserRole.Doctor;
+        public UserRole Role { get; set; } = UserRole.DiagnosingDoctor;
 
         /// <summary>
         /// 账号启用状态（true=启用，false=禁用）

@@ -24,7 +24,7 @@ namespace LYBT.Module.Users.Models {
         /// <summary>
         /// 用户角色（管理员、医生等，枚举）
         /// </summary>
-        public UserRole Role { get; set; } = UserRole.Doctor;
+        public UserRole Role { get; set; } = UserRole.DiagnosingDoctor;
 
         /// <summary>
         /// 启用状态（true=启用，false=禁用）
