@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using LYBT.Models;
 using LYBT.Models.DiagnosisTreatment;
 
 namespace LYBT.Module.Records.Dtos {

@@ -4,6 +4,7 @@ using LYBT.Module.Doctors.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Common.Models;
 
 namespace LYBT.WebAPI.Controllers {
     /// <summary>
@@ -31,14 +32,16 @@ namespace LYBT.WebAPI.Controllers {
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] DoctorCreateDto dto) {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var result = await _doctorService.AddAsync(dto);
             return result ? Ok() : BadRequest();
         }
 
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] DoctorEditDto dto) {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var result = await _doctorService.UpdateAsync(dto);
             return result ? Ok() : BadRequest();
         }

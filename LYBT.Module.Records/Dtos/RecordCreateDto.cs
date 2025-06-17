@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using LYBT.Models.DiagnosisTreatment;
+using LYBT.Models;
 
 namespace LYBT.Module.Records.Dtos {
     /// <summary>
