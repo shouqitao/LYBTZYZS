@@ -75,6 +75,21 @@ namespace LYBT.Module.Auth.Services {
             return _mapper.Map<UserDto>(user);
         }
 
+        public async Task<bool> LogoutAsync(LogoutRequestDto dto) {
+            var user = await _authRepository.GetByUsernameAsync(dto.Username);
+            await _logService.AddLogAsync(new LogDto {
+                LogType = LogType.Login,
+                ObjectType = ObjectType.User,
+                ObjectId = user?.Id ?? Guid.Empty,
+                ActionType = ActionType.Logout,
+                OperatorId = user?.Id ?? Guid.Empty,
+                OperatorName = user?.RealName ?? dto.Username,
+                Content = "Logout",
+                LogTime = DateTime.Now
+            });
+            return true;
+        }
+
         private static string HashPassword(string password) {
             using var sha = System.Security.Cryptography.SHA256.Create();
             return Convert.ToBase64String(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)));

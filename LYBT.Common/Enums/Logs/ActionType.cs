@@ -47,6 +47,12 @@ namespace LYBT.Common.Enums.Logs {
         Login = 6,
 
         /// <summary>
+        /// 登出
+        /// </summary>
+        [Description("登出")]
+        Logout = 7,
+
+        /// <summary>
         /// 其他
         /// </summary>
         [Description("其他")]
