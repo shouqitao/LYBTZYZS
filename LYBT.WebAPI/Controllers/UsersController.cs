@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using LYBT.Module.Users.Dtos;
-using LYBT.Module.Logs.Interfaces;
+
 
 /// <summary>
 /// 用户管理控制器，提供RESTful API接口
@@ -9,11 +9,9 @@ using LYBT.Module.Logs.Interfaces;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase {
     private readonly IUserService _userService;
-    private readonly ILogService _logService;
 
-    public UsersController(IUserService userService, ILogService logService) {
+    public UsersController(IUserService userService) {
         _userService = userService;
-        _logService = logService;
     }
 
     /// <summary>
@@ -131,12 +129,4 @@ public class UsersController : ControllerBase {
         return user == null ? NotFound() : Ok(user);
     }
 
-    /// <summary>
-    /// 获取用户操作日志
-    /// </summary>
-    [HttpGet("getLogs/{id}")]
-    public async Task<IActionResult> GetLogs(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
-        var (logs, total) = await _logService.GetUserLogsAsync(id, page, pageSize);
-        return Ok(new { total, logs });
-    }
 }
