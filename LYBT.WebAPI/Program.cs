@@ -114,6 +114,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "LYBT.WebAPI", Version = "v1" });
+    // Use full type names as schema IDs to avoid conflicts between classes
+    // with the same name in different namespaces
+    options.CustomSchemaIds(type => type.FullName);
 });
 
 // =========== 4. 注册数据库上下文 ===========
