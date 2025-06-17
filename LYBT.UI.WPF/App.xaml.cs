@@ -3,6 +3,10 @@ using Prism.Modularity;
 using Prism.Unity;
 using System.Windows;
 using LYBT.UI.WPF.Views;
+using LYBT.UI.WPF.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Refit;
 
 namespace LYBT.UI.WPF {
     /// <summary>
@@ -10,7 +14,7 @@ namespace LYBT.UI.WPF {
     /// </summary>
     public partial class App : PrismApplication {
         protected override void OnStartup(StartupEventArgs e) {
-            var login = new LoginWindow();
+            var login = Container.Resolve<LoginWindow>();
             var result = login.ShowDialog();
             if (result != true) {
                 Shutdown();
@@ -25,6 +29,21 @@ namespace LYBT.UI.WPF {
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             containerRegistry.RegisterForNavigation<LoginView>(nameof(LoginView));
+            containerRegistry.RegisterSingleton<TokenService>();
+            containerRegistry.Register<LoginWindow>();
+
+            var services = new ServiceCollection();
+            services.AddTransient<AuthHttpMessageHandler>();
+            services.AddRefitClient<IAuthApi>(new RefitSettings {
+                    ContentSerializer = new SystemTextJsonContentSerializer()
+                })
+                .ConfigureHttpClient(c => c.BaseAddress = new System.Uri("http://localhost:5297/"))
+                .AddHttpMessageHandler<AuthHttpMessageHandler>()
+                .AddPolicyHandler(Policy<HttpResponseMessage>.Handle<HttpRequestException>()
+                    .WaitAndRetryAsync(3, _ => System.TimeSpan.FromSeconds(1)));
+
+            var provider = services.BuildServiceProvider();
+            containerRegistry.RegisterInstance(provider.GetRequiredService<IAuthApi>());
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog) {
