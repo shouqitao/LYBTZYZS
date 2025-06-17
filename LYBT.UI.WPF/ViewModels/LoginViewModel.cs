@@ -1,5 +1,6 @@
 using Prism.Commands;
 using Prism.Mvvm;
+using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -24,6 +25,8 @@ namespace LYBT.UI.WPF.ViewModels {
             set => SetProperty(ref _password, value);
         }
 
+        public event Action? LoginSucceeded;
+
         public ICommand LoginCommand { get; }
 
         public LoginViewModel() {
@@ -36,7 +39,7 @@ namespace LYBT.UI.WPF.ViewModels {
             try {
                 var response = await http.PostAsJsonAsync("api/auth/login", dto);
                 if (response.IsSuccessStatusCode) {
-                    MessageBox.Show("登录成功");
+                    LoginSucceeded?.Invoke();
                 }
                 else {
                     MessageBox.Show("用户名或密码错误", "登录失败", MessageBoxButton.OK, MessageBoxImage.Warning);
