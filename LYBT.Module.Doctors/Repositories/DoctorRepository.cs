@@ -2,6 +2,9 @@
 using LYBT.Models;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Interfaces;
+using LYBT.Module.Doctors.Dtos;
+using Microsoft.EntityFrameworkCore;
+using LYBT.Common.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,13 +55,74 @@ namespace LYBT.Module.Doctors.Repositories {
         }
 
         /// <summary>
-        /// 删除医生
+        /// 禁用医生
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id) {
+        public async Task<bool> DisableAsync(Guid id) {
             var model = await _appDbContext.Doctors.FindAsync(id);
             if (model == null)
                 return false;
-            _appDbContext.Doctors.Remove(model);
+            model.Status = DoctorStatus.Inactive;
+            _appDbContext.Doctors.Update(model);
+            return await _appDbContext.SaveChangesAsync() > 0;
+        }
+
+        /// <summary>
+        /// 启用医生
+        /// </summary>
+        public async Task<bool> EnableAsync(Guid id) {
+            var model = await _appDbContext.Doctors.FindAsync(id);
+            if (model == null)
+                return false;
+            model.Status = DoctorStatus.Active;
+            _appDbContext.Doctors.Update(model);
+            return await _appDbContext.SaveChangesAsync() > 0;
+        }
+
+        public async Task<int> BatchDisableAsync(List<Guid> ids) {
+            var list = await _appDbContext.Doctors.Where(d => ids.Contains(d.Id)).ToListAsync();
+            foreach (var d in list) d.Status = DoctorStatus.Inactive;
+            _appDbContext.Doctors.UpdateRange(list);
+            return await _appDbContext.SaveChangesAsync();
+        }
+
+        public async Task<int> BatchEnableAsync(List<Guid> ids) {
+            var list = await _appDbContext.Doctors.Where(d => ids.Contains(d.Id)).ToListAsync();
+            foreach (var d in list) d.Status = DoctorStatus.Active;
+            _appDbContext.Doctors.UpdateRange(list);
+            return await _appDbContext.SaveChangesAsync();
+        }
+
+        public async Task<List<DoctorModel>> SearchAsync(string keyword) {
+            var query = _appDbContext.Doctors.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(keyword)) {
+                query = query.Where(d => d.Name.Contains(keyword) || d.Phone.Contains(keyword) || d.PinyinCode.Contains(keyword));
+            }
+            return await query.OrderByDescending(d => d.CreatedTime).Take(20).ToListAsync();
+        }
+
+        public async Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query) {
+            var dbSet = _appDbContext.Doctors.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(query.Keyword)) {
+                dbSet = dbSet.Where(d => d.Name.Contains(query.Keyword) || d.Phone.Contains(query.Keyword) || d.PinyinCode.Contains(query.Keyword));
+            }
+            if (query.IsActive.HasValue) {
+                var status = query.IsActive.Value ? DoctorStatus.Active : DoctorStatus.Inactive;
+                dbSet = dbSet.Where(d => d.Status == status);
+            }
+            int total = await dbSet.CountAsync();
+            var list = await dbSet.OrderByDescending(d => d.CreatedTime)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+            return (list, total);
+        }
+
+        public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash) {
+            var model = await _appDbContext.Doctors.FindAsync(id);
+            if (model == null)
+                return false;
+            model.PasswordHash = passwordHash;
+            _appDbContext.Doctors.Update(model);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
     }

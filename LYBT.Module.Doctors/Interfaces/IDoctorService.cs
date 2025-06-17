@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Doctors.Dtos;
+using LYBT.Common.Models;
 
 namespace LYBT.Module.Doctors.Interfaces {
     /// <summary>
@@ -14,9 +15,14 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<DoctorDetailDto?> GetByIdAsync(Guid id);
 
         /// <summary>
-        /// 获取医生列表
+        /// 关键词搜索
         /// </summary>
-        Task<List<DoctorDto>> GetListAsync();
+        Task<List<DoctorDto>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 分页获取医生列表
+        /// </summary>
+        Task<PagedResultDto<DoctorDto>> GetPagedAsync(DoctorQueryDto query);
 
         /// <summary>
         /// 新增医生
@@ -29,8 +35,33 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<bool> UpdateAsync(DoctorEditDto doctorEditDto);
 
         /// <summary>
-        /// 删除医生
+        /// 禁用医生
         /// </summary>
-        Task<bool> DeleteAsync(Guid id);
+        Task<bool> DisableAsync(Guid id);
+
+        /// <summary>
+        /// 启用医生
+        /// </summary>
+        Task<bool> EnableAsync(Guid id);
+
+        /// <summary>
+        /// 批量禁用
+        /// </summary>
+        Task<int> BatchDisableAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 批量启用
+        /// </summary>
+        Task<int> BatchEnableAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 重置密码
+        /// </summary>
+        Task<bool> ResetPasswordAsync(Guid id, string newPassword);
+
+        /// <summary>
+        /// 修改密码
+        /// </summary>
+        Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
     }
 }
