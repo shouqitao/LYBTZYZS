@@ -15,6 +15,7 @@
                          materialDesign:HintAssist.Hint="密码"
                          materialDesign:PasswordBoxAssist.BindPassword="True"
                          materialDesign:PasswordBoxAssist.Password="{Binding Password}" />
+
             <Button Content="登录" Command="{Binding LoginCommand}" Style="{StaticResource MaterialDesignRaisedButton}" />
         </StackPanel>
     </Grid>
