@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Text.Json;
+using System.Collections.Generic;
 using LYBT.Models;
 using LYBT.Models.Billing;
 using LYBT.Models.DiagnosisTreatment;
@@ -94,6 +95,55 @@ namespace LYBT.Infrastructure {
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                     v => JsonSerializer.Deserialize<FormulaModel>(v, (JsonSerializerOptions)null));
+
+            // === RecordModel complex fields ===
+            modelBuilder.Entity<RecordModel>()
+                .Property(x => x.DiagnosisResults)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null))
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<string>>(
+                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
+                        c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
+                        c => c == null ? null : JsonSerializer.Deserialize<List<string>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
+                    ));
+
+            modelBuilder.Entity<RecordModel>()
+                .Property(x => x.HerbalFormula)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Deserialize<List<HerbItemModel>>(v, (JsonSerializerOptions)null))
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<HerbItemModel>>(
+                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
+                        c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
+                        c => c == null ? null : JsonSerializer.Deserialize<List<HerbItemModel>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
+                    ));
+
+            modelBuilder.Entity<RecordModel>()
+                .Property(x => x.TreatmentPlans)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Deserialize<List<TreatmentItemModel>>(v, (JsonSerializerOptions)null))
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<TreatmentItemModel>>(
+                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
+                        c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
+                        c => c == null ? null : JsonSerializer.Deserialize<List<TreatmentItemModel>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
+                    ));
+
+            modelBuilder.Entity<RecordModel>()
+                .Property(x => x.SharedToDoctorIds)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null))
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<string>>(
+                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
+                        c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
+                        c => c == null ? null : JsonSerializer.Deserialize<List<string>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
+                    ));
 
             // === 所有金额 decimal 字段加精度（18,2） ===
             modelBuilder.Entity<BillingModel>().Property(x => x.PaidAmount).HasPrecision(18, 2);

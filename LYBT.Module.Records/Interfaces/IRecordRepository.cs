@@ -38,5 +38,10 @@ namespace LYBT.Module.Records.Interfaces {
         /// 根据患者ID获取病历列表
         /// </summary>
         Task<List<RecordModel>> GetListByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 获取共享给某医生的病历
+        /// </summary>
+        Task<List<RecordModel>> GetSharedRecordsAsync(Guid doctorId);
     }
 }

@@ -37,5 +37,20 @@ namespace LYBT.Module.Records.Interfaces {
         /// 根据患者ID获取病历列表
         /// </summary>
         Task<List<RecordDto>> GetByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 标记共享病历
+        /// </summary>
+        Task<bool> MarkAsSharedAsync(Guid id, List<string> doctorIds);
+
+        /// <summary>
+        /// 撤销病历共享
+        /// </summary>
+        Task<bool> RevokeSharingAsync(Guid id);
+
+        /// <summary>
+        /// 获取共享给当前医生的病历
+        /// </summary>
+        Task<List<RecordDto>> GetSharedRecordsAsync(Guid doctorId);
     }
 }
