@@ -1,5 +1,6 @@
 ﻿using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
+using LYBT.Common.Enums.Users;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -39,7 +40,10 @@ public class LogController : ControllerBase {
     /// <returns>日志分页结果</returns>
     [HttpGet]
     public async Task<IActionResult> GetLogs([FromQuery] LogQueryDto query) {
-        var (logs, total) = await _logService.GetLogsAsync(query);
+        // 实际项目应从登录上下文获取角色与ID
+        UserRole role = UserRole.Admin;
+        Guid userId = Guid.NewGuid();
+        var (logs, total) = await _logService.GetLogsAsync(query, role, userId);
         return Ok(new { total, logs });
     }
 
@@ -48,7 +52,15 @@ public class LogController : ControllerBase {
     /// </summary>
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetUserLogs(Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
-        var (logs, total) = await _logService.GetUserLogsAsync(userId, page, pageSize);
+        UserRole role = UserRole.Admin;
+        Guid currentUserId = Guid.NewGuid();
+        var query = new LogQueryDto {
+            ObjectType = LYBT.Common.Enums.Logs.ObjectType.User,
+            ObjectId = userId,
+            Page = page,
+            PageSize = pageSize
+        };
+        var (logs, total) = await _logService.GetLogsAsync(query, role, currentUserId);
         return Ok(new { total, logs });
     }
 
@@ -57,7 +69,15 @@ public class LogController : ControllerBase {
     /// </summary>
     [HttpGet("patient/{patientId}")]
     public async Task<IActionResult> GetPatientLogs(Guid patientId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
-        var (logs, total) = await _logService.GetPatientLogsAsync(patientId, page, pageSize);
+        UserRole role = UserRole.Admin;
+        Guid currentUserId = Guid.NewGuid();
+        var query = new LogQueryDto {
+            ObjectType = LYBT.Common.Enums.Logs.ObjectType.Patient,
+            ObjectId = patientId,
+            Page = page,
+            PageSize = pageSize
+        };
+        var (logs, total) = await _logService.GetLogsAsync(query, role, currentUserId);
         return Ok(new { total, logs });
     }
 
@@ -66,7 +86,15 @@ public class LogController : ControllerBase {
     /// </summary>
     [HttpGet("record/{recordId}")]
     public async Task<IActionResult> GetRecordLogs(Guid recordId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
-        var (logs, total) = await _logService.GetRecordLogsAsync(recordId, page, pageSize);
+        UserRole role = UserRole.Admin;
+        Guid currentUserId = Guid.NewGuid();
+        var query = new LogQueryDto {
+            ObjectType = LYBT.Common.Enums.Logs.ObjectType.Record,
+            ObjectId = recordId,
+            Page = page,
+            PageSize = pageSize
+        };
+        var (logs, total) = await _logService.GetLogsAsync(query, role, currentUserId);
         return Ok(new { total, logs });
     }
 
@@ -75,7 +103,15 @@ public class LogController : ControllerBase {
     /// </summary>
     [HttpGet("prescription/{prescriptionId}")]
     public async Task<IActionResult> GetPrescriptionLogs(Guid prescriptionId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
-        var (logs, total) = await _logService.GetPrescriptionLogsAsync(prescriptionId, page, pageSize);
+        UserRole role = UserRole.Admin;
+        Guid currentUserId = Guid.NewGuid();
+        var query = new LogQueryDto {
+            ObjectType = LYBT.Common.Enums.Logs.ObjectType.Prescription,
+            ObjectId = prescriptionId,
+            Page = page,
+            PageSize = pageSize
+        };
+        var (logs, total) = await _logService.GetLogsAsync(query, role, currentUserId);
         return Ok(new { total, logs });
     }
 
@@ -86,9 +122,13 @@ public class LogController : ControllerBase {
     /// <returns>日志详情DTO</returns>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetLogById(Guid id) {
+        UserRole role = UserRole.Admin;
+        Guid currentUserId = Guid.NewGuid();
         var log = await _logService.GetLogByIdAsync(id);
         if (log == null)
             return NotFound(new { success = false, message = "日志不存在" });
+        if (role != UserRole.Admin && log.OperatorId != currentUserId)
+            return Forbid();
         return Ok(log);
     }
 }
