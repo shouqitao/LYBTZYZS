@@ -9,6 +9,16 @@ namespace LYBT.UI.WPF {
     /// Prism application bootstrap
     /// </summary>
     public partial class App : PrismApplication {
+        protected override void OnStartup(StartupEventArgs e) {
+            var login = new LoginWindow();
+            var result = login.ShowDialog();
+            if (result != true) {
+                Shutdown();
+                return;
+            }
+            base.OnStartup(e);
+        }
+
         protected override Window CreateShell() {
             return Container.Resolve<ShellView>();
         }
