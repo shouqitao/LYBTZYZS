@@ -89,6 +89,28 @@ namespace LYBT.Module.Logs.Services {
         }
 
         /// <inheritdoc />
+        public async Task<(IList<LogDto> logs, int total)> GetRecordLogsAsync(Guid recordId, int page, int pageSize) {
+            var query = new LogQueryDto {
+                ObjectType = ObjectType.Record,
+                ObjectId = recordId,
+                Page = page,
+                PageSize = pageSize
+            };
+            return await GetLogsAsync(query);
+        }
+
+        /// <inheritdoc />
+        public async Task<(IList<LogDto> logs, int total)> GetPrescriptionLogsAsync(Guid prescriptionId, int page, int pageSize) {
+            var query = new LogQueryDto {
+                ObjectType = ObjectType.Prescription,
+                ObjectId = prescriptionId,
+                Page = page,
+                PageSize = pageSize
+            };
+            return await GetLogsAsync(query);
+        }
+
+        /// <inheritdoc />
         public async Task<LogDto?> GetLogByIdAsync(Guid id) {
             var log = await _logRepository.GetByIdAsync(id);
             if (log == null)

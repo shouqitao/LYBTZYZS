@@ -33,6 +33,16 @@ namespace LYBT.Module.Logs.Interfaces {
         Task<(IList<LogDto> logs, int total)> GetPatientLogsAsync(Guid patientId, int page, int pageSize);
 
         /// <summary>
+        /// 获取指定病历的操作日志
+        /// </summary>
+        Task<(IList<LogDto> logs, int total)> GetRecordLogsAsync(Guid recordId, int page, int pageSize);
+
+        /// <summary>
+        /// 获取指定处方的操作日志
+        /// </summary>
+        Task<(IList<LogDto> logs, int total)> GetPrescriptionLogsAsync(Guid prescriptionId, int page, int pageSize);
+
+        /// <summary>
         /// 根据日志ID获取详情
         /// </summary>
         /// <param name="id">日志ID</param>
