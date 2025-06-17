@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Enums;
+﻿using LYBT.Common.Enums.Users;
 using LYBT.Common.Enums.Logs;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;

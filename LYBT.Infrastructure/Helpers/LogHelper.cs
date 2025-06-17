@@ -1,4 +1,5 @@
 ﻿using System;
+using LYBT.Common.Enums.Logs;
 
 namespace LYBT.Infrastructure.Helpers {
     /// <summary>
@@ -11,9 +12,4 @@ namespace LYBT.Infrastructure.Helpers {
         }
     }
 
-    public enum LogType {
-        操作,
-        异常,
-        登录
-    }
 }

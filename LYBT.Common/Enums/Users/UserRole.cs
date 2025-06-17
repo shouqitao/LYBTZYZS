@@ -1,4 +1,4 @@
-namespace LYBT.Common.Enums {
+namespace LYBT.Common.Enums.Users {
 
     /// <summary>
     /// 系统用户角色枚举

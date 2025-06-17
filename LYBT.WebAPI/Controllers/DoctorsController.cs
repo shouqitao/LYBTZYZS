@@ -88,7 +88,7 @@ namespace LYBT.WebAPI.Controllers {
 
         [HttpGet("roles")]
         public IActionResult GetRoles() {
-            var roles = Enum.GetNames(typeof(LYBT.Common.Enums.UserRole));
+            var roles = Enum.GetNames(typeof(LYBT.Common.Enums.Users.UserRole));
             return Ok(roles);
         }
     }

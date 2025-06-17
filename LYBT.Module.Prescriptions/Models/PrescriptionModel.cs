@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Prescriptions.Enums;
+﻿using LYBT.Common.Enums.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Models {
 

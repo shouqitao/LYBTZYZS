@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace LYBT.Common.Enums {
+namespace LYBT.Common.Enums.Users {
     /// <summary>
     /// 用户账号状态
     /// </summary>
@@ -18,3 +18,4 @@ namespace LYBT.Common.Enums {
         Disabled = 1
     }
 }
+
