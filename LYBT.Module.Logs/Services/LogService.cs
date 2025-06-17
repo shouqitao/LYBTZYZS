@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
+using LYBT.Common.Enums.Logs;
 
 namespace LYBT.Module.Logs.Services {
     /// <summary>
@@ -63,6 +64,28 @@ namespace LYBT.Module.Logs.Services {
                 });
             }
             return (list, total);
+        }
+
+        /// <inheritdoc />
+        public async Task<(IList<LogDto> logs, int total)> GetUserLogsAsync(Guid userId, int page, int pageSize) {
+            var query = new LogQueryDto {
+                ObjectType = ObjectType.User,
+                ObjectId = userId,
+                Page = page,
+                PageSize = pageSize
+            };
+            return await GetLogsAsync(query);
+        }
+
+        /// <inheritdoc />
+        public async Task<(IList<LogDto> logs, int total)> GetPatientLogsAsync(Guid patientId, int page, int pageSize) {
+            var query = new LogQueryDto {
+                ObjectType = ObjectType.Patient,
+                ObjectId = patientId,
+                Page = page,
+                PageSize = pageSize
+            };
+            return await GetLogsAsync(query);
         }
 
         /// <inheritdoc />

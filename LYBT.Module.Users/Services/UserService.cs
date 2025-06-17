@@ -243,13 +243,4 @@ public class UserService : IUserService {
         return Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToList();
     }
 
-    public async Task<(IList<LogDto> logs, int total)> GetLogsAsync(Guid id, int page, int pageSize) {
-        var query = new LogQueryDto {
-            ObjectType = ObjectType.User,
-            ObjectId = id,
-            Page = page,
-            PageSize = pageSize
-        };
-        return await _logService.GetLogsAsync(query);
-    }
 }
