@@ -61,3 +61,15 @@ dotnet restore
 ```
 
 
+## Configuration
+
+The application reads the `ConnectionStrings:DefaultConnection` setting from `appsettings.json`. For production deployments, specify the database connection using the `ConnectionStrings__DefaultConnection` environment variable instead of storing credentials in the repository.
+
+Example connection string format:
+
+```
+Server=...;Database=...;User Id=...;Password=...
+```
+=======
+
+
