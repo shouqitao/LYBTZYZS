@@ -1,4 +1,4 @@
-﻿namespace LYBT.Module.Prescriptions.Enums {
+﻿namespace LYBT.Common.Enums.Prescriptions {
 
     /// <summary>
     /// 处方状态枚举

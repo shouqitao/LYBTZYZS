@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Logs.Dtos;
-using LYBT.Common.Enums;
+using LYBT.Common.Enums.Users;
 
 /// <summary>
 /// 用户服务接口，封装业务逻辑（含日志集成）

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Common.Enums;
+using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Users.Dtos {
     /// <summary>
