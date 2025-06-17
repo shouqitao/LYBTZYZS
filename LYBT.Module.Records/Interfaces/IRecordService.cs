@@ -32,5 +32,10 @@ namespace LYBT.Module.Records.Interfaces {
         /// 删除病历
         /// </summary>
         Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 根据患者ID获取病历列表
+        /// </summary>
+        Task<List<RecordDto>> GetByPatientIdAsync(Guid patientId);
     }
 }

@@ -36,6 +36,9 @@ using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Mapping;
 using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
+using LYBT.Module.Records.Interfaces;
+using LYBT.Module.Records.Repositories;
+using LYBT.Module.Records.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using LYBT.Module.Logs.Interfaces;
@@ -77,6 +80,10 @@ builder.Services.AddScoped<IHerbRepository, HerbRepository>();
 // 经验方模板管理
 builder.Services.AddScoped<IFormulaTemplateService, FormulaTemplateService>();
 builder.Services.AddScoped<IFormulaTemplateRepository, FormulaTemplateRepository>();
+
+// 病历管理
+builder.Services.AddScoped<IRecordService, RecordService>();
+builder.Services.AddScoped<IRecordRepository, RecordRepository>();
 
 // 日志管理
 builder.Services.AddScoped<ILogService, LogService>();

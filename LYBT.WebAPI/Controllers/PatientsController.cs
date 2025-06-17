@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Common.Models;
 using LYBT.Module.Patients.Dtos;
+using LYBT.Module.Records.Dtos;
 
 namespace LYBT.WebAPI.Controllers {
     /// <summary>
@@ -21,7 +22,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 新增病人
         /// </summary>
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] PatientCreateDto dto) {
             Guid operatorId = Guid.NewGuid();
             string operatorName = "管理员A";
@@ -32,7 +33,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 编辑病人
         /// </summary>
-        [HttpPut]
+        [HttpPut("edit")]
         public async Task<IActionResult> Edit([FromBody] PatientEditDto dto) {
             Guid operatorId = Guid.NewGuid();
             string operatorName = "管理员A";
@@ -40,21 +41,26 @@ namespace LYBT.WebAPI.Controllers {
             return result ? Ok() : BadRequest("更新失败，必填项不完整或病人不存在。");
         }
 
-        /// <summary>
-        /// 删除单个病人
-        /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id) {
+        [HttpPut("enable/{id}")]
+        public async Task<IActionResult> Enable(Guid id) {
             Guid operatorId = Guid.NewGuid();
             string operatorName = "管理员A";
-            var result = await _patientService.DeleteAsync(id, operatorId, operatorName);
-            return result ? Ok() : NotFound("指定病人不存在。");
+            var result = await _patientService.EnableAsync(id, operatorId, operatorName);
+            return result ? Ok() : NotFound();
+        }
+
+        [HttpPut("disable/{id}")]
+        public async Task<IActionResult> Disable(Guid id) {
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var result = await _patientService.DisableAsync(id, operatorId, operatorName);
+            return result ? Ok() : NotFound();
         }
 
         /// <summary>
         /// 获取病人详情
         /// </summary>
-        [HttpGet("{id}")]
+        [HttpGet("get/{id}")]
         public async Task<ActionResult<PatientDetailDto>> GetById(Guid id) {
             var data = await _patientService.GetByIdAsync(id);
             return data != null ? Ok(data) : NotFound();
@@ -87,6 +93,54 @@ namespace LYBT.WebAPI.Controllers {
             string operatorName = "管理员A";
             var count = await _patientService.BatchDeleteAsync(ids, operatorId, operatorName);
             return Ok(new { DeletedCount = count });
+        }
+
+        [HttpPost("batch-disable")]
+        public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var count = await _patientService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
+            return Ok(new { DisabledCount = count });
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<List<PatientDto>>> Search([FromQuery] string keyword) {
+            var list = await _patientService.SearchAsync(keyword);
+            return Ok(list);
+        }
+
+        [HttpGet("doctor/{doctorId}")]
+        public async Task<ActionResult<List<PatientDto>>> GetForDoctor(Guid doctorId) {
+            var list = await _patientService.GetForDoctorAsync(doctorId);
+            return Ok(list);
+        }
+
+        [HttpPost("{id}/assign-doctor")]
+        public async Task<IActionResult> AssignDoctor(Guid id, [FromBody] AssignDoctorDto dto) {
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var result = await _patientService.AssignDoctorAsync(id, dto.DoctorId, operatorId, operatorName);
+            return result ? Ok() : BadRequest();
+        }
+
+        [HttpPost("import")]
+        public async Task<IActionResult> Import([FromBody] List<PatientCreateDto> dtos) {
+            Guid operatorId = Guid.NewGuid();
+            string operatorName = "管理员A";
+            var count = await _patientService.ImportAsync(dtos, operatorId, operatorName);
+            return Ok(new { Imported = count });
+        }
+
+        [HttpPost("export")]
+        public async Task<ActionResult<List<PatientDto>>> Export() {
+            var data = await _patientService.ExportAsync();
+            return Ok(data);
+        }
+
+        [HttpGet("{id}/records")]
+        public async Task<ActionResult<List<RecordDto>>> GetHistory(Guid id) {
+            var data = await _patientService.GetHistoryRecordsAsync(id);
+            return Ok(data);
         }
     }
 }

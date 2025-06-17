@@ -131,5 +131,10 @@ namespace LYBT.Module.Records.Services {
 
             return result;
         }
+
+        public async Task<List<RecordDto>> GetByPatientIdAsync(Guid patientId) {
+            var list = await _recordRepository.GetListByPatientIdAsync(patientId);
+            return _mapper.Map<List<RecordDto>>(list);
+        }
     }
 }
