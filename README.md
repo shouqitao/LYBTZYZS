@@ -70,6 +70,3 @@ Example connection string format:
 ```
 Server=...;Database=...;User Id=...;Password=...
 ```
-=======
-
-
