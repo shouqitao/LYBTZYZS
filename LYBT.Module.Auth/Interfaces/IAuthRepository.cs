@@ -1,0 +1,20 @@
+using System;
+using System.Threading.Tasks;
+using LYBT.Module.Users.Models;
+
+namespace LYBT.Module.Auth.Interfaces {
+    /// <summary>
+    /// 登录验证仓储接口
+    /// </summary>
+    public interface IAuthRepository {
+        /// <summary>
+        /// 根据用户名获取用户
+        /// </summary>
+        Task<UserModel?> GetByUsernameAsync(string userName);
+
+        /// <summary>
+        /// 更新最后登录时间
+        /// </summary>
+        Task UpdateLastLoginTimeAsync(Guid id, DateTime loginTime);
+    }
+}
