@@ -64,8 +64,4 @@ public interface IUserService {
     /// </summary>
     List<UserRole> GetRoles();
 
-    /// <summary>
-    /// 获取指定用户的操作日志
-    /// </summary>
-    Task<(IList<LogDto> logs, int total)> GetLogsAsync(Guid id, int page, int pageSize);
 }

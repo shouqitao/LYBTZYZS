@@ -44,6 +44,24 @@ public class LogController : ControllerBase {
     }
 
     /// <summary>
+    /// 获取指定用户的操作日志
+    /// </summary>
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetUserLogs(Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
+        var (logs, total) = await _logService.GetUserLogsAsync(userId, page, pageSize);
+        return Ok(new { total, logs });
+    }
+
+    /// <summary>
+    /// 获取指定患者的操作日志
+    /// </summary>
+    [HttpGet("patient/{patientId}")]
+    public async Task<IActionResult> GetPatientLogs(Guid patientId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
+        var (logs, total) = await _logService.GetPatientLogsAsync(patientId, page, pageSize);
+        return Ok(new { total, logs });
+    }
+
+    /// <summary>
     /// 获取日志详情
     /// </summary>
     /// <param name="id">日志ID</param>
