@@ -1,6 +1,9 @@
 ﻿using LYBT.Module.DiagnosisTreatment.Interfaces;
 using LYBT.Module.DiagnosisTreatment.Models.Dtos;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LYBT.Module.DiagnosisTreatment.Controllers {
     /// <summary>
