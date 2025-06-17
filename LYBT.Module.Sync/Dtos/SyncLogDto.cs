@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using LYBT.Common.Enums;
 
 namespace LYBT.Module.Sync.Dtos {
     /// <summary>
@@ -6,18 +7,18 @@ namespace LYBT.Module.Sync.Dtos {
     /// </summary>
     public class SyncLogDto {
         /// <summary>同步日志ID</summary>
-        public Guid Id { get; set; }
-
-        /// <summary>同步类型</summary>
-        public string SyncType { get; set; } = string.Empty;
-
-        /// <summary>同步状态</summary>
-        public string Status { get; set; } = string.Empty;
+        public string Id { get; set; } = string.Empty;
 
         /// <summary>同步时间</summary>
         public DateTime SyncTime { get; set; }
 
-        /// <summary>日志说明</summary>
-        public string? Remark { get; set; }
+        /// <summary>同步模式</summary>
+        public SyncMode Mode { get; set; }
+
+        /// <summary>同步状态</summary>
+        public SyncStatus Status { get; set; }
+
+        /// <summary>错误或成功信息</summary>
+        public string? Message { get; set; }
     }
 }

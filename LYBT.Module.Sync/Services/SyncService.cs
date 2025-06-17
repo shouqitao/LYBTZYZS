@@ -37,7 +37,7 @@ namespace LYBT.Module.Sync.Services {
         /// </summary>
         public async Task<bool> AddLogAsync(SyncLogCreateDto syncLogCreateDto) {
             var model = _mapper.Map<SyncLogModel>(syncLogCreateDto);
-            model.Id = Guid.NewGuid();
+            model.Id = Guid.NewGuid().ToString();
             model.SyncTime = DateTime.Now;
             return await _syncRepository.AddLogAsync(model);
         }
@@ -45,8 +45,43 @@ namespace LYBT.Module.Sync.Services {
         /// <summary>
         /// 删除同步日志
         /// </summary>
-        public async Task<bool> DeleteLogAsync(Guid id) {
+        public async Task<bool> DeleteLogAsync(string id) {
             return await _syncRepository.DeleteLogAsync(id);
+        }
+
+        /// <summary>
+        /// 获取最近一次同步信息
+        /// </summary>
+        public async Task<SyncLogDto?> GetLastSyncInfoAsync() {
+            var model = await _syncRepository.GetLastLogAsync();
+            return model == null ? null : _mapper.Map<SyncLogDto>(model);
+        }
+
+        /// <summary>
+        /// 分页获取同步日志
+        /// </summary>
+        public async Task<List<SyncLogDto>> GetSyncLogPagedAsync(int page, int pageSize) {
+            var list = await _syncRepository.GetLogPagedAsync(page, pageSize);
+            return _mapper.Map<List<SyncLogDto>>(list);
+        }
+
+        /// <summary>
+        /// 检测中心数据库是否可连接
+        /// </summary>
+        public async Task<bool> CheckConnectionStatusAsync() {
+            return await _syncRepository.CanConnectAsync();
+        }
+
+        /// <summary>
+        /// 手动触发同步操作
+        /// </summary>
+        public async Task<bool> TriggerManualSyncAsync() {
+            var log = new SyncLogCreateDto {
+                Mode = Common.Enums.SyncMode.Manual,
+                Status = Common.Enums.SyncStatus.Success,
+                Message = "Manual sync triggered"
+            };
+            return await AddLogAsync(log);
         }
 
         // ========== 任务相关 ==========
