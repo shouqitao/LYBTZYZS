@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Records.Repositories {
     /// <summary>
@@ -60,6 +61,13 @@ namespace LYBT.Module.Records.Repositories {
                 return false;
             _appDbContext.Records.Remove(recordModel);
             return await _appDbContext.SaveChangesAsync() > 0;
+        }
+
+        public async Task<List<RecordModel>> GetListByPatientIdAsync(Guid patientId) {
+            return await _appDbContext.Records
+                .Where(r => r.PatientId == patientId)
+                .OrderByDescending(r => r.RecordTime)
+                .ToListAsync();
         }
     }
 }

@@ -7,6 +7,8 @@ using LYBT.Module.Patients.Models;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Common.Enums.Logs;
+using LYBT.Module.Records.Dtos;
+using LYBT.Module.Records.Interfaces;
 using System.Text.Json;
 
 namespace LYBT.Module.Patients.Services {
@@ -17,13 +19,16 @@ namespace LYBT.Module.Patients.Services {
         private readonly IPatientRepository _patientRepository;
         private readonly IMapper _mapper;
         private readonly ILogService _logService;
+        private readonly IRecordService _recordService;
 
         public PatientService(IPatientRepository patientRepository,
             IMapper mapper,
-            ILogService logService) {
+            ILogService logService,
+            IRecordService recordService) {
             _patientRepository = patientRepository;
             _mapper = mapper;
             _logService = logService;
+            _recordService = recordService;
         }
 
         public async Task<bool> AddAsync(PatientCreateDto dto, Guid operatorId, string operatorName) {
@@ -125,6 +130,103 @@ namespace LYBT.Module.Patients.Services {
                     count++;
             }
             return count;
+        }
+
+        public async Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName) {
+            var result = await _patientRepository.EnableAsync(id);
+            if (result) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Patient,
+                    ObjectId = id,
+                    ActionType = ActionType.Enable,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    LogTime = DateTime.Now,
+                    Content = $"启用患者：{id}"
+                });
+            }
+            return result;
+        }
+
+        public async Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName) {
+            var result = await _patientRepository.DisableAsync(id);
+            if (result) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Patient,
+                    ObjectId = id,
+                    ActionType = ActionType.Disable,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    LogTime = DateTime.Now,
+                    Content = $"禁用患者：{id}"
+                });
+            }
+            return result;
+        }
+
+        public async Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
+            var count = await _patientRepository.BatchDisableAsync(ids);
+            if (count > 0) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Patient,
+                    ObjectId = Guid.Empty,
+                    ActionType = ActionType.Disable,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    LogTime = DateTime.Now,
+                    Content = $"批量禁用患者：{count}人"
+                });
+            }
+            return count;
+        }
+
+        public async Task<List<PatientDto>> SearchAsync(string keyword) {
+            var list = await _patientRepository.SearchAsync(keyword);
+            return list.Select(_mapper.Map<PatientDto>).ToList();
+        }
+
+        public async Task<List<PatientDto>> GetForDoctorAsync(Guid doctorId) {
+            var list = await _patientRepository.GetForDoctorAsync(doctorId);
+            return list.Select(_mapper.Map<PatientDto>).ToList();
+        }
+
+        public async Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
+            var result = await _patientRepository.AssignDoctorAsync(patientId, doctorId);
+            if (result) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Patient,
+                    ObjectId = patientId,
+                    ActionType = ActionType.Other,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    LogTime = DateTime.Now,
+                    Content = $"授权患者{patientId}给医生{doctorId}"
+                });
+            }
+            return result;
+        }
+
+        public async Task<int> ImportAsync(List<PatientCreateDto> dtos, Guid operatorId, string operatorName) {
+            int count = 0;
+            foreach (var dto in dtos) {
+                if (await AddAsync(dto, operatorId, operatorName))
+                    count++;
+            }
+            return count;
+        }
+
+        public async Task<List<PatientDto>> ExportAsync() {
+            var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue);
+            return list.Select(_mapper.Map<PatientDto>).ToList();
+        }
+
+        public async Task<List<RecordDto>> GetHistoryRecordsAsync(Guid patientId) {
+            var records = await _recordService.GetByPatientIdAsync(patientId);
+            return records;
         }
     }
 }
