@@ -45,3 +45,8 @@ provided to set this. Restore NuGet packages before launching the client:
 ```bash
 dotnet restore
 ```
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
