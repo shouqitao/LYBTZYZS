@@ -33,7 +33,7 @@ public class OperationLogModel
 
 项目中实际使用 `LogModel` 与 `LogDto` 等进行映射，字段与上表含义相同。
 
-## 接口概览（`LogsController`）
+## 接口概览（`LogController`）
 
 | 接口名称 | 方法 | 权限 | 说明 |
 | --- | --- | --- | --- |
