@@ -29,6 +29,7 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(user);
         }
 
+
         /// <summary>
         /// 用户登出
         /// </summary>
@@ -39,5 +40,6 @@ namespace LYBT.WebAPI.Controllers {
             await _authService.LogoutAsync(dto);
             return Ok(new { success = true });
         }
+
     }
 }
