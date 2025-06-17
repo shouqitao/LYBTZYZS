@@ -33,5 +33,15 @@ namespace LYBT.Module.Billing.Interfaces {
         /// 删除费用结算记录
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 根据病人ID获取账单
+        /// </summary>
+        Task<List<BillingModel>> GetByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 搜索账单
+        /// </summary>
+        Task<List<BillingModel>> SearchAsync(string keyword);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using LYBT.Common.Enums;
 
 namespace LYBT.Module.Billing.Dtos {
     /// <summary>
@@ -30,8 +31,23 @@ namespace LYBT.Module.Billing.Dtos {
         /// <summary>已缴金额</summary>
         public decimal PaidAmount { get; set; }
 
-        /// <summary>缴费状态</summary>
-        public string PaymentStatus { get; set; } = string.Empty;
+        /// <summary>账单状态</summary>
+        public BillingStatus Status { get; set; }
+
+        /// <summary>创建时间</summary>
+        public DateTime CreatedTime { get; set; }
+
+        /// <summary>支付时间</summary>
+        public DateTime? PaidTime { get; set; }
+
+        /// <summary>完成时间</summary>
+        public DateTime? CompletedTime { get; set; }
+
+        /// <summary>退款时间</summary>
+        public DateTime? RefundTime { get; set; }
+
+        /// <summary>退款理由</summary>
+        public string? RefundReason { get; set; }
 
         /// <summary>缴费方式</summary>
         public string? PaymentMethod { get; set; }

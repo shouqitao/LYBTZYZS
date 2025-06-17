@@ -32,5 +32,50 @@ namespace LYBT.Module.Billing.Interfaces {
         /// 删除费用结算记录
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 标记已支付
+        /// </summary>
+        Task<bool> MarkAsPaidAsync(Guid id);
+
+        /// <summary>
+        /// 标记完成
+        /// </summary>
+        Task<bool> MarkAsCompletedAsync(Guid id);
+
+        /// <summary>
+        /// 申请退款
+        /// </summary>
+        Task<bool> RequestRefundAsync(Guid id, string reason);
+
+        /// <summary>
+        /// 同意退款
+        /// </summary>
+        Task<bool> ApproveRefundAsync(Guid id);
+
+        /// <summary>
+        /// 拒绝退款
+        /// </summary>
+        Task<bool> RejectRefundAsync(Guid id);
+
+        /// <summary>
+        /// 取消未支付账单
+        /// </summary>
+        Task<bool> CancelAsync(Guid id);
+
+        /// <summary>
+        /// 根据病人ID获取账单
+        /// </summary>
+        Task<List<BillingDto>> GetByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 关键字搜索
+        /// </summary>
+        Task<List<BillingDto>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 可退款账单
+        /// </summary>
+        Task<List<BillingDto>> GetRefundableBillsAsync();
     }
 }
