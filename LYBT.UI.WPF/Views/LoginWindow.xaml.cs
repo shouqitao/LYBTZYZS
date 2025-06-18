@@ -7,8 +7,14 @@ namespace LYBT.UI.WPF.Views {
     /// </summary>
     public partial class LoginWindow : Window {
         public LoginWindow() {
-            InitializeComponent();
             DataContextChanged += LoginWindow_DataContextChanged;
+            InitializeComponent();
+
+            // AutoWireViewModel sets DataContext inside InitializeComponent,
+            // so subscribe to LoginSucceeded if it has already been set
+            if (DataContext is LoginViewModel vm) {
+                vm.LoginSucceeded += OnLoginSucceeded;
+            }
         }
 
         private void LoginWindow_DataContextChanged(object? sender, DependencyPropertyChangedEventArgs e) {
