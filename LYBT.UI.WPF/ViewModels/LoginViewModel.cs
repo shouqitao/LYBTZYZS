@@ -42,7 +42,7 @@ namespace LYBT.UI.WPF.ViewModels {
             var dto = new LoginRequestDto { Username = Username, Password = Password };
             try {
                 var response = await _authApi.LoginAsync(dto);
-                _tokenService.SetToken(response.Token);
+                _tokenService.SetLoginInfo(response.Token, response.User);
                 LoginSucceeded?.Invoke();
             } catch (ApiException ex) {
                 MessageBox.Show(ex.Content ?? "用户名或密码错误", "登录失败", MessageBoxButton.OK, MessageBoxImage.Warning);
