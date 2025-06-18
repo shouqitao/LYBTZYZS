@@ -1,11 +1,13 @@
 using LYBT.UI.WPF.Views;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Windows.Input;
 using LYBT.Common.Enums.Users;
+using LYBT.Module.Users.Dtos;
 
 namespace LYBT.UI.WPF.ViewModels {
     /// <summary>
@@ -14,22 +16,39 @@ namespace LYBT.UI.WPF.ViewModels {
     public class ShellViewModel : BindableBase {
         private readonly IRegionManager _regionManager;
         private readonly Services.TokenService _tokenService;
+        private readonly IEventAggregator _eventAggregator;
+
+        private UserDto? _currentUser;
+        public UserDto? CurrentUser {
+            get => _currentUser;
+            private set => SetProperty(ref _currentUser, value);
+        }
 
         public ObservableCollection<NavigationItem> NavigationItems { get; } = new();
         public ICommand NavigateCommand { get; }
-
-        public ShellViewModel(IRegionManager regionManager, Services.TokenService tokenService) {
+        public ICommand LogoutCommand { get; }
+        public ShellViewModel(IRegionManager regionManager, Services.TokenService tokenService, IEventAggregator eventAggregator) {
             _regionManager = regionManager;
             _tokenService = tokenService;
+            _eventAggregator = eventAggregator;
             NavigateCommand = new DelegateCommand<string?>(Navigate);
+            LogoutCommand = new DelegateCommand(OnLogout);
 
-            BuildNavigation();
-            if (NavigationItems.Count > 0) {
-                _regionManager.RequestNavigate("MainRegion", NavigationItems[0].ViewName);
+            _eventAggregator.GetEvent<Events.LoginSuccessEvent>().Subscribe(HandleLoginSuccess);
+
+            if (_tokenService.CurrentUser == null) {
+                _regionManager.RequestNavigate("MainRegion", nameof(LoginView));
+            } else {
+                CurrentUser = _tokenService.CurrentUser;
+                BuildNavigation();
+                if (NavigationItems.Count > 0) {
+                    _regionManager.RequestNavigate("MainRegion", NavigationItems[0].ViewName);
+                }
             }
         }
 
         private void BuildNavigation() {
+            NavigationItems.Clear();
             var user = _tokenService.CurrentUser;
             if (user == null)
                 return;
@@ -60,6 +79,21 @@ namespace LYBT.UI.WPF.ViewModels {
             if (!string.IsNullOrWhiteSpace(view)) {
                 _regionManager.RequestNavigate("MainRegion", view);
             }
+        }
+
+        private void HandleLoginSuccess(UserDto user) {
+            CurrentUser = user;
+            BuildNavigation();
+            if (NavigationItems.Count > 0) {
+                _regionManager.RequestNavigate("MainRegion", NavigationItems[0].ViewName);
+            }
+        }
+
+        private void OnLogout() {
+            _tokenService.ClearLoginInfo();
+            CurrentUser = null;
+            NavigationItems.Clear();
+            _regionManager.RequestNavigate("MainRegion", nameof(LoginView));
         }
     }
 }

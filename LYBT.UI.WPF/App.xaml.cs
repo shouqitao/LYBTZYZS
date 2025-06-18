@@ -4,6 +4,7 @@ using Prism.Unity;
 using System.Windows;
 using LYBT.UI.WPF.Views;
 using LYBT.UI.WPF.Services;
+using Prism.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Refit;
@@ -15,12 +16,6 @@ namespace LYBT.UI.WPF {
     /// </summary>
     public partial class App : PrismApplication {
         protected override Window CreateShell() {
-            var login = Container.Resolve<LoginWindow>();
-            var result = login.ShowDialog();
-            if (result != true) {
-                Shutdown();
-                return null!;
-            }
             return Container.Resolve<ShellView>();
         }
 
@@ -35,7 +30,7 @@ namespace LYBT.UI.WPF {
             // share a single TokenService instance between Prism and the HTTP client
             var tokenService = new TokenService();
             containerRegistry.RegisterInstance(tokenService);
-            containerRegistry.Register<LoginWindow>();
+            containerRegistry.RegisterSingleton<IEventAggregator, EventAggregator>();
 
             var services = new ServiceCollection();
             services.AddSingleton(tokenService);

@@ -19,5 +19,11 @@ namespace LYBT.UI.WPF.Services {
             _token = token;
             _user = user;
         }
+
+        /// <summary>清除当前登录信息</summary>
+        public void ClearLoginInfo() {
+            _token = null;
+            _user = null;
+        }
     }
 }
