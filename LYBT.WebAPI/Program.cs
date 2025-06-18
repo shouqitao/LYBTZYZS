@@ -39,7 +39,6 @@ using LYBT.Module.Sync.Services;
 using LYBT.Module.Records.Interfaces;
 using LYBT.Module.Records.Repositories;
 using LYBT.Module.Records.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using LYBT.Module.Logs.Interfaces;
@@ -49,9 +48,7 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
 using LYBT.Infrastructure.Helpers;
-using LYBT.WebAPI.Services;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using LYBT.Infrastructure.Auth.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -136,21 +133,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connection));
 
 // =========== 5. JWT 认证配置 ===========
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-builder.Services.AddSingleton<JwtTokenService>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options => {
-        var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>();
-        options.TokenValidationParameters = new TokenValidationParameters {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwt.Issuer,
-            ValidAudience = jwt.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret))
-        };
-    });
-builder.Services.AddAuthorization();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 // =========== 6. 启动Web应用 ===========
 

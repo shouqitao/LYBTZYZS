@@ -6,14 +6,14 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using LYBT.Module.Users.Dtos;
 
-namespace LYBT.WebAPI.Services {
+namespace LYBT.Infrastructure.Auth {
     /// <summary>
-    /// 生成 JWT Token 的服务
+    /// JWT Token 辅助生成类
     /// </summary>
-    public class JwtTokenService {
+    public class JwtHelper {
         private readonly JwtOptions _options;
 
-        public JwtTokenService(IOptions<JwtOptions> options) {
+        public JwtHelper(IOptions<JwtOptions> options) {
             _options = options.Value;
         }
 
