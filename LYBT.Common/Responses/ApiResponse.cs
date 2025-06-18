@@ -1,4 +1,5 @@
-﻿namespace LYBT.Common.Responses {
+﻿// LYBT.Common/Responses/ApiResponse.cs
+namespace LYBT.Common.Responses {
     /// <summary>
     /// 接口统一响应体
     /// </summary>

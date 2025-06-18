@@ -20,8 +20,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\LYBT.Common\LYBT.Common.csproj" />
         <ProjectReference Include="..\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-        <ProjectReference Include="..\LYBT.Infrastructure.Auth\LYBT.Infrastructure.Auth.csproj" />
-        <ProjectReference Include="..\LYBT.Infrastructure.Exceptions\LYBT.Infrastructure.Exceptions.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Billing\LYBT.Module.Billing.csproj" />
 		<ProjectReference Include="..\LYBT.Module.DiagnosisTreatment\LYBT.Module.DiagnosisTreatment.csproj" />
