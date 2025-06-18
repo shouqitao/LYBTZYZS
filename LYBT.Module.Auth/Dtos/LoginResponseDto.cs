@@ -7,6 +7,6 @@ namespace LYBT.Module.Auth.Dtos {
         public string Token { get; set; } = string.Empty;
 
         /// <summary>用户信息</summary>
-        public LYBT.Module.Users.Dtos.UserDto User { get; set; } = new();
+        public Users.Dtos.UserDto User { get; set; } = new();
     }
 }
