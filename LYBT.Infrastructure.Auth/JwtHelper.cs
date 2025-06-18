@@ -1,37 +1,32 @@
-using System;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using LYBT.Module.Users.Dtos;
 
 namespace LYBT.Infrastructure.Auth {
     /// <summary>
-    /// JWT Token 辅助生成类
+    /// JWT工具类：生成Token
     /// </summary>
-    public class JwtHelper {
-        private readonly JwtOptions _options;
-
-        public JwtHelper(IOptions<JwtOptions> options) {
-            _options = options.Value;
-        }
-
-        public string GenerateToken(UserDto user) {
+    public static class JwtHelper {
+        public static string GenerateToken(string userId, string userName, JwtOptions options) {
             var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(JwtRegisteredClaimNames.UniqueName, userName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expires = DateTime.UtcNow.AddMinutes(options.ExpireMinutes);
+
             var token = new JwtSecurityToken(
-                issuer: _options.Issuer,
-                audience: _options.Audience,
+                issuer: options.Issuer,
+                audience: options.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(_options.ExpireMinutes),
-                signingCredentials: creds);
+                expires: expires,
+                signingCredentials: creds
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

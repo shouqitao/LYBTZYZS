@@ -49,6 +49,7 @@ using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
 using LYBT.Infrastructure.Helpers;
 using LYBT.Infrastructure.Auth.Extensions;
+using LYBT.Infrastructure.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -138,6 +139,9 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 // =========== 6. 启动Web应用 ===========
 
 var app = builder.Build();
+
+// 注册全局异常处理中间件（放最前面）
+app.UseMiddleware<ExceptionMiddleware>();
 
 // ensure default admin user exists
 using (var scope = app.Services.CreateScope()) {
