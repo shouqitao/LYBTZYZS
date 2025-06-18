@@ -10,9 +10,7 @@
         <materialDesign:DrawerHost>
             <materialDesign:DrawerHost.LeftDrawerContent>
                 <StackPanel>
-                    <Button Content="患者管理" Command="{Binding NavigateCommand}" CommandParameter="Patients"/>
-                    <Button Content="挂号管理" Command="{Binding NavigateCommand}" CommandParameter="Registration"/>
-                    <Button Content="系统设置" Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+                    <Button Content="管理员主页" Command="{Binding NavigateCommand}" CommandParameter="AdminView"/>
                 </StackPanel>
             </materialDesign:DrawerHost.LeftDrawerContent>
             <Grid>
