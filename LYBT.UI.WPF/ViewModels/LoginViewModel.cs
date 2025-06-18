@@ -1,6 +1,6 @@
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
-using System;
 using Refit;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,16 +25,16 @@ namespace LYBT.UI.WPF.ViewModels {
             set => SetProperty(ref _password, value);
         }
 
-        public event Action? LoginSucceeded;
-
         private readonly IAuthApi _authApi;
         private readonly Services.TokenService _tokenService;
+        private readonly IEventAggregator _eventAggregator;
 
         public ICommand LoginCommand { get; }
 
-        public LoginViewModel(IAuthApi authApi, Services.TokenService tokenService) {
+        public LoginViewModel(IAuthApi authApi, Services.TokenService tokenService, IEventAggregator eventAggregator) {
             _authApi = authApi;
             _tokenService = tokenService;
+            _eventAggregator = eventAggregator;
             LoginCommand = new DelegateCommand(async () => await OnLoginAsync());
         }
 
@@ -43,7 +43,7 @@ namespace LYBT.UI.WPF.ViewModels {
             try {
                 var response = await _authApi.LoginAsync(dto);
                 _tokenService.SetLoginInfo(response.Token, response.User);
-                LoginSucceeded?.Invoke();
+                _eventAggregator.GetEvent<Events.LoginSuccessEvent>().Publish(response.User);
             } catch (ApiException ex) {
                 MessageBox.Show(ex.Content ?? "用户名或密码错误", "登录失败", MessageBoxButton.OK, MessageBoxImage.Warning);
             } catch (System.Exception ex) {
