@@ -3,6 +3,7 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Dtos;
 using System.Threading.Tasks;
 using LYBT.Infrastructure.Auth;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.Controllers {
     /// <summary>
@@ -12,11 +13,11 @@ namespace LYBT.WebAPI.Controllers {
     [Route("api/[controller]")]
     public class AuthController : ControllerBase {
         private readonly IAuthService _authService;
-        private readonly JwtHelper _jwtHelper;
+        private readonly JwtOptions _jwtOptions;
 
-        public AuthController(IAuthService authService, JwtHelper jwtHelper) {
+        public AuthController(IAuthService authService, IOptions<JwtOptions> jwtOptions) {
             _authService = authService;
-            _jwtHelper = jwtHelper;
+            _jwtOptions = jwtOptions.Value;
         }
 
         /// <summary>
@@ -30,7 +31,7 @@ namespace LYBT.WebAPI.Controllers {
             if (user == null)
                 return Unauthorized(new { success = false, message = "用户名或密码错误" });
 
-            var token = _jwtHelper.GenerateToken(user);
+            var token = JwtHelper.GenerateToken(user.Id.ToString(), user.UserName, _jwtOptions);
             return Ok(new LoginResponseDto { Token = token, User = user });
         }
 

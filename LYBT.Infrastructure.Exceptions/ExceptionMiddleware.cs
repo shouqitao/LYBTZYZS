@@ -1,11 +1,12 @@
 using LYBT.Common.Responses;
 using Microsoft.AspNetCore.Http;
-using System.Net;
+using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace LYBT.Infrastructure.Exceptions {
     /// <summary>
-    /// 统一异常处理中间件
+    /// 全局异常处理中间件
     /// </summary>
     public class ExceptionMiddleware {
         private readonly RequestDelegate _next;
@@ -17,19 +18,19 @@ namespace LYBT.Infrastructure.Exceptions {
         public async Task InvokeAsync(HttpContext context) {
             try {
                 await _next(context);
-            } catch (BusinessException ex) {
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                var response = ApiResponse<string>.Fail(ex.Message, ex.Code);
-                var json = JsonSerializer.Serialize(response);
-                await context.Response.WriteAsync(json);
-            } catch (Exception ex) {
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                var response = ApiResponse<string>.Fail("服务器内部错误：" + ex.Message);
-                var json = JsonSerializer.Serialize(response);
-                await context.Response.WriteAsync(json);
+            } catch (BusinessException bex) {
+                await HandleExceptionAsync(context, bex.Message, 400);
+            } catch (Exception) {
+                await HandleExceptionAsync(context, "服务器内部错误", 500);
             }
+        }
+
+        private static Task HandleExceptionAsync(HttpContext context, string message, int statusCode) {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = statusCode;
+            // 只需统一用泛型响应体（这里Data为null）
+            var response = ApiResponse<object>.Fail(message, statusCode);
+            return context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
     }
 }
