@@ -8,3 +8,5 @@ the user. After a successful login the main `ShellView` is launched. The shell
 contains a left drawer with navigation buttons that are generated according to
 the roles of the logged in user.
 
+For detailed guidance on the MVVM structure and the login flow, see
+[docs/DevelopmentGuide.md](docs/DevelopmentGuide.md).
