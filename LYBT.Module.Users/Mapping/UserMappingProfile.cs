@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+using AutoMapper;
+using System.Collections.Generic;
+using LYBT.Common.Enums.Users;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
 
@@ -9,7 +11,8 @@ namespace LYBT.Module.Users.Mapping {
     public class UserMappingProfile : Profile {
         public UserMappingProfile() {
             // 用户实体转DTO
-            CreateMap<UserModel, UserDto>();
+            CreateMap<UserModel, UserDto>()
+                .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => new List<UserRole> { src.Role }));
             // 新增DTO转实体
             CreateMap<UserCreateDto, UserModel>();
             // 编辑DTO转实体（密码字段需单独处理）

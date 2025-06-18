@@ -9,9 +9,15 @@
     <Grid>
         <materialDesign:DrawerHost>
             <materialDesign:DrawerHost.LeftDrawerContent>
-                <StackPanel>
-                    <Button Content="管理员主页" Command="{Binding NavigateCommand}" CommandParameter="AdminView"/>
-                </StackPanel>
+                <ItemsControl ItemsSource="{Binding NavigationItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Label}"
+                                    Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding ViewName}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </materialDesign:DrawerHost.LeftDrawerContent>
             <Grid>
                 <ContentControl prism:RegionManager.RegionName="MainRegion"/>
