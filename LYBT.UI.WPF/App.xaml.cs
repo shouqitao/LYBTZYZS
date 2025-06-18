@@ -26,6 +26,7 @@ namespace LYBT.UI.WPF {
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             containerRegistry.RegisterForNavigation<LoginView>(nameof(LoginView));
+            containerRegistry.RegisterForNavigation<AdminView>(nameof(AdminView));
 
             // share a single TokenService instance between Prism and the HTTP client
             var tokenService = new TokenService();

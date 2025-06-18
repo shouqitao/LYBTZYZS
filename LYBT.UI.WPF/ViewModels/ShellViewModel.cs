@@ -12,7 +12,7 @@ namespace LYBT.UI.WPF.ViewModels {
         public ShellViewModel(IRegionManager regionManager) {
             _regionManager = regionManager;
             NavigateCommand = new DelegateCommand<string?>(Navigate);
-            _regionManager.RequestNavigate("MainRegion", nameof(LoginView));
+            _regionManager.RequestNavigate("MainRegion", nameof(AdminView));
         }
 
         private void Navigate(string? view) {

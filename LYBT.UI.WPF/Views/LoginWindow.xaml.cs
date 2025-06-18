@@ -8,10 +8,15 @@ namespace LYBT.UI.WPF.Views {
     public partial class LoginWindow : Window {
         public LoginWindow() {
             InitializeComponent();
-            DataContextChanged += LoginWindow_DataContextChanged;
+
+            // subscribe to DataContext changes on the inner LoginView
+            LoginViewControl.DataContextChanged += LoginView_DataContextChanged;
+            if (LoginViewControl.DataContext is LoginViewModel vm) {
+                vm.LoginSucceeded += OnLoginSucceeded;
+            }
         }
 
-        private void LoginWindow_DataContextChanged(object? sender, DependencyPropertyChangedEventArgs e) {
+        private void LoginView_DataContextChanged(object? sender, DependencyPropertyChangedEventArgs e) {
             if (e.NewValue is LoginViewModel vm) {
                 vm.LoginSucceeded += OnLoginSucceeded;
             }
