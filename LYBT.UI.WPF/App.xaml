@@ -1,14 +1,11 @@
-<prism:PrismApplication x:Class="LYBT.UI.WPF.App"
-            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-            xmlns:prism="http://prismlibrary.com/"
-            xmlns:conv="clr-namespace:LYBT.UI.WPF.Converters">
+﻿<prism:PrismApplication 
+                x:Class="LYBT.UI.WPF.App"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:prism="http://prismlibrary.com/"
+                xmlns:local="clr-namespace:LYBT.UI.WPF">
+    <!-- 注意：移除了 StartupUri，以避免启动两个窗口 -->
     <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <conv:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
-        </ResourceDictionary>
+        <!-- 全局资源字典（如果有） -->
     </Application.Resources>
 </prism:PrismApplication>

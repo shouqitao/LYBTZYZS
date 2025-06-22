@@ -1,54 +1,39 @@
+﻿using LYBT.UI.WPF.Services;
+using LYBT.UI.WPF.ViewModels;
+using LYBT.UI.WPF.Views;
 using Prism.Ioc;
-using Prism.Modularity;
 using Prism.Unity;
 using System.Windows;
-using LYBT.UI.WPF.Views;
-using LYBT.UI.WPF.Services;
-using Prism.Events;
-using Microsoft.Extensions.DependencyInjection;
-using Polly;
-using Refit;
-using System.Net.Http;
 
 namespace LYBT.UI.WPF {
-    /// <summary>
-    /// Prism application bootstrap
-    /// </summary>
     public partial class App : PrismApplication {
-        protected override Window CreateShell() {
-            return Container.Resolve<ShellView>();
-        }
-
+        /// <summary>
+        /// 重写Prism框架方法，注册类型和服务
+        /// </summary>
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
-            containerRegistry.RegisterForNavigation<LoginView>(nameof(LoginView));
-            containerRegistry.RegisterForNavigation<AdminView>(nameof(AdminView));
-            containerRegistry.RegisterForNavigation<DiagnosingDoctorView>(nameof(DiagnosingDoctorView));
-            containerRegistry.RegisterForNavigation<TreatmentDoctorView>(nameof(TreatmentDoctorView));
-            containerRegistry.RegisterForNavigation<PharmacyStaffView>(nameof(PharmacyStaffView));
-            containerRegistry.RegisterForNavigation<RegistrationStaffView>(nameof(RegistrationStaffView));
-
-            // share a single TokenService instance between Prism and the HTTP client
-            var tokenService = new TokenService();
-            containerRegistry.RegisterInstance(tokenService);
-            containerRegistry.RegisterSingleton<IEventAggregator, EventAggregator>();
-
-            var services = new ServiceCollection();
-            services.AddSingleton(tokenService);
-            services.AddTransient<AuthHttpMessageHandler>();
-            services.AddRefitClient<IAuthApi>(new RefitSettings {
-                ContentSerializer = new SystemTextJsonContentSerializer()
-            })
-                .ConfigureHttpClient(c => c.BaseAddress = new System.Uri("http://localhost:5297/"))
-                .AddHttpMessageHandler<AuthHttpMessageHandler>()
-                .AddPolicyHandler(Policy<HttpResponseMessage>.Handle<HttpRequestException>()
-                    .WaitAndRetryAsync(3, _ => System.TimeSpan.FromSeconds(1)));
-
-            var provider = services.BuildServiceProvider();
-            containerRegistry.RegisterInstance(provider.GetRequiredService<IAuthApi>());
+            // 注册服务接口与实现，用于依赖注入
+            containerRegistry.Register<IAuthService, AuthService>();
+            // 注册导航视图（将视图类型映射到导航名称）
+            containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>();
+            containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
         }
 
-        protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog) {
-            // register modules here
+        /// <summary>
+        /// 重写Prism框架方法，创建应用程序主窗口(Shell)
+        /// </summary>
+        protected override Window CreateShell() {
+            // 利用依赖容器创建主窗口实例（会自动注入依赖项）
+            return Container.Resolve<MainWindow>();
+        }
+
+        /// <summary>
+        /// 可选重写：应用程序初始化完成时的钩子
+        /// </summary>
+        protected override void OnInitialized() {
+            base.OnInitialized();
+            // 初始化后导航到登录页面，使LoginView加载到MainWindow的ContentRegion区域
+            var regionManager = Container.Resolve<IRegionManager>();
+            regionManager.RequestNavigate("ContentRegion", "LoginView");
         }
     }
 }

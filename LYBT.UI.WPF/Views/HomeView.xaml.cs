@@ -15,10 +15,10 @@ using System.Windows.Shapes;
 
 namespace LYBT.UI.WPF.Views {
     /// <summary>
-    /// Interaction logic for LoginView.xaml
+    /// Interaction logic for HomeView.xaml
     /// </summary>
-    public partial class LoginView : UserControl {
-        public LoginView() {
+    public partial class HomeView : UserControl {
+        public HomeView() {
             InitializeComponent();
         }
     }

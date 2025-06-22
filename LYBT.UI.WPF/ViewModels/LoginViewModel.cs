@@ -1,54 +1,61 @@
-using Prism.Commands;
-using Prism.Events;
-using Prism.Mvvm;
-using Refit;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-using LYBT.Module.Auth.Dtos;
-using LYBT.UI.WPF.Services;
+﻿using LYBT.UI.WPF.Services;
 
 namespace LYBT.UI.WPF.ViewModels {
     /// <summary>
-    /// Login page view model
+    /// LoginView 对应的视图模型，处理登录逻辑
     /// </summary>
     public class LoginViewModel : BindableBase {
-        private string _username = string.Empty;
+        private string _username;
         public string Username {
             get => _username;
             set => SetProperty(ref _username, value);
         }
 
-        private string _password = string.Empty;
+        private string _password;
         public string Password {
             get => _password;
             set => SetProperty(ref _password, value);
         }
 
-        private readonly IAuthApi _authApi;
-        private readonly Services.TokenService _tokenService;
-        private readonly IEventAggregator _eventAggregator;
+        // 登录命令，按钮绑定此命令以触发登录动作
+        public DelegateCommand LoginCommand { get; private set; }
 
-        public ICommand LoginCommand { get; }
+        private readonly IAuthService _authService;
+        private readonly IRegionManager _regionManager;
 
-        public LoginViewModel(IAuthApi authApi, Services.TokenService tokenService, IEventAggregator eventAggregator) {
-            _authApi = authApi;
-            _tokenService = tokenService;
-            _eventAggregator = eventAggregator;
-            LoginCommand = new DelegateCommand(async () => await OnLoginAsync());
+        /// <summary>
+        /// 构造函数，使用依赖注入获取 AuthService 和 RegionManager
+        /// </summary>
+        public LoginViewModel(IAuthService authService, IRegionManager regionManager) {
+            _authService = authService;
+            _regionManager = regionManager;
+            // 初始化命令，指定执行方法和可执行判定（可执行判定此处简单为非空校验）
+            LoginCommand = new DelegateCommand(ExecuteLogin, CanExecuteLogin)
+                               .ObservesProperty(() => Username)
+                               .ObservesProperty(() => Password);
         }
 
-        private async Task OnLoginAsync() {
-            var dto = new LoginRequestDto { Username = Username, Password = Password };
-            try {
-                var response = await _authApi.LoginAsync(dto);
-                _tokenService.SetLoginInfo(response.Token, response.User);
-                _eventAggregator.GetEvent<Events.LoginSuccessEvent>().Publish(response.User);
-            } catch (ApiException ex) {
-                MessageBox.Show(ex.Content ?? "用户名或密码错误", "登录失败", MessageBoxButton.OK, MessageBoxImage.Warning);
-            } catch (System.Exception ex) {
-                MessageBox.Show($"无法连接到服务器: {ex.Message}", "登录失败", MessageBoxButton.OK, MessageBoxImage.Error);
+        /// <summary>
+        /// 执行登录逻辑的具体方法
+        /// </summary>
+        private void ExecuteLogin() {
+            // 调用认证服务进行验证（此处为模拟逻辑）
+            bool success = _authService.Login(Username, Password);
+            if (success) {
+                // 登录成功，导航到主内容视图HomeView
+                _regionManager.RequestNavigate("ContentRegion", "HomeView");
+            } else {
+                // 登录失败，简单处理：可以在UI上提示错误（此处可通过消息或其他方式反馈）
+                // 例如： MessageBox.Show("登录失败，用户名或密码不正确！");
             }
+        }
+
+        /// <summary>
+        /// 登录命令是否可执行的判定逻辑
+        /// </summary>
+        private bool CanExecuteLogin() {
+            // 当用户名和密码都不为空时，命令才可执行
+            return !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password);
         }
     }
 }
