@@ -1,4 +1,5 @@
 ﻿using LYBT.UI.WPF.Services;
+using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels {
     /// <summary>
@@ -44,6 +45,8 @@ namespace LYBT.UI.WPF.ViewModels {
             if (success) {
                 // 登录成功，导航到主内容视图HomeView
                 _regionManager.RequestNavigate("ContentRegion", "HomeView");
+                // 将主窗口切换为最大化显示
+                Application.Current.MainWindow.WindowState = WindowState.Maximized;
             } else {
                 // 登录失败，简单处理：可以在UI上提示错误（此处可通过消息或其他方式反馈）
                 // 例如： MessageBox.Show("登录失败，用户名或密码不正确！");

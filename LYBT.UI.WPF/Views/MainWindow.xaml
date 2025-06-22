@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
         Title="{Binding Title}" Height="350" Width="525"
+        WindowStartupLocation="CenterScreen"
         prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <!-- 定义一个内容区域，供导航视图呈现 -->
