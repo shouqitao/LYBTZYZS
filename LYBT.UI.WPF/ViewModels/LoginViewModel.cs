@@ -1,4 +1,8 @@
-﻿using LYBT.UI.WPF.Services;
+using LYBT.Common.Enums.Users;
+using LYBT.UI.WPF.Services;
+using Prism.Commands;
+using Prism.Mvvm;
+using Prism.Regions;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels {
@@ -44,10 +48,12 @@ namespace LYBT.UI.WPF.ViewModels {
         /// </summary>
         private void ExecuteLogin() {
             // 调用认证服务进行验证（此处为模拟逻辑）
-            bool success = _authService.Login(Username, Password);
-            if (success) {
-                // 登录成功，导航到主内容视图HomeView
-                _regionManager.RequestNavigate("ContentRegion", "HomeView");
+            UserRole? role = _authService.Login(Username, Password);
+            if (role.HasValue) {
+                // 登录成功，携带角色信息导航到主内容视图HomeView
+                var parameters = new NavigationParameters();
+                parameters.Add("UserRole", role.Value);
+                _regionManager.RequestNavigate("ContentRegion", "HomeView", parameters);
                 // 将主窗口切换为最大化显示
                 Application.Current.MainWindow.WindowState = WindowState.Maximized;
             } else {

@@ -1,13 +1,62 @@
-﻿namespace LYBT.UI.WPF.ViewModels {
+using LYBT.Common.Enums.Users;
+using Prism.Commands;
+using Prism.Mvvm;
+using Prism.Regions;
+using System.Collections.ObjectModel;
+using LYBT.UI.WPF.Models;
+
+namespace LYBT.UI.WPF.ViewModels {
 
     /// <summary>
     /// HomeView 对应的视图模型
     /// </summary>
-    public class HomeViewModel : BindableBase {
+    public class HomeViewModel : BindableBase, INavigationAware {
 
-        // 这里可以定义属性和命令以支撑主界面的功能
-        // 当前示例未设置具体逻辑，仅作为导航目标占位
-        public HomeViewModel() {
+        public ObservableCollection<NavigationItem> NavigationItems { get; } = new();
+
+        public DelegateCommand<NavigationItem> NavigateCommand { get; }
+        private readonly IRegionManager _regionManager;
+
+        public HomeViewModel(IRegionManager regionManager) {
+            _regionManager = regionManager;
+            NavigateCommand = new DelegateCommand<NavigationItem>(Navigate);
         }
+
+        private void Navigate(NavigationItem? item) {
+            if (item != null) {
+                _regionManager.RequestNavigate("HomeContentRegion", item.TargetView);
+            }
+        }
+
+        private void LoadNavigation(UserRole role) {
+            NavigationItems.Clear();
+            switch (role) {
+                case UserRole.Admin:
+                    NavigationItems.Add(new NavigationItem("管理员面板", "AdminView"));
+                    break;
+                case UserRole.DiagnosingDoctor:
+                    NavigationItems.Add(new NavigationItem("医生面板", "DiagnosingDoctorView"));
+                    break;
+                case UserRole.TreatmentDoctor:
+                    NavigationItems.Add(new NavigationItem("治疗面板", "TreatmentDoctorView"));
+                    break;
+                case UserRole.PharmacyStaff:
+                    NavigationItems.Add(new NavigationItem("药房面板", "PharmacyStaffView"));
+                    break;
+                case UserRole.RegistrationStaff:
+                    NavigationItems.Add(new NavigationItem("挂号面板", "RegistrationStaffView"));
+                    break;
+            }
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext) {
+            if (navigationContext.Parameters.TryGetValue("UserRole", out UserRole role)) {
+                LoadNavigation(role);
+            }
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext) => true;
+
+        public void OnNavigatedFrom(NavigationContext navigationContext) { }
     }
 }

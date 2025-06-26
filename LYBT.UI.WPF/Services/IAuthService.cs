@@ -1,4 +1,6 @@
-﻿namespace LYBT.UI.WPF.Services {
+using LYBT.Common.Enums.Users;
+
+namespace LYBT.UI.WPF.Services {
 
     /// <summary>
     /// 定义认证服务接口
@@ -6,8 +8,8 @@
     public interface IAuthService {
 
         /// <summary>
-        /// 验证用户名和密码，模拟登录
+        /// 验证用户名和密码，返回对应的用户角色。登录失败返回 null
         /// </summary>
-        bool Login(string userName, string password);
+        UserRole? Login(string userName, string password);
     }
 }
