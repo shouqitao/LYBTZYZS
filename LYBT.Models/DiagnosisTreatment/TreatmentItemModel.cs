@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Models.DiagnosisTreatment {
 
-namespace LYBT.Models.DiagnosisTreatment {
     /// <summary>
     /// 治疗项目实体（如针灸等，一条诊疗可有多个项目）
     /// </summary>
     public class TreatmentItemModel {
+
         /// <summary>
         /// 治疗项目名称（如“针灸”）
         /// </summary>

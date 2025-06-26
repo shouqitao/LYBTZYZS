@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
 
 namespace LYBT.Common.Enums.Logs {
+
     /// <summary>
     /// 操作类型枚举（用于系统日志记录）
     /// </summary>
     public enum LogActionType {
+
         [Description("新增")]
         Create = 0,
 

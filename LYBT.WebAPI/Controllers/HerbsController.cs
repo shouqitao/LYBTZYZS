@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Dtos;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.Module.Herbs.Controllers {
+
     /// <summary>
     /// 药材管理 API 控制器
     /// </summary>

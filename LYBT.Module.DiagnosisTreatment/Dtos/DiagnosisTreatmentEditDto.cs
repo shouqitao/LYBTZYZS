@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
+
     /// <summary>
     /// 编辑诊疗记录 DTO
     /// </summary>
     public class DiagnosisTreatmentEditDto {
+
         [Required(ErrorMessage = "诊疗ID不能为空")]
         public Guid Id { get; set; }
 

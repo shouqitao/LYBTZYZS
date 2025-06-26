@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace LYBT.Common.Enums.Patient {
+
     /// <summary>
     /// 患者状态枚举
     /// </summary>
     public enum PatientStatus {
+
         [Description("激活")]
         Active = 0,
 

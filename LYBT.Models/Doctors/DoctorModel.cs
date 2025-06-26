@@ -1,10 +1,12 @@
 ﻿using LYBT.Common.Enums;
 
 namespace LYBT.Models.Doctors {
+
     /// <summary>
     /// 医生领域实体
     /// </summary>
     public class DoctorModel {
+
         /// <summary>
         /// 医生ID
         /// </summary>
@@ -59,6 +61,7 @@ namespace LYBT.Models.Doctors {
         /// 备注
         /// </summary>
         public string Remark { get; set; } = string.Empty;
+
         public DateTime Birthday { get; set; }
         public string Phone { get; set; } = string.Empty;
 

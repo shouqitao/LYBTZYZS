@@ -1,10 +1,12 @@
 using System.ComponentModel;
 
 namespace LYBT.Common.Enums {
+
     /// <summary>
     /// 诊疗室状态
     /// </summary>
     public enum TreatmentRoomStatus {
+
         /// <summary>空闲</summary>
         [Description("空闲")]
         Idle = 0,

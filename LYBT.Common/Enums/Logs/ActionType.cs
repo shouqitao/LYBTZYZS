@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace LYBT.Common.Enums.Logs {
+
     /// <summary>
     /// 操作类型枚举
     /// </summary>
     public enum ActionType {
+
         /// <summary>
         /// 新增
         /// </summary>

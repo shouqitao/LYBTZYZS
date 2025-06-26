@@ -1,12 +1,13 @@
-﻿using System;
+﻿using LYBT.Common.Enums.Users;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Users.Dtos {
+
     /// <summary>
     /// 编辑用户请求 DTO，用于修改用户资料（带校验注解）
     /// </summary>
     public class UserEditDto {
+
         /// <summary>
         /// 用户唯一标识（主键，Guid 类型，必填）
         /// </summary>

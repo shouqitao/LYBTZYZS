@@ -1,11 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Sync.Dtos {
+
     /// <summary>
     /// 编辑同步任务 DTO
     /// </summary>
     public class SyncTaskEditDto {
+
         /// <summary>同步任务ID</summary>
         [Required(ErrorMessage = "同步任务ID不能为空")]
         public Guid Id { get; set; }

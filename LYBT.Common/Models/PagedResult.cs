@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿namespace LYBT.Common.Models {
 
-namespace LYBT.Common.Models {
     /// <summary>
     /// 分页返回结构
     /// </summary>

@@ -1,11 +1,12 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Users.Dtos {
+
     /// <summary>
     /// 用户修改密码 DTO
     /// </summary>
     public class ChangePasswordDto {
+
         /// <summary>
         /// 用户ID
         /// </summary>

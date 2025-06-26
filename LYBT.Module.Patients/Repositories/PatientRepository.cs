@@ -1,11 +1,12 @@
-﻿using LYBT.Infrastructure;
+﻿using LYBT.Common.Enums.Patient;
+using LYBT.Infrastructure;
 using LYBT.Models.Patient;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Models;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Common.Enums.Patient;
 
 namespace LYBT.Module.Patients.Repositories {
+
     /// <summary>
     /// 病人仓储实现，负责数据库具体操作
     /// </summary>

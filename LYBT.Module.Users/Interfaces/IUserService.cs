@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Common.Enums.Users;
 using LYBT.Module.Users.Dtos;
-using LYBT.Module.Logs.Dtos;
-using LYBT.Common.Enums.Users;
 
 /// <summary>
 /// 用户服务接口，封装业务逻辑（含日志集成）
 /// </summary>
 public interface IUserService {
+
     /// <summary>
     /// 分页/条件查找用户
     /// </summary>
@@ -63,5 +60,4 @@ public interface IUserService {
     /// 获取系统所有角色
     /// </summary>
     List<UserRole> GetRoles();
-
 }

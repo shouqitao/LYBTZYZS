@@ -6,6 +6,7 @@ namespace LYBT.WebAPI.Extensions;
 /// Swagger 扩展方法
 /// </summary>
 public static class SwaggerExtension {
+
     /// <summary>
     /// 添加 Swagger 服务
     /// </summary>

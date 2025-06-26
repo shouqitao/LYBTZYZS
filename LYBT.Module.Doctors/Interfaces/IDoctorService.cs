@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Common.Models;
 using LYBT.Module.Doctors.Dtos;
-using LYBT.Common.Models;
 
 namespace LYBT.Module.Doctors.Interfaces {
+
     /// <summary>
     /// 医生业务服务接口，定义医生的业务操作
     /// </summary>
     public interface IDoctorService {
+
         /// <summary>
         /// 获取医生详情
         /// </summary>

@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Herbs.Dtos {
+
     /// <summary>
     /// 新增药材 DTO
     /// </summary>
     public class HerbCreateDto {
+
         /// <summary>药材名称</summary>
         [Required(ErrorMessage = "药材名称不能为空")]
         public string Name { get; set; } = string.Empty;

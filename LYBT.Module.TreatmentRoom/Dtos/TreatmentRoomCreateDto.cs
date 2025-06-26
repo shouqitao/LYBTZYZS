@@ -1,11 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.TreatmentRoom.Dtos {
+
     /// <summary>
     /// 新增治疗室单 DTO
     /// </summary>
     public class TreatmentRoomCreateDto {
+
         /// <summary>病人ID</summary>
         [Required(ErrorMessage = "病人ID不能为空")]
         public string PatientId { get; set; } = string.Empty;

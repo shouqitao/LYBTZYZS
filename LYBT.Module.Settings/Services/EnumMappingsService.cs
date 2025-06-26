@@ -1,13 +1,11 @@
 using LYBT.Module.Settings.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Settings.Services {
+
     public class EnumMappingsService : IEnumMappingsService {
+
         public Task<Dictionary<string, Dictionary<int, string>>> GetAllAsync() {
             var result = new Dictionary<string, Dictionary<int, string>>();
             var enumTypes = Assembly.Load("LYBT.Common").GetTypes()

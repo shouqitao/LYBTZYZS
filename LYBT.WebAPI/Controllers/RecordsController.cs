@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Module.Records.Dtos;
 using LYBT.Module.Records.Interfaces;
-using LYBT.Module.Records.Dtos;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.Module.Records.Controllers {
+
     /// <summary>
     /// 病历 API 控制器
     /// </summary>

@@ -1,10 +1,12 @@
 using System.ComponentModel;
 
 namespace LYBT.Common.Enums {
+
     /// <summary>
     /// 治疗任务状态
     /// </summary>
     public enum TreatmentTaskStatus {
+
         /// <summary>待执行</summary>
         [Description("待执行")]
         Pending = 0,

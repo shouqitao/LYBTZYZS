@@ -1,14 +1,14 @@
-using System;
-using System.Linq;
-using LYBT.Module.Users.Models;
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Helpers;
+using LYBT.Module.Users.Models;
 
 namespace LYBT.Infrastructure.Helpers {
+
     /// <summary>
     /// Initializes default administrator account if not present.
     /// </summary>
     public static class AdminSeeder {
+
         public static void Seed(AppDbContext context) {
             if (!context.Users.Any(u => u.UserName == "sysadmin")) {
                 var admin = new UserModel {
@@ -35,6 +35,5 @@ namespace LYBT.Infrastructure.Helpers {
                 context.SaveChanges();
             }
         }
-
     }
 }

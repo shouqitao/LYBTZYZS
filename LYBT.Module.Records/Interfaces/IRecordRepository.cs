@@ -1,14 +1,12 @@
-﻿using LYBT.Models; // RecordModel 实体统一存放在 LYBT.Models
-using LYBT.Models.Records;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Models.Records;
 
 namespace LYBT.Module.Records.Interfaces {
+
     /// <summary>
     /// 病历仓储接口，定义病历数据操作方法
     /// </summary>
     public interface IRecordRepository {
+
         /// <summary>
         /// 根据病历ID获取病历记录
         /// </summary>

@@ -1,6 +1,5 @@
-using System;
-
 namespace LYBT.Module.Settings.Dtos {
+
     public class DiagnosisCatalogDto {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;

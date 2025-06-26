@@ -1,4 +1,5 @@
 namespace LYBT.Infrastructure.Auth {
+
     /// <summary>
     /// JWT 配置项
     /// </summary>

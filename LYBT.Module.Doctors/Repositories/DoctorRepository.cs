@@ -1,16 +1,12 @@
-﻿using LYBT.Infrastructure;
-using LYBT.Models;
+﻿using LYBT.Common.Enums;
+using LYBT.Infrastructure;
 using LYBT.Models.Doctors;
-using LYBT.Module.Doctors.Interfaces;
 using LYBT.Module.Doctors.Dtos;
+using LYBT.Module.Doctors.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Common.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Doctors.Repositories {
+
     /// <summary>
     /// 医生仓储实现类，实现医生数据库操作
     /// </summary>
@@ -80,14 +76,16 @@ namespace LYBT.Module.Doctors.Repositories {
 
         public async Task<int> BatchDisableAsync(List<Guid> ids) {
             var list = await _appDbContext.Doctors.Where(d => ids.Contains(d.Id)).ToListAsync();
-            foreach (var d in list) d.Status = DoctorStatus.Inactive;
+            foreach (var d in list)
+                d.Status = DoctorStatus.Inactive;
             _appDbContext.Doctors.UpdateRange(list);
             return await _appDbContext.SaveChangesAsync();
         }
 
         public async Task<int> BatchEnableAsync(List<Guid> ids) {
             var list = await _appDbContext.Doctors.Where(d => ids.Contains(d.Id)).ToListAsync();
-            foreach (var d in list) d.Status = DoctorStatus.Active;
+            foreach (var d in list)
+                d.Status = DoctorStatus.Active;
             _appDbContext.Doctors.UpdateRange(list);
             return await _appDbContext.SaveChangesAsync();
         }

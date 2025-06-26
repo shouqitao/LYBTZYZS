@@ -2,14 +2,12 @@ using LYBT.Infrastructure;
 using LYBT.Models.Settings;
 using LYBT.Module.Settings.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Settings.Repositories {
+
     public class DiagnosisCatalogRepository : IDiagnosisCatalogRepository {
         private readonly AppDbContext _db;
+
         public DiagnosisCatalogRepository(AppDbContext db) {
             _db = db;
         }
@@ -30,7 +28,8 @@ namespace LYBT.Module.Settings.Repositories {
 
         public async Task<bool> DeleteAsync(Guid id) {
             var entity = await _db.Set<DiagnosisCatalogModel>().FindAsync(id);
-            if (entity == null) return false;
+            if (entity == null)
+                return false;
             _db.Remove(entity);
             return await _db.SaveChangesAsync() > 0;
         }

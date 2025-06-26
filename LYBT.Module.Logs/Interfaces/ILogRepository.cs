@@ -1,14 +1,13 @@
 using LYBT.Models.Logs;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using LYBT.Module.Logs.Dtos;
 
 namespace LYBT.Module.Logs.Interfaces {
+
     /// <summary>
     /// 日志仓储接口，负责操作日志的数据持久化
     /// </summary>
     public interface ILogRepository {
+
         /// <summary>
         /// 新增操作日志（写入数据库）
         /// </summary>

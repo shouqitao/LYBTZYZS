@@ -1,15 +1,13 @@
-﻿using LYBT.Models; // PharmacyModel 统一存放在 LYBT.Models
+﻿using LYBT.Common.Enums;
 using LYBT.Models.Pharmacy;
-using LYBT.Common.Enums;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Pharmacy.Interfaces {
+
     /// <summary>
     /// 药房仓储接口，定义数据操作方法
     /// </summary>
     public interface IPharmacyRepository {
+
         /// <summary>
         /// 根据药房单ID获取药房记录
         /// </summary>

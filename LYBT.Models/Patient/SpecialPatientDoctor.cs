@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Models.Patient {
+
     /// <summary>
     /// 特殊患者-授权医生关系表
     /// </summary>
     public class SpecialPatientDoctor {
+
         /// <summary>
         /// 主键ID
         /// </summary>

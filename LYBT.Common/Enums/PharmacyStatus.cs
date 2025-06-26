@@ -4,6 +4,7 @@
     /// 药房处方状态枚举
     /// </summary>
     public enum PharmacyStatus {
+
         /// <summary>待抓药</summary>
         Waiting = 0,
 

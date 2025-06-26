@@ -1,11 +1,12 @@
-using System;
 using LYBT.Common.Enums;
 
 namespace LYBT.Models {
+
     /// <summary>
     /// 数据同步日志实体
     /// </summary>
     public class SyncLogModel {
+
         /// <summary>同步日志ID</summary>
         public string Id { get; set; } = Guid.NewGuid().ToString();
 

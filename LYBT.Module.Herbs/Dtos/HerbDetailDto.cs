@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Module.Herbs.Dtos {
 
-namespace LYBT.Module.Herbs.Dtos {
     /// <summary>
     /// 药材详情 DTO
     /// </summary>
     public class HerbDetailDto {
+
         /// <summary>药材ID</summary>
         public Guid Id { get; set; }
 

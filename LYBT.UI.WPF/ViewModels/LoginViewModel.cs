@@ -2,17 +2,20 @@
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels {
+
     /// <summary>
     /// LoginView 对应的视图模型，处理登录逻辑
     /// </summary>
     public class LoginViewModel : BindableBase {
         private string _username;
+
         public string Username {
             get => _username;
             set => SetProperty(ref _username, value);
         }
 
         private string _password;
+
         public string Password {
             get => _password;
             set => SetProperty(ref _password, value);

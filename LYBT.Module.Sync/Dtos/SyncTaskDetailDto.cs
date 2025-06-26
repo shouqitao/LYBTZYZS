@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Module.Sync.Dtos {
 
-namespace LYBT.Module.Sync.Dtos {
     /// <summary>
     /// 同步任务详情 DTO
     /// </summary>
     public class SyncTaskDetailDto {
+
         /// <summary>同步任务ID</summary>
         public Guid Id { get; set; }
 

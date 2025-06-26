@@ -2,13 +2,13 @@ using AutoMapper;
 using LYBT.Models.Settings;
 using LYBT.Module.Settings.Dtos;
 using LYBT.Module.Settings.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Settings.Services {
+
     public class GlobalSettingsService : IGlobalSettingsService {
         private readonly IGlobalSettingsRepository _repo;
         private readonly IMapper _mapper;
+
         public GlobalSettingsService(IGlobalSettingsRepository repo, IMapper mapper) {
             _repo = repo;
             _mapper = mapper;

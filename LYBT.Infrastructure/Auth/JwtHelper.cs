@@ -4,10 +4,12 @@ using System.Security.Claims;
 using System.Text;
 
 namespace LYBT.Infrastructure.Auth {
+
     /// <summary>
     /// JWT工具类：生成Token
     /// </summary>
     public static class JwtHelper {
+
         public static string GenerateToken(string userId, string userName, JwtOptions options) {
             var claims = new[] {
                 new Claim(JwtRegisteredClaimNames.Sub, userId),

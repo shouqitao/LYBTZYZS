@@ -1,11 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Pharmacy.Dtos {
+
     /// <summary>
     /// 新增药房单 DTO
     /// </summary>
     public class PharmacyCreateDto {
+
         /// <summary>处方ID</summary>
         [Required(ErrorMessage = "处方ID不能为空")]
         public Guid PrescriptionId { get; set; }

@@ -1,11 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Settings.Dtos {
+
     /// <summary>
     /// 编辑设置项 DTO
     /// </summary>
     public class SettingsEditDto {
+
         /// <summary>设置项ID</summary>
         [Required(ErrorMessage = "ID不能为空")]
         public Guid Id { get; set; }

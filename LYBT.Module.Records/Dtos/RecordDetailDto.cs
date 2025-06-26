@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using LYBT.Models;
+﻿using LYBT.Models;
 using LYBT.Models.DiagnosisTreatment;
 
 namespace LYBT.Module.Records.Dtos {
+
     /// <summary>
     /// 病历详情 DTO
     /// </summary>
     public class RecordDetailDto {
+
         /// <summary>病历ID</summary>
         public Guid Id { get; set; }
 

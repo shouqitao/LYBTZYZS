@@ -1,12 +1,13 @@
-using System;
-using System.ComponentModel.DataAnnotations;
 using LYBT.Common.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Sync.Dtos {
+
     /// <summary>
     /// 新增同步日志 DTO
     /// </summary>
     public class SyncLogCreateDto {
+
         /// <summary>同步模式</summary>
         [Required(ErrorMessage = "同步模式不能为空")]
         public SyncMode Mode { get; set; } = SyncMode.Auto;

@@ -1,11 +1,9 @@
 ﻿using LYBT.Module.Pharmacy.Dtos;
 using LYBT.Module.Pharmacy.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Pharmacy.Controllers {
+
     /// <summary>
     /// 药房 API 控制器
     /// </summary>

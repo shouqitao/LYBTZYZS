@@ -1,13 +1,12 @@
 ﻿using LYBT.Module.Herbs.Dtos;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
+
     /// <summary>
     /// 药方 DTO（治疗方），含药材明细
     /// </summary>
     public class FormulaDto {
+
         /// <summary>药方名称</summary>
         public string Name { get; set; } = string.Empty;
 
@@ -21,5 +20,4 @@ namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
     /// <summary>
     /// 单味药材明细 DTO（引用 LYBT.Module.Herbs.Models.Dtos）
     /// </summary>
-
 }

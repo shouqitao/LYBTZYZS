@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
-using LYBT.Models;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Module.TreatmentRoom.Dtos;
 using LYBT.Module.TreatmentRoom.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.TreatmentRoom.Services {
+
     /// <summary>
     /// 治疗室业务服务实现类，封装治疗室相关业务逻辑
     /// </summary>

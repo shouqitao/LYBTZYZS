@@ -1,14 +1,12 @@
-﻿using LYBT.Models;
-using LYBT.Models.Registration;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Models.Registration;
 
 namespace LYBT.Module.Registration.Interfaces {
+
     /// <summary>
     /// 挂号仓储接口，定义挂号数据操作
     /// </summary>
     public interface IRegistrationRepository {
+
         /// <summary>
         /// 根据ID获取挂号详情
         /// </summary>

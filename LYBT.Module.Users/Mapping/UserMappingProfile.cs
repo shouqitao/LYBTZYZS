@@ -1,14 +1,15 @@
 using AutoMapper;
-using System.Collections.Generic;
 using LYBT.Common.Enums.Users;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
 
 namespace LYBT.Module.Users.Mapping {
+
     /// <summary>
     /// 用户实体与DTO映射配置（AutoMapper用）
     /// </summary>
     public class UserMappingProfile : Profile {
+
         public UserMappingProfile() {
             // 用户实体转DTO
             CreateMap<UserModel, UserDto>()

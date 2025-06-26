@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
 
 namespace LYBT.Common.Enums.Users {
+
     /// <summary>
     /// 用户账号状态
     /// </summary>
     public enum UserStatus {
+
         /// <summary>
         /// 正常
         /// </summary>
@@ -18,4 +20,3 @@ namespace LYBT.Common.Enums.Users {
         Disabled = 1
     }
 }
-

@@ -1,11 +1,9 @@
 ﻿using LYBT.Module.TreatmentRoom.Dtos;
 using LYBT.Module.TreatmentRoom.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.TreatmentRoom.Controllers {
+
     /// <summary>
     /// 治疗室 API 控制器
     /// </summary>

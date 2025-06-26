@@ -1,13 +1,12 @@
 ﻿using LYBT.Models.DiagnosisTreatment;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.DiagnosisTreatment.Interfaces {
+
     /// <summary>
     /// 诊疗仓储接口，定义数据操作
     /// </summary>
     public interface IDiagnosisTreatmentRepository {
+
         /// <summary>
         /// 根据ID获取诊疗详情
         /// </summary>

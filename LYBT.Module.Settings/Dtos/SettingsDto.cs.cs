@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Module.Settings.Dtos {
 
-namespace LYBT.Module.Settings.Dtos {
     /// <summary>
     /// 设置项列表 DTO（简要信息）
     /// </summary>
     public class SettingsDto {
+
         /// <summary>设置项ID</summary>
         public Guid Id { get; set; }
 

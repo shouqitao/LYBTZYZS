@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.DiagnosisTreatment.Models.Dtos;
+﻿using LYBT.Module.DiagnosisTreatment.Models.Dtos;
 
 namespace LYBT.Module.DiagnosisTreatment.Interfaces {
+
     /// <summary>
     /// 诊疗业务服务接口，定义诊疗相关业务操作
     /// </summary>
     public interface IDiagnosisTreatmentService {
+
         /// <summary>
         /// 获取诊疗详情
         /// </summary>

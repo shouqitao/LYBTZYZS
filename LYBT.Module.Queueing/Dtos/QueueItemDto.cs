@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Module.Queueing.Dtos {
 
-namespace LYBT.Module.Queueing.Dtos {
     /// <summary>
     /// 排队列表 DTO
     /// </summary>
     public class QueueingDto {
+
         /// <summary>排队ID</summary>
         public Guid Id { get; set; }
 

@@ -1,11 +1,12 @@
-﻿using System;
-using LYBT.Common.Enums.Users;
+﻿using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Users.Dtos {
+
     /// <summary>
     /// 用户分页与条件查询 DTO
     /// </summary>
     public class UserQueryDto {
+
         /// <summary>
         /// 关键词（支持用户名或真实姓名模糊查询）
         /// </summary>

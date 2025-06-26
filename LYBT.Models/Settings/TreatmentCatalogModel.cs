@@ -1,6 +1,5 @@
-using System;
-
 namespace LYBT.Models.Settings {
+
     /// <summary>
     /// 治疗项目目录项
     /// </summary>

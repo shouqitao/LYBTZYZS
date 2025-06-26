@@ -1,16 +1,14 @@
-using System;
-using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Module.Auth.Dtos;
-using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Users.Dtos;
-using LYBT.Module.Users.Models;
-using LYBT.Module.Logs.Interfaces;
-using LYBT.Module.Logs.Dtos;
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Helpers;
+using LYBT.Module.Auth.Dtos;
+using LYBT.Module.Auth.Interfaces;
+using LYBT.Module.Logs.Dtos;
+using LYBT.Module.Logs.Interfaces;
+using LYBT.Module.Users.Dtos;
 
 namespace LYBT.Module.Auth.Services {
+
     /// <summary>
     /// 登录验证服务实现
     /// </summary>
@@ -90,6 +88,5 @@ namespace LYBT.Module.Auth.Services {
             });
             return true;
         }
-
     }
 }

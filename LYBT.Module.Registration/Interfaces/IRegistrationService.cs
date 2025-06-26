@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Registration.Dtos;
+﻿using LYBT.Module.Registration.Dtos;
 
 namespace LYBT.Module.Registration.Interfaces {
+
     /// <summary>
     /// 挂号业务服务接口
     /// </summary>
     public interface IRegistrationService {
+
         /// <summary>
         /// 获取挂号详情
         /// </summary>

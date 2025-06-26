@@ -2,12 +2,13 @@
 using LYBT.Common.Enums.Patient;
 using System.ComponentModel.DataAnnotations;
 
-
 namespace LYBT.Module.Patients.Models {
+
     /// <summary>
     /// 患者信息实体
     /// </summary>
     public class PatientModel {
+
         /// <summary>
         /// 主键ID
         /// </summary>
@@ -18,7 +19,7 @@ namespace LYBT.Module.Patients.Models {
         /// 姓名
         /// </summary>
         [Required, MaxLength(64)]
-        public required string Name { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// 性别
@@ -35,19 +36,19 @@ namespace LYBT.Module.Patients.Models {
         /// 手机号，唯一
         /// </summary>
         [Required, MaxLength(20)]
-        public required string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
 
         /// <summary>
         /// 身份证号，唯一
         /// </summary>
         [Required, MaxLength(32)]
-        public required string IDNumber { get; set; }
+        public string IDNumber { get; set; }
 
         /// <summary>
         /// 家庭住址
         /// </summary>
         [MaxLength(256)]
-        public required string Address { get; set; }
+        public string Address { get; set; }
 
         /// <summary>
         /// 状态（激活/禁用）
@@ -83,8 +84,7 @@ namespace LYBT.Module.Patients.Models {
         /// </summary>
         [Required]
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
         public string PinyinCode { get; set; }
     }
 }
-
-

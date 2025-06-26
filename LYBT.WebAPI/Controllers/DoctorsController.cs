@@ -1,12 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
-using LYBT.Module.Doctors.Interfaces;
-using LYBT.Module.Doctors.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using LYBT.Common.Models;
+using LYBT.Module.Doctors.Dtos;
+using LYBT.Module.Doctors.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers {
+
     /// <summary>
     /// 医生管理接口
     /// </summary>
@@ -14,6 +12,7 @@ namespace LYBT.WebAPI.Controllers {
     [Route("api/[controller]")]
     public class DoctorsController : ControllerBase {
         private readonly IDoctorService _doctorService;
+
         public DoctorsController(IDoctorService doctorService) {
             _doctorService = doctorService;
         }

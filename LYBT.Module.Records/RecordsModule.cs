@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using LYBT.Module.Records.Interfaces;
+﻿using LYBT.Module.Records.Interfaces;
 using LYBT.Module.Records.Repositories;
 using LYBT.Module.Records.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Records {
+
     /// <summary>
     /// 病历模块服务注册入口
     /// </summary>
     public static class RecordsModule {
+
         /// <summary>
         /// 注册病历相关依赖服务
         /// </summary>

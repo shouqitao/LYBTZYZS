@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LYBT.Infrastructure;
+﻿using LYBT.Infrastructure;
 using LYBT.Models;
 using LYBT.Module.Sync.Interfaces;
 
 namespace LYBT.Module.Sync.Repositories {
+
     /// <summary>
     /// 数据同步仓储实现类，支持同步任务与同步日志数据库操作
     /// </summary>

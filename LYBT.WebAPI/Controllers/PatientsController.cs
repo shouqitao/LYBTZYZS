@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Patients.Interfaces;
-using LYBT.Common.Models;
+﻿using LYBT.Common.Models;
 using LYBT.Module.Patients.Dtos;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Records.Dtos;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers {
+
     /// <summary>
     /// 病人管理API接口
     /// </summary>

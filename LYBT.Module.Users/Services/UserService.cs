@@ -1,10 +1,10 @@
-﻿using LYBT.Common.Enums.Users;
-using LYBT.Common.Enums.Logs;
+﻿using LYBT.Common.Enums.Logs;
+using LYBT.Common.Enums.Users;
+using LYBT.Common.Helpers;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
-using LYBT.Common.Helpers;
 
 /// <summary>
 /// 用户服务实现类（集成日志模块）
@@ -72,7 +72,6 @@ public class UserService : IUserService {
             CreatedTime = DateTime.Now,
 
             PasswordHash = PasswordHelper.Hash(dto.Password)
-
         };
         var result = await _userRepository.AddAsync(user);
 
@@ -199,7 +198,6 @@ public class UserService : IUserService {
         return count;
     }
 
-
     /// <summary>
     /// 管理员重置密码
     /// </summary>
@@ -241,5 +239,4 @@ public class UserService : IUserService {
     public List<UserRole> GetRoles() {
         return Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToList();
     }
-
 }

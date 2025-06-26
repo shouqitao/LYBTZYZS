@@ -1,11 +1,12 @@
-﻿using System;
-using LYBT.Common.Enums;
+﻿using LYBT.Common.Enums;
 
 namespace LYBT.Module.Billing.Dtos {
+
     /// <summary>
     /// 账单列表 DTO
     /// </summary>
     public class BillingDto {
+
         /// <summary>账单ID</summary>
         public Guid Id { get; set; }
 

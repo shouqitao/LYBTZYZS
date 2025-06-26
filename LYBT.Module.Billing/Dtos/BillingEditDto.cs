@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using LYBT.Common.Enums;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Common.Enums;
 
 namespace LYBT.Module.Billing.Dtos {
+
     /// <summary>
     /// 编辑账单 DTO
     /// </summary>
     public class BillingEditDto {
+
         /// <summary>账单ID</summary>
         [Required(ErrorMessage = "账单ID不能为空")]
         public Guid Id { get; set; }

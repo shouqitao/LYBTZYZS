@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.TreatmentRoom.Dtos;
+﻿using LYBT.Module.TreatmentRoom.Dtos;
 
 namespace LYBT.Module.TreatmentRoom.Interfaces {
+
     /// <summary>
     /// 治疗室业务服务接口
     /// </summary>
     public interface ITreatmentRoomService {
+
         /// <summary>
         /// 根据ID获取治疗室详情
         /// </summary>

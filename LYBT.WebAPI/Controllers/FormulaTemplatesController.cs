@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.Module.FormulaTemplates.Interfaces;
-using LYBT.Module.FormulaTemplates.Dtos;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.Module.FormulaTemplates.Controllers {
+
     /// <summary>
     /// 经验方模板 API 控制器
     /// </summary>

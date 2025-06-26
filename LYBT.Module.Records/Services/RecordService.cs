@@ -1,17 +1,14 @@
 ﻿using AutoMapper;
-using LYBT.Models;
+using LYBT.Common.Enums.Logs;
 using LYBT.Models.Records;
+using LYBT.Module.Logs.Dtos;
+using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Records.Dtos;
 using LYBT.Module.Records.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Logs.Interfaces;
-using LYBT.Module.Logs.Dtos;
-using LYBT.Common.Enums.Logs;
 using System.Text.Json;
 
 namespace LYBT.Module.Records.Services {
+
     /// <summary>
     /// 病历业务服务实现类，封装病历相关业务逻辑
     /// </summary>

@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using LYBT.Module.Pharmacy.Interfaces;
+﻿using LYBT.Module.Pharmacy.Interfaces;
 using LYBT.Module.Pharmacy.Repositories;
 using LYBT.Module.Pharmacy.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Pharmacy {
+
     /// <summary>
     /// 药房模块服务注册入口
     /// </summary>
     public static class PharmacyModule {
+
         /// <summary>
         /// 注册药房相关依赖服务
         /// </summary>

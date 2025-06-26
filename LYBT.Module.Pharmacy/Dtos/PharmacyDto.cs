@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Module.Pharmacy.Dtos {
 
-namespace LYBT.Module.Pharmacy.Dtos {
     /// <summary>
     /// 药房单列表 DTO
     /// </summary>
     public class PharmacyDto {
+
         /// <summary>药房单ID</summary>
         public Guid Id { get; set; }
 

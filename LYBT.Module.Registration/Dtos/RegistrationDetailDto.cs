@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Module.Registration.Dtos {
 
-namespace LYBT.Module.Registration.Dtos {
     /// <summary>
     /// 挂号详情 DTO
     /// </summary>
     public class RegistrationDetailDto {
+
         /// <summary>挂号ID</summary>
         public Guid Id { get; set; }
 

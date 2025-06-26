@@ -5,10 +5,12 @@ using LYBT.Module.DiagnosisTreatment.Models.Dtos;
 using LYBT.Module.Herbs.Dtos;
 
 namespace LYBT.Module.DiagnosisTreatment.Mapping {
+
     /// <summary>
     /// 诊疗相关实体与DTO的AutoMapper配置
     /// </summary>
     public class DiagnosisTreatmentMappingProfile : Profile {
+
         public DiagnosisTreatmentMappingProfile() {
             // 诊疗主表
             CreateMap<DiagnosisTreatmentModel, DiagnosisTreatmentDto>().ReverseMap();

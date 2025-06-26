@@ -1,15 +1,13 @@
-﻿using LYBT.Models;
-using LYBT.Models.Doctors;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
 
 namespace LYBT.Module.Doctors.Interfaces {
+
     /// <summary>
     /// 医生仓储接口，定义医生数据操作
     /// </summary>
     public interface IDoctorRepository {
+
         /// <summary>
         /// 获取医生详情
         /// </summary>

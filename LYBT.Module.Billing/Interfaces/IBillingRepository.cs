@@ -1,14 +1,12 @@
-﻿using LYBT.Models; // BillingModel 实体统一存放在 LYBT.Models
-using LYBT.Models.Billing;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Models.Billing;
 
 namespace LYBT.Module.Billing.Interfaces {
+
     /// <summary>
     /// 费用结算仓储接口，定义所有数据操作方法
     /// </summary>
     public interface IBillingRepository {
+
         /// <summary>
         /// 根据费用单ID获取费用结算记录
         /// </summary>

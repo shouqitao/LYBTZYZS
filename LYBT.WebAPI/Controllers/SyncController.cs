@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Sync.Interfaces;
-using LYBT.Module.Sync.Dtos;
+﻿using LYBT.Common.Enums;
 using LYBT.Module.Settings.Interfaces;
-using LYBT.Common.Enums;
+using LYBT.Module.Sync.Dtos;
+using LYBT.Module.Sync.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.Module.Sync.Controllers {
+
     /// <summary>
     /// 数据同步任务与日志 API 控制器
     /// </summary>
@@ -92,7 +90,8 @@ namespace LYBT.Module.Sync.Controllers {
         [HttpPost("manual-sync")]
         public async Task<ActionResult> ManualSync() {
             var result = await _syncService.TriggerManualSyncAsync();
-            if (!result) return BadRequest();
+            if (!result)
+                return BadRequest();
             return Ok();
         }
 
@@ -113,7 +112,8 @@ namespace LYBT.Module.Sync.Controllers {
             var settings = await _settingsService.GetAsync() ?? new Settings.Dtos.GlobalSettingsDto();
             settings.SyncMode = mode;
             var result = await _settingsService.SaveAsync(settings);
-            if (!result) return BadRequest();
+            if (!result)
+                return BadRequest();
             return Ok();
         }
 

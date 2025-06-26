@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 
 namespace LYBT.Common.Helpers {
+
     /// <summary>
     /// Provides password hashing utilities using ASP.NET Core Identity.
     /// </summary>

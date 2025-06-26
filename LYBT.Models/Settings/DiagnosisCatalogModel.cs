@@ -1,6 +1,5 @@
-using System;
-
 namespace LYBT.Models.Settings {
+
     /// <summary>
     /// 诊断目录项
     /// </summary>

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Models;
+﻿using LYBT.Models;
 
 namespace LYBT.Module.Sync.Interfaces {
+
     /// <summary>
     /// 数据同步仓储接口，定义同步任务与同步日志相关数据库操作
     /// </summary>

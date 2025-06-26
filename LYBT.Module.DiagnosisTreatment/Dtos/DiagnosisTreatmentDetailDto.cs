@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
 
-namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
     /// <summary>
     /// 诊疗详情 DTO
     /// </summary>
     public class DiagnosisTreatmentDetailDto {
+
         /// <summary>诊疗ID</summary>
         public Guid Id { get; set; }
 

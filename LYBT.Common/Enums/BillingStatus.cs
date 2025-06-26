@@ -1,10 +1,12 @@
 using System.ComponentModel;
 
 namespace LYBT.Common.Enums {
+
     /// <summary>
     /// 结算状态枚举
     /// </summary>
     public enum BillingStatus {
+
         /// <summary>待支付</summary>
         [Description("待支付")]
         Pending = 0,

@@ -1,13 +1,9 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models;
 using LYBT.Models.DiagnosisTreatment;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.DiagnosisTreatment.Repositories {
+
     /// <summary>
     /// 诊疗仓储实现类，实现诊疗相关数据库操作
     /// </summary>

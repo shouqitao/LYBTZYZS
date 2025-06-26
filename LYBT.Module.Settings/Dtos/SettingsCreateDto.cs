@@ -1,11 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Settings.Dtos {
+
     /// <summary>
     /// 新增设置项 DTO
     /// </summary>
     public class SettingsCreateDto {
+
         /// <summary>设置项键名</summary>
         [Required(ErrorMessage = "键名不能为空")]
         public string Key { get; set; } = string.Empty;

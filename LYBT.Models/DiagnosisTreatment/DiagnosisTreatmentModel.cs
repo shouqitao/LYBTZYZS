@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace LYBT.Models.DiagnosisTreatment {
 
-namespace LYBT.Models.DiagnosisTreatment {
     /// <summary>
     /// 诊疗主表实体
     /// </summary>
     public class DiagnosisTreatmentModel {
+
         /// <summary>
         /// 诊疗ID（主键）
         /// </summary>

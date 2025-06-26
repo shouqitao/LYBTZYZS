@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using LYBT.Common.Enums;
+﻿using LYBT.Common.Enums;
 
 namespace LYBT.Models.Billing {
+
     /// <summary>
     /// 账单主表实体
     /// </summary>
     public class BillingModel {
+
         /// <summary>
         /// 主键ID
         /// </summary>
@@ -102,6 +102,7 @@ namespace LYBT.Models.Billing {
     /// 账单明细实体（可单独为表，也可作为 Json 字段保存）
     /// </summary>
     public class BillingItem {
+
         /// <summary>
         /// 明细主键ID（如不用单独建表可省略）
         /// </summary>

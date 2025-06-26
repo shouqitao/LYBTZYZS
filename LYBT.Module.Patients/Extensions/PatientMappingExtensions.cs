@@ -1,12 +1,13 @@
-﻿using LYBT.Models.Patient;
-using LYBT.Module.Patients.Dtos;
+﻿using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Models;
 
 namespace LYBT.Module.Patients.Extensions {
+
     /// <summary>
     /// 病人模型与 DTO 映射扩展方法（用于模型转换）
     /// </summary>
     public static class PatientMappingExtensions {
+
         /// <summary>
         /// 将 PatientModel 转换为 PatientEditDto（用于编辑页面）
         /// </summary>

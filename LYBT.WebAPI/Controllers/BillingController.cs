@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Module.Billing.Dtos;
 using LYBT.Module.Billing.Interfaces;
-using LYBT.Module.Billing.Dtos;
-using LYBT.Common.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.Module.Billing.Controllers {
+
     /// <summary>
     /// 费用结算 API 控制器
     /// </summary>
@@ -86,42 +83,48 @@ namespace LYBT.Module.Billing.Controllers {
         [HttpPost("mark-paid/{id}")]
         public async Task<ActionResult> MarkAsPaid(Guid id) {
             var success = await _billingService.MarkAsPaidAsync(id);
-            if (!success) return NotFound();
+            if (!success)
+                return NotFound();
             return Ok();
         }
 
         [HttpPost("complete/{id}")]
         public async Task<ActionResult> MarkAsCompleted(Guid id) {
             var success = await _billingService.MarkAsCompletedAsync(id);
-            if (!success) return NotFound();
+            if (!success)
+                return NotFound();
             return Ok();
         }
 
         [HttpPost("request-refund/{id}")]
         public async Task<ActionResult> RequestRefund(Guid id, [FromBody] string reason) {
             var success = await _billingService.RequestRefundAsync(id, reason);
-            if (!success) return NotFound();
+            if (!success)
+                return NotFound();
             return Ok();
         }
 
         [HttpPost("approve-refund/{id}")]
         public async Task<ActionResult> ApproveRefund(Guid id) {
             var success = await _billingService.ApproveRefundAsync(id);
-            if (!success) return NotFound();
+            if (!success)
+                return NotFound();
             return Ok();
         }
 
         [HttpPost("reject-refund/{id}")]
         public async Task<ActionResult> RejectRefund(Guid id) {
             var success = await _billingService.RejectRefundAsync(id);
-            if (!success) return NotFound();
+            if (!success)
+                return NotFound();
             return Ok();
         }
 
         [HttpPost("cancel/{id}")]
         public async Task<ActionResult> Cancel(Guid id) {
             var success = await _billingService.CancelAsync(id);
-            if (!success) return NotFound();
+            if (!success)
+                return NotFound();
             return Ok();
         }
 
@@ -131,7 +134,7 @@ namespace LYBT.Module.Billing.Controllers {
             return Ok(list);
         }
 
-        [HttpGet("search")] 
+        [HttpGet("search")]
         public async Task<ActionResult<List<BillingDto>>> Search(string keyword) {
             var list = await _billingService.SearchAsync(keyword);
             return Ok(list);

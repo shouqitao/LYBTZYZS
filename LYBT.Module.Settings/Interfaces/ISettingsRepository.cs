@@ -1,14 +1,12 @@
-﻿using LYBT.Models; // SettingsModel 实体统一存放在 LYBT.Models
-using LYBT.Models.Settings;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Models.Settings;
 
 namespace LYBT.Module.Settings.Interfaces {
+
     /// <summary>
     /// 系统设置仓储接口，定义数据操作方法
     /// </summary>
     public interface ISettingsRepository {
+
         /// <summary>
         /// 根据设置项ID获取设置
         /// </summary>

@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
-using LYBT.Models;
-using LYBT.Module.Queueing.Interfaces;
-using LYBT.Models.Queueing;
+﻿using AutoMapper;
 using LYBT.Common.Enums;
+using LYBT.Models.Queueing;
 using LYBT.Module.Queueing.Dtos;
+using LYBT.Module.Queueing.Interfaces;
 
 namespace LYBT.Module.Queueing.Services {
+
     /// <summary>
     /// 排队业务服务实现类
     /// </summary>

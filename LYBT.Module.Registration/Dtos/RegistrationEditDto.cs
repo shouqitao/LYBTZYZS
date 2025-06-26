@@ -1,12 +1,13 @@
 ﻿using LYBT.Common.Enums;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Registration.Dtos {
+
     /// <summary>
     /// 编辑挂号 DTO
     /// </summary>
     public class RegistrationEditDto {
+
         /// <summary>挂号ID</summary>
         [Required(ErrorMessage = "挂号ID不能为空")]
         public Guid Id { get; set; }

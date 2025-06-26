@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Sync.Dtos;
+﻿using LYBT.Module.Sync.Dtos;
 
 namespace LYBT.Module.Sync.Interfaces {
+
     /// <summary>
     /// 数据同步业务服务接口，定义同步任务和日志的业务操作
     /// </summary>

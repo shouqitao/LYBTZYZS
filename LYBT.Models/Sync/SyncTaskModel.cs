@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Models {
 
-namespace LYBT.Models {
     /// <summary>
     /// 数据同步任务实体（用于计划、自动或手动同步任务记录）
     /// </summary>
     public class SyncTaskModel {
+
         /// <summary>同步任务ID</summary>
         public Guid Id { get; set; }
 

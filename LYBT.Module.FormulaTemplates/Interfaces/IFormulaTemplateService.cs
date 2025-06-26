@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.FormulaTemplates.Dtos;
+﻿using LYBT.Module.FormulaTemplates.Dtos;
 
 namespace LYBT.Module.FormulaTemplates.Interfaces {
+
     /// <summary>
     /// 经验方模板业务服务接口
     /// </summary>
     public interface IFormulaTemplateService {
+
         /// <summary>
         /// 根据ID获取模板详情
         /// </summary>

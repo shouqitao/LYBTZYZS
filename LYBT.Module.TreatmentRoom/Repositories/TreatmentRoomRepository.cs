@@ -1,13 +1,9 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Module.TreatmentRoom.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.TreatmentRoom.Repositories {
+
     /// <summary>
     /// 治疗室仓储实现类，封装数据库操作
     /// </summary>

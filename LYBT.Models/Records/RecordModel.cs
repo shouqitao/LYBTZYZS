@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using LYBT.Models.DiagnosisTreatment;
+﻿using LYBT.Models.DiagnosisTreatment;
 
 namespace LYBT.Models.Records {
+
     /// <summary>
     /// 病历实体模型
     /// </summary>
     public class RecordModel {
+
         /// <summary>记录ID</summary>
         public Guid RecordId { get; set; }
 
@@ -71,4 +71,3 @@ namespace LYBT.Models.Records {
         public DateTime CreatedTime { get; set; } = DateTime.Now;
     }
 }
-

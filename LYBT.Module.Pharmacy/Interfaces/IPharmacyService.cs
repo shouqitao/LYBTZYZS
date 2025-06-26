@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Pharmacy.Dtos;
+﻿using LYBT.Module.Pharmacy.Dtos;
 
 namespace LYBT.Module.Pharmacy.Interfaces {
+
     /// <summary>
     /// 药房业务服务接口
     /// </summary>
     public interface IPharmacyService {
+
         /// <summary>
         /// 根据ID获取药房单详情
         /// </summary>

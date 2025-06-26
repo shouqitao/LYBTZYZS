@@ -1,11 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Doctors.Dtos {
+
     /// <summary>
     /// 新增医生 DTO
     /// </summary>
     public class DoctorCreateDto {
+
         /// <summary>医生姓名</summary>
         [Required(ErrorMessage = "姓名不能为空")]
         public string Name { get; set; } = string.Empty;

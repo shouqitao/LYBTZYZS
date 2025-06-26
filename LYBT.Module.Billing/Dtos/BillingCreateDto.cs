@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using LYBT.Common.Enums;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Common.Enums;
 
 namespace LYBT.Module.Billing.Dtos {
+
     /// <summary>
     /// 新增账单 DTO
     /// </summary>
     public class BillingCreateDto {
+
         /// <summary>病人ID</summary>
         [Required(ErrorMessage = "病人ID不能为空")]
         public Guid PatientId { get; set; }
@@ -48,6 +48,7 @@ namespace LYBT.Module.Billing.Dtos {
     /// 账单明细 DTO
     /// </summary>
     public class BillingItemDto {
+
         /// <summary>项目名称</summary>
         public string Name { get; set; } = string.Empty;
 

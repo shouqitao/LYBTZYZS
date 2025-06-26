@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Settings.Dtos;
+﻿using LYBT.Module.Settings.Dtos;
 
 namespace LYBT.Module.Settings.Interfaces {
+
     /// <summary>
     /// 系统设置业务服务接口
     /// </summary>
     public interface ISettingsService {
+
         /// <summary>
         /// 根据ID获取设置项详情
         /// </summary>

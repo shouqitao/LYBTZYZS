@@ -1,10 +1,10 @@
-using System;
-
 namespace LYBT.Models.TreatmentRoom {
+
     /// <summary>
     /// 治疗室任务记录
     /// </summary>
     public class TreatmentRoomModel {
+
         /// <summary>主键ID</summary>
         public Guid Id { get; set; }
 

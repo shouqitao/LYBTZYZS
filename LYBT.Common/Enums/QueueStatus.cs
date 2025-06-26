@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
 
 namespace LYBT.Common.Enums {
+
     /// <summary>
     /// 排队状态枚举，带中文描述
     /// </summary>
     public enum QueueStatus {
+
         [Description("等待叫号")]
         Waiting = 0,
 

@@ -1,14 +1,10 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models;
 using LYBT.Models.Records;
 using LYBT.Module.Records.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Records.Repositories {
+
     /// <summary>
     /// 病历仓储实现类，封装病历表的数据库操作
     /// </summary>

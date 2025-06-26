@@ -1,10 +1,12 @@
 ﻿using LYBT.Common.Enums;
 
 namespace LYBT.Models.Queueing {
+
     /// <summary>
     /// 排队主表实体
     /// </summary>
     public class QueueingModel {
+
         /// <summary>
         /// 排队ID（主键）
         /// </summary>

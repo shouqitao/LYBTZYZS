@@ -1,9 +1,9 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models;
 using LYBT.Models.FormulaTemplates;
 using LYBT.Module.FormulaTemplates.Interfaces;
 
 namespace LYBT.Module.FormulaTemplates.Repositories {
+
     /// <summary>
     /// 经验方模板仓储实现类，数据库操作
     /// </summary>

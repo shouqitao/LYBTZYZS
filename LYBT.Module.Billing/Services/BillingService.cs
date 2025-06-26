@@ -1,15 +1,11 @@
 ﻿using AutoMapper;
-using LYBT.Models;
+using LYBT.Common.Enums;
 using LYBT.Models.Billing;
 using LYBT.Module.Billing.Dtos;
 using LYBT.Module.Billing.Interfaces;
-using LYBT.Common.Enums;
-using System.Linq;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Billing.Services {
+
     /// <summary>
     /// 费用结算业务服务实现
     /// </summary>
@@ -75,7 +71,8 @@ namespace LYBT.Module.Billing.Services {
 
         public async Task<bool> MarkAsPaidAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
-            if (model == null) return false;
+            if (model == null)
+                return false;
             model.Status = BillingStatus.Paid;
             model.PaidTime = DateTime.Now;
             return await _billingRepository.UpdateAsync(model);
@@ -83,7 +80,8 @@ namespace LYBT.Module.Billing.Services {
 
         public async Task<bool> MarkAsCompletedAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
-            if (model == null) return false;
+            if (model == null)
+                return false;
             model.Status = BillingStatus.Completed;
             model.CompletedTime = DateTime.Now;
             return await _billingRepository.UpdateAsync(model);
@@ -91,7 +89,8 @@ namespace LYBT.Module.Billing.Services {
 
         public async Task<bool> RequestRefundAsync(Guid id, string reason) {
             var model = await _billingRepository.GetByIdAsync(id);
-            if (model == null) return false;
+            if (model == null)
+                return false;
             model.Status = BillingStatus.RefundRequested;
             model.RefundReason = reason;
             return await _billingRepository.UpdateAsync(model);
@@ -99,7 +98,8 @@ namespace LYBT.Module.Billing.Services {
 
         public async Task<bool> ApproveRefundAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
-            if (model == null) return false;
+            if (model == null)
+                return false;
             model.Status = BillingStatus.Refunded;
             model.RefundTime = DateTime.Now;
             return await _billingRepository.UpdateAsync(model);
@@ -107,7 +107,8 @@ namespace LYBT.Module.Billing.Services {
 
         public async Task<bool> RejectRefundAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
-            if (model == null) return false;
+            if (model == null)
+                return false;
             model.Status = BillingStatus.Paid;
             model.RefundReason = null;
             return await _billingRepository.UpdateAsync(model);
@@ -115,7 +116,8 @@ namespace LYBT.Module.Billing.Services {
 
         public async Task<bool> CancelAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
-            if (model == null) return false;
+            if (model == null)
+                return false;
             model.Status = BillingStatus.Cancelled;
             model.IsDeleted = true;
             return await _billingRepository.UpdateAsync(model);

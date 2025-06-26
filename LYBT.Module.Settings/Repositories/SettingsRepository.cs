@@ -1,13 +1,9 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models;
 using LYBT.Models.Settings;
 using LYBT.Module.Settings.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Settings.Repositories {
+
     /// <summary>
     /// 系统设置仓储实现类
     /// </summary>

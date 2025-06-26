@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Models;
-using LYBT.Module.FormulaTemplates.Interfaces;
-using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.Models.FormulaTemplates;
+using LYBT.Module.FormulaTemplates.Dtos;
+using LYBT.Module.FormulaTemplates.Interfaces;
 
 namespace LYBT.Module.FormulaTemplates.Services {
+
     /// <summary>
     /// 经验方模板业务服务实现类，实现模板的业务处理
     /// </summary>

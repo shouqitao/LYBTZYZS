@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Module.Herbs.Dtos {
 
-namespace LYBT.Module.Herbs.Dtos {
     /// <summary>
     /// 药材列表 DTO
     /// </summary>
     public class HerbDto {
+
         /// <summary>药材ID</summary>
         public Guid Id { get; set; }
 
@@ -19,6 +19,7 @@ namespace LYBT.Module.Herbs.Dtos {
 
         /// <summary>单价</summary>
         public decimal Price { get; set; }
+
         public int TotalPrice { get; set; }
     }
 }

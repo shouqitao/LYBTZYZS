@@ -1,11 +1,10 @@
-using System;
-using System.Threading.Tasks;
 using LYBT.Infrastructure;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Auth.Repositories {
+
     /// <summary>
     /// 登录验证仓储实现
     /// </summary>

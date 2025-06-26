@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
 using LYBT.Common.Enums;
 using LYBT.Models.DiagnosisTreatment;
 
 namespace LYBT.Models.TreatmentTask {
+
     /// <summary>
     /// 治疗任务模型
     /// </summary>

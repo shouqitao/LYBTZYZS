@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
 using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Users.Dtos {
+
     /// <summary>
     /// 用户展示/返回 DTO，用于API查询结果
     /// </summary>
     public class UserDto {
+
         /// <summary>
         /// 用户唯一标识（主键，Guid 类型）
         /// </summary>

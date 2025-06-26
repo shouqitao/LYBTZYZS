@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
+
     /// <summary>
     /// 单个治疗项目 DTO（如针灸、正骨，每项含次数与价格）
     /// </summary>
     public class TreatmentItemDto {
+
         /// <summary>项目名称（如“针灸”）</summary>
         [Required(ErrorMessage = "治疗项目名称不能为空")]
         public string Name { get; set; } = string.Empty;

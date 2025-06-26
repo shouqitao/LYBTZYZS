@@ -1,17 +1,17 @@
 ﻿using AutoMapper;
+using LYBT.Common.Enums.Logs;
 using LYBT.Common.Models;
-using LYBT.Models.Patient;
+using LYBT.Module.Logs.Dtos;
+using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Models;
-using LYBT.Module.Logs.Interfaces;
-using LYBT.Module.Logs.Dtos;
-using LYBT.Common.Enums.Logs;
 using LYBT.Module.Records.Dtos;
 using LYBT.Module.Records.Interfaces;
 using System.Text.Json;
 
 namespace LYBT.Module.Patients.Services {
+
     /// <summary>
     /// 病人服务实现（业务逻辑层）
     /// </summary>

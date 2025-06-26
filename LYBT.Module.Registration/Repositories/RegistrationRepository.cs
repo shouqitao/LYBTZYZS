@@ -1,13 +1,9 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models;
 using LYBT.Models.Registration;
 using LYBT.Module.Registration.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Registration.Repositories {
+
     /// <summary>
     /// 挂号仓储实现类，实现挂号数据库操作
     /// </summary>

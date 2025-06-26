@@ -6,6 +6,7 @@ namespace LYBT.Models.Pharmacy {
     /// 药房任务模型
     /// </summary>
     public class PharmacyModel {
+
         /// <summary>抓药任务ID</summary>
         public Guid TaskId { get; set; }
 

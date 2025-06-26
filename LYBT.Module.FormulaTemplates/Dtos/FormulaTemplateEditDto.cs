@@ -1,13 +1,13 @@
 ﻿using LYBT.Module.Herbs.Dtos;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.FormulaTemplates.Dtos {
+
     /// <summary>
     /// 编辑经验方模板 DTO
     /// </summary>
     public class FormulaTemplateEditDto {
+
         /// <summary>模板ID</summary>
         [Required(ErrorMessage = "模板ID不能为空")]
         public Guid Id { get; set; }

@@ -1,10 +1,12 @@
 using System.ComponentModel;
 
 namespace LYBT.Common.Enums {
+
     /// <summary>
     /// 同步模式（自动/手动）
     /// </summary>
     public enum SyncMode {
+
         [Description("自动同步")]
         Auto = 0,
 

@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Queueing.Dtos;
+﻿using LYBT.Module.Queueing.Dtos;
 
 namespace LYBT.Module.Queueing.Interfaces {
+
     /// <summary>
     /// 排队业务服务接口
     /// </summary>
     public interface IQueueingService {
+
         /// <summary>
         /// 获取排队详情
         /// </summary>

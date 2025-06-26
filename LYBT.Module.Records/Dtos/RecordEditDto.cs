@@ -1,14 +1,14 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
+﻿using LYBT.Models;
 using LYBT.Models.DiagnosisTreatment;
-using LYBT.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Records.Dtos {
+
     /// <summary>
     /// 编辑病历 DTO
     /// </summary>
     public class RecordEditDto {
+
         /// <summary>病历ID</summary>
         [Required(ErrorMessage = "病历ID不能为空")]
         public Guid Id { get; set; }

@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using LYBT.Module.Users.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Module.Users.Dtos;
+using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
 /// 用户管理控制器，提供RESTful API接口
@@ -129,5 +126,4 @@ public class UsersController : ControllerBase {
         var user = await _userService.GetByIdAsync(id);
         return user == null ? NotFound() : Ok(user);
     }
-
 }

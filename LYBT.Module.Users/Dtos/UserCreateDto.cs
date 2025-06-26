@@ -1,12 +1,13 @@
-﻿using System;
+﻿using LYBT.Common.Enums.Users;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Users.Dtos {
+
     /// <summary>
     /// 新增用户请求 DTO，用于创建用户（带校验注解）
     /// </summary>
     public class UserCreateDto {
+
         /// <summary>
         /// 用户名（唯一，必填）
         /// </summary>

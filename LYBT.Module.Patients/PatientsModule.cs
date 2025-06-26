@@ -1,8 +1,10 @@
 ﻿namespace LYBT.Module.Patients {
+
     /// <summary>
     /// Prism 模块初始化类（注册仓储和服务）
     /// </summary>
     public class PatientsModule : IModule {
+
         /// <summary>
         /// 模块初始化事件（目前无额外逻辑）
         /// </summary>

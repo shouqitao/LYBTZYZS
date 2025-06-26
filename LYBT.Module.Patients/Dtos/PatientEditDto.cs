@@ -2,10 +2,12 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Patients.Dtos {
+
     /// <summary>
     /// 编辑病人信息Dto
     /// </summary>
     public class PatientEditDto {
+
         /// <summary>病人ID（必填）</summary>
         [Required(ErrorMessage = "ID不能为空")]
         public Guid Id { get; set; }

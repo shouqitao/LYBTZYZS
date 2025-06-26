@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Module.Registration.Dtos;
 using LYBT.Module.Registration.Interfaces;
-using LYBT.Module.Registration.Dtos;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.Module.Registration.Controllers {
+
     /// <summary>
     /// 挂号管理 API 控制器
     /// </summary>

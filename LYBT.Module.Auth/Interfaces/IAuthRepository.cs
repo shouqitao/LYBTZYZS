@@ -1,12 +1,12 @@
-using System;
-using System.Threading.Tasks;
 using LYBT.Module.Users.Models;
 
 namespace LYBT.Module.Auth.Interfaces {
+
     /// <summary>
     /// 登录验证仓储接口
     /// </summary>
     public interface IAuthRepository {
+
         /// <summary>
         /// 根据用户名获取用户
         /// </summary>

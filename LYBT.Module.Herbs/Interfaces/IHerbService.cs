@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Herbs.Dtos;
+﻿using LYBT.Module.Herbs.Dtos;
 
 namespace LYBT.Module.Herbs.Interfaces {
+
     /// <summary>
     /// 药材业务服务接口
     /// </summary>
     public interface IHerbService {
+
         /// <summary>
         /// 获取药材详情
         /// </summary>

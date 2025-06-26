@@ -1,11 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Herbs.Dtos {
+
     /// <summary>
     /// 编辑药材 DTO
     /// </summary>
     public class HerbEditDto {
+
         /// <summary>药材ID</summary>
         [Required(ErrorMessage = "药材ID不能为空")]
         public Guid Id { get; set; }

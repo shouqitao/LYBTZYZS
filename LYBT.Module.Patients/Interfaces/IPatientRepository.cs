@@ -1,11 +1,12 @@
-﻿using LYBT.Models.Patient;
-using LYBT.Module.Patients.Models;
+﻿using LYBT.Module.Patients.Models;
 
 namespace LYBT.Module.Patients.Interfaces {
+
     /// <summary>
     /// 病人仓储接口，定义病人相关数据操作
     /// </summary>
     public interface IPatientRepository {
+
         /// <summary>
         /// 新增病人记录
         /// </summary>

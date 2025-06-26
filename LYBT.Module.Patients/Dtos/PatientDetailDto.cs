@@ -1,10 +1,12 @@
 ﻿using LYBT.Common.Enums;
 
 namespace LYBT.Module.Patients.Dtos {
+
     /// <summary>
     /// 病人详情Dto，用于患者详情展示
     /// </summary>
     public class PatientDetailDto {
+
         /// <summary>病人ID</summary>
         public Guid Id { get; set; }
 

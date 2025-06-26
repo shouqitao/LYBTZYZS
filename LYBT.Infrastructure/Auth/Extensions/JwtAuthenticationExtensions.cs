@@ -5,10 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 namespace LYBT.Infrastructure.Auth.Extensions {
+
     /// <summary>
     /// JWT 认证服务扩展
     /// </summary>
     public static class JwtAuthenticationExtensions {
+
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration) {
             var jwtSection = configuration.GetSection("Jwt");
             services.Configure<JwtOptions>(jwtSection);

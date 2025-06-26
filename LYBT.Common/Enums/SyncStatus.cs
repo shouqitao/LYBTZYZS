@@ -1,10 +1,12 @@
 using System.ComponentModel;
 
 namespace LYBT.Common.Enums {
+
     /// <summary>
     /// 数据同步结果状态
     /// </summary>
     public enum SyncStatus {
+
         [Description("成功")]
         Success = 0,
 

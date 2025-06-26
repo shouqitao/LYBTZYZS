@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Models;
-using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Dtos;
+using LYBT.Module.Sync.Interfaces;
 
 namespace LYBT.Module.Sync.Services {
+
     /// <summary>
     /// 数据同步业务服务实现类，封装同步任务与同步日志业务逻辑
     /// </summary>

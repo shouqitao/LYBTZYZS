@@ -4,6 +4,7 @@ namespace LYBT.Common.Enums.Users {
     /// 系统用户角色枚举
     /// </summary>
     public enum UserRole {
+
         /// <summary>系统管理员</summary>
         Admin = 0,
 

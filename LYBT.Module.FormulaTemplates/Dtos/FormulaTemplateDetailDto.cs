@@ -1,12 +1,12 @@
 ﻿using LYBT.Module.Herbs.Dtos;
-using System;
-using System.Collections.Generic;
 
 namespace LYBT.Module.FormulaTemplates.Dtos {
+
     /// <summary>
     /// 经验方模板详情 DTO
     /// </summary>
     public class FormulaTemplateDetailDto {
+
         /// <summary>模板ID</summary>
         public Guid Id { get; set; }
 

@@ -1,11 +1,12 @@
-﻿using System;
-using LYBT.Common.Enums.Users;
+﻿using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Users.Models {
+
     /// <summary>
     /// 用户实体类，数据库映射
     /// </summary>
     public class UserModel {
+
         /// <summary>
         /// 用户唯一标识（主键）
         /// </summary>
@@ -48,6 +49,7 @@ namespace LYBT.Module.Users.Models {
 
         // 如有邮箱、手机号等请补充对应字段
         public string? Email { get; set; }
+
         public string? PhoneNumber { get; set; }
     }
 }

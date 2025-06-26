@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Module.Records.Dtos {
 
-namespace LYBT.Module.Records.Dtos {
     /// <summary>
     /// 病历列表 DTO（简要信息）
     /// </summary>
     public class RecordDto {
+
         /// <summary>病历ID</summary>
         public Guid Id { get; set; }
 

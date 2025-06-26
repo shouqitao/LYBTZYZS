@@ -1,11 +1,11 @@
-using System;
-
 namespace LYBT.Module.Users.Models {
+
     /// <summary>
     /// Stores administrator password hashes separately
     /// to prevent tampering of the Users table.
     /// </summary>
     public class AdminSecretModel {
+
         /// <summary>Primary key</summary>
         public Guid Id { get; set; }
 

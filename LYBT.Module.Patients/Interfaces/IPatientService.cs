@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Common.Models;
+﻿using LYBT.Common.Models;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Records.Dtos;
 
 namespace LYBT.Module.Patients.Interfaces {
+
     /// <summary>
     /// 病人服务接口，负责业务逻辑处理
     /// </summary>
     public interface IPatientService {
+
         /// <summary>
         /// 新增病人
         /// </summary>

@@ -1,12 +1,13 @@
 ﻿using LYBT.Common.Enums;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Doctors.Dtos {
+
     /// <summary>
     /// 编辑医生 DTO
     /// </summary>
     public class DoctorEditDto {
+
         /// <summary>医生ID</summary>
         [Required(ErrorMessage = "医生ID不能为空")]
         public Guid Id { get; set; }
@@ -38,7 +39,6 @@ namespace LYBT.Module.Doctors.Dtos {
 
         /// <summary>医生当前状态</summary>
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
-
 
         /// <summary>备注</summary>
         public string Remark { get; set; } = string.Empty;

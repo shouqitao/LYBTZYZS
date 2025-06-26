@@ -1,8 +1,10 @@
 ﻿namespace LYBT.Module.Patients.Dtos {
+
     /// <summary>
     /// 病人分页与条件查询 Dto
     /// </summary>
     public class PatientPagedQueryDto {
+
         /// <summary>关键词（姓名/手机号/拼音码等）</summary>
         public string Keyword { get; set; } = string.Empty;
 

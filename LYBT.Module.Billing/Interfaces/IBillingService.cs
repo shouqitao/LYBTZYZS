@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Billing.Dtos;
+﻿using LYBT.Module.Billing.Dtos;
 
 namespace LYBT.Module.Billing.Interfaces {
+
     /// <summary>
     /// 费用结算业务服务接口
     /// </summary>
     public interface IBillingService {
+
         /// <summary>
         /// 根据ID获取费用结算详情
         /// </summary>

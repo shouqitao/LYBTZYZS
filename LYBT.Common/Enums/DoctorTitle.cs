@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
 
 namespace LYBT.Common.Enums {
+
     /// <summary>
     /// 医生职称枚举
     /// </summary>
     public enum DoctorTitle {
+
         [Description("初级")]
         Junior = 0,
 

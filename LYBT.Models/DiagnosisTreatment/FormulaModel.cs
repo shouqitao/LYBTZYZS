@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿namespace LYBT.Models.DiagnosisTreatment {
 
-namespace LYBT.Models.DiagnosisTreatment {
     /// <summary>
     /// 药方（治疗方）实体
     /// </summary>
     public class FormulaModel {
+
         /// <summary>
         /// 药方名称
         /// </summary>

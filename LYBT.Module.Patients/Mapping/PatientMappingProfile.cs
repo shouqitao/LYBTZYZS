@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
-using LYBT.Models.Patient;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Models;
 
 namespace LYBT.Module.Patients.Mapping {
+
     /// <summary>
     /// 病人实体与DTO之间的AutoMapper映射配置
     /// </summary>
     public class PatientMappingProfile : Profile {
+
         public PatientMappingProfile() {
             // PatientModel → PatientDetailDto
             CreateMap<PatientModel, PatientDetailDto>();

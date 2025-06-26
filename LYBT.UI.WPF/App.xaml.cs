@@ -1,12 +1,12 @@
 ﻿using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.ViewModels;
 using LYBT.UI.WPF.Views;
-using Prism.Ioc;
-using Prism.Unity;
 using System.Windows;
 
 namespace LYBT.UI.WPF {
+
     public partial class App : PrismApplication {
+
         /// <summary>
         /// 重写Prism框架方法，注册类型和服务
         /// </summary>

@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Models {
 
-namespace LYBT.Models {
     /// <summary>
     /// 药材主表实体
     /// </summary>
     public class HerbModel {
+
         /// <summary>
         /// 药材ID（主键）
         /// </summary>

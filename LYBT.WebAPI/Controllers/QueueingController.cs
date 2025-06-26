@@ -1,11 +1,9 @@
 ﻿using LYBT.Module.Queueing.Dtos;
 using LYBT.Module.Queueing.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Queueing.Controllers {
+
     /// <summary>
     /// 排队管理 API 控制器
     /// </summary>

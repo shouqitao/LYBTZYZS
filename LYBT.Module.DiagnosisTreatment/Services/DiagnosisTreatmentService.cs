@@ -2,11 +2,9 @@
 using LYBT.Models.DiagnosisTreatment;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
 using LYBT.Module.DiagnosisTreatment.Models.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.DiagnosisTreatment.Services {
+
     /// <summary>
     /// 诊疗业务服务实现类，实现诊疗模块的业务逻辑
     /// </summary>

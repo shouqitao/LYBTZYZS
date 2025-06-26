@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Users.Dtos {
+
     /// <summary>
     /// 用户登录请求 DTO（带校验注解）
     /// </summary>
     public class UserLoginDto {
+
         /// <summary>
         /// 登录用户名
         /// </summary>

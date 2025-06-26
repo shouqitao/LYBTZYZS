@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Logs.Dtos;
 using LYBT.Common.Enums.Users;
+using LYBT.Module.Logs.Dtos;
 
 namespace LYBT.Module.Logs.Interfaces {
+
     /// <summary>
     /// 日志服务接口，负责业务层日志写入与查询逻辑
     /// </summary>
     public interface ILogService {
+
         /// <summary>
         /// 写入一条操作日志（可被任意业务模块调用）
         /// </summary>

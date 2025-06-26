@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
 
 namespace LYBT.Common.Enums {
+
     /// <summary>
     /// 性别枚举（公共枚举类）
     /// </summary>
     public enum Gender {
+
         [Description("男")]
         Male = 0,
 

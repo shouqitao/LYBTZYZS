@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using LYBT.Module.Settings.Interfaces;
+﻿using LYBT.Module.Settings.Interfaces;
 using LYBT.Module.Settings.Repositories;
 using LYBT.Module.Settings.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Settings {
+
     /// <summary>
     /// 系统设置模块服务注册入口
     /// </summary>
     public static class SettingsModule {
+
         /// <summary>
         /// 注册系统设置相关依赖服务
         /// </summary>

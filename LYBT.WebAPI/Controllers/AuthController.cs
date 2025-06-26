@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Auth.Dtos;
-using System.Threading.Tasks;
 using LYBT.Infrastructure.Auth;
+using LYBT.Module.Auth.Dtos;
+using LYBT.Module.Auth.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.Controllers {
+
     /// <summary>
     /// 认证相关接口
     /// </summary>
@@ -35,7 +35,6 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(new LoginResponseDto { Token = token, User = user });
         }
 
-
         /// <summary>
         /// 用户登出
         /// </summary>
@@ -46,6 +45,5 @@ namespace LYBT.WebAPI.Controllers {
             await _authService.LogoutAsync(dto);
             return Ok(new { success = true });
         }
-
     }
 }

@@ -2,10 +2,12 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Patients.Dtos {
+
     /// <summary>
     /// 创建病人输入 DTO
     /// </summary>
     public class PatientCreateDto {
+
         [Required(ErrorMessage = "姓名不能为空")]
         public string Name { get; set; } = string.Empty;
 

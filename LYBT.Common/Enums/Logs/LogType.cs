@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace LYBT.Common.Enums.Logs {
+
     /// <summary>
     /// 日志类型枚举
     /// </summary>
     public enum LogType {
+
         /// <summary>
         /// 操作日志（业务相关增删改查）
         /// </summary>

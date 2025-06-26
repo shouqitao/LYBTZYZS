@@ -1,16 +1,13 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums;
 using LYBT.Common.Helpers;
-using LYBT.Models;
+using LYBT.Common.Models;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
-using LYBT.Common.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Doctors.Services {
+
     /// <summary>
     /// 医生业务服务实现类，实现医生业务逻辑
     /// </summary>
@@ -114,6 +111,5 @@ namespace LYBT.Module.Doctors.Services {
                 return false;
             return await _doctorRepository.UpdatePasswordAsync(id, PasswordHelper.Hash(newPassword));
         }
-
     }
 }

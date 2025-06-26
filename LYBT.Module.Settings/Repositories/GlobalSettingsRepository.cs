@@ -2,11 +2,12 @@ using LYBT.Infrastructure;
 using LYBT.Models.Settings;
 using LYBT.Module.Settings.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Settings.Repositories {
+
     public class GlobalSettingsRepository : IGlobalSettingsRepository {
         private readonly AppDbContext _db;
+
         public GlobalSettingsRepository(AppDbContext db) {
             _db = db;
         }

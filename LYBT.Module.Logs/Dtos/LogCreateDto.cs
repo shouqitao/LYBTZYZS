@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Logs.Dtos {
+
     /// <summary>
     /// 新增操作日志 DTO
     /// </summary>
     public class LogCreateDto {
+
         /// <summary>日志类型（如“操作”、“系统”）</summary>
         [Required(ErrorMessage = "日志类型不能为空")]
         public string LogType { get; set; } = string.Empty;

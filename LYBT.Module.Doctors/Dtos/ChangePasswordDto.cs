@@ -1,11 +1,12 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Doctors.Dtos {
+
     /// <summary>
     /// 医生修改密码 DTO
     /// </summary>
     public class ChangePasswordDto {
+
         [Required]
         public Guid DoctorId { get; set; }
 

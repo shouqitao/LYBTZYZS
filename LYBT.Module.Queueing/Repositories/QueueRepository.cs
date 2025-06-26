@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LYBT.Infrastructure;
-using LYBT.Models;
+﻿using LYBT.Infrastructure;
 using LYBT.Models.Queueing;
 using LYBT.Module.Queueing.Interfaces;
 
 namespace LYBT.Module.Queueing.Repositories {
+
     /// <summary>
     /// 排队仓储实现类，实现数据库操作
     /// </summary>

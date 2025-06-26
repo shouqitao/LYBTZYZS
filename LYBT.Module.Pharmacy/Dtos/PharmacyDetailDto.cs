@@ -1,11 +1,12 @@
 ﻿using LYBT.Common.Enums;
-using System;
 
 namespace LYBT.Module.Pharmacy.Dtos {
+
     /// <summary>
     /// 药房单详情 DTO
     /// </summary>
     public class PharmacyDetailDto {
+
         /// <summary>药房单ID</summary>
         public Guid Id { get; set; }
 

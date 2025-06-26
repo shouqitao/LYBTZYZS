@@ -1,14 +1,11 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums;
-using LYBT.Models;
 using LYBT.Models.Registration;
 using LYBT.Module.Registration.Dtos;
 using LYBT.Module.Registration.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Registration.Services {
+
     /// <summary>
     /// 挂号业务服务实现类
     /// </summary>

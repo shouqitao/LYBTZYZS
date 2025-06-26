@@ -1,4 +1,5 @@
 ﻿namespace LYBT.Infrastructure {
+
     /// <summary>
     /// 基础设施模块入口
     /// </summary>

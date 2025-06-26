@@ -1,11 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System.Text.Json;
-using System.Collections.Generic;
-using LYBT.Models;
+﻿using LYBT.Models;
 using LYBT.Models.Billing;
 using LYBT.Models.DiagnosisTreatment;
 using LYBT.Models.Doctors;
+using LYBT.Models.FormulaTemplates;
+using LYBT.Models.Logs;
 using LYBT.Models.Patient;
 using LYBT.Models.Pharmacy;
 using LYBT.Models.Queueing;
@@ -13,20 +11,25 @@ using LYBT.Models.Records;
 using LYBT.Models.Registration;
 using LYBT.Models.Settings;
 using LYBT.Models.TreatmentRoom;
-using LYBT.Module.Users.Models;
 using LYBT.Module.Patients.Models;
-using LYBT.Models.FormulaTemplates;
-using LYBT.Models.Logs;
+using LYBT.Module.Users.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Text.Json;
 
 namespace LYBT.Infrastructure {
+
     /// <summary>
     /// 主数据库上下文，统一管理所有主表和明细字段配置
     /// </summary>
     public class AppDbContext : DbContext {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {
+        }
 
         // ===== 主表 DbSet，全部要有 =====
         public DbSet<UserModel> Users { get; set; }
+
         public DbSet<PatientModel> Patients { get; set; }
         public DbSet<DoctorModel> Doctors { get; set; }
         public DbSet<RegistrationModel> Registrations { get; set; }

@@ -1,13 +1,13 @@
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using LYBT.Module.Settings.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers {
+
     [ApiController]
     [Route("api/[controller]")]
     public class EnumMappingsController : ControllerBase {
         private readonly IEnumMappingsService _service;
+
         public EnumMappingsController(IEnumMappingsService service) {
             _service = service;
         }

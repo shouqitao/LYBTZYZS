@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Records.Dtos;
+﻿using LYBT.Module.Records.Dtos;
 
 namespace LYBT.Module.Records.Interfaces {
+
     /// <summary>
     /// 病历业务服务接口
     /// </summary>
     public interface IRecordService {
+
         /// <summary>
         /// 根据ID获取病历详情
         /// </summary>

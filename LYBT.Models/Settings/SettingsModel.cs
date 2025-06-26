@@ -1,10 +1,10 @@
-﻿using System;
+﻿namespace LYBT.Models.Settings {
 
-namespace LYBT.Models.Settings {
     /// <summary>
     /// 系统设置模型
     /// </summary>
     public class SettingsModel {
+
         /// <summary>设置键（唯一标识）</summary>
         public string Key { get; set; } = string.Empty;
 
@@ -24,4 +24,3 @@ namespace LYBT.Models.Settings {
         public Guid Id { get; set; }
     }
 }
-

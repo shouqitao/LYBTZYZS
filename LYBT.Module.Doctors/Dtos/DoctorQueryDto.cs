@@ -1,8 +1,10 @@
 namespace LYBT.Module.Doctors.Dtos {
+
     /// <summary>
     /// 医生分页与条件查询 DTO
     /// </summary>
     public class DoctorQueryDto {
+
         /// <summary>关键词（姓名/拼音码/手机号）</summary>
         public string? Keyword { get; set; }
 

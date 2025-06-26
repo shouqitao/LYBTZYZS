@@ -1,11 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Queueing.Dtos {
+
     /// <summary>
     /// 新增排队信息 DTO
     /// </summary>
     public class QueueingCreateDto {
+
         /// <summary>病人ID</summary>
         [Required(ErrorMessage = "病人ID不能为空")]
         public string PatientId { get; set; } = string.Empty;

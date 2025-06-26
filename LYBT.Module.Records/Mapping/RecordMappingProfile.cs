@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
-using LYBT.Models;
 using LYBT.Models.Records;
 using LYBT.Module.Records.Dtos;
 
 namespace LYBT.Module.Records.Mapping {
+
     /// <summary>
     /// 病历实体与DTO的AutoMapper映射配置
     /// </summary>
     public class RecordMappingProfile : Profile {
+
         public RecordMappingProfile() {
             // 实体 <=> 列表DTO
             CreateMap<RecordModel, RecordDto>().ReverseMap();

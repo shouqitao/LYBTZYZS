@@ -1,11 +1,12 @@
-﻿using LYBT.Models;
-using LYBT.Models.FormulaTemplates;
+﻿using LYBT.Models.FormulaTemplates;
 
 namespace LYBT.Module.FormulaTemplates.Interfaces {
+
     /// <summary>
     /// 经验方模板仓储接口，定义模板数据操作
     /// </summary>
     public interface IFormulaTemplateRepository {
+
         /// <summary>
         /// 获取模板详情
         /// </summary>
