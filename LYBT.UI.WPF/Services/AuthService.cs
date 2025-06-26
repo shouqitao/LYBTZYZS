@@ -1,4 +1,5 @@
 using LYBT.Common.Enums.Users;
+using System.Collections.Generic;
 
 namespace LYBT.UI.WPF.Services {
 
@@ -7,18 +8,22 @@ namespace LYBT.UI.WPF.Services {
     /// </summary>
     public class AuthService : IAuthService {
 
-        public UserRole? Login(string userName, string password) {
-            // 根据用户名简单判定用户角色并验证密码
-            if (userName == "admin" && password == "123")
-                return UserRole.Admin;
-            if (userName == "doctor" && password == "123")
-                return UserRole.DiagnosingDoctor;
-            if (userName == "treatment" && password == "123")
-                return UserRole.TreatmentDoctor;
-            if (userName == "pharmacy" && password == "123")
-                return UserRole.PharmacyStaff;
-            if (userName == "register" && password == "123")
-                return UserRole.RegistrationStaff;
+        private readonly Dictionary<string, (string Password, List<UserRole> Roles)> _accounts = new()
+        {
+            ["admin"] = ("123", new List<UserRole> { UserRole.Admin }),
+            ["doctor"] = ("123", new List<UserRole> { UserRole.DiagnosingDoctor }),
+            ["treatment"] = ("123", new List<UserRole> { UserRole.TreatmentDoctor }),
+            ["pharmacy"] = ("123", new List<UserRole> { UserRole.PharmacyStaff }),
+            ["register"] = ("123", new List<UserRole> { UserRole.RegistrationStaff }),
+            // 多权限测试账号
+            ["admin_pharmacy"] = ("123", new List<UserRole> { UserRole.Admin, UserRole.PharmacyStaff }),
+            ["doctor_admin"] = ("123", new List<UserRole> { UserRole.DiagnosingDoctor, UserRole.Admin }),
+            ["doctor_pharmacy_register"] = ("123", new List<UserRole> { UserRole.DiagnosingDoctor, UserRole.PharmacyStaff, UserRole.RegistrationStaff })
+        };
+
+        public IList<UserRole>? Login(string userName, string password) {
+            if (_accounts.TryGetValue(userName, out var info) && info.Password == password)
+                return info.Roles;
             return null;
         }
     }

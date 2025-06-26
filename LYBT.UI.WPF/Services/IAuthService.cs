@@ -1,4 +1,5 @@
 using LYBT.Common.Enums.Users;
+using System.Collections.Generic;
 
 namespace LYBT.UI.WPF.Services {
 
@@ -8,8 +9,8 @@ namespace LYBT.UI.WPF.Services {
     public interface IAuthService {
 
         /// <summary>
-        /// 验证用户名和密码，返回对应的用户角色。登录失败返回 null
+    /// 验证用户名和密码，返回对应的用户角色列表。登录失败返回 null
         /// </summary>
-        UserRole? Login(string userName, string password);
+        IList<UserRole>? Login(string userName, string password);
     }
 }
