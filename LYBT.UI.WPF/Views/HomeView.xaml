@@ -1,7 +1,7 @@
-<UserControl x:Class="LYBT.UI.WPF.Views.HomeView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:prism="http://prismlibrary.com/"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<UserControl x:Class="LYBT.UI.WPF.Views.HomeView"  
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  
+             xmlns:prism="http://prismlibrary.com/"  
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"  
              prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.RowDefinitions>
@@ -22,13 +22,13 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左侧导航区 -->
-            <StackPanel Grid.Column="0" Background="#F4F4F4" Padding="10">
+            <StackPanel Grid.Column="0" Background="#F4F4F4" Margin="10">
                 <ItemsControl ItemsSource="{Binding NavigationItems}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Button Content="{Binding Title}"
-                                    Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                    CommandParameter="{Binding}"
+                            <Button Content="{Binding Title}"  
+                                    Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"  
+                                    CommandParameter="{Binding}"  
                                     Margin="0,0,0,5" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -36,8 +36,8 @@
             </StackPanel>
 
             <!-- 右侧内容区 -->
-            <ContentControl Grid.Column="1"
-                            prism:RegionManager.RegionName="HomeContentRegion"
+            <ContentControl Grid.Column="1"  
+                            prism:RegionManager.RegionName="HomeContentRegion"  
                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
         </Grid>
     </Grid>

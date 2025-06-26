@@ -1,7 +1,4 @@
 using LYBT.Common.Enums.Users;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
 using System.Collections.ObjectModel;
 using LYBT.UI.WPF.Models;
 
