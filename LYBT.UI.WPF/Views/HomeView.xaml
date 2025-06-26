@@ -22,8 +22,17 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左侧导航区 -->
-            <StackPanel Grid.Column="0" Background="#F4F4F4">
-                <TextBlock Text="导航区域" Margin="10" />
+            <StackPanel Grid.Column="0" Background="#F4F4F4" Padding="10">
+                <ItemsControl ItemsSource="{Binding NavigationItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Title}"
+                                    Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding}"
+                                    Margin="0,0,0,5" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
 
             <!-- 右侧内容区 -->

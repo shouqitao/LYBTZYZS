@@ -16,6 +16,11 @@ namespace LYBT.UI.WPF {
             // 注册导航视图（将视图类型映射到导航名称）
             containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>();
             containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
+            containerRegistry.RegisterForNavigation<AdminView, AdminViewModel>();
+            containerRegistry.RegisterForNavigation<DiagnosingDoctorView, DiagnosingDoctorViewModel>();
+            containerRegistry.RegisterForNavigation<TreatmentDoctorView, TreatmentDoctorViewModel>();
+            containerRegistry.RegisterForNavigation<PharmacyStaffView, PharmacyStaffViewModel>();
+            containerRegistry.RegisterForNavigation<RegistrationStaffView, RegistrationStaffViewModel>();
         }
 
         /// <summary>
