@@ -45,11 +45,11 @@ namespace LYBT.UI.WPF.ViewModels {
         /// </summary>
         private void ExecuteLogin() {
             // 调用认证服务进行验证（此处为模拟逻辑）
-            UserRole? role = _authService.Login(Username, Password);
-            if (role.HasValue) {
+            var roles = _authService.Login(Username, Password);
+            if (roles != null && roles.Count > 0) {
                 // 登录成功，携带角色信息导航到主内容视图HomeView
                 var parameters = new NavigationParameters();
-                parameters.Add("UserRole", role.Value);
+                parameters.Add("UserRoles", roles);
                 _regionManager.RequestNavigate("ContentRegion", "HomeView", parameters);
                 // 将主窗口切换为最大化显示
                 Application.Current.MainWindow.WindowState = WindowState.Maximized;
