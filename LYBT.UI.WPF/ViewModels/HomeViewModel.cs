@@ -1,10 +1,5 @@
 using LYBT.Common.Enums.Users;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
 using System.Collections.ObjectModel;
-using System.Collections.Generic;
-using System.Linq;
 using LYBT.UI.WPF.Models;
 
 namespace LYBT.UI.WPF.ViewModels {
