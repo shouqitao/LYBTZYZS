@@ -18,6 +18,9 @@ namespace LYBT.Common.Enums.Users {
         PharmacyStaff = 3,
 
         /// <summary>挂号/前台工作人员</summary>
-        RegistrationStaff = 4
+        RegistrationStaff = 4,
+
+        /// <summary>收费人员</summary>
+        BillingStaff = 5
     }
 }
