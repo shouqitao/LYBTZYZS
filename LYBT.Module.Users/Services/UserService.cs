@@ -99,9 +99,16 @@ public class UserService : IUserService {
         if (oldUser == null)
             throw new Exception("用户不存在");
 
+        // 记录修改前的数据以便日志审计
+        var oldSnapshot = System.Text.Json.JsonSerializer.Serialize(oldUser);
+
         oldUser.RealName = dto.RealName;
         oldUser.Role = dto.Role;
-        // 其它属性赋值...
+        oldUser.IsActive = dto.IsActive;
+
+        if (!string.IsNullOrWhiteSpace(dto.Password)) {
+            oldUser.PasswordHash = PasswordHelper.Hash(dto.Password);
+        }
 
         var result = await _userRepository.UpdateAsync(oldUser);
 
@@ -115,8 +122,8 @@ public class UserService : IUserService {
                 OperatorName = operatorName,
                 LogTime = DateTime.Now,
                 Content = $"修改用户信息：{oldUser.UserName}",
-                OldValue = System.Text.Json.JsonSerializer.Serialize(oldUser),
-                NewValue = System.Text.Json.JsonSerializer.Serialize(dto)
+                OldValue = oldSnapshot,
+                NewValue = System.Text.Json.JsonSerializer.Serialize(oldUser)
             });
         }
         return result;
