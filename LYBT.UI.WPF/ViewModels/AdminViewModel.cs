@@ -1,9 +1,5 @@
 using LYBT.Module.Users.Dtos;
-using LYBT.Common.Enums.Users;
 using LYBT.UI.WPF.Services;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
 using System.Collections.ObjectModel;
 
 namespace LYBT.UI.WPF.ViewModels {
@@ -42,7 +38,8 @@ namespace LYBT.UI.WPF.ViewModels {
         }
 
         private async void EditUser(UserDto? user) {
-            if (user == null) return;
+            if (user == null)
+                return;
             var roles = await _service.GetRolesAsync();
             var dlg = new Views.UserEditWindow(roles, user);
             if (dlg.ShowDialog() == true && dlg.EditedUser != null) {
@@ -53,7 +50,8 @@ namespace LYBT.UI.WPF.ViewModels {
         }
 
         private async void ToggleUserStatus(UserDto? user) {
-            if (user == null) return;
+            if (user == null)
+                return;
             bool ok = user.IsActive ? await _service.DisableAsync(user.Id) : await _service.EnableAsync(user.Id);
             if (ok) {
                 LoadUsers();

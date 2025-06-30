@@ -1,6 +1,7 @@
 using LYBT.Module.Users.Dtos;
 using LYBT.Common.Enums.Users;
 using Refit;
+using System.Net.Http;
 
 namespace LYBT.UI.WPF.Services {
     public interface IUserManagementService {
