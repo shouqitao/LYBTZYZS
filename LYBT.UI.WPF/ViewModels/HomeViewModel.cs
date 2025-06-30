@@ -28,7 +28,8 @@ namespace LYBT.UI.WPF.ViewModels {
         private static readonly List<UserRole> _roleOrder = new() {
             UserRole.RegistrationStaff,
             UserRole.DiagnosingDoctor,
-            UserRole.Admin,            // 视作收费/管理角色
+            UserRole.BillingStaff,
+            UserRole.Admin,
             UserRole.PharmacyStaff,
             UserRole.TreatmentDoctor
         };
@@ -48,6 +49,7 @@ namespace LYBT.UI.WPF.ViewModels {
                     UserRole.DiagnosingDoctor => new NavigationItem("医生面板", "DiagnosingDoctorView"),
                     UserRole.TreatmentDoctor => new NavigationItem("治疗面板", "TreatmentDoctorView"),
                     UserRole.PharmacyStaff => new NavigationItem("药房面板", "PharmacyStaffView"),
+                    UserRole.BillingStaff => new NavigationItem("收费面板", "BillingStaffView"),
                     UserRole.RegistrationStaff => new NavigationItem("挂号面板", "RegistrationStaffView"),
                     _ => null
                 };

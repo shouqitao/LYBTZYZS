@@ -21,6 +21,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<TreatmentDoctorView, TreatmentDoctorViewModel>();
             containerRegistry.RegisterForNavigation<PharmacyStaffView, PharmacyStaffViewModel>();
             containerRegistry.RegisterForNavigation<RegistrationStaffView, RegistrationStaffViewModel>();
+            containerRegistry.RegisterForNavigation<BillingStaffView, BillingStaffViewModel>();
         }
 
         /// <summary>
