@@ -19,6 +19,8 @@ namespace LYBT.UI.WPF.Views {
                 UserNameTextBox.IsEnabled = false;
                 RealNameTextBox.Text = user.RealName;
                 RoleComboBox.SelectedItem = user.Role;
+                EmailTextBox.Text = user.Email ?? string.Empty;
+                PhoneNumberTextBox.Text = user.PhoneNumber ?? string.Empty;
                 IsActiveCheckBox.IsChecked = user.IsActive;
             } else {
                 Title = "新增用户";
@@ -34,6 +36,8 @@ namespace LYBT.UI.WPF.Views {
                     RealName = RealNameTextBox.Text,
                     Role = (UserRole)RoleComboBox.SelectedItem!,
                     IsActive = IsActiveCheckBox.IsChecked == true,
+                    Email = EmailTextBox.Text,
+                    PhoneNumber = PhoneNumberTextBox.Text,
                     Password = PasswordBox.Password
                 };
             } else {
@@ -42,6 +46,8 @@ namespace LYBT.UI.WPF.Views {
                     RealName = RealNameTextBox.Text,
                     Role = (UserRole)RoleComboBox.SelectedItem!,
                     IsActive = IsActiveCheckBox.IsChecked == true,
+                    Email = EmailTextBox.Text,
+                    PhoneNumber = PhoneNumberTextBox.Text,
                     Password = string.IsNullOrWhiteSpace(PasswordBox.Password) ? null : PasswordBox.Password
                 };
             }

@@ -35,6 +35,18 @@ namespace LYBT.Module.Users.Dtos {
         public bool IsActive { get; set; }
 
         /// <summary>
+        /// 邮箱地址
+        /// </summary>
+        [EmailAddress(ErrorMessage = "邮箱格式不正确")]
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// 联系电话
+        /// </summary>
+        [Phone(ErrorMessage = "联系电话格式不正确")]
+        public string? PhoneNumber { get; set; }
+
+        /// <summary>
         /// 新密码（可选，留空表示不修改。修改密码时必须符合长度要求）
         /// </summary>
         [StringLength(32, MinimumLength = 6, ErrorMessage = "密码长度必须在6-32个字符之间")]

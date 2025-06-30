@@ -35,6 +35,18 @@ namespace LYBT.Module.Users.Dtos {
         public bool IsActive { get; set; } = true;
 
         /// <summary>
+        /// 邮箱地址
+        /// </summary>
+        [EmailAddress(ErrorMessage = "邮箱格式不正确")]
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// 联系电话
+        /// </summary>
+        [Phone(ErrorMessage = "联系电话格式不正确")]
+        public string? PhoneNumber { get; set; }
+
+        /// <summary>
         /// 初始密码（必填）
         /// </summary>
         [Required(ErrorMessage = "密码不能为空")]

@@ -8,11 +8,11 @@ namespace LYBT.UI.WPF.ViewModels {
     /// LoginView 对应的视图模型，处理登录逻辑
     /// </summary>
     public class LoginViewModel : BindableBase {
-        private string _username;
+        private string _userName;
 
-        public string Username {
-            get => _username;
-            set => SetProperty(ref _username, value);
+        public string UserName {
+            get => _userName;
+            set => SetProperty(ref _userName, value);
         }
 
         private string _password;
@@ -36,7 +36,7 @@ namespace LYBT.UI.WPF.ViewModels {
             _regionManager = regionManager;
             // 初始化命令，指定执行方法和可执行判定（可执行判定此处简单为非空校验）
             LoginCommand = new DelegateCommand(ExecuteLogin, CanExecuteLogin)
-                               .ObservesProperty(() => Username)
+                               .ObservesProperty(() => UserName)
                                .ObservesProperty(() => Password);
         }
 
@@ -45,7 +45,7 @@ namespace LYBT.UI.WPF.ViewModels {
         /// </summary>
         private void ExecuteLogin() {
             // 调用认证服务进行验证（此处为模拟逻辑）
-            var roles = _authService.Login(Username, Password);
+            var roles = _authService.Login(UserName, Password);
             if (roles != null && roles.Count > 0) {
                 // 登录成功，携带角色信息导航到主内容视图HomeView
                 var parameters = new NavigationParameters();
@@ -64,7 +64,7 @@ namespace LYBT.UI.WPF.ViewModels {
         /// </summary>
         private bool CanExecuteLogin() {
             // 当用户名和密码都不为空时，命令才可执行
-            return !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password);
+            return !string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password);
         }
     }
 }

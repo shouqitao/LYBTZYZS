@@ -31,8 +31,10 @@
                               HeadersVisibility="Column">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto"/>
-                            <DataGridTextColumn Header="用户名" Binding="{Binding Username}" Width="*"/>
+                            <DataGridTextColumn Header="用户名" Binding="{Binding UserName}" Width="*"/>
+                            <DataGridTextColumn Header="真实姓名" Binding="{Binding RealName}" Width="*"/>
                             <DataGridTextColumn Header="邮箱" Binding="{Binding Email}" Width="*"/>
+                            <DataGridTextColumn Header="电话" Binding="{Binding PhoneNumber}" Width="*"/>
                             <DataGridTextColumn Header="状态" Binding="{Binding IsActive}" Width="Auto"/>
                             <DataGridTemplateColumn Header="操作" Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>
