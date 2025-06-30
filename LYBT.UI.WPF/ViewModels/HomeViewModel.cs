@@ -25,26 +25,41 @@ namespace LYBT.UI.WPF.ViewModels {
             }
         }
 
+        private static readonly List<UserRole> _roleOrder = new() {
+            UserRole.RegistrationStaff,
+            UserRole.DiagnosingDoctor,
+            UserRole.Admin,            // 视作收费/管理角色
+            UserRole.PharmacyStaff,
+            UserRole.TreatmentDoctor
+        };
+
         private void LoadNavigation(IEnumerable<UserRole> roles) {
             NavigationItems.Clear();
-            foreach (var role in roles.Distinct()) {
-                switch (role) {
-                    case UserRole.Admin:
-                        NavigationItems.Add(new NavigationItem("管理员面板", "AdminView"));
-                        break;
-                    case UserRole.DiagnosingDoctor:
-                        NavigationItems.Add(new NavigationItem("医生面板", "DiagnosingDoctorView"));
-                        break;
-                    case UserRole.TreatmentDoctor:
-                        NavigationItems.Add(new NavigationItem("治疗面板", "TreatmentDoctorView"));
-                        break;
-                    case UserRole.PharmacyStaff:
-                        NavigationItems.Add(new NavigationItem("药房面板", "PharmacyStaffView"));
-                        break;
-                    case UserRole.RegistrationStaff:
-                        NavigationItems.Add(new NavigationItem("挂号面板", "RegistrationStaffView"));
-                        break;
+            var orderedRoles = roles.Distinct()
+                .OrderBy(r => {
+                    var index = _roleOrder.IndexOf(r);
+                    return index >= 0 ? index : int.MaxValue;
+                });
+
+            NavigationItem? first = null;
+            foreach (var role in orderedRoles) {
+                NavigationItem? item = role switch {
+                    UserRole.Admin => new NavigationItem("管理员面板", "AdminView"),
+                    UserRole.DiagnosingDoctor => new NavigationItem("医生面板", "DiagnosingDoctorView"),
+                    UserRole.TreatmentDoctor => new NavigationItem("治疗面板", "TreatmentDoctorView"),
+                    UserRole.PharmacyStaff => new NavigationItem("药房面板", "PharmacyStaffView"),
+                    UserRole.RegistrationStaff => new NavigationItem("挂号面板", "RegistrationStaffView"),
+                    _ => null
+                };
+
+                if (item != null) {
+                    NavigationItems.Add(item);
+                    first ??= item;
                 }
+            }
+
+            if (first != null) {
+                Navigate(first);
             }
         }
 
