@@ -48,6 +48,7 @@ using LYBT.Module.Sync.Mapping;
 using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
 using LYBT.Module.Users.Mapping;
+using LYBT.WebAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -126,6 +127,7 @@ builder.Services.AddSwaggerGen(options => {
     // with the same name in different namespaces
     options.CustomSchemaIds(type => type.FullName);
 });
+builder.Services.AddCorsPolicy();
 
 // =========== 4. 注册数据库上下文 ===========
 
@@ -153,6 +155,8 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
