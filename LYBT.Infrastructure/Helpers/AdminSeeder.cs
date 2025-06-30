@@ -10,19 +10,8 @@ namespace LYBT.Infrastructure.Helpers {
     public static class AdminSeeder {
 
         public static void Seed(AppDbContext context) {
-            if (!context.Users.Any(u => u.UserName == "sysadmin")) {
-                var admin = new UserModel {
-                    Id = Guid.NewGuid(),
-                    UserName = "sysadmin",
-                    RealName = "系统管理员",
-                    Role = UserRole.Admin,
-                    IsActive = true,
-                    CreatedTime = DateTime.Now,
-                    PasswordHash = string.Empty
-                };
-                context.Users.Add(admin);
-            }
-
+            // Default sysadmin credentials stored only in AdminSecrets table.
+            // No corresponding record in Users table.
             if (!context.AdminSecrets.Any(s => s.UserName == "sysadmin")) {
                 context.AdminSecrets.Add(new AdminSecretModel {
                     Id = Guid.NewGuid(),
