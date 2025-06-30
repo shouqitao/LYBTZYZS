@@ -6,7 +6,7 @@
     <StackPanel Margin="30" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200">
         <!-- 用户名输入框 -->
         <TextBlock Text="用户名:" />
-        <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10" />
+        <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10" />
         <!-- 密码输入框 -->
         <TextBlock Text="密码:" />
         <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" />

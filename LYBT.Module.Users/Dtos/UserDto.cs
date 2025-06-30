@@ -46,5 +46,15 @@ namespace LYBT.Module.Users.Dtos {
         /// 最近登录时间
         /// </summary>
         public DateTime? LastLoginTime { get; set; }
+
+        /// <summary>
+        /// 邮箱地址
+        /// </summary>
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// 联系电话
+        /// </summary>
+        public string? PhoneNumber { get; set; }
     }
 }

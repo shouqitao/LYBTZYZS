@@ -32,7 +32,9 @@ public class UserService : IUserService {
                 Role = m.Role,
                 IsActive = m.IsActive,
                 CreatedTime = m.CreatedTime,
-                LastLoginTime = m.LastLoginTime
+                LastLoginTime = m.LastLoginTime,
+                Email = m.Email,
+                PhoneNumber = m.PhoneNumber
             });
         }
         return (users, total);
@@ -52,7 +54,9 @@ public class UserService : IUserService {
             Role = m.Role,
             IsActive = m.IsActive,
             CreatedTime = m.CreatedTime,
-            LastLoginTime = m.LastLoginTime
+            LastLoginTime = m.LastLoginTime,
+            Email = m.Email,
+            PhoneNumber = m.PhoneNumber
         };
     }
 
@@ -69,6 +73,8 @@ public class UserService : IUserService {
             RealName = dto.RealName,
             Role = dto.Role,
             IsActive = dto.IsActive,
+            Email = dto.Email,
+            PhoneNumber = dto.PhoneNumber,
             CreatedTime = DateTime.Now,
 
             PasswordHash = PasswordHelper.Hash(dto.Password)
@@ -105,6 +111,8 @@ public class UserService : IUserService {
         oldUser.RealName = dto.RealName;
         oldUser.Role = dto.Role;
         oldUser.IsActive = dto.IsActive;
+        oldUser.Email = dto.Email;
+        oldUser.PhoneNumber = dto.PhoneNumber;
 
         if (!string.IsNullOrWhiteSpace(dto.Password)) {
             oldUser.PasswordHash = PasswordHelper.Hash(dto.Password);
