@@ -4,15 +4,6 @@ using Refit;
 using System.Net.Http;
 
 namespace LYBT.UI.WPF.Services {
-    public interface IUserManagementService {
-        Task<(IList<UserDto> users, int total)> SearchAsync(UserQueryDto query);
-        Task<List<UserRole>> GetRolesAsync();
-        Task<bool> AddAsync(UserCreateDto dto);
-        Task<bool> UpdateAsync(UserEditDto dto);
-        Task<bool> DisableAsync(Guid id);
-        Task<bool> EnableAsync(Guid id);
-    }
-
     public class UserManagementService : IUserManagementService {
         private readonly IUserApi _api;
 
