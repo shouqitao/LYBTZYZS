@@ -1,6 +1,8 @@
 using LYBT.Module.Users.Dtos;
 using LYBT.UI.WPF.Services;
 using System.Collections.ObjectModel;
+using System.Windows;
+using Refit;
 
 namespace LYBT.UI.WPF.ViewModels {
     public class AdminViewModel : BindableBase, INavigationAware {
@@ -31,8 +33,16 @@ namespace LYBT.UI.WPF.ViewModels {
             var roles = await _service.GetRolesAsync();
             var dlg = new Views.UserEditWindow(roles);
             if (dlg.ShowDialog() == true && dlg.CreatedUser != null) {
-                if (await _service.AddAsync(dlg.CreatedUser)) {
-                    LoadUsers();
+                try {
+                    if (await _service.AddAsync(dlg.CreatedUser)) {
+                        LoadUsers();
+                    } else {
+                        MessageBox.Show("新增用户失败", "错误", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                } catch (ApiException ex) {
+                    MessageBox.Show($"新增用户失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                } catch (Exception ex) {
+                    MessageBox.Show($"新增用户失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
