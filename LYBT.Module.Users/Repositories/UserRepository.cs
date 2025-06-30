@@ -59,6 +59,9 @@ public class UserRepository : IUserRepository {
     public async Task<(IList<UserModel> users, int total)> GetPagedAsync(UserQueryDto query) {
         var dbSet = _dbContext.Users.AsQueryable();
 
+        // Hide built-in sysadmin from normal listing
+        dbSet = dbSet.Where(u => u.UserName != "sysadmin");
+
         // 关键词（用户名、真实姓名）模糊查找
         if (!string.IsNullOrWhiteSpace(query.Keyword)) {
             dbSet = dbSet.Where(u =>
