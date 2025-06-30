@@ -40,7 +40,9 @@ namespace LYBT.UI.WPF.ViewModels {
                         MessageBox.Show("新增用户失败", "错误", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 } catch (ApiException ex) {
-                    MessageBox.Show($"新增用户失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // Display server-provided error details when available
+                    var error = string.IsNullOrWhiteSpace(ex.Content) ? ex.Message : ex.Content;
+                    MessageBox.Show($"新增用户失败：{error}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 } catch (Exception ex) {
                     MessageBox.Show($"新增用户失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
