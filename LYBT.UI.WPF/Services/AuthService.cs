@@ -1,38 +1,87 @@
 using LYBT.Common.Enums.Users;
 using LYBT.Module.Auth.Dtos;
+using LYBT.UI.WPF.Services.Api;
 using Refit;
+using System;
 using System.Collections.Generic;
-using System.Net.Http;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Services {
-
     /// <summary>
-    /// 认证服务实现：通过 WebAPI 调用进行真实登录验证
+    /// 认证服务实现（带Token、记住密码、自动登录）
     /// </summary>
     public class AuthService : IAuthService {
-
         private readonly IAuthApi _authApi;
+        private string _token;
+        private bool _hasRemembered;
+        private string _rememberedUserName;
+        private string _rememberedPassword;
 
-        public AuthService() {
-            // TODO: 可从配置读取 API 地址
-            var client = new HttpClient { BaseAddress = new Uri("http://localhost:5297") };
-            _authApi = RestService.For<IAuthApi>(client);
+        public string Token => _token;
+        public bool HasRemembered => _hasRemembered;
+        public string RememberedUserName => _rememberedUserName;
+        public string RememberedPassword => _rememberedPassword;
+
+        private readonly string _autoLoginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autologin.json");
+
+        public AuthService(IAuthApi authApi) {
+            _authApi = authApi;
+            if (File.Exists(_autoLoginPath)) {
+                var json = File.ReadAllText(_autoLoginPath);
+                var info = JsonSerializer.Deserialize<AutoLoginInfo>(json);
+                if (info != null && !string.IsNullOrEmpty(info.UserName) && !string.IsNullOrEmpty(info.Password)) {
+                    _hasRemembered = true;
+                    _rememberedUserName = info.UserName;
+                    _rememberedPassword = info.Password;
+                }
+            }
         }
 
-        public IList<UserRole>? Login(string userName, string password) {
+        public async Task<(bool success, IList<UserRole> roles, string errorMessage, string token)> LoginAsync(string userName, string password) {
             try {
-                var result = _authApi.LoginAsync(new LoginRequestDto {
+                var result = await _authApi.LoginAsync(new LoginRequestDto {
                     Username = userName,
                     Password = password
-                }).GetAwaiter().GetResult();
+                });
 
-                var roles = result.User.Roles;
+                var roles = result.User?.Roles;
                 if (roles == null || roles.Count == 0)
                     roles = new List<UserRole> { result.User.Role };
-                return roles;
+
+                _token = result.Token;
+                SaveAutoLoginInfo(userName, password);
+
+                return (true, roles, null, _token);
             } catch (ApiException) {
-                return null;
+                return (false, null, "登录失败，用户名或密码错误！", null);
+            } catch (Exception ex) {
+                return (false, null, $"系统异常：{ex.Message}", null);
             }
+        }
+
+        private void SaveAutoLoginInfo(string userName, string password) {
+            var info = new AutoLoginInfo { UserName = userName, Password = password };
+            var json = JsonSerializer.Serialize(info);
+            File.WriteAllText(_autoLoginPath, json);
+
+            _hasRemembered = true;
+            _rememberedUserName = userName;
+            _rememberedPassword = password;
+        }
+
+        public void ClearAutoLoginInfo() {
+            if (File.Exists(_autoLoginPath))
+                File.Delete(_autoLoginPath);
+            _hasRemembered = false;
+            _rememberedUserName = null;
+            _rememberedPassword = null;
+        }
+
+        private class AutoLoginInfo {
+            public string UserName { get; set; }
+            public string Password { get; set; }
         }
     }
 }

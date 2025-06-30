@@ -1,16 +1,18 @@
 using LYBT.Common.Enums.Users;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Services {
-
     /// <summary>
-    /// 定义认证服务接口
+    /// 认证服务接口，支持异步登录、Token管理、自动登录
     /// </summary>
     public interface IAuthService {
+        Task<(bool success, IList<UserRole> roles, string errorMessage, string token)> LoginAsync(string userName, string password);
 
-        /// <summary>
-    /// 验证用户名和密码，返回对应的用户角色列表。登录失败返回 null
-        /// </summary>
-        IList<UserRole>? Login(string userName, string password);
+        string Token { get; }
+        bool HasRemembered { get; }
+        void ClearAutoLoginInfo();
+        string RememberedUserName { get; }
+        string RememberedPassword { get; }
     }
 }
