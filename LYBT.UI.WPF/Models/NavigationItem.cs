@@ -1,6 +1,15 @@
 namespace LYBT.UI.WPF.Models {
     /// <summary>
-    /// 简单的导航项数据模型
+    /// 导航菜单项数据模型
     /// </summary>
-    public record NavigationItem(string Title, string TargetView);
+    public class NavigationItem {
+        public string DisplayName { get; set; }
+        public string TargetView { get; set; }
+        public string Icon { get; set; } // 可选：图标
+        public NavigationItem(string name, string view, string icon = null) {
+            DisplayName = name;
+            TargetView = view;
+            Icon = icon;
+        }
+    }
 }

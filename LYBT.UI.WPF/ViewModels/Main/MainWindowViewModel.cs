@@ -27,7 +27,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             // 最大化窗口
             Application.Current.MainWindow.WindowState = WindowState.Maximized;
             // 导航到主内容区（如HomeView）
-            _regionManager.RequestNavigate("ContentRegion", "HomeView");
+            _regionManager.RequestNavigate("MainContentRegion", "HomeView", new NavigationParameters { { "UserRoles", roles } });
         }
     }
 }

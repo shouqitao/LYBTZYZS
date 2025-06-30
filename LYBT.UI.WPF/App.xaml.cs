@@ -29,6 +29,7 @@ namespace LYBT.UI.WPF {
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
             containerRegistry.RegisterForNavigation<MainWindow>("MainWindow");
+            containerRegistry.RegisterForNavigation<HomeView>("HomeView");
 
         }
 

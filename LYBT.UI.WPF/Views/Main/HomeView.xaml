@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="LYBT.UI.WPF.Views.Main.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="180"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <!-- 左侧导航区 -->
+        <ListBox Grid.Column="0"
+                 ItemsSource="{Binding NavigationItems}"
+                 Margin="5">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Button Content="{Binding DisplayName}"
+                            Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}" Margin="2"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <!-- 右侧主内容区域 -->
+        <ContentControl Grid.Column="1" prism:RegionManager.RegionName="HomeContentRegion"/>
+    </Grid>
+</UserControl>
