@@ -7,17 +7,6 @@ namespace LYBT.UI.WPF.Views {
             InitializeComponent();
         }
 
-        private void AddUser_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("新增用户功能待实现", "提示");
-        }
-
-        private void EditUser_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("编辑用户功能待实现", "提示");
-        }
-
-        private void ToggleUserStatus_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("启用/停用用户功能待实现", "提示");
-        }
 
         private void AddHerb_Click(object sender, System.Windows.RoutedEventArgs e) {
             MessageBox.Show("新增药材功能待实现", "提示");

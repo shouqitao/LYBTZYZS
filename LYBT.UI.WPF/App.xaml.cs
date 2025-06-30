@@ -13,6 +13,7 @@ namespace LYBT.UI.WPF {
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             // 注册服务接口与实现，用于依赖注入
             containerRegistry.Register<IAuthService, AuthService>();
+            containerRegistry.Register<IUserManagementService, UserManagementService>();
             // 注册导航视图（将视图类型映射到导航名称）
             containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>();
             containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
