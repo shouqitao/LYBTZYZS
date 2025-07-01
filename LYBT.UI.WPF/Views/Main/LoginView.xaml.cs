@@ -19,7 +19,7 @@ namespace LYBT.UI.WPF.Views.Main {
         }
 
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e) {
-            if (DataContext is LYBT.UI.WPF.ViewModels.Main.LoginViewModel vm) {
+            if (DataContext is ViewModels.Main.LoginViewModel vm) {
                 if (passwordBox.Password != vm.Password)
                     vm.Password = passwordBox.Password;
             }
@@ -28,7 +28,7 @@ namespace LYBT.UI.WPF.Views.Main {
         // 支持在TextBox、PasswordBox按下回车即登录
         private void UserControl_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Enter) {
-                if (DataContext is LYBT.UI.WPF.ViewModels.Main.LoginViewModel vm) {
+                if (DataContext is ViewModels.Main.LoginViewModel vm) {
                     if (vm.LoginCommand.CanExecute())
                         vm.LoginCommand.Execute();
                 }

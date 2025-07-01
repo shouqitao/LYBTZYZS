@@ -5,7 +5,7 @@
         xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="凌隐宝堂中医诊所"
-        Width="600" Height="800"
+        WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
     <Window.Resources>

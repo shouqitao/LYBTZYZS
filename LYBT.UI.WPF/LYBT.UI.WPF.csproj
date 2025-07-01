@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\bg.jpg" />
+    <None Remove="Assets\logo.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="MaterialDesignColors" Version="5.2.1" />
     <PackageReference Include="MaterialDesignThemes" Version="5.2.1" />
@@ -28,6 +33,11 @@
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
     <ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\bg.jpg" />
+    <Resource Include="Assets\logo.jpg" />
   </ItemGroup>
 
 </Project>
