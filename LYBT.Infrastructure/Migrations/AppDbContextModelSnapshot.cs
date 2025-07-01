@@ -829,6 +829,10 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
+                    b.Property<string>("Roles")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

@@ -1,28 +1,33 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations {
-
+namespace LYBT.Infrastructure.Migrations
+{
     /// <inheritdoc />
-    public partial class InitialCreate : Migration {
-
+    public partial class InitDb : Migration
+    {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder) {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.CreateTable(
                 name: "AdminSecrets",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_AdminSecrets", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Billings",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BillingId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -42,25 +47,29 @@ namespace LYBT.Infrastructure.Migrations {
                     BillingTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Billings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "DiagnosisCatalogs",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsEnabled = table.Column<bool>(type: "bit", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_DiagnosisCatalogs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "DiagnosisTreatments",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ChiefComplaint = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -71,13 +80,15 @@ namespace LYBT.Infrastructure.Migrations {
                     Formula = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_DiagnosisTreatments", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Doctors",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
@@ -95,36 +106,42 @@ namespace LYBT.Infrastructure.Migrations {
                     PinyinCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Doctors", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "FormulaTemplates",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Herbs = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_FormulaTemplates", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "GlobalSettings",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DefaultRecordSharing = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SyncMode = table.Column<int>(type: "int", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_GlobalSettings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Logs",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     LogType = table.Column<int>(type: "int", nullable: false),
                     ObjectType = table.Column<int>(type: "int", nullable: false),
@@ -139,13 +156,15 @@ namespace LYBT.Infrastructure.Migrations {
                     IP = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Logs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Patients",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     Gender = table.Column<int>(type: "int", maxLength: 8, nullable: false),
@@ -161,13 +180,15 @@ namespace LYBT.Infrastructure.Migrations {
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PinyinCode = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Patients", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Pharmacies",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PrescriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -180,13 +201,15 @@ namespace LYBT.Infrastructure.Migrations {
                     OperatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Pharmacies", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Queueings",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     QueueType = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -194,13 +217,15 @@ namespace LYBT.Infrastructure.Migrations {
                     Status = table.Column<int>(type: "int", nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Queueings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Records",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RecordId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -223,13 +248,15 @@ namespace LYBT.Infrastructure.Migrations {
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Records", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Registrations",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientName = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -241,13 +268,15 @@ namespace LYBT.Infrastructure.Migrations {
                     RegistrationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Registrations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Settings",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Key = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -255,38 +284,44 @@ namespace LYBT.Infrastructure.Migrations {
                     ValueType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UpdateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Settings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SpecialPatientDoctors",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_SpecialPatientDoctors", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SyncLogs",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     SyncTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Mode = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Message = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_SyncLogs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SyncTasks",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TaskType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -294,26 +329,30 @@ namespace LYBT.Infrastructure.Migrations {
                     ExecuteTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_SyncTasks", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "TreatmentCatalogs",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsEnabled = table.Column<bool>(type: "bit", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_TreatmentCatalogs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "TreatmentRooms",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExecutionId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PlanId = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -331,17 +370,20 @@ namespace LYBT.Infrastructure.Migrations {
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Count = table.Column<int>(type: "int", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_TreatmentRooms", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Users",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RealName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<int>(type: "int", nullable: false),
+                    Roles = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LastLoginTime = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -349,13 +391,15 @@ namespace LYBT.Infrastructure.Migrations {
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Herbs",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Pinyin = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -367,7 +411,8 @@ namespace LYBT.Infrastructure.Migrations {
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PharmacyModelId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_Herbs", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Herbs_Pharmacies_PharmacyModelId",
@@ -383,7 +428,8 @@ namespace LYBT.Infrastructure.Migrations {
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder) {
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.DropTable(
                 name: "AdminSecrets");
 

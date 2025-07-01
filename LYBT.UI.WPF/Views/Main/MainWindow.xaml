@@ -19,7 +19,22 @@
         <DockPanel Visibility="{Binding IsMainVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <!-- 顶部Header -->
             <Border DockPanel.Dock="Top" Height="60" Background="#374151">
-                <TextBlock Text="凌隐宝堂中医诊所" Foreground="White" FontSize="20" Margin="20,0,0,0"/>
+                <Grid>
+                    <TextBlock Text="凌隐宝堂中医诊所"
+                   Foreground="White" FontSize="20"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Margin="20,0,0,0"/>
+                    <!-- 右上角退出按钮 -->
+                    <Button Content="退出"
+                Width="68" Height="34"
+                HorizontalAlignment="Right" VerticalAlignment="Center"
+                Margin="0,0,22,0"
+                Command="{Binding LogoutCommand}"
+                Background="#FF57606A" Foreground="White"
+                FontWeight="Bold" BorderThickness="0"
+                Cursor="Hand"/>
+                </Grid>
             </Border>
             <!-- 主内容区域，加载 HomeView -->
             <ContentControl DockPanel.Dock="Bottom" prism:RegionManager.RegionName="MainContentRegion"/>
