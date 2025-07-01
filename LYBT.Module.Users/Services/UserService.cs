@@ -1,4 +1,6 @@
 ﻿using LYBT.Common.Enums.Logs;
+using System.Collections.Generic;
+using System.Linq;
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Helpers;
 using LYBT.Module.Logs.Dtos;
@@ -30,6 +32,7 @@ public class UserService : IUserService {
                 UserName = m.UserName,
                 RealName = m.RealName,
                 Role = m.Role,
+                Roles = m.Roles != null && m.Roles.Count > 0 ? m.Roles : new List<UserRole> { m.Role },
                 IsActive = m.IsActive,
                 CreatedTime = m.CreatedTime,
                 LastLoginTime = m.LastLoginTime,
@@ -52,6 +55,7 @@ public class UserService : IUserService {
             UserName = m.UserName,
             RealName = m.RealName,
             Role = m.Role,
+            Roles = m.Roles != null && m.Roles.Count > 0 ? m.Roles : new List<UserRole> { m.Role },
             IsActive = m.IsActive,
             CreatedTime = m.CreatedTime,
             LastLoginTime = m.LastLoginTime,
@@ -67,11 +71,13 @@ public class UserService : IUserService {
         if (await _userRepository.ExistsByUsernameAsync(dto.UserName))
             throw new Exception("用户名已存在");
 
+        var roles = dto.Roles != null && dto.Roles.Count > 0 ? dto.Roles : new List<UserRole> { dto.Role };
         var user = new UserModel {
             Id = Guid.NewGuid(),
             UserName = dto.UserName,
             RealName = dto.RealName,
-            Role = dto.Role,
+            Role = roles.First(),
+            Roles = roles,
             IsActive = dto.IsActive,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
@@ -109,7 +115,9 @@ public class UserService : IUserService {
         var oldSnapshot = System.Text.Json.JsonSerializer.Serialize(oldUser);
 
         oldUser.RealName = dto.RealName;
-        oldUser.Role = dto.Role;
+        var roles = dto.Roles != null && dto.Roles.Count > 0 ? dto.Roles : new List<UserRole> { dto.Role };
+        oldUser.Role = roles.First();
+        oldUser.Roles = roles;
         oldUser.IsActive = dto.IsActive;
         oldUser.Email = dto.Email;
         oldUser.PhoneNumber = dto.PhoneNumber;

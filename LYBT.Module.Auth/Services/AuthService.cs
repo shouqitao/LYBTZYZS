@@ -1,4 +1,5 @@
 using AutoMapper;
+using System.Collections.Generic;
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Helpers;
 using LYBT.Module.Auth.Dtos;
@@ -36,6 +37,7 @@ namespace LYBT.Module.Auth.Services {
                     UserName = "sysadmin",
                     RealName = "系统管理员",
                     Role = UserRole.Admin,
+                    Roles = new List<UserRole> { UserRole.Admin },
                     IsActive = true,
                     CreatedTime = DateTime.Now,
                     PasswordHash = string.Empty

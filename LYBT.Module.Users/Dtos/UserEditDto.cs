@@ -1,4 +1,5 @@
 ﻿using LYBT.Common.Enums.Users;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Users.Dtos {
@@ -27,6 +28,11 @@ namespace LYBT.Module.Users.Dtos {
         [Required(ErrorMessage = "用户角色不能为空")]
         [EnumDataType(typeof(UserRole), ErrorMessage = "用户角色无效")]
         public UserRole Role { get; set; } = UserRole.DiagnosingDoctor;
+
+        /// <summary>
+        /// 多个用户角色
+        /// </summary>
+        public List<UserRole> Roles { get; set; } = new();
 
         /// <summary>
         /// 账号启用状态（true=启用，false=禁用，必填）
