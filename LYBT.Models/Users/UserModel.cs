@@ -1,4 +1,5 @@
 ﻿using LYBT.Common.Enums.Users;
+using System.Collections.Generic;
 
 namespace LYBT.Module.Users.Models {
 
@@ -26,6 +27,11 @@ namespace LYBT.Module.Users.Models {
         /// 用户角色（管理员、医生等，枚举）
         /// </summary>
         public UserRole Role { get; set; } = UserRole.DiagnosingDoctor;
+
+        /// <summary>
+        /// 用户拥有的所有角色
+        /// </summary>
+        public List<UserRole> Roles { get; set; } = new();
 
         /// <summary>
         /// 启用状态（true=启用，false=禁用）

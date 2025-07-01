@@ -13,9 +13,11 @@ using LYBT.Models.Settings;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Module.Patients.Models;
 using LYBT.Module.Users.Models;
+using LYBT.Common.Enums.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Text.Json;
+using System.Collections.Generic;
 
 namespace LYBT.Infrastructure {
 
@@ -56,6 +58,19 @@ namespace LYBT.Infrastructure {
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
+
+            // === List<UserRole> for UserModel ===
+            modelBuilder.Entity<UserModel>()
+                .Property(x => x.Roles)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Deserialize<List<UserRole>>(v, (JsonSerializerOptions)null))
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<UserRole>>(
+                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
+                        c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
+                        c => c == null ? null : JsonSerializer.Deserialize<List<UserRole>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
+                    ));
 
             // === List<HerbItemModel> for FormulaTemplateModel ===
             modelBuilder.Entity<FormulaTemplateModel>()
