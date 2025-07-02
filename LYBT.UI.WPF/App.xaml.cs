@@ -13,7 +13,8 @@ namespace LYBT.UI.WPF {
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             // 1. 构造无Token的HttpClient，首次登录还没有token，正常用即可
             var httpClient = new HttpClient() {
-                BaseAddress = new Uri("http://localhost:5297")
+                //BaseAddress = new Uri("http://localhost:5297")
+                BaseAddress = new Uri("http://192.168.190.243:5000")
             };
 
             // 2. 用Refit创建IAuthApi实例
