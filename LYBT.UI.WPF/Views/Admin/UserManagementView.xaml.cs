@@ -20,5 +20,13 @@ namespace LYBT.UI.WPF.Views.Admin {
         public UserManagementView() {
             InitializeComponent();
         }
+
+        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e) {
+            if (DataContext is ViewModels.Admin.UserManagementViewModel vm) {
+                var pb = (PasswordBox)sender;
+                if (pb.Password != vm.Password)
+                    vm.Password = pb.Password;
+            }
+        }
     }
 }
