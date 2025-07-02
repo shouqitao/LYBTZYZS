@@ -21,6 +21,6 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <!-- 右侧主内容区域 -->
-        <ContentControl Grid.Column="1" prism:RegionManager.RegionName="HomeContentRegion"/>
+        <ContentControl Grid.Column="1" prism:RegionManager.RegionName="ContentRegion"/>
     </Grid>
 </UserControl>

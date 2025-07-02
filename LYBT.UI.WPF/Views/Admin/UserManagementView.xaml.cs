@@ -11,17 +11,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace LYBT.UI.WPF.Views
-{
+namespace LYBT.UI.WPF.Views.Admin {
     /// <summary>
-    /// Interaction logic for AdminView.xaml
+    /// Interaction logic for UserManagementView.xaml
     /// </summary>
-    public partial class AdminView : UserControl
-    {
-        public AdminView()
-        {
+    public partial class UserManagementView : UserControl {
+        public UserManagementView() {
             InitializeComponent();
         }
     }
