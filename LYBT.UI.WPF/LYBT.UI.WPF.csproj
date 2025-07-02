@@ -33,6 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
     <ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Billing\LYBT.Module.Billing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

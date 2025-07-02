@@ -27,16 +27,20 @@ namespace LYBT.UI.WPF {
             // 2. 用Refit创建IAuthApi实例  
             var authApi = RestService.For<IAuthApi>(httpClient);
             var userApi = RestService.For<IUserApi>(httpClient);
+            var billingApi = RestService.For<IBillingApi>(httpClient);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！  
             var authService = new AuthService(authApi);
             var userService = new UserManagementService(userApi);
+            var billingService = new BillingService(billingApi);
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
             containerRegistry.RegisterInstance(authApi);
             containerRegistry.RegisterInstance(userApi);
+            containerRegistry.RegisterInstance(billingApi);
             containerRegistry.RegisterInstance<IAuthService>(authService);
             containerRegistry.RegisterInstance<IUserManagementService>(userService);
+            containerRegistry.RegisterInstance<IBillingService>(billingService);
 
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
@@ -44,6 +48,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<HomeView>("HomeView");
             containerRegistry.RegisterForNavigation<AdminView>("AdminView");
             containerRegistry.RegisterForNavigation<UserManagementView>("UserManagementView");
+            containerRegistry.RegisterForNavigation<BillingStaffView>("BillingStaffView");
 
         }
 
