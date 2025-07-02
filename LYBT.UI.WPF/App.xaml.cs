@@ -28,19 +28,23 @@ namespace LYBT.UI.WPF {
             var authApi = RestService.For<IAuthApi>(httpClient);
             var userApi = RestService.For<IUserApi>(httpClient);
             var billingApi = RestService.For<IBillingApi>(httpClient);
+            var diagnosisTreatmentApi = RestService.For<IDiagnosisTreatmentApi>(httpClient);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！  
             var authService = new AuthService(authApi);
             var userService = new UserManagementService(userApi);
             var billingService = new BillingService(billingApi);
+            var diagnosisTreatmentService = new DiagnosisTreatmentService(diagnosisTreatmentApi);
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
             containerRegistry.RegisterInstance(authApi);
             containerRegistry.RegisterInstance(userApi);
             containerRegistry.RegisterInstance(billingApi);
+            containerRegistry.RegisterInstance(diagnosisTreatmentApi);
             containerRegistry.RegisterInstance<IAuthService>(authService);
             containerRegistry.RegisterInstance<IUserManagementService>(userService);
             containerRegistry.RegisterInstance<IBillingService>(billingService);
+            containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
 
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
