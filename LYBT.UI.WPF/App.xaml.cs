@@ -30,6 +30,7 @@ namespace LYBT.UI.WPF {
             var billingApi = RestService.For<IBillingApi>(httpClient);
             var diagnosisTreatmentApi = RestService.For<IDiagnosisTreatmentApi>(httpClient);
             var doctorApi = RestService.For<IDoctorApi>(httpClient);
+            var formulaTemplateApi = RestService.For<IFormulaTemplateApi>(httpClient);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！  
             var authService = new AuthService(authApi);
@@ -37,6 +38,7 @@ namespace LYBT.UI.WPF {
             var billingService = new BillingService(billingApi);
             var diagnosisTreatmentService = new DiagnosisTreatmentService(diagnosisTreatmentApi);
             var doctorService = new DoctorService(doctorApi);
+            var formulaTemplateService = new FormulaTemplateService(formulaTemplateApi);
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
             containerRegistry.RegisterInstance(authApi);
@@ -44,11 +46,13 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(billingApi);
             containerRegistry.RegisterInstance(diagnosisTreatmentApi);
             containerRegistry.RegisterInstance(doctorApi);
+            containerRegistry.RegisterInstance(formulaTemplateApi);
             containerRegistry.RegisterInstance<IAuthService>(authService);
             containerRegistry.RegisterInstance<IUserManagementService>(userService);
             containerRegistry.RegisterInstance<IBillingService>(billingService);
             containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
             containerRegistry.RegisterInstance<IDoctorService>(doctorService);
+            containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
 
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
