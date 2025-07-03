@@ -37,6 +37,7 @@
     <ProjectReference Include="..\LYBT.Module.Doctors\LYBT.Module.Doctors.csproj" />
     <ProjectReference Include="..\LYBT.Module.FormulaTemplates\LYBT.Module.FormulaTemplates.csproj" />
     <ProjectReference Include="..\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Pharmacy\LYBT.Module.Pharmacy.csproj" />
   </ItemGroup>
 
   <ItemGroup>
