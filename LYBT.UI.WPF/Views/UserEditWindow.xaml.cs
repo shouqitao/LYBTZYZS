@@ -4,9 +4,18 @@ using System.Collections.Generic;
 using System.Windows;
 
 namespace LYBT.UI.WPF.Views {
+    /// <summary>
+    /// 类 UserEditWindow 的说明
+    /// </summary>
     public partial class UserEditWindow : Window {
         private readonly UserDto? _origin;
+        /// <summary>
+        /// 属性 CreatedUser 的说明
+        /// </summary>
         public UserCreateDto? CreatedUser { get; private set; }
+        /// <summary>
+        /// 属性 EditedUser 的说明
+        /// </summary>
         public UserEditDto? EditedUser { get; private set; }
 
         public UserEditWindow(IEnumerable<UserRole> roles, UserDto? user = null) {
@@ -29,6 +38,9 @@ namespace LYBT.UI.WPF.Views {
             }
         }
 
+        /// <summary>
+        /// 方法 Ok_Click 的说明
+        /// </summary>
         private void Ok_Click(object sender, RoutedEventArgs e) {
             if (_origin == null) {
                 CreatedUser = new UserCreateDto {
@@ -54,6 +66,9 @@ namespace LYBT.UI.WPF.Views {
             DialogResult = true;
         }
 
+        /// <summary>
+        /// 方法 Cancel_Click 的说明
+        /// </summary>
         private void Cancel_Click(object sender, RoutedEventArgs e) {
             DialogResult = false;
         }

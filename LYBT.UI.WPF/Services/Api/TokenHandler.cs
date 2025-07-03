@@ -11,6 +11,9 @@ namespace LYBT.UI.WPF.Services.Api {
         public TokenHandler(IAuthService authService) {
             _authService = authService;
         }
+        /// <summary>
+        /// 方法 SendAsync 的说明
+        /// </summary>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) {
             var token = _authService.Token;
             if (!string.IsNullOrEmpty(token)) {

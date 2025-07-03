@@ -3,6 +3,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace LYBT.UI.WPF.Views.Main {
+    /// <summary>
+    /// 类 LoginView 的说明
+    /// </summary>
     public partial class LoginView : UserControl {
         public LoginView() {
             InitializeComponent();
@@ -18,6 +21,9 @@ namespace LYBT.UI.WPF.Views.Main {
             };
         }
 
+        /// <summary>
+        /// 方法 PasswordBox_PasswordChanged 的说明
+        /// </summary>
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e) {
             if (DataContext is ViewModels.Main.LoginViewModel vm) {
                 if (passwordBox.Password != vm.Password)

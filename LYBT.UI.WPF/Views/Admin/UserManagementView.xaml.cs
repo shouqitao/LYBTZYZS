@@ -21,6 +21,9 @@ namespace LYBT.UI.WPF.Views.Admin {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 方法 PasswordBox_PasswordChanged 的说明
+        /// </summary>
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e) {
             if (DataContext is ViewModels.Admin.UserManagementViewModel vm) {
                 var pb = (PasswordBox)sender;
