@@ -31,8 +31,12 @@ public class UsersController : ControllerBase {
         // 从Token/Session等获取操作人信息
         Guid operatorId = Guid.NewGuid(); // 实际开发应取登录管理员ID
         string operatorName = "管理员A";
-        var result = await _userService.AddAsync(dto, operatorId, operatorName);
-        return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        try {
+            var result = await _userService.AddAsync(dto, operatorId, operatorName);
+            return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        } catch (Exception ex) {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     /// <summary>
@@ -42,8 +46,12 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> Update([FromBody] UserDetailDto dto) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
-        var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
-        return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        try {
+            var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
+            return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        } catch (Exception ex) {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     /// <summary>
@@ -53,8 +61,12 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> Disable(Guid id) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
-        var result = await _userService.DisableAsync(id, operatorId, operatorName);
-        return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        try {
+            var result = await _userService.DisableAsync(id, operatorId, operatorName);
+            return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        } catch (Exception ex) {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     /// <summary>
@@ -64,8 +76,12 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> Enable(Guid id) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
-        var result = await _userService.EnableAsync(id, operatorId, operatorName);
-        return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        try {
+            var result = await _userService.EnableAsync(id, operatorId, operatorName);
+            return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        } catch (Exception ex) {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     /// <summary>
@@ -97,8 +113,12 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> ResetPassword(Guid id) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
-        var result = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
-        return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        try {
+            var result = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
+            return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+        } catch (Exception ex) {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     /// <summary>
