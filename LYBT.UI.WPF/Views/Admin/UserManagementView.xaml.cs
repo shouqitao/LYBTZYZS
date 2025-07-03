@@ -52,9 +52,11 @@ namespace LYBT.UI.WPF.Views.Admin {
         private void UpdateRoleSelections(ViewModels.Admin.UserManagementViewModel vm) {
             RolesListBox.SelectedItems.Clear();
             if (vm.EditingUser != null) {
-                foreach (var r in vm.EditingUser.Roles)
-                    if (vm.RoleList.Contains(r))
-                        RolesListBox.SelectedItems.Add(r);
+                foreach (var r in vm.EditingUser.Roles) {
+                    var item = RolesListBox.Items.Cast<UserRole>().FirstOrDefault(x => x == r);
+                    if (item != null)
+                        RolesListBox.SelectedItems.Add(item);
+                }
             }
         }
 

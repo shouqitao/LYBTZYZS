@@ -28,15 +28,21 @@ namespace LYBT.UI.WPF.Views {
                 UserNameTextBox.Text = user.UserName;
                 UserNameTextBox.IsEnabled = false;
                 RealNameTextBox.Text = user.RealName;
-                foreach (var r in user.Roles)
-                    RoleListBox.SelectedItems.Add(r);
+                foreach (var r in user.Roles) {
+                    var item = RoleListBox.Items.Cast<UserRole>().FirstOrDefault(x => x == r);
+                    if (item != null)
+                        RoleListBox.SelectedItems.Add(item);
+                }
                 EmailTextBox.Text = user.Email ?? string.Empty;
                 PhoneNumberTextBox.Text = user.PhoneNumber ?? string.Empty;
                 IsActiveCheckBox.IsChecked = user.IsActive;
             } else {
                 Title = "新增用户";
-                if (roles.Contains(UserRole.DiagnosingDoctor))
-                    RoleListBox.SelectedItems.Add(UserRole.DiagnosingDoctor);
+                if (roles.Contains(UserRole.DiagnosingDoctor)) {
+                    var item = RoleListBox.Items.Cast<UserRole>().FirstOrDefault(x => x == UserRole.DiagnosingDoctor);
+                    if (item != null)
+                        RoleListBox.SelectedItems.Add(item);
+                }
                 IsActiveCheckBox.IsChecked = true;
             }
         }
