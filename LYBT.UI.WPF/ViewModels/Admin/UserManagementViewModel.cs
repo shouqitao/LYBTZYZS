@@ -44,21 +44,26 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             set {
                 if (SetProperty(ref _selectedUser, value)) {
                     if (value != null) {
-                        // 选择用户时复制一份到编辑区，避免直接修改列表项
-                        EditingUser = new UserDto {
-                            Id = value.Id,
-                            UserName = value.UserName,
-                            RealName = value.RealName,
-                            Roles = new System.Collections.Generic.List<UserRole>(value.Roles),
-                            IsActive = value.IsActive,
-                            Email = value.Email,
-                            PhoneNumber = value.PhoneNumber
-                        };
-                        IsEditable = false;
-                        EditModeTitle = "用户详情";
+                        _ = LoadSelectedUserAsync(value);
                     }
                 }
             }
+        }
+
+        private async Task LoadSelectedUserAsync(UserDto user) {
+            var detail = await _userService.GetByIdAsync(user.Id) ?? user;
+            // 选择用户时复制一份到编辑区，避免直接修改列表项
+            EditingUser = new UserDto {
+                Id = detail.Id,
+                UserName = detail.UserName,
+                RealName = detail.RealName,
+                Roles = new System.Collections.Generic.List<UserRole>(detail.Roles),
+                IsActive = detail.IsActive,
+                Email = detail.Email,
+                PhoneNumber = detail.PhoneNumber
+            };
+            IsEditable = false;
+            EditModeTitle = "用户详情";
         }
 
         private string _searchKeyword = string.Empty;
