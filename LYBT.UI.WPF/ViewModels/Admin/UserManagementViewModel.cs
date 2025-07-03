@@ -6,6 +6,9 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Refit;
 using System.Text.Json;
+
+using System.Linq;
+
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -176,6 +179,14 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                         var doc = JsonDocument.Parse(apiEx.Content);
                         if (doc.RootElement.TryGetProperty("message", out var m))
                             msg = m.GetString() ?? msg;
+
+                        else if (doc.RootElement.TryGetProperty("errors", out var errs)) {
+                            var parts = errs.EnumerateObject()
+                                .SelectMany(p => p.Value.EnumerateArray().Select(v => v.GetString()))
+                                .Where(s => !string.IsNullOrEmpty(s));
+                            msg = string.Join("; ", parts);
+                        }
+
                     } catch {
                         // ignore parse errors
                     }
