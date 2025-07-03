@@ -1,7 +1,11 @@
 <Window x:Class="LYBT.UI.WPF.Views.UserEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters"
         Title="用户" Height="300" Width="300">
+    <Window.Resources>
+        <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -27,7 +31,8 @@
         <ListBox x:Name="RoleListBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,5" SelectionMode="Multiple">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <CheckBox Content="{Binding}" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"/>
+                    <CheckBox Content="{Binding Converter={StaticResource EnumDescriptionConverter}}"
+                             IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
