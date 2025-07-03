@@ -1,4 +1,5 @@
 ﻿using LYBT.Module.Users.Dtos;
+using LYBT.Common.Enums.Users;
 using LYBT.UI.WPF.Services.Api;
 using System;
 using System.Collections.Generic;
@@ -31,9 +32,41 @@ namespace LYBT.UI.WPF.Services {
             return resp.Success;
         }
 
+        public async Task<bool> EnableUserAsync(Guid id) {
+            var resp = await _userApi.EnableAsync(id);
+            return resp.Success;
+        }
+
+        public async Task<int> BatchDisableAsync(List<Guid> ids) {
+            var resp = await _userApi.BatchDisableAsync(new BatchIdsDto { Ids = ids });
+            return resp.Count ?? 0;
+        }
+
+        public async Task<int> BatchEnableAsync(List<Guid> ids) {
+            var resp = await _userApi.BatchEnableAsync(new BatchIdsDto { Ids = ids });
+            return resp.Count ?? 0;
+        }
+
         public async Task<bool> ResetPasswordAsync(Guid id, string newPassword) {
             var resp = await _userApi.ResetPasswordAsync(id, new ResetPasswordDto { NewPassword = newPassword });
             return resp.Success;
+        }
+
+        public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
+            var resp = await _userApi.ChangePasswordAsync(new ChangePasswordDto {
+                UserId = id,
+                OldPassword = oldPassword,
+                NewPassword = newPassword
+            });
+            return resp.Success;
+        }
+
+        public async Task<IList<UserRole>> GetRolesAsync() {
+            return await _userApi.GetRolesAsync();
+        }
+
+        public async Task<UserDto?> GetByIdAsync(Guid id) {
+            return await _userApi.GetByIdAsync(id);
         }
     }
 }
