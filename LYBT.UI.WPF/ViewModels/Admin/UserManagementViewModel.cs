@@ -132,35 +132,44 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 MessageBox.Show("账号和姓名不能为空！", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            if (EditingUser.Id == Guid.Empty) // 新增
-            {
-                var createDto = new UserCreateDto {
-                    UserName = EditingUser.UserName,
-                    RealName = EditingUser.RealName,
-                    Roles = EditingUser.Roles,
-                    IsActive = EditingUser.IsActive,
-                    Email = EditingUser.Email,
-                    PhoneNumber = EditingUser.PhoneNumber
-                };
-                var ok = await _userService.AddUserAsync(createDto);
-                if (!ok) {
-                    MessageBox.Show("新增用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+            if (EditingUser.Roles == null || EditingUser.Roles.Count == 0) {
+                MessageBox.Show("请至少选择一个角色！", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            try {
+                if (EditingUser.Id == Guid.Empty) // 新增
+                {
+                    var createDto = new UserCreateDto {
+                        UserName = EditingUser.UserName,
+                        RealName = EditingUser.RealName,
+                        Roles = EditingUser.Roles,
+                        IsActive = EditingUser.IsActive,
+                        Email = EditingUser.Email,
+                        PhoneNumber = EditingUser.PhoneNumber
+                    };
+                    var ok = await _userService.AddUserAsync(createDto);
+                    if (!ok) {
+                        MessageBox.Show("新增用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                } else {
+                    var editDto = new UserDetailDto {
+                        Id = EditingUser.Id,
+                        RealName = EditingUser.RealName,
+                        Roles = EditingUser.Roles,
+                        IsActive = EditingUser.IsActive,
+                        Email = EditingUser.Email,
+                        PhoneNumber = EditingUser.PhoneNumber
+                    };
+                    var ok = await _userService.UpdateUserAsync(editDto);
+                    if (!ok) {
+                        MessageBox.Show("保存用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                 }
-            } else {
-                var editDto = new UserDetailDto {
-                    Id = EditingUser.Id,
-                    RealName = EditingUser.RealName,
-                    Roles = EditingUser.Roles,
-                    IsActive = EditingUser.IsActive,
-                    Email = EditingUser.Email,
-                    PhoneNumber = EditingUser.PhoneNumber
-                };
-                var ok = await _userService.UpdateUserAsync(editDto);
-                if (!ok) {
-                    MessageBox.Show("保存用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
+            } catch (Exception ex) {
+                MessageBox.Show($"操作失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
             // 刷新列表
             await LoadUsers();

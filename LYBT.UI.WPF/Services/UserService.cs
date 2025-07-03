@@ -27,16 +27,24 @@ namespace LYBT.UI.WPF.Services {
         /// 方法 AddUserAsync 的说明
         /// </summary>
         public async Task<bool> AddUserAsync(UserCreateDto user) {
-            var resp = await _userApi.AddAsync(user);
-            return resp.Success;
+            try {
+                var resp = await _userApi.AddAsync(user);
+                return resp.Success;
+            } catch {
+                return false;
+            }
         }
 
         /// <summary>
         /// 方法 UpdateUserAsync 的说明
         /// </summary>
         public async Task<bool> UpdateUserAsync(UserDetailDto user) {
-            var resp = await _userApi.UpdateAsync(user);
-            return resp.Success;
+            try {
+                var resp = await _userApi.UpdateAsync(user);
+                return resp.Success;
+            } catch {
+                return false;
+            }
         }
 
         /// <summary>
