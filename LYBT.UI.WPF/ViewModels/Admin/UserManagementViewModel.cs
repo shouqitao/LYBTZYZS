@@ -54,7 +54,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                             Email = value.Email,
                             PhoneNumber = value.PhoneNumber
                         };
-                        EditModeTitle = "编辑用户";
+                        IsEditable = false;
+                        EditModeTitle = "用户详情";
                     }
                 }
             }
@@ -73,10 +74,20 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// </summary>
         public string EditModeTitle { get => _editModeTitle; set => SetProperty(ref _editModeTitle, value); }
 
+        private bool _isEditable;
+        /// <summary>
+        /// 详情区域是否可编辑
+        /// </summary>
+        public bool IsEditable { get => _isEditable; set => SetProperty(ref _isEditable, value); }
+
         /// <summary>
         /// 属性 AddUserCommand 的说明
         /// </summary>
         public DelegateCommand AddUserCommand { get; }
+        /// <summary>
+        /// 编辑命令
+        /// </summary>
+        public DelegateCommand EditUserCommand { get; }
         /// <summary>
         /// 属性 SaveUserCommand 的说明
         /// </summary>
@@ -103,7 +114,10 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public UserManagementViewModel(Services.IUserService userService) {
             _userService = userService;
             AddUserCommand = new DelegateCommand(AddUser);
-            SaveUserCommand = new DelegateCommand(async () => await SaveUser(), () => EditingUser != null).ObservesProperty(() => EditingUser);
+            EditUserCommand = new DelegateCommand(EditUser, () => SelectedUser != null).ObservesProperty(() => SelectedUser);
+            SaveUserCommand = new DelegateCommand(async () => await SaveUser(), () => EditingUser != null && IsEditable)
+                .ObservesProperty(() => EditingUser)
+                .ObservesProperty(() => IsEditable);
             SearchCommand = new DelegateCommand(async () => await LoadUsers());
             DisableUserCommand = new DelegateCommand(async () => await DisableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             EnableUserCommand = new DelegateCommand(async () => await EnableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
@@ -124,6 +138,14 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             };
             SelectedUser = null;
             EditModeTitle = "新增用户";
+            IsEditable = true;
+        }
+
+        private void EditUser() {
+            if (SelectedUser != null) {
+                IsEditable = true;
+                EditModeTitle = "编辑用户";
+            }
         }
 
         /// <summary>
@@ -196,7 +218,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             }
             // 刷新列表
             await LoadUsers();
-            EditModeTitle = "编辑用户";
+            IsEditable = false;
+            EditModeTitle = "用户详情";
         }
 
         /// <summary>

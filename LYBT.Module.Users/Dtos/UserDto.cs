@@ -34,6 +34,12 @@ namespace LYBT.Module.Users.Dtos {
         public List<UserRole> Roles { get; set; } = new();
 
         /// <summary>
+        /// 用户角色文本，显示所有角色名称
+        /// </summary>
+        public string RolesText =>
+            Roles != null && Roles.Count > 0 ? string.Join("、", Roles) : Role.ToString();
+
+        /// <summary>
         /// 账号启用状态（true=启用，false=禁用）
         /// </summary>
         public bool IsActive { get; set; }
