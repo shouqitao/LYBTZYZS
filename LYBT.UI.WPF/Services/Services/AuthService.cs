@@ -39,6 +39,9 @@ namespace LYBT.UI.WPF.Services {
             }
         }
 
+        /// <summary>
+        /// 方法 LoginAsync 的说明
+        /// </summary>
         public async Task<(bool success, IList<UserRole> roles, string errorMessage, string token)> LoginAsync(string userName, string password) {
             try {
                 var result = await _authApi.LoginAsync(new LoginRequestDto {
@@ -61,6 +64,9 @@ namespace LYBT.UI.WPF.Services {
             }
         }
 
+        /// <summary>
+        /// 方法 SaveAutoLoginInfo 的说明
+        /// </summary>
         private void SaveAutoLoginInfo(string userName, string password) {
             var info = new AutoLoginInfo { UserName = userName, Password = password };
             var json = JsonSerializer.Serialize(info);
@@ -71,6 +77,9 @@ namespace LYBT.UI.WPF.Services {
             _rememberedPassword = password;
         }
 
+        /// <summary>
+        /// 方法 ClearAutoLoginInfo 的说明
+        /// </summary>
         public void ClearAutoLoginInfo() {
             if (File.Exists(_autoLoginPath))
                 File.Delete(_autoLoginPath);
@@ -79,8 +88,17 @@ namespace LYBT.UI.WPF.Services {
             _rememberedPassword = null;
         }
 
+        /// <summary>
+        /// 类 AutoLoginInfo 的说明
+        /// </summary>
         private class AutoLoginInfo {
+            /// <summary>
+            /// 属性 UserName 的说明
+            /// </summary>
             public string UserName { get; set; }
+            /// <summary>
+            /// 属性 Password 的说明
+            /// </summary>
             public string Password { get; set; }
         }
     }

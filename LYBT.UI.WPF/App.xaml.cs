@@ -11,7 +11,13 @@ using System.Net.Http;
 using System.Windows;
 
 namespace LYBT.UI.WPF {
+    /// <summary>
+    /// 类 App 的说明
+    /// </summary>
     public partial class App : PrismApplication {
+        /// <summary>
+        /// 方法 RegisterTypes 的说明
+        /// </summary>
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             // 1. 构造无Token的HttpClient，首次登录还没有token，正常用即可  
             string? baseUrl = ConfigurationManager.AppSettings["WebApiBaseUrl"];
@@ -96,10 +102,16 @@ namespace LYBT.UI.WPF {
 
         }
 
+        /// <summary>
+        /// 方法 CreateShell 的说明
+        /// </summary>
         protected override Window CreateShell() {
             return Container.Resolve<MainWindow>();
         }
 
+        /// <summary>
+        /// 方法 OnInitialized 的说明
+        /// </summary>
         protected override void OnInitialized() {
             base.OnInitialized();
             var regionManager = Container.Resolve<IRegionManager>();

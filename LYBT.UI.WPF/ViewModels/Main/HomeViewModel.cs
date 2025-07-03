@@ -7,9 +7,15 @@ namespace LYBT.UI.WPF.ViewModels.Main {
     /// 主内容区ViewModel，动态导航菜单
     /// </summary>
     public class HomeViewModel : BindableBase, INavigationAware {
+        /// <summary>
+        /// 属性 NavigationItems 的说明
+        /// </summary>
         public ObservableCollection<NavigationItem> NavigationItems { get; } = new();
 
         private readonly IRegionManager _regionManager;
+        /// <summary>
+        /// 属性 NavigateCommand 的说明
+        /// </summary>
         public DelegateCommand<NavigationItem> NavigateCommand { get; }
 
         public HomeViewModel(IRegionManager regionManager) {
@@ -17,6 +23,9 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             NavigateCommand = new DelegateCommand<NavigationItem>(Navigate);
         }
 
+        /// <summary>
+        /// 方法 Navigate 的说明
+        /// </summary>
         private void Navigate(NavigationItem item) {
             if (item != null)
                 _regionManager.RequestNavigate("ContentRegion", item.TargetView);
@@ -58,7 +67,13 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             }
         }
 
+        /// <summary>
+        /// 方法 IsNavigationTarget 的说明
+        /// </summary>
         public bool IsNavigationTarget(NavigationContext navigationContext) => true;
+        /// <summary>
+        /// 方法 OnNavigatedFrom 的说明
+        /// </summary>
         public void OnNavigatedFrom(NavigationContext navigationContext) { }
     }
 }
