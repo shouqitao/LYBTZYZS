@@ -8,16 +8,16 @@ namespace LYBT.Common.Enums.Users {
         /// <summary>系统管理员</summary>
         Admin = 0,
 
-        /// <summary>看诊医生</summary>
+        /// <summary>主治医生</summary>
         DiagnosingDoctor = 1,
 
-        /// <summary>诊疗室医生（执行治疗任务）</summary>
+        /// <summary>理疗师</summary>
         TreatmentDoctor = 2,
 
-        /// <summary>药房工作人员</summary>
+        /// <summary>药剂师</summary>
         PharmacyStaff = 3,
 
-        /// <summary>挂号/前台工作人员</summary>
+        /// <summary>挂号人员</summary>
         RegistrationStaff = 4,
 
         /// <summary>收费人员</summary>
