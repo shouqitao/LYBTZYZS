@@ -36,7 +36,6 @@ namespace LYBT.Module.Auth.Services {
                     Id = Guid.NewGuid(),
                     UserName = "sysadmin",
                     RealName = "系统管理员",
-                    Role = UserRole.Admin,
                     Roles = new List<UserRole> { UserRole.Admin },
                     IsActive = true,
                     CreatedTime = DateTime.Now,

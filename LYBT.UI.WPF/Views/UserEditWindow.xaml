@@ -25,7 +25,7 @@
         <TextBox x:Name="RealNameTextBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,5"/>
 
         <TextBlock Text="角色" Grid.Row="2" VerticalAlignment="Center"/>
-        <ComboBox x:Name="RoleComboBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,5"/>
+        <ListBox x:Name="RoleListBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,5" SelectionMode="Multiple"/>
 
         <TextBlock Text="邮箱" Grid.Row="3" VerticalAlignment="Center"/>
         <TextBox x:Name="EmailTextBox" Grid.Row="3" Grid.Column="1" Margin="0,0,0,5"/>

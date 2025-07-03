@@ -32,8 +32,8 @@ public class UserService : IUserService {
                 Id = m.Id,
                 UserName = m.UserName,
                 RealName = m.RealName,
-                Role = m.Role,
-                Roles = m.Roles != null && m.Roles.Count > 0 ? m.Roles : new List<UserRole> { m.Role },
+                Role = m.Roles.FirstOrDefault(),
+                Roles = m.Roles,
                 IsActive = m.IsActive,
                 CreatedTime = m.CreatedTime,
                 LastLoginTime = m.LastLoginTime,
@@ -55,8 +55,8 @@ public class UserService : IUserService {
             Id = m.Id,
             UserName = m.UserName,
             RealName = m.RealName,
-            Role = m.Role,
-            Roles = m.Roles != null && m.Roles.Count > 0 ? m.Roles : new List<UserRole> { m.Role },
+            Role = m.Roles.FirstOrDefault(),
+            Roles = m.Roles,
             IsActive = m.IsActive,
             CreatedTime = m.CreatedTime,
             LastLoginTime = m.LastLoginTime,
@@ -72,12 +72,11 @@ public class UserService : IUserService {
         if (await _userRepository.ExistsByUsernameAsync(dto.UserName))
             throw new Exception("用户名已存在");
 
-        var roles = dto.Roles != null && dto.Roles.Count > 0 ? dto.Roles : new List<UserRole> { dto.Role };
+        var roles = dto.Roles ?? new List<UserRole>();
         var user = new UserModel {
             Id = Guid.NewGuid(),
             UserName = dto.UserName,
             RealName = dto.RealName,
-            Role = roles.First(),
             Roles = roles,
             IsActive = dto.IsActive,
             Email = dto.Email,
@@ -116,8 +115,7 @@ public class UserService : IUserService {
         var oldSnapshot = System.Text.Json.JsonSerializer.Serialize(oldUser);
 
         oldUser.RealName = dto.RealName;
-        var roles = dto.Roles != null && dto.Roles.Count > 0 ? dto.Roles : new List<UserRole> { dto.Role };
-        oldUser.Role = roles.First();
+        var roles = dto.Roles ?? new List<UserRole>();
         oldUser.Roles = roles;
         oldUser.IsActive = dto.IsActive;
         oldUser.Email = dto.Email;

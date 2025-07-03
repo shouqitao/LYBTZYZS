@@ -24,11 +24,6 @@ namespace LYBT.Module.Users.Models {
         public string RealName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用户角色（管理员、医生等，枚举）
-        /// </summary>
-        public UserRole Role { get; set; } = UserRole.DiagnosingDoctor;
-
-        /// <summary>
         /// 用户拥有的所有角色
         /// </summary>
         public List<UserRole> Roles { get; set; } = new();

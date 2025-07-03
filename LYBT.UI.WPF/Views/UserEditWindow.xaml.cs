@@ -1,6 +1,7 @@
 using LYBT.Common.Enums.Users;
 using LYBT.Module.Users.Dtos;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 
 namespace LYBT.UI.WPF.Views {
@@ -20,20 +21,22 @@ namespace LYBT.UI.WPF.Views {
 
         public UserEditWindow(IEnumerable<UserRole> roles, UserDto? user = null) {
             InitializeComponent();
-            RoleComboBox.ItemsSource = roles;
+            RoleListBox.ItemsSource = roles;
             _origin = user;
             if (user != null) {
                 Title = "编辑用户";
                 UserNameTextBox.Text = user.UserName;
                 UserNameTextBox.IsEnabled = false;
                 RealNameTextBox.Text = user.RealName;
-                RoleComboBox.SelectedItem = user.Role;
+                foreach (var r in user.Roles)
+                    RoleListBox.SelectedItems.Add(r);
                 EmailTextBox.Text = user.Email ?? string.Empty;
                 PhoneNumberTextBox.Text = user.PhoneNumber ?? string.Empty;
                 IsActiveCheckBox.IsChecked = user.IsActive;
             } else {
                 Title = "新增用户";
-                RoleComboBox.SelectedIndex = 0;
+                if (roles.Any())
+                    RoleListBox.SelectedItems.Add(roles.First());
                 IsActiveCheckBox.IsChecked = true;
             }
         }
@@ -42,11 +45,12 @@ namespace LYBT.UI.WPF.Views {
         /// 方法 Ok_Click 的说明
         /// </summary>
         private void Ok_Click(object sender, RoutedEventArgs e) {
+            var selectedRoles = RoleListBox.SelectedItems.Cast<UserRole>().ToList();
             if (_origin == null) {
                 CreatedUser = new UserCreateDto {
                     UserName = UserNameTextBox.Text,
                     RealName = RealNameTextBox.Text,
-                    Role = (UserRole)RoleComboBox.SelectedItem!,
+                    Roles = selectedRoles,
                     IsActive = IsActiveCheckBox.IsChecked == true,
                     Email = EmailTextBox.Text,
                     PhoneNumber = PhoneNumberTextBox.Text
@@ -55,7 +59,7 @@ namespace LYBT.UI.WPF.Views {
                 EditedUser = new UserEditDto {
                     Id = _origin.Id,
                     RealName = RealNameTextBox.Text,
-                    Role = (UserRole)RoleComboBox.SelectedItem!,
+                    Roles = selectedRoles,
                     IsActive = IsActiveCheckBox.IsChecked == true,
                     Email = EmailTextBox.Text,
                     PhoneNumber = PhoneNumberTextBox.Text,
