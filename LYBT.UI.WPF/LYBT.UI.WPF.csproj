@@ -41,6 +41,7 @@
     <ProjectReference Include="..\LYBT.Module.Queueing\LYBT.Module.Queueing.csproj" />
     <ProjectReference Include="..\LYBT.Module.Records\LYBT.Module.Records.csproj" />
     <ProjectReference Include="..\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
   </ItemGroup>
 
   <ItemGroup>
