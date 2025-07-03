@@ -50,6 +50,8 @@ using LYBT.Module.Sync.Services;
 using LYBT.Module.Users.Mapping;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Extensions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -122,7 +124,11 @@ builder.Services.AddAutoMapper(
 
 // =========== 3. 注册控制器和Swagger ===========
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(o =>
+{
+    o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "LYBT.WebAPI", Version = "v1" });

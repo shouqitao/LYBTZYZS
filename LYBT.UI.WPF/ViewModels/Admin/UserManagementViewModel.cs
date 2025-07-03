@@ -4,6 +4,9 @@ using LYBT.Module.Users.Dtos;
 using LYBT.UI.WPF.Services;
 using Prism.Commands;
 using Prism.Mvvm;
+using Refit;
+using System.Text.Json;
+using System.Linq;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -168,7 +171,23 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                     }
                 }
             } catch (Exception ex) {
-                MessageBox.Show($"操作失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                string msg = ex.Message;
+                if (ex is ApiException apiEx && !string.IsNullOrEmpty(apiEx.Content)) {
+                    try {
+                        var doc = JsonDocument.Parse(apiEx.Content);
+                        if (doc.RootElement.TryGetProperty("message", out var m))
+                            msg = m.GetString() ?? msg;
+                        else if (doc.RootElement.TryGetProperty("errors", out var errs)) {
+                            var parts = errs.EnumerateObject()
+                                .SelectMany(p => p.Value.EnumerateArray().Select(v => v.GetString()))
+                                .Where(s => !string.IsNullOrEmpty(s));
+                            msg = string.Join("; ", parts);
+                        }
+                    } catch {
+                        // ignore parse errors
+                    }
+                }
+                MessageBox.Show($"操作失败：{msg}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             // 刷新列表
