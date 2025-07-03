@@ -40,6 +40,7 @@
     <ProjectReference Include="..\LYBT.Module.Pharmacy\LYBT.Module.Pharmacy.csproj" />
     <ProjectReference Include="..\LYBT.Module.Queueing\LYBT.Module.Queueing.csproj" />
     <ProjectReference Include="..\LYBT.Module.Records\LYBT.Module.Records.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
   </ItemGroup>
 
   <ItemGroup>
