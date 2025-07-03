@@ -8,6 +8,7 @@ using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
 using LYBT.Module.Users;
+using Microsoft.Extensions.Options;
 
 /// <summary>
 /// 用户服务实现类（集成日志模块）
@@ -15,10 +16,12 @@ using LYBT.Module.Users;
 public class UserService : IUserService {
     private readonly IUserRepository _userRepository;
     private readonly ILogService _logService; // 日志服务
+    private readonly UserOptions _options;
 
-    public UserService(IUserRepository userRepository, ILogService logService) {
+    public UserService(IUserRepository userRepository, ILogService logService, IOptions<UserOptions> options) {
         _userRepository = userRepository;
         _logService = logService;
+        _options = options.Value;
     }
 
     /// <summary>
@@ -83,7 +86,7 @@ public class UserService : IUserService {
             PhoneNumber = dto.PhoneNumber,
             CreatedTime = DateTime.Now,
 
-            PasswordHash = PasswordHelper.Hash(UserDefaults.DefaultUserPassword)
+            PasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword)
         };
         var result = await _userRepository.AddAsync(user);
 
