@@ -8,7 +8,13 @@ using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels {
+    /// <summary>
+    /// 类 BillingStaffViewModel 的说明
+    /// </summary>
     public class BillingStaffViewModel : BindableBase {
+        /// <summary>
+        /// 属性 Bills 的说明
+        /// </summary>
         public ObservableCollection<BillingDto> Bills { get; } = new();
 
         private BillingDto? _selectedBill;
@@ -17,7 +23,13 @@ namespace LYBT.UI.WPF.ViewModels {
             set => SetProperty(ref _selectedBill, value);
         }
 
+        /// <summary>
+        /// 属性 RefreshCommand 的说明
+        /// </summary>
         public DelegateCommand RefreshCommand { get; }
+        /// <summary>
+        /// 属性 MarkPaidCommand 的说明
+        /// </summary>
         public DelegateCommand MarkPaidCommand { get; }
 
         private readonly IBillingService _billingService;
@@ -30,6 +42,9 @@ namespace LYBT.UI.WPF.ViewModels {
             _ = LoadBills();
         }
 
+        /// <summary>
+        /// 方法 LoadBills 的说明
+        /// </summary>
         private async Task LoadBills() {
             var list = await _billingService.GetAllAsync();
             Bills.Clear();
@@ -37,6 +52,9 @@ namespace LYBT.UI.WPF.ViewModels {
                 Bills.Add(b);
         }
 
+        /// <summary>
+        /// 方法 MarkPaid 的说明
+        /// </summary>
         private async Task MarkPaid() {
             if (SelectedBill == null)
                 return;

@@ -12,17 +12,32 @@ namespace LYBT.UI.WPF.ViewModels.Main {
     /// </summary>
     public class LoginViewModel : BindableBase {
         private string _userName;
+        /// <summary>
+        /// 属性 UserName 的说明
+        /// </summary>
         public string UserName { get => _userName; set => SetProperty(ref _userName, value); }
 
         private string _password;
+        /// <summary>
+        /// 属性 Password 的说明
+        /// </summary>
         public string Password { get => _password; set => SetProperty(ref _password, value); }
 
         private string _errorMessage;
+        /// <summary>
+        /// 属性 ErrorMessage 的说明
+        /// </summary>
         public string ErrorMessage { get => _errorMessage; set => SetProperty(ref _errorMessage, value); }
 
         private bool _isRemember;
+        /// <summary>
+        /// 属性 IsRemember 的说明
+        /// </summary>
         public bool IsRemember { get => _isRemember; set => SetProperty(ref _isRemember, value); }
 
+        /// <summary>
+        /// 属性 LoginCommand 的说明
+        /// </summary>
         public DelegateCommand LoginCommand { get; }
 
         private readonly IAuthService _authService;
@@ -44,6 +59,9 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             }
         }
 
+        /// <summary>
+        /// 方法 ExecuteLoginAsync 的说明
+        /// </summary>
         private async Task ExecuteLoginAsync() {
             ErrorMessage = string.Empty;
             var (success, roles, errorMsg, token) = await _authService.LoginAsync(UserName, Password);
@@ -58,6 +76,9 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             }
         }
 
+        /// <summary>
+        /// 方法 CanExecuteLogin 的说明
+        /// </summary>
         private bool CanExecuteLogin() => !string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password);
     }
 }

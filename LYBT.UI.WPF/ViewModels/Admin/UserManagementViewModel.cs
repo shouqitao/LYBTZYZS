@@ -11,30 +11,69 @@ using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
+    /// <summary>
+    /// 类 UserManagementViewModel 的说明
+    /// </summary>
     public class UserManagementViewModel : BindableBase {
+        /// <summary>
+        /// 属性 Users 的说明
+        /// </summary>
         public ObservableCollection<UserDto> Users { get; } = new();
+        /// <summary>
+        /// 属性 RoleList 的说明
+        /// </summary>
         public ObservableCollection<UserRole> RoleList { get; } = new ObservableCollection<UserRole>(
             (UserRole[])Enum.GetValues(typeof(UserRole)));
 
         private UserDto _editingUser;
+        /// <summary>
+        /// 属性 EditingUser 的说明
+        /// </summary>
         public UserDto EditingUser { get => _editingUser; set => SetProperty(ref _editingUser, value); }
 
         private UserDto _selectedUser;
+        /// <summary>
+        /// 属性 SelectedUser 的说明
+        /// </summary>
         public UserDto SelectedUser { get => _selectedUser; set => SetProperty(ref _selectedUser, value); }
 
         private string _searchKeyword = string.Empty;
+        /// <summary>
+        /// 属性 SearchKeyword 的说明
+        /// </summary>
         public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
 
         private string _password;
+        /// <summary>
+        /// 属性 Password 的说明
+        /// </summary>
         public string Password { get => _password; set => SetProperty(ref _password, value); }
 
         private string _editModeTitle = "新增用户";
+        /// <summary>
+        /// 属性 EditModeTitle 的说明
+        /// </summary>
         public string EditModeTitle { get => _editModeTitle; set => SetProperty(ref _editModeTitle, value); }
 
+        /// <summary>
+        /// 属性 AddUserCommand 的说明
+        /// </summary>
         public DelegateCommand AddUserCommand { get; }
+        /// <summary>
+        /// 属性 SaveUserCommand 的说明
+        /// </summary>
         public DelegateCommand SaveUserCommand { get; }
+        /// <summary>
+        /// 属性 SearchCommand 的说明
+        /// </summary>
         public DelegateCommand SearchCommand { get; }
+        /// <summary>
+        /// 属性 DisableUserCommand 的说明
+        /// </summary>
         public DelegateCommand DisableUserCommand { get; }
+        /// <summary>
+        /// 属性 ResetPasswordCommand 的说明
+        /// </summary>
         public DelegateCommand ResetPasswordCommand { get; }
 
         private readonly IUserService _userService;
@@ -50,6 +89,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             _ = LoadUsers();
         }
 
+        /// <summary>
+        /// 方法 AddUser 的说明
+        /// </summary>
         public void AddUser() {
             // 新增时，右侧表单清空
             EditingUser = new UserDto {
@@ -60,6 +102,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             Password = string.Empty;
         }
 
+        /// <summary>
+        /// 方法 SaveUser 的说明
+        /// </summary>
         private async Task SaveUser() {
             if (EditingUser == null)
                 return;
@@ -107,6 +152,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             EditModeTitle = "编辑用户";
         }
 
+        /// <summary>
+        /// 方法 LoadUsers 的说明
+        /// </summary>
         private async Task LoadUsers() {
             var list = await _userService.SearchAsync(SearchKeyword);
             Users.Clear();
@@ -114,6 +162,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 Users.Add(u);
         }
 
+        /// <summary>
+        /// 方法 DisableUser 的说明
+        /// </summary>
         private async Task DisableUser() {
             if (SelectedUser == null)
                 return;
@@ -123,6 +174,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 MessageBox.Show("禁用用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
+        /// <summary>
+        /// 方法 ResetPassword 的说明
+        /// </summary>
         private async Task ResetPassword() {
             if (SelectedUser == null)
                 return;
