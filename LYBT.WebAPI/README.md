@@ -2,5 +2,7 @@
 
 The ASP.NET Core API project that wires up all modules, registers their services and dependencies, and exposes REST endpoints for clients.
 
-Creating new users or doctors and resetting their passwords now requires callers to explicitly provide a password in the request body.
+When creating users, the API automatically assigns an initial password based on
+`UserDefaults` settings in `appsettings.json`. Password reset operations still
+require callers to provide the new password in the request body.
 
