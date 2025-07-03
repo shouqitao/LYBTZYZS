@@ -36,6 +36,7 @@ namespace LYBT.UI.WPF {
             var queueingApi = RestService.For<IQueueingApi>(httpClient);
             var recordApi = RestService.For<IRecordApi>(httpClient);
             var registrationApi = RestService.For<IRegistrationApi>(httpClient);
+            var logApi = RestService.For<ILogApi>(httpClient);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！  
             var authService = new AuthService(authApi);
@@ -49,6 +50,7 @@ namespace LYBT.UI.WPF {
             var queueingService = new QueueingService(queueingApi);
             var recordService = new RecordService(recordApi);
             var registrationService = new RegistrationService(registrationApi);
+            var logService = new LogService(logApi);
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
             containerRegistry.RegisterInstance(authApi);
@@ -62,6 +64,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(queueingApi);
             containerRegistry.RegisterInstance(recordApi);
             containerRegistry.RegisterInstance(registrationApi);
+            containerRegistry.RegisterInstance(logApi);
             containerRegistry.RegisterInstance<IAuthService>(authService);
             containerRegistry.RegisterInstance<IUserManagementService>(userService);
             containerRegistry.RegisterInstance<IBillingService>(billingService);
@@ -73,6 +76,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IQueueingService>(queueingService);
             containerRegistry.RegisterInstance<IRecordService>(recordService);
             containerRegistry.RegisterInstance<IRegistrationService>(registrationService);
+            containerRegistry.RegisterInstance<ILogService>(logService);
 
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
