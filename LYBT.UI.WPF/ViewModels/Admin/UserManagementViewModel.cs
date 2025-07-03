@@ -57,7 +57,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 Id = detail.Id,
                 UserName = detail.UserName,
                 RealName = detail.RealName,
-                Roles = new System.Collections.Generic.List<UserRole>(detail.Roles),
+                Roles = detail.Roles,
                 IsActive = detail.IsActive,
                 Email = detail.Email,
                 PhoneNumber = detail.PhoneNumber
@@ -139,7 +139,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             // 新增时，右侧表单清空
             EditingUser = new UserDto {
                 IsActive = true,
-                Roles = new System.Collections.Generic.List<UserRole> { UserRole.DiagnosingDoctor }
+                Roles = new List<UserRole> { UserRole.DiagnosingDoctor }
             };
             SelectedUser = null;
             EditModeTitle = "新增用户";
