@@ -35,7 +35,28 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// <summary>
         /// 属性 SelectedUser 的说明
         /// </summary>
-        public UserDto SelectedUser { get => _selectedUser; set => SetProperty(ref _selectedUser, value); }
+        public UserDto SelectedUser {
+            get => _selectedUser;
+            set {
+                if (SetProperty(ref _selectedUser, value)) {
+                    if (value != null) {
+                        // 选择用户时复制一份到编辑区，避免直接修改列表项
+                        EditingUser = new UserDto {
+                            Id = value.Id,
+                            UserName = value.UserName,
+                            RealName = value.RealName,
+                            Role = value.Role,
+                            Roles = new System.Collections.Generic.List<UserRole>(value.Roles),
+                            IsActive = value.IsActive,
+                            Email = value.Email,
+                            PhoneNumber = value.PhoneNumber
+                        };
+                        EditModeTitle = "编辑用户";
+                        Password = string.Empty;
+                    }
+                }
+            }
+        }
 
         private string _searchKeyword = string.Empty;
         /// <summary>
@@ -104,6 +125,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 IsActive = true,
                 Role = RoleList.Count > 0 ? RoleList[0] : UserRole.DiagnosingDoctor // 默认角色
             };
+            SelectedUser = null;
             EditModeTitle = "新增用户";
             Password = string.Empty;
         }

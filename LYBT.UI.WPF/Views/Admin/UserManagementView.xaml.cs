@@ -19,6 +19,23 @@ namespace LYBT.UI.WPF.Views.Admin {
     public partial class UserManagementView : UserControl {
         public UserManagementView() {
             InitializeComponent();
+            DataContextChanged += UserManagementView_DataContextChanged;
+        }
+
+        private void UserManagementView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) {
+            if (e.OldValue is ViewModels.Admin.UserManagementViewModel oldVm)
+                oldVm.PropertyChanged -= Vm_PropertyChanged;
+            if (e.NewValue is ViewModels.Admin.UserManagementViewModel newVm)
+                newVm.PropertyChanged += Vm_PropertyChanged;
+        }
+
+        private void Vm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
+            if (sender is ViewModels.Admin.UserManagementViewModel vm) {
+                if (e.PropertyName == nameof(vm.Password) || e.PropertyName == nameof(vm.EditingUser)) {
+                    if (passwordBox.Password != vm.Password)
+                        passwordBox.Password = vm.Password ?? string.Empty;
+                }
+            }
         }
 
         /// <summary>
