@@ -1,5 +1,5 @@
-﻿using LYBT.UI.WPF.Services;
-using LYBT.UI.WPF.Services.Api;
+﻿using LYBT.UI.WPF.Apis;
+using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.Views;
 using LYBT.UI.WPF.Views.Admin;
 using LYBT.UI.WPF.Views.Main;
