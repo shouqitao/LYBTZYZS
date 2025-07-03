@@ -13,9 +13,9 @@ namespace LYBT.Module.Users.Dtos {
         public string? Keyword { get; set; }
 
         /// <summary>
-        /// 用户角色（可选条件，枚举）
+        /// 用户角色列表（可选，多选）
         /// </summary>
-        public UserRole? Role { get; set; }
+        public List<UserRole>? Roles { get; set; }
 
         /// <summary>
         /// 启用状态（可选条件）

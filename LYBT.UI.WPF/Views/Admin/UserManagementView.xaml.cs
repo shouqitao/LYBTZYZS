@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using LYBT.Common.Enums.Users;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -34,6 +35,11 @@ namespace LYBT.UI.WPF.Views.Admin {
                 if (e.PropertyName == nameof(vm.Password) || e.PropertyName == nameof(vm.EditingUser)) {
                     if (passwordBox.Password != vm.Password)
                         passwordBox.Password = vm.Password ?? string.Empty;
+                    if (vm.EditingUser != null) {
+                        RolesListBox.SelectedItems.Clear();
+                        foreach (var r in vm.EditingUser.Roles)
+                            RolesListBox.SelectedItems.Add(r);
+                    }
                 }
             }
         }
@@ -46,6 +52,12 @@ namespace LYBT.UI.WPF.Views.Admin {
                 var pb = (PasswordBox)sender;
                 if (pb.Password != vm.Password)
                     vm.Password = pb.Password;
+            }
+        }
+
+        private void RolesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (DataContext is ViewModels.Admin.UserManagementViewModel vm && vm.EditingUser != null) {
+                vm.EditingUser.Roles = RolesListBox.SelectedItems.Cast<UserRole>().ToList();
             }
         }
     }

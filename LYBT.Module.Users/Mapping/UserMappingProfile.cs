@@ -14,8 +14,8 @@ namespace LYBT.Module.Users.Mapping {
         public UserMappingProfile() {
             // 用户实体转DTO
             CreateMap<UserModel, UserDto>()
-                .ForMember(dest => dest.Roles,
-                    opt => opt.MapFrom(src => src.Roles != null && src.Roles.Count > 0 ? src.Roles : new List<UserRole> { src.Role }));
+                .ForMember(dest => dest.Role,
+                    opt => opt.MapFrom(src => src.Roles.FirstOrDefault()));
             // 新增DTO转实体
             CreateMap<UserCreateDto, UserModel>();
             // 编辑DTO转实体（密码字段需单独处理）

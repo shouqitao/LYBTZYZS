@@ -45,7 +45,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                             Id = value.Id,
                             UserName = value.UserName,
                             RealName = value.RealName,
-                            Role = value.Role,
                             Roles = new System.Collections.Generic.List<UserRole>(value.Roles),
                             IsActive = value.IsActive,
                             Email = value.Email,
@@ -123,7 +122,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             // 新增时，右侧表单清空
             EditingUser = new UserDto {
                 IsActive = true,
-                Role = RoleList.Count > 0 ? RoleList[0] : UserRole.DiagnosingDoctor // 默认角色
+                Roles = RoleList.Count > 0 ? new System.Collections.Generic.List<UserRole> { RoleList[0] } : new System.Collections.Generic.List<UserRole>()
             };
             SelectedUser = null;
             EditModeTitle = "新增用户";
@@ -146,7 +145,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 var createDto = new UserCreateDto {
                     UserName = EditingUser.UserName,
                     RealName = EditingUser.RealName,
-                    Role = EditingUser.Role,
                     Roles = EditingUser.Roles,
                     IsActive = EditingUser.IsActive,
                     Email = EditingUser.Email,
@@ -161,7 +159,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 var editDto = new UserEditDto {
                     Id = EditingUser.Id,
                     RealName = EditingUser.RealName,
-                    Role = EditingUser.Role,
                     Roles = EditingUser.Roles,
                     IsActive = EditingUser.IsActive,
                     Email = EditingUser.Email,

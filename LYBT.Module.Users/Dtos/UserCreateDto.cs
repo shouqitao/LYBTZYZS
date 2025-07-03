@@ -24,15 +24,10 @@ namespace LYBT.Module.Users.Dtos {
         public string RealName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用户角色（必填）
+        /// 用户角色集合（至少选择一个）
         /// </summary>
         [Required(ErrorMessage = "用户角色不能为空")]
-        [EnumDataType(typeof(UserRole), ErrorMessage = "用户角色无效")]
-        public UserRole Role { get; set; } = UserRole.DiagnosingDoctor;
-
-        /// <summary>
-        /// 多个用户角色
-        /// </summary>
+        [MinLength(1, ErrorMessage = "至少指定一个角色")]
         public List<UserRole> Roles { get; set; } = new();
 
         /// <summary>
