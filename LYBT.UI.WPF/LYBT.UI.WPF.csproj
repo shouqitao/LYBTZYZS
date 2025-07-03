@@ -44,6 +44,7 @@
     <ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
     <ProjectReference Include="..\LYBT.Module.Settings\LYBT.Module.Settings.csproj" />
     <ProjectReference Include="..\LYBT.Module.DiagnosisTreatment\LYBT.Module.DiagnosisTreatment.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
   </ItemGroup>
 
   <ItemGroup>
