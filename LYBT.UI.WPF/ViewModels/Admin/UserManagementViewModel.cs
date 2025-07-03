@@ -72,20 +72,26 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// </summary>
         public DelegateCommand DisableUserCommand { get; }
         /// <summary>
+        /// 属性 EnableUserCommand 的说明
+        /// </summary>
+        public DelegateCommand EnableUserCommand { get; }
+        /// <summary>
         /// 属性 ResetPasswordCommand 的说明
         /// </summary>
         public DelegateCommand ResetPasswordCommand { get; }
 
-        private readonly IUserService _userService;
+        private readonly Services.IUserService _userService;
 
-        public UserManagementViewModel(IUserService userService) {
+        public UserManagementViewModel(Services.IUserService userService) {
             _userService = userService;
             AddUserCommand = new DelegateCommand(AddUser);
             SaveUserCommand = new DelegateCommand(async () => await SaveUser(), () => EditingUser != null).ObservesProperty(() => EditingUser);
             SearchCommand = new DelegateCommand(async () => await LoadUsers());
             DisableUserCommand = new DelegateCommand(async () => await DisableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
+            EnableUserCommand = new DelegateCommand(async () => await EnableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             ResetPasswordCommand = new DelegateCommand(async () => await ResetPassword(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
 
+            _ = LoadRoles();
             _ = LoadUsers();
         }
 
@@ -96,7 +102,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             // 新增时，右侧表单清空
             EditingUser = new UserDto {
                 IsActive = true,
-                Role = UserRole.DiagnosingDoctor // 默认角色，可自定义
+                Role = RoleList.Count > 0 ? RoleList[0] : UserRole.DiagnosingDoctor // 默认角色
             };
             EditModeTitle = "新增用户";
             Password = string.Empty;
@@ -172,6 +178,28 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 await LoadUsers();
             else
                 MessageBox.Show("禁用用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        /// <summary>
+        /// 方法 EnableUser 的说明
+        /// </summary>
+        private async Task EnableUser() {
+            if (SelectedUser == null)
+                return;
+            if (await _userService.EnableUserAsync(SelectedUser.Id))
+                await LoadUsers();
+            else
+                MessageBox.Show("启用用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        /// <summary>
+        /// 方法 LoadRoles 的说明
+        /// </summary>
+        private async Task LoadRoles() {
+            var roles = await _userService.GetRolesAsync();
+            RoleList.Clear();
+            foreach (var r in roles)
+                RoleList.Add(r);
         }
 
         /// <summary>

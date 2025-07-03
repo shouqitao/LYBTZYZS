@@ -48,7 +48,7 @@ namespace LYBT.UI.WPF {
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
             var authService = new AuthService(authApi);
-            var userService = new UserService(userApi);
+            var userService = new Services.UserService(userApi);
             var billingService = new BillingService(billingApi);
             var diagnosisTreatmentService = new DiagnosisTreatmentService(diagnosisTreatmentApi);
             var doctorService = new DoctorService(doctorApi);
@@ -78,7 +78,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(logApi);
             containerRegistry.RegisterInstance(syncApi);
             containerRegistry.RegisterInstance<IAuthService>(authService);
-            containerRegistry.RegisterInstance<IUserService>(userService);
+            containerRegistry.RegisterInstance<Services.IUserService>(userService);
             containerRegistry.RegisterInstance<IBillingService>(billingService);
             containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
             containerRegistry.RegisterInstance<IDoctorService>(doctorService);

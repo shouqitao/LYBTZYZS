@@ -19,10 +19,13 @@
             <Button Content="新增用户" Command="{Binding AddUserCommand}" Margin="0,0,8,0"/>
             <Button Content="保存" Command="{Binding SaveUserCommand}" Margin="0,0,8,0"   
                     IsEnabled="{Binding EditingUser, Converter={StaticResource NullToBoolConverter}}"/>
-            <Button Content="禁用用户" Command="{Binding DisableUserCommand}"   
-                    IsEnabled="{Binding SelectedUser, Converter={StaticResource NullToBoolConverter}}"  
+            <Button Content="禁用用户" Command="{Binding DisableUserCommand}"
+                    IsEnabled="{Binding SelectedUser, Converter={StaticResource NullToBoolConverter}}"
                     Margin="0,0,8,0"/>
-            <Button Content="重置密码" Command="{Binding ResetPasswordCommand}"   
+            <Button Content="启用用户" Command="{Binding EnableUserCommand}"
+                    IsEnabled="{Binding SelectedUser, Converter={StaticResource NullToBoolConverter}}"
+                    Margin="0,0,8,0"/>
+            <Button Content="重置密码" Command="{Binding ResetPasswordCommand}"
                     IsEnabled="{Binding SelectedUser, Converter={StaticResource NullToBoolConverter}}"/>
         </StackPanel>
         <Grid Grid.Row="1">
