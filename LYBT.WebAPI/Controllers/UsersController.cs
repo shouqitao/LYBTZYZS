@@ -24,7 +24,7 @@ public class UsersController : ControllerBase {
     }
 
     /// <summary>
-    /// 新增用户，密码将设为 <see cref="UserDefaults.DefaultUserPassword"/>
+    /// 新增用户，密码将设为配置的默认值
     /// </summary>
     [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] UserCreateDto dto) {

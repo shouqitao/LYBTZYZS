@@ -1,10 +1,5 @@
 # LYBT.WebAPI
 
-The ASP.NET Core API project that wires up all modules, registers their services and dependencies, and exposes REST endpoints for clients.
+ASP.NET Core API 项目，负责整合所有业务模块并向客户端提供 REST 接口。
 
-
-When creating users, the API automatically assigns an initial password based on
-`UserDefaults` settings in `appsettings.json`. Password reset operations still
-require callers to provide the new password in the request body.
-
-
+创建用户时，系统会根据 `appsettings.json` 中 `UserDefaults:DefaultUserPassword` 的设置自动生成初始密码。重置密码操作仍需在请求体中提供新密码。

@@ -48,11 +48,14 @@ using LYBT.Module.Sync.Mapping;
 using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
 using LYBT.Module.Users.Mapping;
+using LYBT.Module.Users;
 using LYBT.WebAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDefaults"));
 
 // =========== 1. 注册所有模块的 Service 和 Repository ===========
 
