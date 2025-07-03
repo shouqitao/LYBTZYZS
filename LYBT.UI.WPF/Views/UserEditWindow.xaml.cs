@@ -17,7 +17,7 @@ namespace LYBT.UI.WPF.Views {
         /// <summary>
         /// 属性 EditedUser 的说明
         /// </summary>
-        public UserEditDto? EditedUser { get; private set; }
+        public UserDetailDto? EditedUser { get; private set; }
 
         public UserEditWindow(IEnumerable<UserRole> roles, UserDto? user = null) {
             InitializeComponent();
@@ -35,8 +35,8 @@ namespace LYBT.UI.WPF.Views {
                 IsActiveCheckBox.IsChecked = user.IsActive;
             } else {
                 Title = "新增用户";
-                if (roles.Any())
-                    RoleListBox.SelectedItems.Add(roles.First());
+                if (roles.Contains(UserRole.DiagnosingDoctor))
+                    RoleListBox.SelectedItems.Add(UserRole.DiagnosingDoctor);
                 IsActiveCheckBox.IsChecked = true;
             }
         }
@@ -56,14 +56,13 @@ namespace LYBT.UI.WPF.Views {
                     PhoneNumber = PhoneNumberTextBox.Text
                 };
             } else {
-                EditedUser = new UserEditDto {
+                EditedUser = new UserDetailDto {
                     Id = _origin.Id,
                     RealName = RealNameTextBox.Text,
                     Roles = selectedRoles,
                     IsActive = IsActiveCheckBox.IsChecked == true,
                     Email = EmailTextBox.Text,
-                    PhoneNumber = PhoneNumberTextBox.Text,
-                    Password = string.IsNullOrWhiteSpace(PasswordBox.Password) ? null : PasswordBox.Password
+                    PhoneNumber = PhoneNumberTextBox.Text
                 };
             }
             DialogResult = true;

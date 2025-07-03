@@ -24,7 +24,7 @@ public interface IUserService {
     /// <summary>
     /// 编辑用户
     /// </summary>
-    Task<bool> UpdateAsync(UserEditDto dto, Guid operatorId, string operatorName);
+    Task<bool> UpdateAsync(UserDetailDto dto, Guid operatorId, string operatorName);
 
     /// <summary>
     /// 禁用用户
@@ -47,9 +47,9 @@ public interface IUserService {
     Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName);
 
     /// <summary>
-    /// 管理员重置密码
+    /// 管理员重置密码为默认值
     /// </summary>
-    Task<bool> ResetPasswordAsync(Guid id, string newPassword, Guid operatorId, string operatorName);
+    Task<bool> ResetPasswordAsync(Guid id, Guid operatorId, string operatorName);
 
     /// <summary>
     /// 用户修改密码

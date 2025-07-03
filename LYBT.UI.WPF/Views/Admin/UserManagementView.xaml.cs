@@ -32,9 +32,7 @@ namespace LYBT.UI.WPF.Views.Admin {
 
         private void Vm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
             if (sender is ViewModels.Admin.UserManagementViewModel vm) {
-                if (e.PropertyName == nameof(vm.Password) || e.PropertyName == nameof(vm.EditingUser)) {
-                    if (passwordBox.Password != vm.Password)
-                        passwordBox.Password = vm.Password ?? string.Empty;
+                if (e.PropertyName == nameof(vm.EditingUser)) {
                     if (vm.EditingUser != null) {
                         RolesListBox.SelectedItems.Clear();
                         foreach (var r in vm.EditingUser.Roles)
@@ -44,16 +42,6 @@ namespace LYBT.UI.WPF.Views.Admin {
             }
         }
 
-        /// <summary>
-        /// 方法 PasswordBox_PasswordChanged 的说明
-        /// </summary>
-        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e) {
-            if (DataContext is ViewModels.Admin.UserManagementViewModel vm) {
-                var pb = (PasswordBox)sender;
-                if (pb.Password != vm.Password)
-                    vm.Password = pb.Password;
-            }
-        }
 
         private void RolesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (DataContext is ViewModels.Admin.UserManagementViewModel vm && vm.EditingUser != null) {
