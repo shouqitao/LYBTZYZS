@@ -234,7 +234,7 @@ LYBT 智能医疗系统服务于诊疗机构全员、全过程，解决以下核
 ### 认证系统
 
 - 登录/登出逻辑清晰，支持角色分配
-- 使用 DTO（LoginRequestDto, UserLoginDto 等）封装登录互通
+- 使用 DTO（LoginRequestDto 等）封装登录互通
 - 登陆接口各端一致，兼容未来 SSO
 
 ---
