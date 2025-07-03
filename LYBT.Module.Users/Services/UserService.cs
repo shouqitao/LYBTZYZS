@@ -7,6 +7,7 @@ using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
+using LYBT.Module.Users;
 
 /// <summary>
 /// 用户服务实现类（集成日志模块）
@@ -83,7 +84,7 @@ public class UserService : IUserService {
             PhoneNumber = dto.PhoneNumber,
             CreatedTime = DateTime.Now,
 
-            PasswordHash = PasswordHelper.Hash(dto.Password)
+            PasswordHash = PasswordHelper.Hash(UserDefaults.DefaultUserPassword)
         };
         var result = await _userRepository.AddAsync(user);
 

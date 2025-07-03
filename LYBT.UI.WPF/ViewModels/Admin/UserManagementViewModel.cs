@@ -150,8 +150,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                     Roles = EditingUser.Roles,
                     IsActive = EditingUser.IsActive,
                     Email = EditingUser.Email,
-                    PhoneNumber = EditingUser.PhoneNumber,
-                    Password = Password
+                    PhoneNumber = EditingUser.PhoneNumber
                 };
                 var ok = await _userService.AddUserAsync(createDto);
                 if (!ok) {

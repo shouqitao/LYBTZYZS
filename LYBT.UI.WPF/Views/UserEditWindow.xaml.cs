@@ -49,8 +49,7 @@ namespace LYBT.UI.WPF.Views {
                     Role = (UserRole)RoleComboBox.SelectedItem!,
                     IsActive = IsActiveCheckBox.IsChecked == true,
                     Email = EmailTextBox.Text,
-                    PhoneNumber = PhoneNumberTextBox.Text,
-                    Password = PasswordBox.Password
+                    PhoneNumber = PhoneNumberTextBox.Text
                 };
             } else {
                 EditedUser = new UserEditDto {
