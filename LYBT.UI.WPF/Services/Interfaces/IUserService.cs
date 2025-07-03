@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Services {
-    public interface IUserManagementService {
+    public interface IUserService {
         Task<IList<UserDto>> SearchAsync(string keyword = "");
         Task<bool> AddUserAsync(UserCreateDto user);
         Task<bool> UpdateUserAsync(UserEditDto user);

@@ -37,9 +37,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public DelegateCommand DisableUserCommand { get; }
         public DelegateCommand ResetPasswordCommand { get; }
 
-        private readonly IUserManagementService _userService;
+        private readonly IUserService _userService;
 
-        public UserManagementViewModel(IUserManagementService userService) {
+        public UserManagementViewModel(IUserService userService) {
             _userService = userService;
             AddUserCommand = new DelegateCommand(AddUser);
             SaveUserCommand = new DelegateCommand(async () => await SaveUser(), () => EditingUser != null).ObservesProperty(() => EditingUser);
