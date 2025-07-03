@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Services {
-    public class UserManagementService : IUserManagementService {
+    public class UserService : IUserService {
         private readonly IUserApi _userApi;
-        public UserManagementService(IUserApi userApi) => _userApi = userApi;
+        public UserService(IUserApi userApi) => _userApi = userApi;
 
         public async Task<IList<UserDto>> SearchAsync(string keyword = "") {
             var resp = await _userApi.SearchAsync(new UserQueryDto { Keyword = keyword, Page = 1, PageSize = 100 });
