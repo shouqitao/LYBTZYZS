@@ -109,7 +109,7 @@ public class UserService : IUserService {
     /// <summary>
     /// 编辑用户
     /// </summary>
-    public async Task<bool> UpdateAsync(UserEditDto dto, Guid operatorId, string operatorName) {
+    public async Task<bool> UpdateAsync(UserDetailDto dto, Guid operatorId, string operatorName) {
         var oldUser = await _userRepository.GetByIdAsync(dto.Id);
         if (oldUser == null)
             throw new Exception("用户不存在");
@@ -123,10 +123,6 @@ public class UserService : IUserService {
         oldUser.IsActive = dto.IsActive;
         oldUser.Email = dto.Email;
         oldUser.PhoneNumber = dto.PhoneNumber;
-
-        if (!string.IsNullOrWhiteSpace(dto.Password)) {
-            oldUser.PasswordHash = PasswordHelper.Hash(dto.Password);
-        }
 
         var result = await _userRepository.UpdateAsync(oldUser);
 
@@ -226,12 +222,12 @@ public class UserService : IUserService {
     /// <summary>
     /// 管理员重置密码
     /// </summary>
-    public async Task<bool> ResetPasswordAsync(Guid id, string newPassword, Guid operatorId, string operatorName) {
+    public async Task<bool> ResetPasswordAsync(Guid id, Guid operatorId, string operatorName) {
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null)
             throw new Exception("用户不存在");
 
-        user.PasswordHash = PasswordHelper.Hash(newPassword);
+        user.PasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword);
         var result = await _userRepository.UpdateAsync(user);
         if (result) {
             await _logService.AddLogAsync(new LogDto {

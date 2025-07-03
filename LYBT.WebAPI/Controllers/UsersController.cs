@@ -39,7 +39,7 @@ public class UsersController : ControllerBase {
     /// 编辑用户
     /// </summary>
     [HttpPut("update")]
-    public async Task<IActionResult> Update([FromBody] UserEditDto dto) {
+    public async Task<IActionResult> Update([FromBody] UserDetailDto dto) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
         var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
@@ -91,13 +91,13 @@ public class UsersController : ControllerBase {
     }
 
     /// <summary>
-    /// 管理员重置密码，需要明确提供新密码
+    /// 管理员重置密码，恢复为默认值
     /// </summary>
     [HttpPost("resetPassword/{id}")]
-    public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordDto dto) {
+    public async Task<IActionResult> ResetPassword(Guid id) {
         Guid operatorId = Guid.NewGuid();
         string operatorName = "管理员A";
-        var result = await _userService.ResetPasswordAsync(id, dto.NewPassword, operatorId, operatorName);
+        var result = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
         return result ? Ok(new { success = true }) : BadRequest(new { success = false });
     }
 

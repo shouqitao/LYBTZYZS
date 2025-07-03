@@ -14,7 +14,7 @@ namespace LYBT.UI.WPF.Apis {
         Task<ApiSuccessResponse> AddAsync([Body] UserCreateDto user);
 
         [Put("/api/Users/update")]
-        Task<ApiSuccessResponse> UpdateAsync([Body] UserEditDto user);
+        Task<ApiSuccessResponse> UpdateAsync([Body] UserDetailDto user);
 
         [Post("/api/Users/disable/{id}")]
         Task<ApiSuccessResponse> DisableAsync(Guid id);
@@ -29,7 +29,7 @@ namespace LYBT.UI.WPF.Apis {
         Task<ApiSuccessResponse> BatchEnableAsync([Body] BatchIdsDto dto);
 
         [Post("/api/Users/resetPassword/{id}")]
-        Task<ApiSuccessResponse> ResetPasswordAsync(Guid id, [Body] ResetPasswordDto dto);
+        Task<ApiSuccessResponse> ResetPasswordAsync(Guid id);
 
         [Post("/api/Users/changePassword")]
         Task<ApiSuccessResponse> ChangePasswordAsync([Body] ChangePasswordDto dto);

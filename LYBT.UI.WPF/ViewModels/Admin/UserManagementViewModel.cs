@@ -3,7 +3,6 @@ using LYBT.Models;
 using LYBT.Module.Users.Dtos;
 using LYBT.UI.WPF.Services;
 using Prism.Commands;
-using Microsoft.VisualBasic;
 using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
@@ -51,7 +50,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                             PhoneNumber = value.PhoneNumber
                         };
                         EditModeTitle = "编辑用户";
-                        Password = string.Empty;
                     }
                 }
             }
@@ -63,11 +61,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// </summary>
         public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
 
-        private string _password;
-        /// <summary>
-        /// 属性 Password 的说明
-        /// </summary>
-        public string Password { get => _password; set => SetProperty(ref _password, value); }
 
         private string _editModeTitle = "新增用户";
         /// <summary>
@@ -122,11 +115,10 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             // 新增时，右侧表单清空
             EditingUser = new UserDto {
                 IsActive = true,
-                Roles = RoleList.Count > 0 ? new System.Collections.Generic.List<UserRole> { RoleList[0] } : new System.Collections.Generic.List<UserRole>()
+                Roles = new System.Collections.Generic.List<UserRole> { UserRole.DiagnosingDoctor }
             };
             SelectedUser = null;
             EditModeTitle = "新增用户";
-            Password = string.Empty;
         }
 
         /// <summary>
@@ -156,14 +148,13 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                     return;
                 }
             } else {
-                var editDto = new UserEditDto {
+                var editDto = new UserDetailDto {
                     Id = EditingUser.Id,
                     RealName = EditingUser.RealName,
                     Roles = EditingUser.Roles,
                     IsActive = EditingUser.IsActive,
                     Email = EditingUser.Email,
-                    PhoneNumber = EditingUser.PhoneNumber,
-                    Password = string.IsNullOrWhiteSpace(Password) ? null : Password
+                    PhoneNumber = EditingUser.PhoneNumber
                 };
                 var ok = await _userService.UpdateUserAsync(editDto);
                 if (!ok) {
@@ -226,10 +217,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private async Task ResetPassword() {
             if (SelectedUser == null)
                 return;
-            string newPwd = Microsoft.VisualBasic.Interaction.InputBox("请输入新密码", "重置密码", "");
-            if (string.IsNullOrWhiteSpace(newPwd))
-                return;
-            if (await _userService.ResetPasswordAsync(SelectedUser.Id, newPwd))
+            if (await _userService.ResetPasswordAsync(SelectedUser.Id))
                 MessageBox.Show("密码已重置", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             else
                 MessageBox.Show("重置密码失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);

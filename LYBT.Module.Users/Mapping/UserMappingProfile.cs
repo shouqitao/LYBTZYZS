@@ -18,8 +18,8 @@ namespace LYBT.Module.Users.Mapping {
                     opt => opt.MapFrom(src => src.Roles.FirstOrDefault()));
             // 新增DTO转实体
             CreateMap<UserCreateDto, UserModel>();
-            // 编辑DTO转实体（密码字段需单独处理）
-            CreateMap<UserEditDto, UserModel>()
+            // 详情DTO转实体
+            CreateMap<UserDetailDto, UserModel>()
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
         }
     }

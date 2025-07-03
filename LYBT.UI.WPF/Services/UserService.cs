@@ -34,7 +34,7 @@ namespace LYBT.UI.WPF.Services {
         /// <summary>
         /// 方法 UpdateUserAsync 的说明
         /// </summary>
-        public async Task<bool> UpdateUserAsync(UserEditDto user) {
+        public async Task<bool> UpdateUserAsync(UserDetailDto user) {
             var resp = await _userApi.UpdateAsync(user);
             return resp.Success;
         }
@@ -74,8 +74,8 @@ namespace LYBT.UI.WPF.Services {
         /// <summary>
         /// 方法 ResetPasswordAsync 的说明
         /// </summary>
-        public async Task<bool> ResetPasswordAsync(Guid id, string newPassword) {
-            var resp = await _userApi.ResetPasswordAsync(id, new ResetPasswordDto { NewPassword = newPassword });
+        public async Task<bool> ResetPasswordAsync(Guid id) {
+            var resp = await _userApi.ResetPasswordAsync(id);
             return resp.Success;
         }
 
