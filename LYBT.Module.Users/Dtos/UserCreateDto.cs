@@ -52,11 +52,5 @@ namespace LYBT.Module.Users.Dtos {
         [Phone(ErrorMessage = "联系电话格式不正确")]
         public string? PhoneNumber { get; set; }
 
-        /// <summary>
-        /// 初始密码（必填）
-        /// </summary>
-        [Required(ErrorMessage = "密码不能为空")]
-        [StringLength(32, MinimumLength = 6, ErrorMessage = "密码长度必须在6-32个字符之间")]
-        public string Password { get; set; } = string.Empty;
     }
 }

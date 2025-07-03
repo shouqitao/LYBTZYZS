@@ -1,4 +1,5 @@
 ﻿using LYBT.Module.Users.Dtos;
+using LYBT.Module.Users;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
@@ -23,7 +24,7 @@ public class UsersController : ControllerBase {
     }
 
     /// <summary>
-    /// 新增用户，需要设置初始密码
+    /// 新增用户，密码将设为 <see cref="UserDefaults.DefaultUserPassword"/>
     /// </summary>
     [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] UserCreateDto dto) {
