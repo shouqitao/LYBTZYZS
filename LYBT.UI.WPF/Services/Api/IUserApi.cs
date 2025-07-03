@@ -20,4 +20,5 @@ namespace LYBT.UI.WPF.Services.Api {
 
         [Post("/api/Users/resetPassword/{id}")]
         Task<ApiSuccessResponse> ResetPasswordAsync(Guid id, [Body] ResetPasswordDto dto);
-    }\n}
+    }
+}
