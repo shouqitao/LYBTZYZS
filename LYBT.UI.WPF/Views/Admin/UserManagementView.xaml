@@ -8,6 +8,7 @@
     <Control.Resources>
         <converters:NullToBoolConverter x:Key="NullToBoolConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
     </Control.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -69,7 +70,8 @@
                              helpers:ListBoxExtensions.BindableSelectedItems="{Binding EditingUser.Roles}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <CheckBox Content="{Binding}" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"/>
+                                <CheckBox Content="{Binding Converter={StaticResource EnumDescriptionConverter}}"
+                                          IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"/>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
