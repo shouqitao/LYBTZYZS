@@ -1,15 +1,14 @@
 using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.ViewModels.Main;
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace LYBT.UI.WPF.Views {
-    public partial class ChangePasswordWindow : Window {
+    public partial class ChangePasswordView : UserControl {
         private readonly IUserService _userService;
         private readonly IAuthService _authService;
-        public ChangePasswordWindow(IUserService userService, IAuthService authService) {
+        public ChangePasswordView(IUserService userService, IAuthService authService) {
             InitializeComponent();
             _userService = userService;
             _authService = authService;
@@ -50,11 +49,15 @@ namespace LYBT.UI.WPF.Views {
                 return;
             }
             MessageBox.Show("密码修改成功，请使用新密码重新登录。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-            DialogResult = true;
+            if (Application.Current.MainWindow.DataContext is MainWindowViewModel mainVm) {
+                mainVm.Logout();
+            }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e) {
-            DialogResult = false;
+            if (Application.Current.MainWindow.DataContext is MainWindowViewModel mainVm) {
+                mainVm.ShowHomeView();
+            }
         }
     }
 }
