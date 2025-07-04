@@ -40,5 +40,9 @@ namespace LYBT.UI.WPF.Views.Main {
                 }
             }
         }
+
+        private void BtnExit_Click(object sender, RoutedEventArgs e) {
+            Application.Current.Shutdown();
+        }
     }
 }
