@@ -1,11 +1,12 @@
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Regions;
 using Services = LYBT.UI.WPF.Services;
 using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
-    public class ChangeProfileViewModel : BindableBase {
+    public class ChangeProfileViewModel : BindableBase, INavigationAware {
         private readonly Services.IUserService _userService;
         private readonly Services.IAuthService _authService;
 
@@ -39,7 +40,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             SaveCommand = new DelegateCommand(async () => await ChangeAsync(), CanSave)
                 .ObservesProperty(() => RealName);
             CancelCommand = new DelegateCommand(OnCancel);
-            _ = LoadAsync();
         }
 
         public async Task LoadAsync() {
@@ -82,5 +82,13 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 main.IsFunctionVisible = false;
             }
         }
+
+        public void OnNavigatedTo(NavigationContext navigationContext) {
+            _ = LoadAsync();
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext) => true;
+
+        public void OnNavigatedFrom(NavigationContext navigationContext) { }
     }
 }
