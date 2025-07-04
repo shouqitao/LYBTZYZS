@@ -3,6 +3,6 @@
 
 set -euo pipefail
 
-# Update database to migration UpdateIdFieldsToGuid
+# Update database to migration AddDoctorInfoRequest
 cd "$(dirname "$0")/.."
-dotnet ef database update 20250615155700_UpdateIdFieldsToGuid
+dotnet ef database update 20250704145214_AddDoctorInfoRequest
