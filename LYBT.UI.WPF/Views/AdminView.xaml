@@ -20,8 +20,5 @@
         <TabItem Header="药方管理">
             <TextBlock Text="药方管理开发中..." Padding="40"/>
         </TabItem>
-        <TabItem Header="医生信息审批">
-            <admin:DoctorInfoApprovalView/>
-        </TabItem>
     </TabControl>
 </UserControl>

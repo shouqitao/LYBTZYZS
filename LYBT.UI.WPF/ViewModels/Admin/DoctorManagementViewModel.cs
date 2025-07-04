@@ -93,7 +93,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
 
         private void AddDoctor() {
             EditingDoctor = new DoctorDetailDto {
-                Gender = Gender.Unknown,
+                Gender = Gender.Unknown.ToString(),
                 Birthday = DateTime.Now,
                 Title = nameof(DoctorTitle.Junior),
                 Status = nameof(DoctorStatus.Active)

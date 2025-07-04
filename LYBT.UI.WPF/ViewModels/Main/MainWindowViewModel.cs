@@ -44,10 +44,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public DelegateCommand ShowChangeProfileCommand { get; }
 
-        /// <summary>
-        /// 显示医生信息界面
-        /// </summary>
-        public DelegateCommand ShowDoctorInfoCommand { get; }
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
@@ -66,7 +62,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             LogoutCommand = new DelegateCommand(Logout);
             ShowChangePasswordCommand = new DelegateCommand(ShowChangePassword);
             ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
-            ShowDoctorInfoCommand = new DelegateCommand(ShowDoctorInfo);
         }
 
         /// <summary>
@@ -101,11 +96,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _regionManager.RequestNavigate("FunctionRegion", "ChangeProfileView");
         }
 
-        private void ShowDoctorInfo() {
-            IsMainVisible = false;
-            IsFunctionVisible = true;
-            _regionManager.RequestNavigate("FunctionRegion", "DoctorInfoView");
-        }
 
         /// <summary>
         /// 方法 OnLoginSuccess 的说明
