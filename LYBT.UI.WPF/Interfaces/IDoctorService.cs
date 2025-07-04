@@ -1,5 +1,6 @@
 using LYBT.Common.Models;
 using LYBT.Module.Doctors.Dtos;
+using LYBT.Models.Doctors;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,5 +19,10 @@ namespace LYBT.UI.WPF.Services {
         Task<bool> ResetPasswordAsync(Guid id, string newPassword);
         Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
         Task<IList<string>> GetRolesAsync();
+
+        Task<bool> SubmitInfoRequestAsync(DoctorInfoRequestModel model);
+        Task<IList<DoctorInfoRequestModel>> GetPendingRequestsAsync();
+        Task<bool> ApproveRequestAsync(Guid id);
+        Task<bool> RejectRequestAsync(Guid id);
     }
 }
