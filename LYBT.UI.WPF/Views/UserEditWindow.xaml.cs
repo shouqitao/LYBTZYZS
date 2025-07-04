@@ -38,11 +38,6 @@ namespace LYBT.UI.WPF.Views {
                 IsActiveCheckBox.IsChecked = user.IsActive;
             } else {
                 Title = "新增用户";
-                if (roles.Contains(UserRole.DiagnosingDoctor)) {
-                    var item = RoleListBox.Items.Cast<UserRole>().FirstOrDefault(x => x == UserRole.DiagnosingDoctor);
-                    if (item != null)
-                        RoleListBox.SelectedItems.Add(item);
-                }
                 IsActiveCheckBox.IsChecked = true;
             }
         }
@@ -52,6 +47,10 @@ namespace LYBT.UI.WPF.Views {
         /// </summary>
         private void Ok_Click(object sender, RoutedEventArgs e) {
             var selectedRoles = RoleListBox.SelectedItems.Cast<UserRole>().ToList();
+            if (selectedRoles.Count == 0) {
+                MessageBox.Show("角色不能为空！", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             if (_origin == null) {
                 CreatedUser = new UserCreateDto {
                     UserName = UserNameTextBox.Text,

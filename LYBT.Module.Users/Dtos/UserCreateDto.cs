@@ -26,8 +26,8 @@ namespace LYBT.Module.Users.Dtos {
         /// <summary>
         /// 用户角色集合（至少选择一个）
         /// </summary>
-        [Required(ErrorMessage = "用户角色不能为空")]
-        [MinLength(1, ErrorMessage = "至少指定一个角色")]
+        [Required(ErrorMessage = "角色不能为空")]
+        [MinLength(1, ErrorMessage = "角色不能为空")]
         public List<UserRole> Roles { get; set; } = new();
 
         /// <summary>
