@@ -1,13 +1,13 @@
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.UI.WPF.Services;
+using Services = LYBT.UI.WPF.Services;
 using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class ChangePasswordViewModel : BindableBase {
-        private readonly IUserService _userService;
-        private readonly IAuthService _authService;
+        private readonly Services.IUserService _userService;
+        private readonly Services.IAuthService _authService;
 
         private string _oldPassword = string.Empty;
         public string OldPassword { get => _oldPassword; set => SetProperty(ref _oldPassword, value); }
@@ -24,7 +24,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
-        public ChangePasswordViewModel(IUserService userService, IAuthService authService) {
+        public ChangePasswordViewModel(Services.IUserService userService, Services.IAuthService authService) {
             _userService = userService;
             _authService = authService;
             SaveCommand = new DelegateCommand(async () => await ChangeAsync(), CanSave)
