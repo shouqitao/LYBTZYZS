@@ -292,7 +292,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             if (SelectedUser != null)
                 _ = LoadSelectedUserAsync(SelectedUser);
             else
-                EditingUser = new UserDto();
+                EditingUser = null;
             IsEditable = false;
             EditModeTitle = "用户详情";
         }
