@@ -82,13 +82,9 @@ namespace LYBT.Module.Doctors.Services {
             var model = await _doctorRepository.GetByIdAsync(doctorEditDto.Id);
             if (model == null)
                 return false;
-            model.Gender = doctorEditDto.Gender;
-            model.Birthday = doctorEditDto.Birthday;
-            model.PinyinCode = doctorEditDto.PinyinCode;
-            model.LicenseNumber = doctorEditDto.LicenseNumber;
-            model.Title = doctorEditDto.Title;
-            model.Status = doctorEditDto.Status;
-            model.Remark = doctorEditDto.Remark;
+
+            // 使用 AutoMapper 将 DTO 属性映射到实体
+            _mapper.Map(doctorEditDto, model);
 
             // 更新关联的用户信息
             var user = model.User;
