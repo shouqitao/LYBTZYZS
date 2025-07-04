@@ -3,6 +3,7 @@ using LYBT.Module.Auth.Services;
 using LYBT.UI.WPF.Events;
 using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.Views;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
@@ -28,6 +29,8 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand LogoutCommand { get; }
         public DelegateCommand ChangePasswordCommand { get; }
 
+        private IList<UserRole> _currentRoles = new List<UserRole>();
+
         private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
 
@@ -51,7 +54,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// <summary>
         /// 方法 Logout 的说明
         /// </summary>
-        private void Logout() {
+        public void Logout() {
             // 显示登录界面，隐藏主界面
             IsMainVisible = false;
             IsLoginVisible = true;
@@ -69,23 +72,22 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         private void ChangePassword() {
-            var window = new ChangePasswordWindow(_userService, _authService) { Owner = Application.Current.MainWindow };
-            window.DataContext = new ChangePasswordViewModel();
-            if (window.ShowDialog() == true) {
-                Logout();
-            }
+            _regionManager.RequestNavigate("MainContentRegion", nameof(ChangePasswordView));
+        }
+
+        public void ShowHomeView() {
+            _regionManager.RequestNavigate("MainContentRegion", "HomeView", new NavigationParameters { { "UserRoles", _currentRoles } });
         }
 
         /// <summary>
         /// 方法 OnLoginSuccess 的说明
         /// </summary>
         private void OnLoginSuccess(IList<UserRole> roles) {
+            _currentRoles = roles;
             IsLoginVisible = false;
             IsMainVisible = true;
-            // 最大化窗口
             Application.Current.MainWindow.WindowState = WindowState.Maximized;
-            // 导航到主内容区（如HomeView）
-            _regionManager.RequestNavigate("MainContentRegion", "HomeView", new NavigationParameters { { "UserRoles", roles } });
+            ShowHomeView();
         }
     }
 }
