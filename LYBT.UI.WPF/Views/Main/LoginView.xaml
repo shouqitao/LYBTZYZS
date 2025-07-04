@@ -9,7 +9,7 @@
         <Image Source="/Assets/bg.jpg"
                Stretch="UniformToFill"
                Panel.ZIndex="0"/>
-        <Border Background="#A6FFFFFF" Panel.ZIndex="1"/>
+
 
         <!-- 登录卡片部分，只修改这块为左右结构 -->
         <Border Width="520"
@@ -43,6 +43,11 @@
                                    Foreground="#F6F6F6"
                                    HorizontalAlignment="Center"
                                    Margin="0,8,0,0"/>
+                        <TextBlock Text="⊙2024 凌隐宝堂中医诊所 All Rights Reserved."
+                                   FontSize="9"
+                                   Foreground="#F6F6F6"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,20,0,0"/>
                     </StackPanel>
                 </Border>
 
