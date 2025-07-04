@@ -3,8 +3,11 @@ using LYBT.Common.Enums;
 using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using LYBT.Models.Doctors;
+using LYBT.Module.Users.Models;
+using LYBT.Common.Enums.Users;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
+using System.Collections.Generic;
 
 namespace LYBT.Module.Doctors.Services {
 
@@ -55,7 +58,19 @@ namespace LYBT.Module.Doctors.Services {
             model.Id = Guid.NewGuid();
             model.Status = DoctorStatus.Active;
 
-            model.PasswordHash = PasswordHelper.Hash(doctorCreateDto.Password);
+            var user = new UserModel {
+                Id = Guid.NewGuid(),
+                UserName = doctorCreateDto.Phone,
+                RealName = doctorCreateDto.Name,
+                Roles = new List<UserRole> { UserRole.DiagnosingDoctor },
+                IsActive = true,
+                CreatedTime = DateTime.Now,
+                PhoneNumber = doctorCreateDto.Phone,
+                PasswordHash = PasswordHelper.Hash(doctorCreateDto.Password)
+            };
+
+            model.UserId = user.Id;
+            model.User = user;
 
             return await _doctorRepository.AddAsync(model);
         }
@@ -67,15 +82,19 @@ namespace LYBT.Module.Doctors.Services {
             var model = await _doctorRepository.GetByIdAsync(doctorEditDto.Id);
             if (model == null)
                 return false;
-            model.Name = doctorEditDto.Name;
             model.Gender = doctorEditDto.Gender;
             model.Birthday = doctorEditDto.Birthday;
-            model.Phone = doctorEditDto.Phone;
             model.PinyinCode = doctorEditDto.PinyinCode;
             model.LicenseNumber = doctorEditDto.LicenseNumber;
             model.Title = doctorEditDto.Title;
             model.Status = doctorEditDto.Status;
             model.Remark = doctorEditDto.Remark;
+
+            // 更新关联的用户信息
+            var user = model.User;
+            user.RealName = doctorEditDto.Name;
+            user.PhoneNumber = doctorEditDto.Phone;
+
             return await _doctorRepository.UpdateAsync(model);
         }
 
@@ -107,7 +126,7 @@ namespace LYBT.Module.Doctors.Services {
             var model = await _doctorRepository.GetByIdAsync(id);
             if (model == null)
                 return false;
-            if (!PasswordHelper.Verify(model.PasswordHash, oldPassword))
+            if (!PasswordHelper.Verify(model.User.PasswordHash, oldPassword))
                 return false;
             return await _doctorRepository.UpdatePasswordAsync(id, PasswordHelper.Hash(newPassword));
         }

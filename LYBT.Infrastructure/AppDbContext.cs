@@ -172,6 +172,12 @@ namespace LYBT.Infrastructure {
             modelBuilder.Entity<BillingModel>().Property(x => x.TotalAmount).HasPrecision(18, 2);
             modelBuilder.Entity<HerbModel>().Property(x => x.Price).HasPrecision(18, 2);
             // 如有其他金额字段都可如此加
+
+            modelBuilder.Entity<DoctorModel>()
+                .HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
