@@ -1,7 +1,6 @@
 using LYBT.Common.Models;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.UI.WPF.Apis;
-using LYBT.Models.Doctors;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -110,25 +109,6 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         public async Task<IList<string>> GetRolesAsync() {
             return await _doctorApi.GetRolesAsync();
-        }
-
-        public async Task<bool> SubmitInfoRequestAsync(DoctorInfoRequestModel model) {
-            var resp = await _doctorApi.SubmitInfoRequestAsync(model);
-            return resp.Success;
-        }
-
-        public async Task<IList<DoctorInfoRequestModel>> GetPendingRequestsAsync() {
-            return await _doctorApi.GetPendingRequestsAsync();
-        }
-
-        public async Task<bool> ApproveRequestAsync(Guid id) {
-            var resp = await _doctorApi.ApproveRequestAsync(id);
-            return resp.Success;
-        }
-
-        public async Task<bool> RejectRequestAsync(Guid id) {
-            var resp = await _doctorApi.RejectRequestAsync(id);
-            return resp.Success;
         }
     }
 }

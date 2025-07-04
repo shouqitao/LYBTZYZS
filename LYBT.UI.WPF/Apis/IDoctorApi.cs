@@ -1,6 +1,5 @@
 using LYBT.Common.Models;
 using LYBT.Module.Doctors.Dtos;
-using LYBT.Models.Doctors;
 using Refit;
 using System;
 using System.Collections.Generic;
@@ -44,16 +43,5 @@ namespace LYBT.UI.WPF.Apis {
         [Get("/api/Doctors/roles")]
         Task<List<string>> GetRolesAsync();
 
-        [Post("/api/Doctors/InfoRequest")]
-        Task<ApiSuccessResponse> SubmitInfoRequestAsync([Body] DoctorInfoRequestModel model);
-
-        [Get("/api/Doctors/InfoRequest/pending")]
-        Task<List<DoctorInfoRequestModel>> GetPendingRequestsAsync();
-
-        [Put("/api/Doctors/InfoRequest/{id}/approve")]
-        Task<ApiSuccessResponse> ApproveRequestAsync(Guid id);
-
-        [Put("/api/Doctors/InfoRequest/{id}/reject")]
-        Task<ApiSuccessResponse> RejectRequestAsync(Guid id);
     }
 }
