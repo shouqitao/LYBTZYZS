@@ -12,8 +12,8 @@
 
 
         <!-- 登录卡片部分，只修改这块为左右结构 -->
-        <Border Width="520"
-                Height="340"
+        <Border Width="780"
+                Height="510"
                 CornerRadius="14"
                 Background="#F9FAFB"
                 HorizontalAlignment="Center"
@@ -30,25 +30,31 @@
                 <Border Grid.Column="0"
                         Background="#19b5fe"
                         CornerRadius="14,0,0,14">
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8">
-                        <Image Source="/Assets/Logo.jpg"
-                               Width="72" Height="72" Margin="0,0,0,22"/>
-                        <TextBlock Text="凌隐宝堂中医诊所"
-                                   FontSize="22"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"/>
-                        <TextBlock Text="LYBT TCM CLINIC"
-                                   FontSize="14"
-                                   Foreground="#F6F6F6"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,8,0,0"/>
-                        <TextBlock Text="⊙2024 凌隐宝堂中医诊所 All Rights Reserved."
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Image Source="/Assets/Logo.jpg"
+                                   Width="72" Height="72" Margin="0,0,0,22"/>
+                            <TextBlock Text="凌隐宝堂中医诊所"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="LYBT TCM CLINIC"
+                                       FontSize="14"
+                                       Foreground="#F6F6F6"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Row="1" Text="⊙2024 凌隐宝堂中医诊所 All Rights Reserved."
                                    FontSize="9"
                                    Foreground="#F6F6F6"
                                    HorizontalAlignment="Center"
-                                   Margin="0,20,0,0"/>
-                    </StackPanel>
+                                   Margin="0,20,0,10"/>
+                    </Grid>
                 </Border>
 
                 <!-- 右侧：登录表单 -->
