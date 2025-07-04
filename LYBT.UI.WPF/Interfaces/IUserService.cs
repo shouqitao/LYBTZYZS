@@ -17,6 +17,7 @@ namespace LYBT.UI.WPF.Services {
         Task<int> BatchEnableAsync(List<Guid> ids);
         Task<bool> ResetPasswordAsync(Guid id);
         Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
+        Task<bool> ChangeProfileAsync(Guid id, string realName, string? email, string? phoneNumber);
         Task<IList<UserRole>> GetRolesAsync();
         Task<UserDto?> GetByIdAsync(Guid id);
     }

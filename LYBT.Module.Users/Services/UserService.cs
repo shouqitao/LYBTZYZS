@@ -257,6 +257,19 @@ public class UserService : IUserService {
         return await _userRepository.UpdateAsync(user);
     }
 
+    /// <summary>
+    /// 用户修改个人信息
+    /// </summary>
+    public async Task<bool> ChangeProfileAsync(Guid id, string realName, string? email, string? phoneNumber) {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null)
+            return false;
+        user.RealName = realName;
+        user.Email = email;
+        user.PhoneNumber = phoneNumber;
+        return await _userRepository.UpdateAsync(user);
+    }
+
     public List<UserRole> GetRoles() {
         return Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToList();
     }

@@ -34,6 +34,9 @@ namespace LYBT.UI.WPF.Apis {
         [Post("/api/Users/changePassword")]
         Task<ApiSuccessResponse> ChangePasswordAsync([Body] ChangePasswordDto dto);
 
+        [Post("/api/Users/changeProfile")]
+        Task<ApiSuccessResponse> ChangeProfileAsync([Body] ChangeProfileDto dto);
+
         [Get("/api/Users/getRoles")]
         Task<List<UserRole>> GetRolesAsync();
 

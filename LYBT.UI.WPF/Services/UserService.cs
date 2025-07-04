@@ -92,6 +92,19 @@ namespace LYBT.UI.WPF.Services {
         }
 
         /// <summary>
+        /// 修改个人信息
+        /// </summary>
+        public async Task<bool> ChangeProfileAsync(Guid id, string realName, string? email, string? phoneNumber) {
+            var resp = await _userApi.ChangeProfileAsync(new ChangeProfileDto {
+                UserId = id,
+                RealName = realName,
+                Email = email,
+                PhoneNumber = phoneNumber
+            });
+            return resp.Success;
+        }
+
+        /// <summary>
         /// 方法 GetRolesAsync 的说明
         /// </summary>
         public async Task<IList<UserRole>> GetRolesAsync() {

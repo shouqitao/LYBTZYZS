@@ -34,6 +34,13 @@
                                 Background="#FF57606A" Foreground="White"
                                 FontWeight="Bold" BorderThickness="0"
                                 Cursor="Hand"/>
+                        <Button Content="修改个人信息"
+                                Width="100" Height="34"
+                                Margin="0,0,10,0"
+                                Command="{Binding ShowChangeProfileCommand}"
+                                Background="#FF57606A" Foreground="White"
+                                FontWeight="Bold" BorderThickness="0"
+                                Cursor="Hand"/>
                         <Button Content="退出"
                                 Width="68" Height="34"
                                 Command="{Binding LogoutCommand}"

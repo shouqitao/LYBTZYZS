@@ -131,6 +131,15 @@ public class UsersController : ControllerBase {
     }
 
     /// <summary>
+    /// 用户修改个人信息
+    /// </summary>
+    [HttpPost("changeProfile")]
+    public async Task<IActionResult> ChangeProfile([FromBody] ChangeProfileDto dto) {
+        var result = await _userService.ChangeProfileAsync(dto.UserId, dto.RealName, dto.Email, dto.PhoneNumber);
+        return result ? Ok(new { success = true }) : BadRequest(new { success = false });
+    }
+
+    /// <summary>
     /// 获取所有角色
     /// </summary>
     [HttpGet("getRoles")]
