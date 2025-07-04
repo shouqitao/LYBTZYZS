@@ -12,9 +12,9 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
     <Grid>
-        <!-- 登录区域（只用于登录，登录成功后隐藏） -->
-        <ContentControl prism:RegionManager.RegionName="LoginRegion"
-                        Visibility="{Binding IsLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <!-- 功能区：登录、修改密码等界面 -->
+        <ContentControl prism:RegionManager.RegionName="FunctionRegion"
+                        Visibility="{Binding IsFunctionVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
         <!-- 主界面区域（登录后可见，初始隐藏） -->
         <DockPanel Visibility="{Binding IsMainVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <!-- 顶部Header -->

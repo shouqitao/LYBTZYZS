@@ -99,6 +99,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<AdminView>("AdminView");
             containerRegistry.RegisterForNavigation<UserManagementView>("UserManagementView");
             containerRegistry.RegisterForNavigation<BillingStaffView>("BillingStaffView");
+            containerRegistry.RegisterForNavigation<ChangePasswordView>("ChangePasswordView");
 
         }
 
@@ -115,7 +116,7 @@ namespace LYBT.UI.WPF {
         protected override void OnInitialized() {
             base.OnInitialized();
             var regionManager = Container.Resolve<IRegionManager>();
-            regionManager.RequestNavigate("LoginRegion", "LoginView");
+            regionManager.RequestNavigate("FunctionRegion", "LoginView");
         }
     }
 }

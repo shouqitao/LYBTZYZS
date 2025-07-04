@@ -2,6 +2,8 @@
 using LYBT.Module.Auth.Services;
 using LYBT.UI.WPF.Events;
 using LYBT.UI.WPF.Services;
+using Prism.Commands;
+using Prism.Mvvm;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
@@ -9,11 +11,11 @@ namespace LYBT.UI.WPF.ViewModels.Main {
     /// 类 MainWindowViewModel 的说明
     /// </summary>
     public class MainWindowViewModel : BindableBase {
-        private bool _isLoginVisible = true;
+        private bool _isFunctionVisible = true;
         /// <summary>
-        /// 属性 IsLoginVisible 的说明
+        /// 功能区可见性（登录/修改密码等）
         /// </summary>
-        public bool IsLoginVisible { get => _isLoginVisible; set => SetProperty(ref _isLoginVisible, value); }
+        public bool IsFunctionVisible { get => _isFunctionVisible; set => SetProperty(ref _isFunctionVisible, value); }
 
         private bool _isMainVisible = false;
         /// <summary>
@@ -22,9 +24,14 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public bool IsMainVisible { get => _isMainVisible; set => SetProperty(ref _isMainVisible, value); }
 
         /// <summary>
-        /// 属性 LogoutCommand 的说明
+        /// 退出登录命令
         /// </summary>
         public DelegateCommand LogoutCommand { get; }
+
+        /// <summary>
+        /// 显示修改密码界面
+        /// </summary>
+        public DelegateCommand ShowChangePasswordCommand { get; }
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
@@ -39,8 +46,9 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             // 订阅登录成功事件
             _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
 
-            // 初始化退出命令
+            // 初始化命令
             LogoutCommand = new DelegateCommand(Logout);
+            ShowChangePasswordCommand = new DelegateCommand(ShowChangePassword);
         }
 
         /// <summary>
@@ -49,10 +57,10 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private void Logout() {
             // 显示登录界面，隐藏主界面
             IsMainVisible = false;
-            IsLoginVisible = true;
+            IsFunctionVisible = true;
 
             // 跳转回登录区
-            _regionManager.RequestNavigate("LoginRegion", "LoginView");
+            _regionManager.RequestNavigate("FunctionRegion", "LoginView");
 
             // 恢复窗口尺寸（可选）
             Application.Current.MainWindow.WindowState = WindowState.Maximized;
@@ -63,11 +71,17 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _authService.ClearAutoLoginInfo();
         }
 
+        private void ShowChangePassword() {
+            IsMainVisible = false;
+            IsFunctionVisible = true;
+            _regionManager.RequestNavigate("FunctionRegion", "ChangePasswordView");
+        }
+
         /// <summary>
         /// 方法 OnLoginSuccess 的说明
         /// </summary>
         private void OnLoginSuccess(IList<UserRole> roles) {
-            IsLoginVisible = false;
+            IsFunctionVisible = false;
             IsMainVisible = true;
             // 最大化窗口
             Application.Current.MainWindow.WindowState = WindowState.Maximized;

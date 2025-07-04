@@ -10,6 +10,7 @@ namespace LYBT.UI.WPF.Services {
         Task<(bool success, IList<UserRole> roles, string errorMessage, string token)> LoginAsync(string userName, string password);
 
         string Token { get; }
+        Guid UserId { get; }
         bool HasRemembered { get; }
         void ClearAutoLoginInfo();
         string RememberedUserName { get; }
