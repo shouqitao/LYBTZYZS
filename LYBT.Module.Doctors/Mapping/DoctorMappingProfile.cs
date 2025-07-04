@@ -21,6 +21,11 @@ namespace LYBT.Module.Doctors.Mapping {
             CreateMap<DoctorCreateDto, DoctorModel>()
                 .ForMember(d => d.User, o => o.Ignore())
                 .ForMember(d => d.UserId, o => o.Ignore());
+
+            // 编辑医生时仍以 DTO 传递，忽略导航属性映射
+            CreateMap<DoctorEditDto, DoctorModel>()
+                .ForMember(d => d.User, o => o.Ignore())
+                .ForMember(d => d.UserId, o => o.Ignore());
         }
     }
 }
