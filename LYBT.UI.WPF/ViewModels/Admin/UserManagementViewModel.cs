@@ -144,7 +144,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             // 新增时，右侧表单清空
             EditingUser = new UserDto {
                 IsActive = true,
-                Roles = new List<UserRole> { UserRole.DiagnosingDoctor }
+                Roles = new List<UserRole>()
             };
             SelectedUser = null;
             EditModeTitle = "新增用户";
@@ -170,7 +170,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 return;
             }
             if (EditingUser.Roles == null || EditingUser.Roles.Count == 0) {
-                MessageBox.Show("请至少选择一个角色！", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("角色不能为空！", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             try {
