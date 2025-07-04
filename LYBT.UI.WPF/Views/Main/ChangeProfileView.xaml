@@ -11,7 +11,7 @@
                     <DropShadowEffect Color="Black" Opacity="0.16" BlurRadius="18" ShadowDepth="5"/>
                 </Border.Effect>
                 <StackPanel>
-                    <TextBlock Text="修改个人信息" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                    <TextBlock Text="修改个人信息" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#333"/>
 
                     <Grid>
                         <Grid.RowDefinitions>
@@ -27,28 +27,28 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="原姓名：" Grid.Row="0" Grid.Column="0"/>
-                        <TextBlock Text="{Binding OriginalRealName}" Grid.Row="0" Grid.Column="1"/>
+                        <TextBlock Text="原姓名：" Grid.Row="0" Grid.Column="0" Foreground="#707070"/>
+                        <TextBlock Text="{Binding OriginalRealName}" Grid.Row="0" Grid.Column="1" Foreground="#333"/>
 
-                        <TextBlock Text="现姓名：" Grid.Row="1" Grid.Column="0" Margin="0,8,0,0"/>
+                        <TextBlock Text="现姓名：" Grid.Row="1" Grid.Column="0" Margin="0,8,0,0" Foreground="#707070"/>
                         <TextBox Text="{Binding RealName, UpdateSourceTrigger=PropertyChanged}"
                                  Grid.Row="1" Grid.Column="1" Margin="0,4,0,0"
                                  Height="30" Padding="6" FontSize="13"
                                  Background="#F4F5F7" BorderBrush="#F8F8EC" BorderThickness="1"/>
 
-                        <TextBlock Text="原邮箱：" Grid.Row="2" Grid.Column="0" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding OriginalEmail}" Grid.Row="2" Grid.Column="1" Margin="0,8,0,0"/>
+                        <TextBlock Text="原邮箱：" Grid.Row="2" Grid.Column="0" Margin="0,8,0,0" Foreground="#707070"/>
+                        <TextBlock Text="{Binding OriginalEmail}" Grid.Row="2" Grid.Column="1" Margin="0,8,0,0" Foreground="#333"/>
 
-                        <TextBlock Text="现邮箱：" Grid.Row="3" Grid.Column="0" Margin="0,8,0,0"/>
+                        <TextBlock Text="现邮箱：" Grid.Row="3" Grid.Column="0" Margin="0,8,0,0" Foreground="#707070"/>
                         <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
                                  Grid.Row="3" Grid.Column="1" Margin="0,4,0,0"
                                  Height="30" Padding="6" FontSize="13"
                                  Background="#F4F5F7" BorderBrush="#F8F8EC" BorderThickness="1"/>
 
-                        <TextBlock Text="原联系电话：" Grid.Row="4" Grid.Column="0" Margin="0,8,0,0"/>
-                        <TextBlock Text="{Binding OriginalPhoneNumber}" Grid.Row="4" Grid.Column="1" Margin="0,8,0,0"/>
+                        <TextBlock Text="原联系电话：" Grid.Row="4" Grid.Column="0" Margin="0,8,0,0" Foreground="#707070"/>
+                        <TextBlock Text="{Binding OriginalPhoneNumber}" Grid.Row="4" Grid.Column="1" Margin="0,8,0,0" Foreground="#333"/>
 
-                        <TextBlock Text="现联系电话：" Grid.Row="5" Grid.Column="0" Margin="0,8,0,0"/>
+                        <TextBlock Text="现联系电话：" Grid.Row="5" Grid.Column="0" Margin="0,8,0,0" Foreground="#707070"/>
                         <TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
                                  Grid.Row="5" Grid.Column="1" Margin="0,4,0,20"
                                  Height="30" Padding="6" FontSize="13"

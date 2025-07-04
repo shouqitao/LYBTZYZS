@@ -5,9 +5,10 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              KeyDown="UserControl_KeyDown">
     <Grid>
-        <!-- 背景图片层保留原有实现 -->
+        <!-- 背景图片层添加蒙版效果，与其他页面保持一致 -->
         <Image Source="/Assets/bg.jpg"
                Stretch="UniformToFill"
+               Opacity="0.6"
                Panel.ZIndex="0"/>
 
 
@@ -77,7 +78,7 @@
                         <TextBlock Text="用户登录"
                                    FontSize="19"
                                    FontWeight="Bold"
-                                   Foreground="#222"
+                                   Foreground="#333"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,19"/>
                         <TextBlock Text="用户名"
