@@ -4,6 +4,7 @@ using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace LYBT.Module.Doctors.Repositories {
 
@@ -24,14 +25,18 @@ namespace LYBT.Module.Doctors.Repositories {
         /// 获取医生详情
         /// </summary>
         public async Task<DoctorModel?> GetByIdAsync(Guid id) {
-            return await _appDbContext.Doctors.FindAsync(id);
+            return await _appDbContext.Doctors
+                .Include(d => d.User)
+                .FirstOrDefaultAsync(d => d.Id == id);
         }
 
         /// <summary>
         /// 获取所有医生
         /// </summary>
         public async Task<List<DoctorModel>> GetListAsync() {
-            return await Task.FromResult(_appDbContext.Doctors.ToList());
+            return await _appDbContext.Doctors
+                .Include(d => d.User)
+                .ToListAsync();
         }
 
         /// <summary>
@@ -39,6 +44,9 @@ namespace LYBT.Module.Doctors.Repositories {
         /// </summary>
         public async Task<bool> AddAsync(DoctorModel doctorModel) {
             _appDbContext.Doctors.Add(doctorModel);
+            if (_appDbContext.Entry(doctorModel.User).State == EntityState.Detached) {
+                _appDbContext.Users.Add(doctorModel.User);
+            }
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
@@ -47,6 +55,7 @@ namespace LYBT.Module.Doctors.Repositories {
         /// </summary>
         public async Task<bool> UpdateAsync(DoctorModel doctorModel) {
             _appDbContext.Doctors.Update(doctorModel);
+            _appDbContext.Users.Update(doctorModel.User);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
@@ -91,17 +100,21 @@ namespace LYBT.Module.Doctors.Repositories {
         }
 
         public async Task<List<DoctorModel>> SearchAsync(string keyword) {
-            var query = _appDbContext.Doctors.AsQueryable();
+            var query = _appDbContext.Doctors
+                .Include(d => d.User)
+                .AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword)) {
-                query = query.Where(d => d.Name.Contains(keyword) || d.Phone.Contains(keyword) || d.PinyinCode.Contains(keyword));
+                query = query.Where(d => d.User.RealName.Contains(keyword) || (d.User.PhoneNumber ?? "").Contains(keyword) || d.PinyinCode.Contains(keyword));
             }
             return await query.OrderByDescending(d => d.CreatedTime).Take(20).ToListAsync();
         }
 
         public async Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query) {
-            var dbSet = _appDbContext.Doctors.AsQueryable();
+            var dbSet = _appDbContext.Doctors
+                .Include(d => d.User)
+                .AsQueryable();
             if (!string.IsNullOrWhiteSpace(query.Keyword)) {
-                dbSet = dbSet.Where(d => d.Name.Contains(query.Keyword) || d.Phone.Contains(query.Keyword) || d.PinyinCode.Contains(query.Keyword));
+                dbSet = dbSet.Where(d => d.User.RealName.Contains(query.Keyword) || (d.User.PhoneNumber ?? "").Contains(query.Keyword) || d.PinyinCode.Contains(query.Keyword));
             }
             if (query.IsActive.HasValue) {
                 var status = query.IsActive.Value ? DoctorStatus.Active : DoctorStatus.Inactive;
@@ -116,11 +129,11 @@ namespace LYBT.Module.Doctors.Repositories {
         }
 
         public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash) {
-            var model = await _appDbContext.Doctors.FindAsync(id);
+            var model = await _appDbContext.Doctors.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
             if (model == null)
                 return false;
-            model.PasswordHash = passwordHash;
-            _appDbContext.Doctors.Update(model);
+            model.User.PasswordHash = passwordHash;
+            _appDbContext.Users.Update(model.User);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
     }

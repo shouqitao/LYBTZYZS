@@ -10,9 +10,17 @@ namespace LYBT.Module.Doctors.Mapping {
     public class DoctorMappingProfile : Profile {
 
         public DoctorMappingProfile() {
-            CreateMap<DoctorModel, DoctorDto>().ReverseMap();
-            CreateMap<DoctorModel, DoctorDetailDto>().ReverseMap();
-            CreateMap<DoctorCreateDto, DoctorModel>();
+            CreateMap<DoctorModel, DoctorDto>()
+                .ForMember(d => d.Name, o => o.MapFrom(s => s.User.RealName))
+                .ForMember(d => d.Phone, o => o.MapFrom(s => s.User.PhoneNumber));
+
+            CreateMap<DoctorModel, DoctorDetailDto>()
+                .ForMember(d => d.Name, o => o.MapFrom(s => s.User.RealName))
+                .ForMember(d => d.Phone, o => o.MapFrom(s => s.User.PhoneNumber));
+
+            CreateMap<DoctorCreateDto, DoctorModel>()
+                .ForMember(d => d.User, o => o.Ignore())
+                .ForMember(d => d.UserId, o => o.Ignore());
         }
     }
 }

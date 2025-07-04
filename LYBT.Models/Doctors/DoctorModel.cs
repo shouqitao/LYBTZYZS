@@ -1,4 +1,5 @@
 ﻿using LYBT.Common.Enums;
+using LYBT.Module.Users.Models;
 
 namespace LYBT.Models.Doctors {
 
@@ -12,10 +13,6 @@ namespace LYBT.Models.Doctors {
         /// </summary>
         public Guid Id { get; set; }
 
-        /// <summary>
-        /// 医生姓名
-        /// </summary>
-        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 性别
@@ -27,10 +24,6 @@ namespace LYBT.Models.Doctors {
         /// </summary>
         public int Age { get; set; } = 0;
 
-        /// <summary>
-        /// 电话
-        /// </summary>
-        public string PhoneNumber { get; set; } = string.Empty;
 
         /// <summary>
         /// 职称
@@ -63,7 +56,6 @@ namespace LYBT.Models.Doctors {
         public string Remark { get; set; } = string.Empty;
 
         public DateTime Birthday { get; set; }
-        public string Phone { get; set; } = string.Empty;
 
         /// <summary>执业证书号</summary>
         public string? LicenseNumber { get; set; }
@@ -74,8 +66,13 @@ namespace LYBT.Models.Doctors {
         public string PinyinCode { get; set; } = string.Empty;
 
         /// <summary>
-        /// 登录密码哈希值
+        /// 对应的用户ID
         /// </summary>
-        public string PasswordHash { get; set; } = string.Empty;
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// 导航属性：关联的用户
+        /// </summary>
+        public UserModel User { get; set; } = null!;
     }
 }
