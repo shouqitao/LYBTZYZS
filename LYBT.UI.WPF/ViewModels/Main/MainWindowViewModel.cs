@@ -2,6 +2,8 @@
 using LYBT.Module.Auth.Services;
 using LYBT.UI.WPF.Events;
 using LYBT.UI.WPF.Services;
+using LYBT.UI.WPF.Views;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
@@ -25,28 +27,34 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// 属性 LogoutCommand 的说明
         /// </summary>
         public DelegateCommand LogoutCommand { get; }
+        public DelegateCommand ChangePasswordCommand { get; }
+
+        private IList<UserRole> _currentRoles = new List<UserRole>();
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
 
         private readonly IAuthService _authService;
+        private readonly IUserService _userService;
 
-        public MainWindowViewModel(IEventAggregator eventAggregator, IRegionManager regionManager, IAuthService authService) {
+        public MainWindowViewModel(IEventAggregator eventAggregator, IRegionManager regionManager, IAuthService authService, IUserService userService) {
             _eventAggregator = eventAggregator;
             _regionManager = regionManager;
             _authService = authService;
+            _userService = userService;
 
             // 订阅登录成功事件
             _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
 
             // 初始化退出命令
             LogoutCommand = new DelegateCommand(Logout);
+            ChangePasswordCommand = new DelegateCommand(ChangePassword);
         }
 
         /// <summary>
         /// 方法 Logout 的说明
         /// </summary>
-        private void Logout() {
+        public void Logout() {
             // 显示登录界面，隐藏主界面
             IsMainVisible = false;
             IsLoginVisible = true;
@@ -63,16 +71,23 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _authService.ClearAutoLoginInfo();
         }
 
+        private void ChangePassword() {
+            _regionManager.RequestNavigate("MainContentRegion", nameof(ChangePasswordView));
+        }
+
+        public void ShowHomeView() {
+            _regionManager.RequestNavigate("MainContentRegion", "HomeView", new NavigationParameters { { "UserRoles", _currentRoles } });
+        }
+
         /// <summary>
         /// 方法 OnLoginSuccess 的说明
         /// </summary>
         private void OnLoginSuccess(IList<UserRole> roles) {
+            _currentRoles = roles;
             IsLoginVisible = false;
             IsMainVisible = true;
-            // 最大化窗口
             Application.Current.MainWindow.WindowState = WindowState.Maximized;
-            // 导航到主内容区（如HomeView）
-            _regionManager.RequestNavigate("MainContentRegion", "HomeView", new NavigationParameters { { "UserRoles", roles } });
+            ShowHomeView();
         }
     }
 }
