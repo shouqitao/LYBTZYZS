@@ -5,56 +5,112 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              KeyDown="UserControl_KeyDown">
     <Grid>
-        <!-- 全屏背景图（根据你实际路径设置 Source） -->
+        <!-- 背景图片层保留原有实现 -->
         <Image Source="/Assets/bg.jpg"
                Stretch="UniformToFill"
-               Opacity="0.6"
                Panel.ZIndex="0"/>
+        <Border Background="#A6FFFFFF" Panel.ZIndex="1"/>
 
-        <!-- 登录卡片区，垂直居中、带阴影 -->
-        <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Panel.ZIndex="1">
-            <Border Padding="32" MinWidth="380" MinHeight="430"
-                    Background="#FAFAFAEE" CornerRadius="14"
-                    BorderBrush="#CCCCCC" BorderThickness="1">
-                <Border.Effect>
-                    <DropShadowEffect Color="Black" Opacity="0.16" BlurRadius="18" ShadowDepth="5"/>
-                </Border.Effect>
-                <StackPanel>
-                    <!-- Logo -->
-                    <Image Source="/Assets/logo.jpg" Height="60" Width="60"
-                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                    <TextBlock Text="用户登录" FontWeight="Bold" FontSize="22"
-                               HorizontalAlignment="Center" Margin="0,0,0,20"/>
+        <!-- 登录卡片部分，只修改这块为左右结构 -->
+        <Border Width="520"
+                Height="340"
+                CornerRadius="14"
+                Background="#F9FAFB"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                >
 
-                    <!-- 用户名 -->
-                    <TextBlock Text="用户名" Margin="0,0,0,4" FontSize="15"/>
-                    <TextBox x:Name="userNameBox"
-                             Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
-                             Height="32" FontSize="15" Margin="0,0,0,16" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2.2*"/>
+                    <ColumnDefinition Width="2.8*"/>
+                </Grid.ColumnDefinitions>
 
-                    <!-- 密码 -->
-                    <TextBlock Text="密码" Margin="0,0,0,4" FontSize="15"/>
-                    <PasswordBox x:Name="passwordBox"
-                                 PasswordChanged="PasswordBox_PasswordChanged"
-                                 Height="32" FontSize="15" Margin="0,0,0,20"/>
-
-                    <!-- 记住密码 + 登录 -->
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <CheckBox Content="记住密码" IsChecked="{Binding IsRemember}" />
+                <!-- 左侧：Logo和名称 -->
+                <Border Grid.Column="0"
+                        Background="#19b5fe"
+                        CornerRadius="14,0,0,14">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8">
+                        <Image Source="/Assets/Logo.jpg"
+                               Width="72" Height="72" Margin="0,0,0,22"/>
+                        <TextBlock Text="凌隐宝堂中医诊所"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="LYBT TCM CLINIC"
+                                   FontSize="14"
+                                   Foreground="#F6F6F6"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,8,0,0"/>
                     </StackPanel>
-                    <Button Content="登录" Command="{Binding LoginCommand}" Height="38"
-                            FontSize="16" Margin="0,0,0,14" Name="loginButton"/>
+                </Border>
 
-                    <!-- 错误消息 -->
-                    <TextBlock Text="{Binding ErrorMessage}" Foreground="Red"
-                               Margin="0,8,0,0" FontSize="14" TextWrapping="Wrap"/>
-
-                    <!-- 版权 -->
-                    <TextBlock Text="© 2024 凌隐宝堂中医诊所 All Rights Reserved."
-                               Foreground="#888" FontSize="12"
-                               HorizontalAlignment="Center" Margin="0,32,0,0"/>
-                </StackPanel>
-            </Border>
-        </Grid>
+                <!-- 右侧：登录表单 -->
+                <Grid Grid.Column="1" Background="Transparent">
+                    <!-- 右上角退出按钮 -->
+                    <Button x:Name="BtnExit"
+                            Width="28" Height="28"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,10,10,0"
+                            Content="✕"
+                            FontSize="15"
+                            Foreground="#B0B0B0"
+                            Background="Transparent"
+                            BorderBrush="{x:Null}"
+                            Cursor="Hand"/>
+                    <!-- 登录表单内容 -->
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="186">
+                        <TextBlock Text="用户登录"
+                                   FontSize="19"
+                                   FontWeight="Bold"
+                                   Foreground="#222"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,19"/>
+                        <TextBlock Text="用户名"
+                                   FontSize="12"
+                                   Margin="2,0,0,2"
+                                   Foreground="#707070"/>
+                        <TextBox x:Name="userNameBox"
+                                 Height="30"
+                                 Margin="0,0,0,7"
+                                 FontSize="13"
+                                 Padding="6"
+                                 BorderBrush="#19b5fe"
+                                 BorderThickness="1"
+                                 Background="#F4F5F7"/>
+                        <TextBlock Text="密码"
+                                   FontSize="12"
+                                   Margin="2,0,0,2"
+                                   Foreground="#707070"/>
+                        <PasswordBox x:Name="passwordBox"
+                                     Height="30"
+                                     Margin="0,0,0,7"
+                                     FontSize="13"
+                                     Padding="6"
+                                     BorderBrush="#19b5fe"
+                                     BorderThickness="1"
+                                     Background="#F4F5F7"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                            <CheckBox x:Name="ChkRememberMe"
+                                      Content="记住密码"
+                                      FontSize="12"
+                                      Foreground="#888"/>
+                        </StackPanel>
+                        <Button x:Name="BtnLogin"
+                                Content="登 录"
+                                Height="32"
+                                Margin="0,0,0,0"
+                                FontSize="15"
+                                FontWeight="Bold"
+                                Foreground="White"
+                                Background="#19b5fe"
+                                BorderThickness="0"
+                                Cursor="Hand"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>
