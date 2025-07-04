@@ -1,8 +1,3 @@
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using Services = LYBT.UI.WPF.Services;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
@@ -49,9 +44,9 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 OriginalEmail = user.Email;
                 OriginalPhoneNumber = user.PhoneNumber;
 
-                RealName = user.RealName;
-                Email = user.Email;
-                PhoneNumber = user.PhoneNumber;
+                //RealName = user.RealName;
+                //Email = user.Email;
+                //PhoneNumber = user.PhoneNumber;
             }
         }
 
