@@ -1,9 +1,10 @@
-<UserControl x:Class="LYBT.UI.WPF.Views.Admin.DoctorInfoApprovalView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:prism="http://prismlibrary.com/"
+<UserControl x:Class="LYBT.UI.WPF.Views.Admin.DoctorInfoApprovalView"  
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"  
+             xmlns:prism="http://prismlibrary.com/"  
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <Grid Padding="10">
+    <Grid Margin="10">
+        <!-- Changed 'Padding' to 'Margin' as Grid does not support 'Padding' -->
         <StackPanel>
             <ListView ItemsSource="{Binding Requests}" SelectedItem="{Binding SelectedRequest}">
                 <ListView.View>

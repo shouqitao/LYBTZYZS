@@ -1,11 +1,5 @@
 using LYBT.Common.Enums;
 using LYBT.Models.Doctors;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
