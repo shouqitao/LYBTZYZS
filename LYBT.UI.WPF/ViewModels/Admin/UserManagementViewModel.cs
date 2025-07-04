@@ -98,6 +98,10 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// </summary>
         public DelegateCommand SaveUserCommand { get; }
         /// <summary>
+        /// 取消编辑命令
+        /// </summary>
+        public DelegateCommand CancelCommand { get; }
+        /// <summary>
         /// 属性 SearchCommand 的说明
         /// </summary>
         public DelegateCommand SearchCommand { get; }
@@ -127,6 +131,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             DisableUserCommand = new DelegateCommand(async () => await DisableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             EnableUserCommand = new DelegateCommand(async () => await EnableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             ResetPasswordCommand = new DelegateCommand(async () => await ResetPassword(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
+            CancelCommand = new DelegateCommand(CancelEdit);
 
             _ = LoadRoles();
             _ = LoadUsers();
@@ -281,6 +286,15 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 MessageBox.Show("密码已重置", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             else
                 MessageBox.Show("重置密码失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void CancelEdit() {
+            if (SelectedUser != null)
+                _ = LoadSelectedUserAsync(SelectedUser);
+            else
+                EditingUser = null;
+            IsEditable = false;
+            EditModeTitle = "用户详情";
         }
     }
 }
