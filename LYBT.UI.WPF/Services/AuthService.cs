@@ -15,11 +15,13 @@ namespace LYBT.UI.WPF.Services {
     public class AuthService : IAuthService {
         private readonly IAuthApi _authApi;
         private string _token;
+        private Guid _userId;
         private bool _hasRemembered;
         private string _rememberedUserName;
         private string _rememberedPassword;
 
         public string Token => _token;
+        public Guid UserId => _userId;
         public bool HasRemembered => _hasRemembered;
         public string RememberedUserName => _rememberedUserName;
         public string RememberedPassword => _rememberedPassword;
@@ -28,6 +30,7 @@ namespace LYBT.UI.WPF.Services {
 
         public AuthService(IAuthApi authApi) {
             _authApi = authApi;
+            _userId = Guid.Empty;
             if (File.Exists(_autoLoginPath)) {
                 var json = File.ReadAllText(_autoLoginPath);
                 var info = JsonSerializer.Deserialize<AutoLoginInfo>(json);
@@ -54,6 +57,7 @@ namespace LYBT.UI.WPF.Services {
                     roles = new List<UserRole> { result.User.Role };
 
                 _token = result.Token;
+                _userId = result.User.Id;
                 SaveAutoLoginInfo(userName, password);
 
                 return (true, roles, null, _token);
