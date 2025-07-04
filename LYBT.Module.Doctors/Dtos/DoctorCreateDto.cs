@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using LYBT.Common.Enums;
 
 namespace LYBT.Module.Doctors.Dtos {
 
@@ -13,7 +14,7 @@ namespace LYBT.Module.Doctors.Dtos {
 
         /// <summary>性别</summary>
         [Required(ErrorMessage = "性别不能为空")]
-        public string Gender { get; set; } = string.Empty;
+        public Gender Gender { get; set; } = Gender.Unknown;
 
         /// <summary>出生日期</summary>
         [Required(ErrorMessage = "出生日期不能为空")]
@@ -30,10 +31,10 @@ namespace LYBT.Module.Doctors.Dtos {
         public string? LicenseNumber { get; set; }
 
         /// <summary>职称（如“主任医师”、“主治医师”）</summary>
-        public string? Title { get; set; }
+        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
 
-        /// <summary>医生当前状态（如“在职”、“离职”）</summary>
-        public string Status { get; set; } = "在职";
+        /// <summary>医生当前状态（如“在职”、“离职"）</summary>
+        public DoctorStatus Status { get; set; } = DoctorStatus.Active;
 
         /// <summary>备注</summary>
         public string? Remark { get; set; }

@@ -56,7 +56,8 @@ namespace LYBT.Module.Doctors.Services {
         public async Task<bool> AddAsync(DoctorCreateDto doctorCreateDto) {
             var model = _mapper.Map<DoctorModel>(doctorCreateDto);
             model.Id = Guid.NewGuid();
-            model.Status = DoctorStatus.Active;
+            // 状态直接使用请求中的值，默认激活
+            model.Status = doctorCreateDto.Status;
 
             var user = new UserModel {
                 Id = Guid.NewGuid(),
