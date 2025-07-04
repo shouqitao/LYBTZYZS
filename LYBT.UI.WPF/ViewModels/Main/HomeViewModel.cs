@@ -1,6 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Common.Enums.Users;
 using LYBT.UI.WPF.Models;
+using System.Linq;
+using LYBT.Common.Extensions;
+using Prism.Commands;
+using Prism.Mvvm;
+using Prism.Regions;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
@@ -41,25 +46,26 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         // 动态加载导航菜单（可按角色自定义）
         private void LoadNavigation(IEnumerable<UserRole> roles) {
             NavigationItems.Clear();
-            foreach (var role in roles) {
+            foreach (var role in roles.OrderBy(r => (int)r)) {
+                var displayName = $"{role.GetDescription()}功能模块";
                 switch (role) {
                     case UserRole.Admin:
-                        NavigationItems.Add(new NavigationItem("管理员面板", "AdminView"));
+                        NavigationItems.Add(new NavigationItem(displayName, "AdminView"));
                         break;
                     case UserRole.DiagnosingDoctor:
-                        NavigationItems.Add(new NavigationItem("医生面板", "DiagnosingDoctorView"));
+                        NavigationItems.Add(new NavigationItem(displayName, "DiagnosingDoctorView"));
                         break;
                     case UserRole.PharmacyStaff:
-                        NavigationItems.Add(new NavigationItem("药房面板", "PharmacyStaffView"));
+                        NavigationItems.Add(new NavigationItem(displayName, "PharmacyStaffView"));
                         break;
                     case UserRole.BillingStaff:
-                        NavigationItems.Add(new NavigationItem("收费面板", "BillingStaffView"));
+                        NavigationItems.Add(new NavigationItem(displayName, "BillingStaffView"));
                         break;
                     case UserRole.RegistrationStaff:
-                        NavigationItems.Add(new NavigationItem("挂号面板", "RegistrationStaffView"));
+                        NavigationItems.Add(new NavigationItem(displayName, "RegistrationStaffView"));
                         break;
                     case UserRole.TreatmentDoctor:
-                        NavigationItems.Add(new NavigationItem("治疗面板", "TreatmentDoctorView"));
+                        NavigationItems.Add(new NavigationItem(displayName, "TreatmentDoctorView"));
                         break;
                     default:
                         break;
