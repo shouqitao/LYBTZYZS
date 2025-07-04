@@ -33,6 +33,11 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public DelegateCommand ShowChangePasswordCommand { get; }
 
+        /// <summary>
+        /// 显示修改个人信息界面
+        /// </summary>
+        public DelegateCommand ShowChangeProfileCommand { get; }
+
         private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
 
@@ -49,6 +54,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             // 初始化命令
             LogoutCommand = new DelegateCommand(Logout);
             ShowChangePasswordCommand = new DelegateCommand(ShowChangePassword);
+            ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
         }
 
         /// <summary>
@@ -75,6 +81,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             IsMainVisible = false;
             IsFunctionVisible = true;
             _regionManager.RequestNavigate("FunctionRegion", "ChangePasswordView");
+        }
+
+        private void ShowChangeProfile() {
+            IsMainVisible = false;
+            IsFunctionVisible = true;
+            _regionManager.RequestNavigate("FunctionRegion", "ChangeProfileView");
         }
 
         /// <summary>

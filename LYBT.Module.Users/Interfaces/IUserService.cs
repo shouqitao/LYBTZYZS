@@ -57,6 +57,11 @@ public interface IUserService {
     Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
 
     /// <summary>
+    /// 用户修改个人信息
+    /// </summary>
+    Task<bool> ChangeProfileAsync(Guid id, string realName, string? email, string? phoneNumber);
+
+    /// <summary>
     /// 获取系统所有角色
     /// </summary>
     List<UserRole> GetRoles();
