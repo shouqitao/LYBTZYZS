@@ -25,15 +25,20 @@
                    VerticalAlignment="Center"
                    HorizontalAlignment="Left"
                    Margin="20,0,0,0"/>
-                    <!-- 右上角退出按钮 -->
-                    <Button Content="退出"
-                Width="68" Height="34"
-                HorizontalAlignment="Right" VerticalAlignment="Center"
-                Margin="0,0,22,0"
-                Command="{Binding LogoutCommand}"
-                Background="#FF57606A" Foreground="White"
-                FontWeight="Bold" BorderThickness="0"
-                Cursor="Hand"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,22,0">
+                        <Button Content="修改密码"
+                                Width="80" Height="34" Margin="0,0,10,0"
+                                Command="{Binding ChangePasswordCommand}"
+                                Background="#FF57606A" Foreground="White"
+                                FontWeight="Bold" BorderThickness="0"
+                                Cursor="Hand"/>
+                        <Button Content="退出"
+                                Width="68" Height="34"
+                                Command="{Binding LogoutCommand}"
+                                Background="#FF57606A" Foreground="White"
+                                FontWeight="Bold" BorderThickness="0"
+                                Cursor="Hand"/>
+                    </StackPanel>
                 </Grid>
             </Border>
             <!-- 主内容区域，加载 HomeView -->
