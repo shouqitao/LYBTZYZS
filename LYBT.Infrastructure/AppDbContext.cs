@@ -52,6 +52,7 @@ namespace LYBT.Infrastructure {
         public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; }
         public DbSet<SpecialPatientDoctor> SpecialPatientDoctors { get; set; }
         public DbSet<AdminSecretModel> AdminSecrets { get; set; }
+        public DbSet<DoctorInfoRequestModel> DoctorInfoRequests { get; set; }
 
         /// <summary>
         /// 配置明细字段Json存储，decimal金额加精度，集合加ValueComparer

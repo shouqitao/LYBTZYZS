@@ -16,6 +16,8 @@ namespace LYBT.Module.Doctors {
         public static void Register(IServiceCollection services) {
             services.AddScoped<IDoctorRepository, DoctorRepository>();
             services.AddScoped<IDoctorService, DoctorService>();
+            services.AddScoped<IDoctorInfoRequestRepository, DoctorInfoRequestRepository>();
+            services.AddScoped<IDoctorInfoRequestService, DoctorInfoRequestService>();
         }
     }
 }

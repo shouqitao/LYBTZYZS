@@ -1,6 +1,7 @@
 using LYBT.Common.Models;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
+using LYBT.Models.Doctors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers {
@@ -12,9 +13,10 @@ namespace LYBT.WebAPI.Controllers {
     [Route("api/[controller]")]
     public class DoctorsController : ControllerBase {
         private readonly IDoctorService _doctorService;
-
-        public DoctorsController(IDoctorService doctorService) {
+        private readonly IDoctorInfoRequestService _infoRequestService;
+        public DoctorsController(IDoctorService doctorService, IDoctorInfoRequestService infoRequestService) {
             _doctorService = doctorService;
+            _infoRequestService = infoRequestService;
         }
 
         [HttpGet("search")]
@@ -94,6 +96,30 @@ namespace LYBT.WebAPI.Controllers {
         public IActionResult GetRoles() {
             var roles = Enum.GetNames(typeof(LYBT.Common.Enums.Users.UserRole));
             return Ok(roles);
+        }
+
+        [HttpPost("InfoRequest")]
+        public async Task<IActionResult> SubmitInfoRequest([FromBody] DoctorInfoRequestModel model) {
+            var ok = await _infoRequestService.SubmitAsync(model);
+            return ok ? Ok() : BadRequest();
+        }
+
+        [HttpGet("InfoRequest/pending")]
+        public async Task<ActionResult<List<DoctorInfoRequestModel>>> GetPendingRequests() {
+            var list = await _infoRequestService.GetPendingListAsync();
+            return Ok(list);
+        }
+
+        [HttpPut("InfoRequest/{id}/approve")]
+        public async Task<IActionResult> Approve(Guid id) {
+            var ok = await _infoRequestService.ApproveAsync(id);
+            return ok ? Ok() : NotFound();
+        }
+
+        [HttpPut("InfoRequest/{id}/reject")]
+        public async Task<IActionResult> Reject(Guid id) {
+            var ok = await _infoRequestService.RejectAsync(id);
+            return ok ? Ok() : NotFound();
         }
     }
 }
