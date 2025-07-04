@@ -26,7 +26,7 @@
                    HorizontalAlignment="Left"
                    Margin="20,0,0,0"/>
                     <!-- 右上角功能按钮 -->
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,22,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,22,0">
                         <Button Content="修改密码"
                                 Width="100" Height="34"
                                 Margin="0,0,10,0"
