@@ -3,18 +3,33 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
-        <StackPanel>
-            <TextBlock Text="修改个人信息" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-            <TextBlock Text="真实姓名"/>
-            <TextBox Text="{Binding RealName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
-            <TextBlock Text="邮箱"/>
-            <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
-            <TextBlock Text="联系电话"/>
-            <TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,20"/>
-            <Button Content="保存" Command="{Binding SaveCommand}" Height="32" Margin="0,0,0,10"/>
-            <Button Content="取消" Command="{Binding CancelCommand}" Height="32"/>
-            <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" Margin="0,10,0,0" TextWrapping="Wrap"/>
-        </StackPanel>
+    <Grid>
+        <Image Source="/Assets/bg.jpg" Stretch="UniformToFill" Opacity="0.6" Panel.ZIndex="0"/>
+        <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Panel.ZIndex="1">
+            <Border Padding="32" MinWidth="380" MinHeight="430" Background="#FAFAFAEE" CornerRadius="14" BorderBrush="#CCCCCC" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.16" BlurRadius="18" ShadowDepth="5"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="修改个人信息" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                    <TextBlock><Run Text="原姓名："/><Run Text="{Binding OriginalRealName}"/></TextBlock>
+                    <TextBlock Text="现姓名" Margin="0,8,0,0"/>
+                    <TextBox Text="{Binding RealName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
+
+                    <TextBlock><Run Text="原邮箱："/><Run Text="{Binding OriginalEmail}"/></TextBlock>
+                    <TextBlock Text="现邮箱" Margin="0,8,0,0"/>
+                    <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
+
+                    <TextBlock><Run Text="原联系电话："/><Run Text="{Binding OriginalPhoneNumber}"/></TextBlock>
+                    <TextBlock Text="现联系电话" Margin="0,8,0,0"/>
+                    <TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,20"/>
+
+                    <Button Content="保存" Command="{Binding SaveCommand}" Height="32" Margin="0,0,0,10"/>
+                    <Button Content="取消" Command="{Binding CancelCommand}" Height="32"/>
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>
