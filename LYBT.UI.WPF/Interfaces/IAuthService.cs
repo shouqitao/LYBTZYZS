@@ -1,4 +1,5 @@
 using LYBT.Common.Enums.Users;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,5 +15,7 @@ namespace LYBT.UI.WPF.Services {
         void ClearAutoLoginInfo();
         string RememberedUserName { get; }
         string RememberedPassword { get; }
+
+        Guid CurrentUserId { get; }
     }
 }

@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Services {
@@ -18,11 +20,13 @@ namespace LYBT.UI.WPF.Services {
         private bool _hasRemembered;
         private string _rememberedUserName;
         private string _rememberedPassword;
+        private Guid _currentUserId;
 
         public string Token => _token;
         public bool HasRemembered => _hasRemembered;
         public string RememberedUserName => _rememberedUserName;
         public string RememberedPassword => _rememberedPassword;
+        public Guid CurrentUserId => _currentUserId;
 
         private readonly string _autoLoginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autologin.json");
 
@@ -54,6 +58,15 @@ namespace LYBT.UI.WPF.Services {
                     roles = new List<UserRole> { result.User.Role };
 
                 _token = result.Token;
+                try {
+                    var handler = new JwtSecurityTokenHandler();
+                    var jwt = handler.ReadJwtToken(_token);
+                    var claim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
+                    if (claim != null && Guid.TryParse(claim.Value, out var id))
+                        _currentUserId = id;
+                } catch {
+                    _currentUserId = Guid.Empty;
+                }
                 SaveAutoLoginInfo(userName, password);
 
                 return (true, roles, null, _token);
@@ -86,6 +99,7 @@ namespace LYBT.UI.WPF.Services {
             _hasRemembered = false;
             _rememberedUserName = null;
             _rememberedPassword = null;
+            _currentUserId = Guid.Empty;
         }
 
         /// <summary>
