@@ -81,6 +81,7 @@
                     <TextBox Text="{Binding EditingUser.PhoneNumber}" Margin="0,0,0,8"/>
                     <CheckBox Content="启用" IsChecked="{Binding EditingUser.IsActive}" Margin="0,0,0,10"/>
                     <Button Content="保存" Command="{Binding SaveUserCommand}" Margin="0,10,0,0" Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Button Content="取消" Command="{Binding CancelCommand}" Margin="0,10,0,0" Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 </StackPanel>
             </Border>
         </Grid>
