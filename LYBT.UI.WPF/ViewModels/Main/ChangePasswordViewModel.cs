@@ -45,13 +45,21 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             var ok = await _userService.ChangePasswordAsync(_authService.UserId, OldPassword, NewPassword);
             if (ok) {
                 MessageBox.Show("密码已修改，请重新登录", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (Application.Current.MainWindow.DataContext is MainWindowViewModel main)
+                {
+                    main.LogoutCommand.Execute();
+                }
             } else {
                 ErrorMessage = "修改失败";
             }
         }
 
         private void OnCancel() {
-            // 该命令在功能区内可用于返回登录等操作，暂留空实现
+            if (Application.Current.MainWindow.DataContext is MainWindowViewModel main)
+            {
+                main.IsMainVisible = true;
+                main.IsFunctionVisible = false;
+            }
         }
     }
 }
