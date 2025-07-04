@@ -11,6 +11,9 @@
         <TabItem Header="用户管理">
             <admin:UserManagementView/>
         </TabItem>
+        <TabItem Header="医生管理">
+            <admin:DoctorManagementView/>
+        </TabItem>
         <TabItem Header="药材管理">
             <TextBlock Text="药材管理开发中..." Padding="40"/>
         </TabItem>
