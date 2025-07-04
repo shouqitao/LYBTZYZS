@@ -8,13 +8,13 @@
         /// <summary>医生ID</summary>
         public Guid Id { get; set; }
 
-        /// <summary>医生姓名</summary>
+        /// <summary>医生姓名(来自用户)</summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>职称</summary>
         public string? Title { get; set; }
 
-        /// <summary>联系电话</summary>
+        /// <summary>联系电话(来自用户)</summary>
         public string Phone { get; set; } = string.Empty;
 
         /// <summary>姓名拼音码</summary>

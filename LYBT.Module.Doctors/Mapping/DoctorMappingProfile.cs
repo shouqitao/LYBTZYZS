@@ -11,12 +11,12 @@ namespace LYBT.Module.Doctors.Mapping {
 
         public DoctorMappingProfile() {
             CreateMap<DoctorModel, DoctorDto>()
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.User.RealName))
-                .ForMember(d => d.Phone, o => o.MapFrom(s => s.User.PhoneNumber));
+                .ForMember(d => d.Name, o => o.MapFrom(s => s.User != null ? s.User.RealName : string.Empty))
+                .ForMember(d => d.Phone, o => o.MapFrom(s => s.User != null ? s.User.PhoneNumber : string.Empty));
 
             CreateMap<DoctorModel, DoctorDetailDto>()
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.User.RealName))
-                .ForMember(d => d.Phone, o => o.MapFrom(s => s.User.PhoneNumber));
+                .ForMember(d => d.Name, o => o.MapFrom(s => s.User != null ? s.User.RealName : string.Empty))
+                .ForMember(d => d.Phone, o => o.MapFrom(s => s.User != null ? s.User.PhoneNumber : string.Empty));
 
             CreateMap<DoctorCreateDto, DoctorModel>()
                 .ForMember(d => d.User, o => o.Ignore())
