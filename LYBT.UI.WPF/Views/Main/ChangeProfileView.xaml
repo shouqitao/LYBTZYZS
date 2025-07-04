@@ -6,7 +6,7 @@
     <Grid>
         <Image Source="/Assets/bg.jpg" Stretch="UniformToFill" Opacity="0.6" Panel.ZIndex="0"/>
         <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Panel.ZIndex="1">
-            <Border Padding="32" MinWidth="380" MinHeight="430" Background="#FAFAFAEE" CornerRadius="14" BorderBrush="#CCCCCC" BorderThickness="1">
+            <Border Padding="32" MinWidth="380" MinHeight="430" Background="#F9FAFB" CornerRadius="14" BorderBrush="#19b5fe" BorderThickness="1">
                 <Border.Effect>
                     <DropShadowEffect Color="Black" Opacity="0.16" BlurRadius="18" ShadowDepth="5"/>
                 </Border.Effect>
@@ -31,23 +31,41 @@
                         <TextBlock Text="{Binding OriginalRealName}" Grid.Row="0" Grid.Column="1"/>
 
                         <TextBlock Text="现姓名：" Grid.Row="1" Grid.Column="0" Margin="0,8,0,0"/>
-                        <TextBox Text="{Binding RealName, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Grid.Column="1" Margin="0,4,0,0"/>
+                        <TextBox Text="{Binding RealName, UpdateSourceTrigger=PropertyChanged}"
+                                 Grid.Row="1" Grid.Column="1" Margin="0,4,0,0"
+                                 Height="30" Padding="6" FontSize="13"
+                                 Background="#F4F5F7" BorderBrush="#19b5fe" BorderThickness="1"/>
 
                         <TextBlock Text="原邮箱：" Grid.Row="2" Grid.Column="0" Margin="0,8,0,0"/>
                         <TextBlock Text="{Binding OriginalEmail}" Grid.Row="2" Grid.Column="1" Margin="0,8,0,0"/>
 
                         <TextBlock Text="现邮箱：" Grid.Row="3" Grid.Column="0" Margin="0,8,0,0"/>
-                        <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Grid.Row="3" Grid.Column="1" Margin="0,4,0,0"/>
+                        <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                                 Grid.Row="3" Grid.Column="1" Margin="0,4,0,0"
+                                 Height="30" Padding="6" FontSize="13"
+                                 Background="#F4F5F7" BorderBrush="#19b5fe" BorderThickness="1"/>
 
                         <TextBlock Text="原联系电话：" Grid.Row="4" Grid.Column="0" Margin="0,8,0,0"/>
                         <TextBlock Text="{Binding OriginalPhoneNumber}" Grid.Row="4" Grid.Column="1" Margin="0,8,0,0"/>
 
                         <TextBlock Text="现联系电话：" Grid.Row="5" Grid.Column="0" Margin="0,8,0,0"/>
-                        <TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" Grid.Row="5" Grid.Column="1" Margin="0,4,0,20"/>
+                        <TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
+                                 Grid.Row="5" Grid.Column="1" Margin="0,4,0,20"
+                                 Height="30" Padding="6" FontSize="13"
+                                 Background="#F4F5F7" BorderBrush="#19b5fe" BorderThickness="1"/>
                     </Grid>
 
-                    <Button Content="保存" Command="{Binding SaveCommand}" Height="32" Margin="0,0,0,10"/>
-                    <Button Content="取消" Command="{Binding CancelCommand}" Height="32"/>
+                    <Button Content="保 存"
+                            Command="{Binding SaveCommand}"
+                            Height="32" Margin="0,0,0,10"
+                            FontSize="15" FontWeight="Bold"
+                            Foreground="White" Background="#19b5fe"
+                            BorderThickness="0" Cursor="Hand"/>
+                    <Button Content="取 消"
+                            Command="{Binding CancelCommand}"
+                            Height="32" FontSize="15"
+                            Foreground="#333" Background="#F4F5F7"
+                            BorderBrush="#19b5fe" BorderThickness="1" Cursor="Hand"/>
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" Margin="0,10,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
