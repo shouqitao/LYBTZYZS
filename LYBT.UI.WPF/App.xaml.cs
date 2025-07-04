@@ -101,6 +101,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<BillingStaffView>("BillingStaffView");
             containerRegistry.RegisterForNavigation<ChangePasswordView>("ChangePasswordView");
             containerRegistry.RegisterForNavigation<ChangeProfileView>("ChangeProfileView");
+            containerRegistry.RegisterForNavigation<DoctorInfoView>("DoctorInfoView");
 
         }
 

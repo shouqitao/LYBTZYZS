@@ -23,6 +23,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public bool IsMainVisible { get => _isMainVisible; set => SetProperty(ref _isMainVisible, value); }
 
+        private bool _isDoctorRole = false;
+        /// <summary>
+        /// 当前登录用户是否医生角色
+        /// </summary>
+        public bool IsDoctorRole { get => _isDoctorRole; set => SetProperty(ref _isDoctorRole, value); }
+
         /// <summary>
         /// 退出登录命令
         /// </summary>
@@ -37,6 +43,11 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// 显示修改个人信息界面
         /// </summary>
         public DelegateCommand ShowChangeProfileCommand { get; }
+
+        /// <summary>
+        /// 显示医生信息界面
+        /// </summary>
+        public DelegateCommand ShowDoctorInfoCommand { get; }
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
@@ -55,6 +66,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             LogoutCommand = new DelegateCommand(Logout);
             ShowChangePasswordCommand = new DelegateCommand(ShowChangePassword);
             ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
+            ShowDoctorInfoCommand = new DelegateCommand(ShowDoctorInfo);
         }
 
         /// <summary>
@@ -89,12 +101,19 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _regionManager.RequestNavigate("FunctionRegion", "ChangeProfileView");
         }
 
+        private void ShowDoctorInfo() {
+            IsMainVisible = false;
+            IsFunctionVisible = true;
+            _regionManager.RequestNavigate("FunctionRegion", "DoctorInfoView");
+        }
+
         /// <summary>
         /// 方法 OnLoginSuccess 的说明
         /// </summary>
         private void OnLoginSuccess(IList<UserRole> roles) {
             IsFunctionVisible = false;
             IsMainVisible = true;
+            IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
             // 最大化窗口
             Application.Current.MainWindow.WindowState = WindowState.Maximized;
             // 导航到主内容区（如HomeView）
