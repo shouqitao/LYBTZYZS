@@ -1,38 +1,20 @@
+using System;
 using LYBT.Common.Enums;
 
 namespace LYBT.Module.Doctors.Dtos {
     /// <summary>
-    /// 医生列表 DTO
+    /// 医生列表 DTO（仅包含医生专属字段和UserId，姓名等通过User获取）
     /// </summary>
     public class DoctorDto {
-        /// <summary>医生ID</summary>
         public Guid Id { get; set; }
-
-        /// <summary>医生姓名(来自用户)</summary>
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>性别</summary>
-        public Gender Gender { get; set; } = Gender.Unknown;
-
-        /// <summary>出生日期</summary>
-        public DateTime Birthday { get; set; }
-
-        /// <summary>职称</summary>
-        public DoctorTitle Title { get; set; }
-
-        /// <summary>联系电话(来自用户)</summary>
-        public string Phone { get; set; } = string.Empty;
-
-        /// <summary>姓名拼音码</summary>
-        public string PinyinCode { get; set; } = string.Empty;
-
-        /// <summary>执业证书号</summary>
+        public Guid UserId { get; set; }
+        public DateTime? Birthday { get; set; }
+        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
         public string? LicenseNumber { get; set; }
-
-        /// <summary>状态</summary>
+        public string Specialty { get; set; } = string.Empty;
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
-
-        /// <summary>备注</summary>
+        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
+        public string PinyinCode { get; set; } = string.Empty;
         public string? Remark { get; set; }
     }
 }

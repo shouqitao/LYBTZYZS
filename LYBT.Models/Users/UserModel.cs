@@ -1,5 +1,6 @@
 ﻿using LYBT.Common.Enums.Users;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.Users.Models {
 
@@ -16,16 +17,19 @@ namespace LYBT.Module.Users.Models {
         /// <summary>
         /// 用户名（唯一）
         /// </summary>
+        [Required, StringLength(32, MinimumLength = 2)]
         public string UserName { get; set; } = string.Empty;
 
         /// <summary>
         /// 真实姓名
         /// </summary>
+        [Required, StringLength(20)]
         public string RealName { get; set; } = string.Empty;
 
         /// <summary>
         /// 用户拥有的所有角色
         /// </summary>
+        [Required]
         public List<UserRole> Roles { get; set; } = new();
 
         /// <summary>
@@ -44,11 +48,11 @@ namespace LYBT.Module.Users.Models {
         public DateTime? LastLoginTime { get; set; }
 
         /// <summary>
-        /// 密码哈希（可选，如有安全需求可加盐等字段）
+        /// 密码哈希（不可在DTO中暴露）
         /// </summary>
+        [Required]
         public string PasswordHash { get; set; } = string.Empty;
 
-        // 登录防护相关字段
         /// <summary>
         /// 连续登录失败次数
         /// </summary>
@@ -59,9 +63,16 @@ namespace LYBT.Module.Users.Models {
         /// </summary>
         public DateTime? LockoutEnd { get; set; }
 
-        // 如有邮箱、手机号等请补充对应字段
+        /// <summary>
+        /// 邮箱
+        /// </summary>
+        [EmailAddress]
         public string? Email { get; set; }
 
+        /// <summary>
+        /// 手机号
+        /// </summary>
+        [Phone]
         public string? PhoneNumber { get; set; }
     }
 }

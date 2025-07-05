@@ -8,6 +8,8 @@ using Refit;
 using System;
 using System.Configuration;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
 
 namespace LYBT.UI.WPF {
@@ -30,21 +32,29 @@ namespace LYBT.UI.WPF {
                 BaseAddress = new Uri(baseUrl)
             };
 
+            // 优化：统一配置 Refit 的枚举序列化方式
+            var refitSettings = new RefitSettings {
+                ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    Converters = { new JsonStringEnumConverter() }
+                })
+            };
+
             // 2. 用Refit创建IAuthApi实例  
-            var authApi = RestService.For<IAuthApi>(httpClient);
-            var userApi = RestService.For<IUserApi>(httpClient);
-            var billingApi = RestService.For<IBillingApi>(httpClient);
-            var diagnosisTreatmentApi = RestService.For<IDiagnosisTreatmentApi>(httpClient);
-            var doctorApi = RestService.For<IDoctorApi>(httpClient);
-            var formulaTemplateApi = RestService.For<IFormulaTemplateApi>(httpClient);
-            var herbApi = RestService.For<IHerbApi>(httpClient);
-            var patientApi = RestService.For<IPatientApi>(httpClient);
-            var queueingApi = RestService.For<IQueueingApi>(httpClient);
-            var recordApi = RestService.For<IRecordApi>(httpClient);
-            var registrationApi = RestService.For<IRegistrationApi>(httpClient);
-            var settingsApi = RestService.For<ISettingsApi>(httpClient);
-            var logApi = RestService.For<ILogApi>(httpClient);
-            var syncApi = RestService.For<ISyncApi>(httpClient);
+            var authApi = RestService.For<IAuthApi>(httpClient, refitSettings);
+            var userApi = RestService.For<IUserApi>(httpClient, refitSettings);
+            var billingApi = RestService.For<IBillingApi>(httpClient, refitSettings);
+            var diagnosisTreatmentApi = RestService.For<IDiagnosisTreatmentApi>(httpClient, refitSettings);
+            var doctorApi = RestService.For<IDoctorApi>(httpClient, refitSettings);
+            var formulaTemplateApi = RestService.For<IFormulaTemplateApi>(httpClient, refitSettings);
+            var herbApi = RestService.For<IHerbApi>(httpClient, refitSettings);
+            var patientApi = RestService.For<IPatientApi>(httpClient, refitSettings);
+            var queueingApi = RestService.For<IQueueingApi>(httpClient, refitSettings);
+            var recordApi = RestService.For<IRecordApi>(httpClient, refitSettings);
+            var registrationApi = RestService.For<IRegistrationApi>(httpClient, refitSettings);
+            var settingsApi = RestService.For<ISettingsApi>(httpClient, refitSettings);
+            var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
+            var syncApi = RestService.For<ISyncApi>(httpClient, refitSettings);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
             var authService = new AuthService(authApi);

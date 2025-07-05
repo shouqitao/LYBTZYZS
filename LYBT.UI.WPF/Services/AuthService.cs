@@ -5,20 +5,23 @@ using Refit;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>
-    /// 认证服务实现（带Token、记住密码、自动登录）
+    /// 认证服务实现，提供登录、登出、Token管理、自动登录等功能
     /// </summary>
     public class AuthService : IAuthService {
         private readonly IAuthApi _authApi;
-        private string _token;
-        private Guid _userId;
+        private string _token = string.Empty;
+        private Guid _userId = Guid.Empty;
         private bool _hasRemembered;
-        private string _rememberedUserName;
-        private string _rememberedPassword;
+        private string _rememberedUserName = string.Empty;
+        private string _rememberedPassword = string.Empty;
+
+        private readonly string _autoLoginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autologin.json");
 
         public string Token => _token;
         public Guid UserId => _userId;
@@ -26,84 +29,191 @@ namespace LYBT.UI.WPF.Services {
         public string RememberedUserName => _rememberedUserName;
         public string RememberedPassword => _rememberedPassword;
 
-        private readonly string _autoLoginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "autologin.json");
-
         public AuthService(IAuthApi authApi) {
-            _authApi = authApi;
-            _userId = Guid.Empty;
-            if (File.Exists(_autoLoginPath)) {
+            _authApi = authApi ?? throw new ArgumentNullException(nameof(authApi));
+            LoadAutoLoginInfo();
+        }
+
+        /// <summary>
+        /// 用户登录
+        /// </summary>
+        public async Task<(bool success, IList<UserRole> roles, string errorMessage, string token)> LoginAsync(string userName, string password) {
+            try {
+                // 验证输入参数
+                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password)) {
+                    return (false, new List<UserRole>(), "用户名和密码不能为空", string.Empty);
+                }
+
+                // 调用 API 登录
+                var loginRequest = new LoginRequestDto {
+                    Username = userName,
+                    Password = password,
+                    LoginType = "Password"
+                };
+
+                var result = await _authApi.LoginAsync(loginRequest);
+
+                // 验证返回结果
+                if (result?.User == null) {
+                    return (false, new List<UserRole>(), "登录失败：服务器返回数据异常", string.Empty);
+                }
+
+                // 获取用户角色
+                var roles = GetUserRoles(result.User);
+
+                // 验证角色信息
+                if (roles.Count == 0) {
+                    return (false, new List<UserRole>(), "登录失败：用户未分配有效角色", string.Empty);
+                }
+
+                // 保存登录状态
+                _token = result.Token ?? string.Empty;
+                _userId = result.User.Id;
+                SaveAutoLoginInfo(userName, password);
+
+                return (true, roles, string.Empty, _token);
+            }
+            catch (ApiException apiEx) {
+                // API 异常处理
+                var errorMessage = GetApiErrorMessage(apiEx);
+                return (false, new List<UserRole>(), errorMessage, string.Empty);
+            }
+            catch (Exception ex) {
+                // 其他异常处理
+                return (false, new List<UserRole>(), $"登录异常：{ex.Message}", string.Empty);
+            }
+        }
+
+        /// <summary>
+        /// 用户登出
+        /// </summary>
+        public async Task<bool> LogoutAsync() {
+            try {
+                if (!string.IsNullOrEmpty(_rememberedUserName)) {
+                    var logoutRequest = new LogoutRequestDto { Username = _rememberedUserName };
+                    var response = await _authApi.LogoutAsync(logoutRequest);
+                    
+                    if (response?.Success == true) {
+                        ClearLoginState();
+                        return true;
+                    }
+                }
+                
+                // 即使 API 调用失败，也清除本地状态
+                ClearLoginState();
+                return true;
+            }
+            catch {
+                // 登出失败也清除本地状态
+                ClearLoginState();
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 清除自动登录信息
+        /// </summary>
+        public void ClearAutoLoginInfo() {
+            try {
+                if (File.Exists(_autoLoginPath)) {
+                    File.Delete(_autoLoginPath);
+                }
+            }
+            catch {
+                // 忽略文件删除异常
+            }
+
+            _hasRemembered = false;
+            _rememberedUserName = string.Empty;
+            _rememberedPassword = string.Empty;
+        }
+
+        /// <summary>
+        /// 获取用户角色列表
+        /// </summary>
+        private static IList<UserRole> GetUserRoles(Module.Users.Dtos.UserDto user) {
+            var roles = new List<UserRole>();
+
+            // 优先使用 Roles 列表
+            if (user.Roles?.Any() == true) {
+                roles.AddRange(user.Roles);
+            }
+            // 如果 Roles 为空，使用单个 Role
+            else if (Enum.IsDefined(typeof(UserRole), user.Role)) {
+                roles.Add(user.Role);
+            }
+
+            // 去重并排序
+            return roles.Distinct().OrderBy(r => (int)r).ToList();
+        }
+
+        /// <summary>
+        /// 获取 API 异常错误信息
+        /// </summary>
+        private static string GetApiErrorMessage(ApiException apiEx) {
+            return apiEx.StatusCode switch {
+                System.Net.HttpStatusCode.Unauthorized => "用户名或密码错误",
+                System.Net.HttpStatusCode.Forbidden => "账户已被禁用",
+                System.Net.HttpStatusCode.NotFound => "登录服务不可用",
+                System.Net.HttpStatusCode.InternalServerError => "服务器内部错误",
+                _ => $"登录失败：{apiEx.Content}"
+            };
+        }
+
+        /// <summary>
+        /// 加载自动登录信息
+        /// </summary>
+        private void LoadAutoLoginInfo() {
+            try {
+                if (!File.Exists(_autoLoginPath)) return;
+
                 var json = File.ReadAllText(_autoLoginPath);
                 var info = JsonSerializer.Deserialize<AutoLoginInfo>(json);
-                if (info != null && !string.IsNullOrEmpty(info.UserName) && !string.IsNullOrEmpty(info.Password)) {
+
+                if (info != null && !string.IsNullOrWhiteSpace(info.UserName) && !string.IsNullOrWhiteSpace(info.Password)) {
                     _hasRemembered = true;
                     _rememberedUserName = info.UserName;
                     _rememberedPassword = info.Password;
                 }
             }
-        }
-
-        /// <summary>
-        /// 方法 LoginAsync 的说明
-        /// </summary>
-        public async Task<(bool success, IList<UserRole> roles, string errorMessage, string token)> LoginAsync(string userName, string password) {
-            try {
-                var result = await _authApi.LoginAsync(new LoginRequestDto {
-                    Username = userName,
-                    Password = password
-                });
-
-                var roles = result.User?.Roles;
-                if (roles == null || roles.Count == 0)
-                    roles = new List<UserRole> { result.User.Role };
-
-                _token = result.Token;
-                _userId = result.User.Id;
-                SaveAutoLoginInfo(userName, password);
-
-                return (true, roles, null, _token);
-            } catch (ApiException) {
-                return (false, null, "登录失败，用户名或密码错误！", null);
-            } catch (Exception ex) {
-                return (false, null, $"系统异常：{ex.Message}", null);
+            catch {
+                // 忽略加载异常，继续正常流程
             }
         }
 
         /// <summary>
-        /// 方法 SaveAutoLoginInfo 的说明
+        /// 保存自动登录信息
         /// </summary>
         private void SaveAutoLoginInfo(string userName, string password) {
-            var info = new AutoLoginInfo { UserName = userName, Password = password };
-            var json = JsonSerializer.Serialize(info);
-            File.WriteAllText(_autoLoginPath, json);
+            try {
+                var info = new AutoLoginInfo { UserName = userName, Password = password };
+                var json = JsonSerializer.Serialize(info, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(_autoLoginPath, json);
 
-            _hasRemembered = true;
-            _rememberedUserName = userName;
-            _rememberedPassword = password;
+                _hasRemembered = true;
+                _rememberedUserName = userName;
+                _rememberedPassword = password;
+            }
+            catch {
+                // 忽略保存异常
+            }
         }
 
         /// <summary>
-        /// 方法 ClearAutoLoginInfo 的说明
+        /// 清除登录状态
         /// </summary>
-        public void ClearAutoLoginInfo() {
-            if (File.Exists(_autoLoginPath))
-                File.Delete(_autoLoginPath);
-            _hasRemembered = false;
-            _rememberedUserName = null;
-            _rememberedPassword = null;
+        private void ClearLoginState() {
+            _token = string.Empty;
+            _userId = Guid.Empty;
+            ClearAutoLoginInfo();
         }
 
         /// <summary>
-        /// 类 AutoLoginInfo 的说明
+        /// 自动登录信息存储类
         /// </summary>
         private class AutoLoginInfo {
-            /// <summary>
-            /// 属性 UserName 的说明
-            /// </summary>
-            public string UserName { get; set; }
-            /// <summary>
-            /// 属性 Password 的说明
-            /// </summary>
-            public string Password { get; set; }
+            public string UserName { get; set; } = string.Empty;
+            public string Password { get; set; } = string.Empty;
         }
     }
 }

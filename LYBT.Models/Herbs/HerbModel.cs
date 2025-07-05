@@ -1,53 +1,38 @@
-﻿namespace LYBT.Models {
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace LYBT.Models {
 
     /// <summary>
     /// 药材主表实体
     /// </summary>
     public class HerbModel {
 
-        /// <summary>
-        /// 药材ID（主键）
-        /// </summary>
+        [Key]
         public Guid Id { get; set; }
 
-        /// <summary>
-        /// 药材名称
-        /// </summary>
+        [Required, StringLength(64)]
         public string Name { get; set; } = string.Empty;
 
-        /// <summary>
-        /// 拼音码
-        /// </summary>
+        [StringLength(32)]
         public string? Pinyin { get; set; }
 
-        /// <summary>
-        /// 产地
-        /// </summary>
+        [StringLength(64)]
         public string? Origin { get; set; }
 
-        /// <summary>
-        /// 规格
-        /// </summary>
+        [StringLength(32)]
         public string? Spec { get; set; }
 
-        /// <summary>
-        /// 单位
-        /// </summary>
+        [StringLength(16)]
         public string? Unit { get; set; }
 
-        /// <summary>
-        /// 单价
-        /// </summary>
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
 
-        /// <summary>
-        /// 功效说明
-        /// </summary>
+        [StringLength(128)]
         public string? Effect { get; set; }
 
-        /// <summary>
-        /// 备注
-        /// </summary>
+        [StringLength(256)]
         public string? Remark { get; set; }
     }
 }

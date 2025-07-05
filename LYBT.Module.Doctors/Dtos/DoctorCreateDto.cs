@@ -1,40 +1,37 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using LYBT.Common.Enums;
 
 namespace LYBT.Module.Doctors.Dtos {
 
     /// <summary>
-    /// 新增医生 DTO
+    /// 新增医生 DTO（仅包含医生专属字段）
     /// </summary>
     public class DoctorCreateDto {
 
-        /// <summary>医生姓名</summary>
-        [Required(ErrorMessage = "姓名不能为空")]
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>性别</summary>
-        [Required(ErrorMessage = "性别不能为空")]
-        public Gender Gender { get; set; } = Gender.Unknown;
+        [Required(ErrorMessage = "用户ID不能为空")]
+        public Guid UserId { get; set; }
 
         /// <summary>出生日期</summary>
-        [Required(ErrorMessage = "出生日期不能为空")]
-        public DateTime Birthday { get; set; }
+        public DateTime? Birthday { get; set; }
 
-        /// <summary>联系电话</summary>
-        [Required(ErrorMessage = "联系电话不能为空")]
-        public string Phone { get; set; } = string.Empty;
-
-        /// <summary>姓名拼音码</summary>
-        public string PinyinCode { get; set; } = string.Empty;
+        /// <summary>职称</summary>
+        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
 
         /// <summary>执业证书号</summary>
         public string? LicenseNumber { get; set; }
 
-        /// <summary>职称（如“主任医师”、“主治医师”）</summary>
-        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
+        /// <summary>专长</summary>
+        public string Specialty { get; set; } = string.Empty;
 
-        /// <summary>医生当前状态（如“在职”、“离职"）</summary>
+        /// <summary>医生当前状态</summary>
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
+
+        /// <summary>工作状态</summary>
+        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
+
+        /// <summary>姓名拼音码</summary>
+        public string PinyinCode { get; set; } = string.Empty;
 
         /// <summary>备注</summary>
         public string? Remark { get; set; }

@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Text.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LYBT.Infrastructure {
 
@@ -59,17 +60,23 @@ namespace LYBT.Infrastructure {
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
+            // UserName唯一索引
+            modelBuilder.Entity<UserModel>()
+                .HasIndex(u => u.UserName)
+                .IsUnique();
+
             // === List<UserRole> for UserModel ===
             modelBuilder.Entity<UserModel>()
                 .Property(x => x.Roles)
                 .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                    v => JsonSerializer.Deserialize<List<UserRole>>(v, (JsonSerializerOptions)null))
+                    v => string.Join(",", v.Select(r => ((int)r).ToString())),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => (UserRole)int.Parse(s)).ToList()
+                )
                 .Metadata.SetValueComparer(
                     new ValueComparer<List<UserRole>>(
-                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
-                        c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
-                        c => c == null ? null : JsonSerializer.Deserialize<List<UserRole>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
+                        (c1, c2) => c1.SequenceEqual(c2),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()
                     ));
 
             // === List<HerbItemModel> for FormulaTemplateModel ===

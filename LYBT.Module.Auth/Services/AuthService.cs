@@ -63,6 +63,11 @@ namespace LYBT.Module.Auth.Services {
                     };
                 }
 
+                // 强制保证 sysadmin 角色为 Admin
+                if (user != null && user.UserName == "sysadmin") {
+                    user.Roles = new List<UserRole> { UserRole.Admin };
+                }
+
                 // 账号不存在或未启用
                 if (user == null || !user.IsActive) {
                     await _logService.AddLogAsync(new LogDto {

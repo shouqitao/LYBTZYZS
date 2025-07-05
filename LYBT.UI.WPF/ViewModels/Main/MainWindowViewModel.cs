@@ -121,6 +121,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             IsFunctionVisible = false;
             IsMainVisible = true;
             IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
+            // 新增：如果是管理员，直接跳转到系统管理界面
+            if (roles.Contains(UserRole.Admin)) {
+                // 这里假设有一个 UserManagementView 作为系统管理主界面
+                _regionManager.RequestNavigate("MainContentRegion", "UserManagementView", new NavigationParameters { { "UserRoles", roles } });
+                return;
+            }
             if (IsDoctorRole)
                 await CheckDoctorProfileAsync();
             // 最大化窗口

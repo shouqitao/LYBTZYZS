@@ -35,15 +35,15 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 // 从User信息自动填充
                 var currentUser = await _userService.GetByIdAsync(_authService.UserId);
                 Doctor = new DoctorDetailDto {
-                    Name = currentUser?.RealName ?? "",
-                    Phone = currentUser?.PhoneNumber ?? "",
-                    Gender = Gender.Unknown,
+                    UserId = _authService.UserId,
                     Birthday = DateTime.Now.AddYears(-30),
                     Title = DoctorTitle.Junior,
                     Status = DoctorStatus.Active,
-                    PinyinCode = "",
-                    LicenseNumber = "",
-                    Remark = ""
+                    WorkStatus = DoctorWorkStatus.Clinic,
+                    PinyinCode = string.Empty,
+                    LicenseNumber = string.Empty,
+                    Specialty = string.Empty,
+                    Remark = string.Empty
                 };
                 EditModeTitle = "新增医生档案";
             }
@@ -53,28 +53,28 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             bool ok;
             if (Doctor.Id == Guid.Empty) {
                 var dto = new DoctorCreateDto {
-                    Name = Doctor.Name,
-                    Gender = Doctor.Gender,
+                    UserId = Doctor.UserId,
                     Birthday = Doctor.Birthday,
-                    Phone = Doctor.Phone,
-                    PinyinCode = Doctor.PinyinCode,
-                    LicenseNumber = Doctor.LicenseNumber,
                     Title = Doctor.Title,
+                    LicenseNumber = Doctor.LicenseNumber,
+                    Specialty = Doctor.Specialty,
                     Status = Doctor.Status,
+                    WorkStatus = Doctor.WorkStatus,
+                    PinyinCode = Doctor.PinyinCode,
                     Remark = Doctor.Remark
                 };
                 ok = await _doctorService.AddAsync(dto);
             } else {
                 var dto = new DoctorEditDto {
                     Id = Doctor.Id,
-                    Name = Doctor.Name,
-                    Gender = Doctor.Gender,
+                    UserId = Doctor.UserId,
                     Birthday = Doctor.Birthday,
-                    Phone = Doctor.Phone,
-                    PinyinCode = Doctor.PinyinCode,
-                    LicenseNumber = Doctor.LicenseNumber,
                     Title = Doctor.Title,
+                    LicenseNumber = Doctor.LicenseNumber,
+                    Specialty = Doctor.Specialty,
                     Status = Doctor.Status,
+                    WorkStatus = Doctor.WorkStatus,
+                    PinyinCode = Doctor.PinyinCode,
                     Remark = Doctor.Remark
                 };
                 ok = await _doctorService.UpdateAsync(dto);

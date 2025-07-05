@@ -1,78 +1,51 @@
-﻿using LYBT.Common.Enums;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using LYBT.Common.Enums;
 using LYBT.Module.Users.Models;
 
 namespace LYBT.Models.Doctors {
-
     /// <summary>
     /// 医生领域实体
     /// </summary>
     public class DoctorModel {
-
-        /// <summary>
-        /// 医生ID
-        /// </summary>
+        [Key]
         public Guid Id { get; set; }
 
-
-        /// <summary>
-        /// 性别
-        /// </summary>
+        [Required]
         public Gender Gender { get; set; } = Gender.Unknown;
 
-        /// <summary>
-        /// 年龄
-        /// </summary>
         public int Age { get; set; } = 0;
 
-
-        /// <summary>
-        /// 职称
-        /// </summary>
+        [Required]
         public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
 
-        /// <summary>
-        /// 擅长领域
-        /// </summary>
+        [StringLength(64)]
         public string Specialty { get; set; } = string.Empty;
 
-        /// <summary>
-        /// 是否在职
-        /// </summary>
+        [Required]
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
 
-        /// <summary>
-        /// 工作状态（如休假、外出等）
-        /// </summary>
+        [Required]
         public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
 
-        /// <summary>
-        /// 创建时间
-        /// </summary>
+        [Required]
         public DateTime CreatedTime { get; set; } = DateTime.Now;
 
-        /// <summary>
-        /// 备注
-        /// </summary>
+        [StringLength(256)]
         public string Remark { get; set; } = string.Empty;
 
         public DateTime Birthday { get; set; }
 
-        /// <summary>执业证书号</summary>
+        [StringLength(32)]
         public string? LicenseNumber { get; set; }
 
-        /// <summary>
-        /// 医生姓名拼音码，用于快捷搜索
-        /// </summary>
+        [StringLength(32)]
         public string PinyinCode { get; set; } = string.Empty;
 
-        /// <summary>
-        /// 对应的用户ID
-        /// </summary>
+        [Required]
         public Guid UserId { get; set; }
 
-        /// <summary>
-        /// 导航属性：关联的用户
-        /// </summary>
-        public UserModel User { get; set; } = null!;
+        [Required]
+        public virtual UserModel User { get; set; } = null!;
     }
 }

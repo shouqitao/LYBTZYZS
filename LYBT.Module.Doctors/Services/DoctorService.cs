@@ -1,16 +1,12 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums;
 using LYBT.Common.Helpers;
-using LYBT.Common.Models;
 using LYBT.Models.Doctors;
-using LYBT.Module.Users.Models;
-using LYBT.Common.Enums.Users;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
+using LYBT.Common.Models; // 正确的using指令，PagedResultDto定义于此
 using System.Collections.Generic;
 
 namespace LYBT.Module.Doctors.Services {
-
     /// <summary>
     /// 医生业务服务实现类，实现医生业务逻辑
     /// </summary>
@@ -18,17 +14,11 @@ namespace LYBT.Module.Doctors.Services {
         private readonly IDoctorRepository _doctorRepository;
         private readonly IMapper _mapper;
 
-        /// <summary>
-        /// 构造方法，注入医生仓储与映射器
-        /// </summary>
         public DoctorService(IDoctorRepository doctorRepository, IMapper mapper) {
             _doctorRepository = doctorRepository;
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// 获取医生详情
-        /// </summary>
         public async Task<DoctorDetailDto?> GetByIdAsync(Guid id) {
             var model = await _doctorRepository.GetByIdAsync(id);
             return model == null ? null : _mapper.Map<DoctorDetailDto>(model);
@@ -39,9 +29,6 @@ namespace LYBT.Module.Doctors.Services {
             return model == null ? null : _mapper.Map<DoctorDetailDto>(model);
         }
 
-        /// <summary>
-        /// 关键词搜索
-        /// </summary>
         public async Task<List<DoctorDto>> SearchAsync(string keyword) {
             var list = await _doctorRepository.SearchAsync(keyword);
             return _mapper.Map<List<DoctorDto>>(list);
@@ -55,63 +42,20 @@ namespace LYBT.Module.Doctors.Services {
             };
         }
 
-        /// <summary>
-        /// 新增医生
-        /// </summary>
         public async Task<bool> AddAsync(DoctorCreateDto doctorCreateDto) {
-            // 手机号唯一性校验
-            var exists = (await _doctorRepository.SearchAsync(doctorCreateDto.Phone)).Any(d => d.User.PhoneNumber == doctorCreateDto.Phone);
-            if (exists)
-                throw new Exception("该手机号已存在，请更换手机号。");
-
             var model = _mapper.Map<DoctorModel>(doctorCreateDto);
             model.Id = Guid.NewGuid();
-            // 状态直接使用请求中的值，默认激活
-            model.Status = doctorCreateDto.Status;
-
-            var user = new UserModel {
-                Id = Guid.NewGuid(),
-                UserName = doctorCreateDto.Phone,
-                RealName = doctorCreateDto.Name,
-                Roles = new List<UserRole> { UserRole.DiagnosingDoctor },
-                IsActive = true,
-                CreatedTime = DateTime.Now,
-                PhoneNumber = doctorCreateDto.Phone
-            };
-
-            model.UserId = user.Id;
-            model.User = user;
-
             return await _doctorRepository.AddAsync(model);
         }
 
-        /// <summary>
-        /// 编辑医生
-        /// </summary>
         public async Task<bool> UpdateAsync(DoctorEditDto doctorEditDto) {
             var model = await _doctorRepository.GetByIdAsync(doctorEditDto.Id);
             if (model == null)
                 throw new Exception("医生不存在。");
-
-            // 手机号唯一性校验（排除自己）
-            var exists = (await _doctorRepository.SearchAsync(doctorEditDto.Phone)).Any(d => d.User.PhoneNumber == doctorEditDto.Phone && d.Id != doctorEditDto.Id);
-            if (exists)
-                throw new Exception("该手机号已存在，请更换手机号。");
-
-            // 使用 AutoMapper 将 DTO 属性映射到实体
             _mapper.Map(doctorEditDto, model);
-
-            // 更新关联的用户信息
-            var user = model.User;
-            user.RealName = doctorEditDto.Name;
-            user.PhoneNumber = doctorEditDto.Phone;
-
             return await _doctorRepository.UpdateAsync(model);
         }
 
-        /// <summary>
-        /// 禁用医生
-        /// </summary>
         public async Task<bool> DisableAsync(Guid id) {
             return await _doctorRepository.DisableAsync(id);
         }

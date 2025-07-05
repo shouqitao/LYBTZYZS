@@ -69,14 +69,14 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             if (detail != null) {
                 EditingDoctor = new DoctorDetailDto {
                     Id = detail.Id,
-                    Name = detail.Name,
-                    Gender = detail.Gender,
+                    UserId = detail.UserId,
                     Birthday = detail.Birthday,
-                    Phone = detail.Phone,
-                    PinyinCode = detail.PinyinCode,
-                    LicenseNumber = detail.LicenseNumber,
                     Title = detail.Title,
+                    LicenseNumber = detail.LicenseNumber,
+                    Specialty = detail.Specialty,
                     Status = detail.Status,
+                    WorkStatus = detail.WorkStatus,
+                    PinyinCode = detail.PinyinCode,
                     Remark = detail.Remark
                 };
                 EditModeTitle = "医生详情";
@@ -93,10 +93,15 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
 
         private void AddDoctor() {
             EditingDoctor = new DoctorDetailDto {
-                Gender = Gender.Unknown,
+                UserId = Guid.Empty,
                 Birthday = DateTime.Now,
                 Title = DoctorTitle.Junior,
-                Status = DoctorStatus.Active
+                Status = DoctorStatus.Active,
+                WorkStatus = DoctorWorkStatus.Clinic,
+                PinyinCode = string.Empty,
+                LicenseNumber = string.Empty,
+                Specialty = string.Empty,
+                Remark = string.Empty
             };
             SelectedDoctor = null;
             EditModeTitle = "新增医生";
@@ -110,21 +115,22 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private async Task SaveDoctor() {
-            if (string.IsNullOrWhiteSpace(EditingDoctor.Name) || string.IsNullOrWhiteSpace(EditingDoctor.Phone)) {
-                MessageBox.Show("姓名和电话不能为空", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            // 这里只校验必填项：UserId, Title, Status, Specialty
+            if (EditingDoctor.UserId == Guid.Empty || string.IsNullOrWhiteSpace(EditingDoctor.Specialty)) {
+                MessageBox.Show("用户ID和专长不能为空", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             try {
                 if (EditingDoctor.Id == Guid.Empty) {
                     var dto = new DoctorCreateDto {
-                        Name = EditingDoctor.Name,
-                        Gender = EditingDoctor.Gender,
+                        UserId = EditingDoctor.UserId,
                         Birthday = EditingDoctor.Birthday,
-                        Phone = EditingDoctor.Phone,
-                        PinyinCode = EditingDoctor.PinyinCode,
-                        LicenseNumber = EditingDoctor.LicenseNumber,
                         Title = EditingDoctor.Title,
+                        LicenseNumber = EditingDoctor.LicenseNumber,
+                        Specialty = EditingDoctor.Specialty,
                         Status = EditingDoctor.Status,
+                        WorkStatus = EditingDoctor.WorkStatus,
+                        PinyinCode = EditingDoctor.PinyinCode,
                         Remark = EditingDoctor.Remark
                     };
                     var ok = await _doctorService.AddAsync(dto);
@@ -135,14 +141,14 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 } else {
                     var dto = new DoctorEditDto {
                         Id = EditingDoctor.Id,
-                        Name = EditingDoctor.Name,
-                        Gender = EditingDoctor.Gender,
+                        UserId = EditingDoctor.UserId,
                         Birthday = EditingDoctor.Birthday,
-                        Phone = EditingDoctor.Phone,
-                        PinyinCode = EditingDoctor.PinyinCode,
-                        LicenseNumber = EditingDoctor.LicenseNumber,
                         Title = EditingDoctor.Title,
+                        LicenseNumber = EditingDoctor.LicenseNumber,
+                        Specialty = EditingDoctor.Specialty,
                         Status = EditingDoctor.Status,
+                        WorkStatus = EditingDoctor.WorkStatus,
+                        PinyinCode = EditingDoctor.PinyinCode,
                         Remark = EditingDoctor.Remark
                     };
                     var ok = await _doctorService.UpdateAsync(dto);

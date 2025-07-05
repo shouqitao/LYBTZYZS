@@ -9,7 +9,7 @@ using System.Security.Claims;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize] // 全部接口必须登录
 public class UsersController : ControllerBase {
     private readonly IUserService _userService;
 

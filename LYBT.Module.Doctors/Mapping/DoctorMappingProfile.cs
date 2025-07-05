@@ -9,40 +9,18 @@ namespace LYBT.Module.Doctors.Mapping {
     public class DoctorMappingProfile : Profile {
         public DoctorMappingProfile() {
             // DoctorModel -> DoctorDto 映射 (用于列表)
-            CreateMap<DoctorModel, DoctorDto>()
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.User != null ? s.User.RealName : string.Empty))
-                .ForMember(d => d.Phone, o => o.MapFrom(s => s.User != null ? s.User.PhoneNumber : string.Empty))
-                .ForMember(d => d.Title, o => o.MapFrom(s => s.Title))
-                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
-                .ForMember(d => d.PinyinCode, o => o.MapFrom(s => s.PinyinCode))
-                .ForMember(d => d.LicenseNumber, o => o.MapFrom(s => s.LicenseNumber))
-                .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender))
-                .ForMember(d => d.Birthday, o => o.MapFrom(s => s.Birthday))
-                .ForMember(d => d.Remark, o => o.MapFrom(s => s.Remark));
+            CreateMap<DoctorModel, DoctorDto>();
 
             // DoctorModel -> DoctorDetailDto 映射 (用于详情)
-            CreateMap<DoctorModel, DoctorDetailDto>()
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.User != null ? s.User.RealName : string.Empty))
-                .ForMember(d => d.Phone, o => o.MapFrom(s => s.User != null ? s.User.PhoneNumber : string.Empty))
-                .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender))
-                .ForMember(d => d.Birthday, o => o.MapFrom(s => s.Birthday))
-                .ForMember(d => d.PinyinCode, o => o.MapFrom(s => s.PinyinCode))
-                .ForMember(d => d.LicenseNumber, o => o.MapFrom(s => s.LicenseNumber))
-                .ForMember(d => d.Title, o => o.MapFrom(s => s.Title))
-                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
-                .ForMember(d => d.Remark, o => o.MapFrom(s => s.Remark));
+            CreateMap<DoctorModel, DoctorDetailDto>();
 
             // DoctorCreateDto -> DoctorModel 映射 (新增)
             CreateMap<DoctorCreateDto, DoctorModel>()
-                .ForMember(d => d.User, o => o.Ignore())
-                .ForMember(d => d.UserId, o => o.Ignore())
-                .ForMember(d => d.CreatedTime, o => o.MapFrom(s => DateTime.Now));
+                .ForMember(d => d.User, o => o.Ignore());
 
             // DoctorEditDto -> DoctorModel 映射 (编辑)
             CreateMap<DoctorEditDto, DoctorModel>()
-                .ForMember(d => d.User, o => o.Ignore())
-                .ForMember(d => d.UserId, o => o.Ignore())
-                .ForMember(d => d.CreatedTime, o => o.Ignore());
+                .ForMember(d => d.User, o => o.Ignore());
         }
     }
 }
