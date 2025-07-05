@@ -60,6 +60,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             if (Doctor.Id == Guid.Empty) {
                 var dto = new DoctorCreateDto {
                     UserId = Doctor.UserId,
+                    Gender = Doctor.Gender,
                     Birthday = Doctor.Birthday,
                     Title = Doctor.Title,
                     LicenseNumber = Doctor.LicenseNumber,
@@ -67,6 +68,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                     Status = Doctor.Status,
                     WorkStatus = Doctor.WorkStatus,
                     PinyinCode = Doctor.PinyinCode,
+                    ContactNumber = Doctor.ContactNumber,
                     Remark = Doctor.Remark
                 };
                 ok = await _doctorService.AddAsync(dto);
@@ -74,6 +76,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 var dto = new DoctorEditDto {
                     Id = Doctor.Id,
                     UserId = Doctor.UserId,
+                    Gender = Doctor.Gender,
                     Birthday = Doctor.Birthday,
                     Title = Doctor.Title,
                     LicenseNumber = Doctor.LicenseNumber,
@@ -81,6 +84,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                     Status = Doctor.Status,
                     WorkStatus = Doctor.WorkStatus,
                     PinyinCode = Doctor.PinyinCode,
+                    ContactNumber = Doctor.ContactNumber,
                     Remark = Doctor.Remark
                 };
                 ok = await _doctorService.UpdateAsync(dto);
