@@ -21,5 +21,10 @@ namespace LYBT.Module.Auth.Interfaces {
         /// 获取管理员密码哈希
         /// </summary>
         Task<string?> GetAdminPasswordHashAsync(string userName);
+
+        /// <summary>
+        /// 更新登录防护相关字段（失败次数、锁定时间）
+        /// </summary>
+        Task UpdateUserLoginProtectionAsync(UserModel user);
     }
 }

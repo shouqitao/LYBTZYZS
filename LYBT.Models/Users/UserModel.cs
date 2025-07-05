@@ -48,6 +48,17 @@ namespace LYBT.Module.Users.Models {
         /// </summary>
         public string PasswordHash { get; set; } = string.Empty;
 
+        // 登录防护相关字段
+        /// <summary>
+        /// 连续登录失败次数
+        /// </summary>
+        public int FailedLoginCount { get; set; } = 0;
+
+        /// <summary>
+        /// 账号锁定截止时间（null为未锁定）
+        /// </summary>
+        public DateTime? LockoutEnd { get; set; }
+
         // 如有邮箱、手机号等请补充对应字段
         public string? Email { get; set; }
 

@@ -1,17 +1,28 @@
 ﻿using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 /// <summary>
 /// 用户管理控制器，提供RESTful API接口
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UsersController : ControllerBase {
     private readonly IUserService _userService;
 
     public UsersController(IUserService userService) {
         _userService = userService;
+    }
+
+    private (Guid operatorId, string operatorName) GetOperator() {
+        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = User?.Identity?.Name;
+        if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName))
+            return (opId, userName);
+        throw new UnauthorizedAccessException("未登录或用户信息无效");
     }
 
     /// <summary>
@@ -28,9 +39,7 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] UserCreateDto dto) {
-        // 从Token/Session等获取操作人信息
-        Guid operatorId = Guid.NewGuid(); // 实际开发应取登录管理员ID
-        string operatorName = "管理员A";
+        var (operatorId, operatorName) = GetOperator();
         try {
             var result = await _userService.AddAsync(dto, operatorId, operatorName);
             return result ? Ok(new { success = true }) : BadRequest(new { success = false });
@@ -44,8 +53,7 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPut("update")]
     public async Task<IActionResult> Update([FromBody] UserDetailDto dto) {
-        Guid operatorId = Guid.NewGuid();
-        string operatorName = "管理员A";
+        var (operatorId, operatorName) = GetOperator();
         try {
             var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
             return result ? Ok(new { success = true }) : BadRequest(new { success = false });
@@ -59,8 +67,7 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPost("disable/{id}")]
     public async Task<IActionResult> Disable(Guid id) {
-        Guid operatorId = Guid.NewGuid();
-        string operatorName = "管理员A";
+        var (operatorId, operatorName) = GetOperator();
         try {
             var result = await _userService.DisableAsync(id, operatorId, operatorName);
             return result ? Ok(new { success = true }) : BadRequest(new { success = false });
@@ -74,8 +81,7 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPost("enable/{id}")]
     public async Task<IActionResult> Enable(Guid id) {
-        Guid operatorId = Guid.NewGuid();
-        string operatorName = "管理员A";
+        var (operatorId, operatorName) = GetOperator();
         try {
             var result = await _userService.EnableAsync(id, operatorId, operatorName);
             return result ? Ok(new { success = true }) : BadRequest(new { success = false });
@@ -89,8 +95,7 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPost("batchDisable")]
     public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
-        Guid operatorId = Guid.NewGuid();
-        string operatorName = "管理员A";
+        var (operatorId, operatorName) = GetOperator();
         var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
         return Ok(new { success = true, count });
     }
@@ -100,8 +105,7 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPost("batchEnable")]
     public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
-        Guid operatorId = Guid.NewGuid();
-        string operatorName = "管理员A";
+        var (operatorId, operatorName) = GetOperator();
         var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
         return Ok(new { success = true, count });
     }
@@ -111,8 +115,7 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPost("resetPassword/{id}")]
     public async Task<IActionResult> ResetPassword(Guid id) {
-        Guid operatorId = Guid.NewGuid();
-        string operatorName = "管理员A";
+        var (operatorId, operatorName) = GetOperator();
         try {
             var result = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
             return result ? Ok(new { success = true }) : BadRequest(new { success = false });
@@ -126,7 +129,11 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPost("changePassword")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto) {
-        var result = await _userService.ChangePasswordAsync(dto.UserId, dto.OldPassword, dto.NewPassword);
+        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var id))
+            return Unauthorized(new { success = false, message = "未登录或用户信息无效" });
+
+        var result = await _userService.ChangePasswordAsync(id, dto.OldPassword, dto.NewPassword);
         return result ? Ok(new { success = true }) : BadRequest(new { success = false });
     }
 
@@ -135,7 +142,11 @@ public class UsersController : ControllerBase {
     /// </summary>
     [HttpPost("changeProfile")]
     public async Task<IActionResult> ChangeProfile([FromBody] ChangeProfileDto dto) {
-        var result = await _userService.ChangeProfileAsync(dto.UserId, dto.RealName, dto.Email, dto.PhoneNumber);
+        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var id))
+            return Unauthorized(new { success = false, message = "未登录或用户信息无效" });
+
+        var result = await _userService.ChangeProfileAsync(id, dto.RealName, dto.Email, dto.PhoneNumber);
         return result ? Ok(new { success = true }) : BadRequest(new { success = false });
     }
 

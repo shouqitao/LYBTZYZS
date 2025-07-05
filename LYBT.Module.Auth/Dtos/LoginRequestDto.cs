@@ -15,5 +15,14 @@ namespace LYBT.Module.Auth.Dtos {
         /// <summary>密码</summary>
         [Required(ErrorMessage = "密码不能为空")]
         public string Password { get; set; } = string.Empty;
+
+        /// <summary>客户端IP</summary>
+        public string? ClientIp { get; set; }
+
+        /// <summary>UserAgent</summary>
+        public string? UserAgent { get; set; }
+
+        /// <summary>登录类型（Password, WeChat, OAuth等）</summary>
+        public string? LoginType { get; set; } = "Password";
     }
 }
