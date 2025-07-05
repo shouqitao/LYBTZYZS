@@ -23,5 +23,11 @@ namespace LYBT.UI.WPF.Apis {
         /// <returns>登出响应</returns>
         [Post("/api/Auth/logout")]
         Task<LYBT.Common.Responses.ApiResponse<object>> LogoutAsync([Body] LogoutRequestDto dto);
+
+        /// <summary>
+        /// 修改 sysadmin 密码
+        /// </summary>
+        [Post("/api/Auth/changeSysAdminPassword")]
+        Task<LYBT.Common.Responses.ApiResponse<object>> ChangeSysAdminPasswordAsync([Body] ChangeSysAdminPasswordDto dto);
     }
 }

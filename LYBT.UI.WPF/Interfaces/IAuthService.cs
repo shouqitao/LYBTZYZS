@@ -51,5 +51,10 @@ namespace LYBT.UI.WPF.Services {
         /// 清除自动登录信息
         /// </summary>
         void ClearAutoLoginInfo();
+
+        /// <summary>
+        /// 修改 sysadmin 密码
+        /// </summary>
+        Task<bool> ChangeSysAdminPasswordAsync(string oldPassword, string newPassword);
     }
 }

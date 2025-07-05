@@ -33,6 +33,15 @@ namespace LYBT.Module.Auth.Repositories {
             return secret?.PasswordHash;
         }
 
+        public async Task UpdateAdminPasswordHashAsync(string userName, string passwordHash) {
+            var secret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(s => s.UserName == userName);
+            if (secret != null) {
+                secret.PasswordHash = passwordHash;
+                _dbContext.AdminSecrets.Update(secret);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
         public async Task UpdateUserLoginProtectionAsync(UserModel user) {
             var dbUser = await _dbContext.Users.FindAsync(user.Id);
             if (dbUser != null) {

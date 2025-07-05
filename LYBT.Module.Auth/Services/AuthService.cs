@@ -180,5 +180,26 @@ namespace LYBT.Module.Auth.Services {
             });
             return true;
         }
+
+        public async Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto) {
+            var hash = await _authRepository.GetAdminPasswordHashAsync("sysadmin");
+            if (string.IsNullOrEmpty(hash))
+                return false;
+            if (!PasswordHelper.Verify(hash, dto.OldPassword))
+                return false;
+            var newHash = PasswordHelper.Hash(dto.NewPassword);
+            await _authRepository.UpdateAdminPasswordHashAsync("sysadmin", newHash);
+            await _logService.AddLogAsync(new LogDto {
+                LogType = LogType.Operation,
+                ObjectType = ObjectType.User,
+                ObjectId = Guid.Empty,
+                ActionType = ActionType.Edit,
+                OperatorId = Guid.Empty,
+                OperatorName = "sysadmin",
+                Content = "Change sysadmin password",
+                LogTime = DateTime.Now
+            });
+            return true;
+        }
     }
 }

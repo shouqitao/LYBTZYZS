@@ -111,6 +111,19 @@ namespace LYBT.UI.WPF.Services {
         }
 
         /// <summary>
+        /// 修改 sysadmin 密码
+        /// </summary>
+        public async Task<bool> ChangeSysAdminPasswordAsync(string oldPassword, string newPassword) {
+            try {
+                var resp = await _authApi.ChangeSysAdminPasswordAsync(new ChangeSysAdminPasswordDto {
+                    OldPassword = oldPassword,
+                    NewPassword = newPassword
+                });
+                return resp?.Code == 200;
+            } catch { return false; }
+        }
+
+        /// <summary>
         /// 清除自动登录信息
         /// </summary>
         public void ClearAutoLoginInfo() {
