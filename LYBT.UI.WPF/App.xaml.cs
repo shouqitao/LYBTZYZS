@@ -28,7 +28,8 @@ namespace LYBT.UI.WPF {
                 throw new InvalidOperationException("WebApiBaseUrl is not configured in AppSettings.");
             }
 
-            var httpClient = new HttpClient() {
+            var tokenHandler = new TokenHandler { InnerHandler = new HttpClientHandler() };
+            var httpClient = new HttpClient(tokenHandler) {
                 BaseAddress = new Uri(baseUrl)
             };
 

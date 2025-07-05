@@ -1,4 +1,3 @@
-﻿using LYBT.UI.WPF.Services;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,15 +7,10 @@ namespace LYBT.UI.WPF.Apis {
     /// 全局API Token注入Handler
     /// </summary>
     public class TokenHandler : DelegatingHandler {
-        private readonly IAuthService _authService;
-        public TokenHandler(IAuthService authService) {
-            _authService = authService;
-        }
-        /// <summary>
-        /// 方法 SendAsync 的说明
-        /// </summary>
+        public TokenHandler() { }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) {
-            var token = _authService.Token;
+            var token = TokenProvider.Token;
             if (!string.IsNullOrEmpty(token)) {
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             }
