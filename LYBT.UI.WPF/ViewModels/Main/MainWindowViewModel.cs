@@ -130,20 +130,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             IsMainVisible = true;
             IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
             
-            // 新增：如果是管理员，直接跳转到系统管理界面
-            if (roles.Contains(UserRole.Admin)) {
-                // 这里假设有一个 UserManagementView 作为系统管理主界面
-                var navigationParams = new NavigationParameters();
-                navigationParams.Add("UserRoles", roles);
-                System.Diagnostics.Debug.WriteLine("Navigating to UserManagementView for Admin role...");
-                _regionManager.RequestNavigate("MainContentRegion", "UserManagementView", result => {
-                    System.Diagnostics.Debug.WriteLine($"Navigation to UserManagementView completed. Success: {(result.Exception == null)}");
-                    if (result.Exception != null) {
-                        System.Diagnostics.Debug.WriteLine($"Navigation error: {result.Exception.Message}");
-                    }
-                }, navigationParams);
-                return;
-            }
+            // 取消原先直接跳转管理视图的逻辑，统一在 HomeView 中根据角色展示菜单
             
             if (IsDoctorRole)
                 await CheckDoctorProfileAsync();
