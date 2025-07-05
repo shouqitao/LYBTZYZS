@@ -42,7 +42,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         private async Task ChangeAsync() {
             ErrorMessage = string.Empty;
-            var ok = await _userService.ChangePasswordAsync(_authService.UserId, OldPassword, NewPassword);
+            bool ok;
+            if (string.Equals(_authService.RememberedUserName, "sysadmin", StringComparison.OrdinalIgnoreCase)) {
+                ok = await _authService.ChangeSysAdminPasswordAsync(OldPassword, NewPassword);
+            } else {
+                ok = await _userService.ChangePasswordAsync(_authService.UserId, OldPassword, NewPassword);
+            }
             if (ok) {
                 MessageBox.Show("密码已修改，请重新登录", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 if (Application.Current.MainWindow.DataContext is MainWindowViewModel main)

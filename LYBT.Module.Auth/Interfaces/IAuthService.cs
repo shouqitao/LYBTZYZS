@@ -17,5 +17,10 @@ namespace LYBT.Module.Auth.Interfaces {
         /// 用户登出
         /// </summary>
         Task<bool> LogoutAsync(LogoutRequestDto dto);
+
+        /// <summary>
+        /// 修改 sysadmin 密码
+        /// </summary>
+        Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto);
     }
 }

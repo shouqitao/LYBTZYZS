@@ -23,6 +23,11 @@ namespace LYBT.Module.Auth.Interfaces {
         Task<string?> GetAdminPasswordHashAsync(string userName);
 
         /// <summary>
+        /// 更新管理员密码哈希
+        /// </summary>
+        Task UpdateAdminPasswordHashAsync(string userName, string passwordHash);
+
+        /// <summary>
         /// 更新登录防护相关字段（失败次数、锁定时间）
         /// </summary>
         Task UpdateUserLoginProtectionAsync(UserModel user);

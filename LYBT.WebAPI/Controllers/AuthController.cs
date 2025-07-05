@@ -49,5 +49,16 @@ namespace LYBT.WebAPI.Controllers {
             await _authService.LogoutAsync(dto);
             return Ok(ApiResponse<object>.Success(null));
         }
+
+        /// <summary>
+        /// 修改 sysadmin 密码
+        /// </summary>
+        [HttpPost("changeSysAdminPassword")]
+        public async Task<IActionResult> ChangeSysAdminPassword([FromBody] ChangeSysAdminPasswordDto dto) {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<object>.Fail("参数无效", 400));
+            var ok = await _authService.ChangeSysAdminPasswordAsync(dto);
+            return ok ? Ok(ApiResponse<object>.Success(null)) : BadRequest(ApiResponse<object>.Fail("修改失败", 400));
+        }
     }
 }
