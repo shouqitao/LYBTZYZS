@@ -30,6 +30,12 @@ namespace LYBT.Module.Doctors.Repositories {
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
 
+        public async Task<DoctorModel?> GetByUserIdAsync(Guid userId) {
+            return await _appDbContext.Doctors
+                .Include(d => d.User)
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+        }
+
         /// <summary>
         /// 获取所有医生
         /// </summary>

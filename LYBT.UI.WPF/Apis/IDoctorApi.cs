@@ -13,6 +13,9 @@ namespace LYBT.UI.WPF.Apis {
         [Get("/api/Doctors/{id}")]
         Task<DoctorDetailDto> GetByIdAsync(Guid id);
 
+        [Get("/api/Doctors/by-user/{userId}")]
+        Task<DoctorDetailDto> GetByUserIdAsync(Guid userId);
+
         [Post("/api/Doctors/add")]
         Task<ApiSuccessResponse> AddAsync([Body] DoctorCreateDto dto);
 

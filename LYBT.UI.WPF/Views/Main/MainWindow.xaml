@@ -41,6 +41,14 @@
                                 Background="#FF57606A" Foreground="White"
                                 FontWeight="Bold" BorderThickness="0"
                                 Cursor="Hand"/>
+                        <Button Content="{Binding DoctorProfileButtonText}"
+                                Width="120" Height="34"
+                                Margin="0,0,10,0"
+                                Visibility="{Binding IsDoctorRole, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Command="{Binding ShowDoctorProfileCommand}"
+                                Background="#FF57606A" Foreground="White"
+                                FontWeight="Bold" BorderThickness="0"
+                                Cursor="Hand"/>
                         <Button Content="退出登录"
                                 Width="100" Height="34"
                                 Command="{Binding LogoutCommand}"

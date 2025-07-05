@@ -14,6 +14,11 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<DoctorModel?> GetByIdAsync(Guid id);
 
         /// <summary>
+        /// 根据用户ID获取医生详情
+        /// </summary>
+        Task<DoctorModel?> GetByUserIdAsync(Guid userId);
+
+        /// <summary>
         /// 获取所有医生列表（不分页）
         /// </summary>
         Task<List<DoctorModel>> GetListAsync();

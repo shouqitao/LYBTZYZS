@@ -29,6 +29,10 @@ namespace LYBT.UI.WPF.Services {
             return await _doctorApi.GetByIdAsync(id);
         }
 
+        public async Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId) {
+            return await _doctorApi.GetByUserIdAsync(userId);
+        }
+
         /// <summary>
         /// 方法 AddAsync 的说明
         /// </summary>

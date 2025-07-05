@@ -8,6 +8,7 @@ namespace LYBT.UI.WPF.Services {
     public interface IDoctorService {
         Task<IList<DoctorDto>> SearchAsync(string keyword = "");
         Task<DoctorDetailDto?> GetByIdAsync(Guid id);
+        Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId);
         Task<bool> AddAsync(DoctorCreateDto dto);
         Task<bool> UpdateAsync(DoctorEditDto dto);
         Task<bool> DisableAsync(Guid id);

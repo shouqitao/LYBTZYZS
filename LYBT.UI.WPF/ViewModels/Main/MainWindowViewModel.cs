@@ -5,6 +5,7 @@ using LYBT.UI.WPF.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 using System.Windows;
+using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
@@ -29,6 +30,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public bool IsDoctorRole { get => _isDoctorRole; set => SetProperty(ref _isDoctorRole, value); }
 
+        private bool _hasDoctorProfile;
+        public bool HasDoctorProfile { get => _hasDoctorProfile; set => SetProperty(ref _hasDoctorProfile, value); }
+
+        private string _doctorProfileButtonText = "新增医生档案";
+        public string DoctorProfileButtonText { get => _doctorProfileButtonText; set => SetProperty(ref _doctorProfileButtonText, value); }
+
         /// <summary>
         /// 退出登录命令
         /// </summary>
@@ -43,17 +50,20 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// 显示修改个人信息界面
         /// </summary>
         public DelegateCommand ShowChangeProfileCommand { get; }
+        public DelegateCommand ShowDoctorProfileCommand { get; }
 
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
 
         private readonly IAuthService _authService;
+        private readonly IDoctorService _doctorService;
 
-        public MainWindowViewModel(IEventAggregator eventAggregator, IRegionManager regionManager, IAuthService authService) {
+        public MainWindowViewModel(IEventAggregator eventAggregator, IRegionManager regionManager, IAuthService authService, IDoctorService doctorService) {
             _eventAggregator = eventAggregator;
             _regionManager = regionManager;
             _authService = authService;
+            _doctorService = doctorService;
 
             // 订阅登录成功事件
             _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
@@ -62,6 +72,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             LogoutCommand = new DelegateCommand(Logout);
             ShowChangePasswordCommand = new DelegateCommand(ShowChangePassword);
             ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
+            ShowDoctorProfileCommand = new DelegateCommand(ShowDoctorProfile);
         }
 
         /// <summary>
@@ -96,18 +107,32 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _regionManager.RequestNavigate("FunctionRegion", "ChangeProfileView");
         }
 
+        private void ShowDoctorProfile() {
+            IsMainVisible = false;
+            IsFunctionVisible = true;
+            _regionManager.RequestNavigate("FunctionRegion", "DoctorProfileView");
+        }
+
 
         /// <summary>
         /// 方法 OnLoginSuccess 的说明
         /// </summary>
-        private void OnLoginSuccess(IList<UserRole> roles) {
+        private async void OnLoginSuccess(IList<UserRole> roles) {
             IsFunctionVisible = false;
             IsMainVisible = true;
             IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
+            if (IsDoctorRole)
+                await CheckDoctorProfileAsync();
             // 最大化窗口
             Application.Current.MainWindow.WindowState = WindowState.Maximized;
             // 导航到主内容区（如HomeView）
             _regionManager.RequestNavigate("MainContentRegion", "HomeView", new NavigationParameters { { "UserRoles", roles } });
+        }
+
+        private async Task CheckDoctorProfileAsync() {
+            var detail = await _doctorService.GetByUserIdAsync(_authService.UserId);
+            HasDoctorProfile = detail != null;
+            DoctorProfileButtonText = HasDoctorProfile ? "编辑医生档案" : "新增医生档案";
         }
     }
 }
