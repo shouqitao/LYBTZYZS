@@ -34,6 +34,16 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public bool IsDoctorRole { get => _isDoctorRole; set => SetProperty(ref _isDoctorRole, value); }
 
+        private bool _isSysAdmin;
+        /// <summary>
+        /// 当前登录用户是否为内置 sysadmin
+        /// </summary>
+        public bool IsSysAdmin { get => _isSysAdmin; set { SetProperty(ref _isSysAdmin, value); RaisePropertyChanged(nameof(IsNotSysAdmin)); } }
+        /// <summary>
+        /// 非 sysadmin 用户
+        /// </summary>
+        public bool IsNotSysAdmin => !IsSysAdmin;
+
         private bool _hasDoctorProfile;
         public bool HasDoctorProfile { get => _hasDoctorProfile; set => SetProperty(ref _hasDoctorProfile, value); }
 
@@ -89,6 +99,8 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             IsMainVisible = false;
             IsFunctionVisible = true;
 
+            IsSysAdmin = false;
+
             // 跳转回登录区
             _regionManager.RequestNavigate("FunctionRegion", "LoginView");
 
@@ -125,7 +137,9 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         private async void OnLoginSuccess(IList<UserRole> roles) {
             System.Diagnostics.Debug.WriteLine($"OnLoginSuccess called with roles: {string.Join(", ", roles)}");
-            
+
+            IsSysAdmin = string.Equals(_authService.RememberedUserName, "sysadmin", StringComparison.OrdinalIgnoreCase);
+
             IsFunctionVisible = false;
             IsMainVisible = true;
             IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
