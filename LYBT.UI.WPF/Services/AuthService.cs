@@ -54,12 +54,12 @@ namespace LYBT.UI.WPF.Services {
                 var result = await _authApi.LoginAsync(loginRequest);
 
                 // 验证返回结果
-                if (result?.User == null) {
+                if (result?.Data?.User == null) {
                     return (false, new List<UserRole>(), "登录失败：服务器返回数据异常", string.Empty);
                 }
 
                 // 获取用户角色
-                var roles = GetUserRoles(result.User);
+                var roles = GetUserRoles(result.Data.User);
 
                 // 验证角色信息
                 if (roles.Count == 0) {
@@ -67,8 +67,8 @@ namespace LYBT.UI.WPF.Services {
                 }
 
                 // 保存登录状态
-                _token = result.Token ?? string.Empty;
-                _userId = result.User.Id;
+                _token = result.Data.Token ?? string.Empty;
+                _userId = result.Data.User.Id;
                 SaveAutoLoginInfo(userName, password);
 
                 return (true, roles, string.Empty, _token);
@@ -92,8 +92,8 @@ namespace LYBT.UI.WPF.Services {
                 if (!string.IsNullOrEmpty(_rememberedUserName)) {
                     var logoutRequest = new LogoutRequestDto { Username = _rememberedUserName };
                     var response = await _authApi.LogoutAsync(logoutRequest);
-                    
-                    if (response?.Success == true) {
+
+                    if (response?.Code == 200) {
                         ClearLoginState();
                         return true;
                     }

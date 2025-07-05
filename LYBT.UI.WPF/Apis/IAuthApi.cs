@@ -1,26 +1,27 @@
 using LYBT.Module.Auth.Dtos;
+using LYBT.Common.Responses;
 using Refit;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Apis {
     /// <summary>
-    /// 认证相关的 API 接口
+    /// 璁よ瘉鐩稿叧 API 鎺ュ彛
     /// </summary>
     public interface IAuthApi {
         /// <summary>
-        /// 用户登录
+        /// 鐢ㄦ埛鐧诲綍
         /// </summary>
-        /// <param name="dto">登录请求数据</param>
-        /// <returns>登录响应数据</returns>
+        /// <param name="dto">鐧诲綍璇锋眰</param>
+        /// <returns>鐧诲綍鍝嶅簲</returns>
         [Post("/api/Auth/login")]
-        Task<LoginResponseDto> LoginAsync([Body] LoginRequestDto dto);
+        Task<ApiResponse<LoginResponseDto>> LoginAsync([Body] LoginRequestDto dto);
 
         /// <summary>
-        /// 用户登出
+        /// 鐢ㄦ埛鐧诲嚭
         /// </summary>
-        /// <param name="dto">登出请求数据</param>
-        /// <returns>登出响应</returns>
+        /// <param name="dto">鐧诲嚭璇锋眰</param>
+        /// <returns>鐧诲嚭鍝嶅簲</returns>
         [Post("/api/Auth/logout")]
-        Task<Module.Auth.Dtos.ApiResponse<object>> LogoutAsync([Body] LogoutRequestDto dto);
+        Task<ApiResponse<object>> LogoutAsync([Body] LogoutRequestDto dto);
     }
 }

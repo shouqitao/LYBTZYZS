@@ -12,7 +12,7 @@ namespace LYBT.Infrastructure.Auth.Extensions {
     public static class JwtAuthenticationExtensions {
 
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration) {
-            var jwtSection = configuration.GetSection("Jwt");
+            var jwtSection = configuration.GetSection("JwtOptions");
             services.Configure<JwtOptions>(jwtSection);
 
             var options = jwtSection.Get<JwtOptions>();
