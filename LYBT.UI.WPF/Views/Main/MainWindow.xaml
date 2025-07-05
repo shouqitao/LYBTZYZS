@@ -7,6 +7,7 @@
         Title="凌隐宝堂中医诊所"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
         ResizeMode="NoResize">
     <Window.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>

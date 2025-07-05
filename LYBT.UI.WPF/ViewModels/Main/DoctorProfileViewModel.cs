@@ -1,24 +1,30 @@
 using LYBT.Common.Enums;
 using LYBT.Module.Doctors.Dtos;
+using LYBT.Module.Users.Dtos;
 using LYBT.UI.WPF.Services;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class DoctorProfileViewModel : BindableBase, INavigationAware {
-        private readonly IDoctorService _doctorService;
-        private readonly IAuthService _authService;
-        private readonly IUserService _userService;
+        private readonly LYBT.UI.WPF.Services.IDoctorService _doctorService;
+        private readonly LYBT.UI.WPF.Services.IAuthService _authService;
+        private readonly LYBT.UI.WPF.Services.IUserService _userService;
 
         private DoctorDetailDto _doctor = new();
         public DoctorDetailDto Doctor { get => _doctor; set => SetProperty(ref _doctor, value); }
 
+        private UserDto? _user;
+        public UserDto? User { get => _user; set => SetProperty(ref _user, value); }
+
         private string _editModeTitle = "新增医生档案";
         public string EditModeTitle { get => _editModeTitle; set => SetProperty(ref _editModeTitle, value); }
+
+        public string? ContactNumber { get => Doctor.ContactNumber; set { Doctor.ContactNumber = value; RaisePropertyChanged(); } }
 
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
-        public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService, IUserService userService) {
+        public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService, LYBT.UI.WPF.Services.IUserService userService) {
             _doctorService = doctorService;
             _authService = authService;
             _userService = userService;
@@ -28,12 +34,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         public async Task LoadAsync() {
             var info = await _doctorService.GetByUserIdAsync(_authService.UserId);
+            var currentUser = await _userService.GetByIdAsync(_authService.UserId);
+            User = currentUser;
             if (info != null) {
                 Doctor = info;
                 EditModeTitle = "编辑医生档案";
             } else {
-                // 从User信息自动填充
-                var currentUser = await _userService.GetByIdAsync(_authService.UserId);
                 Doctor = new DoctorDetailDto {
                     UserId = _authService.UserId,
                     Birthday = DateTime.Now.AddYears(-30),

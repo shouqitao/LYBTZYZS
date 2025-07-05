@@ -12,6 +12,9 @@ namespace LYBT.Module.Doctors.Dtos {
         [Required(ErrorMessage = "用户ID不能为空")]
         public Guid UserId { get; set; }
 
+        /// <summary>性别</summary>
+        public Gender Gender { get; set; } = Gender.Unknown;
+
         /// <summary>出生日期</summary>
         public DateTime? Birthday { get; set; }
 
@@ -32,6 +35,9 @@ namespace LYBT.Module.Doctors.Dtos {
 
         /// <summary>姓名拼音码</summary>
         public string PinyinCode { get; set; } = string.Empty;
+
+        /// <summary>医生对外联系方式</summary>
+        public string? ContactNumber { get; set; }
 
         /// <summary>备注</summary>
         public string? Remark { get; set; }

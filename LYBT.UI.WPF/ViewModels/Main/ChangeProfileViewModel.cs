@@ -5,15 +5,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private readonly Services.IUserService _userService;
         private readonly Services.IAuthService _authService;
 
-        private string _originalRealName = string.Empty;
-        public string OriginalRealName { get => _originalRealName; set => SetProperty(ref _originalRealName, value); }
-
-        private string? _originalEmail;
-        public string? OriginalEmail { get => _originalEmail; set => SetProperty(ref _originalEmail, value); }
-
-        private string? _originalPhoneNumber;
-        public string? OriginalPhoneNumber { get => _originalPhoneNumber; set => SetProperty(ref _originalPhoneNumber, value); }
-
         private string _realName = string.Empty;
         public string RealName { get => _realName; set => SetProperty(ref _realName, value); }
 
@@ -40,13 +31,9 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public async Task LoadAsync() {
             var user = await _userService.GetByIdAsync(_authService.UserId);
             if (user != null) {
-                OriginalRealName = user.RealName;
-                OriginalEmail = user.Email;
-                OriginalPhoneNumber = user.PhoneNumber;
-
-                //RealName = user.RealName;
-                //Email = user.Email;
-                //PhoneNumber = user.PhoneNumber;
+                RealName = user.RealName;
+                Email = user.Email;
+                PhoneNumber = user.PhoneNumber;
             }
         }
 
@@ -63,9 +50,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                     main.IsMainVisible = true;
                     main.IsFunctionVisible = false;
                 }
-                OriginalRealName = RealName;
-                OriginalEmail = Email;
-                OriginalPhoneNumber = PhoneNumber;
             } else {
                 ErrorMessage = "修改失败";
             }

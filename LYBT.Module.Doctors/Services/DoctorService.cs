@@ -52,7 +52,18 @@ namespace LYBT.Module.Doctors.Services {
             var model = await _doctorRepository.GetByIdAsync(doctorEditDto.Id);
             if (model == null)
                 throw new Exception("医生不存在。");
-            _mapper.Map(doctorEditDto, model);
+            // 只允许更新医生表自身字段，不允许更新User相关（账号、姓名）
+            model.Gender = doctorEditDto.Gender;
+            model.Birthday = doctorEditDto.Birthday ?? model.Birthday;
+            model.Title = doctorEditDto.Title;
+            model.LicenseNumber = doctorEditDto.LicenseNumber;
+            model.Specialty = doctorEditDto.Specialty;
+            model.Status = doctorEditDto.Status;
+            model.WorkStatus = doctorEditDto.WorkStatus;
+            model.PinyinCode = doctorEditDto.PinyinCode;
+            model.Remark = doctorEditDto.Remark;
+            model.ContactNumber = doctorEditDto.ContactNumber;
+            // 不更新UserId、User
             return await _doctorRepository.UpdateAsync(model);
         }
 

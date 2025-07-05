@@ -42,6 +42,9 @@ namespace LYBT.Models.Doctors {
         [StringLength(32)]
         public string PinyinCode { get; set; } = string.Empty;
 
+        [StringLength(32)]
+        public string? ContactNumber { get; set; } // 医生对外联系方式
+
         [Required]
         public Guid UserId { get; set; }
 

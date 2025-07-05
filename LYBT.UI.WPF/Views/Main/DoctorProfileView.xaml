@@ -31,10 +31,14 @@
                     <TextBlock Text="{Binding EditModeTitle}" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
+                            <TextBlock Text="账号" />
+                            <TextBox Text="{Binding User.UserName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
                             <TextBlock Text="姓名" />
-                            <TextBox Text="{Binding Doctor.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding User.RealName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
+                            <TextBlock Text="联系号码" />
+                            <TextBox Text="{Binding Doctor.ContactNumber}" Margin="0,0,0,8"/>
                             <TextBlock Text="手机号" />
-                            <TextBox Text="{Binding Doctor.Phone}" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding User.PhoneNumber, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
                             <TextBlock Text="性别" />
                             <ComboBox ItemsSource="{Binding Source={StaticResource GenderValues}}" SelectedItem="{Binding Doctor.Gender}" Margin="0,0,0,8">
                                 <ComboBox.ItemTemplate>
@@ -76,4 +80,3 @@
         </Grid>
     </Grid>
 </UserControl>
-

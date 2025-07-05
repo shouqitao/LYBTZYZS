@@ -43,8 +43,9 @@
             <DataGrid Grid.Row="1" ItemsSource="{Binding Doctors}" SelectedItem="{Binding SelectedDoctor, Mode=TwoWay}"
           AutoGenerateColumns="False" Margin="0,0,8,0" IsReadOnly="True">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="姓名" Binding="{Binding Name}" Width="*"/>
-                    <DataGridTextColumn Header="手机号" Binding="{Binding Phone}" Width="*"/>
+                    <DataGridTextColumn Header="账号" Binding="{Binding UserName}" Width="*"/>
+                    <DataGridTextColumn Header="姓名" Binding="{Binding RealName}" Width="*"/>
+                    <DataGridTextColumn Header="联系号码" Binding="{Binding ContactNumber}" Width="*"/>
                     <DataGridTemplateColumn Header="性别" Width="80">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
