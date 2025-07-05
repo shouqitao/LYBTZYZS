@@ -1,4 +1,6 @@
-﻿namespace LYBT.Module.Doctors.Dtos {
+using LYBT.Common.Enums;
+
+namespace LYBT.Module.Doctors.Dtos {
 
     /// <summary>
     /// 医生详情 DTO
@@ -12,7 +14,7 @@
         public string Name { get; set; } = string.Empty;
 
         /// <summary>性别</summary>
-        public string Gender { get; set; } = string.Empty;
+        public Gender Gender { get; set; } = Gender.Unknown;
 
         /// <summary>出生日期</summary>
         public DateTime Birthday { get; set; }
@@ -27,10 +29,10 @@
         public string? LicenseNumber { get; set; }
 
         /// <summary>职称</summary>
-        public string? Title { get; set; }
+        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
 
         /// <summary>医生当前状态</summary>
-        public string Status { get; set; } = string.Empty;
+        public DoctorStatus Status { get; set; } = DoctorStatus.Active;
 
         /// <summary>备注</summary>
         public string? Remark { get; set; }

@@ -93,10 +93,10 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
 
         private void AddDoctor() {
             EditingDoctor = new DoctorDetailDto {
-                Gender = Gender.Unknown.ToString(),
+                Gender = Gender.Unknown,
                 Birthday = DateTime.Now,
-                Title = nameof(DoctorTitle.Junior),
-                Status = nameof(DoctorStatus.Active)
+                Title = DoctorTitle.Junior,
+                Status = DoctorStatus.Active
             };
             SelectedDoctor = null;
             EditModeTitle = "新增医生";
@@ -118,13 +118,13 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 if (EditingDoctor.Id == Guid.Empty) {
                     var dto = new DoctorCreateDto {
                         Name = EditingDoctor.Name,
-                        Gender = Enum.TryParse<Gender>(EditingDoctor.Gender, out var g) ? g : Gender.Unknown,
+                        Gender = EditingDoctor.Gender,
                         Birthday = EditingDoctor.Birthday,
                         Phone = EditingDoctor.Phone,
                         PinyinCode = EditingDoctor.PinyinCode,
                         LicenseNumber = EditingDoctor.LicenseNumber,
-                        Title = Enum.TryParse<DoctorTitle>(EditingDoctor.Title ?? string.Empty, out var t) ? t : DoctorTitle.Junior,
-                        Status = Enum.TryParse<DoctorStatus>(EditingDoctor.Status ?? string.Empty, out var s) ? s : DoctorStatus.Active,
+                        Title = EditingDoctor.Title,
+                        Status = EditingDoctor.Status,
                         Remark = EditingDoctor.Remark,
                         Password = "123456"
                     };
@@ -137,13 +137,13 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                     var dto = new DoctorEditDto {
                         Id = EditingDoctor.Id,
                         Name = EditingDoctor.Name,
-                        Gender = Enum.TryParse<Gender>(EditingDoctor.Gender, out var g) ? g : Gender.Unknown,
+                        Gender = EditingDoctor.Gender,
                         Birthday = EditingDoctor.Birthday,
                         Phone = EditingDoctor.Phone,
                         PinyinCode = EditingDoctor.PinyinCode,
                         LicenseNumber = EditingDoctor.LicenseNumber,
-                        Title = Enum.TryParse<DoctorTitle>(EditingDoctor.Title ?? string.Empty, out var t) ? t : DoctorTitle.Junior,
-                        Status = Enum.TryParse<DoctorStatus>(EditingDoctor.Status ?? string.Empty, out var s) ? s : DoctorStatus.Active,
+                        Title = EditingDoctor.Title,
+                        Status = EditingDoctor.Status,
                         Remark = EditingDoctor.Remark
                     };
                     var ok = await _doctorService.UpdateAsync(dto);
