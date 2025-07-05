@@ -27,13 +27,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public HomeViewModel(IRegionManager regionManager) {
             _regionManager = regionManager;
             NavigateCommand = new DelegateCommand<NavigationItem>(Navigate);
-            
-            // 添加调试信息
-            System.Diagnostics.Debug.WriteLine("HomeViewModel constructor called");
-            
-            // 为了测试，我们先添加一个测试项
-            NavigationItems.Add(new NavigationItem("测试导航项", "TestView"));
-            System.Diagnostics.Debug.WriteLine($"Added test navigation item. Total items: {NavigationItems.Count}");
+            // 构造函数不再添加测试项
         }
 
         /// <summary>
@@ -54,7 +48,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 LoadNavigation(roles);
             } else {
                 System.Diagnostics.Debug.WriteLine("No UserRoles found in navigation parameters");
-                // 即使没有角色参数，也添加一个默认项来测试UI
                 NavigationItems.Clear();
                 NavigationItems.Add(new NavigationItem("默认功能模块", "DefaultView"));
                 System.Diagnostics.Debug.WriteLine("Added default navigation item for testing");
