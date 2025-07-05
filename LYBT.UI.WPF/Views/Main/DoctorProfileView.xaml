@@ -37,8 +37,8 @@
                             <TextBox Text="{Binding User.RealName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
                             <TextBlock Text="联系号码" />
                             <TextBox Text="{Binding Doctor.ContactNumber}" Margin="0,0,0,8"/>
-                            <TextBlock Text="手机号" />
-                            <TextBox Text="{Binding User.PhoneNumber, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
+                            <TextBlock Text="手机号" Visibility="Collapsed" />
+                            <TextBox Text="{Binding User.PhoneNumber, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8" Visibility="Collapsed"/>
                             <TextBlock Text="性别" />
                             <ComboBox ItemsSource="{Binding Source={StaticResource GenderValues}}" SelectedItem="{Binding Doctor.Gender}" Margin="0,0,0,8">
                                 <ComboBox.ItemTemplate>
