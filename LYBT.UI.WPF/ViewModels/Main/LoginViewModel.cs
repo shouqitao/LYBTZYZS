@@ -102,6 +102,8 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
             // 加载记住的登录信息
             LoadRememberedCredentials();
+
+            System.Diagnostics.Debug.WriteLine("LoginViewModel constructed");
         }
 
         #region Command Methods
@@ -121,16 +123,30 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                     return;
                 }
 
+                System.Diagnostics.Debug.WriteLine($"开始登录用户: {UserName}");
+
                 // 执行登录
                 var (success, roles, errorMessage, token) = await _authService.LoginAsync(UserName.Trim(), Password);
+
+                System.Diagnostics.Debug.WriteLine($"登录结果: success={success}, roles count={roles?.Count ?? 0}");
 
                 if (success && roles?.Any() == true) {
                     // 登录成功
                     LoadingText = "登录成功，正在跳转...";
-                    
+
+                    System.Diagnostics.Debug.WriteLine($"发布登录成功事件，角色: {string.Join(", ", roles)}");
+
+                    // 保存记住的登录信息（如果选择了记住密码）
+                    if (IsRemember) {
+                        // 这里可以调用 _authService 的保存记住信息的方法
+                        // _authService.SaveRememberedCredentials(UserName, Password);
+                    } else {
+                        _authService.ClearAutoLoginInfo();
+                    }
+
                     // 发布登录成功事件
                     _eventAggregator.GetEvent<LoginSuccessEvent>().Publish(roles);
-                    
+
                     // 清除密码（如果不记住的话）
                     if (!IsRemember) {
                         Password = string.Empty;
@@ -139,13 +155,15 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 else {
                     // 登录失败
                     ErrorMessage = errorMessage ?? "登录失败，请检查用户名和密码";
-                    
+                    System.Diagnostics.Debug.WriteLine($"登录失败: {ErrorMessage}");
+
                     // 清除密码
                     Password = string.Empty;
                 }
             }
             catch (System.Exception ex) {
                 ErrorMessage = $"登录异常：{ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"登录异常: {ex}");
             }
             finally {
                 IsLoading = false;
@@ -170,7 +188,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             Password = string.Empty;
             ErrorMessage = string.Empty;
             IsRemember = false;
-            
+
             // 清除记住的登录信息
             _authService.ClearAutoLoginInfo();
         }
@@ -214,6 +232,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 UserName = _authService.RememberedUserName ?? string.Empty;
                 Password = _authService.RememberedPassword ?? string.Empty;
                 IsRemember = true;
+                System.Diagnostics.Debug.WriteLine("已加载记住的登录凭据");
             }
         }
 

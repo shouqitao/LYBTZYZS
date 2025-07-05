@@ -14,7 +14,7 @@ namespace LYBT.UI.WPF.Apis {
         /// <param name="dto">登录请求</param>
         /// <returns>登录响应</returns>
         [Post("/api/Auth/login")]
-        Task<ApiResponse<LoginResponseDto>> LoginAsync([Body] LoginRequestDto dto);
+        Task<LYBT.Common.Responses.ApiResponse<LoginResponseDto>> LoginAsync([Body] LoginRequestDto dto);
 
         /// <summary>
         /// 用户登出
@@ -22,6 +22,6 @@ namespace LYBT.UI.WPF.Apis {
         /// <param name="dto">登出请求</param>
         /// <returns>登出响应</returns>
         [Post("/api/Auth/logout")]
-        Task<ApiResponse<object>> LogoutAsync([Body] LogoutRequestDto dto);
+        Task<LYBT.Common.Responses.ApiResponse<object>> LogoutAsync([Body] LogoutRequestDto dto);
     }
 }

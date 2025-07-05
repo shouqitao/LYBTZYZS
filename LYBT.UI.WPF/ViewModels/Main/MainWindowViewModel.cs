@@ -3,9 +3,13 @@ using LYBT.Module.Auth.Services;
 using LYBT.UI.WPF.Events;
 using LYBT.UI.WPF.Services;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Threading.Tasks;
+using System;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
@@ -73,6 +77,8 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             ShowChangePasswordCommand = new DelegateCommand(ShowChangePassword);
             ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
             ShowDoctorProfileCommand = new DelegateCommand(ShowDoctorProfile);
+            
+            System.Diagnostics.Debug.WriteLine("MainWindowViewModel constructed");
         }
 
         /// <summary>
@@ -118,21 +124,48 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// 方法 OnLoginSuccess 的说明
         /// </summary>
         private async void OnLoginSuccess(IList<UserRole> roles) {
+            System.Diagnostics.Debug.WriteLine($"OnLoginSuccess called with roles: {string.Join(", ", roles)}");
+            
             IsFunctionVisible = false;
             IsMainVisible = true;
             IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
+            
             // 新增：如果是管理员，直接跳转到系统管理界面
             if (roles.Contains(UserRole.Admin)) {
                 // 这里假设有一个 UserManagementView 作为系统管理主界面
-                _regionManager.RequestNavigate("MainContentRegion", "UserManagementView", new NavigationParameters { { "UserRoles", roles } });
+                var navigationParams = new NavigationParameters();
+                navigationParams.Add("UserRoles", roles);
+                System.Diagnostics.Debug.WriteLine("Navigating to UserManagementView for Admin role...");
+                _regionManager.RequestNavigate("MainContentRegion", "UserManagementView", result => {
+                    System.Diagnostics.Debug.WriteLine($"Navigation to UserManagementView completed. Success: {(result.Exception == null)}");
+                    if (result.Exception != null) {
+                        System.Diagnostics.Debug.WriteLine($"Navigation error: {result.Exception.Message}");
+                    }
+                }, navigationParams);
                 return;
             }
+            
             if (IsDoctorRole)
                 await CheckDoctorProfileAsync();
+            
             // 最大化窗口
             Application.Current.MainWindow.WindowState = WindowState.Maximized;
+            
             // 导航到主内容区（如HomeView）
-            _regionManager.RequestNavigate("MainContentRegion", "HomeView", new NavigationParameters { { "UserRoles", roles } });
+            System.Diagnostics.Debug.WriteLine("Navigating to HomeView...");
+            var homeNavigationParams = new NavigationParameters();
+            homeNavigationParams.Add("UserRoles", roles);
+            
+            // 添加导航结果回调
+            _regionManager.RequestNavigate("MainContentRegion", "HomeView", result => {
+                System.Diagnostics.Debug.WriteLine($"Navigation to HomeView completed. Success: {(result.Exception == null)}");
+                if (result.Exception != null) {
+                    System.Diagnostics.Debug.WriteLine($"Navigation error: {result.Exception.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Stack trace: {result.Exception.StackTrace}");
+                } else {
+                    System.Diagnostics.Debug.WriteLine("Navigation to HomeView successful!");
+                }
+            }, homeNavigationParams);
         }
 
         public async Task CheckDoctorProfileAsync() {

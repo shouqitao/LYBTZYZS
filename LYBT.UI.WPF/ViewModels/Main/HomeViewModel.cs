@@ -2,6 +2,11 @@
 using LYBT.Common.Enums.Users;
 using LYBT.UI.WPF.Models;
 using LYBT.Common.Extensions;
+using Prism.Mvvm;
+using Prism.Commands;
+using Prism.Ioc;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
@@ -22,25 +27,43 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public HomeViewModel(IRegionManager regionManager) {
             _regionManager = regionManager;
             NavigateCommand = new DelegateCommand<NavigationItem>(Navigate);
+            
+            // 添加调试信息
+            System.Diagnostics.Debug.WriteLine("HomeViewModel constructor called");
+            
+            // 为了测试，我们先添加一个测试项
+            NavigationItems.Add(new NavigationItem("测试导航项", "TestView"));
+            System.Diagnostics.Debug.WriteLine($"Added test navigation item. Total items: {NavigationItems.Count}");
         }
 
         /// <summary>
         /// 方法 Navigate 的说明
         /// </summary>
         private void Navigate(NavigationItem item) {
-            if (item != null)
+            if (item != null) {
+                System.Diagnostics.Debug.WriteLine($"Navigating to: {item.TargetView}");
                 _regionManager.RequestNavigate("ContentRegion", item.TargetView);
+            }
         }
 
         // Prism导航时传递角色，根据角色加载菜单
         public void OnNavigatedTo(NavigationContext navigationContext) {
+            System.Diagnostics.Debug.WriteLine($"HomeViewModel.OnNavigatedTo called");
             if (navigationContext.Parameters.TryGetValue("UserRoles", out IList<UserRole> roles)) {
+                System.Diagnostics.Debug.WriteLine($"Found {roles.Count} user roles: {string.Join(", ", roles)}");
                 LoadNavigation(roles);
+            } else {
+                System.Diagnostics.Debug.WriteLine("No UserRoles found in navigation parameters");
+                // 即使没有角色参数，也添加一个默认项来测试UI
+                NavigationItems.Clear();
+                NavigationItems.Add(new NavigationItem("默认功能模块", "DefaultView"));
+                System.Diagnostics.Debug.WriteLine("Added default navigation item for testing");
             }
         }
 
         // 动态加载导航菜单（可按角色自定义）
         private void LoadNavigation(IEnumerable<UserRole> roles) {
+            System.Diagnostics.Debug.WriteLine($"LoadNavigation called with roles: {string.Join(", ", roles)}");
             NavigationItems.Clear();
             foreach (var role in roles.OrderBy(r => (int)r)) {
                 var displayName = $"{role.GetDescription()}功能模块";
@@ -67,6 +90,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                         break;
                 }
             }
+            System.Diagnostics.Debug.WriteLine($"NavigationItems count after loading: {NavigationItems.Count}");
         }
 
         /// <summary>
@@ -76,6 +100,8 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// <summary>
         /// 方法 OnNavigatedFrom 的说明
         /// </summary>
-        public void OnNavigatedFrom(NavigationContext navigationContext) { }
+        public void OnNavigatedFrom(NavigationContext navigationContext) { 
+            System.Diagnostics.Debug.WriteLine("HomeViewModel.OnNavigatedFrom called");
+        }
     }
 }

@@ -128,7 +128,9 @@ namespace LYBT.UI.WPF {
         /// </summary>
         protected override void OnInitialized() {
             base.OnInitialized();
+            System.Diagnostics.Debug.WriteLine("App.OnInitialized called");
             var regionManager = Container.Resolve<IRegionManager>();
+            System.Diagnostics.Debug.WriteLine("Navigating to LoginView on startup");
             regionManager.RequestNavigate("FunctionRegion", "LoginView");
         }
     }
