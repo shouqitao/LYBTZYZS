@@ -130,9 +130,14 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         public async Task CheckDoctorProfileAsync() {
-            var detail = await _doctorService.GetByUserIdAsync(_authService.UserId);
-            HasDoctorProfile = detail != null;
-            DoctorProfileButtonText = HasDoctorProfile ? "编辑医生档案" : "新增医生档案";
+            try {
+                var detail = await _doctorService.GetByUserIdAsync(_authService.UserId);
+                HasDoctorProfile = detail != null;
+                DoctorProfileButtonText = HasDoctorProfile ? "编辑医生档案" : "新增医生档案";
+            } catch (Exception ex) {
+                MessageBox.Show($"医生档案检查失败：{ex.Message}",
+                    "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

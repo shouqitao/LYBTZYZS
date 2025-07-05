@@ -37,6 +37,10 @@ namespace LYBT.UI.WPF.Services {
             } catch (ApiException ex) {
                 if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
                     return null; // 没有医生档案，正常返回null
+                if (ex.StatusCode == System.Net.HttpStatusCode.BadRequest) {
+                    MessageBox.Show(ex.Content ?? "请求参数错误。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return null;
+                }
                 if (ex.StatusCode == System.Net.HttpStatusCode.InternalServerError) {
                     MessageBox.Show("服务器内部错误，请联系管理员。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     return null;
