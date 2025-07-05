@@ -88,9 +88,9 @@
                 <StackPanel>
                     <TextBlock Text="{Binding EditModeTitle}" FontWeight="Bold" FontSize="17" Margin="0,0,0,16"/>
                     <TextBlock Text="姓名" />
-                    <TextBox Text="{Binding EditingDoctor.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding SelectedDoctor.RealName}" IsReadOnly="True" Margin="0,0,0,8"/>
                     <TextBlock Text="手机号" />
-                    <TextBox Text="{Binding EditingDoctor.Phone}" Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding EditingDoctor.ContactNumber}" Margin="0,0,0,8"/>
                     <TextBlock Text="性别" />
                     <ComboBox ItemsSource="{Binding Source={StaticResource GenderValues}}" SelectedItem="{Binding EditingDoctor.Gender}"
                               Margin="0,0,0,8">

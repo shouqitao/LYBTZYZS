@@ -70,6 +70,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 EditingDoctor = new DoctorDetailDto {
                     Id = detail.Id,
                     UserId = detail.UserId,
+                    Gender = detail.Gender,
                     Birthday = detail.Birthday,
                     Title = detail.Title,
                     LicenseNumber = detail.LicenseNumber,
@@ -77,7 +78,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                     Status = detail.Status,
                     WorkStatus = detail.WorkStatus,
                     PinyinCode = detail.PinyinCode,
-                    Remark = detail.Remark
+                    Remark = detail.Remark,
+                    ContactNumber = detail.ContactNumber
                 };
                 EditModeTitle = "医生详情";
                 IsEditable = false;
@@ -94,6 +96,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private void AddDoctor() {
             EditingDoctor = new DoctorDetailDto {
                 UserId = Guid.Empty,
+                Gender = Gender.Unknown,
                 Birthday = DateTime.Now,
                 Title = DoctorTitle.Junior,
                 Status = DoctorStatus.Active,
@@ -101,6 +104,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 PinyinCode = string.Empty,
                 LicenseNumber = string.Empty,
                 Specialty = string.Empty,
+                ContactNumber = string.Empty,
                 Remark = string.Empty
             };
             SelectedDoctor = null;
@@ -124,6 +128,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 if (EditingDoctor.Id == Guid.Empty) {
                     var dto = new DoctorCreateDto {
                         UserId = EditingDoctor.UserId,
+                        Gender = EditingDoctor.Gender,
                         Birthday = EditingDoctor.Birthday,
                         Title = EditingDoctor.Title,
                         LicenseNumber = EditingDoctor.LicenseNumber,
@@ -131,6 +136,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                         Status = EditingDoctor.Status,
                         WorkStatus = EditingDoctor.WorkStatus,
                         PinyinCode = EditingDoctor.PinyinCode,
+                        ContactNumber = EditingDoctor.ContactNumber,
                         Remark = EditingDoctor.Remark
                     };
                     var ok = await _doctorService.AddAsync(dto);
@@ -142,6 +148,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                     var dto = new DoctorEditDto {
                         Id = EditingDoctor.Id,
                         UserId = EditingDoctor.UserId,
+                        Gender = EditingDoctor.Gender,
                         Birthday = EditingDoctor.Birthday,
                         Title = EditingDoctor.Title,
                         LicenseNumber = EditingDoctor.LicenseNumber,
@@ -149,6 +156,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                         Status = EditingDoctor.Status,
                         WorkStatus = EditingDoctor.WorkStatus,
                         PinyinCode = EditingDoctor.PinyinCode,
+                        ContactNumber = EditingDoctor.ContactNumber,
                         Remark = EditingDoctor.Remark
                     };
                     var ok = await _doctorService.UpdateAsync(dto);
