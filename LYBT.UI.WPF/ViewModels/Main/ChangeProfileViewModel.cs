@@ -78,8 +78,13 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             }
         }
 
-        public void OnNavigatedTo(NavigationContext navigationContext) {
-            _ = LoadAsync();
+        public async void OnNavigatedTo(NavigationContext navigationContext) {
+            try {
+                await LoadAsync();
+            } catch (Exception ex) {
+                MessageBox.Show($"加载用户信息失败：{ex.Message}", "错误",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext) => true;
