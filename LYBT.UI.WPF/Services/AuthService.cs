@@ -68,6 +68,7 @@ namespace LYBT.UI.WPF.Services {
 
                 // 保存登录状态
                 _token = result.Data.Token ?? string.Empty;
+                TokenProvider.Token = _token;
                 _userId = result.Data.User.Id;
                 SaveAutoLoginInfo(userName, password);
 
@@ -217,6 +218,7 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         private void ClearLoginState() {
             _token = string.Empty;
+            TokenProvider.Token = string.Empty;
             _userId = Guid.Empty;
             ClearAutoLoginInfo();
         }
