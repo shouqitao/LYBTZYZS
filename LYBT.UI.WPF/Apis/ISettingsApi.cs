@@ -1,3 +1,4 @@
+using LYBT.Common.Models;
 using LYBT.Module.Settings.Dtos;
 using Refit;
 using System;

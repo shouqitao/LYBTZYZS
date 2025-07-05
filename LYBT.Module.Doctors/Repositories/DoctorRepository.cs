@@ -42,6 +42,7 @@ namespace LYBT.Module.Doctors.Repositories {
         public async Task<List<DoctorModel>> GetListAsync() {
             return await _appDbContext.Doctors
                 .Include(d => d.User)
+                .OrderByDescending(d => d.CreatedTime)
                 .ToListAsync();
         }
 
@@ -109,28 +110,43 @@ namespace LYBT.Module.Doctors.Repositories {
             var query = _appDbContext.Doctors
                 .Include(d => d.User)
                 .AsQueryable();
+            
             if (!string.IsNullOrWhiteSpace(keyword)) {
-                query = query.Where(d => d.User.RealName.Contains(keyword) || (d.User.PhoneNumber ?? "").Contains(keyword) || d.PinyinCode.Contains(keyword));
+                query = query.Where(d => 
+                    d.User.RealName.Contains(keyword) || 
+                    (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(keyword)) || 
+                    d.PinyinCode.Contains(keyword));
             }
-            return await query.OrderByDescending(d => d.CreatedTime).Take(20).ToListAsync();
+            
+            return await query
+                .OrderByDescending(d => d.CreatedTime)
+                .Take(20)
+                .ToListAsync();
         }
 
         public async Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query) {
             var dbSet = _appDbContext.Doctors
                 .Include(d => d.User)
                 .AsQueryable();
+            
             if (!string.IsNullOrWhiteSpace(query.Keyword)) {
-                dbSet = dbSet.Where(d => d.User.RealName.Contains(query.Keyword) || (d.User.PhoneNumber ?? "").Contains(query.Keyword) || d.PinyinCode.Contains(query.Keyword));
+                dbSet = dbSet.Where(d => 
+                    d.User.RealName.Contains(query.Keyword) || 
+                    (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(query.Keyword)) || 
+                    d.PinyinCode.Contains(query.Keyword));
             }
+            
             if (query.IsActive.HasValue) {
                 var status = query.IsActive.Value ? DoctorStatus.Active : DoctorStatus.Inactive;
                 dbSet = dbSet.Where(d => d.Status == status);
             }
+            
             int total = await dbSet.CountAsync();
             var list = await dbSet.OrderByDescending(d => d.CreatedTime)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
+            
             return (list, total);
         }
 

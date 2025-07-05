@@ -4,6 +4,8 @@ using LYBT.UI.WPF.Apis;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Refit; // 新增
+using System.Windows; // 新增
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>
@@ -30,7 +32,17 @@ namespace LYBT.UI.WPF.Services {
         }
 
         public async Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId) {
-            return await _doctorApi.GetByUserIdAsync(userId);
+            try {
+                return await _doctorApi.GetByUserIdAsync(userId);
+            } catch (ApiException ex) {
+                if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    return null; // 没有医生档案，正常返回null
+                if (ex.StatusCode == System.Net.HttpStatusCode.InternalServerError) {
+                    MessageBox.Show("服务器内部错误，请联系管理员。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return null;
+                }
+                throw;
+            }
         }
 
         /// <summary>
@@ -38,6 +50,8 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         public async Task<bool> AddAsync(DoctorCreateDto dto) {
             var resp = await _doctorApi.AddAsync(dto);
+            if (!resp.Success)
+                throw new Exception(resp.Message ?? "新增医生失败");
             return resp.Success;
         }
 
@@ -46,6 +60,8 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         public async Task<bool> UpdateAsync(DoctorEditDto dto) {
             var resp = await _doctorApi.UpdateAsync(dto);
+            if (!resp.Success)
+                throw new Exception(resp.Message ?? "保存医生失败");
             return resp.Success;
         }
 

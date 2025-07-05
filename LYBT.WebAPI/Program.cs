@@ -43,6 +43,9 @@ using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Mapping;
 using LYBT.Module.Registration.Repositories;
 using LYBT.Module.Registration.Services;
+using LYBT.Module.Settings.Interfaces;
+using LYBT.Module.Settings.Repositories;
+using LYBT.Module.Settings.Services;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Mapping;
 using LYBT.Module.Sync.Repositories;
@@ -54,6 +57,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using LYBT.Module.Settings.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,6 +111,10 @@ builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ISyncService, SyncService>();
 builder.Services.AddScoped<ISyncRepository, SyncRepository>();
 
+// 设置管理
+builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
+
 // =========== 2. 注册所有模块的 AutoMapper 配置文件 ===========
 
 builder.Services.AddAutoMapper(
@@ -119,13 +127,13 @@ builder.Services.AddAutoMapper(
     typeof(HerbMappingProfile),
     typeof(FormulaTemplateMappingProfile),
     typeof(LogMappingProfile),
-    typeof(SyncMappingProfile)
+    typeof(SyncMappingProfile),
+   typeof(SettingsMappingProfile)
 );
 
 // =========== 3. 注册控制器和Swagger ===========
 
-builder.Services.AddControllers().AddJsonOptions(o =>
-{
+builder.Services.AddControllers().AddJsonOptions(o => {
     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });

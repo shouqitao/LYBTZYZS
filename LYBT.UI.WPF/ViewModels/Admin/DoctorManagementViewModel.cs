@@ -125,8 +125,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                         LicenseNumber = EditingDoctor.LicenseNumber,
                         Title = EditingDoctor.Title,
                         Status = EditingDoctor.Status,
-                        Remark = EditingDoctor.Remark,
-                        Password = "123456"
+                        Remark = EditingDoctor.Remark
                     };
                     var ok = await _doctorService.AddAsync(dto);
                     if (!ok) {

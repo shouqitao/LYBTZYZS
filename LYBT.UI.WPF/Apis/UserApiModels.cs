@@ -15,18 +15,5 @@ namespace LYBT.UI.WPF.Apis {
         /// </summary>
         public List<UserDto> Users { get; set; } = new();
     }
-
-    /// <summary>
-    /// 简单的成功返回
-    /// </summary>
-    public class ApiSuccessResponse {
-        /// <summary>
-        /// 属性 Success 的说明
-        /// </summary>
-        public bool Success { get; set; }
-        /// <summary>
-        /// 属性 Count 的说明
-        /// </summary>
-        public int? Count { get; set; }
-    }
+    // 已删除本地ApiSuccessResponse，统一使用LYBT.Common.Models.ApiSuccessResponse
 }

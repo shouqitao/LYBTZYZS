@@ -59,6 +59,11 @@ namespace LYBT.Module.Doctors.Services {
         /// 新增医生
         /// </summary>
         public async Task<bool> AddAsync(DoctorCreateDto doctorCreateDto) {
+            // 手机号唯一性校验
+            var exists = (await _doctorRepository.SearchAsync(doctorCreateDto.Phone)).Any(d => d.User.PhoneNumber == doctorCreateDto.Phone);
+            if (exists)
+                throw new Exception("该手机号已存在，请更换手机号。");
+
             var model = _mapper.Map<DoctorModel>(doctorCreateDto);
             model.Id = Guid.NewGuid();
             // 状态直接使用请求中的值，默认激活
@@ -71,8 +76,7 @@ namespace LYBT.Module.Doctors.Services {
                 Roles = new List<UserRole> { UserRole.DiagnosingDoctor },
                 IsActive = true,
                 CreatedTime = DateTime.Now,
-                PhoneNumber = doctorCreateDto.Phone,
-                PasswordHash = PasswordHelper.Hash(doctorCreateDto.Password)
+                PhoneNumber = doctorCreateDto.Phone
             };
 
             model.UserId = user.Id;
@@ -87,7 +91,12 @@ namespace LYBT.Module.Doctors.Services {
         public async Task<bool> UpdateAsync(DoctorEditDto doctorEditDto) {
             var model = await _doctorRepository.GetByIdAsync(doctorEditDto.Id);
             if (model == null)
-                return false;
+                throw new Exception("医生不存在。");
+
+            // 手机号唯一性校验（排除自己）
+            var exists = (await _doctorRepository.SearchAsync(doctorEditDto.Phone)).Any(d => d.User.PhoneNumber == doctorEditDto.Phone && d.Id != doctorEditDto.Id);
+            if (exists)
+                throw new Exception("该手机号已存在，请更换手机号。");
 
             // 使用 AutoMapper 将 DTO 属性映射到实体
             _mapper.Map(doctorEditDto, model);

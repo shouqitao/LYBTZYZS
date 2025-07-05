@@ -1,17 +1,13 @@
 using LYBT.Common.Enums;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.UI.WPF.Services;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using System;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class DoctorProfileViewModel : BindableBase, INavigationAware {
         private readonly IDoctorService _doctorService;
         private readonly IAuthService _authService;
+        private readonly IUserService _userService;
 
         private DoctorDetailDto _doctor = new();
         public DoctorDetailDto Doctor { get => _doctor; set => SetProperty(ref _doctor, value); }
@@ -22,9 +18,10 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
-        public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService) {
+        public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService, IUserService userService) {
             _doctorService = doctorService;
             _authService = authService;
+            _userService = userService;
             SaveCommand = new DelegateCommand(async () => await SaveAsync());
             CancelCommand = new DelegateCommand(Cancel);
         }
@@ -35,11 +32,18 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 Doctor = info;
                 EditModeTitle = "编辑医生档案";
             } else {
+                // 从User信息自动填充
+                var currentUser = await _userService.GetByIdAsync(_authService.UserId);
                 Doctor = new DoctorDetailDto {
+                    Name = currentUser?.RealName ?? "",
+                    Phone = currentUser?.PhoneNumber ?? "",
                     Gender = Gender.Unknown,
-                    Birthday = DateTime.Now,
+                    Birthday = DateTime.Now.AddYears(-30),
                     Title = DoctorTitle.Junior,
-                    Status = DoctorStatus.Active
+                    Status = DoctorStatus.Active,
+                    PinyinCode = "",
+                    LicenseNumber = "",
+                    Remark = ""
                 };
                 EditModeTitle = "新增医生档案";
             }
@@ -57,8 +61,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                     LicenseNumber = Doctor.LicenseNumber,
                     Title = Doctor.Title,
                     Status = Doctor.Status,
-                    Remark = Doctor.Remark,
-                    Password = "123456"
+                    Remark = Doctor.Remark
                 };
                 ok = await _doctorService.AddAsync(dto);
             } else {
@@ -83,7 +86,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                     main.IsMainVisible = true;
                     main.IsFunctionVisible = false;
                     main.HasDoctorProfile = true;
-                    main.DoctorProfileButtonText = "编辑医生档案";
+                    await main.CheckDoctorProfileAsync(); // 重新检查状态
                 }
             } else {
                 MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);

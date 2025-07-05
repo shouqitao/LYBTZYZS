@@ -17,6 +17,9 @@ namespace LYBT.Module.Settings.Mapping {
             // 新增DTO => 实体
             CreateMap<SettingsCreateDto, SettingsModel>();
 
+            CreateMap<SettingsCreateDto, SettingsModel>();
+            CreateMap<SettingsEditDto, SettingsModel>();
+
             CreateMap<DiagnosisCatalogModel, DiagnosisCatalogDto>().ReverseMap();
             CreateMap<DiagnosisCatalogCreateDto, DiagnosisCatalogModel>();
             CreateMap<DiagnosisCatalogEditDto, DiagnosisCatalogModel>();

@@ -1,4 +1,5 @@
 using LYBT.Module.DiagnosisTreatment.Models.Dtos;
+using LYBT.Common.Models;
 using Refit;
 using System;
 using System.Collections.Generic;

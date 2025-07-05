@@ -1,5 +1,6 @@
 ﻿using LYBT.Module.Users.Dtos;
 using LYBT.Common.Enums.Users;
+using LYBT.Common.Models;
 using Refit;
 using System;
 using System.Collections.Generic;

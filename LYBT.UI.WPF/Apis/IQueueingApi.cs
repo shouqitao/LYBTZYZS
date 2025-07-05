@@ -1,3 +1,4 @@
+using LYBT.Common.Models;
 using LYBT.Module.Queueing.Dtos;
 using Refit;
 using System;

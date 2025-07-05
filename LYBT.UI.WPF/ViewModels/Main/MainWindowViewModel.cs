@@ -129,7 +129,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _regionManager.RequestNavigate("MainContentRegion", "HomeView", new NavigationParameters { { "UserRoles", roles } });
         }
 
-        private async Task CheckDoctorProfileAsync() {
+        public async Task CheckDoctorProfileAsync() {
             var detail = await _doctorService.GetByUserIdAsync(_authService.UserId);
             HasDoctorProfile = detail != null;
             DoctorProfileButtonText = HasDoctorProfile ? "编辑医生档案" : "新增医生档案";

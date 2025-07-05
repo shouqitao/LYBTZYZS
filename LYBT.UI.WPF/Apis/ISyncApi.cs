@@ -1,4 +1,5 @@
 using LYBT.Common.Enums;
+using LYBT.Common.Models;
 using LYBT.Module.Sync.Dtos;
 using Refit;
 using System;
