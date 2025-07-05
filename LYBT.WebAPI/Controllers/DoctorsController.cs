@@ -28,6 +28,12 @@ namespace LYBT.WebAPI.Controllers {
             return item == null ? NotFound() : Ok(item);
         }
 
+        [HttpGet("by-user/{userId}")]
+        public async Task<ActionResult<DoctorDetailDto>> GetByUserId(Guid userId) {
+            var item = await _doctorService.GetByUserIdAsync(userId);
+            return item == null ? NotFound() : Ok(item);
+        }
+
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] DoctorCreateDto dto) {
             if (!ModelState.IsValid)

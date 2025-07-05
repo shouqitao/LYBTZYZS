@@ -34,6 +34,11 @@ namespace LYBT.Module.Doctors.Services {
             return model == null ? null : _mapper.Map<DoctorDetailDto>(model);
         }
 
+        public async Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId) {
+            var model = await _doctorRepository.GetByUserIdAsync(userId);
+            return model == null ? null : _mapper.Map<DoctorDetailDto>(model);
+        }
+
         /// <summary>
         /// 关键词搜索
         /// </summary>
