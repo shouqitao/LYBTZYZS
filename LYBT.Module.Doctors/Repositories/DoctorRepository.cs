@@ -51,7 +51,8 @@ namespace LYBT.Module.Doctors.Repositories {
         /// </summary>
         public async Task<bool> AddAsync(DoctorModel doctorModel) {
             _appDbContext.Doctors.Add(doctorModel);
-            if (_appDbContext.Entry(doctorModel.User).State == EntityState.Detached) {
+            if (doctorModel.User != null &&
+                _appDbContext.Entry(doctorModel.User).State == EntityState.Detached) {
                 _appDbContext.Users.Add(doctorModel.User);
             }
             return await _appDbContext.SaveChangesAsync() > 0;
