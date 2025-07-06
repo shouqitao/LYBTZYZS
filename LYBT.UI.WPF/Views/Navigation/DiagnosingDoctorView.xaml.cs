@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace LYBT.UI.WPF.Views {
+namespace LYBT.UI.WPF.Views.Navigation {
     /// <summary>
     /// 类 DiagnosingDoctorView 的说明
     /// </summary>

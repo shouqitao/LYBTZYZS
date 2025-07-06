@@ -3,9 +3,10 @@ using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Users.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.Services;
+using LYBT.UI.WPF.ViewModels.Main;
 using System.Windows;
 
-namespace LYBT.UI.WPF.ViewModels.Main {
+namespace LYBT.UI.WPF.ViewModels.Profile {
     public class DoctorProfileViewModel : BindableBase, INavigationAware {
         private readonly IDoctorService _doctorService;
         private readonly IAuthService _authService;
@@ -37,7 +38,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public Action? CancelAction { get; set; }
 
-        public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService, Interfaces.IUserService userService) {
+        public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService, IUserService userService) {
             _doctorService = doctorService;
             _authService = authService;
             _userService = userService;

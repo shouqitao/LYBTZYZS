@@ -56,10 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ViewModels\Navigation\" />
-    <Folder Include="ViewModels\Profile\" />
     <Folder Include="Views\Navigation\" />
-    <Folder Include="Views\Profile\" />
   </ItemGroup>
 
 </Project>

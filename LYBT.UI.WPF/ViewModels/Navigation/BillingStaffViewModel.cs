@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace LYBT.UI.WPF.ViewModels {
+namespace LYBT.UI.WPF.ViewModels.Navigation {
     /// <summary>
     /// 类 BillingStaffViewModel 的说明
     /// </summary>

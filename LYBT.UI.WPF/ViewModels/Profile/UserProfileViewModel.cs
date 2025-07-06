@@ -1,12 +1,8 @@
 using LYBT.Module.Users.Dtos;
 using LYBT.UI.WPF.Interfaces;
-using Prism.Mvvm;
-using Prism.Regions;
-using System;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace LYBT.UI.WPF.ViewModels.Main {
+namespace LYBT.UI.WPF.ViewModels.Profile {
     /// <summary>
     /// 用户资料视图模型
     /// </summary>

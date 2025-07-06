@@ -6,7 +6,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace LYBT.UI.WPF.ViewModels.Main {
+namespace LYBT.UI.WPF.ViewModels.Profile {
     public class PatientProfileViewModel : BindableBase {
         private readonly IPatientService _patientService;
 

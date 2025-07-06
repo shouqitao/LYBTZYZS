@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
 using LYBT.UI.WPF.Interfaces;
+using LYBT.UI.WPF.Views.Navigation;
 
 namespace LYBT.UI.WPF {
     /// <summary>

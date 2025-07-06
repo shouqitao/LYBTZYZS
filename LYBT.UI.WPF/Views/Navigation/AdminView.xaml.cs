@@ -13,15 +13,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace LYBT.UI.WPF.Views
-{
+namespace LYBT.UI.WPF.Views.Navigation {
     /// <summary>
     /// Interaction logic for AdminView.xaml
     /// </summary>
-    public partial class AdminView : UserControl
-    {
-        public AdminView()
-        {
+    public partial class AdminView : UserControl {
+        public AdminView() {
             InitializeComponent();
         }
     }

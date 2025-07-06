@@ -2,7 +2,7 @@ using LYBT.Common.Enums;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.Services;
-using LYBT.UI.WPF.ViewModels.Main;
+using LYBT.UI.WPF.ViewModels.Profile;
 using Prism.Commands;
 using Prism.Mvvm;
 using Refit;
