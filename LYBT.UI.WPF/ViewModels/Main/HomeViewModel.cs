@@ -19,6 +19,13 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public ObservableCollection<NavigationItem> NavigationItems { get; } = new();
 
+        private NavigationItem _selectedNavigationItem;
+        public NavigationItem SelectedNavigationItem
+        {
+            get => _selectedNavigationItem;
+            set => SetProperty(ref _selectedNavigationItem, value);
+        }
+
         private readonly IRegionManager _regionManager;
         /// <summary>
         /// 属性 NavigateCommand 的说明
@@ -36,6 +43,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         private void Navigate(NavigationItem item) {
             if (item != null) {
+                SelectedNavigationItem = item;
                 // 检查目标视图是否已注册（即是否存在对应的View类）
                 var viewType = typeof(HomeViewModel).Assembly.GetType($"LYBT.UI.WPF.Views.{item.TargetView}");
                 if (viewType == null) {
