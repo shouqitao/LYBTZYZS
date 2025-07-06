@@ -18,5 +18,10 @@ namespace LYBT.Module.Doctors.Dtos {
         public string PinyinCode { get; set; } = string.Empty;
         public string? Remark { get; set; }
         public string? ContactNumber { get; set; } // 医生对外联系方式
+
+        // 关联的用户信息（只读）
+        public string? UserName { get; set; }
+        public string? RealName { get; set; }
+        public string? PhoneNumber { get; set; }
     }
 }
