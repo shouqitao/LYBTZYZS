@@ -16,7 +16,10 @@ namespace LYBT.Module.Doctors.Mapping {
                 .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender));
 
             // DoctorModel -> DoctorDetailDto 映射 (用于详情)
-            CreateMap<DoctorModel, DoctorDetailDto>();
+            CreateMap<DoctorModel, DoctorDetailDto>()
+                .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName))
+                .ForMember(d => d.RealName, o => o.MapFrom(s => s.User.RealName))
+                .ForMember(d => d.PhoneNumber, o => o.MapFrom(s => s.User.PhoneNumber));
 
             // DoctorDetailDto -> DoctorModel 映射 (新增/编辑)
             CreateMap<DoctorDetailDto, DoctorModel>()
