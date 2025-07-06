@@ -56,6 +56,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public DoctorManagementViewModel(IDoctorService doctorService) {
             _doctorService = doctorService;
             DoctorProfileViewModel = new DoctorProfileViewModel(_doctorService, null, null); // 依赖注入可根据实际情况调整
+            DoctorProfileViewModel.CancelAction = CancelEdit;
             AddDoctorCommand = new DelegateCommand(AddDoctor);
             EditDoctorCommand = new DelegateCommand(EditDoctor, () => SelectedDoctor != null).ObservesProperty(() => SelectedDoctor);
             SaveDoctorCommand = new DelegateCommand(async () => await SaveDoctor(), () => IsEditable).ObservesProperty(() => IsEditable);
