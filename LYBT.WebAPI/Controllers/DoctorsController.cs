@@ -124,29 +124,6 @@ namespace LYBT.WebAPI.Controllers {
             }
         }
 
-        /// <summary>
-        /// 重置医生密码，必须提供新密码
-        /// </summary>
-        [HttpPut("reset-password/{id}")]
-        public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordDto dto) {
-            try {
-                var ok = await _doctorService.ResetPasswordAsync(id, dto.NewPassword);
-                return ok ? Ok(new ApiSuccessResponse { Success = true, Message = "密码重置成功" }) : NotFound();
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"重置密码失败: {ex.Message}" });
-            }
-        }
-
-        [HttpPut("change-password")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto) {
-            try {
-                var ok = await _doctorService.ChangePasswordAsync(dto.DoctorId, dto.OldPassword, dto.NewPassword);
-                return ok ? Ok(new ApiSuccessResponse { Success = true, Message = "密码修改成功" }) : BadRequest(new { message = "密码修改失败，请检查原密码是否正确" });
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"修改密码失败: {ex.Message}" });
-            }
-        }
-
         [HttpGet("roles")]
         public IActionResult GetRoles() {
             try {

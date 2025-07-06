@@ -84,19 +84,5 @@ namespace LYBT.Module.Doctors.Services {
         public async Task<int> BatchEnableAsync(List<Guid> ids) {
             return await _doctorRepository.BatchEnableAsync(ids);
         }
-
-        public async Task<bool> ResetPasswordAsync(Guid id, string newPassword) {
-            var hash = PasswordHelper.Hash(newPassword);
-            return await _doctorRepository.UpdatePasswordAsync(id, hash);
-        }
-
-        public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
-            var model = await _doctorRepository.GetByIdAsync(id);
-            if (model == null)
-                return false;
-            if (!PasswordHelper.Verify(model.User.PasswordHash, oldPassword))
-                return false;
-            return await _doctorRepository.UpdatePasswordAsync(id, PasswordHelper.Hash(newPassword));
-        }
     }
 }

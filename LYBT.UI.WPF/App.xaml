@@ -6,8 +6,8 @@
                 xmlns:local="clr-namespace:LYBT.UI.WPF.Converters">
     <!-- 注意：移除了 StartupUri，以避免启动两个窗口 -->
     <Application.Resources>
-        <!-- 全局资源字典（如果有） -->
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <!-- 添加 BoolToVisibilityConverter 资源 -->
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <!-- 反向布尔转换器 -->
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />

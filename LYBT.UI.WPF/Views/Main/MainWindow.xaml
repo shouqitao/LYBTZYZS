@@ -2,16 +2,12 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
-        xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="凌隐宝堂中医诊所"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="NoResize">
-    <Window.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </Window.Resources>
     <Grid>
         <!-- 功能区：登录、修改密码等界面 -->
         <ContentControl prism:RegionManager.RegionName="FunctionRegion"

@@ -16,8 +16,6 @@ namespace LYBT.UI.WPF.Services {
         Task<PagedResultDto<DoctorDto>> GetPagedAsync(DoctorQueryDto query);
         Task<int> BatchDisableAsync(List<Guid> ids);
         Task<int> BatchEnableAsync(List<Guid> ids);
-        Task<bool> ResetPasswordAsync(Guid id, string newPassword);
-        Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
         Task<IList<string>> GetRolesAsync();
     }
 }

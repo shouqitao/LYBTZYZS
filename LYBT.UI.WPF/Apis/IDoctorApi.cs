@@ -37,14 +37,7 @@ namespace LYBT.UI.WPF.Apis {
         [Put("/api/Doctors/batch-enable")]
         Task<ApiSuccessResponse> BatchEnableAsync([Body] BatchIdsDto dto);
 
-        [Put("/api/Doctors/reset-password/{id}")]
-        Task<ApiSuccessResponse> ResetPasswordAsync(Guid id, [Body] ResetPasswordDto dto);
-
-        [Put("/api/Doctors/change-password")]
-        Task<ApiSuccessResponse> ChangePasswordAsync([Body] ChangePasswordDto dto);
-
         [Get("/api/Doctors/roles")]
         Task<List<string>> GetRolesAsync();
-
     }
 }

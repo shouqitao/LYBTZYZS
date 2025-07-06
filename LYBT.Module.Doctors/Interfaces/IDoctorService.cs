@@ -21,7 +21,5 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<bool> EnableAsync(Guid id);
         Task<int> BatchDisableAsync(List<Guid> ids);
         Task<int> BatchEnableAsync(List<Guid> ids);
-        Task<bool> ResetPasswordAsync(Guid id, string newPassword);
-        Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
     }
 }

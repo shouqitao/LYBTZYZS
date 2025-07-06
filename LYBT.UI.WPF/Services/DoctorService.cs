@@ -109,26 +109,6 @@ namespace LYBT.UI.WPF.Services {
         }
 
         /// <summary>
-        /// 方法 ResetPasswordAsync 的说明
-        /// </summary>
-        public async Task<bool> ResetPasswordAsync(Guid id, string newPassword) {
-            var resp = await _doctorApi.ResetPasswordAsync(id, new ResetPasswordDto { NewPassword = newPassword });
-            return resp.Success;
-        }
-
-        /// <summary>
-        /// 方法 ChangePasswordAsync 的说明
-        /// </summary>
-        public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
-            var resp = await _doctorApi.ChangePasswordAsync(new ChangePasswordDto {
-                DoctorId = id,
-                OldPassword = oldPassword,
-                NewPassword = newPassword
-            });
-            return resp.Success;
-        }
-
-        /// <summary>
         /// 方法 GetRolesAsync 的说明
         /// </summary>
         public async Task<IList<string>> GetRolesAsync() {
