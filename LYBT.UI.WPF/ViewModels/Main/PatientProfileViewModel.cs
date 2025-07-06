@@ -1,23 +1,32 @@
 using LYBT.Module.Patients.Dtos;
 using LYBT.UI.WPF.Interfaces;
-using LYBT.UI.WPF.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class PatientProfileViewModel : BindableBase {
         private readonly IPatientService _patientService;
 
         private PatientDetailDto _patient = new();
-        public PatientDetailDto Patient { get => _patient; set => SetProperty(ref _patient, value); }
+        public PatientDetailDto Patient {
+            get => _patient;
+            set => SetProperty(ref _patient, value);
+        }
 
-        private string _editModeTitle = "ĞÂÔö»¼Õßµµ°¸";
-        public string EditModeTitle { get => _editModeTitle; set => SetProperty(ref _editModeTitle, value); }
+        private string _editModeTitle = "æ–°å¢æ‚£è€…æ¡£æ¡ˆ";
+        public string EditModeTitle {
+            get => _editModeTitle;
+            set => SetProperty(ref _editModeTitle, value);
+        }
 
         private bool _isEditable;
-        public bool IsEditable { get => _isEditable; set => SetProperty(ref _isEditable, value); }
+        public bool IsEditable {
+            get => _isEditable;
+            set => SetProperty(ref _isEditable, value);
+        }
 
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
@@ -31,22 +40,35 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         public async Task LoadAsync(Guid patientId) {
-            var info = await _patientService.GetByIdAsync(patientId);
-            if (info != null) {
-                Patient = info;
-                EditModeTitle = "±à¼­»¼Õßµµ°¸";
+            if (patientId != Guid.Empty) {
+                var info = await _patientService.GetByIdAsync(patientId);
+                if (info != null) {
+                    Patient = info;
+                    EditModeTitle = "ç¼–è¾‘æ‚£è€…æ¡£æ¡ˆ";
+                } else {
+                    Patient = new PatientDetailDto();
+                    EditModeTitle = "æ–°å¢æ‚£è€…æ¡£æ¡ˆ";
+                }
             } else {
                 Patient = new PatientDetailDto();
-                EditModeTitle = "ĞÂÔö»¼Õßµµ°¸";
+                EditModeTitle = "æ–°å¢æ‚£è€…æ¡£æ¡ˆ";
             }
+            IsEditable = true;
         }
 
         private async Task SaveAsync() {
+            bool ok;
             if (Patient.Id == Guid.Empty)
-                await _patientService.AddAsync(Patient);
+                ok = await _patientService.AddAsync(Patient);
             else
-                await _patientService.UpdateAsync(Patient);
-            IsEditable = false;
+                ok = await _patientService.UpdateAsync(Patient);
+
+            if (ok) {
+                MessageBox.Show("å·²ä¿å­˜", "æç¤º", MessageBoxButton.OK, MessageBoxImage.Information);
+                IsEditable = false;
+            } else {
+                MessageBox.Show("ä¿å­˜å¤±è´¥", "æç¤º", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Cancel() {
