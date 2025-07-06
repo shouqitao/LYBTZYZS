@@ -11,12 +11,25 @@
         <!-- 左侧导航区 -->
         <ListBox Grid.Column="0"
                  ItemsSource="{Binding NavigationItems}"
-                 Margin="5">
+                 Margin="5"
+                 Background="#F5F6FA"
+                 BorderThickness="0"
+                 SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Button Content="{Binding DisplayName}"
                             Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding}" Margin="2"/>
+                            CommandParameter="{Binding}"
+                            Margin="4,6,4,6"
+                            Padding="10,6"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Background="{Binding IsSelected, Converter={StaticResource SelectedNavButtonBackgroundConverter}, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
+                            Foreground="{Binding IsSelected, Converter={StaticResource SelectedNavButtonForegroundConverter}, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            HorizontalContentAlignment="Left"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

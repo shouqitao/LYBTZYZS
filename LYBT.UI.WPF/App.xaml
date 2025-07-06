@@ -14,5 +14,11 @@
 
         <!-- 字符串到可见性转换器 -->
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+
+        <!-- 导航按钮选中背景色转换器 -->
+        <local:SelectedNavButtonBackgroundConverter x:Key="SelectedNavButtonBackgroundConverter" />
+
+        <!-- 导航按钮选中前景色转换器 -->
+        <local:SelectedNavButtonForegroundConverter x:Key="SelectedNavButtonForegroundConverter" />
     </Application.Resources>
 </prism:PrismApplication>

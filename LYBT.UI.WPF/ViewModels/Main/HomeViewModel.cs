@@ -7,6 +7,7 @@ using Prism.Commands;
 using Prism.Ioc;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
@@ -35,6 +36,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         private void Navigate(NavigationItem item) {
             if (item != null) {
+                // 检查目标视图是否已注册（即是否存在对应的View类）
+                var viewType = typeof(HomeViewModel).Assembly.GetType($"LYBT.UI.WPF.Views.{item.TargetView}");
+                if (viewType == null) {
+                    MessageBox.Show("该功能暂未开放或未实现。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
                 System.Diagnostics.Debug.WriteLine($"Navigating to: {item.TargetView}");
                 _regionManager.RequestNavigate("ContentRegion", item.TargetView);
             }
