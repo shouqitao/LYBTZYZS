@@ -17,10 +17,10 @@ namespace LYBT.UI.WPF.Apis {
         Task<DoctorDetailDto> GetByUserIdAsync(Guid userId);
 
         [Post("/api/Doctors/add")]
-        Task<ApiSuccessResponse> AddAsync([Body] DoctorCreateDto dto);
+        Task<ApiSuccessResponse> AddAsync([Body] DoctorDetailDto dto);
 
         [Put("/api/Doctors/update")]
-        Task<ApiSuccessResponse> UpdateAsync([Body] DoctorEditDto dto);
+        Task<ApiSuccessResponse> UpdateAsync([Body] DoctorDetailDto dto);
 
         [Put("/api/Doctors/disable/{id}")]
         Task<ApiSuccessResponse> DisableAsync(Guid id);

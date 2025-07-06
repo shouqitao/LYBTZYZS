@@ -52,7 +52,7 @@ namespace LYBT.UI.WPF.Services {
         /// <summary>
         /// 方法 AddAsync 的说明
         /// </summary>
-        public async Task<bool> AddAsync(DoctorCreateDto dto) {
+        public async Task<bool> AddAsync(DoctorDetailDto dto) {
             var resp = await _doctorApi.AddAsync(dto);
             if (!resp.Success)
                 throw new Exception(resp.Message ?? "新增医生失败");
@@ -62,7 +62,7 @@ namespace LYBT.UI.WPF.Services {
         /// <summary>
         /// 方法 UpdateAsync 的说明
         /// </summary>
-        public async Task<bool> UpdateAsync(DoctorEditDto dto) {
+        public async Task<bool> UpdateAsync(DoctorDetailDto dto) {
             var resp = await _doctorApi.UpdateAsync(dto);
             if (!resp.Success)
                 throw new Exception(resp.Message ?? "保存医生失败");

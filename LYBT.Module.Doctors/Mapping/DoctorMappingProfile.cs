@@ -18,15 +18,8 @@ namespace LYBT.Module.Doctors.Mapping {
             // DoctorModel -> DoctorDetailDto 映射 (用于详情)
             CreateMap<DoctorModel, DoctorDetailDto>();
 
-            // DoctorCreateDto -> DoctorModel 映射 (新增)
-            CreateMap<DoctorCreateDto, DoctorModel>()
-                .ForMember(d => d.User, o => o.Ignore())
-                .ForMember(d => d.UserId, o => o.MapFrom(s => s.UserId))
-                .ForMember(d => d.ContactNumber, o => o.MapFrom(s => s.ContactNumber))
-                .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender));
-
-            // DoctorEditDto -> DoctorModel 映射 (编辑)
-            CreateMap<DoctorEditDto, DoctorModel>()
+            // DoctorDetailDto -> DoctorModel 映射 (新增/编辑)
+            CreateMap<DoctorDetailDto, DoctorModel>()
                 .ForMember(d => d.User, o => o.Ignore())
                 .ForMember(d => d.UserId, o => o.MapFrom(s => s.UserId))
                 .ForMember(d => d.ContactNumber, o => o.MapFrom(s => s.ContactNumber))

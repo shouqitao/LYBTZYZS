@@ -3,8 +3,10 @@ using LYBT.Common.Helpers;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
-using LYBT.Common.Models; // 正确的using指令，PagedResultDto定义于此
+using LYBT.Common.Models;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LYBT.Module.Doctors.Services {
     /// <summary>
@@ -42,27 +44,27 @@ namespace LYBT.Module.Doctors.Services {
             };
         }
 
-        public async Task<bool> AddAsync(DoctorCreateDto doctorCreateDto) {
-            var model = _mapper.Map<DoctorModel>(doctorCreateDto);
+        public async Task<bool> AddAsync(DoctorDetailDto dto) {
+            var model = _mapper.Map<DoctorModel>(dto);
             model.Id = Guid.NewGuid();
             return await _doctorRepository.AddAsync(model);
         }
 
-        public async Task<bool> UpdateAsync(DoctorEditDto doctorEditDto) {
-            var model = await _doctorRepository.GetByIdAsync(doctorEditDto.Id);
+        public async Task<bool> UpdateAsync(DoctorDetailDto dto) {
+            var model = await _doctorRepository.GetByIdAsync(dto.Id);
             if (model == null)
                 throw new Exception("医生不存在。");
             // 只允许更新医生表自身字段，不允许更新User相关（账号、姓名）
-            model.Gender = doctorEditDto.Gender;
-            model.Birthday = doctorEditDto.Birthday ?? model.Birthday;
-            model.Title = doctorEditDto.Title;
-            model.LicenseNumber = doctorEditDto.LicenseNumber;
-            model.Specialty = doctorEditDto.Specialty;
-            model.Status = doctorEditDto.Status;
-            model.WorkStatus = doctorEditDto.WorkStatus;
-            model.PinyinCode = doctorEditDto.PinyinCode;
-            model.Remark = doctorEditDto.Remark;
-            model.ContactNumber = doctorEditDto.ContactNumber;
+            model.Gender = dto.Gender;
+            model.Birthday = dto.Birthday ?? model.Birthday;
+            model.Title = dto.Title;
+            model.LicenseNumber = dto.LicenseNumber;
+            model.Specialty = dto.Specialty;
+            model.Status = dto.Status;
+            model.WorkStatus = dto.WorkStatus;
+            model.PinyinCode = dto.PinyinCode;
+            model.Remark = dto.Remark;
+            model.ContactNumber = dto.ContactNumber;
             // 不更新UserId、User
             return await _doctorRepository.UpdateAsync(model);
         }

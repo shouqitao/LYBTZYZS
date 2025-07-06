@@ -9,8 +9,8 @@ namespace LYBT.UI.WPF.Services {
         Task<IList<DoctorDto>> SearchAsync(string keyword = "");
         Task<DoctorDetailDto?> GetByIdAsync(Guid id);
         Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId);
-        Task<bool> AddAsync(DoctorCreateDto dto);
-        Task<bool> UpdateAsync(DoctorEditDto dto);
+        Task<bool> AddAsync(DoctorDetailDto dto);
+        Task<bool> UpdateAsync(DoctorDetailDto dto);
         Task<bool> DisableAsync(Guid id);
         Task<bool> EnableAsync(Guid id);
         Task<PagedResultDto<DoctorDto>> GetPagedAsync(DoctorQueryDto query);
@@ -19,6 +19,5 @@ namespace LYBT.UI.WPF.Services {
         Task<bool> ResetPasswordAsync(Guid id, string newPassword);
         Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
         Task<IList<string>> GetRolesAsync();
-
     }
 }

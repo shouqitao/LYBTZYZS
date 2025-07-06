@@ -21,6 +21,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         public string? ContactNumber { get => Doctor.ContactNumber; set { Doctor.ContactNumber = value; RaisePropertyChanged(); } }
 
+        private bool _isEditable;
+        public bool IsEditable {
+            get => _isEditable;
+            set => SetProperty(ref _isEditable, value);
+        }
+
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
@@ -58,7 +64,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private async Task SaveAsync() {
             bool ok;
             if (Doctor.Id == Guid.Empty) {
-                var dto = new DoctorCreateDto {
+                var dto = new DoctorDetailDto {
                     UserId = Doctor.UserId,
                     Gender = Doctor.Gender,
                     Birthday = Doctor.Birthday,
@@ -73,7 +79,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 };
                 ok = await _doctorService.AddAsync(dto);
             } else {
-                var dto = new DoctorEditDto {
+                var dto = new DoctorDetailDto {
                     Id = Doctor.Id,
                     UserId = Doctor.UserId,
                     Gender = Doctor.Gender,

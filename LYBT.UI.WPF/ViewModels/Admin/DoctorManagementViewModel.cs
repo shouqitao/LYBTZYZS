@@ -1,6 +1,7 @@
 using LYBT.Common.Enums;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.UI.WPF.Services;
+using LYBT.UI.WPF.ViewModels.Main;
 using Prism.Commands;
 using Prism.Mvvm;
 using Refit;
@@ -18,10 +19,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
     public class DoctorManagementViewModel : BindableBase {
         public ObservableCollection<DoctorDto> Doctors { get; } = new();
 
-        private DoctorDetailDto _editingDoctor = new();
-        /// <summary>正在编辑的医生</summary>
-        public DoctorDetailDto EditingDoctor { get => _editingDoctor; set => SetProperty(ref _editingDoctor, value); }
-
         private DoctorDto? _selectedDoctor;
         /// <summary>列表中选中的医生</summary>
         public DoctorDto? SelectedDoctor {
@@ -29,7 +26,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             set {
                 if (SetProperty(ref _selectedDoctor, value)) {
                     if (value != null)
-                        _ = LoadSelectedDoctorAsync(value.Id);
+                        _ = UpdateDoctorProfileViewModel(value.Id);
+                    IsEditable = false; // 选中后不可编辑
                 }
             }
         }
@@ -53,9 +51,11 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public DelegateCommand SearchCommand { get; }
 
         private readonly IDoctorService _doctorService;
+        public DoctorProfileViewModel DoctorProfileViewModel { get; }
 
         public DoctorManagementViewModel(IDoctorService doctorService) {
             _doctorService = doctorService;
+            DoctorProfileViewModel = new DoctorProfileViewModel(_doctorService, null, null); // 依赖注入可根据实际情况调整
             AddDoctorCommand = new DelegateCommand(AddDoctor);
             EditDoctorCommand = new DelegateCommand(EditDoctor, () => SelectedDoctor != null).ObservesProperty(() => SelectedDoctor);
             SaveDoctorCommand = new DelegateCommand(async () => await SaveDoctor(), () => IsEditable).ObservesProperty(() => IsEditable);
@@ -64,25 +64,15 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             _ = LoadDoctors();
         }
 
-        private async Task LoadSelectedDoctorAsync(Guid id) {
-            var detail = await _doctorService.GetByIdAsync(id);
+        /// <summary>
+        /// 选中左侧医生时，右侧档案区自动显示详情且只读
+        /// </summary>
+        private async Task UpdateDoctorProfileViewModel(Guid doctorId) {
+            var detail = await _doctorService.GetByIdAsync(doctorId);
             if (detail != null) {
-                EditingDoctor = new DoctorDetailDto {
-                    Id = detail.Id,
-                    UserId = detail.UserId,
-                    Gender = detail.Gender,
-                    Birthday = detail.Birthday,
-                    Title = detail.Title,
-                    LicenseNumber = detail.LicenseNumber,
-                    Specialty = detail.Specialty,
-                    Status = detail.Status,
-                    WorkStatus = detail.WorkStatus,
-                    PinyinCode = detail.PinyinCode,
-                    Remark = detail.Remark,
-                    ContactNumber = detail.ContactNumber
-                };
-                EditModeTitle = "医生详情";
-                IsEditable = false;
+                DoctorProfileViewModel.Doctor = detail;
+                DoctorProfileViewModel.EditModeTitle = "医生详情";
+                DoctorProfileViewModel.IsEditable = false;
             }
         }
 
@@ -93,8 +83,11 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 Doctors.Add(d);
         }
 
+        /// <summary>
+        /// 新增医生档案
+        /// </summary>
         private void AddDoctor() {
-            EditingDoctor = new DoctorDetailDto {
+            var newDoctor = new DoctorDetailDto {
                 UserId = Guid.Empty,
                 Gender = Gender.Unknown,
                 Birthday = DateTime.Now,
@@ -107,63 +100,42 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 ContactNumber = string.Empty,
                 Remark = string.Empty
             };
+            DoctorProfileViewModel.Doctor = newDoctor;
+            DoctorProfileViewModel.EditModeTitle = "新增医生";
+            DoctorProfileViewModel.IsEditable = true;
             SelectedDoctor = null;
-            EditModeTitle = "新增医生";
-            IsEditable = true;
         }
 
+        /// <summary>
+        /// 编辑医生档案
+        /// </summary>
         private void EditDoctor() {
-            if (SelectedDoctor != null)
-                IsEditable = true;
-            EditModeTitle = "编辑医生";
+            if (SelectedDoctor != null) {
+                DoctorProfileViewModel.IsEditable = true;
+                DoctorProfileViewModel.EditModeTitle = "编辑医生";
+            }
         }
 
+        /// <summary>
+        /// 保存医生档案
+        /// </summary>
         private async Task SaveDoctor() {
             // 这里只校验必填项：UserId, Title, Status, Specialty
-            if (EditingDoctor.UserId == Guid.Empty || string.IsNullOrWhiteSpace(EditingDoctor.Specialty)) {
+            var editing = DoctorProfileViewModel.Doctor;
+            if (editing.UserId == Guid.Empty || string.IsNullOrWhiteSpace(editing.Specialty)) {
                 MessageBox.Show("用户ID和专长不能为空", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             try {
-                if (EditingDoctor.Id == Guid.Empty) {
-                    var dto = new DoctorCreateDto {
-                        UserId = EditingDoctor.UserId,
-                        Gender = EditingDoctor.Gender,
-                        Birthday = EditingDoctor.Birthday,
-                        Title = EditingDoctor.Title,
-                        LicenseNumber = EditingDoctor.LicenseNumber,
-                        Specialty = EditingDoctor.Specialty,
-                        Status = EditingDoctor.Status,
-                        WorkStatus = EditingDoctor.WorkStatus,
-                        PinyinCode = EditingDoctor.PinyinCode,
-                        ContactNumber = EditingDoctor.ContactNumber,
-                        Remark = EditingDoctor.Remark
-                    };
-                    var ok = await _doctorService.AddAsync(dto);
-                    if (!ok) {
-                        MessageBox.Show("新增医生失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
+                bool ok;
+                if (editing.Id == Guid.Empty) {
+                    ok = await _doctorService.AddAsync(editing);
                 } else {
-                    var dto = new DoctorEditDto {
-                        Id = EditingDoctor.Id,
-                        UserId = EditingDoctor.UserId,
-                        Gender = EditingDoctor.Gender,
-                        Birthday = EditingDoctor.Birthday,
-                        Title = EditingDoctor.Title,
-                        LicenseNumber = EditingDoctor.LicenseNumber,
-                        Specialty = EditingDoctor.Specialty,
-                        Status = EditingDoctor.Status,
-                        WorkStatus = EditingDoctor.WorkStatus,
-                        PinyinCode = EditingDoctor.PinyinCode,
-                        ContactNumber = EditingDoctor.ContactNumber,
-                        Remark = EditingDoctor.Remark
-                    };
-                    var ok = await _doctorService.UpdateAsync(dto);
-                    if (!ok) {
-                        MessageBox.Show("保存医生失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
+                    ok = await _doctorService.UpdateAsync(editing);
+                }
+                if (!ok) {
+                    MessageBox.Show(editing.Id == Guid.Empty ? "新增医生失败" : "保存医生失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
                 }
             } catch (Exception ex) {
                 var msg = ex.Message;
@@ -180,17 +152,20 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 return;
             }
             await LoadDoctors();
-            IsEditable = false;
-            EditModeTitle = "医生详情";
+            DoctorProfileViewModel.IsEditable = false;
+            DoctorProfileViewModel.EditModeTitle = "医生详情";
         }
 
+        /// <summary>
+        /// 取消编辑
+        /// </summary>
         private void CancelEdit() {
             if (SelectedDoctor != null)
-                _ = LoadSelectedDoctorAsync(SelectedDoctor.Id);
+                _ = UpdateDoctorProfileViewModel(SelectedDoctor.Id);
             else
-                EditingDoctor = new DoctorDetailDto();
-            IsEditable = false;
-            EditModeTitle = "医生详情";
+                DoctorProfileViewModel.Doctor = new DoctorDetailDto();
+            DoctorProfileViewModel.IsEditable = false;
+            DoctorProfileViewModel.EditModeTitle = "医生详情";
         }
     }
 }

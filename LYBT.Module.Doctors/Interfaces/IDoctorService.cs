@@ -15,8 +15,8 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId);
         Task<List<DoctorDto>> SearchAsync(string keyword);
         Task<PagedResultDto<DoctorDto>> GetPagedAsync(DoctorQueryDto query);
-        Task<bool> AddAsync(DoctorCreateDto doctorCreateDto);
-        Task<bool> UpdateAsync(DoctorEditDto doctorEditDto);
+        Task<bool> AddAsync(DoctorDetailDto doctorDetailDto);
+        Task<bool> UpdateAsync(DoctorDetailDto doctorDetailDto);
         Task<bool> DisableAsync(Guid id);
         Task<bool> EnableAsync(Guid id);
         Task<int> BatchDisableAsync(List<Guid> ids);

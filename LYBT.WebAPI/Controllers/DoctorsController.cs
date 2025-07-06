@@ -47,7 +47,7 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         [HttpPost("add")]
-        public async Task<ActionResult<ApiSuccessResponse>> Add([FromBody] DoctorCreateDto dto) {
+        public async Task<ActionResult<ApiSuccessResponse>> Add([FromBody] DoctorDetailDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(new ApiSuccessResponse { Success = false, Count = 0, Message = "参数验证失败" });
             try {
@@ -61,7 +61,7 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         [HttpPut("update")]
-        public async Task<ActionResult<ApiSuccessResponse>> Update([FromBody] DoctorEditDto dto) {
+        public async Task<ActionResult<ApiSuccessResponse>> Update([FromBody] DoctorDetailDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(new ApiSuccessResponse { Success = false, Count = 0, Message = "参数验证失败" });
             try {

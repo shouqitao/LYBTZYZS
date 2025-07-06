@@ -32,9 +32,9 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <TextBlock Text="账号" />
-                            <TextBox Text="{Binding User.UserName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding Doctor.UserName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
                             <TextBlock Text="姓名" />
-                            <TextBox Text="{Binding User.RealName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding Doctor.RealName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
                             <TextBlock Text="联系号码" />
                             <TextBox Text="{Binding Doctor.ContactNumber}" Margin="0,0,0,8"/>
                             <TextBlock Text="性别" />
