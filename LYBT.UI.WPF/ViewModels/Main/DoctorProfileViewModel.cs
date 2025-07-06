@@ -30,6 +30,12 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
+        /// <summary>
+        /// Optional action invoked when canceling editing. If not set,
+        /// the view model falls back to its default behavior.
+        /// </summary>
+        public Action? CancelAction { get; set; }
+
         public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService, LYBT.UI.WPF.Services.IUserService userService) {
             _doctorService = doctorService;
             _authService = authService;
@@ -110,6 +116,10 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         private void Cancel() {
+            if (CancelAction != null) {
+                CancelAction.Invoke();
+                return;
+            }
             if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
                 main.IsMainVisible = true;
                 main.IsFunctionVisible = false;
