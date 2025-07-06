@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LYBT.UI.WPF.Services {
+namespace LYBT.UI.WPF.Interfaces {
     public interface IRecordService {
         Task<IList<RecordDto>> GetListAsync();
         Task<IList<RecordDto>> GetByPatientIdAsync(Guid patientId);

@@ -58,6 +58,9 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using LYBT.Module.Settings.Mapping;
+using LYBT.Module.Users.Services;
+using LYBT.Module.Users.Repositories;
+using LYBT.Module.Users.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

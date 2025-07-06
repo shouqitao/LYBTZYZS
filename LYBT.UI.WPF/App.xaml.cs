@@ -3,15 +3,13 @@ using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.Views;
 using LYBT.UI.WPF.Views.Admin;
 using LYBT.UI.WPF.Views.Main;
-using Prism.Ioc;
 using Refit;
-using WPFInterfaces = LYBT.UI.WPF.Interfaces;
-using WPFServices = LYBT.UI.WPF.Services;
 using System.Configuration;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
+using LYBT.UI.WPF.Interfaces;
 
 namespace LYBT.UI.WPF {
     /// <summary>
@@ -47,14 +45,16 @@ namespace LYBT.UI.WPF {
             var userApi = RestService.For<IUserApi>(httpClient, refitSettings);
             var doctorApi = RestService.For<IDoctorApi>(httpClient, refitSettings);
             var patientApi = RestService.For<IPatientApi>(httpClient, refitSettings);
+            var billingApi = RestService.For<IBillingApi>(httpClient, refitSettings);
             var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
             var authService = new AuthService(authApi);
-            var userService = new WPFServices.UserService(userApi);
-            var doctorService = new WPFServices.DoctorService(doctorApi);
-            var patientService = new WPFServices.PatientService(patientApi);
-            var logService = new WPFServices.LogService(logApi);
+            var userService = new UserService(userApi);
+            var doctorService = new DoctorService(doctorApi);
+            var patientService = new PatientService(patientApi);
+            var billingService = new BillingService(billingApi);
+            var logService = new LogService(logApi);
 
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
@@ -62,13 +62,15 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(userApi);
             containerRegistry.RegisterInstance(doctorApi);
             containerRegistry.RegisterInstance(patientApi);
+            containerRegistry.RegisterInstance(billingService);
             containerRegistry.RegisterInstance(logApi);
 
             containerRegistry.RegisterInstance<IAuthService>(authService);
-            containerRegistry.RegisterInstance<WPFInterfaces.IUserService>(userService);
-            containerRegistry.RegisterInstance<Services.IDoctorService>(doctorService);
-            containerRegistry.RegisterInstance<WPFInterfaces.IPatientService>(patientService);
-            containerRegistry.RegisterInstance<Services.ILogService>(logService);
+            containerRegistry.RegisterInstance<IUserService>(userService);
+            containerRegistry.RegisterInstance<IDoctorService>(doctorService);
+            containerRegistry.RegisterInstance<IPatientService>(patientService);
+            containerRegistry.RegisterInstance<IBillingService>(billingService);
+            containerRegistry.RegisterInstance<ILogService>(logService);
 
 
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows;
 using System.Threading.Tasks;
 using System;
+using LYBT.UI.WPF.Interfaces;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>

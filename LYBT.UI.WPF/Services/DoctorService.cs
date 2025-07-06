@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit; // 新增
-using System.Windows; // 新增
+using System.Windows;
+using LYBT.UI.WPF.Interfaces; // 新增
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>

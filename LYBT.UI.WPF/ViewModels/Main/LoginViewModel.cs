@@ -1,6 +1,6 @@
 using LYBT.Common.Enums.Users;
 using LYBT.UI.WPF.Events;
-using LYBT.UI.WPF.Services;
+using LYBT.UI.WPF.Interfaces;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;

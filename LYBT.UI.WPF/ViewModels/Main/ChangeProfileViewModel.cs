@@ -1,9 +1,10 @@
+using LYBT.UI.WPF.Interfaces;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class ChangeProfileViewModel : BindableBase, INavigationAware {
         private readonly Interfaces.IUserService _userService;
-        private readonly Services.IAuthService _authService;
+        private readonly IAuthService _authService;
 
         private string _realName = string.Empty;
         public string RealName { get => _realName; set => SetProperty(ref _realName, value); }
@@ -20,7 +21,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
-        public ChangeProfileViewModel(Interfaces.IUserService userService, Services.IAuthService authService) {
+        public ChangeProfileViewModel(Interfaces.IUserService userService, IAuthService authService) {
             _userService = userService;
             _authService = authService;
             SaveCommand = new DelegateCommand(async () => await ChangeAsync(), CanSave)

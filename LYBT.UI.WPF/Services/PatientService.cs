@@ -10,7 +10,7 @@ namespace LYBT.UI.WPF.Services {
     /// <summary>
     /// 患者服务实现（WPF前端）
     /// </summary>
-    public class PatientService : Interfaces.IPatientService {
+    public class PatientService : IPatientService {
         private readonly IPatientApi _api;
         public PatientService(IPatientApi api) {
             _api = api;

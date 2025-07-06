@@ -1,14 +1,15 @@
 using LYBT.Common.Enums;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Users.Dtos;
+using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.Services;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class DoctorProfileViewModel : BindableBase, INavigationAware {
-        private readonly LYBT.UI.WPF.Services.IDoctorService _doctorService;
-        private readonly LYBT.UI.WPF.Services.IAuthService _authService;
-        private readonly Interfaces.IUserService _userService;
+        private readonly IDoctorService _doctorService;
+        private readonly IAuthService _authService;
+        private readonly IUserService _userService;
 
         private DoctorDetailDto _doctor = new();
         public DoctorDetailDto Doctor { get => _doctor; set => SetProperty(ref _doctor, value); }

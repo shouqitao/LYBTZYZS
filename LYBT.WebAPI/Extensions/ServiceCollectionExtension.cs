@@ -1,4 +1,7 @@
-﻿namespace LYBT.WebAPI.Extensions;
+﻿using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Services;
+
+namespace LYBT.WebAPI.Extensions;
 
 /// <summary>
 /// 所有模块服务注入

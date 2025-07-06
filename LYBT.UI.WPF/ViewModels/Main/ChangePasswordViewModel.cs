@@ -3,11 +3,12 @@ using Prism.Mvvm;
 using Services = LYBT.UI.WPF.Services;
 using System.Threading.Tasks;
 using System.Windows;
+using LYBT.UI.WPF.Interfaces;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class ChangePasswordViewModel : BindableBase {
         private readonly Interfaces.IUserService _userService;
-        private readonly Services.IAuthService _authService;
+        private readonly IAuthService _authService;
 
         private string _oldPassword = string.Empty;
         public string OldPassword { get => _oldPassword; set => SetProperty(ref _oldPassword, value); }
@@ -24,7 +25,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
-        public ChangePasswordViewModel(Interfaces.IUserService userService, Services.IAuthService authService) {
+        public ChangePasswordViewModel(Interfaces.IUserService userService, IAuthService authService) {
             _userService = userService;
             _authService = authService;
             SaveCommand = new DelegateCommand(async () => await ChangeAsync(), CanSave)
@@ -50,8 +51,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             }
             if (ok) {
                 MessageBox.Show("密码已修改，请重新登录", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                if (Application.Current.MainWindow.DataContext is MainWindowViewModel main)
-                {
+                if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
                     main.LogoutCommand.Execute();
                 }
             } else {
@@ -60,8 +60,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         private void OnCancel() {
-            if (Application.Current.MainWindow.DataContext is MainWindowViewModel main)
-            {
+            if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
                 main.IsMainVisible = true;
                 main.IsFunctionVisible = false;
             }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Billing.Dtos;
 
-namespace LYBT.UI.WPF.Services {
+namespace LYBT.UI.WPF.Interfaces {
     public interface IBillingService {
         Task<IList<BillingDto>> GetAllAsync();
         Task<BillingDetailDto?> GetByIdAsync(Guid id);

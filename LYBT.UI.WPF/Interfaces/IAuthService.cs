@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LYBT.UI.WPF.Services {
+namespace LYBT.UI.WPF.Interfaces {
     /// <summary>
     /// 认证服务接口，提供登录、登出、Token管理、自动登录等功能
     /// </summary>

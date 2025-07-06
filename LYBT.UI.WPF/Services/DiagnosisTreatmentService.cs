@@ -1,5 +1,6 @@
 using LYBT.Module.DiagnosisTreatment.Models.Dtos;
 using LYBT.UI.WPF.Apis;
+using LYBT.UI.WPF.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

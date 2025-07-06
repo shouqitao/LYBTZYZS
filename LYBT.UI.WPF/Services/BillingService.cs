@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Billing.Dtos;
 using LYBT.UI.WPF.Apis;
+using LYBT.UI.WPF.Interfaces;
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>

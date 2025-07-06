@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LYBT.UI.WPF.Services {
+namespace LYBT.UI.WPF.Interfaces {
     public interface ILogService {
         Task<Guid?> AddAsync(LogDto dto);
         Task<(IList<LogDto> Logs, int Total)> GetLogsAsync(LogQueryDto query);

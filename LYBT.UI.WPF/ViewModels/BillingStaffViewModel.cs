@@ -1,5 +1,5 @@
 using LYBT.Module.Billing.Dtos;
-using LYBT.UI.WPF.Services;
+using LYBT.UI.WPF.Interfaces;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;

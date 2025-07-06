@@ -3,6 +3,7 @@ using LYBT.Module.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using LYBT.Module.Users.Interfaces;
 
 /// <summary>
 /// 用户管理控制器，提供RESTful API接口

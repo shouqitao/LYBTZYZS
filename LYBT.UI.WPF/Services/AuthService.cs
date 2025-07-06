@@ -1,6 +1,7 @@
 using LYBT.Common.Enums.Users;
 using LYBT.Module.Auth.Dtos;
 using LYBT.UI.WPF.Apis;
+using LYBT.UI.WPF.Interfaces;
 using Refit;
 using System;
 using System.Collections.Generic;

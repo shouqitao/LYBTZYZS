@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LYBT.UI.WPF.Services {
+namespace LYBT.UI.WPF.Interfaces {
     public interface IDoctorService {
         Task<IList<DoctorDto>> SearchAsync(string keyword = "");
         Task<DoctorDetailDto?> GetByIdAsync(Guid id);
