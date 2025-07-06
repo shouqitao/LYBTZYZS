@@ -65,6 +65,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 };
                 EditModeTitle = "新增医生档案";
             }
+            IsEditable = true;
         }
 
         private async Task SaveAsync() {

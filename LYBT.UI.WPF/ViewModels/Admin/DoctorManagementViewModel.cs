@@ -36,7 +36,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// <summary>搜索关键字</summary>
         public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
 
-        private string _editModeTitle = "新增医生";
+        private string _editModeTitle = "新增医生档案";
         /// <summary>右侧编辑区标题</summary>
         public string EditModeTitle { get => _editModeTitle; set => SetProperty(ref _editModeTitle, value); }
 
@@ -102,7 +102,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 Remark = string.Empty
             };
             DoctorProfileViewModel.Doctor = newDoctor;
-            DoctorProfileViewModel.EditModeTitle = "新增医生";
+            DoctorProfileViewModel.EditModeTitle = "新增医生档案";
             DoctorProfileViewModel.IsEditable = true;
             SelectedDoctor = null;
         }
@@ -113,7 +113,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private void EditDoctor() {
             if (SelectedDoctor != null) {
                 DoctorProfileViewModel.IsEditable = true;
-                DoctorProfileViewModel.EditModeTitle = "编辑医生";
+                DoctorProfileViewModel.EditModeTitle = "编辑医生档案";
             }
         }
 
