@@ -111,6 +111,10 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<UserManagementView>("UserManagementView");
             containerRegistry.RegisterForNavigation<DoctorManagementView>("DoctorManagementView");
             containerRegistry.RegisterForNavigation<BillingStaffView>("BillingStaffView");
+            containerRegistry.RegisterForNavigation<DiagnosingDoctorView>("DiagnosingDoctorView");
+            containerRegistry.RegisterForNavigation<PharmacyStaffView>("PharmacyStaffView");
+            containerRegistry.RegisterForNavigation<RegistrationStaffView>("RegistrationStaffView");
+            containerRegistry.RegisterForNavigation<TreatmentDoctorView>("TreatmentDoctorView");
             containerRegistry.RegisterForNavigation<ChangePasswordView>("ChangePasswordView");
             containerRegistry.RegisterForNavigation<ChangeProfileView>("ChangeProfileView");
             containerRegistry.RegisterForNavigation<DoctorProfileView>("DoctorProfileView");
