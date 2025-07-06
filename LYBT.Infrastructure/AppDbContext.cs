@@ -4,21 +4,18 @@ using LYBT.Models.DiagnosisTreatment;
 using LYBT.Models.Doctors;
 using LYBT.Models.FormulaTemplates;
 using LYBT.Models.Logs;
-using LYBT.Models.Patient;
 using LYBT.Models.Pharmacy;
 using LYBT.Models.Queueing;
 using LYBT.Models.Records;
 using LYBT.Models.Registration;
 using LYBT.Models.Settings;
 using LYBT.Models.TreatmentRoom;
-using LYBT.Module.Patients.Models;
 using LYBT.Module.Users.Models;
 using LYBT.Common.Enums.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Text.Json;
-using System.Collections.Generic;
-using System.Linq;
+using LYBT.Models.Patients;
 
 namespace LYBT.Infrastructure {
 

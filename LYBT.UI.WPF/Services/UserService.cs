@@ -11,7 +11,7 @@ namespace LYBT.UI.WPF.Services {
     /// <summary>
     /// 类 UserService 的说明
     /// </summary>
-    public class UserService : IUserService {
+    public class UserService : Interfaces.IUserService {
         private readonly IUserApi _userApi;
         public UserService(IUserApi userApi) => _userApi = userApi;
 

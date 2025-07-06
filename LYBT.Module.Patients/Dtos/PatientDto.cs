@@ -17,15 +17,41 @@ namespace LYBT.Module.Patients.Dtos {
         public Gender Gender { get; set; } = Gender.Unknown;
 
         /// <summary>年龄</summary>
-        public int? Age { get; set; }
+        public int Age { get; set; }
 
-        /// <summary>手机号</summary>
-        public string PhoneNumber { get; set; } = string.Empty;
+        /// <summary>过敏史</summary>
+        public string AllergyHistory { get; set; } = string.Empty;
+
+        /// <summary>民族</summary>
+        public string Ethnicity { get; set; } = string.Empty;
 
         /// <summary>地址</summary>
         public string Address { get; set; } = string.Empty;
 
-        /// <summary>拼音码（姓名拼音首字母，便于快速模糊检索）</summary>
+        /// <summary>手机号</summary>
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        /// <summary>学历</summary>
+        public string Education { get; set; } = string.Empty;
+
+        /// <summary>职业</summary>
+        public string Profession { get; set; } = string.Empty;
+
+        /// <summary>证件类型</summary>
+        public string IDType { get; set; } = string.Empty;
+
+        /// <summary>证件号</summary>
+        public string IDNumber { get; set; } = string.Empty;
+
+        /// <summary>婚姻状况</summary>
+        public string MaritalStatus { get; set; } = string.Empty;
+
+        /// <summary>拼音码</summary>
         public string PinyinCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 是否特殊患者（仅有权限的医生可见/可创建）
+        /// </summary>
+        public bool IsSpecial { get; set; }
     }
 }

@@ -20,5 +20,11 @@
 
         <!-- 导航按钮选中前景色转换器 -->
         <local:SelectedNavButtonForegroundConverter x:Key="SelectedNavButtonForegroundConverter" />
+
+        <!-- 枚举转描述特性 -->
+        <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+
+        <!-- 空转布尔转换器 -->
+        <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
     </Application.Resources>
 </prism:PrismApplication>

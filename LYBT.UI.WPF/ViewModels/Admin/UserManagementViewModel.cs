@@ -1,7 +1,6 @@
 ﻿using LYBT.Common.Enums.Users;
 using LYBT.Models;
 using LYBT.Module.Users.Dtos;
-using LYBT.UI.WPF.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 using Refit;
@@ -118,9 +117,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// </summary>
         public DelegateCommand ResetPasswordCommand { get; }
 
-        private readonly Services.IUserService _userService;
+        private readonly Interfaces.IUserService _userService;
 
-        public UserManagementViewModel(Services.IUserService userService) {
+        public UserManagementViewModel(Interfaces.IUserService userService) {
             _userService = userService;
             AddUserCommand = new DelegateCommand(AddUser);
             EditUserCommand = new DelegateCommand(EditUser, () => SelectedUser != null).ObservesProperty(() => SelectedUser);

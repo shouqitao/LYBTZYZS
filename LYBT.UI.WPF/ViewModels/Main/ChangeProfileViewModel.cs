@@ -2,7 +2,7 @@ using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class ChangeProfileViewModel : BindableBase, INavigationAware {
-        private readonly Services.IUserService _userService;
+        private readonly Interfaces.IUserService _userService;
         private readonly Services.IAuthService _authService;
 
         private string _realName = string.Empty;
@@ -20,7 +20,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
-        public ChangeProfileViewModel(Services.IUserService userService, Services.IAuthService authService) {
+        public ChangeProfileViewModel(Interfaces.IUserService userService, Services.IAuthService authService) {
             _userService = userService;
             _authService = authService;
             SaveCommand = new DelegateCommand(async () => await ChangeAsync(), CanSave)

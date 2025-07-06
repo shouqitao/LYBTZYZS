@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Common.Enums;
 using LYBT.Module.Users.Models;
+using LYBT.Models.Patients;
 
 namespace LYBT.Models.Doctors {
     /// <summary>
@@ -50,5 +52,10 @@ namespace LYBT.Models.Doctors {
 
         [Required]
         public virtual UserModel User { get; set; } = null!;
+
+        /// <summary>
+        /// 授权可查看的特殊病人关系集合
+        /// </summary>
+        public virtual ICollection<SpecialPatientDoctor> SpecialPatientPatients { get; set; } = new List<SpecialPatientDoctor>();
     }
 }

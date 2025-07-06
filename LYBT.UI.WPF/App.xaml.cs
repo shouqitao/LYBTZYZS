@@ -5,7 +5,8 @@ using LYBT.UI.WPF.Views.Admin;
 using LYBT.UI.WPF.Views.Main;
 using Prism.Ioc;
 using Refit;
-using System;
+using WPFInterfaces = LYBT.UI.WPF.Interfaces;
+using WPFServices = LYBT.UI.WPF.Services;
 using System.Configuration;
 using System.Net.Http;
 using System.Text.Json;
@@ -44,64 +45,31 @@ namespace LYBT.UI.WPF {
             // 2. 用Refit创建IAuthApi实例  
             var authApi = RestService.For<IAuthApi>(httpClient, refitSettings);
             var userApi = RestService.For<IUserApi>(httpClient, refitSettings);
-            var billingApi = RestService.For<IBillingApi>(httpClient, refitSettings);
-            var diagnosisTreatmentApi = RestService.For<IDiagnosisTreatmentApi>(httpClient, refitSettings);
             var doctorApi = RestService.For<IDoctorApi>(httpClient, refitSettings);
-            var formulaTemplateApi = RestService.For<IFormulaTemplateApi>(httpClient, refitSettings);
-            var herbApi = RestService.For<IHerbApi>(httpClient, refitSettings);
             var patientApi = RestService.For<IPatientApi>(httpClient, refitSettings);
-            var queueingApi = RestService.For<IQueueingApi>(httpClient, refitSettings);
-            var recordApi = RestService.For<IRecordApi>(httpClient, refitSettings);
-            var registrationApi = RestService.For<IRegistrationApi>(httpClient, refitSettings);
-            var settingsApi = RestService.For<ISettingsApi>(httpClient, refitSettings);
             var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
-            var syncApi = RestService.For<ISyncApi>(httpClient, refitSettings);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
             var authService = new AuthService(authApi);
-            var userService = new Services.UserService(userApi);
-            var billingService = new BillingService(billingApi);
-            var diagnosisTreatmentService = new DiagnosisTreatmentService(diagnosisTreatmentApi);
-            var doctorService = new DoctorService(doctorApi);
-            var formulaTemplateService = new FormulaTemplateService(formulaTemplateApi);
-            var herbService = new HerbService(herbApi);
-            var patientService = new PatientService(patientApi);
-            var queueingService = new QueueingService(queueingApi);
-            var recordService = new RecordService(recordApi);
-            var registrationService = new RegistrationService(registrationApi);
-            var settingsService = new SettingsService(settingsApi);
-            var logService = new LogService(logApi);
-            var syncService = new SyncService(syncApi);
+            var userService = new WPFServices.UserService(userApi);
+            var doctorService = new WPFServices.DoctorService(doctorApi);
+            var patientService = new WPFServices.PatientService(patientApi);
+            var logService = new WPFServices.LogService(logApi);
+
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
             containerRegistry.RegisterInstance(authApi);
             containerRegistry.RegisterInstance(userApi);
-            containerRegistry.RegisterInstance(billingApi);
-            containerRegistry.RegisterInstance(diagnosisTreatmentApi);
             containerRegistry.RegisterInstance(doctorApi);
-            containerRegistry.RegisterInstance(formulaTemplateApi);
-            containerRegistry.RegisterInstance(herbApi);
             containerRegistry.RegisterInstance(patientApi);
-            containerRegistry.RegisterInstance(queueingApi);
-            containerRegistry.RegisterInstance(recordApi);
-            containerRegistry.RegisterInstance(registrationApi);
-            containerRegistry.RegisterInstance(settingsApi);
             containerRegistry.RegisterInstance(logApi);
-            containerRegistry.RegisterInstance(syncApi);
+
             containerRegistry.RegisterInstance<IAuthService>(authService);
-            containerRegistry.RegisterInstance<Services.IUserService>(userService);
-            containerRegistry.RegisterInstance<IBillingService>(billingService);
-            containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
-            containerRegistry.RegisterInstance<IDoctorService>(doctorService);
-            containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
-            containerRegistry.RegisterInstance<IHerbService>(herbService);
-            containerRegistry.RegisterInstance<IPatientService>(patientService);
-            containerRegistry.RegisterInstance<IQueueingService>(queueingService);
-            containerRegistry.RegisterInstance<IRecordService>(recordService);
-            containerRegistry.RegisterInstance<IRegistrationService>(registrationService);
-            containerRegistry.RegisterInstance<ISettingsService>(settingsService);
-            containerRegistry.RegisterInstance<ILogService>(logService);
-            containerRegistry.RegisterInstance<ISyncService>(syncService);
+            containerRegistry.RegisterInstance<WPFInterfaces.IUserService>(userService);
+            containerRegistry.RegisterInstance<Services.IDoctorService>(doctorService);
+            containerRegistry.RegisterInstance<WPFInterfaces.IPatientService>(patientService);
+            containerRegistry.RegisterInstance<Services.ILogService>(logService);
+
 
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");

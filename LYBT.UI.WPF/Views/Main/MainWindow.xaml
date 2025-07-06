@@ -15,44 +15,63 @@
         <!-- 主界面区域（登录后可见，初始隐藏） -->
         <DockPanel Visibility="{Binding IsMainVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <!-- 顶部Header -->
-            <Border DockPanel.Dock="Top" Height="100" Background="#374151">
+            <Border DockPanel.Dock="Top" Height="100" Background="#2C3E50">
                 <Grid>
-                    <TextBlock Text="凌隐宝堂中医诊所"
-                   Foreground="White" FontSize="20"
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Logo区域，假设logo图片为Images/logo.png -->
+                    <Image Source="/Assets/logo.png"
+               Height="70"
+               Margin="20,0,10,0"
+               VerticalAlignment="Center"/>
+                    <!-- 标题 -->
+                    <TextBlock Grid.Column="1"
+                   Text="凌隐宝堂中医诊所"
+                   Foreground="#FFD700"
+                   FontSize="28"
+                   FontWeight="Bold"
+                   FontFamily="微软雅黑"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Left"
-                   Margin="20,0,0,0"/>
+                   Margin="0,0,0,0"/>
                     <!-- 右上角功能按钮 -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,22,0">
+                    <StackPanel Grid.Column="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Margin="0,0,22,0">
                         <Button Content="修改密码"
-                                Width="100" Height="34"
-                                Margin="0,0,10,0"
-                                Command="{Binding ShowChangePasswordCommand}"
-                                Background="#FF57606A" Foreground="White"
-                                FontWeight="Bold" BorderThickness="0"
-                                Cursor="Hand"/>
+                    Width="100" Height="34"
+                    Margin="0,0,10,0"
+                    Command="{Binding ShowChangePasswordCommand}"
+                    Background="#FF57606A" Foreground="White"
+                    FontWeight="Bold" BorderThickness="0"
+                    Cursor="Hand"/>
                         <Button Content="修改信息"
-                                Width="100" Height="34"
-                                Margin="0,0,10,0"
-                                Command="{Binding ShowChangeProfileCommand}"
-                                Background="#FF57606A" Foreground="White"
-                                FontWeight="Bold" BorderThickness="0"
-                                Cursor="Hand"
-                                Visibility="{Binding IsNotSysAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    Width="100" Height="34"
+                    Margin="0,0,10,0"
+                    Command="{Binding ShowChangeProfileCommand}"
+                    Background="#FF57606A" Foreground="White"
+                    FontWeight="Bold" BorderThickness="0"
+                    Cursor="Hand"
+                    Visibility="{Binding IsNotSysAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         <Button Content="{Binding DoctorProfileButtonText}"
-                                Width="120" Height="34"
-                                Margin="0,0,10,0"
-                                Visibility="{Binding IsDoctorRole, Converter={StaticResource BoolToVisibilityConverter}}"
-                                Command="{Binding ShowDoctorProfileCommand}"
-                                Background="#FF57606A" Foreground="White"
-                                FontWeight="Bold" BorderThickness="0"
-                                Cursor="Hand"/>
+                    Width="120" Height="34"
+                    Margin="0,0,10,0"
+                    Visibility="{Binding IsDoctorRole, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Command="{Binding ShowDoctorProfileCommand}"
+                    Background="#FF57606A" Foreground="White"
+                    FontWeight="Bold" BorderThickness="0"
+                    Cursor="Hand"/>
                         <Button Content="退出登录"
-                                Width="100" Height="34"
-                                Command="{Binding LogoutCommand}"
-                                Background="#FF57606A" Foreground="White"
-                                FontWeight="Bold" BorderThickness="0"
-                                Cursor="Hand"/>
+                    Width="100" Height="34"
+                    Command="{Binding LogoutCommand}"
+                    Background="#FF57606A" Foreground="White"
+                    FontWeight="Bold" BorderThickness="0"
+                    Cursor="Hand"/>
                     </StackPanel>
                 </Grid>
             </Border>

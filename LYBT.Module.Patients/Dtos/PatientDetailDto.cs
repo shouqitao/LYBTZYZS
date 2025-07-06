@@ -48,5 +48,10 @@ namespace LYBT.Module.Patients.Dtos {
 
         /// <summary>拼音码</summary>
         public string PinyinCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 是否特殊患者（仅有权限的医生可见/可创建）
+        /// </summary>
+        public bool IsSpecial { get; set; }
     }
 }

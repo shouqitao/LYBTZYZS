@@ -6,7 +6,7 @@ using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     public class ChangePasswordViewModel : BindableBase {
-        private readonly Services.IUserService _userService;
+        private readonly Interfaces.IUserService _userService;
         private readonly Services.IAuthService _authService;
 
         private string _oldPassword = string.Empty;
@@ -24,7 +24,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
-        public ChangePasswordViewModel(Services.IUserService userService, Services.IAuthService authService) {
+        public ChangePasswordViewModel(Interfaces.IUserService userService, Services.IAuthService authService) {
             _userService = userService;
             _authService = authService;
             SaveCommand = new DelegateCommand(async () => await ChangeAsync(), CanSave)

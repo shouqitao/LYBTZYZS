@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Common.Enums;
 using LYBT.Common.Enums.Patient;
 
-namespace LYBT.Module.Patients.Models {
+namespace LYBT.Models.Patients {
     /// <summary>
     /// 患者信息实体
     /// </summary>
@@ -34,6 +35,9 @@ namespace LYBT.Module.Patients.Models {
         [StringLength(128)]
         public string DisableReason { get; set; } = string.Empty;
 
+        /// <summary>
+        /// 是否为特殊病人（前台不可见，仅特定医生可见）
+        /// </summary>
         public bool IsSpecial { get; set; } = false;
 
         [StringLength(256)]
@@ -47,5 +51,10 @@ namespace LYBT.Module.Patients.Models {
 
         [StringLength(32)]
         public string PinyinCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 允许查看该特殊病人的医生列表（仅IsSpecial为true时有效）
+        /// </summary>
+        public virtual ICollection<SpecialPatientDoctor> SpecialPatientDoctors { get; set; } = new List<SpecialPatientDoctor>();
     }
 }

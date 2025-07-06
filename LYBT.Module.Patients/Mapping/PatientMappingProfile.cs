@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using LYBT.Models.Patients;
 using LYBT.Module.Patients.Dtos;
-using LYBT.Module.Patients.Models;
 
 namespace LYBT.Module.Patients.Mapping {
 
@@ -13,22 +13,7 @@ namespace LYBT.Module.Patients.Mapping {
             // PatientModel → PatientDetailDto
             CreateMap<PatientModel, PatientDetailDto>();
 
-            // PatientModel → PatientDto（用于列表）
-            CreateMap<PatientModel, PatientDto>();
-
-            // PatientCreateDto → PatientModel
-            CreateMap<PatientCreateDto, PatientModel>();
-
-            // PatientEditDto → PatientModel
-            CreateMap<PatientEditDto, PatientModel>();
-
-            // PatientModel → PatientEditDto（便于回显/编辑）
-            CreateMap<PatientModel, PatientEditDto>();
-
-            // PatientDto → PatientModel（如列表选中行直接转为实体）
-            CreateMap<PatientDto, PatientModel>();
-
-            // PatientDetailDto → PatientModel（如详情页直接编辑）
+            // PatientDetailDto → PatientModel（用于创建、修改、详情回显）
             CreateMap<PatientDetailDto, PatientModel>();
         }
     }

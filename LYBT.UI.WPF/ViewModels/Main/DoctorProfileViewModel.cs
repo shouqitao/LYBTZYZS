@@ -8,7 +8,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
     public class DoctorProfileViewModel : BindableBase, INavigationAware {
         private readonly LYBT.UI.WPF.Services.IDoctorService _doctorService;
         private readonly LYBT.UI.WPF.Services.IAuthService _authService;
-        private readonly LYBT.UI.WPF.Services.IUserService _userService;
+        private readonly Interfaces.IUserService _userService;
 
         private DoctorDetailDto _doctor = new();
         public DoctorDetailDto Doctor { get => _doctor; set => SetProperty(ref _doctor, value); }
@@ -36,7 +36,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public Action? CancelAction { get; set; }
 
-        public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService, LYBT.UI.WPF.Services.IUserService userService) {
+        public DoctorProfileViewModel(IDoctorService doctorService, IAuthService authService, Interfaces.IUserService userService) {
             _doctorService = doctorService;
             _authService = authService;
             _userService = userService;

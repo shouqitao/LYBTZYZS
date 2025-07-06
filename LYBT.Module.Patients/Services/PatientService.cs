@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Models;
+using LYBT.Models.Patients;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Patients.Models;
 using LYBT.Module.Records.Dtos;
 using LYBT.Module.Records.Interfaces;
 using System.Text.Json;
@@ -31,11 +31,9 @@ namespace LYBT.Module.Patients.Services {
             _recordService = recordService;
         }
 
-        public async Task<bool> AddAsync(PatientCreateDto dto, Guid operatorId, string operatorName) {
-            // 必填项校验等业务逻辑...
+        public async Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<PatientModel>(dto);
             model.Id = Guid.NewGuid();
-            // 省略拼音码生成等细节...
             var result = await _patientRepository.AddAsync(model);
 
             if (result) {
@@ -55,13 +53,13 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
-        public async Task<bool> UpdateAsync(PatientEditDto dto, Guid operatorId, string operatorName) {
+        public async Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             var model = await _patientRepository.GetByIdAsync(dto.Id);
             if (model == null)
                 throw new ArgumentException("病人不存在");
 
             var oldJson = JsonSerializer.Serialize(model);
-            // 赋值更新，略...
+            _mapper.Map(dto, model);
             var result = await _patientRepository.UpdateAsync(model);
 
             if (result) {
@@ -108,18 +106,17 @@ namespace LYBT.Module.Patients.Services {
             return model == null ? null : _mapper.Map<PatientDetailDto>(model);
         }
 
-        public async Task<List<PatientDto>> GetAllAsync() {
+        public async Task<List<PatientDetailDto>> GetAllAsync() {
             var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue);
-            return list.Select(_mapper.Map<PatientDto>).ToList();
+            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
-        public async Task<PagedResultDto<PatientDto>> GetPagedAsync(PatientPagedQueryDto query) {
-            // 若你有更高阶的分页接口，可自行扩展
+        public async Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query) {
             var list = await _patientRepository.GetListAsync(query.Keyword, query.Page, query.PageSize);
             var total = await _patientRepository.GetCountAsync(query.Keyword);
-            return new PagedResultDto<PatientDto> {
+            return new PagedResultDto<PatientDetailDto> {
                 TotalCount = total,
-                Items = list.Select(_mapper.Map<PatientDto>).ToList()
+                Items = list.Select(_mapper.Map<PatientDetailDto>).ToList()
             };
         }
 
@@ -183,14 +180,14 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
-        public async Task<List<PatientDto>> SearchAsync(string keyword) {
+        public async Task<List<PatientDetailDto>> SearchAsync(string keyword) {
             var list = await _patientRepository.SearchAsync(keyword);
-            return list.Select(_mapper.Map<PatientDto>).ToList();
+            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
-        public async Task<List<PatientDto>> GetForDoctorAsync(Guid doctorId) {
+        public async Task<List<PatientDetailDto>> GetForDoctorAsync(Guid doctorId) {
             var list = await _patientRepository.GetForDoctorAsync(doctorId);
-            return list.Select(_mapper.Map<PatientDto>).ToList();
+            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         public async Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
@@ -210,7 +207,7 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
-        public async Task<int> ImportAsync(List<PatientCreateDto> dtos, Guid operatorId, string operatorName) {
+        public async Task<int> ImportAsync(List<PatientDetailDto> dtos, Guid operatorId, string operatorName) {
             int count = 0;
             foreach (var dto in dtos) {
                 if (await AddAsync(dto, operatorId, operatorName))
@@ -219,9 +216,9 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
-        public async Task<List<PatientDto>> ExportAsync() {
+        public async Task<List<PatientDetailDto>> ExportAsync() {
             var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue);
-            return list.Select(_mapper.Map<PatientDto>).ToList();
+            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         public async Task<List<RecordDto>> GetHistoryRecordsAsync(Guid patientId) {
