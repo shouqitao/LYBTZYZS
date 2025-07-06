@@ -44,12 +44,25 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private void Navigate(NavigationItem item) {
             if (item != null) {
                 SelectedNavigationItem = item;
-                // 检查目标视图是否已注册（即是否存在对应的View类）
-                var viewType = typeof(HomeViewModel).Assembly.GetType($"LYBT.UI.WPF.Views.{item.TargetView}");
+
+                var assembly = typeof(HomeViewModel).Assembly;
+                var possibleNames = new[] {
+                    $"LYBT.UI.WPF.Views.{item.TargetView}",
+                    $"LYBT.UI.WPF.Views.Main.{item.TargetView}",
+                    $"LYBT.UI.WPF.Views.Navigation.{item.TargetView}",
+                    $"LYBT.UI.WPF.Views.Profile.{item.TargetView}",
+                    $"LYBT.UI.WPF.Views.Admin.{item.TargetView}"
+                };
+
+                var viewType = possibleNames
+                    .Select(name => assembly.GetType(name))
+                    .FirstOrDefault(t => t != null);
+
                 if (viewType == null) {
                     MessageBox.Show("该功能暂未开放或未实现。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
+
                 System.Diagnostics.Debug.WriteLine($"Navigating to: {item.TargetView}");
                 _regionManager.RequestNavigate("ContentRegion", item.TargetView);
             }
