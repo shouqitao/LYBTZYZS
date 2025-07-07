@@ -20,8 +20,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public ObservableCollection<NavigationItem> NavigationItems { get; } = new();
 
         private NavigationItem _selectedNavigationItem;
-        public NavigationItem SelectedNavigationItem
-        {
+        public NavigationItem SelectedNavigationItem {
             get => _selectedNavigationItem;
             set => SetProperty(ref _selectedNavigationItem, value);
         }
@@ -45,7 +44,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             if (item != null) {
                 SelectedNavigationItem = item;
                 // 检查目标视图是否已注册（即是否存在对应的View类）
-                var viewType = typeof(HomeViewModel).Assembly.GetType($"LYBT.UI.WPF.Views.{item.TargetView}");
+                var viewType = typeof(HomeViewModel).Assembly.GetType($"LYBT.UI.WPF.Views.Navigation.{item.TargetView}");
                 if (viewType == null) {
                     MessageBox.Show("该功能暂未开放或未实现。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
@@ -108,7 +107,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// <summary>
         /// 方法 OnNavigatedFrom 的说明
         /// </summary>
-        public void OnNavigatedFrom(NavigationContext navigationContext) { 
+        public void OnNavigatedFrom(NavigationContext navigationContext) {
             System.Diagnostics.Debug.WriteLine("HomeViewModel.OnNavigatedFrom called");
         }
     }
