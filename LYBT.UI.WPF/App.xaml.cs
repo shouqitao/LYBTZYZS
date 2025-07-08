@@ -46,6 +46,7 @@ namespace LYBT.UI.WPF {
             var userApi = RestService.For<IUserApi>(httpClient, refitSettings);
             var doctorApi = RestService.For<IDoctorApi>(httpClient, refitSettings);
             var patientApi = RestService.For<IPatientApi>(httpClient, refitSettings);
+            var herbApi = RestService.For<IHerbApi>(httpClient, refitSettings);
             var billingApi = RestService.For<IBillingApi>(httpClient, refitSettings);
             var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
 
@@ -54,6 +55,7 @@ namespace LYBT.UI.WPF {
             var userService = new UserService(userApi);
             var doctorService = new DoctorService(doctorApi);
             var patientService = new PatientService(patientApi);
+            var herbService = new HerbService(herbApi);
             var billingService = new BillingService(billingApi);
             var logService = new LogService(logApi);
 
@@ -63,6 +65,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(userApi);
             containerRegistry.RegisterInstance(doctorApi);
             containerRegistry.RegisterInstance(patientApi);
+            containerRegistry.RegisterInstance(herbApi);
             containerRegistry.RegisterInstance(billingService);
             containerRegistry.RegisterInstance(logApi);
 
@@ -70,6 +73,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IUserService>(userService);
             containerRegistry.RegisterInstance<IDoctorService>(doctorService);
             containerRegistry.RegisterInstance<IPatientService>(patientService);
+            containerRegistry.RegisterInstance<IHerbService>(herbService);
             containerRegistry.RegisterInstance<IBillingService>(billingService);
             containerRegistry.RegisterInstance<ILogService>(logService);
 
@@ -81,6 +85,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<AdminView>("AdminView");
             containerRegistry.RegisterForNavigation<UserManagementView>("UserManagementView");
             containerRegistry.RegisterForNavigation<DoctorManagementView>("DoctorManagementView");
+            containerRegistry.RegisterForNavigation<HerbManagementView>("HerbManagementView");
             containerRegistry.RegisterForNavigation<BillingStaffView>("BillingStaffView");
             containerRegistry.RegisterForNavigation<DiagnosingDoctorView>("DiagnosingDoctorView");
             containerRegistry.RegisterForNavigation<PharmacyStaffView>("PharmacyStaffView");
@@ -89,6 +94,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<ChangePasswordView>("ChangePasswordView");
             containerRegistry.RegisterForNavigation<ChangeProfileView>("ChangeProfileView");
             containerRegistry.RegisterForNavigation<DoctorProfileView>("DoctorProfileView");
+            containerRegistry.RegisterForNavigation<HerbProfileView>("HerbProfileView");
             containerRegistry.RegisterForNavigation<UserProfileView>("UserProfileView");
 
         }
