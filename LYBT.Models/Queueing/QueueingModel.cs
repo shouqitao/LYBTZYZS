@@ -18,6 +18,11 @@ namespace LYBT.Models.Queueing {
         public Guid PatientId { get; set; }
 
         /// <summary>
+        /// 病人姓名（仅用于快速展示）
+        /// </summary>
+        public string PatientName { get; set; } = string.Empty;
+
+        /// <summary>
         /// 排队类型（如“普通”、“急诊”）
         /// </summary>
         public string QueueType { get; set; } = "普通";
