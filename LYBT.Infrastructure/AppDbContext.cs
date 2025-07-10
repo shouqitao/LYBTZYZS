@@ -5,6 +5,7 @@ using LYBT.Models.Doctors;
 using LYBT.Models.FormulaTemplates;
 using LYBT.Models.Logs;
 using LYBT.Models.Pharmacy;
+using LYBT.Models.Prescriptions;
 using LYBT.Models.Queueing;
 using LYBT.Models.Records;
 using LYBT.Models.Registration;
@@ -42,6 +43,8 @@ namespace LYBT.Infrastructure {
         public DbSet<SyncTaskModel> SyncTasks { get; set; }
         public DbSet<BillingModel> Billings { get; set; }
         public DbSet<PharmacyModel> Pharmacies { get; set; }
+        public DbSet<PrescriptionModel> Prescriptions { get; set; }
+        public DbSet<PrescriptionItemModel> PrescriptionItems { get; set; }
         public DbSet<RecordModel> Records { get; set; }
         public DbSet<SettingsModel> Settings { get; set; }
         public DbSet<DiagnosisCatalogModel> DiagnosisCatalogs { get; set; }
@@ -181,6 +184,12 @@ namespace LYBT.Infrastructure {
                 .HasOne(d => d.User)
                 .WithMany()
                 .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PrescriptionItemModel>()
+                .HasOne<PrescriptionModel>()
+                .WithMany(p => p.Items)
+                .HasForeignKey(i => i.PrescriptionId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

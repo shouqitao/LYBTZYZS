@@ -29,6 +29,22 @@ namespace LYBT.Models {
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
 
+        /// <summary>
+        /// 库存数量
+        /// </summary>
+        public int Stock { get; set; }
+
+        /// <summary>
+        /// 批号
+        /// </summary>
+        [StringLength(32)]
+        public string? BatchNo { get; set; }
+
+        /// <summary>
+        /// 有效期
+        /// </summary>
+        public DateTime? ExpireDate { get; set; }
+
         [StringLength(128)]
         public string? Effect { get; set; }
 

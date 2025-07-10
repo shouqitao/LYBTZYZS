@@ -21,5 +21,9 @@
         public decimal Price { get; set; }
 
         public int TotalPrice { get; set; }
+
+        public int Stock { get; set; }
+        public string? BatchNo { get; set; }
+        public DateTime? ExpireDate { get; set; }
     }
 }

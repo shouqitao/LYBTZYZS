@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Prescriptions.Models;
+﻿using LYBT.Module.Prescriptions.Dtos;
 
 namespace LYBT.Module.Prescriptions.Interfaces {
 
@@ -7,13 +7,13 @@ namespace LYBT.Module.Prescriptions.Interfaces {
     /// </summary>
     public interface IPrescriptionApi {
 
-        Task<List<PrescriptionModel>> GetAllPrescriptionsAsync();
+        Task<List<PrescriptionDto>> GetAllPrescriptionsAsync();
 
-        Task<PrescriptionModel> GetPrescriptionByIdAsync(string id);
+        Task<PrescriptionDetailDto?> GetPrescriptionByIdAsync(string id);
 
-        Task<bool> CreatePrescriptionAsync(PrescriptionModel prescription);
+        Task<bool> CreatePrescriptionAsync(PrescriptionCreateDto prescription);
 
-        Task<bool> UpdatePrescriptionAsync(PrescriptionModel prescription);
+        Task<bool> UpdatePrescriptionAsync(PrescriptionEditDto prescription);
 
         Task<bool> DeletePrescriptionAsync(string id);
 
