@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Prescriptions.Models;
+﻿using LYBT.Module.Prescriptions.Dtos;
 
 namespace LYBT.Module.Prescriptions.Services {
 
@@ -7,13 +7,13 @@ namespace LYBT.Module.Prescriptions.Services {
     /// </summary>
     public interface IPrescriptionService {
 
-        Task<List<PrescriptionModel>> GetAllAsync();
+        Task<List<PrescriptionDto>> GetAllAsync();
 
-        Task<PrescriptionModel> GetByIdAsync(string id);
+        Task<PrescriptionDetailDto?> GetByIdAsync(string id);
 
-        Task<bool> CreateAsync(PrescriptionModel prescription, Guid operatorId, string operatorName);
+        Task<bool> CreateAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName);
 
-        Task<bool> UpdateAsync(PrescriptionModel prescription, Guid operatorId, string operatorName);
+        Task<bool> UpdateAsync(PrescriptionEditDto dto, Guid operatorId, string operatorName);
 
         Task<bool> DeleteAsync(string id, Guid operatorId, string operatorName);
     }

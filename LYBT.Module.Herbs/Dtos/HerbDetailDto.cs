@@ -26,6 +26,10 @@
         /// <summary>单价</summary>
         public decimal Price { get; set; }
 
+        public int Stock { get; set; }
+        public string? BatchNo { get; set; }
+        public DateTime? ExpireDate { get; set; }
+
         /// <summary>功效说明</summary>
         public string? Effect { get; set; }
 
