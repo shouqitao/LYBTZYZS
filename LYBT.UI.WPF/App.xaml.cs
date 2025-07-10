@@ -48,6 +48,7 @@ namespace LYBT.UI.WPF {
             var patientApi = RestService.For<IPatientApi>(httpClient, refitSettings);
             var herbApi = RestService.For<IHerbApi>(httpClient, refitSettings);
             var billingApi = RestService.For<IBillingApi>(httpClient, refitSettings);
+            var prescriptionApi = RestService.For<IPrescriptionApi>(httpClient, refitSettings);
             var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
@@ -57,6 +58,7 @@ namespace LYBT.UI.WPF {
             var patientService = new PatientService(patientApi);
             var herbService = new HerbService(herbApi);
             var billingService = new BillingService(billingApi);
+            var prescriptionService = new PrescriptionService(prescriptionApi);
             var logService = new LogService(logApi);
 
 
@@ -67,6 +69,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(patientApi);
             containerRegistry.RegisterInstance(herbApi);
             containerRegistry.RegisterInstance(billingService);
+            containerRegistry.RegisterInstance(prescriptionApi);
             containerRegistry.RegisterInstance(logApi);
 
             containerRegistry.RegisterInstance<IAuthService>(authService);
@@ -75,6 +78,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IPatientService>(patientService);
             containerRegistry.RegisterInstance<IHerbService>(herbService);
             containerRegistry.RegisterInstance<IBillingService>(billingService);
+            containerRegistry.RegisterInstance<IPrescriptionService>(prescriptionService);
             containerRegistry.RegisterInstance<ILogService>(logService);
 
 
@@ -86,6 +90,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<UserManagementView>("UserManagementView");
             containerRegistry.RegisterForNavigation<DoctorManagementView>("DoctorManagementView");
             containerRegistry.RegisterForNavigation<HerbManagementView>("HerbManagementView");
+            containerRegistry.RegisterForNavigation<PrescriptionManagementView>("PrescriptionManagementView");
             containerRegistry.RegisterForNavigation<BillingStaffView>("BillingStaffView");
             containerRegistry.RegisterForNavigation<DiagnosingDoctorView>("DiagnosingDoctorView");
             containerRegistry.RegisterForNavigation<PharmacyStaffView>("PharmacyStaffView");
