@@ -1,6 +1,8 @@
 ﻿using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Repositories;
 using LYBT.Module.Registration.Services;
+using LYBT.Module.Queueing.Interfaces;
+using LYBT.Module.Queueing.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Registration {
@@ -16,6 +18,7 @@ namespace LYBT.Module.Registration {
         public static void Register(IServiceCollection services) {
             services.AddScoped<IRegistrationRepository, RegistrationRepository>();
             services.AddScoped<IRegistrationService, RegistrationService>();
+            services.AddScoped<IQueueingRepository, QueueingRepository>();
         }
     }
 }

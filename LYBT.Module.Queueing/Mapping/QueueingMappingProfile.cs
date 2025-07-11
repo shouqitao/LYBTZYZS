@@ -13,6 +13,7 @@ namespace LYBT.Module.Queueing.Mapping {
             CreateMap<QueueingModel, QueueingDto>().ReverseMap();
             CreateMap<QueueingModel, QueueingDetailDto>().ReverseMap();
             CreateMap<QueueingCreateDto, QueueingModel>();
+            CreateMap<QueueingEditDto, QueueingModel>();
         }
     }
 }

@@ -11,6 +11,9 @@
         /// <summary>病人姓名</summary>
         public string PatientName { get; set; } = string.Empty;
 
+        /// <summary>医生姓名</summary>
+        public string DoctorName { get; set; } = string.Empty;
+
         /// <summary>挂号类型</summary>
         public string RegistrationType { get; set; } = string.Empty;
 

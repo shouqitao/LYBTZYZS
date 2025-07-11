@@ -11,6 +11,10 @@ namespace LYBT.Module.Queueing.Dtos {
         [Required(ErrorMessage = "病人ID不能为空")]
         public string PatientId { get; set; } = string.Empty;
 
+        /// <summary>医生ID</summary>
+        [Required(ErrorMessage = "医生ID不能为空")]
+        public string DoctorId { get; set; } = string.Empty;
+
         /// <summary>排队类型（如“普通”、“急诊”）</summary>
         [Required(ErrorMessage = "排队类型不能为空")]
         public string QueueType { get; set; } = "普通";

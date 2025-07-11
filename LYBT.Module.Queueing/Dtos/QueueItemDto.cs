@@ -11,6 +11,9 @@
         /// <summary>病人姓名</summary>
         public string PatientName { get; set; } = string.Empty;
 
+        /// <summary>医生姓名</summary>
+        public string DoctorName { get; set; } = string.Empty;
+
         /// <summary>排队类型</summary>
         public string QueueType { get; set; } = string.Empty;
 

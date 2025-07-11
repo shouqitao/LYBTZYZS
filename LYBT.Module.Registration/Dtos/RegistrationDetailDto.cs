@@ -11,6 +11,9 @@
         /// <summary>病人ID</summary>
         public string PatientId { get; set; } = string.Empty;
 
+        /// <summary>医生ID</summary>
+        public string DoctorId { get; set; } = string.Empty;
+
         /// <summary>病人姓名</summary>
         public string PatientName { get; set; } = string.Empty;
 

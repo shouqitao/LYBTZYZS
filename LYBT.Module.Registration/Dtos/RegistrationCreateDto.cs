@@ -11,6 +11,10 @@ namespace LYBT.Module.Registration.Dtos {
         [Required(ErrorMessage = "病人ID不能为空")]
         public string PatientId { get; set; } = string.Empty;
 
+        /// <summary>医生ID</summary>
+        [Required(ErrorMessage = "医生ID不能为空")]
+        public string DoctorId { get; set; } = string.Empty;
+
         /// <summary>挂号类型（如“普通”、“急诊”）</summary>
         [Required(ErrorMessage = "挂号类型不能为空")]
         public string RegistrationType { get; set; } = "普通";
