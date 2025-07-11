@@ -1,5 +1,7 @@
 using LYBT.Infrastructure;
 using LYBT.Models.Prescriptions;
+using LYBT.Common.Enums.Prescriptions;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Prescriptions.Repositories {
     public class PrescriptionRepository : IPrescriptionRepository {
@@ -9,11 +11,15 @@ namespace LYBT.Module.Prescriptions.Repositories {
         }
 
         public async Task<PrescriptionModel?> GetByIdAsync(Guid id) {
-            return await _db.Prescriptions.FindAsync(id);
+            return await _db.Prescriptions
+                .Include(p => p.Items)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<List<PrescriptionModel>> GetListAsync() {
-            return await Task.FromResult(_db.Prescriptions.ToList());
+            return await _db.Prescriptions
+                .Include(p => p.Items)
+                .ToListAsync();
         }
 
         public async Task<bool> AddAsync(PrescriptionModel model) {
@@ -31,6 +37,15 @@ namespace LYBT.Module.Prescriptions.Repositories {
             if (m == null)
                 return false;
             _db.Prescriptions.Remove(m);
+            return await _db.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> CancelAsync(Guid id) {
+            var model = await _db.Prescriptions.FindAsync(id);
+            if (model == null)
+                return false;
+            model.Status = PrescriptionStatus.Cancelled;
+            _db.Prescriptions.Update(model);
             return await _db.SaveChangesAsync() > 0;
         }
     }

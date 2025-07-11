@@ -16,5 +16,7 @@ namespace LYBT.Module.Prescriptions.Services {
         Task<bool> UpdateAsync(PrescriptionEditDto dto, Guid operatorId, string operatorName);
 
         Task<bool> DeleteAsync(string id, Guid operatorId, string operatorName);
+
+        Task<bool> CancelAsync(string id, Guid operatorId, string operatorName);
     }
 }

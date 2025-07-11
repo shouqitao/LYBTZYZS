@@ -13,5 +13,6 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<bool> AddAsync(PrescriptionCreateDto dto);
         Task<bool> UpdateAsync(PrescriptionEditDto dto);
         Task<bool> DeleteAsync(Guid id);
+        Task<bool> CancelAsync(Guid id);
     }
 }

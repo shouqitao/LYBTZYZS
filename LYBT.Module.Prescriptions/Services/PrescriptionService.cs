@@ -3,6 +3,7 @@ using AutoMapper;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Common.Enums.Logs;
+using LYBT.Common.Enums.Prescriptions;
 using LYBT.Module.Prescriptions.Dtos;
 using LYBT.Models.Prescriptions;
 using LYBT.Module.Prescriptions.Repositories;
@@ -89,6 +90,27 @@ namespace LYBT.Module.Prescriptions.Services {
                 LogTime = DateTime.Now,
                 Content = "删除处方",
                 OldValue = JsonSerializer.Serialize(item)
+            });
+            return success;
+        }
+
+        public async Task<bool> CancelAsync(string id, Guid operatorId, string operatorName) {
+            if (!Guid.TryParse(id, out var gid))
+                return false;
+            var model = await _repository.GetByIdAsync(gid);
+            if (model == null)
+                return false;
+            var success = await _repository.CancelAsync(gid);
+            await _logService.AddLogAsync(new LogDto {
+                LogType = LogType.Operation,
+                ObjectType = ObjectType.Prescription,
+                ObjectId = gid,
+                ActionType = ActionType.Edit,
+                OperatorId = operatorId,
+                OperatorName = operatorName,
+                LogTime = DateTime.Now,
+                Content = "作废处方",
+                OldValue = JsonSerializer.Serialize(model)
             });
             return success;
         }

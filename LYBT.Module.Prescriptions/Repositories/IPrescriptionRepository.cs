@@ -7,5 +7,6 @@ namespace LYBT.Module.Prescriptions.Repositories {
         Task<bool> AddAsync(PrescriptionModel model);
         Task<bool> UpdateAsync(PrescriptionModel model);
         Task<bool> DeleteAsync(Guid id);
+        Task<bool> CancelAsync(Guid id);
     }
 }
