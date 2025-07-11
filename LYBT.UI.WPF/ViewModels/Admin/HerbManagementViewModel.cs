@@ -5,12 +5,15 @@ using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
     public class HerbManagementViewModel : BindableBase {
         private readonly IHerbService _herbService;
+        private IList<HerbDto> _allHerbs = new List<HerbDto>();
         public ObservableCollection<HerbDto> Herbs { get; } = new();
 
         private HerbDto? _selectedHerb;
@@ -37,7 +40,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public HerbManagementViewModel(IHerbService herbService, HerbProfileViewModel profileViewModel) {
             _herbService = herbService;
             HerbProfileViewModel = profileViewModel;
-            SearchCommand = new DelegateCommand(async () => await LoadAsync());
+            SearchCommand = new DelegateCommand(Search);
             AddCommand = new DelegateCommand(Add);
             EditCommand = new DelegateCommand(Edit, () => SelectedHerb != null).ObservesProperty(() => SelectedHerb);
             DeleteCommand = new DelegateCommand(async () => await DeleteAsync(), () => SelectedHerb != null).ObservesProperty(() => SelectedHerb);
@@ -46,19 +49,36 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
 
         private async Task LoadAsync() {
             var list = await _herbService.GetListAsync();
+            _allHerbs = list;
+            ApplyFilter();
+        }
+
+        private void Search() => ApplyFilter();
+
+        private void ApplyFilter() {
             Herbs.Clear();
-            foreach (var item in list)
+            foreach (var item in _allHerbs.Where(h => string.IsNullOrWhiteSpace(SearchKeyword)
+                || (h.Name?.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (h.Pinyin?.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) ?? false)))
                 Herbs.Add(item);
         }
 
         private void Add() {
             HerbProfileViewModel.IsEditable = true;
+            HerbProfileViewModel.CancelAction = async () => {
+                HerbProfileViewModel.IsEditable = false;
+                await LoadAsync();
+            };
             HerbProfileViewModel.LoadAsync();
         }
 
         private void Edit() {
             if (SelectedHerb != null) {
                 HerbProfileViewModel.IsEditable = true;
+                HerbProfileViewModel.CancelAction = async () => {
+                    HerbProfileViewModel.IsEditable = false;
+                    await LoadAsync();
+                };
                 HerbProfileViewModel.LoadAsync(SelectedHerb.Id);
             }
         }

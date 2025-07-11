@@ -72,6 +72,8 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 }
                 if (!success)
                     MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                else
+                    CancelAction?.Invoke();
             } catch (Exception ex) {
                 MessageBox.Show($"保存失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
