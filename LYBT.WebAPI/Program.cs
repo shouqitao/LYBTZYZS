@@ -65,66 +65,14 @@ using LYBT.Module.Settings.Mapping;
 using LYBT.Module.Users.Services;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Interfaces;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDefaults"));
 
 // =========== 1. 注册所有模块的 Service 和 Repository ===========
-
-// 用户管理
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-// 病人管理
-builder.Services.AddScoped<IPatientService, PatientService>();
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-
-// 医生管理
-builder.Services.AddScoped<IDoctorService, DoctorService>();
-builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
-
-// 挂号管理
-builder.Services.AddScoped<IRegistrationService, RegistrationService>();
-builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
-
-// 排队管理
-builder.Services.AddScoped<IQueueingService, QueueingService>();
-builder.Services.AddScoped<IQueueingRepository, QueueingRepository>();
-
-// 诊疗管理
-builder.Services.AddScoped<IDiagnosisTreatmentService, DiagnosisTreatmentService>();
-builder.Services.AddScoped<IDiagnosisTreatmentRepository, DiagnosisTreatmentRepository>();
-
-// 药材管理
-builder.Services.AddScoped<IHerbService, HerbService>();
-builder.Services.AddScoped<IHerbRepository, HerbRepository>();
-
-// 经验方模板管理
-builder.Services.AddScoped<IFormulaTemplateService, FormulaTemplateService>();
-builder.Services.AddScoped<IFormulaTemplateRepository, FormulaTemplateRepository>();
-
-// 病历管理
-builder.Services.AddScoped<IRecordService, RecordService>();
-builder.Services.AddScoped<IRecordRepository, RecordRepository>();
-
-// 日志管理
-builder.Services.AddScoped<ILogService, LogService>();
-builder.Services.AddScoped<ILogRepository, LogRepository>();
-
-// 处方管理
-builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
-builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
-
-// 同步管理
-builder.Services.AddScoped<ISyncService, SyncService>();
-builder.Services.AddScoped<ISyncRepository, SyncRepository>();
-
-// 设置管理
-builder.Services.AddScoped<ISettingsService, SettingsService>();
-builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
+builder.Services.AddLybtModules();
 
 // =========== 2. 注册所有模块的 AutoMapper 配置文件 ===========
 
@@ -177,7 +125,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 // ensure default admin user exists
 using (var scope = app.Services.CreateScope()) {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    AdminSeeder.Seed(context);
+    var opts = scope.ServiceProvider.GetRequiredService<IOptions<UserOptions>>();
+    AdminSeeder.Seed(context, opts.Value.DefaultUserPassword);
 }
 
 if (app.Environment.IsDevelopment()) {
