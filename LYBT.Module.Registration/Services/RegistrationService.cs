@@ -85,10 +85,20 @@ namespace LYBT.Module.Registration.Services {
         }
 
         /// <summary>
-        /// 删除挂号
+        /// 删除挂号（物理删除）
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
             return await _registrationRepository.DeleteAsync(id);
+        }
+
+        /// <summary>
+        /// 取消挂号，更新注册和队列状态
+        /// </summary>
+        public async Task<bool> CancelAsync(Guid id) {
+            var result = await _registrationRepository.CancelAsync(id);
+            if (result)
+                await _queueingRepository.CancelAsync(id);
+            return result;
         }
     }
 }

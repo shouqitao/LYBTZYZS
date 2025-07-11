@@ -28,8 +28,13 @@ namespace LYBT.Module.Registration.Interfaces {
         Task<bool> UpdateAsync(RegistrationModel model);
 
         /// <summary>
-        /// 删除挂号
+        /// 删除挂号（物理删除，不推荐）
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 取消挂号，更新状态为已取消
+        /// </summary>
+        Task<bool> CancelAsync(Guid id);
     }
 }
