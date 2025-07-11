@@ -1,6 +1,7 @@
 ﻿using LYBT.Infrastructure;
 using LYBT.Models.Registration;
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Common.Enums;
 
 namespace LYBT.Module.Registration.Repositories {
 
@@ -48,13 +49,25 @@ namespace LYBT.Module.Registration.Repositories {
         }
 
         /// <summary>
-        /// 删除挂号
+        /// 删除挂号（物理删除）
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
             var model = await _appDbContext.Registrations.FindAsync(id);
             if (model == null)
                 return false;
             _appDbContext.Registrations.Remove(model);
+            return await _appDbContext.SaveChangesAsync() > 0;
+        }
+
+        /// <summary>
+        /// 取消挂号，设置状态为已取消
+        /// </summary>
+        public async Task<bool> CancelAsync(Guid id) {
+            var model = await _appDbContext.Registrations.FindAsync(id);
+            if (model == null)
+                return false;
+            model.Status = RegistrationStatus.Cancelled;
+            _appDbContext.Registrations.Update(model);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
     }

@@ -77,5 +77,16 @@ namespace LYBT.Module.Registration.Controllers {
                 return NotFound();
             return Ok("删除挂号成功");
         }
+
+        /// <summary>
+        /// 取消挂号（软删除）
+        /// </summary>
+        [HttpPost("cancel/{id}")]
+        public async Task<ActionResult> Cancel(Guid id) {
+            var result = await _registrationService.CancelAsync(id);
+            if (!result)
+                return NotFound();
+            return Ok("取消挂号成功");
+        }
     }
 }
