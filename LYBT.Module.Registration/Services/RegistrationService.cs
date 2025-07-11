@@ -3,6 +3,8 @@ using LYBT.Common.Enums;
 using LYBT.Models.Registration;
 using LYBT.Module.Registration.Dtos;
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Queueing.Interfaces;
+using LYBT.Models.Queueing;
 
 namespace LYBT.Module.Registration.Services {
 
@@ -11,13 +13,15 @@ namespace LYBT.Module.Registration.Services {
     /// </summary>
     public class RegistrationService : IRegistrationService {
         private readonly IRegistrationRepository _registrationRepository;
+        private readonly IQueueingRepository _queueingRepository;
         private readonly IMapper _mapper;
 
         /// <summary>
         /// 构造方法，注入仓储与对象映射
         /// </summary>
-        public RegistrationService(IRegistrationRepository registrationRepository, IMapper mapper) {
+        public RegistrationService(IRegistrationRepository registrationRepository, IQueueingRepository queueingRepository, IMapper mapper) {
             _registrationRepository = registrationRepository;
+            _queueingRepository = queueingRepository;
             _mapper = mapper;
         }
 
@@ -45,7 +49,27 @@ namespace LYBT.Module.Registration.Services {
             model.Id = Guid.NewGuid();
             model.RegistrationTime = DateTime.Now;
             model.Status = RegistrationStatus.Pending;
-            return await _registrationRepository.AddAsync(model);
+            if (Guid.TryParse(dto.PatientId, out var patId))
+                model.PatientId = patId;
+            if (Guid.TryParse(dto.DoctorId, out var docId))
+                model.DoctorId = docId;
+            var result = await _registrationRepository.AddAsync(model);
+            if (!result)
+                return false;
+
+            var queue = new QueueingModel {
+                Id = Guid.NewGuid(),
+                PatientId = Guid.TryParse(dto.PatientId, out var pid) ? pid : Guid.Empty,
+                PatientName = model.PatientName,
+                DoctorId = Guid.TryParse(dto.DoctorId, out var did) ? did : Guid.Empty,
+                DoctorName = model.DoctorName,
+                QueueType = dto.RegistrationType,
+                QueueTime = DateTime.Now,
+                Status = QueueStatus.Waiting,
+                Remark = "自动排队"
+            };
+            await _queueingRepository.AddAsync(queue);
+            return true;
         }
 
         /// <summary>

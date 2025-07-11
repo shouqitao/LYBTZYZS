@@ -16,6 +16,9 @@ namespace LYBT.Module.Registration.Dtos {
         [Required(ErrorMessage = "挂号类型不能为空")]
         public RegistrationType RegistrationType { get; set; } = RegistrationType.General;
 
+        /// <summary>医生ID</summary>
+        public string DoctorId { get; set; } = string.Empty;
+
         /// <summary>备注</summary>
         public string Remark { get; set; } = string.Empty;
     }

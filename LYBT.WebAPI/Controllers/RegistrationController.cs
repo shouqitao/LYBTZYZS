@@ -1,6 +1,7 @@
 ﻿using LYBT.Module.Registration.Dtos;
 using LYBT.Module.Registration.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LYBT.Module.Registration.Controllers {
 
@@ -9,6 +10,7 @@ namespace LYBT.Module.Registration.Controllers {
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class RegistrationController : ControllerBase {
         private readonly IRegistrationService _registrationService;
 
