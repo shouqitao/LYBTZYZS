@@ -1,519 +1,210 @@
-# 概述
+# Agents 自动化调用文档
 
+## 患者管理 Agent
 
-# LYBT 智能医疗业务管理系统 - 企业级应用全景文档
+**功能描述**：管理患者基本信息，包括新增、编辑、查询、搜索、启用/禁用、分配医生等操作。该 Agent 封装对 `PatientDetailDto`（患者详情 DTO）的 CRUD 业务调用。
+ **触发条件/输入要求**：需要提供包含患者信息的 `PatientDetailDto` 对象（字段如姓名、性别、出生日期等在 DTO 定义中注明）。创建或修改患者时，当前登录用户信息（`operatorId`、`operatorName`）会自动从上下文获取。例如，`PatientDetailDto` 中必填字段有 `Name`、`Gender` 等。
+ **调用方式**：可以通过后端接口 `IPatientService.AddAsync/UpdateAsync` 等方法，也可以通过 Web API 路径 `/api/Patients`（对应 `PatientsController`）进行调用。在前端代码中，可使用 Refit 定义的 `IPatientApi` 接口（命名空间 `LYBT.UI.WPF.Apis`）来调用对应的 REST API 方法，如 `AddAsync([Body] PatientDetailDto dto)`（发送 POST 到 `/api/Patients/add`）。调用时需引用 `LYBT.Module.Patients.Dtos` 命名空间中的 `PatientDetailDto` 和 `LYBT.UI.WPF.Apis.IPatientApi`。
+ **使用示例**：
 
-LYBTZYZS 是一款模块化、高度集成的医疗信息管理系统，专为中小型诊所、医疗机构以及中医诊疗中心设计，覆盖完整的医疗业务全流程。其目标是通过流程数字化、一体化数据管理和跨模块互联，实现医院级运营效率提升与医疗服务质量改进。
+```csharp
+using LYBT.Module.Patients.Dtos;
+using LYBT.UI.WPF.Apis;
 
-系统采用软删除策略，详细说明见 [docs/soft_delete_policy.md](docs/soft_delete_policy.md)。
-
----
-
-## 🏢 业务概览
-
-### 问题领域与解决方案
-
-#### 业务领域定位
-
-LYBT 智能医疗系统服务于诊疗机构全员、全过程，解决以下核心问题：
-
-- 患者就诊全生命周期管理（登记、挂号、诊疗、费用、取药）
-- 医护人员工作流协同与任务分派
-- 诊疗与药品信息精准流转
-- 运营合规性、审核与安全管控
-
-#### 解决方案
-
-系统采用多模块设计，涵盖各主要业务场景，实现以下目标：
-
-- 全面电子化患者与诊疗数据流，归档历史信息
-- 支持灵活的挂号、排队、费用结算及医生分派流程
-- 严格权限和角色分层，确保操作合规与数据安全
-- 打通医技药房，内建同步框架，便利与外部系统无缝集成
-- 统一日志，支持运营监控与故障溯源
-
----
-
-### 目标用户与利益相关方
-
-- **患者（Patients）**：就诊、复诊、查询个人就医档案
-- **医生（Doctors）**：诊疗、开方、访视记录、患者管理
-- **药房/药剂师（Pharmacy）**：库存维护、药品出入库、发药
-- **窗口/挂号/收费人员（Admin/BillingStaff/RegistrationStaff）**：挂号、费用结算、收费收据
-- **IT 管理员/系统维护者**：系统部署、日志巡查、同步任务管理
-- **诊所管理者**：业务数据统计、医务绩效分析
-
----
-
-### 业务价值与影响
-
-- **业务提效**：业务自动流转，极大减少人工登记/协作成本
-- **准确合规**：多级权限和操作日志，满足医疗信息安全及审计要求
-- **患者体验提升**：流程流畅，接口友好，减少等待和多头跑腿
-- **数据价值**：数据集中归档，便于运营、财务和决策分析
-- **弹性扩展**：模块化架构适于医疗机构不同阶段扩展需求
-
----
-
-## 🏗️ 系统架构
-
-### 高级架构
-
-```
-                 ┌──────────────┐
-                 │  LYBT.UI.WPF │（桌面前端）
-                 └──────┬───────┘
-                        │
-                 REST API / DTOs
-                        │
-                ┌───────▼──────────────┐
-                │   LYBT.WebAPI        │（后端API网关）
-                ├─────▲─┴──┬──────────┤
-  模块化 REST业务API  │     │ 各业务模块DLL
-    控制器中转        │     │
- ────────────────────────┴──┬──────────────┘
- │ LYBT.Module.Patients      │ LYBT.Module.Billing ...
- │ LYBT.Module.Doctors       │ LYBT.Module.Pharmacy ...
-  ...                         ...
- 各功能模块独立分层
-                            │
- ─────────────►  数据持久化（EF Core, 迁移脚本, 物理数据库） ◄─────────────
-                            │
-                外部平台集成（LYBT.Module.Sync, 其他第三方系统）
-
+// 示例：创建并添加一个新患者
+var patientDto = new PatientDetailDto { Name = "张三", Gender = Gender.Male, BirthDate = DateTime.Parse("1990-01-01"), ... };
+bool success = await patientApi.AddAsync(patientDto);
 ```
 
-#### 体系分层
-
-- **表示层**：WPF 桌面UI（适医务现场场景），用于数据展示和操作
-- **服务层**：WebAPI 提供全部业务接口
-- **领域/业务层**：各 Module 按 DDD 各自负责业务实现
-- **数据访问层**：EF Core 管理ORM与数据库交互
-- **集成层**：外部系统同步模块，对接第三方数据
+以上示例调用了 `IPatientApi.AddAsync` 方法向后端 `/api/Patients/add` 提交患者信息。
 
----
-
-### 技术栈
-
-- **前端**：.NET 8.0 WPF（LYBT.UI.WPF 项目）
-- **后端**：.NET 8.0 C#，RESTful WebAPI（LYBT.WebAPI），采用分层/模块化领域设计模式
-- **数据库**：兼容 SQL Server/MySQL（EF Core 数据上下文，迁移脚本自动化）
-- **基础设施/运维**：标准 .NET 容器/进程，支持开发/生产多环境配置
-- **API文档**：自动生成 Swagger（SwaggerExtension 扩展）
+## 挂号管理 Agent
 
----
+**功能描述**：管理挂号登记信息，包括查询挂号记录、新增挂号、修改挂号及取消挂号等操作。该 Agent 处理 `RegistrationCreateDto`（新增挂号 DTO）和相关 DTO，完成挂号业务。
+ **触发条件/输入要求**：新增挂号时需提供 `RegistrationCreateDto`，其中必填字段包括患者 ID (`PatientId`)、医生 ID (`DoctorId`)、挂号类型 (`RegistrationType`) 等。查询或编辑挂号时需提供挂号记录的主键 `id`。例如，`RegistrationCreateDto` 要求包含有效的 `PatientId` 和 `DoctorId`。
+ **调用方式**：可调用 `IRegistrationService.AddAsync/UpdateAsync` 等服务方法，也可调用后端 API `/api/Registration`（由 `RegistrationController` 提供）。在前端，可使用 Refit 定义的 `IRegistrationApi`（在 `LYBT.UI.WPF.Apis` 命名空间中）进行调用。例如，`AddAsync([Body] RegistrationCreateDto dto)` 对应 POST `/api/Registration`。调用时需引入 `LYBT.Module.Registration.Dtos` 命名空间。
+ **使用示例**：
 
-### 系统组件
+```csharp
+using LYBT.Module.Registration.Dtos;
+using LYBT.UI.WPF.Apis;
 
-#### 主要业务模块概览
+// 示例：新增挂号
+var regDto = new RegistrationCreateDto { PatientId = "患者GUID", DoctorId = "医生GUID", RegistrationType = "普通" };
+var response = await registrationApi.AddAsync(regDto);
+```
 
-- **Patients（患者管理）**
-- **Doctors（医生管理）**
-- **Registration（挂号管理）**
-- **Queueing（排队系统）**
-- **DiagnosisTreatment（诊疗）**
-- **Prescription（处方管理）**
-- **Pharmacy（药房）**
-- **Billing（费用管理）**
-- **Logs（日记/操作审计）**
-- **Settings（全局参数/枚举配置）**
-- **Users（账户/角色/权限）**
-- **Sync（外部系统同步）**
-- **FormulaTemplates（中药方模板）**
-- **TreatmentRoom（诊室任务分配）**
+上述示例通过 `IRegistrationApi.AddAsync` 向 `/api/Registration` 提交新的挂号信息。
 
----
+## 排队管理 Agent
 
-## 🚀 核心业务功能
+**功能描述**：管理排队信息，包括列出排队列表、新增排队记录、编辑或取消排队条目等操作。该 Agent 负责对 `QueueingCreateDto`（新增排队 DTO）及其他排队 DTO 的调用。
+ **触发条件/输入要求**：新增排队时需提供 `QueueingCreateDto`，必填字段包括患者 ID (`PatientId`)、医生 ID (`DoctorId`)、排队类型 (`QueueType`) 等。编辑或删除排队记录时需提供对应记录的 GUID。
+ **调用方式**：可调用 `IQueueingService.AddAsync/UpdateAsync` 等服务方法，或通过后端 API `/api/Queueing`（由 `QueueingController` 提供）进行操作。在前端，可使用 `IQueueingApi` 接口（`LYBT.UI.WPF.Apis` 命名空间）来调用，例如 `AddAsync([Body] QueueingCreateDto dto)` 对应 POST `/api/Queueing`。
+ **使用示例**：
 
-### 患者管理模块（LYBT.Module.Patients）
+```csharp
+using LYBT.Module.Queueing.Dtos;
+using LYBT.UI.WPF.Apis;
 
-- **功能描述**：患者基本信息建档、检索、编辑与归档
-- **特点**：
-  - 详细患者信息（病史、地址、联系人等）
-  - 灵活条件检索与分页展示
-  - 与挂号/诊疗模块联动, 可直接指派医生
-  - UI支持患者数据全流程管理
-- **数据交互**：
-  - 支持REST接口（新建、编辑、删除、查询、分页）
-  - 与 Registration、Doctors、Billing 联动
+// 示例：新增排队记录
+var queueDto = new QueueingCreateDto { PatientId = "患者GUID", DoctorId = "医生GUID", QueueType = "普通" };
+var result = await queueingApi.AddAsync(queueDto);
+```
 
----
+示例中调用了 `IQueueingApi.AddAsync` 提交排队信息。
 
-### 医生管理模块（LYBT.Module.Doctors）
+## 诊疗 Agent
 
-- **功能描述**：医生个人信息、岗位/头衔、账号权限及密码管理
-- **特点**：
-  - 医生信息新增、批量导入、编辑、删除
-  - 医生信息审核表 **DoctorInfoRequests**：医生提交资料变更后由管理员审批
-  - 密码初始化/重置
-  - 统计分析/查询功能
-  - 角色细分（主治、助理、实习等，来自DoctorTitle/DoctorWorkStatus 枚举）
-- **安全管控**：
-  - 与 User/Role 集成，细粒度权限分配
+**功能描述**：管理诊疗记录，包括查询诊疗列表、新增诊疗、编辑诊疗和取消诊疗等。该 Agent 处理 `DiagnosisTreatmentCreateDto` 等 DTO，用于创建和维护诊疗（就诊）记录。
+ **触发条件/输入要求**：新增诊疗时需提供 `DiagnosisTreatmentCreateDto`，关键字段包括患者 ID (`PatientId`)、诊断内容 (`Diagnosis`) 等。其他字段如主诉、现病史、治疗项目列表、草药方等也可填写。
+ **调用方式**：调用 `IDiagnosisTreatmentService.AddAsync/UpdateAsync` 等服务，或使用后端 API `/api/DiagnosisTreatment`（由 `DiagnosisTreatmentController` 提供）。前端可使用 `IDiagnosisTreatmentApi` 接口（`LYBT.UI.WPF.Apis` 命名空间）进行调用，例如 `AddAsync([Body] DiagnosisTreatmentCreateDto dto)` 对应 POST `/api/DiagnosisTreatment`。
+ **使用示例**：
 
----
+```csharp
+using LYBT.Module.DiagnosisTreatment.Models.Dtos;
+using LYBT.UI.WPF.Apis;
 
-### 诊疗及处方模块（LYBT.Module.DiagnosisTreatment, Prescriptions, FormulaTemplates）
+// 示例：新增诊疗记录
+var diagDto = new DiagnosisTreatmentCreateDto { PatientId = patientId, Diagnosis = "感冒", Treatments = new List<TreatmentItemDto> { ... } };
+await diagnosisTreatmentApi.AddAsync(diagDto);
+```
 
-- **功能描述**：诊断、处置、方剂、药材选择与处方开具，支持模板引用
-- **特点**：
-  - 结构化记录诊断结果与治疗建议
-  - 方剂模板支持复用（FormulaTemplates）
-  - 药材、剂型、剂量细分管理（Herbs/FormulaType/HerbType）
-  - 直接与 Pharmacy、Billing 流程联动
-- **操作流**：
-  - 患者就诊——>医生编号——>选择或自定义模板开方——>记录病例
+示例调用 `IDiagnosisTreatmentApi.AddAsync` 向 `/api/DiagnosisTreatment` 添加诊疗信息。
 
----
+## 处方 Agent
 
-### 挂号与队列系统（LYBT.Module.Registration, Queueing）
+**功能描述**：管理处方信息，包括查询所有处方、获取处方详情、新增、修改和禁用处方记录。该 Agent 操作 `PrescriptionCreateDto` 等 DTO，用于医生开具和管理处方。
+ **触发条件/输入要求**：创建处方需提供 `PrescriptionCreateDto`，必填字段包括患者 ID、医生 ID，以及处方内容和项目列表。例如，`PrescriptionCreateDto` 要包含有效的 `PatientId`、`DoctorId` 和药材明细 `Items`。
+ **调用方式**：调用 `IPrescriptionService.CreateAsync/UpdateAsync` 等业务接口，或通过后端 API `/api/Prescriptions`（由 `PrescriptionsController` 提供）进行操作。前端可使用 `HttpClient` 直接调用 REST API：POST 到 `/api/Prescriptions` 并传递 `PrescriptionCreateDto`。后端控制器中对应方法为 `PrescriptionsController.Add`，接受 `PrescriptionCreateDto` 并调用服务。
+ **使用示例**：
 
-- **功能描述**：病人挂号、诊室排队、队列管理自动化
-- **特点**：
-  - 支持手动/自动排队，挂号状态与队列状态联动
-  - 可跨诊室、按医生、时间等灵活分配
-  - 支持批量处理，实时队列信息查询
+```csharp
+using LYBT.Module.Prescriptions.Dtos;
+using System.Net.Http.Json;
 
----
+// 示例：创建新处方
+var presDto = new PrescriptionCreateDto { PatientId = patientId, DoctorId = doctorId, Diagnosis = "头痛", Items = new List<PrescriptionItemCreateDto> { ... } };
+var response = await httpClient.PostAsJsonAsync("/api/Prescriptions", presDto);
+```
 
-### 费用与收银模块（LYBT.Module.Billing）
+示例中使用 `HttpClient.PostAsJsonAsync` 向 `/api/Prescriptions` 提交处方信息。
 
-- **功能描述**：费用项目结算、收费明细、发票管理、历史账单查询
-- **特点**：
-  - 按患者、就诊、处方多维统计
-  - 费用明细、批量管理
-  - 联动处方、药房、挂号等模块，实现账单闭环
+## 药房配药 Agent
 
----
+**功能描述**：管理药房配药单，包括新增药单、编辑和标记配药完成等操作。该 Agent 处理 `PharmacyCreateDto` 等 DTO，用于对处方进行发药处理。
+ **触发条件/输入要求**：新增药房单时需提供 `PharmacyCreateDto`，其中 `PrescriptionId`（处方ID）和 `OperatorId`（药房操作员ID）为必填项。可以选择填写配药时间、状态和备注等信息。
+ **调用方式**：调用 `IPharmacyService.AddAsync/UpdateAsync` 等接口。前端可使用定义好的服务接口（如 `IPharmacyService`）来调用这些方法。`IPharmacyService.AddAsync(PharmacyCreateDto dto)` 方法将创建新的药房单，参数需引入 `LYBT.Module.Pharmacy.Dtos.PharmacyCreateDto`。
+ **使用示例**：
 
-### 药房管理（LYBT.Module.Pharmacy, Herbs）
+```csharp
+using LYBT.Module.Pharmacy.Dtos;
+using LYBT.UI.WPF.Interfaces;
 
-- **功能描述**：中药材、成品药库存、药品出入库、药房发药管理
-- **特点**：
-  - 支持药品批次、库存量、预警设置
-  - 发药环节与处方实时联动
-  - 多药房、多角色操作权限划分
+// 示例：新增药房配药单
+var phDto = new PharmacyCreateDto { PrescriptionId = presId, OperatorId = operatorId };
+bool ok = await pharmacyService.AddAsync(phDto);
+```
 
----
+示例调用 `IPharmacyService.AddAsync` 创建新药房单。
 
-### 日志、同步与运维
+## 费用结算 Agent
 
-- **日志模块**：全系统操作与异常日志；支持日志查询、导出
-- **同步模块**：对接第三方系统/互联网诊疗平台；任务、日志、状态追踪
-- **全局设置与参数维护**：定义业务功能开关、价格、挂号类型等
+**功能描述**：管理费用结算，包括查询账单、生成新账单、编辑账单、标记支付、退款等操作。该 Agent 处理 `BillingCreateDto`、`BillingItemDto` 等 DTO，用于患者收费管理。
+ **触发条件/输入要求**：生成账单时需提供 `BillingCreateDto`，必填字段包括患者 ID (`PatientId`)、医生 ID (`DoctorId`) 以及账单明细 `Items` 列表。其他字段如总金额、已付金额、支付方式等可选填写。
+ **调用方式**：调用 `IBillingService.AddAsync/UpdateAsync` 等服务方法。前端可使用对应业务接口调用，例如 `IBillingService.AddAsync(BillingCreateDto dto)`。详细定义了相关接口和 DTO 字段。
+ **使用示例**：
 
----
-
-## 📊 数据架构
-
-### 数据库设计
-
-- 采用 EF Core 领域模型自动迁移，实体结构清晰对应业务对象
-- **关键表结构**：
-  - Patients、Doctors、Billings、Records、Prescriptions、Pharmacy、Registration、Queueing、TreatmentRooms 等
-- 统一分页查询设计（PagedResult、PaginationRequest）
-- 明确的多实体关系链，可追溯全业务轨迹
-
----
-
-### 数据流动 & 集成
-
-- WPF 桌面端与 WebAPI 通过 DTO 对象结构通信
-- 构建医疗全链路数据流转路径：登记—>挂号—>诊室/队列排号—>诊疗/开方—>药房/费用—>归档/历史数据
-- 数据同步外部平台，支持第三方标准接口
-
----
-
-### 外部数据源
-
-- 集成平台对接（见 Sync/ISyncRepository）
-- 可扩展后续医保、第三方药品供应商等系统
-
----
-
-## 🔐 安全与访问控制
-
-### 认证系统
-
-- 登录/登出逻辑清晰，支持角色分配
-- 用户可同时拥有多个角色，权限按角色集合综合判定
-- 使用 DTO（LoginRequestDto 等）封装登录互通
-- 登陆接口各端一致，兼容未来 SSO
-
----
-
-### 授权模型
-
-- RBAC（基于角色访问控制），涵盖医生、药师、管理员、患者等
-- 权限实现分层至 API Controller 和业务接口
-- 各模块接口只对授权角色暴露
-
----
-
-### 安全措施
-
-- 全局异常拦截和统一日志（GlobalExceptionMiddleware/Filter）
-- 完整操作日志记录（辅助审计/溯源）
-- 支持加密敏感信息（密码等，详细加密实现建议进一步补充）
-
----
-
-## 🚀 部署与安装
-
-### 系统要求
-
-- Windows 10/11（桌面端客户端必须）
-- .NET 8.0运行环境（服务端和客户端）
-- 支持的数据库（建议 SQL Server/MySQL）
-
----
-
-### 安装流程
-
-1. Git 克隆源代码仓库（https://github.com/shouqitao/LYBTZYZS）
-2. 安装 .NET 8 SDK
-3. （首次部署）使用 `dotnet ef database update` 执行数据库初始化
-4. 执行：`dotnet restore`（依赖还原），`dotnet build`（全项目构建）
-5. 启动 API 服务：`dotnet run --project LYBT.WebAPI`
-6. 启动 WPF 客户端：`dotnet run --project LYBT.UI.WPF` 或 VS 直接调试
-
----
-
-### 环境配置
-
-- `appsettings.json`、`appsettings.Development.json` 多环境配置
-- 数据库连接串、日志级别、端口、认证参数全配置化
-- `launchSettings.json` 支持一键本地开发环境快速启动
-
----
-
-### 数据库初始化
-
-- 迁移类自动建表（见 Migrations/20250617143131_InitialCreate.cs 等）
-- 支持增量升级，历史版本追溯
-- `scripts/update_db.sh` 可用于数据库升级自动化
-- 运行该脚本会创建 **DoctorInfoRequests** 等最新表，用于医生资料审核
-
----
-
-## ⚙️ 配置管理
-
-### 应用配置
-
-- 所有可配功能集中于 Settings/GlobalSettings
-- 支持挂号类型、药房参数、费用项、过程状态等界面可维护
-
----
-
-### 环境变量
-
-- 标准 .NET 配置体系，可通过外部变量/Secrets 管理敏感数据
-- 推荐生产环境结合 Kubernetes/运维平台安全存储
-
----
-
-### 功能开关与参数
-
-- Settings/GlobalSettings、SettingsModel、SettingsDto.cs 支持动态业务参数切换
-- 业务流程/挂号/药房/费用/同步等模块参数分级管理
-
----
-
-## 🔧 管理与运维
-
-### 系统管理
-
-- AdminSeeder 支持系统管理员账号种子填充
-- 管理端提供用户批量管理、权限分配、角色编辑等运维操作
-- 内置 sysadmin 账户作为超级管理员，不在用户列表中显示，Users 表不保存该记录，密码单独存放于 AdminSecrets 表中，仅支持登录与修改密码，用于紧急权限维护
-
----
-
-### 监控与健康检查
-
-- 日志辅助监控（支持 LogLevel 调节，LogHelper/LogService 管理）
-- 目前未包括开放健康检查API，建议未来补充 /health 路由
-
----
-
-### 备份与恢复
-
-- 数据迁移和还原靠 EF Core migration/数据库方案（建议结合定期备份策略与容灾恢复脚本）
-- 业务数据通过归档定期导出
-
----
-
-### 故障排查指南
-
-- 全局异常、日志记录详细，支持按操作流水回溯定位
-- 推荐通过 WebAPI/Logs 结合日志管理界面进行问题诊断
-
----
-
-## 📈 性能与可扩展性
-
-### 性能特点
-
-- 分层架构减少耦合，API 调用高效
-- 分页处理，数据库响应快
-
----
-
-### 扩展与弹性
-
-- 每业务模块独立，便于横向扩展
-- 未来可与云平台部署（容器化、微服务分布式建议）
-
----
-
-### 优化方案
-
-- 结合缓存机制（暂无 Redis/Caching 显式实现，建议后续引入）
-- 队列服务与异步任务处理可拓展
-
----
-
-## 🔌 集成与API
-
-### 外部集成
-
-- Sync模块（ISyncRepository/SyncService）预留第三方系统集成能力
-- 配合标准REST/JSON接口格式兼容各类医疗信息集市
-
----
-
-### API文档
-
-- 所有业务控制器公开 API，支持Swagger自动文档（/swagger）
-
----
-
-### 数据交换格式
-
-- 全部 REST 接口均采用标准 JSON
-- DTO 层层封装，避免直接暴露内部数据结构
-
----
-
-## 👥 用户手册
-
-### 新用户入门
-
-- 启动客户端，输入管理员提供的用户名和系統生成的初始密码登录
-  （密码生成规则可在系统设置中配置，LoginViewModel/UI）
-- 登录后进入主界面（ShellView），所有业务模块可菜单访问
-
----
-
-### 主要用户流程
-
-- 患者登记 → 挂号 → 分诊排队 → 诊室就诊 → 诊疗&开方 → 收费结账 → 药房取药
-- 管理员登录后可进行用户管理、参数配置、日志审查及同步任务监控
-
----
-
-### 高级功能
-
-- 批量数据导入/导出
-- 操作历史审计（追查历史操作）
-- 多医生协作与交接班支持
-
----
-
-## 🛠️ 开发与维护
-
-### 开发环境搭建
-
-- .NET 8.0 SDK，Windows 平台必备
-- 依赖一致性管理通过 NuGet
-- WPF 端需要启用 WindowsTargeting（见 Directory.Build.props）
-
----
-
-### 代码结构说明
-
-- 每一个业务领域一个独立 Module （如 Patients、Doctors、Billing 等）
-- Controller 集中管理API，Service/Repository/Mapping 按层分离
-- Models、Dtos、Enums、Response 结构标准化
-- 公共组件于 LYBT.Common 抽象共用逻辑
-
----
-
-### 测试与发布
-
-- 测试目录未见，建议按Module补充单元和集成测试
-- 脚本/scripts 支持数据库升级和运维自动化
-
----
-
-## 📋 系统规格
-
-### 技术要求
-
-- Windows 10/11
-- .NET 8.0+ Runtime
-- SQL Server/MySQL 实例
-
----
-
-### 兼容性
-
-- 客户端限 Windows 桌面环境
-- 服务端横跨主流 Windows/服务器操作系统环境
-
----
-
-### 合规与安全
-
-- 完善的分权限操作审计及数据保护
-- 建议结合医疗信息系统国家标准/地方法规进一步适配
-
----
-
-## 📞 支持与维护
-
-### 支持渠道
-
-- Github Issue（https://github.com/shouqitao/LYBTZYZS/issues）
-- 内部 IT 团队日常技术支持
-
----
-
-### 运维计划
-
-- 日常检查日志，发现异常及时处理
-- 数据库与应用按需定时备份和更新
-
----
-
-### 问题反馈
-
-- Bug、需求建议通过 Github Issues 提交
-- 版本迭代后及时关注README及更新日志
-
----
-
-## 📄 法律与合规
-
-### 许可协议
-
-- 目前开源仓库未见 LICENSE 文件，建议正式部署环境前确认使用/分发协议
-
----
-
-### 数据隐私
-
-- 患者/医生等敏感信息由权限管控
-- 所有访问记录自动审计与存档
-
----
-
-### 法规遵循
-
-- 医疗数据按地区政策分类加密
-- 操作追踪合规审计要求
-
----
-
-如需进一步深度架构、安全合规、集成扩展等说明，请结合实际业务场景与政策补充咨询。
+```csharp
+using LYBT.Module.Billing.Dtos;
+using LYBT.UI.WPF.Interfaces;
+
+// 示例：新增费用结算账单
+var billDto = new BillingCreateDto { PatientId = patientId, DoctorId = doctorId, Items = new List<BillingItemDto> {
+    new BillingItemDto { Name = "挂号费", UnitPrice = 50, Quantity = 1 }
+}, TotalAmount = 50, PaidAmount = 0, Status = BillingStatus.Pending };
+bool success = await billingService.AddAsync(billDto);
+```
+
+示例调用 `IBillingService.AddAsync` 提交新账单。
+
+## 病历记录 Agent
+
+**功能描述**：管理病历记录，包括查询病历列表、新增病历、编辑和禁用病历，以及共享/撤销共享病历等操作。该 Agent 处理 `RecordCreateDto` 等 DTO，用于记录患者就诊过程。
+ **触发条件/输入要求**：创建病历时需提供 `RecordCreateDto`，必填字段包括患者 ID (`PatientId`)、挂号 ID (`RegistrationId`) 和诊断内容 (`Diagnosis`)。其他字段如主诉、现病史、治疗建议、处方 ID 等可选填写。也可指定是否共享以及共享给哪些医生。
+ **调用方式**：调用 `IRecordService.AddAsync/UpdateAsync` 等服务方法。需要传入 `RecordCreateDto` 以及当前操作员信息 (`operatorId`、`operatorName`)。例如，`IRecordService.AddAsync(recordDto, operatorId, operatorName)` 会创建新的病历。`RecordCreateDto` 定义在 `LYBT.Module.Records.Dtos` 中。
+ **使用示例**：
+
+```csharp
+using LYBT.Module.Records.Dtos;
+using LYBT.UI.WPF.Interfaces;
+
+// 示例：新增病历记录
+var recDto = new RecordCreateDto { PatientId = patientGuid, RegistrationId = regGuid, Diagnosis = "感冒发热", ChiefComplaint = "咳嗽发烧" };
+bool ok = await recordService.AddAsync(recDto, operatorId, operatorName);
+```
+
+示例调用 `IRecordService.AddAsync` 创建新病历。
+
+## 经验方模板 Agent
+
+**功能描述**：管理经验方（中药配方）模板，包括查询模板列表、新增、编辑和禁用模板等。该 Agent 处理 `FormulaTemplateCreateDto` 等 DTO，用于维护常用草药方剂。
+ **触发条件/输入要求**：新增模板时需提供 `FormulaTemplateCreateDto`，必填字段是模板名称 (`Name`)，以及药材列表 `Herbs`。可选填写模板备注。
+ **调用方式**：调用 `IFormulaTemplateService.AddAsync/UpdateAsync` 等服务方法。将 `FormulaTemplateCreateDto` 作为参数传入即可。需要引用命名空间 `LYBT.Module.FormulaTemplates.Dtos`。
+ **使用示例**：
+
+```csharp
+using LYBT.Module.FormulaTemplates.Dtos;
+using LYBT.UI.WPF.Interfaces;
+
+// 示例：新增经验方模板
+var templateDto = new FormulaTemplateCreateDto { Name = "清热解毒方", Herbs = new List<HerbDto> {
+    new HerbDto { Id = herbId1, Name = "金银花", Quantity = 10, Unit = "克" },
+    // ...
+} };
+bool added = await formulaService.AddAsync(templateDto);
+```
+
+示例调用 `IFormulaTemplateService.AddAsync` 添加新的中药方模板。
+
+## 系统设置 Agent
+
+**功能描述**：管理系统全局设置，包括读取和更新全局参数（如默认隐私设置、同步模式等）。该 Agent 主要操作 `GlobalSettingsDto`，控制系统运行参数。
+ **触发条件/输入要求**：读取设置时无需输入。更新设置时需提供完整的 `GlobalSettingsDto` 对象（如 `DefaultRecordSharing`、`SyncMode` 等字段）。
+ **调用方式**：通过后端 API `/api/GlobalSettings`（由 `GlobalSettingsController` 提供）进行调用。GET 请求返回当前 `GlobalSettingsDto`，PUT 请求传递 `GlobalSettingsDto` 以保存设置。在代码中可使用 `IGlobalSettingsService.GetAsync()` 和 `IGlobalSettingsService.SaveAsync(GlobalSettingsDto dto)` 接口调用。
+ **使用示例**：
+
+```csharp
+using LYBT.Module.Settings.Dtos;
+using LYBT.UI.WPF.Interfaces;
+
+// 示例：获取并修改全局设置
+var settings = await settingsService.GetAsync();
+settings.DefaultRecordSharing = "Public";
+bool saved = await settingsService.SaveAsync(settings);
+```
+
+示例中 `GetAsync()` 获取当前设置，`SaveAsync(dto)` 更新设置。
+
+## 日志 Agent
+
+**功能描述**：记录和查询系统操作日志，支持任何业务模块记录操作，以及按条件分页查询日志。该 Agent 使用 `LogDto` 传输日志信息，用于保存用户操作历史。
+ **触发条件/输入要求**：写入日志时需提供 `LogDto` 对象，其中包含日志类型 (`LogType`)、对象类型 (`ObjectType`)、操作对象 ID、操作类型 (`ActionType`)、操作人信息 (`OperatorId`/`OperatorName`)、操作内容 `Content` 等。查询日志时需提供包含查询条件的 `LogQueryDto`（如时间范围、关键词、用户角色等）。
+ **调用方式**：调用 `ILogService.AddLogAsync(LogDto dto)` 方法将日志写入；调用 `ILogService.GetLogsAsync(LogQueryDto query)` 进行分页查询。需要引用 `LYBT.Module.Logs.Dtos.LogDto` 和 `LYBT.Module.Logs.Interfaces.ILogService`。
+ **使用示例**：
+
+```csharp
+using LYBT.Module.Logs.Dtos;
+using LYBT.Common.Enums.Logs;
+using LYBT.UI.WPF.Interfaces;
+
+// 示例：写入一条操作日志
+var logDto = new LogDto {
+    LogType = LogType.Operation, ObjectType = ObjectType.Patient,
+    ObjectId = patientId, OperatorId = userId, OperatorName = "张三",
+    ActionType = ActionType.Edit, Content = "修改患者信息", OldValue = "{...}", NewValue = "{...}"
+};
+Guid logId = await logService.AddLogAsync(logDto);
+```
+
+示例调用 `ILogService.AddLogAsync` 写入日志记录，包括日志类型、操作对象和操作人等信息。
