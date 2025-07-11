@@ -70,9 +70,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             if (SelectedPrescription == null)
                 return;
             if (MessageBox.Show("确定删除该处方吗？", "确认", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes) {
-                var ok = await _service.DeleteAsync(SelectedPrescription.Id);
+                var ok = await _service.CancelAsync(SelectedPrescription.Id);
                 if (!ok)
-                    MessageBox.Show("删除失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("作废失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 await LoadAsync();
             }
         }

@@ -49,5 +49,11 @@ namespace LYBT.WebAPI.Controllers {
             var result = await _service.DeleteAsync(id, Guid.Empty, "system");
             return result ? Ok() : NotFound();
         }
+
+        [HttpPost("void/{id}")]
+        public async Task<ActionResult> Cancel(string id) {
+            var result = await _service.CancelAsync(id, Guid.Empty, "system");
+            return result ? Ok() : NotFound();
+        }
     }
 }

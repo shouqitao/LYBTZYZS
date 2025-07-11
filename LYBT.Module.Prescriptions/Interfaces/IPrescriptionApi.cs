@@ -17,6 +17,8 @@ namespace LYBT.Module.Prescriptions.Interfaces {
 
         Task<bool> DeletePrescriptionAsync(string id);
 
+        Task<bool> CancelPrescriptionAsync(string id);
+
         // 可以扩展更多接口，如状态流转
     }
 }

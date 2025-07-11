@@ -24,5 +24,8 @@ namespace LYBT.UI.WPF.Apis {
 
         [Delete("/api/Prescriptions/{id}")]
         Task<ApiSuccessResponse> DeleteAsync(Guid id);
+
+        [Post("/api/Prescriptions/void/{id}")]
+        Task<ApiSuccessResponse> CancelAsync(Guid id);
     }
 }
