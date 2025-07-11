@@ -7,30 +7,30 @@
 		<BaseOutputPath>..\BIN</BaseOutputPath>
 	</PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
-    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\LYBT.Common\LYBT.Common.csproj" />
-        <ProjectReference Include="..\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-        <ProjectReference Include="..\LYBT.Models\LYBT.Models.csproj" />
+		<ProjectReference Include="..\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+		<ProjectReference Include="..\LYBT.Models\LYBT.Models.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Billing\LYBT.Module.Billing.csproj" />
 		<ProjectReference Include="..\LYBT.Module.DiagnosisTreatment\LYBT.Module.DiagnosisTreatment.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Doctors\LYBT.Module.Doctors.csproj" />
 		<ProjectReference Include="..\LYBT.Module.FormulaTemplates\LYBT.Module.FormulaTemplates.csproj" />
-                <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
-                <ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
-                <ProjectReference Include="..\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
-                <ProjectReference Include="..\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
-                <ProjectReference Include="..\LYBT.Module.Pharmacy\LYBT.Module.Pharmacy.csproj" />
+		<ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+		<ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
+		<ProjectReference Include="..\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
+		<ProjectReference Include="..\LYBT.Module.Pharmacy\LYBT.Module.Pharmacy.csproj" />
+		<ProjectReference Include="..\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Queueing\LYBT.Module.Queueing.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Records\LYBT.Module.Records.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />

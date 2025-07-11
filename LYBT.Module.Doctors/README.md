@@ -1,33 +1,64 @@
-﻿# LYBT.Module.Doctors 模块
+﻿## AGENTS.md — 医生模块（LYBT.Module.Doctors）
 
-## 主要功能
+### 1. Agent 概述
 
-- 医生信息的增删改查
-- 结构化领域模型与DTO
-- 业务服务与数据访问分层
+医生模块用于管理医生档案信息，包括姓名、性别、职称、联系方式、执业状态、挂号权限等，支持医生信息增删改查。
 
-## 结构说明
+### 2. 核心能力
 
-- Enums：枚举类型，带中文描述
-- Interfaces：服务/仓储接口
-- Models：领域实体及DTO
-- Services：业务逻辑实现
-- Repositories：数据访问实现（可替换为数据库实现）
-- Extensions：实体DTO映射扩展
-- DoctorsModule.cs：模块注册入口
+- 新增医生档案
+- 编辑医生资料
+- 删除/禁用医生账号
+- 查询医生列表（支持分页/条件过滤）
+- 按照医生状态筛选
 
-## 接口说明
+### 3. 输入输出规范
 
-- `IDoctorService`：医生业务逻辑接口
-- `IDoctorRepository`：数据库操作接口，使用 `AppDbContext` 实现
+#### 输入
 
-## 特别说明
+- `DoctorCreateDto`：新增医生
+- `DoctorEditDto`：修改医生信息
+- `DoctorQueryDto`：分页/条件查询
 
-- 性别字段已统一调用 LYBT.Common.Enums.Gender 枚举。
-- DoctorStatus 仅包含在职、离职。
-- DoctorWorkStatus 独立表示在职医生的工作状态（诊所坐诊、外出就诊、休假）。
-- 所有枚举用英文命名，[Description] 注解中文。
-- 代码全部带详细中文注释。
-- 创建医生和重置密码接口均需要显式提供密码，不再使用默认值。
+#### 输出
 
----
+- `DoctorDto`：医生列表项
+- `DoctorDetailDto`：医生详细资料
+- `(IList<DoctorDto>, int TotalCount)`：分页结果
+- `bool`：操作成功与否
+
+### 4. 协作与依赖模块
+
+- **用户模块**：医生账号与用户表可关联
+- **挂号/诊疗模块**：医生信息用于挂号、诊疗、排队等业务
+- **基础设施模块**：持久化医生信息
+- **日志模块**：医生信息变更写入操作日志
+
+### 5. 示例场景
+
+#### 新增医生
+
+```csharp
+var dto = new DoctorCreateDto {
+  Name = "王主任",
+  Gender = Gender.Male,
+  Title = DoctorTitle.ChiefPhysician,
+  PhoneNumber = "13312345678"
+};
+bool ok = await _doctorService.AddAsync(dto);
+```
+
+#### 禁用医生账号
+
+```csharp
+await _doctorService.DisableAsync(doctorId);
+```
+
+### 6. 接口列表
+
+- `Task<(IList<DoctorDto>, int)> SearchAsync(DoctorQueryDto query)`
+- `Task<DoctorDetailDto?> GetByIdAsync(Guid id)`
+- `Task<bool> AddAsync(DoctorCreateDto dto)`
+- `Task<bool> UpdateAsync(DoctorEditDto dto)`
+- `Task<bool> DeleteAsync(Guid id)`
+

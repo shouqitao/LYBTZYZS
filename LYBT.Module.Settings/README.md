@@ -1,20 +1,57 @@
-# LYBT.Module.Settings
+## AGENTS.md — 系统设置模块（LYBT.Module.Settings）
 
-系统设置模块，维护应用级配置项，同时提供诊断目录、治疗项目及全局设置等管理能力。
+### 1. Agent 概述
 
-## 主要服务及接口
-- `ISettingsService` / `SettingsService`
-- `ISettingsRepository` / `SettingsRepository`
-- `IDiagnosisCatalogService` / `DiagnosisCatalogService`
-- `ITreatmentCatalogService` / `TreatmentCatalogService`
-- `IGlobalSettingsService` / `GlobalSettingsService`
-- `IEnumMappingsService` / `EnumMappingsService`
+系统设置模块负责维护全局运行参数、诊断目录、治疗目录、枚举映射及其他系统配置项，支撑各模块配置化运行及灵活扩展。
 
-## 重要模型和DTO
-- `SettingsModel`
-- `DiagnosisCatalogModel`、`TreatmentCatalogModel`、`GlobalSettingsModel`
-- `SettingsDto`、`SettingsCreateDto`、`SettingsEditDto`、`SettingsDetailDto`
-- `DiagnosisCatalogDto`、`TreatmentCatalogDto`、`GlobalSettingsDto`
+### 2. 核心能力
 
-## 用法
-执行 `SettingsModule.Register(services)` 后，可通过 `ISettingsService` 读取和保存系统设置。
+- 管理全局设置（如数据同步模式、病历默认共享策略等）
+- 管理诊断目录与治疗目录（支持结构化维护、增删改查）
+- 系统枚举映射（供前端枚举下拉、展示等使用）
+- 读取/保存各类通用配置
+
+### 3. 输入输出规范
+
+#### 输入
+
+- `GlobalSettingsDto`：全局设置项
+- `DiagnosisCatalogDto` / `TreatmentCatalogDto`：目录维护
+- `EnumMappingQueryDto`：枚举查询参数
+
+#### 输出
+
+- `GlobalSettingsDto`：全局配置详情
+- `(IList<DiagnosisCatalogDto>, int)`：诊断目录分页
+- `(IList<TreatmentCatalogDto>, int)`：治疗目录分页
+- `(IList<EnumMappingDto>, int)`：枚举映射
+
+### 4. 协作与依赖模块
+
+- **全部业务模块**：依赖全局配置和目录，如共享策略、默认挂号方式等
+- **基础设施模块**：数据持久化
+- **日志模块**：重要配置变更写入日志
+
+### 5. 示例场景
+
+#### 查询全局设置
+
+```csharp
+var global = await _globalSettingsService.GetAsync();
+```
+
+#### 新增诊断目录
+
+```csharp
+var dto = new DiagnosisCatalogDto { Name = "呼吸系统" };
+bool ok = await _diagnosisCatalogService.AddAsync(dto);
+```
+
+### 6. 接口列表
+
+- `Task<GlobalSettingsDto> GetAsync()`
+- `Task<bool> SaveAsync(GlobalSettingsDto dto)`
+- `Task<(IList<DiagnosisCatalogDto>, int)> GetDiagnosisCatalogsAsync(DiagnosisCatalogQueryDto query)`
+- `Task<(IList<TreatmentCatalogDto>, int)> GetTreatmentCatalogsAsync(TreatmentCatalogQueryDto query)`
+- `Task<(IList<EnumMappingDto>, int)> GetEnumMappingsAsync(EnumMappingQueryDto query)`
+

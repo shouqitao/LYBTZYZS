@@ -1,14 +1,70 @@
-# LYBT.Module.Herbs
+## AGENTS.md — 药材模块（LYBT.Module.Herbs）
 
-药材管理模块，提供药材信息的维护和查询功能。
+### 1. Agent 概述
 
-## 主要服务及接口
-- `IHerbService` / `HerbService`
-- `IHerbRepository` / `HerbRepository`
+药材模块用于管理诊所中使用的中药材信息，包括药材名称、功效、单位、单价等，支持维护药材目录及配合处方模块计算费用。
 
-## 重要模型和DTO
-- `HerbModel`
-- `HerbDto`、`HerbCreateDto`、`HerbEditDto`、`HerbDetailDto`
+### 2. 核心能力
 
-## 用法
-调用 `HerbsModule.Register(services)` 后即可通过 `IHerbService` 增删改查药材数据。
+- 添加新药材
+- 编辑药材信息（如单价、功效、单位）
+- 删除药材
+- 查询药材列表（支持模糊搜索）
+- 支持批量导入药材信息
+
+### 3. 输入输出规范
+
+#### 输入
+
+- `HerbCreateDto`：新增药材
+- `HerbEditDto`：编辑药材
+- `HerbImportDto`：批量导入
+- `HerbQueryDto`：模糊搜索与分页参数
+
+#### 输出
+
+- `HerbDto`：药材信息展示
+- `(IList<HerbDto>, int TotalCount)`：分页结果
+- `bool`：表示操作成功与否
+
+### 4. 协作与依赖模块
+
+- **处方模块**：引用药材信息用于处方开具
+- **经验方模块**：引用药材用于组成药方模板
+- **诊疗模块**：药方部分引用药材
+- **费用模块**：根据药材单价计算处方总价
+- **基础设施模块**：持久化药材记录
+
+### 5. 示例场景
+
+#### 新增药材
+
+```csharp
+var dto = new HerbCreateDto {
+  Name = "黄芪",
+  Effect = "补气固表",
+  Unit = "g",
+  UnitPrice = 2.0M
+};
+bool result = await _herbService.AddAsync(dto);
+```
+
+#### 批量导入药材
+
+```csharp
+var list = new List<HerbImportDto> {
+  new HerbImportDto { Name = "党参", Unit = "g", UnitPrice = 1.8M, Effect = "补中益气" },
+  // ...
+};
+bool ok = await _herbService.BatchImportAsync(list);
+```
+
+### 6. 接口列表
+
+- `Task<(IList<HerbDto>, int)> SearchAsync(HerbQueryDto query)`
+- `Task<HerbDto?> GetByIdAsync(Guid id)`
+- `Task<bool> AddAsync(HerbCreateDto dto)`
+- `Task<bool> UpdateAsync(HerbEditDto dto)`
+- `Task<bool> DeleteAsync(Guid id)`
+- `Task<bool> BatchImportAsync(IList<HerbImportDto> dtoList)`
+

@@ -7,9 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Exceptions\**" />
+    <Compile Remove="Extensions\**" />
+    <EmbeddedResource Remove="Exceptions\**" />
+    <EmbeddedResource Remove="Extensions\**" />
+    <None Remove="Exceptions\**" />
+    <None Remove="Extensions\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Prism.Core" Version="9.0.537" />
-    <PackageReference Include="Prism.Wpf" Version="9.0.537" />
     <PackageReference Include="AutoMapper" Version="14.0.0" />
   </ItemGroup>
 
@@ -20,8 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Exceptions\" />
-    <Folder Include="Extensions\" />
     <Folder Include="Repositories\" />
     <Folder Include="Dtos\" />
     <Folder Include="Mapping\" />
