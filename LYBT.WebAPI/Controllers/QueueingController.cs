@@ -75,5 +75,16 @@ namespace LYBT.Module.Queueing.Controllers {
                 return NotFound();
             return Ok("删除排队成功");
         }
+
+        /// <summary>
+        /// 取消排队
+        /// </summary>
+        [HttpPost("cancel/{id}")]
+        public async Task<ActionResult> Cancel(Guid id) {
+            var result = await _queueingService.CancelAsync(id);
+            if (!result)
+                return NotFound();
+            return Ok();
+        }
     }
 }

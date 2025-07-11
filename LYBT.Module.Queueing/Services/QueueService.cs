@@ -66,5 +66,12 @@ namespace LYBT.Module.Queueing.Services {
         public async Task<bool> DeleteAsync(Guid id) {
             return await _repository.DeleteAsync(id);
         }
+
+        /// <summary>
+        /// 取消排队，更新状态为已取消
+        /// </summary>
+        public async Task<bool> CancelAsync(Guid id) {
+            return await _repository.CancelAsync(id);
+        }
     }
 }
