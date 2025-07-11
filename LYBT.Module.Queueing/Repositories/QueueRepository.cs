@@ -57,5 +57,17 @@ namespace LYBT.Module.Queueing.Repositories {
             _appDbContext.Queueings.Remove(model);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
+
+        /// <summary>
+        /// 取消排队信息，标记状态为已取消
+        /// </summary>
+        public async Task<bool> CancelAsync(Guid id) {
+            var model = await _appDbContext.Queueings.FindAsync(id);
+            if (model == null)
+                return false;
+            model.Status = LYBT.Common.Enums.QueueStatus.Cancelled;
+            _appDbContext.Queueings.Update(model);
+            return await _appDbContext.SaveChangesAsync() > 0;
+        }
     }
 }

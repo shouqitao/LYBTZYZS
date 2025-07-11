@@ -31,5 +31,10 @@ namespace LYBT.Module.Queueing.Interfaces {
         /// 删除排队信息
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 取消排队
+        /// </summary>
+        Task<bool> CancelAsync(Guid id);
     }
 }
