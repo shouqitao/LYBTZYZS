@@ -2,6 +2,8 @@ using LYBT.Infrastructure.Auth;
 using LYBT.Module.Auth.Dtos;
 using LYBT.Common.Responses;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Module.Users.Interfaces;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -14,10 +16,12 @@ namespace LYBT.WebAPI.Controllers {
     [Route("api/[controller]")]
     public class AuthController : ControllerBase {
         private readonly IAuthService _authService;
+        private readonly IUserService _userService;
         private readonly JwtOptions _jwtOptions;
 
-        public AuthController(IAuthService authService, IOptions<JwtOptions> jwtOptions) {
+        public AuthController(IAuthService authService, IUserService userService, IOptions<JwtOptions> jwtOptions) {
             _authService = authService;
+            _userService = userService;
             _jwtOptions = jwtOptions.Value;
         }
 
@@ -59,6 +63,19 @@ namespace LYBT.WebAPI.Controllers {
                 return BadRequest(ApiResponse<object>.Fail("参数无效", 400));
             var ok = await _authService.ChangeSysAdminPasswordAsync(dto);
             return ok ? Ok(ApiResponse<object>.Success(null)) : BadRequest(ApiResponse<object>.Fail("修改失败", 400));
+        }
+
+        /// <summary>
+        /// 获取当前登录用户信息
+        /// </summary>
+        [HttpGet("current")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> GetCurrent() {
+            var userIdStr = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(ApiResponse<object>.Fail("未登录", 401));
+            var user = await _userService.GetByIdAsync(userId);
+            return user == null ? Unauthorized(ApiResponse<object>.Fail("未登录", 401)) : Ok(ApiResponse<object>.Success(user));
         }
     }
 }
