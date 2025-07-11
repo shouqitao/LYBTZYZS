@@ -17,5 +17,10 @@ namespace LYBT.Common.Extensions {
             var attribute = field?.GetCustomAttribute<DescriptionAttribute>();
             return attribute?.Description ?? value.ToString();
         }
+
+        /// <summary>
+        /// Alias for GetDescription to align with README wording.
+        /// </summary>
+        public static string ToChinese(this Enum value) => value.GetDescription();
     }
 }
