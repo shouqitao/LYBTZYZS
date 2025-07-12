@@ -3,6 +3,7 @@ using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.Views;
 using LYBT.UI.WPF.Views.Admin;
 using LYBT.UI.WPF.Views.Main;
+using LYBT.UI.WPF.Views.Profile;
 using Refit;
 using System.Configuration;
 using System.Net.Http;
@@ -49,6 +50,7 @@ namespace LYBT.UI.WPF {
             var herbApi = RestService.For<IHerbApi>(httpClient, refitSettings);
             var billingApi = RestService.For<IBillingApi>(httpClient, refitSettings);
             var prescriptionApi = RestService.For<IPrescriptionApi>(httpClient, refitSettings);
+            var formulaTemplateApi = RestService.For<IFormulaTemplateApi>(httpClient, refitSettings);
             var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
@@ -59,6 +61,7 @@ namespace LYBT.UI.WPF {
             var herbService = new HerbService(herbApi);
             var billingService = new BillingService(billingApi);
             var prescriptionService = new PrescriptionService(prescriptionApi);
+            var formulaTemplateService = new FormulaTemplateService(formulaTemplateApi);
             var logService = new LogService(logApi);
 
 
@@ -70,6 +73,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(herbApi);
             containerRegistry.RegisterInstance(billingService);
             containerRegistry.RegisterInstance(prescriptionApi);
+            containerRegistry.RegisterInstance(formulaTemplateApi);
             containerRegistry.RegisterInstance(logApi);
 
             containerRegistry.RegisterInstance<IAuthService>(authService);
@@ -79,6 +83,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IHerbService>(herbService);
             containerRegistry.RegisterInstance<IBillingService>(billingService);
             containerRegistry.RegisterInstance<IPrescriptionService>(prescriptionService);
+            containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
             containerRegistry.RegisterInstance<ILogService>(logService);
 
 
@@ -91,6 +96,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<DoctorManagementView>("DoctorManagementView");
             containerRegistry.RegisterForNavigation<HerbManagementView>("HerbManagementView");
             containerRegistry.RegisterForNavigation<PrescriptionManagementView>("PrescriptionManagementView");
+            containerRegistry.RegisterForNavigation<FormulaTemplatesManagementView>("FormulaTemplatesManagementView");
             containerRegistry.RegisterForNavigation<BillingStaffView>("BillingStaffView");
             containerRegistry.RegisterForNavigation<DiagnosingDoctorView>("DiagnosingDoctorView");
             containerRegistry.RegisterForNavigation<PharmacyStaffView>("PharmacyStaffView");
@@ -100,6 +106,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<ChangeProfileView>("ChangeProfileView");
             containerRegistry.RegisterForNavigation<DoctorProfileView>("DoctorProfileView");
             containerRegistry.RegisterForNavigation<HerbProfileView>("HerbProfileView");
+            containerRegistry.RegisterForNavigation<FormulaTemplatesProfileView>("FormulaTemplatesProfileView");
             containerRegistry.RegisterForNavigation<UserProfileView>("UserProfileView");
 
         }

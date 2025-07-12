@@ -22,5 +22,8 @@
         <TabItem Header="处方管理">
             <admin:PrescriptionManagementView/>
         </TabItem>
+        <TabItem Header="经验方模板">
+            <admin:FormulaTemplatesManagementView/>
+        </TabItem>
     </TabControl>
 </UserControl>
