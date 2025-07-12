@@ -8,9 +8,9 @@
 
 - 创建账单记录（含账单明细）
 - 修改账单金额或支付状态
-- 查询账单（分页与条件过滤）
-- 支持费用统计（如总金额、已付、未付等）
-- 删除账单记录
+- 删除账单
+- 标记已支付、完成及退款
+- 获取账单列表和单条详情
 
 ### 3. 输入输出规范
 
@@ -64,9 +64,15 @@ var (list, total) = await _billingService.SearchAsync(query);
 
 ### 6. 接口列表
 
-- `Task<(IList<BillingDto>, int)> SearchAsync(BillingQueryDto query)`
+- `Task<List<BillingDto>> GetListAsync()`
 - `Task<BillingDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(BillingCreateDto dto)`
 - `Task<bool> UpdateAsync(BillingEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
+- `Task<bool> MarkAsPaidAsync(Guid id)`
+- `Task<bool> MarkAsCompletedAsync(Guid id)`
+- `Task<bool> RequestRefundAsync(Guid id, string reason)`
+- `Task<bool> ApproveRefundAsync(Guid id)`
+- `Task<bool> RejectRefundAsync(Guid id)`
+- `Task<bool> CancelAsync(Guid id)`
 

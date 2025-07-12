@@ -9,8 +9,7 @@
 - 创建药方模板（包含名称和药材组成）
 - 编辑药方模板（添加/修改/删除药材）
 - 删除药方模板
-- 查询模板列表（支持分页和模糊搜索）
-- 查看模板详情
+- 获取模板列表及详情
 
 ### 3. 输入输出规范
 
@@ -50,7 +49,7 @@ bool success = await _formulaTemplateService.AddAsync(dto);
 
 ### 6. 接口列表
 
-- `Task<(IList<FormulaTemplateDto>, int)> SearchAsync(FormulaTemplateQueryDto query)`
+- `Task<List<FormulaTemplateDto>> GetListAsync()`
 - `Task<FormulaTemplateDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(FormulaTemplateCreateDto dto)`
 - `Task<bool> UpdateAsync(FormulaTemplateEditDto dto)`

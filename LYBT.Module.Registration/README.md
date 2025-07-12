@@ -8,8 +8,8 @@
 
 - 创建挂号记录（含挂号类型、挂号医生、挂号时间等）
 - 修改或取消挂号记录
-- 支持分页与条件查询挂号列表
-- 支持挂号时自动关联排队记录（根据系统设置）
+- 删除挂号记录
+- 挂号后自动生成排队记录
 
 ### 3. 输入输出规范
 
@@ -59,9 +59,10 @@ var (list, total) = await _registrationService.SearchAsync(query);
 
 ### 6. 接口列表
 
-- `Task<(IList<RegistrationDto>, int)> SearchAsync(RegistrationQueryDto dto)`
-- `Task<RegistrationDto?> GetByIdAsync(Guid id)`
+- `Task<List<RegistrationDto>> GetListAsync()`
+- `Task<RegistrationDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(RegistrationCreateDto dto)`
 - `Task<bool> UpdateAsync(RegistrationEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
+- `Task<bool> CancelAsync(Guid id)`
 

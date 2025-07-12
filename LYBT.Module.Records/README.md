@@ -6,10 +6,8 @@
 
 ### 2. 核心能力
 
-- 新增病历记录（含挂号ID、诊疗ID、主诉、诊断、处方等）
-- 编辑病历内容
-- 删除病历
-- 查询/分页病历列表（按患者、医生、日期、共享状态等）
+- 新增、编辑和删除病历记录
+- 获取病历列表及详情
 - 病历共享与权限管理（可设置公开/非公开、指定共享对象）
 
 ### 3. 输入输出规范
@@ -63,10 +61,11 @@ bool ok = await _recordService.ShareAsync(shareDto);
 
 ### 6. 接口列表
 
-- `Task<(IList<RecordDto>, int)> SearchAsync(RecordQueryDto query)`
+- `Task<List<RecordDto>> GetListAsync()`
 - `Task<RecordDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(RecordCreateDto dto, Guid operatorId, string operatorName)`
 - `Task<bool> UpdateAsync(RecordEditDto dto, Guid operatorId, string operatorName)`
-- `Task<bool> DeleteAsync(Guid id)`
-- `Task<bool> ShareAsync(RecordShareDto dto)`
+- `Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName)`
+- `Task<bool> MarkAsSharedAsync(Guid id, List<string> doctorIds)`
+- `Task<bool> RevokeSharingAsync(Guid id)`
 

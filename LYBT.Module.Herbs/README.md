@@ -9,8 +9,7 @@
 - 添加新药材
 - 编辑药材信息（如单价、功效、单位）
 - 删除药材
-- 查询药材列表（支持模糊搜索）
-- 支持批量导入药材信息
+- 获取药材列表
 
 ### 3. 输入输出规范
 
@@ -61,10 +60,9 @@ bool ok = await _herbService.BatchImportAsync(list);
 
 ### 6. 接口列表
 
-- `Task<(IList<HerbDto>, int)> SearchAsync(HerbQueryDto query)`
-- `Task<HerbDto?> GetByIdAsync(Guid id)`
+- `Task<List<HerbDto>> GetListAsync()`
+- `Task<HerbDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(HerbCreateDto dto)`
 - `Task<bool> UpdateAsync(HerbEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
-- `Task<bool> BatchImportAsync(IList<HerbImportDto> dtoList)`
 

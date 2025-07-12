@@ -6,10 +6,10 @@
 
 ### 2. 核心能力
 
-- 创建同步任务（记录同步源、目标、时间、范围等）
-- 编辑/更新同步任务状态
-- 查询同步任务及同步日志（按任务、类型、时间过滤）
-- 写入同步日志，记录同步详细信息和结果
+- 创建、更新和删除同步任务
+- 写入同步日志并查询历史
+- 获取最近一次同步信息
+- 检测中心数据库连接状态
 
 ### 3. 输入输出规范
 
@@ -59,9 +59,15 @@ bool ok = await _syncService.WriteLogAsync(logDto);
 
 ### 6. 接口列表
 
-- `Task<bool> CreateTaskAsync(SyncTaskCreateDto dto)`
+- `Task<List<SyncTaskDto>> GetTaskListAsync()`
+- `Task<SyncTaskDetailDto?> GetTaskDetailAsync(Guid id)`
+- `Task<bool> AddTaskAsync(SyncTaskCreateDto dto)`
 - `Task<bool> UpdateTaskAsync(SyncTaskEditDto dto)`
-- `Task<(IList<SyncTaskDto>, int)> GetTasksAsync(SyncTaskQueryDto query)`
-- `Task<bool> WriteLogAsync(SyncLogDto dto)`
-- `Task<(IList<SyncLogDto>, int)> GetLogsAsync(SyncLogQueryDto query)`
+- `Task<bool> DeleteTaskAsync(Guid id)`
+- `Task<List<SyncLogDto>> GetLogListAsync()`
+- `Task<SyncLogDto?> GetLastSyncInfoAsync()`
+- `Task<bool> AddLogAsync(SyncLogCreateDto dto)`
+- `Task<bool> DeleteLogAsync(string id)`
+- `Task<bool> CheckConnectionStatusAsync()`
+- `Task<bool> TriggerManualSyncAsync()`
 

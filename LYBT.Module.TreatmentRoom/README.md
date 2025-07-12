@@ -6,11 +6,8 @@
 
 ### 2. 核心能力
 
-- 创建/编辑诊疗室（如房间号、类型、可用状态）
-- 删除诊疗室
-- 查询诊疗室列表及详情
-- 管理诊疗室内的治疗任务队列（如推拿、理疗、康复等）
-- 治疗任务分配与进度更新
+- 创建、编辑和删除治疗室记录
+- 获取治疗室列表及详情
 
 ### 3. 输入输出规范
 
@@ -61,10 +58,9 @@ bool ok = await _treatmentRoomService.AssignTaskAsync(task);
 
 ### 6. 接口列表
 
-- `Task<(IList<TreatmentRoomDto>, int)> SearchAsync(TreatmentRoomQueryDto query)`
+- `Task<List<TreatmentRoomDto>> GetListAsync()`
 - `Task<TreatmentRoomDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(TreatmentRoomCreateDto dto)`
 - `Task<bool> UpdateAsync(TreatmentRoomEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
-- `Task<bool> AssignTaskAsync(TreatmentTaskDto dto)`
 

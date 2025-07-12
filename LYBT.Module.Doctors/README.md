@@ -6,11 +6,10 @@
 
 ### 2. 核心能力
 
-- 新增医生档案
-- 编辑医生资料
-- 删除/禁用医生账号
-- 查询医生列表（支持分页/条件过滤）
-- 按照医生状态筛选
+- 新增和编辑医生档案
+- 禁用/启用医生账号及批量操作
+- 分页查询医生列表
+- 按在职状态筛选
 
 ### 3. 输入输出规范
 
@@ -56,9 +55,14 @@ await _doctorService.DisableAsync(doctorId);
 
 ### 6. 接口列表
 
-- `Task<(IList<DoctorDto>, int)> SearchAsync(DoctorQueryDto query)`
+- `Task<PagedResultDto<DoctorDto>> GetPagedAsync(DoctorQueryDto query)`
+- `Task<List<DoctorDto>> SearchAsync(string keyword)`
 - `Task<DoctorDetailDto?> GetByIdAsync(Guid id)`
-- `Task<bool> AddAsync(DoctorCreateDto dto)`
-- `Task<bool> UpdateAsync(DoctorEditDto dto)`
-- `Task<bool> DeleteAsync(Guid id)`
+- `Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId)`
+- `Task<bool> AddAsync(DoctorDetailDto dto)`
+- `Task<bool> UpdateAsync(DoctorDetailDto dto)`
+- `Task<bool> DisableAsync(Guid id)`
+- `Task<bool> EnableAsync(Guid id)`
+- `Task<int> BatchDisableAsync(List<Guid> ids)`
+- `Task<int> BatchEnableAsync(List<Guid> ids)`
 

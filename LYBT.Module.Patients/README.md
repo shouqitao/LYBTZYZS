@@ -6,12 +6,12 @@
 
 ### 2. 核心能力
 
-- 添加新患者（支持手动输入或身份证读取）
-- 编辑患者信息
-- 删除患者记录
-- 根据姓名、拼音码、身份证等快速模糊搜索
+- 添加、编辑和删除患者记录
+- 根据关键词快速搜索患者
 - 分页查询患者列表
-- 支持按条件筛选和排序
+- 启用/禁用患者及批量禁用
+- 授权患者给指定医生
+- 批量导入与导出患者数据
 
 ### 3. 输入输出规范
 
@@ -63,9 +63,18 @@ var (list, total) = await _patientService.SearchAsync(query);
 
 ### 6. 接口列表
 
-- `Task<(IList<PatientDto>, int)> SearchAsync(PatientQueryDto query)`
-- `Task<PatientDto?> GetByIdAsync(Guid id)`
-- `Task<bool> AddAsync(PatientCreateDto dto)`
-- `Task<bool> UpdateAsync(PatientEditDto dto)`
-- `Task<bool> DeleteAsync(Guid id)`
+- `Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query)`
+- `Task<PatientDetailDto?> GetByIdAsync(Guid id)`
+- `Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName)`
+- `Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName)`
+- `Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName)`
+- `Task<int> BatchDeleteAsync(List<string> ids, Guid operatorId, string operatorName)`
+- `Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName)`
+- `Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName)`
+- `Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName)`
+- `Task<List<PatientDetailDto>> SearchAsync(string keyword)`
+- `Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName)`
+- `Task<int> ImportAsync(List<PatientDetailDto> dtos, Guid operatorId, string operatorName)`
+- `Task<List<PatientDetailDto>> ExportAsync()`
+- `Task<List<RecordDto>> GetHistoryRecordsAsync(Guid patientId)`
 

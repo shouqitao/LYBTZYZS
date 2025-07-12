@@ -17,7 +17,6 @@
 
 - `GlobalSettingsDto`：全局设置项
 - `DiagnosisCatalogDto` / `TreatmentCatalogDto`：目录维护
-- `EnumMappingQueryDto`：枚举查询参数
 
 #### 输出
 
@@ -49,9 +48,15 @@ bool ok = await _diagnosisCatalogService.AddAsync(dto);
 
 ### 6. 接口列表
 
-- `Task<GlobalSettingsDto> GetAsync()`
+- `Task<GlobalSettingsDto?> GetAsync()`
 - `Task<bool> SaveAsync(GlobalSettingsDto dto)`
-- `Task<(IList<DiagnosisCatalogDto>, int)> GetDiagnosisCatalogsAsync(DiagnosisCatalogQueryDto query)`
-- `Task<(IList<TreatmentCatalogDto>, int)> GetTreatmentCatalogsAsync(TreatmentCatalogQueryDto query)`
-- `Task<(IList<EnumMappingDto>, int)> GetEnumMappingsAsync(EnumMappingQueryDto query)`
+- `Task<List<DiagnosisCatalogDto>> GetDiagnosisCatalogsAsync()`
+- `Task<bool> AddDiagnosisCatalogAsync(DiagnosisCatalogCreateDto dto)`
+- `Task<bool> UpdateDiagnosisCatalogAsync(DiagnosisCatalogEditDto dto)`
+- `Task<bool> DeleteDiagnosisCatalogAsync(Guid id)`
+- `Task<List<TreatmentCatalogDto>> GetTreatmentCatalogsAsync()`
+- `Task<bool> AddTreatmentCatalogAsync(TreatmentCatalogCreateDto dto)`
+- `Task<bool> UpdateTreatmentCatalogAsync(TreatmentCatalogEditDto dto)`
+- `Task<bool> DeleteTreatmentCatalogAsync(Guid id)`
+- `Task<Dictionary<string, Dictionary<int,string>>> GetEnumMappingsAsync()`
 
