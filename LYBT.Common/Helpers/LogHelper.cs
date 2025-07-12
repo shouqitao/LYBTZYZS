@@ -1,6 +1,6 @@
 ﻿using LYBT.Common.Enums.Logs;
 
-namespace LYBT.Infrastructure.Helpers {
+namespace LYBT.Common.Helpers {
 
     /// <summary>
     /// 日志工具类（简化示例）

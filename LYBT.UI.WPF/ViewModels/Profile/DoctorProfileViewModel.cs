@@ -4,6 +4,9 @@ using LYBT.Module.Users.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.ViewModels.Main;
+using LYBT.Common.Helpers;
+using LYBT.Common.Models;
+using System.Collections.ObjectModel;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Profile {
@@ -14,6 +17,10 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         private DoctorDetailDto _doctor = new();
         public DoctorDetailDto Doctor { get => _doctor; set => SetProperty(ref _doctor, value); }
+
+        public ObservableCollection<EnumItem<Gender>> GenderList { get; } = EnumHelper.BuildComboBoxSource<Gender>();
+        public ObservableCollection<EnumItem<DoctorTitle>> TitleList { get; } = EnumHelper.BuildComboBoxSource<DoctorTitle>();
+        public ObservableCollection<EnumItem<DoctorStatus>> StatusList { get; } = EnumHelper.BuildComboBoxSource<DoctorStatus>();
 
         private UserDto? _user;
         public UserDto? User { get => _user; set => SetProperty(ref _user, value); }

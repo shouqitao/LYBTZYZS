@@ -4,6 +4,7 @@
 using LYBT.Infrastructure;
 using LYBT.Infrastructure.Auth.Extensions;
 using LYBT.Infrastructure.Exceptions;
+using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Helpers;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
@@ -28,10 +29,6 @@ using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Logs.Mapping;
 using LYBT.Module.Logs.Repositories;
 using LYBT.Module.Logs.Services;
-using LYBT.Module.Prescriptions.Interfaces;
-using LYBT.Module.Prescriptions.Mapping;
-using LYBT.Module.Prescriptions.Repositories;
-using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Repositories;
@@ -72,7 +69,58 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDefaults"));
 
 // =========== 1. 注册所有模块的 Service 和 Repository ===========
-builder.Services.AddLybtModules();
+
+
+// 用户管理
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// 病人管理
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
+// 医生管理
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+
+// 挂号管理
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
+
+// 排队管理
+builder.Services.AddScoped<IQueueingService, QueueingService>();
+builder.Services.AddScoped<IQueueingRepository, QueueingRepository>();
+
+// 诊疗管理
+builder.Services.AddScoped<IDiagnosisTreatmentService, DiagnosisTreatmentService>();
+builder.Services.AddScoped<IDiagnosisTreatmentRepository, DiagnosisTreatmentRepository>();
+
+// 药材管理
+builder.Services.AddScoped<IHerbService, HerbService>();
+builder.Services.AddScoped<IHerbRepository, HerbRepository>();
+
+// 经验方模板管理
+builder.Services.AddScoped<IFormulaTemplateService, FormulaTemplateService>();
+builder.Services.AddScoped<IFormulaTemplateRepository, FormulaTemplateRepository>();
+
+// 病历管理
+builder.Services.AddScoped<IRecordService, RecordService>();
+builder.Services.AddScoped<IRecordRepository, RecordRepository>();
+
+// 日志管理
+builder.Services.AddScoped<ILogService, LogService>();
+builder.Services.AddScoped<ILogRepository, LogRepository>();
+
+// 同步管理
+builder.Services.AddScoped<ISyncService, SyncService>();
+builder.Services.AddScoped<ISyncRepository, SyncRepository>();
+
+// 设置管理
+builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
+
 
 // =========== 2. 注册所有模块的 AutoMapper 配置文件 ===========
 
@@ -87,8 +135,7 @@ builder.Services.AddAutoMapper(
     typeof(FormulaTemplateMappingProfile),
     typeof(LogMappingProfile),
     typeof(SyncMappingProfile),
-   typeof(SettingsMappingProfile),
-   typeof(PrescriptionMappingProfile)
+   typeof(SettingsMappingProfile)
 );
 
 // =========== 3. 注册控制器和Swagger ===========

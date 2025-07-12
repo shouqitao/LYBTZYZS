@@ -1,5 +1,9 @@
 using LYBT.Module.Patients.Dtos;
 using LYBT.UI.WPF.Interfaces;
+using LYBT.Common.Enums;
+using LYBT.Common.Helpers;
+using LYBT.Common.Models;
+using System.Collections.ObjectModel;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -15,6 +19,8 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             get => _patient;
             set => SetProperty(ref _patient, value);
         }
+
+        public ObservableCollection<EnumItem<Gender>> GenderList { get; } = EnumHelper.BuildComboBoxSource<Gender>();
 
         private string _editModeTitle = "新增患者档案";
         public string EditModeTitle {

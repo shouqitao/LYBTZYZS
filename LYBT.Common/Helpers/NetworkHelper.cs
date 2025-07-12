@@ -1,6 +1,6 @@
 ﻿using System.Net.NetworkInformation;
 
-namespace LYBT.Infrastructure.Helpers {
+namespace LYBT.Common.Helpers {
 
     /// <summary>
     /// 网络状态检查工具类
