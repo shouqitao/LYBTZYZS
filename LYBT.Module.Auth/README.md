@@ -50,7 +50,18 @@ await _logService.WriteAsync(userId, "登录", "Auth", "Success", "登录成功"
 
 ### 6. 接口列表
 
-- `Task<UserDto?> LoginAsync(LoginRequestDto dto)`
-- `Task<bool> LogoutAsync(LogoutRequestDto dto)`
-- `Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto)`
+- `Task<UserDto?> LoginAsync(LoginRequestDto dto)` - 用户登录并返回用户信息
+- `Task<bool> LogoutAsync(LogoutRequestDto dto)` - 用户登出
+- `Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto)` - 修改系统管理员密码
 
+
+### Web API 接口对照
+
+| 设计接口 | 接口说明 | 状态 |
+| --- | --- | --- |
+| `POST /api/auth/login` | 用户登录 | 已实现 |
+| `POST /api/auth/logout` | 用户登出 | 已实现 |
+| `POST /api/auth/changeSysAdminPassword` | 修改 sysadmin 密码 | 已实现 |
+
+接口数量：3
+已实现 Web API 数量：3
