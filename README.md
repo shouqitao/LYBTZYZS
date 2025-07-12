@@ -93,4 +93,12 @@
 
 - 各模块 AGENTS.md 文件详细定义请见对应模块目录
 - 系统整体支持横向扩展、新业务模块与第三方平台集成
+## Running Tests
+
+Execute all unit tests with:
+
+```bash
+ dotnet test
+```
+
 
