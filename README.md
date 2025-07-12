@@ -102,3 +102,5 @@ Execute all unit tests with:
 ```
 
 
+
+Unit tests now cover service ports of all modules and can be run with `dotnet test`.
