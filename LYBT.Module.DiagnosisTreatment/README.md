@@ -60,3 +60,14 @@ await _diagnosisService.AddAsync(dto);
 - `Task<bool> UpdateAsync(DiagnosisTreatmentEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/diagnosis` | 已实现 | `DiagnosisTreatmentController.Add` |
+| `PUT /api/diagnosis/{id}` | 已实现 | Id 在 DTO 中传递 |
+| `GET /api/diagnosis` | 已实现 | |
+| `GET /api/diagnosis/{id}` | 已实现 | |
+| `POST /api/diagnosis/importtemplate` | 未实现 | 未找到对应接口 |
+
+

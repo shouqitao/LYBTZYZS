@@ -78,3 +78,14 @@ var (list, total) = await _patientService.SearchAsync(query);
 - `Task<List<PatientDetailDto>> ExportAsync()`
 - `Task<List<RecordDto>> GetHistoryRecordsAsync(Guid patientId)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/patients` | 未实现 | 实际路径 `POST /api/Patients/add` |
+| `PUT /api/patients/{id}` | 未实现 | 实际路径 `PUT /api/Patients/edit` |
+| `GET /api/patients` | 未实现 | 提供 `GET /api/Patients/all`、`/paged` 等 |
+| `DELETE /api/patients/{id}` | 未实现 | 提供 `batchDelete` 与 `disable/{id}` |
+| `POST /api/patients/readidcard` | 未实现 | 代码中未找到对应实现 |
+
+

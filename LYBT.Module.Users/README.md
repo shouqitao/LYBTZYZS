@@ -78,3 +78,14 @@ await _userService.ChangePasswordAsync(userId, oldPwd, newPwd);
 - `Task<bool> ChangeProfileAsync(Guid id, string realName, string? phone, string? email)`
 - `Task<IList<string>> GetRoles()`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/users` | 未实现 | 实际路径 `POST /api/Users/add` |
+| `PUT /api/users/{id}` | 未实现 | 实际路径 `PUT /api/Users/update` |
+| `POST /api/auth/login` | 已实现 | 由 `AuthController` 提供 |
+| `GET /api/users` | 未实现 | 实际路径 `GET /api/Users/search` |
+| `DELETE /api/users/{id}` | 未实现 | 仅提供 `disable/{id}` 与 `enable/{id}` |
+
+

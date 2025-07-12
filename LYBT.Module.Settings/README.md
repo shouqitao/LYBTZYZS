@@ -60,3 +60,13 @@ bool ok = await _diagnosisCatalogService.AddAsync(dto);
 - `Task<bool> DeleteTreatmentCatalogAsync(Guid id)`
 - `Task<Dictionary<string, Dictionary<int,string>>> GetEnumMappingsAsync()`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/settings` | 已实现 |
+| `GET /api/settings` | 已实现 |
+| `POST /api/diagnosiscatalog` | 已实现 |
+| `GET /api/diagnosiscatalog` | 已实现 |
+
+

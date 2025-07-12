@@ -66,3 +66,13 @@ await _doctorService.DisableAsync(doctorId);
 - `Task<int> BatchDisableAsync(List<Guid> ids)`
 - `Task<int> BatchEnableAsync(List<Guid> ids)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/doctors` | 未实现 | 实际路径 `POST /api/Doctors/add` |
+| `PUT /api/doctors/{id}` | 未实现 | 实际路径 `PUT /api/Doctors/update` |
+| `GET /api/doctors` | 未实现 | 实际路径 `GET /api/Doctors/search` |
+| `DELETE /api/doctors/{id}` | 未实现 | 提供 `disable/{id}` 与 `enable/{id}` |
+
+

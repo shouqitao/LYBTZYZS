@@ -66,3 +66,15 @@ bool ok = await _herbService.BatchImportAsync(list);
 - `Task<bool> UpdateAsync(HerbEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/herbs` | 已实现 |
+| `PUT /api/herbs/{id}` | 已实现 |
+| `GET /api/herbs` | 已实现 |
+| `GET /api/herbs/{id}` | 已实现 |
+| `DELETE /api/herbs/{id}` | 已实现 |
+| `POST /api/herbs/import` | 未实现 | 控制器中未提供导入接口 |
+
+

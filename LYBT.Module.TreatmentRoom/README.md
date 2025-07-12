@@ -64,3 +64,12 @@ bool ok = await _treatmentRoomService.AssignTaskAsync(task);
 - `Task<bool> UpdateAsync(TreatmentRoomEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/treatmentroom` | 已实现 |
+| `GET /api/treatmentroom` | 已实现 |
+| `DELETE /api/treatmentroom/{id}` | 已实现 |
+
+
