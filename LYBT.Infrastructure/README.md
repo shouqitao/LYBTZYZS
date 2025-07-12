@@ -1,62 +1,63 @@
-## AGENTS.md �� ������ʩģ�飨LYBT.Infrastructure��
+## AGENTS.md — 基础设施模块（LYBT.Infrastructure）
 
-### 1. Agent ����
+### 1. Agent 概述
 
-������ʩģ��Ϊȫϵͳ�ṩ���ݿ���ʡ����ݳ�ʼ�������ʱ�����ġ��ִ�ע��ȵײ�֧�ţ�������ҵ��ģ��־û��ĺ���������
+基础设施模块为全系统提供数据库访问、数据初始化、设计时上下文等底层支撑，是所有业务模块持久化和认证、异常处理等能力的核心桥梁。
 
-### 2. ��������
+### 2. 核心能力
 
-- ͳһ���ݷ��ʣ����� Entity Framework�������� AppDbContext ������ʵ���ӳ�����ϵ����
-- �ṩ���ʱ DbContextFactory��֧�� EF migrations �� CLI ����
-- ϵͳ��ʼ�����ߣ��糬������Ա�˻����� AdminSeeder��
-- �ִ�ע����չ���������ע�루Repository �Զ�ע������ģ��Ĳִ�ʵ�֣�
+- 统一数据访问（基于 Entity Framework），包含 AppDbContext 的所有实体表映射与关系配置
+- 提供设计时 DbContextFactory，支持 EF migrations 和 CLI 工具
+- 系统初始化工具（如超级管理员账户种子 AdminSeeder）
+- JWT 认证帮助（`JwtHelper`、`AddJwtAuthentication` 扩展）
+- 全局异常处理中间件（`BusinessException`、`ExceptionMiddleware`）
 
-### 3. ��������淶
+### 3. 输入输出规范
 
-#### ����
+#### 输入
 
-- ҵ���ͨ������ע���� DbContext ��ִ��ӿ�
-- ���ݿ������ַ�����Ǩ�Ʋ�����������
+- 业务层通过依赖注入获得 DbContext 或仓储接口
+- 数据库连接字符串、迁移参数等配置项
 
-#### ���
+#### 输出
 
-- ��������ģ�ͣ�Model���ڴ˲��Զ�ӳ��Ϊ���ݿ��
-- ͨ���ִ��㷵�ز�ѯ����������������������¡�ɾ���ȣ�
+- 所有数据模型（Model）在此层自动映射为数据库表
+- 通过仓储层返回查询结果、变更结果（新增、更新、删除等）
 
-### 4. Э��������ģ��
+### 4. 协作与依赖模块
 
-- **ȫ��ҵ��ģ��**��ͨ��ע�������ʩ�� DbContext �� Repository �������ݲ���
-- **����ģ��ģ��**������ʵ�� Model ����ӳ���ϵ
-- **ͨ��ģ��**���ֶ�ӳ������ö��/��������
-- **��־/ͬ����ģ��**����־��ͬ�������ͬ���ɻ�����ʩ�����������
+- **全部业务模块**：通过注入基础设施的 DbContext 或 Repository 进行数据操作
+- **数据模型模块**：引用实体 Model 定义映射关系
+- **通用模块**：字段映射依赖枚举/常量定义
+- **日志/同步等模块**：日志与同步任务表同样由基础设施负责数据落库
 
-### 5. ʾ������
+### 5. 示例场景
 
-#### EF Core ����Ǩ��
+#### EF Core 数据迁移
 
 ```csharp
-// ����̨�Զ�Ǩ�����ݿ�ṹ
+// 控制台自动迁移数据库结构
 var context = dbFactory.CreateDbContext(args);
 context.Database.Migrate();
 ```
 
-#### ��ģ���Զ�ע��ִ�
+#### 配置 JWT 认证
 
 ```csharp
-services.AddModuleRepositories(); // ������ʩ�Զ�ע������ҵ��ִ�
+builder.Services.AddJwtAuthentication(builder.Configuration); // 读取 JwtOptions 配置
 ```
-
-#### ���ݳ�ʼ��
+#### 数据初始化
 
 ```csharp
-await AdminSeeder.SeedAsync(context); // ����ʱ�Զ����ɳ�ʼ��������Ա
+await AdminSeeder.SeedAsync(context); // 启动时自动生成初始超级管理员
 ```
 
-### 6. ��Ҫ�����빤��
+### 6. 主要类型与工具
 
-- `AppDbContext`��EF Core �����ģ�ӳ��ȫ��ʵ��
-- `AppDbContextFactory`�����ʱ������֧��Ǩ�������
-- `AdminSeeder`��ϵͳ��ʼ����������Ա
-- `Repository<T>`��ͨ�òִ�����
-- �ִ��Զ�ע����չ���� `AddModuleRepositories`
+- `AppDbContext`：EF Core 上下文，映射全部实体
+- `AppDbContextFactory`：设计时工厂，支持迁移与测试
+- `AdminSeeder`：系统初始化超级管理员
+- `JwtHelper`：生成 JWT Token
+- `JwtAuthenticationExtensions`：注册 JWT 认证服务
+- `ExceptionMiddleware`：全局异常处理中间件
 
