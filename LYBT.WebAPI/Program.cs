@@ -4,6 +4,7 @@
 using LYBT.Infrastructure;
 using LYBT.Infrastructure.Auth.Extensions;
 using LYBT.Infrastructure.Exceptions;
+using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Helpers;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
