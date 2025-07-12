@@ -64,3 +64,12 @@ var (list, total) = await _pharmacyService.SearchAsync(query);
 - `Task<List<PharmacyDto>> GetWaitingListAsync()`
 - `Task<bool> MarkAsPreparedAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `GET /api/pharmacy/orders` | 未实现 | 提供 `GET /api/Pharmacy` 与 `waiting` |
+| `GET /api/pharmacy/status` | 未实现 | 未找到对应接口 |
+| `POST /api/pharmacy/processorder` | 未实现 | 控制器仅提供 `/{id}/prepared` |
+
+

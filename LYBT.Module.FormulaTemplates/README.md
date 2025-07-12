@@ -55,3 +55,14 @@ bool success = await _formulaTemplateService.AddAsync(dto);
 - `Task<bool> UpdateAsync(FormulaTemplateEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/formulatemplates` | 已实现 | |
+| `PUT /api/formulatemplates/{id}` | 已实现 | Id 由 DTO 传入 |
+| `GET /api/formulatemplates` | 已实现 | |
+| `GET /api/formulatemplates/{id}` | 已实现 | |
+| `DELETE /api/formulatemplates/{id}` | 已实现 | |
+
+

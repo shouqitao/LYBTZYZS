@@ -76,3 +76,15 @@ var (list, total) = await _billingService.SearchAsync(query);
 - `Task<bool> RejectRefundAsync(Guid id)`
 - `Task<bool> CancelAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/billing` | 已实现 | |
+| `PUT /api/billing/{id}` | 已实现 | Id 通过 DTO 提交 |
+| `POST /api/billing/refund` | 未实现 | 提供 `request-refund/{id}` 等接口 |
+| `GET /api/billing` | 已实现 | |
+| `GET /api/billing/{id}` | 已实现 | |
+| `DELETE /api/billing/{id}` | 已实现 | |
+
+

@@ -61,3 +61,12 @@ var list = await _queueingService.GetListAsync();
 - `Task<bool> DeleteAsync(Guid id)`
 - `Task<bool> CancelAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/queue` | 已实现 |
+| `GET /api/queue` | 已实现 |
+| `DELETE /api/queue/{id}` | 已实现 |
+
+

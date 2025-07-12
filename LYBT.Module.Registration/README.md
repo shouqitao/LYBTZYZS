@@ -66,3 +66,13 @@ var (list, total) = await _registrationService.SearchAsync(query);
 - `Task<bool> DeleteAsync(Guid id)`
 - `Task<bool> CancelAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `POST /api/registrations` | 已实现 | `RegistrationController.Add` |
+| `PUT /api/registrations/{id}` | 已实现 | 参数通过 DTO 携带 Id |
+| `GET /api/registrations` | 已实现 | |
+| `DELETE /api/registrations/{id}` | 已实现 | |
+
+

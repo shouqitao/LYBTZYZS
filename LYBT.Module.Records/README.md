@@ -69,3 +69,11 @@ bool ok = await _recordService.ShareAsync(shareDto);
 - `Task<bool> MarkAsSharedAsync(Guid id, List<string> doctorIds)`
 - `Task<bool> RevokeSharingAsync(Guid id)`
 
+### Web API 接口对照
+
+| 设计接口 | 状态 | 备注 |
+| --- | --- | --- |
+| `GET /api/records` | 已实现 | `RecordsController.GetList` |
+| `GET /api/records/{id}` | 已实现 | `RecordsController.GetById` |
+
+
