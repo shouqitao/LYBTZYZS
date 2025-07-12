@@ -65,27 +65,29 @@ await _userService.ChangePasswordAsync(userId, oldPwd, newPwd);
 
 ### 6. 接口列表
 
-- `Task<(IList<UserDto>, int)> SearchAsync(UserQueryDto dto)`
-- `Task<UserDetailDto?> GetByIdAsync(Guid id)`
-- `Task<bool> AddAsync(UserCreateDto dto, Guid operatorId, string operatorName)`
-- `Task<bool> UpdateAsync(UserDetailDto dto, Guid operatorId, string operatorName)`
-- `Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName)`
-- `Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName)`
-- `Task<bool> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName)`
-- `Task<bool> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName)`
-- `Task<bool> ResetPasswordAsync(Guid id, Guid operatorId, string operatorName)`
-- `Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)`
-- `Task<bool> ChangeProfileAsync(Guid id, string realName, string? phone, string? email)`
-- `Task<IList<string>> GetRoles()`
+- `Task<(IList<UserDto>, int)> SearchAsync(UserQueryDto dto)` - 搜索用户
+- `Task<UserDetailDto?> GetByIdAsync(Guid id)` - 根据ID获取用户
+- `Task<bool> AddAsync(UserCreateDto dto, Guid operatorId, string operatorName)` - 新增用户
+- `Task<bool> UpdateAsync(UserDetailDto dto, Guid operatorId, string operatorName)` - 更新用户
+- `Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName)` - 禁用用户
+- `Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName)` - 启用用户
+- `Task<bool> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName)` - 批量禁用
+- `Task<bool> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName)` - 批量启用
+- `Task<bool> ResetPasswordAsync(Guid id, Guid operatorId, string operatorName)` - 重置密码
+- `Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)` - 修改密码
+- `Task<bool> ChangeProfileAsync(Guid id, string realName, string? phone, string? email)` - 修改个人资料
+- `Task<IList<string>> GetRoles()` - 获取角色列表
 
 ### Web API 接口对照
 
-| 设计接口 | 状态 | 备注 |
-| --- | --- | --- |
-| `POST /api/users` | 未实现 | 实际路径 `POST /api/Users/add` |
-| `PUT /api/users/{id}` | 未实现 | 实际路径 `PUT /api/Users/update` |
-| `POST /api/auth/login` | 已实现 | 由 `AuthController` 提供 |
-| `GET /api/users` | 未实现 | 实际路径 `GET /api/Users/search` |
-| `DELETE /api/users/{id}` | 未实现 | 仅提供 `disable/{id}` 与 `enable/{id}` |
+| 设计接口 | 接口说明 | 状态 | 备注 |
+| --- | --- | --- | --- |
+| `POST /api/users` | 新增用户 | 未实现 | 实际路径 `POST /api/Users/add` |
+| `PUT /api/users/{id}` | 更新用户 | 未实现 | 实际路径 `PUT /api/Users/update` |
+| `GET /api/users` | 查询用户 | 未实现 | 实际路径 `GET /api/Users/search` |
+| `DELETE /api/users/{id}` | 删除用户 | 未实现 | 仅提供 `disable/{id}` 与 `enable/{id}` |
 
 
+
+接口数量：12
+已实现 Web API 数量：0

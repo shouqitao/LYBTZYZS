@@ -60,6 +60,27 @@
 
 ---
 
+## 模块接口统计
+
+| 模块 | 接口数量 | 已实现 WebAPI |
+| --- | --- | --- |
+| Auth | 3 | 3 |
+| Billing | 11 | 5 |
+| DiagnosisTreatment | 5 | 4 |
+| Doctors | 10 | 0 |
+| FormulaTemplates | 5 | 5 |
+| Herbs | 5 | 5 |
+| Logs | 2 | 0 |
+| Patients | 14 | 0 |
+| Pharmacy | 7 | 0 |
+| Prescriptions | 6 | 0 |
+| Queueing | 6 | 3 |
+| Records | 7 | 2 |
+| Registration | 6 | 4 |
+| Settings | 11 | 4 |
+| Sync | 11 | 0 |
+| TreatmentRoom | 5 | 3 |
+| Users | 12 | 0 |
 ## 典型接口结构（以用户模块为例）
 
 - `Task<(IList<UserDto>, int)> SearchAsync(UserQueryDto dto)`
