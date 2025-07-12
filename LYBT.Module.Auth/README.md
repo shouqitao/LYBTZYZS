@@ -7,10 +7,10 @@
 ### 2. 核心能力
 
 - 用户名+密码登录认证
-- 身份校验与权限基础
-- 生成/管理登录凭据（如 JWT 或 Session）
 - 登录日志写入（与日志模块协作）
 - 更新用户最后登录时间
+- 支持注销登录
+- 支持修改系统管理员密码
 
 ### 3. 输入输出规范
 
@@ -50,6 +50,7 @@ await _logService.WriteAsync(userId, "登录", "Auth", "Success", "登录成功"
 
 ### 6. 接口列表
 
-- `Task<LoginResultDto> LoginAsync(string userName, string password)`
-- `Task<bool> LogoutAsync(Guid userId)`
+- `Task<UserDto?> LoginAsync(LoginRequestDto dto)`
+- `Task<bool> LogoutAsync(LogoutRequestDto dto)`
+- `Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto)`
 

@@ -7,8 +7,8 @@
 ### 2. 核心能力
 
 - 创建排队记录
-- 查询排队列表（支持按医生、患者、日期过滤）
-- 修改排队状态（如取消、完成等）
+- 获取全部排队列表
+- 取消排队记录或标记完成
 - 删除排队记录
 
 ### 3. 输入输出规范
@@ -49,18 +49,15 @@ bool ok = await _queueingService.AddAsync(dto);
 #### 查询排队
 
 ```csharp
-var query = new QueueingQueryDto {
-  DoctorId = doctorId,
-  Date = DateTime.Today
-};
-var (list, total) = await _queueingService.SearchAsync(query);
+var list = await _queueingService.GetListAsync();
 ```
 
 ### 6. 接口列表
 
-- `Task<(IList<QueueingDto>, int)> SearchAsync(QueueingQueryDto dto)`
-- `Task<QueueingDto?> GetByIdAsync(Guid id)`
+- `Task<List<QueueingDto>> GetListAsync()`
+- `Task<QueueingDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(QueueingCreateDto dto)`
 - `Task<bool> UpdateAsync(QueueingEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
+- `Task<bool> CancelAsync(Guid id)`
 

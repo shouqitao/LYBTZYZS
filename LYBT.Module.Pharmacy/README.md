@@ -6,11 +6,10 @@
 
 ### 2. 核心能力
 
-- 处方流转管理（待配药、已配药、待抓药、已完成等状态）
-- 药房配药单创建、编辑、完成
-- 查询药房配药历史（按患者、处方、日期等）
-- 支持代煎服务及收费
-- 药房状态查询（如队列、药品状态）
+- 药房配药单创建与编辑
+- 删除配药单
+- 获取配药单列表和详情
+- 获取待抓药列表并标记完成
 
 ### 3. 输入输出规范
 
@@ -57,9 +56,11 @@ var (list, total) = await _pharmacyService.SearchAsync(query);
 
 ### 6. 接口列表
 
-- `Task<(IList<PharmacyDto>, int)> SearchAsync(PharmacyQueryDto query)`
-- `Task<PharmacyDto?> GetByIdAsync(Guid id)`
+- `Task<List<PharmacyDto>> GetListAsync()`
+- `Task<PharmacyDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(PharmacyCreateDto dto)`
 - `Task<bool> UpdateAsync(PharmacyEditDto dto)`
 - `Task<bool> DeleteAsync(Guid id)`
+- `Task<List<PharmacyDto>> GetWaitingListAsync()`
+- `Task<bool> MarkAsPreparedAsync(Guid id)`
 

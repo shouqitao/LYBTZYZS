@@ -7,9 +7,9 @@
 ### 2. 核心能力
 
 - 创建诊疗记录（含诊断、治疗项目、药方）
-- 编辑诊疗记录（更新治疗建议、治疗次数等）
-- 查询诊疗记录（按患者、医生、日期等）
-- 支持结构化保存治疗方案和草药处方
+- 编辑诊疗记录
+- 删除诊疗记录
+- 获取诊疗记录列表
 
 ### 3. 输入输出规范
 
@@ -17,7 +17,6 @@
 
 - `DiagnosisTreatmentCreateDto`：创建诊疗记录（含患者ID、诊断内容、药方组成等）
 - `DiagnosisTreatmentEditDto`：编辑诊疗记录
-- `DiagnosisTreatmentQueryDto`：查询条件
 
 #### 输出
 
@@ -55,7 +54,7 @@ await _diagnosisService.AddAsync(dto);
 
 ### 6. 接口列表
 
-- `Task<(IList<DiagnosisTreatmentDto>, int)> SearchAsync(DiagnosisTreatmentQueryDto query)`
+- `Task<List<DiagnosisTreatmentDto>> GetListAsync()`
 - `Task<DiagnosisTreatmentDetailDto?> GetByIdAsync(Guid id)`
 - `Task<bool> AddAsync(DiagnosisTreatmentCreateDto dto)`
 - `Task<bool> UpdateAsync(DiagnosisTreatmentEditDto dto)`
