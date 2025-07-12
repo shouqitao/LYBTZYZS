@@ -62,12 +62,14 @@ using LYBT.Module.Settings.Mapping;
 using LYBT.Module.Users.Services;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Interfaces;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDefaults"));
 
 // =========== 1. 注册所有模块的 Service 和 Repository ===========
+
 
 // 用户管理
 builder.Services.AddScoped<IUserService, UserService>();
@@ -119,6 +121,7 @@ builder.Services.AddScoped<ISyncRepository, SyncRepository>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
 
+
 // =========== 2. 注册所有模块的 AutoMapper 配置文件 ===========
 
 builder.Services.AddAutoMapper(
@@ -169,7 +172,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 // ensure default admin user exists
 using (var scope = app.Services.CreateScope()) {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    AdminSeeder.Seed(context);
+    var opts = scope.ServiceProvider.GetRequiredService<IOptions<UserOptions>>();
+    AdminSeeder.Seed(context, opts.Value.DefaultUserPassword);
 }
 
 if (app.Environment.IsDevelopment()) {
