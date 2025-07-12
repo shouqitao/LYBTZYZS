@@ -57,4 +57,5 @@ var isOk = Validator.CheckIdNumber("440101199912121234");
 - `ApiResponse<T>`、`PagedResult<T>` 通用返回对象
 - `EnumHelper`、`StringHelper`、`Validator` 等扩展方法类
 - 枚举转中文辅助（`.ToChinese()`）
+- `LogHelper`、`NetworkHelper` 基础日志与网络工具（从 Infrastructure 移至此模块）
 
