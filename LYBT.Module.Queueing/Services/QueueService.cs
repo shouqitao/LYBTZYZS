@@ -73,5 +73,13 @@ namespace LYBT.Module.Queueing.Services {
         public async Task<bool> CancelAsync(Guid id) {
             return await _repository.CancelAsync(id);
         }
+
+        public async Task<bool> CompleteAsync(Guid id) {
+            return await _repository.CompleteAsync(id);
+        }
+
+        public async Task<bool> HoldAsync(Guid id) {
+            return await _repository.HoldAsync(id);
+        }
     }
 }

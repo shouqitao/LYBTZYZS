@@ -86,5 +86,21 @@ namespace LYBT.Module.Queueing.Controllers {
                 return NotFound();
             return Ok();
         }
+
+        [HttpPost("complete/{id}")]
+        public async Task<ActionResult> Complete(Guid id) {
+            var result = await _queueingService.CompleteAsync(id);
+            if (!result)
+                return NotFound();
+            return Ok();
+        }
+
+        [HttpPost("hold/{id}")]
+        public async Task<ActionResult> Hold(Guid id) {
+            var result = await _queueingService.HoldAsync(id);
+            if (!result)
+                return NotFound();
+            return Ok();
+        }
     }
 }

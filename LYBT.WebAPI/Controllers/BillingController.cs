@@ -1,5 +1,6 @@
 ﻿using LYBT.Module.Billing.Dtos;
 using LYBT.Module.Billing.Interfaces;
+using LYBT.Common.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.Module.Billing.Controllers {
@@ -143,6 +144,12 @@ namespace LYBT.Module.Billing.Controllers {
         [HttpGet("refundable")]
         public async Task<ActionResult<List<BillingDto>>> GetRefundableBills() {
             var list = await _billingService.GetRefundableBillsAsync();
+            return Ok(list);
+        }
+
+        [HttpGet("status/{status}")]
+        public async Task<ActionResult<List<BillingDto>>> GetByStatus(BillingStatus status) {
+            var list = await _billingService.GetByStatusAsync(status);
             return Ok(list);
         }
     }

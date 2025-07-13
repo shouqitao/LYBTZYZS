@@ -60,5 +60,9 @@ namespace LYBT.UI.WPF.Services {
             var resp = await _api.DeleteAsync(id);
             return resp.Success;
         }
+
+        public async Task<IList<TreatmentRoomDto>> GetByStatusAsync(string status) {
+            return await _api.GetByStatusAsync(status);
+        }
     }
 }

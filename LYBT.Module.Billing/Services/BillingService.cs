@@ -138,5 +138,10 @@ namespace LYBT.Module.Billing.Services {
             var refundable = list.Where(b => b.Status == BillingStatus.Paid).ToList();
             return _mapper.Map<List<BillingDto>>(refundable);
         }
+
+        public async Task<List<BillingDto>> GetByStatusAsync(BillingStatus status) {
+            var list = await _billingRepository.GetByStatusAsync(status);
+            return _mapper.Map<List<BillingDto>>(list);
+        }
     }
 }

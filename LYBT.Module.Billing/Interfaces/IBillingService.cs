@@ -1,4 +1,5 @@
 ﻿using LYBT.Module.Billing.Dtos;
+using LYBT.Common.Enums;
 
 namespace LYBT.Module.Billing.Interfaces {
 
@@ -76,5 +77,10 @@ namespace LYBT.Module.Billing.Interfaces {
         /// 可退款账单
         /// </summary>
         Task<List<BillingDto>> GetRefundableBillsAsync();
+
+        /// <summary>
+        /// 根据状态获取账单
+        /// </summary>
+        Task<List<BillingDto>> GetByStatusAsync(BillingStatus status);
     }
 }

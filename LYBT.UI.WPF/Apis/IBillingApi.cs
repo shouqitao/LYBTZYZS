@@ -48,5 +48,8 @@ namespace LYBT.UI.WPF.Apis {
 
         [Get("/api/Billing/refundable")]
         Task<List<BillingDto>> GetRefundableBillsAsync();
+
+        [Get("/api/Billing/status/{status}")]
+        Task<List<BillingDto>> GetByStatusAsync(int status);
     }
 }

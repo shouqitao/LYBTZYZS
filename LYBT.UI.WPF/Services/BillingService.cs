@@ -110,9 +110,11 @@ namespace LYBT.UI.WPF.Services {
             return await _billingApi.GetRefundableBillsAsync();
         }
 
+
         public async Task<IList<BillingDto>> GetByStatusAsync(BillingStatus status) {
             var list = await _billingApi.GetListAsync();
             return list.Where(b => b.Status == status).ToList();
+
         }
     }
 }
