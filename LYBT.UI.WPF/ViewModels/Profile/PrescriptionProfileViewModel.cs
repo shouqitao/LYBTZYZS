@@ -23,6 +23,12 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public ObservableCollection<PrescriptionItemDto> Items { get; } = new();
 
+        private PrescriptionItemDto? _selectedItem;
+        public PrescriptionItemDto? SelectedItem {
+            get => _selectedItem;
+            set => SetProperty(ref _selectedItem, value);
+        }
+
         private string _editModeTitle = "新增处方";
         public string EditModeTitle {
             get => _editModeTitle;
