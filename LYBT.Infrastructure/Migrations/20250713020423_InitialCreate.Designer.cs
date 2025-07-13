@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250705050426_InitialCreate")]
+    [Migration("20250713020423_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -33,7 +33,8 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("BillingId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("BillingTime")
                         .HasColumnType("datetime2");
@@ -66,19 +67,22 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
-                    b.Property<Guid>("PrescriptionId")
+                    b.Property<Guid?>("PrescriptionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RefundReason")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<DateTime?>("RefundTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -141,6 +145,10 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<DateTime>("Birthday")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ContactNumber")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
@@ -148,19 +156,23 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("LicenseNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("PinyinCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("Remark")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Specialty")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -209,34 +221,51 @@ namespace LYBT.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BatchNo")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<string>("Effect")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTime?>("ExpireDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Origin")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<Guid?>("PharmacyModelId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Pinyin")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Spec")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
 
                     b.Property<string>("Unit")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.HasKey("Id");
 
@@ -292,7 +321,71 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Logs");
                 });
 
-            modelBuilder.Entity("LYBT.Models.Patient.SpecialPatientDoctor", b =>
+            modelBuilder.Entity("LYBT.Models.Patients.PatientModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisableReason")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IDNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<bool>("IsSpecial")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PinyinCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Remark")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Patients.SpecialPatientDoctor", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -304,10 +397,17 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("DoctorModelId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DoctorModelId");
+
+                    b.HasIndex("PatientId");
 
                     b.ToTable("SpecialPatientDoctors");
                 });
@@ -340,7 +440,8 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -353,14 +454,91 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Pharmacies");
                 });
 
+            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HerbId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("HerbName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<Guid>("PrescriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("Usage")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrescriptionId");
+
+                    b.ToTable("PrescriptionItems");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Diagnosis")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Remark")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Prescriptions");
+                });
+
             modelBuilder.Entity("LYBT.Models.Queueing.QueueingModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DoctorName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PatientName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("QueueTime")
                         .HasColumnType("datetime2");
@@ -506,14 +684,16 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -546,22 +726,26 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Key")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("UpdateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("ValueType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.HasKey("Id");
 
@@ -575,14 +759,16 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -653,7 +839,8 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("DoctorId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
@@ -663,111 +850,55 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("ExecutionId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Executor")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("LastExecuteTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PatientId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("PlanId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<int>("TotalCount")
                         .HasColumnType("int");
 
                     b.Property<string>("TreatmentItem")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("TreatmentType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TreatmentRooms");
-                });
-
-            modelBuilder.Entity("LYBT.Module.Patients.Models.PatientModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<int?>("Age")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DisableReason")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<int>("Gender")
-                        .HasMaxLength(8)
-                        .HasColumnType("int");
-
-                    b.Property<string>("IDNumber")
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<bool>("IsSpecial")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("PinyinCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Remark")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Patients");
+                    b.ToTable("TreatmentRooms");
                 });
 
             modelBuilder.Entity("LYBT.Module.Users.Models.AdminSecretModel", b =>
@@ -801,10 +932,16 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("FailedLoginCount")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutEnd")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PasswordHash")
@@ -816,7 +953,8 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("RealName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Roles")
                         .IsRequired()
@@ -824,9 +962,13 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -849,9 +991,48 @@ namespace LYBT.Infrastructure.Migrations
                         .HasForeignKey("PharmacyModelId");
                 });
 
+            modelBuilder.Entity("LYBT.Models.Patients.SpecialPatientDoctor", b =>
+                {
+                    b.HasOne("LYBT.Models.Doctors.DoctorModel", null)
+                        .WithMany("SpecialPatientPatients")
+                        .HasForeignKey("DoctorModelId");
+
+                    b.HasOne("LYBT.Models.Patients.PatientModel", "Patient")
+                        .WithMany("SpecialPatientDoctors")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
+                {
+                    b.HasOne("LYBT.Models.Prescriptions.PrescriptionModel", null)
+                        .WithMany("Items")
+                        .HasForeignKey("PrescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LYBT.Models.Doctors.DoctorModel", b =>
+                {
+                    b.Navigation("SpecialPatientPatients");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Patients.PatientModel", b =>
+                {
+                    b.Navigation("SpecialPatientDoctors");
+                });
+
             modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyModel", b =>
                 {
                     b.Navigation("Herbs");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionModel", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

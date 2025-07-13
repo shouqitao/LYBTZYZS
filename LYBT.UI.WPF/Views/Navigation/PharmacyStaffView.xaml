@@ -4,9 +4,7 @@
              xmlns:prism="http://prismlibrary.com/"
              xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <UserControl.Resources>
-        <converters:NullToBoolConverter x:Key="NullToBoolConverter" />
-    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

@@ -218,9 +218,16 @@ namespace LYBT.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BatchNo")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<string>("Effect")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTime?>("ExpireDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -249,6 +256,9 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<string>("Spec")
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
 
                     b.Property<string>("Unit")
                         .HasMaxLength(16)
@@ -308,7 +318,71 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Logs");
                 });
 
-            modelBuilder.Entity("LYBT.Models.Patient.SpecialPatientDoctor", b =>
+            modelBuilder.Entity("LYBT.Models.Patients.PatientModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisableReason")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IDNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<bool>("IsSpecial")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PinyinCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Remark")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Patients.SpecialPatientDoctor", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -320,10 +394,17 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("DoctorModelId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DoctorModelId");
+
+                    b.HasIndex("PatientId");
 
                     b.ToTable("SpecialPatientDoctors");
                 });
@@ -370,14 +451,91 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Pharmacies");
                 });
 
+            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HerbId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("HerbName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<Guid>("PrescriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("Usage")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrescriptionId");
+
+                    b.ToTable("PrescriptionItems");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Diagnosis")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Remark")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Prescriptions");
+                });
+
             modelBuilder.Entity("LYBT.Models.Queueing.QueueingModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DoctorName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PatientName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("QueueTime")
                         .HasColumnType("datetime2");
@@ -740,70 +898,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("TreatmentRooms");
                 });
 
-            modelBuilder.Entity("LYBT.Module.Patients.Models.PatientModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<int?>("Age")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DisableReason")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IDNumber")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<bool>("IsSpecial")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("PinyinCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Remark")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Patients");
-                });
-
             modelBuilder.Entity("LYBT.Module.Users.Models.AdminSecretModel", b =>
                 {
                     b.Property<Guid>("Id")
@@ -894,9 +988,48 @@ namespace LYBT.Infrastructure.Migrations
                         .HasForeignKey("PharmacyModelId");
                 });
 
+            modelBuilder.Entity("LYBT.Models.Patients.SpecialPatientDoctor", b =>
+                {
+                    b.HasOne("LYBT.Models.Doctors.DoctorModel", null)
+                        .WithMany("SpecialPatientPatients")
+                        .HasForeignKey("DoctorModelId");
+
+                    b.HasOne("LYBT.Models.Patients.PatientModel", "Patient")
+                        .WithMany("SpecialPatientDoctors")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
+                {
+                    b.HasOne("LYBT.Models.Prescriptions.PrescriptionModel", null)
+                        .WithMany("Items")
+                        .HasForeignKey("PrescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LYBT.Models.Doctors.DoctorModel", b =>
+                {
+                    b.Navigation("SpecialPatientPatients");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Patients.PatientModel", b =>
+                {
+                    b.Navigation("SpecialPatientDoctors");
+                });
+
             modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyModel", b =>
                 {
                     b.Navigation("Herbs");
+                });
+
+            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionModel", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

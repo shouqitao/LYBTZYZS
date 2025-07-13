@@ -3,9 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
         Title="用户" Height="300" Width="300">
-    <Window.Resources>
-        <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
-    </Window.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
