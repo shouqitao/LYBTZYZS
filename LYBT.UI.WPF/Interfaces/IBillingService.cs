@@ -19,5 +19,6 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<IList<BillingDto>> GetByPatientIdAsync(Guid patientId);
         Task<IList<BillingDto>> SearchAsync(string keyword);
         Task<IList<BillingDto>> GetRefundableBillsAsync();
+        Task<IList<BillingDto>> GetByStatusAsync(int status);
     }
 }

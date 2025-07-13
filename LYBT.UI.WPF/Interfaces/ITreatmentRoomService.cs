@@ -10,5 +10,6 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<bool> AddAsync(TreatmentRoomCreateDto dto);
         Task<bool> UpdateAsync(TreatmentRoomEditDto dto);
         Task<bool> DeleteAsync(Guid id);
+        Task<IList<TreatmentRoomDto>> GetByStatusAsync(string status);
     }
 }

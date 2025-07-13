@@ -67,5 +67,10 @@ namespace LYBT.Module.TreatmentRoom.Services {
         public async Task<bool> DeleteAsync(Guid id) {
             return await _treatmentRoomRepository.DeleteAsync(id);
         }
+
+        public async Task<List<TreatmentRoomDto>> GetByStatusAsync(string status) {
+            var list = await _treatmentRoomRepository.GetByStatusAsync(status);
+            return _mapper.Map<List<TreatmentRoomDto>>(list);
+        }
     }
 }

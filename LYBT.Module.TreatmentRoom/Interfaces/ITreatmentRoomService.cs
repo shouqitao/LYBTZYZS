@@ -31,5 +31,10 @@ namespace LYBT.Module.TreatmentRoom.Interfaces {
         /// 删除治疗室单
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 根据状态获取治疗室单
+        /// </summary>
+        Task<List<TreatmentRoomDto>> GetByStatusAsync(string status);
     }
 }

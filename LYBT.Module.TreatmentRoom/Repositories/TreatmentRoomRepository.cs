@@ -57,5 +57,12 @@ namespace LYBT.Module.TreatmentRoom.Repositories {
             _appDbContext.TreatmentRooms.Remove(model);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
+
+        public async Task<List<TreatmentRoomModel>> GetByStatusAsync(string status) {
+            var list = _appDbContext.TreatmentRooms
+                .Where(t => t.Status == status)
+                .ToList();
+            return await Task.FromResult(list);
+        }
     }
 }
