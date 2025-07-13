@@ -62,6 +62,8 @@ namespace LYBT.UI.WPF {
             var registrationService = new RegistrationService(registrationApi);
             var herbService = new HerbService(herbApi);
             var billingService = new BillingService(billingApi);
+            var pharmacyApi = RestService.For<IPharmacyApi>(httpClient, refitSettings);
+            var pharmacyService = new PharmacyService(pharmacyApi);
             var prescriptionService = new PrescriptionService(prescriptionApi);
             var formulaTemplateService = new FormulaTemplateService(formulaTemplateApi);
             var logService = new LogService(logApi);
@@ -74,6 +76,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(patientApi);
             containerRegistry.RegisterInstance(registrationApi);
             containerRegistry.RegisterInstance(herbApi);
+            containerRegistry.RegisterInstance(pharmacyApi);
             containerRegistry.RegisterInstance(billingService);
             containerRegistry.RegisterInstance(prescriptionApi);
             containerRegistry.RegisterInstance(formulaTemplateApi);
@@ -84,7 +87,11 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IDoctorService>(doctorService);
             containerRegistry.RegisterInstance<IPatientService>(patientService);
             containerRegistry.RegisterInstance<IHerbService>(herbService);
+
+            containerRegistry.RegisterInstance<IPharmacyService>(pharmacyService);
+
             containerRegistry.RegisterInstance<IRegistrationService>(registrationService);
+
             containerRegistry.RegisterInstance<IBillingService>(billingService);
             containerRegistry.RegisterInstance<IPrescriptionService>(prescriptionService);
             containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
