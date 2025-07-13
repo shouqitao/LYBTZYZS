@@ -7,8 +7,9 @@ namespace LYBT.UI.WPF.Interfaces {
     public interface IRegistrationService {
         Task<IList<RegistrationDto>> GetListAsync();
         Task<RegistrationDetailDto?> GetByIdAsync(Guid id);
-        Task<bool> AddAsync(RegistrationCreateDto dto);
+        Task<Guid?> AddAsync(RegistrationCreateDto dto);
         Task<bool> UpdateAsync(RegistrationEditDto dto);
         Task<bool> DeleteAsync(Guid id);
+        Task<bool> CancelAsync(Guid id);
     }
 }

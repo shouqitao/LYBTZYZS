@@ -33,9 +33,9 @@ namespace LYBT.UI.WPF.Services {
         /// <summary>
         /// 方法 AddAsync 的说明
         /// </summary>
-        public async Task<bool> AddAsync(RegistrationCreateDto dto) {
+        public async Task<Guid?> AddAsync(RegistrationCreateDto dto) {
             var resp = await _api.AddAsync(dto);
-            return resp.Success;
+            return resp.Success ? resp.Id : null;
         }
 
         /// <summary>
@@ -51,6 +51,14 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
             var resp = await _api.DeleteAsync(id);
+            return resp.Success;
+        }
+
+        /// <summary>
+        /// 方法 CancelAsync 的说明
+        /// </summary>
+        public async Task<bool> CancelAsync(Guid id) {
+            var resp = await _api.CancelAsync(id);
             return resp.Success;
         }
     }

@@ -20,6 +20,12 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
         public ObservableCollection<PatientDetailDto> PatientSearchResults { get; } = new();
         public ObservableCollection<PendingPatientItem> PendingPatients { get; } = new();
 
+        private PendingPatientItem? _selectedPendingPatient;
+        public PendingPatientItem? SelectedPendingPatient {
+            get => _selectedPendingPatient;
+            set => SetProperty(ref _selectedPendingPatient, value);
+        }
+
         private PatientDetailDto? _selectedPatient;
         public PatientDetailDto? SelectedPatient {
             get => _selectedPatient;
@@ -55,8 +61,8 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
             RegisterCommand = new DelegateCommand(async () => await RegisterAsync(), () => SelectedPatient != null)
                 .ObservesProperty(() => SelectedPatient);
             ClearCommand = new DelegateCommand(Clear);
-            CancelCommand = new DelegateCommand(async () => await CancelAsync(), () => SelectedPatient != null)
-                .ObservesProperty(() => SelectedPatient);
+            CancelCommand = new DelegateCommand(async () => await CancelAsync(), () => SelectedPendingPatient != null)
+                .ObservesProperty(() => SelectedPendingPatient);
         }
 
         private async Task SearchAsync() {
@@ -78,9 +84,9 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
                 RegistrationType = "普通"
             };
 
-            var ok = await _registrationService.AddAsync(dto);
-            if (ok) {
-                PendingPatients.Add(new PendingPatientItem { QueueNumber = PendingPatients.Count + 1, Name = SelectedPatient.Name });
+            var regId = await _registrationService.AddAsync(dto);
+            if (regId != null) {
+                PendingPatients.Add(new PendingPatientItem { QueueNumber = PendingPatients.Count + 1, Name = SelectedPatient.Name, RegistrationId = regId.Value });
                 PendingPatientsInfo = string.Empty;
                 SelectedPatient = null;
             } else {
@@ -94,15 +100,23 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
         }
 
         private async Task CancelAsync() {
-            if (SelectedPatient == null)
+            if (SelectedPendingPatient == null)
                 return;
-            await _registrationService.DeleteAsync(SelectedPatient.Id);
-            SelectedPatient = null;
+            bool ok = await _registrationService.CancelAsync(SelectedPendingPatient.RegistrationId);
+            if (ok) {
+                PendingPatients.Remove(SelectedPendingPatient);
+                SelectedPendingPatient = null;
+                if (PendingPatients.Count == 0)
+                    PendingPatientsInfo = "暂无待看诊患者";
+            } else {
+                MessageBox.Show("取消挂号失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         public class PendingPatientItem {
             public int QueueNumber { get; set; }
             public string Name { get; set; } = string.Empty;
+            public Guid RegistrationId { get; set; }
         }
     }
 }
