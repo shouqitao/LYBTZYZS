@@ -35,4 +35,22 @@ public class RegistrationServiceTests
         regRepo.Verify(r => r.AddAsync(It.IsAny<LYBT.Models.Registration.RegistrationModel>()), Times.Once);
         queueRepo.Verify(r => r.AddAsync(It.IsAny<LYBT.Models.Queueing.QueueingModel>()), Times.Once);
     }
+
+    [Fact]
+    public async Task CancelAsync_UpdatesRepositories()
+    {
+        var regRepo = new Mock<IRegistrationRepository>();
+        regRepo.Setup(r => r.CancelAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+        var queueRepo = new Mock<IQueueingRepository>();
+        queueRepo.Setup(q => q.CancelAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+        var mapper = CreateMapper();
+        var service = new RegistrationService(regRepo.Object, queueRepo.Object, mapper);
+
+        var id = Guid.NewGuid();
+        var result = await service.CancelAsync(id);
+
+        Assert.True(result);
+        regRepo.Verify(r => r.CancelAsync(id), Times.Once);
+        queueRepo.Verify(q => q.CancelAsync(id), Times.Once);
+    }
 }

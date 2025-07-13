@@ -14,12 +14,15 @@ namespace LYBT.UI.WPF.Apis {
         Task<RegistrationDetailDto> GetByIdAsync(Guid id);
 
         [Post("/api/Registration")]
-        Task<ApiSuccessResponse> AddAsync([Body] RegistrationCreateDto dto);
+        Task<AddRegistrationResponse> AddAsync([Body] RegistrationCreateDto dto);
 
         [Put("/api/Registration")]
         Task<ApiSuccessResponse> UpdateAsync([Body] RegistrationEditDto dto);
 
         [Delete("/api/Registration/{id}")]
         Task<ApiSuccessResponse> DeleteAsync(Guid id);
+
+        [Post("/api/Registration/cancel/{id}")]
+        Task<ApiSuccessResponse> CancelAsync(Guid id);
     }
 }
