@@ -21,5 +21,8 @@ namespace LYBT.UI.WPF.Apis {
 
         [Delete("/api/TreatmentRoom/{id}")]
         Task<ApiSuccessResponse> DeleteAsync(Guid id);
+
+        [Get("/api/TreatmentRoom/status/{status}")]
+        Task<List<TreatmentRoomDto>> GetByStatusAsync(string status);
     }
 }

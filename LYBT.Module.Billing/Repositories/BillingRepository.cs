@@ -1,5 +1,6 @@
 ﻿using LYBT.Infrastructure;
 using LYBT.Models.Billing;
+using LYBT.Common.Enums;
 using LYBT.Module.Billing.Interfaces;
 
 namespace LYBT.Module.Billing.Repositories {
@@ -72,6 +73,13 @@ namespace LYBT.Module.Billing.Repositories {
         public async Task<List<BillingModel>> SearchAsync(string keyword) {
             var list = _appDbContext.Billings
                 .Where(b => (b.BillingId.Contains(keyword) || b.Remark!.Contains(keyword)) && !b.IsDeleted)
+                .ToList();
+            return await Task.FromResult(list);
+        }
+
+        public async Task<List<BillingModel>> GetByStatusAsync(BillingStatus status) {
+            var list = _appDbContext.Billings
+                .Where(b => b.Status == status && !b.IsDeleted)
                 .ToList();
             return await Task.FromResult(list);
         }

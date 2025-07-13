@@ -1,4 +1,5 @@
 ﻿using LYBT.Models.Billing;
+using LYBT.Common.Enums;
 
 namespace LYBT.Module.Billing.Interfaces {
 
@@ -41,5 +42,10 @@ namespace LYBT.Module.Billing.Interfaces {
         /// 搜索账单
         /// </summary>
         Task<List<BillingModel>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 根据状态获取账单列表
+        /// </summary>
+        Task<List<BillingModel>> GetByStatusAsync(BillingStatus status);
     }
 }

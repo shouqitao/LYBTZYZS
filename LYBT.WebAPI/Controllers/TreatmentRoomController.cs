@@ -79,5 +79,11 @@ namespace LYBT.Module.TreatmentRoom.Controllers {
                 return NotFound();
             return Ok("删除治疗室单成功");
         }
+
+        [HttpGet("status/{status}")]
+        public async Task<ActionResult<List<TreatmentRoomDto>>> GetByStatus(string status) {
+            var list = await _treatmentRoomService.GetByStatusAsync(status);
+            return Ok(list);
+        }
     }
 }
