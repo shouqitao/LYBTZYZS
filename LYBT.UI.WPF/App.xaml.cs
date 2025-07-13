@@ -105,6 +105,9 @@ namespace LYBT.UI.WPF {
             containerRegistry.Register<HerbProfileViewModel>();
             containerRegistry.Register<PrescriptionProfileViewModel>();
             containerRegistry.Register<FormulaTemplatesProfileViewModel>();
+            containerRegistry.Register<DoctorProfileViewModel>();
+            containerRegistry.Register<PatientProfileViewModel>();
+            containerRegistry.Register<UserProfileViewModel>();
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
             containerRegistry.RegisterForNavigation<MainWindow>("MainWindow");
