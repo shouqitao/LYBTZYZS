@@ -55,6 +55,7 @@ namespace LYBT.UI.WPF {
             var formulaTemplateApi = RestService.For<IFormulaTemplateApi>(httpClient, refitSettings);
             var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
             var treatmentRoomApi = RestService.For<ITreatmentRoomApi>(httpClient, refitSettings);
+            var recordApi = RestService.For<IRecordApi>(httpClient, refitSettings);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
             var authService = new AuthService(authApi);
@@ -70,6 +71,7 @@ namespace LYBT.UI.WPF {
             var formulaTemplateService = new FormulaTemplateService(formulaTemplateApi);
             var logService = new LogService(logApi);
             var treatmentRoomService = new TreatmentRoomService(treatmentRoomApi);
+            var recordService = new RecordService(recordApi);
 
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
@@ -85,6 +87,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(formulaTemplateApi);
             containerRegistry.RegisterInstance(logApi);
             containerRegistry.RegisterInstance(treatmentRoomApi);
+            containerRegistry.RegisterInstance(recordApi);
 
             containerRegistry.RegisterInstance<IAuthService>(authService);
             containerRegistry.RegisterInstance<IUserService>(userService);
@@ -101,6 +104,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
             containerRegistry.RegisterInstance<ILogService>(logService);
             containerRegistry.RegisterInstance<ITreatmentRoomService>(treatmentRoomService);
+            containerRegistry.RegisterInstance<IRecordService>(recordService);
             // Register profile view models for dependency injection
             containerRegistry.Register<HerbProfileViewModel>();
             containerRegistry.Register<PrescriptionProfileViewModel>();
