@@ -4,6 +4,7 @@ using LYBT.UI.WPF.Views;
 using LYBT.UI.WPF.Views.Admin;
 using LYBT.UI.WPF.Views.Main;
 using LYBT.UI.WPF.Views.Profile;
+using LYBT.UI.WPF.ViewModels.Profile;
 using Refit;
 using System.Configuration;
 using System.Net.Http;
@@ -100,8 +101,10 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
             containerRegistry.RegisterInstance<ILogService>(logService);
             containerRegistry.RegisterInstance<ITreatmentRoomService>(treatmentRoomService);
-
-
+            // Register profile view models for dependency injection
+            containerRegistry.Register<HerbProfileViewModel>();
+            containerRegistry.Register<PrescriptionProfileViewModel>();
+            containerRegistry.Register<FormulaTemplatesProfileViewModel>();
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
             containerRegistry.RegisterForNavigation<MainWindow>("MainWindow");
