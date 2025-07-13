@@ -22,3 +22,13 @@ LYBT.WebAPI 是一个 ASP.NET Core API，集成系统的业务模块并通过 RE
 
 ## 控制器
 `LYBT.WebAPI/Controllers` 下的控制器覆盖 Users、Patients、Registration、Billing、Prescriptions 等模块。更多各模块功能请参阅仓库 [README](../README.md)。
+
+## 已实现功能
+- **Auth**：登录、登出、修改管理员密码。
+- **Users**：用户查询、添加/修改、启用/禁用、批量操作、重置密码、角色获取等。
+- **Patients**：病人增删改查、批量处理、医生分配、导入导出、历史记录查询。
+- **Billing**：费用结算列表、详情、新增/编辑/删除，标记支付、完成、退款和取消等。
+- **Pharmacy**：待抓药列表、药房单增删改查、标记处方已抓药。
+- **Queueing**：排队列表和详情、新增/编辑/删除、取消排队。
+- **DiagnosisTreatment**：诊疗记录增删改查。
+- **Doctors/Registration/Prescriptions/Herbs/FormulaTemplates/Records/Settings/Sync** 等模块亦提供各自的 CRUD 与状态处理接口。
