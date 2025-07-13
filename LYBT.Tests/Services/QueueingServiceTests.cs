@@ -32,4 +32,34 @@ public class QueueingServiceTests
         Assert.True(result);
         repo.Verify(r => r.AddAsync(It.IsAny<LYBT.Models.Queueing.QueueingModel>()), Times.Once);
     }
+
+    [Fact]
+    public async Task CompleteAsync_CallsRepository()
+    {
+        var repo = new Mock<IQueueingRepository>();
+        repo.Setup(r => r.CompleteAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+        var mapper = CreateMapper();
+        var service = new QueueingService(repo.Object, mapper);
+
+        var id = Guid.NewGuid();
+        var result = await service.CompleteAsync(id);
+
+        Assert.True(result);
+        repo.Verify(r => r.CompleteAsync(id), Times.Once);
+    }
+
+    [Fact]
+    public async Task HoldAsync_CallsRepository()
+    {
+        var repo = new Mock<IQueueingRepository>();
+        repo.Setup(r => r.HoldAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+        var mapper = CreateMapper();
+        var service = new QueueingService(repo.Object, mapper);
+
+        var id = Guid.NewGuid();
+        var result = await service.HoldAsync(id);
+
+        Assert.True(result);
+        repo.Verify(r => r.HoldAsync(id), Times.Once);
+    }
 }
