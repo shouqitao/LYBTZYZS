@@ -56,6 +56,8 @@ namespace LYBT.UI.WPF {
             var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
             var treatmentRoomApi = RestService.For<ITreatmentRoomApi>(httpClient, refitSettings);
             var recordApi = RestService.For<IRecordApi>(httpClient, refitSettings);
+            var queueingApi = RestService.For<IQueueingApi>(httpClient, refitSettings);
+            var diagnosisTreatmentApi = RestService.For<IDiagnosisTreatmentApi>(httpClient, refitSettings);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
             var authService = new AuthService(authApi);
@@ -72,6 +74,8 @@ namespace LYBT.UI.WPF {
             var logService = new LogService(logApi);
             var treatmentRoomService = new TreatmentRoomService(treatmentRoomApi);
             var recordService = new RecordService(recordApi);
+            var queueingService = new QueueingService(queueingApi);
+            var diagnosisTreatmentService = new DiagnosisTreatmentService(diagnosisTreatmentApi);
 
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
@@ -88,6 +92,8 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(logApi);
             containerRegistry.RegisterInstance(treatmentRoomApi);
             containerRegistry.RegisterInstance(recordApi);
+            containerRegistry.RegisterInstance(queueingApi);
+            containerRegistry.RegisterInstance(diagnosisTreatmentApi);
 
             containerRegistry.RegisterInstance<IAuthService>(authService);
             containerRegistry.RegisterInstance<IUserService>(userService);
@@ -105,6 +111,8 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<ILogService>(logService);
             containerRegistry.RegisterInstance<ITreatmentRoomService>(treatmentRoomService);
             containerRegistry.RegisterInstance<IRecordService>(recordService);
+            containerRegistry.RegisterInstance<IQueueingService>(queueingService);
+            containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
             // Register profile view models for dependency injection
             containerRegistry.Register<HerbProfileViewModel>();
             containerRegistry.Register<PrescriptionProfileViewModel>();
