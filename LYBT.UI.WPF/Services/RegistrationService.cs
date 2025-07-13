@@ -1,8 +1,10 @@
 using LYBT.Module.Registration.Dtos;
 using LYBT.UI.WPF.Apis;
 using LYBT.UI.WPF.Interfaces;
+using LYBT.Common.Enums;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Services {
@@ -21,6 +23,11 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         public async Task<IList<RegistrationDto>> GetListAsync() {
             return await _api.GetListAsync();
+        }
+
+        public async Task<IList<RegistrationDto>> GetByStatusAsync(RegistrationStatus status) {
+            var list = await _api.GetListAsync();
+            return list.Where(r => Enum.TryParse<RegistrationStatus>(r.Status, out var s) && s == status).ToList();
         }
 
         /// <summary>

@@ -4,6 +4,8 @@ using LYBT.UI.WPF.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Common.Enums;
+using System.Linq;
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>
@@ -21,6 +23,11 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         public async Task<IList<PharmacyDto>> GetWaitingListAsync() {
             return await _api.GetWaitingListAsync();
+        }
+
+        public async Task<IList<PharmacyDto>> GetByStatusAsync(PharmacyStatus status) {
+            var list = await _api.GetListAsync();
+            return list.Where(p => p.Status == (int)status).ToList();
         }
 
         /// <summary>

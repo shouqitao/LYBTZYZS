@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Billing.Dtos;
+using LYBT.Common.Enums;
 
 namespace LYBT.UI.WPF.Interfaces {
     public interface IBillingService {
@@ -19,6 +20,7 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<IList<BillingDto>> GetByPatientIdAsync(Guid patientId);
         Task<IList<BillingDto>> SearchAsync(string keyword);
         Task<IList<BillingDto>> GetRefundableBillsAsync();
-        Task<IList<BillingDto>> GetByStatusAsync(int status);
+        Task<IList<BillingDto>> GetByStatusAsync(BillingStatus status);
+
     }
 }

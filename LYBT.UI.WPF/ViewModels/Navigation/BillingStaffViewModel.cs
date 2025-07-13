@@ -1,5 +1,6 @@
 using LYBT.Module.Billing.Dtos;
 using LYBT.UI.WPF.Interfaces;
+using LYBT.Common.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -46,7 +47,7 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
         /// 方法 LoadBills 的说明
         /// </summary>
         private async Task LoadBills() {
-            var list = await _billingService.GetAllAsync();
+            var list = await _billingService.GetByStatusAsync(BillingStatus.Pending);
             Bills.Clear();
             foreach (var b in list)
                 Bills.Add(b);

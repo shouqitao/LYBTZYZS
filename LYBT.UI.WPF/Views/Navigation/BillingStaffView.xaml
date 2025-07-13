@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
+             xmlns:controls="clr-namespace:LYBT.UI.WPF.Views.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.RowDefinitions>
@@ -13,13 +14,6 @@
             <Button Content="刷新" Command="{Binding RefreshCommand}" Margin="0,0,8,0" />
             <Button Content="标记已支付" Command="{Binding MarkPaidCommand}" IsEnabled="{Binding SelectedBill, Converter={StaticResource NullToBoolConverter}}" />
         </StackPanel>
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Bills}" SelectedItem="{Binding SelectedBill, Mode=TwoWay}" AutoGenerateColumns="False">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="病人" Binding="{Binding PatientName}" Width="*" />
-                <DataGridTextColumn Header="金额" Binding="{Binding TotalAmount}" Width="80" />
-                <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" />
-                <DataGridTextColumn Header="时间" Binding="{Binding BillingTime}" Width="130" />
-            </DataGrid.Columns>
-        </DataGrid>
+        <controls:PendingPaymentListControl Grid.Row="1" ItemsSource="{Binding Bills}" SelectedItem="{Binding SelectedBill, Mode=TwoWay}" />
     </Grid>
 </UserControl>

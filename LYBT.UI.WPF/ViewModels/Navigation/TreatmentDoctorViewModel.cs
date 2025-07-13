@@ -38,7 +38,7 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
         }
 
         private async Task LoadTasks() {
-            var list = await _treatmentRoomService.GetListAsync();
+            var list = await _treatmentRoomService.GetByStatusAsync(TreatmentTaskStatus.Pending);
             Tasks.Clear();
             foreach (var t in list)
                 Tasks.Add(t);
