@@ -7,8 +7,12 @@ using Refit;
 using System.Text.Json;
 using System.Linq;
 
+using LYBT.Module.Doctors.Dtos;
+using LYBT.UI.WPF.Interfaces;
+
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -116,11 +120,17 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// 属性 ResetPasswordCommand 的说明
         /// </summary>
         public DelegateCommand ResetPasswordCommand { get; }
+        /// <summary>
+        /// 创建医生档案命令
+        /// </summary>
+        public DelegateCommand CreateDoctorProfileCommand { get; }
 
         private readonly Interfaces.IUserService _userService;
+        private readonly IDoctorService _doctorService;
 
-        public UserManagementViewModel(Interfaces.IUserService userService) {
+        public UserManagementViewModel(Interfaces.IUserService userService, IDoctorService doctorService) {
             _userService = userService;
+            _doctorService = doctorService;
             AddUserCommand = new DelegateCommand(AddUser);
             EditUserCommand = new DelegateCommand(EditUser, () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             SaveUserCommand = new DelegateCommand(async () => await SaveUser(), () => EditingUser != null && IsEditable)
@@ -130,6 +140,10 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             DisableUserCommand = new DelegateCommand(async () => await DisableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             EnableUserCommand = new DelegateCommand(async () => await EnableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             ResetPasswordCommand = new DelegateCommand(async () => await ResetPassword(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
+            CreateDoctorProfileCommand =
+                new DelegateCommand(async () => await CreateDoctorProfileAsync(),
+                                    () => SelectedUser != null)
+                .ObservesProperty(() => SelectedUser);
             CancelCommand = new DelegateCommand(CancelEdit);
 
             _ = LoadRoles();
@@ -285,6 +299,37 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 MessageBox.Show("密码已重置", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             else
                 MessageBox.Show("重置密码失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private async Task CreateDoctorProfileAsync() {
+            if (SelectedUser == null)
+                return;
+            var roles = SelectedUser.Roles ?? new List<UserRole>();
+            if (!roles.Contains(UserRole.DiagnosingDoctor) && !roles.Contains(UserRole.TreatmentDoctor)) {
+                MessageBox.Show("此用户不包含医生角色，无法创建医生档案", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            var existing = await _doctorService.GetByUserIdAsync(SelectedUser.Id);
+            if (existing != null) {
+                MessageBox.Show("该用户已有医生档案", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            var dto = new DoctorDetailDto {
+                UserId = SelectedUser.Id,
+                UserName = SelectedUser.UserName,
+                RealName = SelectedUser.RealName
+            };
+            bool ok;
+            try {
+                ok = await _doctorService.AddAsync(dto);
+            } catch (Exception ex) {
+                MessageBox.Show($"创建医生档案失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (ok)
+                MessageBox.Show("医生档案创建成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show("创建医生档案失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void CancelEdit() {
