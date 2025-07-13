@@ -1,29 +1,29 @@
 # LYBT.UI.WPF
 
-## Overview
+## 概述
 
-This project is the desktop client for the LYBT system. It is a Windows Presentation Foundation (WPF) application built with Prism for modular MVVM patterns and Refit for communicating with the accompanying WebAPI.
+本项目是 LYBT 系统的桌面客户端。它是一个基于 Windows Presentation Foundation (WPF) 的应用，使用 Prism 实现模块化 MVVM 模式，并通过 Refit 与 WebAPI 通讯。
 
-## Prerequisites
+## 前置条件
 
 - .NET 8 SDK
-- Windows environment (WPF)
+- 运行于 Windows（WPF）
 
-## Build and Run
+## 构建与运行
 
-1. Restore and build the project:
+1. 还原并构建项目：
    ```bash
    dotnet build
    ```
-2. Run the application:
+2. 启动应用：
    ```bash
    dotnet run --project LYBT.UI.WPF
    ```
 
-## Main Features
+## 主要功能
 
-- User login with role-based navigation
-- Management screens for modules such as patients, billing and pharmacy
-- UI theme based on MaterialDesign
-- HTTP communication via Refit with the LYBT WebAPI
+- 支持基于角色的用户登录与导航
+- 提供患者、收费、药房等模块的管理界面
+- UI 主题基于 MaterialDesign
+- 通过 Refit 与 LYBT WebAPI 进行 HTTP 通讯
 
