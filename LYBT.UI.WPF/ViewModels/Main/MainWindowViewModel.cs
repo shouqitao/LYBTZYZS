@@ -11,6 +11,7 @@ using System.Windows;
 using System.Threading.Tasks;
 using System;
 using LYBT.UI.WPF.Interfaces;
+using LYBT.UI.WPF.ViewModels.Profile;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
@@ -66,6 +67,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         public DelegateCommand ShowChangeProfileCommand { get; }
         public DelegateCommand ShowDoctorProfileCommand { get; }
+        public DelegateCommand ShowPatientProfileCommand { get; }
 
 
         private readonly IEventAggregator _eventAggregator;
@@ -88,6 +90,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             ShowChangePasswordCommand = new DelegateCommand(ShowChangePassword);
             ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
             ShowDoctorProfileCommand = new DelegateCommand(ShowDoctorProfile);
+            ShowPatientProfileCommand = new DelegateCommand(ShowPatientProfile);
             
             System.Diagnostics.Debug.WriteLine("MainWindowViewModel constructed");
         }
@@ -130,6 +133,20 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             IsMainVisible = false;
             IsFunctionVisible = true;
             _regionManager.RequestNavigate("FunctionRegion", "DoctorProfileView");
+        }
+
+        private void ShowPatientProfile() {
+            IsMainVisible = false;
+            IsFunctionVisible = true;
+            _regionManager.RequestNavigate("FunctionRegion", "PatientProfileView", result => {
+                var view = _regionManager.Regions["FunctionRegion"].ActiveViews.FirstOrDefault();
+                if (view is FrameworkElement element && element.DataContext is PatientProfileViewModel vm) {
+                    vm.CancelAction = () => {
+                        IsMainVisible = true;
+                        IsFunctionVisible = false;
+                    };
+                }
+            });
         }
 
 

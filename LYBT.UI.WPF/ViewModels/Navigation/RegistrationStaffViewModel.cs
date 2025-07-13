@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using LYBT.UI.WPF.ViewModels.Main;
 
 namespace LYBT.UI.WPF.ViewModels.Navigation {
     /// <summary>
@@ -50,7 +51,7 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
             _patientService = patientService;
 
             ReadCardCommand = new DelegateCommand(() => MessageBox.Show("读卡功能待实现", "提示"));
-            NewPatientCommand = new DelegateCommand(() => MessageBox.Show("新建患者功能待实现", "提示"));
+            NewPatientCommand = new DelegateCommand(NewPatient);
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
             RegisterCommand = new DelegateCommand(async () => await RegisterAsync(), () => SelectedPatient != null)
                 .ObservesProperty(() => SelectedPatient);
@@ -85,6 +86,12 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
                 SelectedPatient = null;
             } else {
                 MessageBox.Show("挂号失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void NewPatient() {
+            if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
+                main.ShowPatientProfileCommand.Execute();
             }
         }
 
