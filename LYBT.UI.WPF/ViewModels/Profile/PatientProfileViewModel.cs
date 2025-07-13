@@ -9,6 +9,7 @@ using Prism.Mvvm;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using LYBT.UI.WPF.ViewModels.Main;
 
 namespace LYBT.UI.WPF.ViewModels.Profile {
     public class PatientProfileViewModel : BindableBase {
@@ -78,7 +79,14 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         }
 
         private void Cancel() {
-            CancelAction?.Invoke();
+            if (CancelAction != null) {
+                CancelAction.Invoke();
+                return;
+            }
+            if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
+                main.IsMainVisible = true;
+                main.IsFunctionVisible = false;
+            }
         }
     }
 }
