@@ -5,7 +5,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:enums="clr-namespace:LYBT.Common.Enums;assembly=LYBT.Common"
              xmlns:helpers="clr-namespace:LYBT.UI.WPF.Helpers"
-             xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters"
+             xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
              xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Main"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>

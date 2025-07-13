@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
             xmlns:common="clr-namespace:LYBT.Common.Models;assembly=LYBT.Common"
-            xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters"
+            xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
             prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
     </UserControl.Resources>

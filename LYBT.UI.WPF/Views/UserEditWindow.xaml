@@ -1,7 +1,7 @@
 <Window x:Class="LYBT.UI.WPF.Views.UserEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters"
+        xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
         Title="用户" Height="300" Width="300">
     <Window.Resources>
         <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
