@@ -44,7 +44,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand AddItemCommand { get; }
-        public DelegateCommand<PrescriptionItemDto?> RemoveItemCommand { get; }
+        public DelegateCommand<object?> RemoveItemCommand { get; }
 
         public Action? CancelAction { get; set; }
 
@@ -53,7 +53,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             SaveCommand = new DelegateCommand(async () => await SaveAsync());
             CancelCommand = new DelegateCommand(Cancel);
             AddItemCommand = new DelegateCommand(AddItem);
-            RemoveItemCommand = new DelegateCommand<PrescriptionItemDto?>(RemoveItem);
+            RemoveItemCommand = new DelegateCommand<object?>(param => RemoveItem(param as PrescriptionItemDto));
         }
 
         public async Task LoadAsync(Guid? id = null) {

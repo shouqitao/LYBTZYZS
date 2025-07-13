@@ -2,8 +2,10 @@ using LYBT.Module.Patients.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using Prism.Commands;
 using Prism.Mvvm;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using LYBT.UI.WPF.ViewModels.Profile;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
     public class PatientManagementViewModel : BindableBase {
@@ -13,7 +15,12 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private PatientDetailDto? _selectedPatient;
         public PatientDetailDto? SelectedPatient {
             get => _selectedPatient;
-            set => SetProperty(ref _selectedPatient, value);
+            set {
+                if (SetProperty(ref _selectedPatient, value)) {
+                    if (value != null)
+                        _ = LoadProfileAsync(value.Id);
+                }
+            }
         }
 
         private string _searchKeyword = string.Empty;
@@ -22,10 +29,13 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             set => SetProperty(ref _searchKeyword, value);
         }
 
+        public PatientProfileViewModel PatientProfileViewModel { get; }
+
         public DelegateCommand SearchCommand { get; }
 
-        public PatientManagementViewModel(IPatientService patientService) {
+        public PatientManagementViewModel(IPatientService patientService, PatientProfileViewModel profileViewModel) {
             _patientService = patientService;
+            PatientProfileViewModel = profileViewModel;
             SearchCommand = new DelegateCommand(async () => await LoadPatients());
             _ = LoadPatients();
         }
@@ -38,5 +48,11 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             foreach (var p in list)
                 Patients.Add(p);
         }
+
+        private async Task LoadProfileAsync(Guid id) {
+            await PatientProfileViewModel.LoadAsync(id);
+            PatientProfileViewModel.IsEditable = false;
+        }
+
     }
 }
