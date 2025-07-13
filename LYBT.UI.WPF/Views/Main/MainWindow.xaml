@@ -4,6 +4,7 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="凌隐宝堂中医诊所"
+        Icon="/Assets/icon.ico"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
