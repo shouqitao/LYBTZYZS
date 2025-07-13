@@ -13,15 +13,17 @@ namespace LYBT.UI.WPF.Views.Navigation {
         /// <summary>
         /// 方法 btnReadCard_Click 的说明
         /// </summary>
-        private void btnReadCard_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("读卡功能待实现", "提示");
+        private void btnReadCard_Click(object sender, RoutedEventArgs e) {
+            if (DataContext is ViewModels.Navigation.RegistrationStaffViewModel vm)
+                vm.ReadCardCommand.Execute();
         }
 
         /// <summary>
         /// 方法 btnSearch_Click 的说明
         /// </summary>
-        private void btnSearch_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("查询功能待实现", "提示");
+        private void btnSearch_Click(object sender, RoutedEventArgs e) {
+            if (DataContext is ViewModels.Navigation.RegistrationStaffViewModel vm)
+                vm.SearchCommand.Execute();
         }
 
         /// <summary>
@@ -34,29 +36,33 @@ namespace LYBT.UI.WPF.Views.Navigation {
         /// <summary>
         /// 方法 btnNewPatient_Click 的说明
         /// </summary>
-        private void btnNewPatient_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("新建患者功能待实现", "提示");
+        private void btnNewPatient_Click(object sender, RoutedEventArgs e) {
+            if (DataContext is ViewModels.Navigation.RegistrationStaffViewModel vm)
+                vm.NewPatientCommand.Execute();
         }
 
         /// <summary>
         /// 方法 btnRegister_Click 的说明
         /// </summary>
-        private void btnRegister_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("挂号功能待实现", "提示");
+        private void btnRegister_Click(object sender, RoutedEventArgs e) {
+            if (DataContext is ViewModels.Navigation.RegistrationStaffViewModel vm)
+                vm.RegisterCommand.Execute();
         }
 
         /// <summary>
         /// 方法 btnClear_Click 的说明
         /// </summary>
-        private void btnClear_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("清空表单功能待实现", "提示");
+        private void btnClear_Click(object sender, RoutedEventArgs e) {
+            if (DataContext is ViewModels.Navigation.RegistrationStaffViewModel vm)
+                vm.ClearCommand.Execute();
         }
 
         /// <summary>
         /// 方法 btnCancel_Click 的说明
         /// </summary>
-        private void btnCancel_Click(object sender, System.Windows.RoutedEventArgs e) {
-            MessageBox.Show("取消挂号功能待实现", "提示");
+        private void btnCancel_Click(object sender, RoutedEventArgs e) {
+            if (DataContext is ViewModels.Navigation.RegistrationStaffViewModel vm)
+                vm.CancelCommand.Execute();
         }
     }
 }
