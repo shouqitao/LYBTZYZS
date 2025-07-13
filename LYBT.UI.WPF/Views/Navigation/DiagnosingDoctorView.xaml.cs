@@ -25,16 +25,16 @@ namespace LYBT.UI.WPF.Views.Navigation {
         /// 方法 SelectPatient_Click 的说明
         /// </summary>
         private void SelectPatient_Click(object sender, System.Windows.RoutedEventArgs e) {
-            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.SelectPatientCommand.CanExecute(null))
-                vm.SelectPatientCommand.Execute(null);
+            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.SelectPatientCommand.CanExecute())
+                vm.SelectPatientCommand.Execute();
         }
 
         /// <summary>
         /// 方法 EmergencyPatient_Click 的说明
         /// </summary>
         private void EmergencyPatient_Click(object sender, System.Windows.RoutedEventArgs e) {
-            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.EmergencyPatientCommand.CanExecute(null))
-                vm.EmergencyPatientCommand.Execute(null);
+            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.EmergencyPatientCommand.CanExecute())
+                vm.EmergencyPatientCommand.Execute();
         }
 
         /// <summary>
@@ -68,24 +68,24 @@ namespace LYBT.UI.WPF.Views.Navigation {
         /// 方法 SuspendPatient_Click 的说明
         /// </summary>
         private void SuspendPatient_Click(object sender, System.Windows.RoutedEventArgs e) {
-            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.SuspendPatientCommand.CanExecute(null))
-                vm.SuspendPatientCommand.Execute(null);
+            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.SuspendPatientCommand.CanExecute())
+                vm.SuspendPatientCommand.Execute();
         }
 
         /// <summary>
         /// 方法 HoldPatient_Click 的说明
         /// </summary>
         private void HoldPatient_Click(object sender, System.Windows.RoutedEventArgs e) {
-            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.HoldPatientCommand.CanExecute(null))
-                vm.HoldPatientCommand.Execute(null);
+            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.HoldPatientCommand.CanExecute())
+                vm.HoldPatientCommand.Execute();
         }
 
         /// <summary>
         /// 方法 CompleteConsultation_Click 的说明
         /// </summary>
         private void CompleteConsultation_Click(object sender, System.Windows.RoutedEventArgs e) {
-            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.CompleteConsultationCommand.CanExecute(null))
-                vm.CompleteConsultationCommand.Execute(null);
+            if (DataContext is ViewModels.Navigation.DiagnosingDoctorViewModel vm && vm.CompleteConsultationCommand.CanExecute())
+                vm.CompleteConsultationCommand.Execute();
         }
     }
 }
