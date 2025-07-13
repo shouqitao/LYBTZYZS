@@ -52,6 +52,7 @@ namespace LYBT.UI.WPF {
             var prescriptionApi = RestService.For<IPrescriptionApi>(httpClient, refitSettings);
             var formulaTemplateApi = RestService.For<IFormulaTemplateApi>(httpClient, refitSettings);
             var logApi = RestService.For<ILogApi>(httpClient, refitSettings);
+            var treatmentRoomApi = RestService.For<ITreatmentRoomApi>(httpClient, refitSettings);
 
             // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
             var authService = new AuthService(authApi);
@@ -63,6 +64,7 @@ namespace LYBT.UI.WPF {
             var prescriptionService = new PrescriptionService(prescriptionApi);
             var formulaTemplateService = new FormulaTemplateService(formulaTemplateApi);
             var logService = new LogService(logApi);
+            var treatmentRoomService = new TreatmentRoomService(treatmentRoomApi);
 
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
@@ -75,6 +77,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(prescriptionApi);
             containerRegistry.RegisterInstance(formulaTemplateApi);
             containerRegistry.RegisterInstance(logApi);
+            containerRegistry.RegisterInstance(treatmentRoomApi);
 
             containerRegistry.RegisterInstance<IAuthService>(authService);
             containerRegistry.RegisterInstance<IUserService>(userService);
@@ -85,6 +88,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IPrescriptionService>(prescriptionService);
             containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
             containerRegistry.RegisterInstance<ILogService>(logService);
+            containerRegistry.RegisterInstance<ITreatmentRoomService>(treatmentRoomService);
 
 
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
