@@ -25,6 +25,10 @@
                     Margin="0,0,8,0"/>
             <Button Content="重置密码" Command="{Binding ResetPasswordCommand}"
                     IsEnabled="{Binding SelectedUser, Converter={StaticResource NullToBoolConverter}}"/>
+            <Button Content="创建医生档案"
+                    Command="{Binding CreateDoctorProfileCommand}"
+                    IsEnabled="{Binding SelectedUser, Converter={StaticResource NullToBoolConverter}}"
+                    Margin="0,0,8,0"/>
         </StackPanel>
         <!-- 内容区 -->
         <Grid Grid.Row="1">
