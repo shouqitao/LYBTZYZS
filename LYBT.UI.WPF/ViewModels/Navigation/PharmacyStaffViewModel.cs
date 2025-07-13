@@ -49,7 +49,7 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
         }
 
         private async Task LoadAsync() {
-            var waiting = await _pharmacyService.GetWaitingListAsync();
+            var waiting = await _pharmacyService.GetByStatusAsync(PharmacyStatus.Waiting);
             var all = await _pharmacyService.GetListAsync();
             var processed = all.Where(p => p.Status != (int)PharmacyStatus.Waiting).ToList();
 

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
+             xmlns:controls="clr-namespace:LYBT.UI.WPF.Views.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <Grid>
@@ -18,13 +19,7 @@
             <Button Content="标记已抓药" Command="{Binding MarkDispensedCommand}" IsEnabled="{Binding SelectedPending, Converter={StaticResource NullToBoolConverter}}" />
         </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding PendingItems}" SelectedItem="{Binding SelectedPending, Mode=TwoWay}" AutoGenerateColumns="False">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="病人" Binding="{Binding PatientName}" Width="*" />
-                <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" />
-                <DataGridTextColumn Header="时间" Binding="{Binding DispenseTime}" Width="130" />
-            </DataGrid.Columns>
-        </DataGrid>
+        <controls:PendingDispenseListControl Grid.Row="1" ItemsSource="{Binding PendingItems}" SelectedItem="{Binding SelectedPending, Mode=TwoWay}" />
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,8">
             <Button Content="标记完成" Command="{Binding MarkCompletedCommand}" IsEnabled="{Binding SelectedProcessed, Converter={StaticResource NullToBoolConverter}}" />

@@ -1,5 +1,6 @@
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Registration.Dtos;
+using LYBT.Common.Enums;
 using LYBT.UI.WPF.Interfaces;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -19,10 +20,10 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
         private readonly IPatientService _patientService;
 
         public ObservableCollection<PatientDetailDto> PatientSearchResults { get; } = new();
-        public ObservableCollection<PendingPatientItem> PendingPatients { get; } = new();
+        public ObservableCollection<RegistrationDto> PendingPatients { get; } = new();
 
-        private PendingPatientItem? _selectedPendingPatient;
-        public PendingPatientItem? SelectedPendingPatient {
+        private RegistrationDto? _selectedPendingPatient;
+        public RegistrationDto? SelectedPendingPatient {
             get => _selectedPendingPatient;
             set => SetProperty(ref _selectedPendingPatient, value);
         }
@@ -64,6 +65,8 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
             ClearCommand = new DelegateCommand(Clear);
             CancelCommand = new DelegateCommand(async () => await CancelAsync(), () => SelectedPendingPatient != null)
                 .ObservesProperty(() => SelectedPendingPatient);
+
+            _ = LoadPendingAsync();
         }
 
         private async Task SearchAsync() {
@@ -87,8 +90,7 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
 
             var regId = await _registrationService.AddAsync(dto);
             if (regId != null) {
-                PendingPatients.Add(new PendingPatientItem { QueueNumber = PendingPatients.Count + 1, Name = SelectedPatient.Name, RegistrationId = regId.Value });
-                PendingPatientsInfo = string.Empty;
+                await LoadPendingAsync();
                 SelectedPatient = null;
             } else {
                 MessageBox.Show("挂号失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -109,21 +111,20 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
         private async Task CancelAsync() {
             if (SelectedPendingPatient == null)
                 return;
-            bool ok = await _registrationService.CancelAsync(SelectedPendingPatient.RegistrationId);
+            bool ok = await _registrationService.CancelAsync(SelectedPendingPatient.Id);
             if (ok) {
-                PendingPatients.Remove(SelectedPendingPatient);
-                SelectedPendingPatient = null;
-                if (PendingPatients.Count == 0)
-                    PendingPatientsInfo = "暂无待看诊患者";
+                await LoadPendingAsync();
             } else {
                 MessageBox.Show("取消挂号失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        public class PendingPatientItem {
-            public int QueueNumber { get; set; }
-            public string Name { get; set; } = string.Empty;
-            public Guid RegistrationId { get; set; }
+        private async Task LoadPendingAsync() {
+            var list = await _registrationService.GetByStatusAsync(RegistrationStatus.Pending);
+            PendingPatients.Clear();
+            foreach (var item in list)
+                PendingPatients.Add(item);
+            PendingPatientsInfo = PendingPatients.Count == 0 ? "暂无待看诊患者" : string.Empty;
         }
     }
 }

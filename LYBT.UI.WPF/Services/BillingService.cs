@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using LYBT.Module.Billing.Dtos;
 using LYBT.UI.WPF.Apis;
 using LYBT.UI.WPF.Interfaces;
+using LYBT.Common.Enums;
+using System.Linq;
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>
@@ -106,6 +108,11 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         public async Task<IList<BillingDto>> GetRefundableBillsAsync() {
             return await _billingApi.GetRefundableBillsAsync();
+        }
+
+        public async Task<IList<BillingDto>> GetByStatusAsync(BillingStatus status) {
+            var list = await _billingApi.GetListAsync();
+            return list.Where(b => b.Status == status).ToList();
         }
     }
 }
