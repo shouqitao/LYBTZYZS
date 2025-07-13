@@ -53,5 +53,15 @@ namespace LYBT.UI.WPF.Services {
             var resp = await _api.DeleteAsync(id);
             return resp.Success;
         }
+
+        public async Task<bool> CompleteAsync(Guid id) {
+            var resp = await _api.CompleteAsync(id);
+            return resp.Success;
+        }
+
+        public async Task<bool> HoldAsync(Guid id) {
+            var resp = await _api.HoldAsync(id);
+            return resp.Success;
+        }
     }
 }

@@ -21,5 +21,11 @@ namespace LYBT.UI.WPF.Apis {
 
         [Delete("/api/Queueing/{id}")]
         Task<ApiSuccessResponse> DeleteAsync(Guid id);
+
+        [Post("/api/Queueing/complete/{id}")]
+        Task<ApiSuccessResponse> CompleteAsync(Guid id);
+
+        [Post("/api/Queueing/hold/{id}")]
+        Task<ApiSuccessResponse> HoldAsync(Guid id);
     }
 }

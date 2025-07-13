@@ -69,5 +69,23 @@ namespace LYBT.Module.Queueing.Repositories {
             _appDbContext.Queueings.Update(model);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
+
+        public async Task<bool> CompleteAsync(Guid id) {
+            var model = await _appDbContext.Queueings.FindAsync(id);
+            if (model == null)
+                return false;
+            model.Status = LYBT.Common.Enums.QueueStatus.Finished;
+            _appDbContext.Queueings.Update(model);
+            return await _appDbContext.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> HoldAsync(Guid id) {
+            var model = await _appDbContext.Queueings.FindAsync(id);
+            if (model == null)
+                return false;
+            model.Status = LYBT.Common.Enums.QueueStatus.OnHold;
+            _appDbContext.Queueings.Update(model);
+            return await _appDbContext.SaveChangesAsync() > 0;
+        }
     }
 }

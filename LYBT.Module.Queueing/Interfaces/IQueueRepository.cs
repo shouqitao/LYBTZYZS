@@ -36,5 +36,15 @@ namespace LYBT.Module.Queueing.Interfaces {
         /// 将排队信息标记为已取消
         /// </summary>
         Task<bool> CancelAsync(Guid id);
+
+        /// <summary>
+        /// 将排队信息标记为已完成
+        /// </summary>
+        Task<bool> CompleteAsync(Guid id);
+
+        /// <summary>
+        /// 将排队信息标记为挂起
+        /// </summary>
+        Task<bool> HoldAsync(Guid id);
     }
 }

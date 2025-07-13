@@ -17,6 +17,9 @@ namespace LYBT.Common.Enums {
         Finished = 2,
 
         [Description("已取消")]
-        Cancelled = 3
+        Cancelled = 3,
+
+        [Description("已挂起")]
+        OnHold = 4
     }
 }

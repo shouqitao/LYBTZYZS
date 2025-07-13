@@ -10,5 +10,7 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<bool> AddAsync(QueueingCreateDto dto);
         Task<bool> UpdateAsync(QueueingEditDto dto);
         Task<bool> DeleteAsync(Guid id);
+        Task<bool> CompleteAsync(Guid id);
+        Task<bool> HoldAsync(Guid id);
     }
 }

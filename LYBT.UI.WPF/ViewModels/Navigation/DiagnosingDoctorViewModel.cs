@@ -105,14 +105,14 @@ namespace LYBT.UI.WPF.ViewModels.Navigation {
 
         private async Task HoldAsync() {
             if (SelectedPatient != null) {
-                await _queueingService.DeleteAsync(SelectedPatient.Id);
+                await _queueingService.HoldAsync(SelectedPatient.Id);
                 await LoadQueueAsync();
             }
         }
 
         private async Task CompleteAsync() {
             if (SelectedPatient != null) {
-                await _queueingService.DeleteAsync(SelectedPatient.Id);
+                await _queueingService.CompleteAsync(SelectedPatient.Id);
                 await LoadQueueAsync();
                 SelectedPatient = null;
                 CurrentPatientName = string.Empty;
