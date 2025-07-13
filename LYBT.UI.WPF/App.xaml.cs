@@ -47,6 +47,7 @@ namespace LYBT.UI.WPF {
             var userApi = RestService.For<IUserApi>(httpClient, refitSettings);
             var doctorApi = RestService.For<IDoctorApi>(httpClient, refitSettings);
             var patientApi = RestService.For<IPatientApi>(httpClient, refitSettings);
+            var registrationApi = RestService.For<IRegistrationApi>(httpClient, refitSettings);
             var herbApi = RestService.For<IHerbApi>(httpClient, refitSettings);
             var billingApi = RestService.For<IBillingApi>(httpClient, refitSettings);
             var prescriptionApi = RestService.For<IPrescriptionApi>(httpClient, refitSettings);
@@ -58,6 +59,7 @@ namespace LYBT.UI.WPF {
             var userService = new UserService(userApi);
             var doctorService = new DoctorService(doctorApi);
             var patientService = new PatientService(patientApi);
+            var registrationService = new RegistrationService(registrationApi);
             var herbService = new HerbService(herbApi);
             var billingService = new BillingService(billingApi);
             var prescriptionService = new PrescriptionService(prescriptionApi);
@@ -70,6 +72,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(userApi);
             containerRegistry.RegisterInstance(doctorApi);
             containerRegistry.RegisterInstance(patientApi);
+            containerRegistry.RegisterInstance(registrationApi);
             containerRegistry.RegisterInstance(herbApi);
             containerRegistry.RegisterInstance(billingService);
             containerRegistry.RegisterInstance(prescriptionApi);
@@ -81,6 +84,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IDoctorService>(doctorService);
             containerRegistry.RegisterInstance<IPatientService>(patientService);
             containerRegistry.RegisterInstance<IHerbService>(herbService);
+            containerRegistry.RegisterInstance<IRegistrationService>(registrationService);
             containerRegistry.RegisterInstance<IBillingService>(billingService);
             containerRegistry.RegisterInstance<IPrescriptionService>(prescriptionService);
             containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
