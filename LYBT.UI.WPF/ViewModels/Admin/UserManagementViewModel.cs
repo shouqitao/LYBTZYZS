@@ -321,7 +321,11 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             }
 
             if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
-                main.NavigateDoctorProfile(SelectedUser.Id, ProfileMode.Create);
+                main.NavigateDoctorProfile(
+                    SelectedUser.Id,
+                    ProfileMode.Create,
+                    SelectedUser.UserName,
+                    SelectedUser.RealName);
             }
         }
 

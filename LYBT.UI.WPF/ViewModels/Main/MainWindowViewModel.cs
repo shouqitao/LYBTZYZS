@@ -125,13 +125,17 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             NavigateDoctorProfile();
         }
 
-        public void NavigateDoctorProfile(Guid? userId = null, ProfileMode? mode = null) {
+        public void NavigateDoctorProfile(Guid? userId = null, ProfileMode? mode = null, string? userName = null, string? realName = null) {
             IsMainVisible = false;
             IsFunctionVisible = true;
             var actualMode = mode ?? (HasDoctorProfile ? ProfileMode.Edit : ProfileMode.Create);
             var parameters = new NavigationParameters { { "Mode", actualMode } };
             if (userId != null)
                 parameters.Add("UserId", userId.Value);
+            if (userName != null)
+                parameters.Add("UserName", userName);
+            if (realName != null)
+                parameters.Add("RealName", realName);
             _regionManager.RequestNavigate("FunctionRegion", "DoctorProfileView", result => {
                 var view = _regionManager.Regions["FunctionRegion"].ActiveViews.FirstOrDefault();
                 if (view is FrameworkElement element && element.DataContext is DoctorProfileViewModel vm) {
