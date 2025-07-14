@@ -36,4 +36,29 @@ public class DoctorServiceTests
         Assert.True(result);
         repo.Verify(r => r.AddAsync(It.IsAny<LYBT.Models.Doctors.DoctorModel>()), Times.Once);
     }
+
+    [Fact]
+    public async Task AddAsync_Throws_WhenUserMissing()
+    {
+        var repo = new Mock<IDoctorRepository>();
+        var userRepo = new Mock<IUserRepository>();
+        userRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((UserModel?)null);
+        var mapper = CreateMapper();
+        var service = new DoctorService(repo.Object, userRepo.Object, mapper);
+
+        await Assert.ThrowsAsync<Exception>(() => service.AddAsync(new DoctorDetailDto { UserId = Guid.NewGuid() }));
+    }
+
+    [Fact]
+    public async Task AddAsync_Throws_WhenDoctorExists()
+    {
+        var repo = new Mock<IDoctorRepository>();
+        repo.Setup(r => r.GetByUserIdAsync(It.IsAny<Guid>())).ReturnsAsync(new LYBT.Models.Doctors.DoctorModel());
+        var userRepo = new Mock<IUserRepository>();
+        userRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new UserModel());
+        var mapper = CreateMapper();
+        var service = new DoctorService(repo.Object, userRepo.Object, mapper);
+
+        await Assert.ThrowsAsync<Exception>(() => service.AddAsync(new DoctorDetailDto { UserId = Guid.NewGuid() }));
+    }
 }
