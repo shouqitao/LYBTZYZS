@@ -14,7 +14,7 @@ namespace LYBT.Module.Users {
         /// 注册本模块所有服务到 DI 容器
         /// </summary>
         public static IServiceCollection AddUsersModule(this IServiceCollection services) {
-            services.AddSingleton<IUserRepository, UserRepository>(); // 仓储层
+            services.AddScoped<IUserRepository, UserRepository>(); // 仓储层
             services.AddScoped<IUserService, UserService>();           // 业务层
             return services;
         }
