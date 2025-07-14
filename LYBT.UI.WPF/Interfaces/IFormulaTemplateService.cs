@@ -7,8 +7,8 @@ namespace LYBT.UI.WPF.Interfaces {
     public interface IFormulaTemplateService {
         Task<IList<FormulaTemplateDto>> GetListAsync();
         Task<FormulaTemplateDetailDto?> GetByIdAsync(Guid id);
-        Task<bool> AddAsync(FormulaTemplateCreateDto dto);
-        Task<bool> UpdateAsync(FormulaTemplateEditDto dto);
+        Task<bool> AddAsync(FormulaTemplateDetailDto dto);
+        Task<bool> UpdateAsync(FormulaTemplateDetailDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

@@ -33,16 +33,43 @@ namespace LYBT.UI.WPF.Services {
         /// <summary>
         /// 方法 AddAsync 的说明
         /// </summary>
-        public async Task<bool> AddAsync(HerbCreateDto dto) {
-            var resp = await _api.AddAsync(dto);
+        public async Task<bool> AddAsync(HerbDetailDto dto) {
+            var create = new HerbCreateDto {
+                Name = dto.Name,
+                Pinyin = dto.Pinyin,
+                Origin = dto.Origin,
+                Spec = dto.Spec,
+                Unit = dto.Unit,
+                Price = dto.Price,
+                Stock = dto.Stock,
+                BatchNo = dto.BatchNo,
+                ExpireDate = dto.ExpireDate,
+                Effect = dto.Effect,
+                Remark = dto.Remark
+            };
+            var resp = await _api.AddAsync(create);
             return resp.Success;
         }
 
         /// <summary>
         /// 方法 UpdateAsync 的说明
         /// </summary>
-        public async Task<bool> UpdateAsync(HerbEditDto dto) {
-            var resp = await _api.UpdateAsync(dto);
+        public async Task<bool> UpdateAsync(HerbDetailDto dto) {
+            var edit = new HerbEditDto {
+                Id = dto.Id,
+                Name = dto.Name,
+                Pinyin = dto.Pinyin,
+                Origin = dto.Origin,
+                Spec = dto.Spec,
+                Unit = dto.Unit,
+                Price = dto.Price,
+                Stock = dto.Stock,
+                BatchNo = dto.BatchNo,
+                ExpireDate = dto.ExpireDate,
+                Effect = dto.Effect,
+                Remark = dto.Remark
+            };
+            var resp = await _api.UpdateAsync(edit);
             return resp.Success;
         }
 
