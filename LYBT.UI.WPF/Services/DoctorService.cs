@@ -64,9 +64,7 @@ namespace LYBT.UI.WPF.Services {
                 var msg = "新增医生失败";
                 if (!string.IsNullOrWhiteSpace(ex.Content)) {
                     try {
-                        var apiMsg = JsonSerializer.Deserialize<ApiSuccessResponse>(ex.Content);
-                        if (!string.IsNullOrWhiteSpace(apiMsg?.Message))
-                            msg = apiMsg.Message;
+                        msg = JsonSerializer.Deserialize<ApiSuccessResponse>(ex.Content)?.Message ?? msg;
                     } catch { }
                 }
                 MessageBox.Show(msg, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -87,9 +85,7 @@ namespace LYBT.UI.WPF.Services {
                 var msg = "保存医生失败";
                 if (!string.IsNullOrWhiteSpace(ex.Content)) {
                     try {
-                        var apiMsg = JsonSerializer.Deserialize<ApiSuccessResponse>(ex.Content);
-                        if (!string.IsNullOrWhiteSpace(apiMsg?.Message))
-                            msg = apiMsg.Message;
+                        msg = JsonSerializer.Deserialize<ApiSuccessResponse>(ex.Content)?.Message ?? msg;
                     } catch { }
                 }
                 MessageBox.Show(msg, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
