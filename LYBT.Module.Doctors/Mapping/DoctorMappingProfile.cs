@@ -26,7 +26,15 @@ namespace LYBT.Module.Doctors.Mapping {
                 .ForMember(d => d.User, o => o.Ignore())
                 .ForMember(d => d.UserId, o => o.MapFrom(s => s.UserId))
                 .ForMember(d => d.ContactNumber, o => o.MapFrom(s => s.ContactNumber))
-                .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender));
+                .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender))
+                .ForMember(d => d.Birthday, o => o.MapFrom(s => s.Birthday))
+                .ForMember(d => d.Title, o => o.MapFrom(s => s.Title))
+                .ForMember(d => d.LicenseNumber, o => o.MapFrom(s => s.LicenseNumber))
+                .ForMember(d => d.Specialty, o => o.MapFrom(s => s.Specialty))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status))
+                .ForMember(d => d.WorkStatus, o => o.MapFrom(s => s.WorkStatus))
+                .ForMember(d => d.PinyinCode, o => o.MapFrom(s => s.PinyinCode))
+                .ForMember(d => d.Remark, o => o.MapFrom(s => s.Remark));
         }
     }
 }
