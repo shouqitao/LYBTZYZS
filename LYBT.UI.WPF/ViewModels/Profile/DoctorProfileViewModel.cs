@@ -134,20 +134,18 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 ok = await _doctorService.UpdateAsync(dto);
             }
 
-            if (ok) {
-                MessageBox.Show("已保存", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
-                    main.IsMainVisible = true;
-                    main.IsFunctionVisible = false;
-                    main.HasDoctorProfile = true;
-                    await main.CheckDoctorProfileAsync(); // 重新检查状态
-                }
-                Mode = ProfileMode.View;
-                IsEditable = false;
-                EditModeTitle = "医生详情";
-            } else {
-                MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (!ok)
+                return;
+            MessageBox.Show("已保存", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
+                main.IsMainVisible = true;
+                main.IsFunctionVisible = false;
+                main.HasDoctorProfile = true;
+                await main.CheckDoctorProfileAsync(); // 重新检查状态
             }
+            Mode = ProfileMode.View;
+            IsEditable = false;
+            EditModeTitle = "医生详情";
         }
 
         private void Cancel() {
