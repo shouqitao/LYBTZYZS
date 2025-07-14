@@ -84,8 +84,10 @@ namespace LYBT.UI.WPF.Services {
         }
 
         public async Task<int> ExportToExcelAsync(string path) {
-            var bytes = await _api.ExportExcelAsync();
-            await File.WriteAllBytesAsync(path, bytes);
+            var content = await _api.ExportExcelAsync();
+            await using (var fs = File.Create(path)) {
+                await content.CopyToAsync(fs);
+            }
             var list = await _api.GetListAsync();
             return list.Count;
         }
