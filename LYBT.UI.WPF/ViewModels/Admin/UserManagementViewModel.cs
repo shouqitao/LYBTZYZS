@@ -16,6 +16,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
+using LYBT.UI.WPF.ViewModels.Profile;
+using LYBT.Common.Enums;
+using LYBT.UI.WPF.Views;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
     /// <summary>
