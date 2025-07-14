@@ -137,7 +137,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             if (!ok)
                 return;
             MessageBox.Show("已保存", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-            if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
+            if (CancelAction != null) {
+                CancelAction.Invoke();
+            } else if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
                 main.IsMainVisible = true;
                 main.IsFunctionVisible = false;
                 main.HasDoctorProfile = true;

@@ -314,21 +314,21 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 MessageBox.Show("该用户已有医生档案", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-            var dto = new DoctorDetailDto {
-                UserId = SelectedUser.Id,
-                UserName = SelectedUser.UserName,
-                RealName = SelectedUser.RealName
+
+            // 创建档案编辑窗口并预填用户信息
+            var vm = new DoctorProfileViewModel(_doctorService, null, null) {
+                Doctor = new DoctorDetailDto {
+                    UserId = SelectedUser.Id,
+                    UserName = SelectedUser.UserName,
+                    RealName = SelectedUser.RealName
+                },
+                Mode = ProfileMode.Create,
+                IsEditable = true,
+                EditModeTitle = "新增医生档案"
             };
-            bool ok;
-            try {
-                ok = await _doctorService.AddAsync(dto);
-            } catch (Exception ex) {
-                MessageBox.Show($"创建医生档案失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            if (!ok)
-                return;
-            MessageBox.Show("医生档案创建成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            var win = new DoctorProfileWindow { DataContext = vm };
+            vm.CancelAction = () => win.Close();
+            win.ShowDialog();
         }
 
         private void CancelEdit() {
