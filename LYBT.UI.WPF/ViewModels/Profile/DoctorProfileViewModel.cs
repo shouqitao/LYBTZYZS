@@ -36,6 +36,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             set => SetProperty(ref _isEditable, value);
         }
 
+        private ProfileMode _mode;
+        /// <summary>
+        /// 当前视图模式
+        /// </summary>
+        public ProfileMode Mode {
+            get => _mode;
+            set => SetProperty(ref _mode, value);
+        }
+
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
@@ -53,13 +62,13 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             CancelCommand = new DelegateCommand(Cancel);
         }
 
-        public async Task LoadAsync() {
+        public async Task LoadAsync(ProfileMode mode = ProfileMode.View) {
+            Mode = mode;
             var info = await _doctorService.GetByUserIdAsync(_authService.UserId);
             var currentUser = await _userService.GetByIdAsync(_authService.UserId);
             User = currentUser;
             if (info != null) {
                 Doctor = info;
-                EditModeTitle = "编辑医生档案";
             } else {
                 Doctor = new DoctorDetailDto {
                     UserId = _authService.UserId,
@@ -72,9 +81,22 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                     Specialty = string.Empty,
                     Remark = string.Empty
                 };
-                EditModeTitle = "新增医生档案";
             }
-            IsEditable = true;
+
+            switch (mode) {
+                case ProfileMode.Create:
+                    EditModeTitle = "新增医生档案";
+                    IsEditable = true;
+                    break;
+                case ProfileMode.Edit:
+                    EditModeTitle = "编辑医生档案";
+                    IsEditable = true;
+                    break;
+                default:
+                    EditModeTitle = "医生详情";
+                    IsEditable = false;
+                    break;
+            }
         }
 
         private async Task SaveAsync() {
@@ -120,6 +142,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                     main.HasDoctorProfile = true;
                     await main.CheckDoctorProfileAsync(); // 重新检查状态
                 }
+                Mode = ProfileMode.View;
+                IsEditable = false;
+                EditModeTitle = "医生详情";
             } else {
                 MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -134,11 +159,14 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 main.IsMainVisible = true;
                 main.IsFunctionVisible = false;
             }
+            Mode = ProfileMode.View;
+            IsEditable = false;
+            EditModeTitle = "医生详情";
         }
 
         public async void OnNavigatedTo(NavigationContext navigationContext) {
             try {
-                await LoadAsync();
+                await LoadAsync(ProfileMode.Edit);
             } catch (Exception ex) {
                 MessageBox.Show($"加载医生档案失败：{ex.Message}", "错误",
                     MessageBoxButton.OK, MessageBoxImage.Error);

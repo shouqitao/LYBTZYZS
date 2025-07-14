@@ -5,6 +5,7 @@ using Prism.Mvvm;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using LYBT.Common.Enums;
 
 namespace LYBT.UI.WPF.ViewModels.Profile {
     public class HerbProfileViewModel : BindableBase {
@@ -19,6 +20,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         private bool _isEditable;
         public bool IsEditable { get => _isEditable; set => SetProperty(ref _isEditable, value); }
 
+        private ProfileMode _mode;
+        /// <summary>
+        /// 当前视图模式
+        /// </summary>
+        public ProfileMode Mode {
+            get => _mode;
+            set => SetProperty(ref _mode, value);
+        }
+
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
@@ -30,16 +40,31 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             CancelCommand = new DelegateCommand(Cancel);
         }
 
-        public async Task LoadAsync(Guid? id = null) {
+        public async Task LoadAsync(Guid? id = null, ProfileMode mode = ProfileMode.View) {
+            Mode = mode;
             if (id.HasValue && id.Value != Guid.Empty) {
                 var info = await _herbService.GetByIdAsync(id.Value);
-                if (info != null) {
+                if (info != null)
                     Herb = info;
-                    EditModeTitle = "编辑药材";
-                }
+                else
+                    Herb = new HerbDetailDto();
             } else {
                 Herb = new HerbDetailDto();
-                EditModeTitle = "新增药材";
+            }
+
+            switch (mode) {
+                case ProfileMode.Create:
+                    EditModeTitle = "新增药材";
+                    IsEditable = true;
+                    break;
+                case ProfileMode.Edit:
+                    EditModeTitle = "编辑药材";
+                    IsEditable = true;
+                    break;
+                default:
+                    EditModeTitle = "药材详情";
+                    IsEditable = false;
+                    break;
             }
         }
 
@@ -72,14 +97,21 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 }
                 if (!success)
                     MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
-                else
+                else {
+                    Mode = ProfileMode.View;
+                    IsEditable = false;
+                    EditModeTitle = "药材详情";
                     CancelAction?.Invoke();
+                }
             } catch (Exception ex) {
                 MessageBox.Show($"保存失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void Cancel() {
+            Mode = ProfileMode.View;
+            IsEditable = false;
+            EditModeTitle = "药材详情";
             CancelAction?.Invoke();
         }
     }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using LYBT.UI.WPF.ViewModels.Profile;
+using LYBT.Common.Enums;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
     public class PatientManagementViewModel : BindableBase {
@@ -50,8 +51,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private async Task LoadProfileAsync(Guid id) {
-            await PatientProfileViewModel.LoadAsync(id);
-            PatientProfileViewModel.IsEditable = false;
+            await PatientProfileViewModel.LoadAsync(id, ProfileMode.View);
         }
 
     }

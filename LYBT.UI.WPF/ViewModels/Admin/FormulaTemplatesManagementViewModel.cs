@@ -1,6 +1,7 @@
 using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.ViewModels.Profile;
+using LYBT.Common.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -47,23 +48,21 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private void Add() {
-            ProfileViewModel.IsEditable = true;
             ProfileViewModel.CancelAction = async () => {
-                ProfileViewModel.IsEditable = false;
                 await LoadAsync();
+                await ProfileViewModel.LoadAsync(SelectedTemplate?.Id, ProfileMode.View);
             };
-            _ = ProfileViewModel.LoadAsync();
+            _ = ProfileViewModel.LoadAsync(null, ProfileMode.Create);
         }
 
         private void Edit() {
             if (SelectedTemplate == null)
                 return;
-            ProfileViewModel.IsEditable = true;
             ProfileViewModel.CancelAction = async () => {
-                ProfileViewModel.IsEditable = false;
                 await LoadAsync();
+                await ProfileViewModel.LoadAsync(SelectedTemplate.Id, ProfileMode.View);
             };
-            _ = ProfileViewModel.LoadAsync(SelectedTemplate.Id);
+            _ = ProfileViewModel.LoadAsync(SelectedTemplate.Id, ProfileMode.Edit);
         }
 
         private async Task DeleteAsync() {

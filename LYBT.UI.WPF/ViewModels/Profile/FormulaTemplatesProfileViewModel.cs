@@ -5,6 +5,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
+using LYBT.Common.Enums;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,6 +43,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             set => SetProperty(ref _isEditable, value);
         }
 
+        private ProfileMode _mode;
+        /// <summary>
+        /// 当前视图模式
+        /// </summary>
+        public ProfileMode Mode {
+            get => _mode;
+            set => SetProperty(ref _mode, value);
+        }
+
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand AddHerbCommand { get; }
@@ -57,7 +67,8 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             RemoveHerbCommand = new DelegateCommand(RemoveHerb, () => SelectedHerb != null).ObservesProperty(() => SelectedHerb);
         }
 
-        public async Task LoadAsync(Guid? id = null) {
+        public async Task LoadAsync(Guid? id = null, ProfileMode mode = ProfileMode.View) {
+            Mode = mode;
             if (id.HasValue && id.Value != Guid.Empty) {
                 var detail = await _service.GetByIdAsync(id.Value);
                 if (detail != null) {
@@ -65,12 +76,28 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                     Herbs.Clear();
                     foreach (var h in detail.Herbs)
                         Herbs.Add(h);
-                    EditModeTitle = "编辑模板";
+                } else {
+                    Template = new FormulaTemplateDetailDto();
+                    Herbs.Clear();
                 }
             } else {
                 Template = new FormulaTemplateDetailDto();
                 Herbs.Clear();
-                EditModeTitle = "新增模板";
+            }
+
+            switch (mode) {
+                case ProfileMode.Create:
+                    EditModeTitle = "新增模板";
+                    IsEditable = true;
+                    break;
+                case ProfileMode.Edit:
+                    EditModeTitle = "编辑模板";
+                    IsEditable = true;
+                    break;
+                default:
+                    EditModeTitle = "模板详情";
+                    IsEditable = false;
+                    break;
             }
         }
 
@@ -104,10 +131,19 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             }
             if (!ok)
                 MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
-            else
+            else {
+                Mode = ProfileMode.View;
+                IsEditable = false;
+                EditModeTitle = "模板详情";
                 CancelAction?.Invoke();
+            }
         }
 
-        private void Cancel() => CancelAction?.Invoke();
+        private void Cancel() {
+            Mode = ProfileMode.View;
+            IsEditable = false;
+            EditModeTitle = "模板详情";
+            CancelAction?.Invoke();
+        }
     }
 }

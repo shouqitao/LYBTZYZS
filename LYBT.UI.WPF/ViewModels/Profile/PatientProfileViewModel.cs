@@ -35,6 +35,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             set => SetProperty(ref _isEditable, value);
         }
 
+        private ProfileMode _mode;
+        /// <summary>
+        /// 当前视图模式
+        /// </summary>
+        public ProfileMode Mode {
+            get => _mode;
+            set => SetProperty(ref _mode, value);
+        }
+
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
@@ -46,21 +55,29 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             CancelCommand = new DelegateCommand(Cancel);
         }
 
-        public async Task LoadAsync(Guid patientId) {
+        public async Task LoadAsync(Guid patientId, ProfileMode mode = ProfileMode.View) {
+            Mode = mode;
             if (patientId != Guid.Empty) {
                 var info = await _patientService.GetByIdAsync(patientId);
-                if (info != null) {
-                    Patient = info;
-                    EditModeTitle = "编辑患者档案";
-                } else {
-                    Patient = new PatientDetailDto();
-                    EditModeTitle = "新增患者档案";
-                }
+                Patient = info ?? new PatientDetailDto();
             } else {
                 Patient = new PatientDetailDto();
-                EditModeTitle = "新增患者档案";
             }
-            IsEditable = true;
+
+            switch (mode) {
+                case ProfileMode.Create:
+                    EditModeTitle = "新增患者档案";
+                    IsEditable = true;
+                    break;
+                case ProfileMode.Edit:
+                    EditModeTitle = "编辑患者档案";
+                    IsEditable = true;
+                    break;
+                default:
+                    EditModeTitle = "患者详情";
+                    IsEditable = false;
+                    break;
+            }
         }
 
         private async Task SaveAsync() {
@@ -72,7 +89,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
             if (ok) {
                 MessageBox.Show("已保存", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                Mode = ProfileMode.View;
                 IsEditable = false;
+                EditModeTitle = "患者详情";
             } else {
                 MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -87,6 +106,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 main.IsMainVisible = true;
                 main.IsFunctionVisible = false;
             }
+            Mode = ProfileMode.View;
+            IsEditable = false;
+            EditModeTitle = "患者详情";
         }
     }
 }

@@ -1,6 +1,7 @@
 using LYBT.Module.Prescriptions.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.ViewModels.Profile;
+using LYBT.Common.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -47,23 +48,21 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private void Add() {
-            ProfileViewModel.IsEditable = true;
             ProfileViewModel.CancelAction = async () => {
-                ProfileViewModel.IsEditable = false;
                 await LoadAsync();
+                await ProfileViewModel.LoadAsync(SelectedPrescription?.Id, ProfileMode.View);
             };
-            _ = ProfileViewModel.LoadAsync();
+            _ = ProfileViewModel.LoadAsync(null, ProfileMode.Create);
         }
 
         private void Edit() {
             if (SelectedPrescription == null)
                 return;
-            ProfileViewModel.IsEditable = true;
             ProfileViewModel.CancelAction = async () => {
-                ProfileViewModel.IsEditable = false;
                 await LoadAsync();
+                await ProfileViewModel.LoadAsync(SelectedPrescription.Id, ProfileMode.View);
             };
-            _ = ProfileViewModel.LoadAsync(SelectedPrescription.Id);
+            _ = ProfileViewModel.LoadAsync(SelectedPrescription.Id, ProfileMode.Edit);
         }
 
         private async Task DeleteAsync() {
