@@ -5,6 +5,7 @@ using LYBT.UI.WPF.Services;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
+using Prism.Regions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 using System;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.ViewModels.Profile;
+using LYBT.Common.Enums;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
@@ -130,9 +132,25 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         private void ShowDoctorProfile() {
+            NavigateDoctorProfile();
+        }
+
+        public void NavigateDoctorProfile(Guid? userId = null, ProfileMode? mode = null) {
             IsMainVisible = false;
             IsFunctionVisible = true;
-            _regionManager.RequestNavigate("FunctionRegion", "DoctorProfileView");
+            var actualMode = mode ?? (HasDoctorProfile ? ProfileMode.Edit : ProfileMode.Create);
+            var parameters = new NavigationParameters { { "Mode", actualMode } };
+            if (userId != null)
+                parameters.Add("UserId", userId.Value);
+            _regionManager.RequestNavigate("FunctionRegion", "DoctorProfileView", result => {
+                var view = _regionManager.Regions["FunctionRegion"].ActiveViews.FirstOrDefault();
+                if (view is FrameworkElement element && element.DataContext is DoctorProfileViewModel vm) {
+                    vm.CancelAction = () => {
+                        IsMainVisible = true;
+                        IsFunctionVisible = false;
+                    };
+                }
+            }, parameters);
         }
 
         private void ShowPatientProfile() {
