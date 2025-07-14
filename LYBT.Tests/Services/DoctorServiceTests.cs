@@ -74,7 +74,8 @@ public class DoctorServiceTests
             .Callback<DoctorModel>(m => savedModel = m)
             .ReturnsAsync(true);
         var userRepo = new Mock<IUserRepository>();
-        userRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new UserModel());
+        var existingUser = new UserModel();
+        userRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(existingUser);
         var mapper = CreateMapper();
         var service = new DoctorService(repo.Object, userRepo.Object, mapper);
 
@@ -97,6 +98,8 @@ public class DoctorServiceTests
 
         Assert.True(result);
         Assert.NotNull(savedModel);
+        // User navigation property should be assigned with the existing user
+        Assert.Same(existingUser, savedModel!.User);
         Assert.Equal(dto.Birthday, savedModel!.Birthday);
         Assert.Equal(dto.Title, savedModel.Title);
         Assert.Equal(dto.LicenseNumber, savedModel.LicenseNumber);
