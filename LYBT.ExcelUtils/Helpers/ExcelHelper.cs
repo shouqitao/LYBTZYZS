@@ -7,7 +7,7 @@ using NPOI.XSSF.UserModel;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.FormulaTemplates.Dtos;
 
-namespace LYBT.Common.Helpers;
+namespace LYBT.ExcelUtils.Helpers;
 
 public static class ExcelHelper {
     public static List<HerbImportDto> ReadHerbs(Stream stream) {

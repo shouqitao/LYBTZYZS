@@ -38,7 +38,8 @@
 		<ProjectReference Include="..\LYBT.Module.Settings\LYBT.Module.Settings.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
 		<ProjectReference Include="..\LYBT.Module.TreatmentRoom\LYBT.Module.TreatmentRoom.csproj" />
-		<ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
-	</ItemGroup>
+                <ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+                <ProjectReference Include="..\LYBT.ExcelUtils\LYBT.ExcelUtils.csproj" />
+        </ItemGroup>
 
 </Project>
