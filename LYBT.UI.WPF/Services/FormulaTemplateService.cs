@@ -64,5 +64,14 @@ namespace LYBT.UI.WPF.Services {
             var resp = await _api.DeleteAsync(id);
             return resp.Success;
         }
+
+        public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos) {
+            var resp = await _api.ImportAsync(dtos);
+            return resp.Success ? dtos.Count : 0;
+        }
+
+        public async Task<IList<FormulaTemplateDetailDto>> ExportAsync() {
+            return await _api.ExportAsync();
+        }
     }
 }

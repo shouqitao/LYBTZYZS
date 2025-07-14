@@ -31,5 +31,15 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         /// 删除模板
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 批量导入模板
+        /// </summary>
+        Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos);
+
+        /// <summary>
+        /// 导出全部模板数据
+        /// </summary>
+        Task<List<FormulaTemplateDetailDto>> ExportAsync();
     }
 }

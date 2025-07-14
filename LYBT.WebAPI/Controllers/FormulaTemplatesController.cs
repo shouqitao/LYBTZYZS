@@ -75,5 +75,17 @@ namespace LYBT.Module.FormulaTemplates.Controllers {
                 return NotFound();
             return Ok("删除模板成功");
         }
+
+        [HttpPost("import")]
+        public async Task<ActionResult<object>> Import([FromBody] List<FormulaTemplateImportDto> dtos) {
+            var count = await _service.ImportAsync(dtos);
+            return Ok(new { Imported = count });
+        }
+
+        [HttpPost("export")]
+        public async Task<ActionResult<List<FormulaTemplateDetailDto>>> Export() {
+            var data = await _service.ExportAsync();
+            return Ok(data);
+        }
     }
 }

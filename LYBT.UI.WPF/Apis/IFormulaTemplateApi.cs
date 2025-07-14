@@ -21,5 +21,11 @@ namespace LYBT.UI.WPF.Apis {
 
         [Delete("/api/FormulaTemplate/{id}")]
         Task<ApiSuccessResponse> DeleteAsync(Guid id);
+
+        [Post("/api/FormulaTemplate/import")]
+        Task<ApiSuccessResponse> ImportAsync([Body] List<FormulaTemplateImportDto> dtos);
+
+        [Post("/api/FormulaTemplate/export")]
+        Task<List<FormulaTemplateDetailDto>> ExportAsync();
     }
 }

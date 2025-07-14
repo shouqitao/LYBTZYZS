@@ -10,5 +10,9 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<bool> AddAsync(FormulaTemplateDetailDto dto);
         Task<bool> UpdateAsync(FormulaTemplateDetailDto dto);
         Task<bool> DeleteAsync(Guid id);
+
+        Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos);
+
+        Task<IList<FormulaTemplateDetailDto>> ExportAsync();
     }
 }

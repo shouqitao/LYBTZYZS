@@ -29,6 +29,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public DelegateCommand AddCommand { get; }
         public DelegateCommand EditCommand { get; }
         public DelegateCommand DeleteCommand { get; }
+        public DelegateCommand ImportCommand { get; }
+        public DelegateCommand ExportCommand { get; }
 
         public FormulaTemplatesManagementViewModel(IFormulaTemplateService service, FormulaTemplatesProfileViewModel profileViewModel) {
             _service = service;
@@ -37,6 +39,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             AddCommand = new DelegateCommand(Add);
             EditCommand = new DelegateCommand(Edit, () => SelectedTemplate != null).ObservesProperty(() => SelectedTemplate);
             DeleteCommand = new DelegateCommand(async () => await DeleteAsync(), () => SelectedTemplate != null).ObservesProperty(() => SelectedTemplate);
+            ImportCommand = new DelegateCommand(async () => await ImportAsync());
+            ExportCommand = new DelegateCommand(async () => await ExportAsync());
             _ = LoadAsync();
         }
 
@@ -74,6 +78,19 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                     MessageBox.Show("删除失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 await LoadAsync();
             }
+        }
+
+        private async Task ImportAsync() {
+            // 在此示例中仅演示调用服务导入接口，实际场景可结合文件选择等
+            var count = await _service.ImportAsync(new List<FormulaTemplateImportDto>());
+            MessageBox.Show($"已导入 {count} 条模板", "提示");
+            await LoadAsync();
+        }
+
+        private async Task ExportAsync() {
+            var data = await _service.ExportAsync();
+            // 此处仅简单提示，实际可保存到文件
+            MessageBox.Show($"已导出 {data.Count} 条模板", "提示");
         }
     }
 }
