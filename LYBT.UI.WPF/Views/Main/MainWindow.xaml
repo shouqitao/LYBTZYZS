@@ -32,7 +32,7 @@
                     <TextBlock Grid.Column="1"
                    Text="凌隐宝堂中医诊所"
                    Foreground="#FFD700"
-                   FontSize="28"
+                   FontSize="36"
                    FontWeight="Bold"
                    FontFamily="微软雅黑"
                    VerticalAlignment="Center"
