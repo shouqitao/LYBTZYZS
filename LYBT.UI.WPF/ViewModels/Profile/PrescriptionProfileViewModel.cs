@@ -86,38 +86,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             Prescription.Items = Items.ToList();
             bool ok;
             if (Prescription.Id == Guid.Empty) {
-                var dto = new PrescriptionCreateDto {
-                    PatientId = Prescription.PatientId,
-                    DoctorId = Prescription.DoctorId,
-                    Diagnosis = Prescription.Diagnosis,
-                    Remark = Prescription.Remark,
-                    Status = Prescription.Status,
-                    Items = Items.Select(i => new PrescriptionItemCreateDto {
-                        HerbId = i.HerbId,
-                        HerbName = i.HerbName,
-                        Quantity = i.Quantity,
-                        Unit = i.Unit,
-                        Usage = i.Usage
-                    }).ToList()
-                };
-                ok = await _service.AddAsync(dto);
+                ok = await _service.AddAsync(Prescription);
             } else {
-                var dto = new PrescriptionEditDto {
-                    Id = Prescription.Id,
-                    PatientId = Prescription.PatientId,
-                    DoctorId = Prescription.DoctorId,
-                    Diagnosis = Prescription.Diagnosis,
-                    Remark = Prescription.Remark,
-                    Status = Prescription.Status,
-                    Items = Items.Select(i => new PrescriptionItemCreateDto {
-                        HerbId = i.HerbId,
-                        HerbName = i.HerbName,
-                        Quantity = i.Quantity,
-                        Unit = i.Unit,
-                        Usage = i.Usage
-                    }).ToList()
-                };
-                ok = await _service.UpdateAsync(dto);
+                ok = await _service.UpdateAsync(Prescription);
             }
             if (!ok)
                 MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);

@@ -10,8 +10,8 @@ namespace LYBT.UI.WPF.Interfaces {
     public interface IPrescriptionService {
         Task<IList<PrescriptionDto>> GetListAsync();
         Task<PrescriptionDetailDto?> GetByIdAsync(Guid id);
-        Task<bool> AddAsync(PrescriptionCreateDto dto);
-        Task<bool> UpdateAsync(PrescriptionEditDto dto);
+        Task<bool> AddAsync(PrescriptionDetailDto dto);
+        Task<bool> UpdateAsync(PrescriptionDetailDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<bool> CancelAsync(Guid id);
     }

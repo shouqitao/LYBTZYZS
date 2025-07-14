@@ -87,20 +87,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             Template.Herbs = Herbs.ToList();
             bool ok;
             if (Template.Id == Guid.Empty) {
-                var dto = new FormulaTemplateCreateDto {
-                    Name = Template.Name,
-                    Herbs = Herbs.ToList(),
-                    Remark = Template.Remark
-                };
-                ok = await _service.AddAsync(dto);
+                ok = await _service.AddAsync(Template);
             } else {
-                var dto = new FormulaTemplateEditDto {
-                    Id = Template.Id,
-                    Name = Template.Name,
-                    Herbs = Herbs.ToList(),
-                    Remark = Template.Remark
-                };
-                ok = await _service.UpdateAsync(dto);
+                ok = await _service.UpdateAsync(Template);
             }
             if (!ok)
                 MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);

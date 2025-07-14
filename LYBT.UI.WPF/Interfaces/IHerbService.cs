@@ -7,8 +7,8 @@ namespace LYBT.UI.WPF.Interfaces {
     public interface IHerbService {
         Task<IList<HerbDto>> GetListAsync();
         Task<HerbDetailDto?> GetByIdAsync(Guid id);
-        Task<bool> AddAsync(HerbCreateDto dto);
-        Task<bool> UpdateAsync(HerbEditDto dto);
+        Task<bool> AddAsync(HerbDetailDto dto);
+        Task<bool> UpdateAsync(HerbDetailDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

@@ -47,28 +47,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             try {
                 bool success;
                 if (Herb.Id == Guid.Empty) {
-                    success = await _herbService.AddAsync(new HerbCreateDto {
-                        Name = Herb.Name,
-                        Pinyin = Herb.Pinyin,
-                        Origin = Herb.Origin,
-                        Spec = Herb.Spec,
-                        Unit = Herb.Unit,
-                        Price = Herb.Price,
-                        Effect = Herb.Effect,
-                        Remark = Herb.Remark
-                    });
+                    success = await _herbService.AddAsync(Herb);
                 } else {
-                    success = await _herbService.UpdateAsync(new HerbEditDto {
-                        Id = Herb.Id,
-                        Name = Herb.Name,
-                        Pinyin = Herb.Pinyin,
-                        Origin = Herb.Origin,
-                        Spec = Herb.Spec,
-                        Unit = Herb.Unit,
-                        Price = Herb.Price,
-                        Effect = Herb.Effect,
-                        Remark = Herb.Remark
-                    });
+                    success = await _herbService.UpdateAsync(Herb);
                 }
                 if (!success)
                     MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
