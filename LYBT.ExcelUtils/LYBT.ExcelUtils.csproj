@@ -12,8 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\LYBT.Module.FormulaTemplates\LYBT.Module.FormulaTemplates.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\LYBT.Models\LYBT.Models.csproj" />
   </ItemGroup>
 
 </Project>
