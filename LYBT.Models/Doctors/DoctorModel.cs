@@ -34,7 +34,7 @@ namespace LYBT.Models.Doctors {
         public DateTime CreatedTime { get; set; } = DateTime.Now;
 
         [StringLength(256)]
-        public string Remark { get; set; } = string.Empty;
+        public string? Remark { get; set; }
 
         public DateTime Birthday { get; set; }
 
