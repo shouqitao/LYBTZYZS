@@ -1,16 +1,6 @@
 ﻿using LYBT.Common.Enums.Users;
-using LYBT.Module.Auth.Services;
 using LYBT.UI.WPF.Events;
-using LYBT.UI.WPF.Services;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Mvvm;
-using Prism.Regions;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
-using System.Threading.Tasks;
-using System;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.Common.Enums;
@@ -93,7 +83,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
             ShowDoctorProfileCommand = new DelegateCommand(ShowDoctorProfile);
             ShowPatientProfileCommand = new DelegateCommand(ShowPatientProfile);
-            
+
             System.Diagnostics.Debug.WriteLine("MainWindowViewModel constructed");
         }
 
@@ -179,20 +169,20 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             IsFunctionVisible = false;
             IsMainVisible = true;
             IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
-            
+
             // 取消原先直接跳转管理视图的逻辑，统一在 HomeView 中根据角色展示菜单
-            
+
             if (IsDoctorRole)
                 await CheckDoctorProfileAsync();
-            
+
             // 最大化窗口
             Application.Current.MainWindow.WindowState = WindowState.Maximized;
-            
+
             // 导航到主内容区（如HomeView）
             System.Diagnostics.Debug.WriteLine("Navigating to HomeView...");
             var homeNavigationParams = new NavigationParameters();
             homeNavigationParams.Add("UserRoles", roles);
-            
+
             // 添加导航结果回调
             _regionManager.RequestNavigate("MainContentRegion", "HomeView", result => {
                 System.Diagnostics.Debug.WriteLine($"Navigation to HomeView completed. Success: {(result.Exception == null)}");
