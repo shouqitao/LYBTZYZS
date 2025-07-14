@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums {
     /// <summary>
     /// 数据同步结果状态
     /// </summary>
+    [Description("同步状态")]
     public enum SyncStatus {
 
         [Description("成功")]

@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums {
     /// <summary>
     /// 治疗任务状态
     /// </summary>
+    [Description("治疗任务状态")]
     public enum TreatmentTaskStatus {
 
         /// <summary>待执行</summary>

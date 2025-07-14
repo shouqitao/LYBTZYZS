@@ -1,8 +1,11 @@
-﻿namespace LYBT.Common.Enums.Logs {
+﻿using System.ComponentModel;
+
+namespace LYBT.Common.Enums.Logs {
 
     /// <summary>
     /// 日志级别枚举
     /// </summary>
+    [Description("日志级别")]
     public enum LogLevel {
         Info,       // 普通信息
         Warning,    // 警告信息

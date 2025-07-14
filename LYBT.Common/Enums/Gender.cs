@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums {
     /// <summary>
     /// 性别枚举（公共枚举类）
     /// </summary>
+    [Description("性别")]
     public enum Gender {
 
         [Description("男")]

@@ -1,8 +1,11 @@
-﻿namespace LYBT.Common.Enums {
+﻿using System.ComponentModel;
+
+namespace LYBT.Common.Enums {
 
     /// <summary>
     /// 药房处方状态枚举
     /// </summary>
+    [Description("药房状态")]
     public enum PharmacyStatus {
 
         /// <summary>待抓药</summary>

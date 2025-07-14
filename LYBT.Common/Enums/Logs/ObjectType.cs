@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums.Logs {
     /// <summary>
     /// 操作对象类型枚举
     /// </summary>
+    [Description("操作对象类型")]
     public enum ObjectType {
 
         /// <summary>

@@ -1,15 +1,19 @@
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
+using System.ComponentModel;
+using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.FormulaTemplates.Dtos;
 
-namespace LYBT.ExcelUtils.Helpers;
+namespace LYBT.ExcelUtils;
 
-public static class ExcelHelper {
+/// <summary>
+/// 通用工具类，提供 Excel 读写及常用辅助方法
+/// </summary>
+[Description("通用工具类")]
+public static class ExcelUtils {
     public static List<HerbImportDto> ReadHerbs(Stream stream) {
         var result = new List<HerbImportDto>();
         IWorkbook wb = new XSSFWorkbook(stream);
@@ -103,5 +107,34 @@ public static class ExcelHelper {
         using var ms = new MemoryStream();
         wb.Write(ms, true);
         return ms.ToArray();
+    }
+
+    public static bool IsNetworkAvailable() => NetworkInterface.GetIsNetworkAvailable();
+
+    public static string FormatPhone(string? phone) {
+        if (string.IsNullOrWhiteSpace(phone))
+            return string.Empty;
+        var digits = Regex.Replace(phone, @"\n|\r|\s|\D", string.Empty);
+        if (digits.Length == 11)
+            return $"{digits[..3]}-{digits[3..7]}-{digits[7..]}";
+        if (digits.Length == 10)
+            return $"{digits[..3]}-{digits[3..6]}-{digits[6..]}";
+        return digits;
+    }
+
+    public static bool CheckIdNumber(string? idNumber) {
+        if (string.IsNullOrWhiteSpace(idNumber))
+            return false;
+        idNumber = idNumber.Trim();
+        if (!Regex.IsMatch(idNumber, "^\\d{17}[\\dXx]$"))
+            return false;
+        int[] weight = {7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2};
+        char[] codes = "10X98765432".ToCharArray();
+        int sum = 0;
+        for (int i = 0; i < 17; i++) {
+            sum += (idNumber[i] - '0') * weight[i];
+        }
+        char code = codes[sum % 11];
+        return char.ToUpperInvariant(idNumber[17]) == code;
     }
 }
