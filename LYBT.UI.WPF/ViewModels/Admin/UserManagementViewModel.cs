@@ -326,10 +326,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 MessageBox.Show($"创建医生档案失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            if (ok)
-                MessageBox.Show("医生档案创建成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-            else
-                MessageBox.Show("创建医生档案失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (!ok)
+                return;
+            MessageBox.Show("医生档案创建成功", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void CancelEdit() {

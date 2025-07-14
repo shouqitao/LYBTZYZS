@@ -114,10 +114,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 } else {
                     ok = await _doctorService.UpdateAsync(editing);
                 }
-                if (!ok) {
-                    MessageBox.Show(editing.Id == Guid.Empty ? "新增医生失败" : "保存医生失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
+                if (!ok)
                     return;
-                }
             } catch (Exception ex) {
                 var msg = ex.Message;
                 if (ex is ApiException apiEx && !string.IsNullOrEmpty(apiEx.Content)) {
