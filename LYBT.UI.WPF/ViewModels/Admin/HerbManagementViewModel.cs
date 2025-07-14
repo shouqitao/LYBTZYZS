@@ -1,6 +1,7 @@
 using LYBT.Module.Herbs.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.ViewModels.Profile;
+using LYBT.Common.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -22,7 +23,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             set {
                 if (SetProperty(ref _selectedHerb, value)) {
                     if (value != null)
-                        _ = HerbProfileViewModel.LoadAsync(value.Id);
+                        _ = HerbProfileViewModel.LoadAsync(value.Id, ProfileMode.View);
                 }
             }
         }
@@ -64,22 +65,20 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private void Add() {
-            HerbProfileViewModel.IsEditable = true;
             HerbProfileViewModel.CancelAction = async () => {
-                HerbProfileViewModel.IsEditable = false;
                 await LoadAsync();
+                await HerbProfileViewModel.LoadAsync(SelectedHerb?.Id, ProfileMode.View);
             };
-            HerbProfileViewModel.LoadAsync();
+            HerbProfileViewModel.LoadAsync(null, ProfileMode.Create);
         }
 
         private void Edit() {
             if (SelectedHerb != null) {
-                HerbProfileViewModel.IsEditable = true;
                 HerbProfileViewModel.CancelAction = async () => {
-                    HerbProfileViewModel.IsEditable = false;
                     await LoadAsync();
+                    await HerbProfileViewModel.LoadAsync(SelectedHerb.Id, ProfileMode.View);
                 };
-                HerbProfileViewModel.LoadAsync(SelectedHerb.Id);
+                HerbProfileViewModel.LoadAsync(SelectedHerb.Id, ProfileMode.Edit);
             }
         }
 

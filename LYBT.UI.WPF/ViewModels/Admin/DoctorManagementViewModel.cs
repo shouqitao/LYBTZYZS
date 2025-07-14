@@ -3,6 +3,7 @@ using LYBT.Module.Doctors.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.ViewModels.Profile;
+using LYBT.Common.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 using Refit;
@@ -73,6 +74,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             var detail = await _doctorService.GetByIdAsync(doctorId);
             if (detail != null) {
                 DoctorProfileViewModel.Doctor = detail;
+                DoctorProfileViewModel.Mode = ProfileMode.View;
                 DoctorProfileViewModel.EditModeTitle = "医生详情";
                 DoctorProfileViewModel.IsEditable = false;
             }
@@ -103,6 +105,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 Remark = string.Empty
             };
             DoctorProfileViewModel.Doctor = newDoctor;
+            DoctorProfileViewModel.Mode = ProfileMode.Create;
             DoctorProfileViewModel.EditModeTitle = "新增医生档案";
             DoctorProfileViewModel.IsEditable = true;
             SelectedDoctor = null;
@@ -113,6 +116,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// </summary>
         private void EditDoctor() {
             if (SelectedDoctor != null) {
+                DoctorProfileViewModel.Mode = ProfileMode.Edit;
                 DoctorProfileViewModel.IsEditable = true;
                 DoctorProfileViewModel.EditModeTitle = "编辑医生档案";
             }
@@ -154,6 +158,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 return;
             }
             await LoadDoctors();
+            DoctorProfileViewModel.Mode = ProfileMode.View;
             DoctorProfileViewModel.IsEditable = false;
             DoctorProfileViewModel.EditModeTitle = "医生详情";
         }
@@ -166,6 +171,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 _ = UpdateDoctorProfileViewModel(SelectedDoctor.Id);
             else
                 DoctorProfileViewModel.Doctor = new DoctorDetailDto();
+            DoctorProfileViewModel.Mode = ProfileMode.View;
             DoctorProfileViewModel.IsEditable = false;
             DoctorProfileViewModel.EditModeTitle = "医生详情";
         }
