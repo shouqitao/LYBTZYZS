@@ -65,5 +65,13 @@ namespace LYBT.Module.FormulaTemplates.Services {
         public async Task<bool> DeleteAsync(Guid id) {
             return await _repository.DeleteAsync(id);
         }
+
+        public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos) {
+            return await _repository.ImportAsync(dtos);
+        }
+
+        public async Task<List<FormulaTemplateDetailDto>> ExportAsync() {
+            return await _repository.ExportAsync();
+        }
     }
 }
