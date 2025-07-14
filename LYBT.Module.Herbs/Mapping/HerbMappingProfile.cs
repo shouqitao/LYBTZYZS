@@ -13,6 +13,7 @@ namespace LYBT.Module.Herbs.Mapping {
             CreateMap<HerbModel, HerbDto>().ReverseMap();
             CreateMap<HerbModel, HerbDetailDto>().ReverseMap();
             CreateMap<HerbCreateDto, HerbModel>();
+            CreateMap<HerbImportDto, HerbModel>();
         }
     }
 }
