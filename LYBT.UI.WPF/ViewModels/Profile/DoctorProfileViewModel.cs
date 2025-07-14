@@ -170,14 +170,14 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         public async void OnNavigatedTo(NavigationContext navigationContext) {
             try {
                 var mode = ProfileMode.Edit;
-                if (navigationContext.Parameters.TryGetValue("Mode", out var m)) {
+                if (navigationContext.Parameters.TryGetValue<object>("Mode", out var m)) {
                     if (m is ProfileMode pm)
                         mode = pm;
                     else if (m is string s && Enum.TryParse<ProfileMode>(s, out var parsed))
                         mode = parsed;
                 }
                 Guid? userId = null;
-                if (navigationContext.Parameters.TryGetValue("UserId", out var u) && u is Guid guid)
+                if (navigationContext.Parameters.TryGetValue<object>("UserId", out var u) && u is Guid guid)
                     userId = guid;
                 await LoadAsync(userId, mode);
             } catch (Exception ex) {
