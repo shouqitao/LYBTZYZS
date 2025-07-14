@@ -32,6 +32,7 @@
     <ProjectReference Include="..\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
     <ProjectReference Include="..\LYBT.Module.TreatmentRoom\LYBT.Module.TreatmentRoom.csproj" />
     <ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+    <ProjectReference Include="..\LYBT.ExcelUtils\LYBT.ExcelUtils.csproj" />
     <ProjectReference Include="..\LYBT.WebAPI\LYBT.WebAPI.csproj" />
   </ItemGroup>
 </Project>
