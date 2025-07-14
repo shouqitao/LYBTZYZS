@@ -69,6 +69,10 @@ namespace LYBT.Module.Doctors.Services {
 
             var model = _mapper.Map<DoctorModel>(dto);
             model.Id = Guid.NewGuid();
+            // EF Core requires the User navigation property for required relationships
+            // to be non-null when saving entities. Assign the retrieved user to avoid
+            // validation errors when calling SaveChangesAsync.
+            model.User = user;
             try {
                 return await _doctorRepository.AddAsync(model);
             } catch (DbUpdateException ex) {
