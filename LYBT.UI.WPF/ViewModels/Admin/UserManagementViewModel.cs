@@ -317,7 +317,17 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             var dto = new DoctorDetailDto {
                 UserId = SelectedUser.Id,
                 UserName = SelectedUser.UserName,
-                RealName = SelectedUser.RealName
+                RealName = SelectedUser.RealName,
+                Gender = Gender.Unknown,
+                Birthday = DateTime.Now,
+                Title = DoctorTitle.Junior,
+                Specialty = string.Empty,
+                Status = DoctorStatus.Active,
+                WorkStatus = DoctorWorkStatus.Clinic,
+                PinyinCode = string.Empty,
+                LicenseNumber = string.Empty,
+                ContactNumber = string.Empty,
+                Remark = string.Empty
             };
             bool ok;
             try {
