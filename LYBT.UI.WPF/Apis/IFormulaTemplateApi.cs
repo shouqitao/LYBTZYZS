@@ -4,6 +4,7 @@ using Refit;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Apis {
@@ -34,6 +35,6 @@ namespace LYBT.UI.WPF.Apis {
         Task<ImportCountResponse> ImportExcelAsync([AliasAs("file")] StreamPart file);
 
         [Get("/api/FormulaTemplate/exportExcel")]
-        Task<byte[]> ExportExcelAsync();
+        Task<HttpContent> ExportExcelAsync();
     }
 }
