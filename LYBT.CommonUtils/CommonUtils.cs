@@ -7,13 +7,13 @@ using NPOI.XSSF.UserModel;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.FormulaTemplates.Dtos;
 
-namespace LYBT.ExcelUtils;
+namespace LYBT.CommonUtils;
 
 /// <summary>
 /// 通用工具类，提供 Excel 读写及常用辅助方法
 /// </summary>
 [Description("通用工具类")]
-public static class ExcelUtils {
+public static class CommonUtils {
     public static List<HerbImportDto> ReadHerbs(Stream stream) {
         var result = new List<HerbImportDto>();
         IWorkbook wb = new XSSFWorkbook(stream);

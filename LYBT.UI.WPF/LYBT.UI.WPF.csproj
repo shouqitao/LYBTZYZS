@@ -53,7 +53,7 @@
     <ProjectReference Include="..\LYBT.Module.DiagnosisTreatment\LYBT.Module.DiagnosisTreatment.csproj" />
     <ProjectReference Include="..\LYBT.Module.TreatmentRoom\LYBT.Module.TreatmentRoom.csproj" />
     <ProjectReference Include="..\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
-    <ProjectReference Include="..\LYBT.ExcelUtils\LYBT.ExcelUtils.csproj" />
+    <ProjectReference Include="..\LYBT.CommonUtils\LYBT.CommonUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

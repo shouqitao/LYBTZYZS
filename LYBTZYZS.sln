@@ -54,7 +54,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Prescriptions",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Tests", "LYBT.Tests\LYBT.Tests.csproj", "{4BB3FC23-94F6-433E-BCA0-6B7D2FDAF84C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.ExcelUtils", "LYBT.ExcelUtils\LYBT.ExcelUtils.csproj", "{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.CommonUtils", "LYBT.CommonUtils\LYBT.CommonUtils.csproj", "{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

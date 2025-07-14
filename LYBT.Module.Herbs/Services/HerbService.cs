@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ExcelUtil = LYBT.ExcelUtils.ExcelUtils;
+using CommonUtil = LYBT.CommonUtils.CommonUtils;
 using LYBT.Models;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
@@ -88,13 +88,13 @@ namespace LYBT.Module.Herbs.Services {
         }
 
         public async Task<int> ImportFromExcelAsync(Stream stream) {
-            var dtos = ExcelUtil.ReadHerbs(stream);
+            var dtos = CommonUtil.ReadHerbs(stream);
             return await ImportAsync(dtos);
         }
 
         public async Task<byte[]> ExportToExcelAsync() {
             var data = await ExportAsync();
-            return ExcelUtil.WriteHerbs(data);
+            return CommonUtil.WriteHerbs(data);
         }
     }
 }

@@ -7,6 +7,7 @@ using LYBT.UI.WPF.ViewModels.Main;
 using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Profile {
@@ -62,7 +63,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             CancelCommand = new DelegateCommand(Cancel);
         }
 
-        public async Task LoadAsync(Guid? userId = null, ProfileMode mode = ProfileMode.View) {
+        public async Task LoadAsync(Guid? userId = null, ProfileMode mode = ProfileMode.View, string? userName = null, string? realName = null) {
             Mode = mode;
             var uid = userId ?? _authService.UserId;
             var info = await _doctorService.GetByUserIdAsync(uid);
@@ -73,8 +74,8 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             } else {
                 Doctor = new DoctorDetailDto {
                     UserId = uid,
-                    UserName = currentUser?.UserName,
-                    RealName = currentUser?.RealName,
+                    UserName = userName ?? currentUser?.UserName,
+                    RealName = realName ?? currentUser?.RealName,
                     Birthday = DateTime.Now.AddYears(-30),
                     Title = DoctorTitle.Junior,
                     Status = DoctorStatus.Active,
@@ -161,6 +162,11 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
                 main.IsMainVisible = true;
                 main.IsFunctionVisible = false;
+            } else {
+                var window = Application.Current.Windows
+                    .OfType<Window>()
+                    .FirstOrDefault(w => ReferenceEquals(w.DataContext, this));
+                window?.Close();
             }
             Mode = ProfileMode.View;
             IsEditable = false;
@@ -179,7 +185,13 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 Guid? userId = null;
                 if (navigationContext.Parameters.TryGetValue<object>("UserId", out var u) && u is Guid guid)
                     userId = guid;
-                await LoadAsync(userId, mode);
+                string? userName = null;
+                if (navigationContext.Parameters.TryGetValue<object>("UserName", out var un))
+                    userName = un?.ToString();
+                string? realName = null;
+                if (navigationContext.Parameters.TryGetValue<object>("RealName", out var rn))
+                    realName = rn?.ToString();
+                await LoadAsync(userId, mode, userName, realName);
             } catch (Exception ex) {
                 MessageBox.Show($"加载医生档案失败：{ex.Message}", "错误",
                     MessageBoxButton.OK, MessageBoxImage.Error);
