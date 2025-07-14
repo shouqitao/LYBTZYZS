@@ -12,8 +12,10 @@
         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
             <Button Content="刷新" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
             <Button Content="新增" Command="{Binding AddCommand}" Margin="0,0,8,0"/>
-            <Button Content="编辑" Command="{Binding EditCommand}" IsEnabled="{Binding SelectedTemplate, Converter={StaticResource NullToBoolConverter}}" Margin="0,0,8,0"/>
-            <Button Content="删除" Command="{Binding DeleteCommand}" IsEnabled="{Binding SelectedTemplate, Converter={StaticResource NullToBoolConverter}}"/>
+            <Button Content="编辑" Command="{Binding EditCommand}" Margin="0,0,8,0" IsEnabled="{Binding SelectedTemplate, Converter={StaticResource NullToBoolConverter}}"/>
+            <Button Content="删除" Command="{Binding DeleteCommand}" Margin="0,0,8,0" IsEnabled="{Binding SelectedTemplate, Converter={StaticResource NullToBoolConverter}}"/>
+            <Button Content="批量导入经典方" Command="{Binding ImportCommand}" Margin="0,0,8,0"/>
+            <Button Content="批量导出经典方" Command="{Binding ExportCommand}"/>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>

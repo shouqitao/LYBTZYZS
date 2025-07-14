@@ -8,8 +8,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
     public class HerbManagementViewModel : BindableBase {
@@ -98,32 +101,39 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private async Task ImportAsync() {
-            var count = await _herbService.ImportAsync(_allHerbs.Select(h => new HerbDetailDto {
-                Name = h.Name,
-                Pinyin = h.Pinyin,
-                Unit = h.Unit,
-                Price = h.Price,
-                Stock = h.Stock,
-                BatchNo = h.BatchNo,
-                ExpireDate = h.ExpireDate
-            }).ToList());
-            MessageBox.Show($"成功导入 {count} 条记录", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-            await LoadAsync();
+            var dlg = new Microsoft.Win32.OpenFileDialog {
+                Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*"
+            };
+            if (dlg.ShowDialog() == true) {
+                try {
+                    var json = await File.ReadAllTextAsync(dlg.FileName);
+                    var list = JsonSerializer.Deserialize<List<HerbDetailDto>>(json);
+                    if (list != null) {
+                        var count = await _herbService.ImportAsync(list);
+                        MessageBox.Show($"成功导入 {count} 条记录", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                        await LoadAsync();
+                    }
+                } catch (Exception ex) {
+                    MessageBox.Show($"导入失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private async Task ExportAsync() {
-            var data = await _herbService.ExportAsync();
-            _allHerbs = data.Select(d => new HerbDto {
-                Id = d.Id,
-                Name = d.Name,
-                Pinyin = d.Pinyin,
-                Unit = d.Unit,
-                Price = d.Price,
-                Stock = d.Stock,
-                BatchNo = d.BatchNo,
-                ExpireDate = d.ExpireDate
-            }).ToList();
-            ApplyFilter();
+            var dlg = new Microsoft.Win32.SaveFileDialog {
+                Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+                FileName = "herbs.json"
+            };
+            if (dlg.ShowDialog() == true) {
+                try {
+                    var data = await _herbService.ExportAsync();
+                    var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(dlg.FileName, json);
+                    MessageBox.Show($"已导出 {data.Count} 条记录", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                } catch (Exception ex) {
+                    MessageBox.Show($"导出失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
     }
 }

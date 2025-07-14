@@ -6,8 +6,12 @@ using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
     /// <summary>
@@ -81,16 +85,39 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private async Task ImportAsync() {
-            // 在此示例中仅演示调用服务导入接口，实际场景可结合文件选择等
-            var count = await _service.ImportAsync(new List<FormulaTemplateImportDto>());
-            MessageBox.Show($"已导入 {count} 条模板", "提示");
-            await LoadAsync();
+            var dlg = new Microsoft.Win32.OpenFileDialog {
+                Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*"
+            };
+            if (dlg.ShowDialog() == true) {
+                try {
+                    var json = await File.ReadAllTextAsync(dlg.FileName);
+                    var list = JsonSerializer.Deserialize<List<FormulaTemplateImportDto>>(json);
+                    if (list != null) {
+                        var count = await _service.ImportAsync(list);
+                        MessageBox.Show($"已导入 {count} 条模板", "提示");
+                        await LoadAsync();
+                    }
+                } catch (Exception ex) {
+                    MessageBox.Show($"导入失败：{ex.Message}", "错误");
+                }
+            }
         }
 
         private async Task ExportAsync() {
-            var data = await _service.ExportAsync();
-            // 此处仅简单提示，实际可保存到文件
-            MessageBox.Show($"已导出 {data.Count} 条模板", "提示");
+            var dlg = new Microsoft.Win32.SaveFileDialog {
+                Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+                FileName = "templates.json"
+            };
+            if (dlg.ShowDialog() == true) {
+                try {
+                    var data = await _service.ExportAsync();
+                    var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(dlg.FileName, json);
+                    MessageBox.Show($"已导出 {data.Count} 条模板", "提示");
+                } catch (Exception ex) {
+                    MessageBox.Show($"导出失败：{ex.Message}", "错误");
+                }
+            }
         }
     }
 }
