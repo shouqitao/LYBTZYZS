@@ -8,6 +8,8 @@ using System.Text.Json;
 using System.Linq;
 
 using LYBT.Module.Doctors.Dtos;
+using LYBT.UI.WPF.ViewModels.Main;
+using LYBT.Common.Enums;
 using LYBT.UI.WPF.Interfaces;
 
 
@@ -318,20 +320,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 return;
             }
 
-            // 创建档案编辑窗口并预填用户信息
-            var vm = new DoctorProfileViewModel(_doctorService, null, null) {
-                Doctor = new DoctorDetailDto {
-                    UserId = SelectedUser.Id,
-                    UserName = SelectedUser.UserName,
-                    RealName = SelectedUser.RealName
-                },
-                Mode = ProfileMode.Create,
-                IsEditable = true,
-                EditModeTitle = "新增医生档案"
-            };
-            var win = new DoctorProfileWindow { DataContext = vm };
-            vm.CancelAction = () => win.Close();
-            win.ShowDialog();
+            if (Application.Current.MainWindow.DataContext is MainWindowViewModel main) {
+                main.NavigateDoctorProfile(SelectedUser.Id, ProfileMode.Create);
+            }
         }
 
         private void CancelEdit() {

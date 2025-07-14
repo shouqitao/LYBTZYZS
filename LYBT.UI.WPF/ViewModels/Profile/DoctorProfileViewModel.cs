@@ -62,16 +62,19 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             CancelCommand = new DelegateCommand(Cancel);
         }
 
-        public async Task LoadAsync(ProfileMode mode = ProfileMode.View) {
+        public async Task LoadAsync(Guid? userId = null, ProfileMode mode = ProfileMode.View) {
             Mode = mode;
-            var info = await _doctorService.GetByUserIdAsync(_authService.UserId);
-            var currentUser = await _userService.GetByIdAsync(_authService.UserId);
+            var uid = userId ?? _authService.UserId;
+            var info = await _doctorService.GetByUserIdAsync(uid);
+            var currentUser = await _userService.GetByIdAsync(uid);
             User = currentUser;
             if (info != null) {
                 Doctor = info;
             } else {
                 Doctor = new DoctorDetailDto {
-                    UserId = _authService.UserId,
+                    UserId = uid,
+                    UserName = currentUser?.UserName,
+                    RealName = currentUser?.RealName,
                     Birthday = DateTime.Now.AddYears(-30),
                     Title = DoctorTitle.Junior,
                     Status = DoctorStatus.Active,
@@ -166,7 +169,17 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public async void OnNavigatedTo(NavigationContext navigationContext) {
             try {
-                await LoadAsync(ProfileMode.Edit);
+                var mode = ProfileMode.Edit;
+                if (navigationContext.Parameters.TryGetValue("Mode", out var m)) {
+                    if (m is ProfileMode pm)
+                        mode = pm;
+                    else if (m is string s && Enum.TryParse<ProfileMode>(s, out var parsed))
+                        mode = parsed;
+                }
+                Guid? userId = null;
+                if (navigationContext.Parameters.TryGetValue("UserId", out var u) && u is Guid guid)
+                    userId = guid;
+                await LoadAsync(userId, mode);
             } catch (Exception ex) {
                 MessageBox.Show($"加载医生档案失败：{ex.Message}", "错误",
                     MessageBoxButton.OK, MessageBoxImage.Error);
