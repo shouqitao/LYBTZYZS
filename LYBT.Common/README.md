@@ -47,15 +47,16 @@ var items = EnumHelper.BuildComboBoxSource<Gender>(); // 用于前端下拉
 #### 校验与格式化
 
 ```csharp
-var phone = StringHelper.FormatPhone("13312345678");
-var isOk = Validator.CheckIdNumber("440101199912121234");
+var phone = ExcelUtils.FormatPhone("13312345678");
+var isOk = ExcelUtils.CheckIdNumber("440101199912121234");
 ```
 
 ### 6. 典型类型/工具列表
 
 - `Gender`、`UserStatus`、`RegistrationStatus`、`PrescriptionStatus`、`BillingStatus` 等基础枚举
 - `ApiResponse<T>`、`PagedResult<T>` 通用返回对象
-- `EnumHelper`、`StringHelper`、`Validator` 等扩展方法类
+- `EnumHelper` 等扩展方法类
+- `ExcelUtils` 通用工具类（字符串格式化、校验、网络状态等）
 - 枚举转中文辅助（`.ToChinese()`）
-- `LogHelper`、`NetworkHelper` 基础日志与网络工具（从 Infrastructure 移至此模块）
+- `LogHelper` 基础日志工具
 

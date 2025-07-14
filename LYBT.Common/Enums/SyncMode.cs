@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums {
     /// <summary>
     /// 同步模式（自动/手动）
     /// </summary>
+    [Description("同步模式")]
     public enum SyncMode {
 
         [Description("自动同步")]

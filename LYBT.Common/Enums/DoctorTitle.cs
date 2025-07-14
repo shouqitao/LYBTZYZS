@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums {
     /// <summary>
     /// 医生职称枚举
     /// </summary>
+    [Description("医生职称")]
     public enum DoctorTitle {
 
         [Description("初级")]

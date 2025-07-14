@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums.Patient {
     /// <summary>
     /// 患者状态枚举
     /// </summary>
+    [Description("患者状态")]
     public enum PatientStatus {
 
         [Description("激活")]

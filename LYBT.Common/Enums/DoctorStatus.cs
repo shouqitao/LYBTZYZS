@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums {
     /// <summary>
     /// 医生状态（是否在职）
     /// </summary>
+    [Description("医生状态")]
     public enum DoctorStatus {
 
         [Description("在职")]

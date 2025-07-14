@@ -3,10 +3,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+using System.ComponentModel;
+
 namespace LYBT.Infrastructure.Auth {
     /// <summary>
     /// JWT工具类：生成Token
     /// </summary>
+    [Description("JWT工具类")]
     public static class JwtHelper {
         public static string GenerateToken(string userId, string userName, JwtOptions options) {
             var claims = new[] {

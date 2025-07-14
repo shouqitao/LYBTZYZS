@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 
+using System.ComponentModel;
+
 namespace LYBT.Common.Helpers {
 
     /// <summary>
     /// Provides password hashing utilities using ASP.NET Core Identity.
     /// </summary>
+    [Description("密码工具类")]
     public static class PasswordHelper {
         private static readonly PasswordHasher<object> _hasher = new();
 

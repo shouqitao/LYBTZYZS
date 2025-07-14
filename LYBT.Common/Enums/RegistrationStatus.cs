@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums {
     /// <summary>
     /// 挂号状态枚举
     /// </summary>
+    [Description("挂号状态")]
     public enum RegistrationStatus {
 
         [Description("待看诊")]

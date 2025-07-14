@@ -5,6 +5,7 @@ namespace LYBT.Common.Enums {
     /// <summary>
     /// 结算状态枚举
     /// </summary>
+    [Description("结算状态")]
     public enum BillingStatus {
 
         /// <summary>待支付</summary>
