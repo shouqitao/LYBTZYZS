@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Refit; // 新增
 using System.Windows;
 using LYBT.UI.WPF.Interfaces; // 新增
+using System.Text.Json;
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>
@@ -54,20 +55,46 @@ namespace LYBT.UI.WPF.Services {
         /// 方法 AddAsync 的说明
         /// </summary>
         public async Task<bool> AddAsync(DoctorDetailDto dto) {
-            var resp = await _doctorApi.AddAsync(dto);
-            if (!resp.Success)
-                throw new Exception(resp.Message ?? "新增医生失败");
-            return resp.Success;
+            try {
+                var resp = await _doctorApi.AddAsync(dto);
+                if (!resp.Success)
+                    MessageBox.Show(resp.Message ?? "新增医生失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return resp.Success;
+            } catch (ApiException ex) {
+                var msg = "新增医生失败";
+                if (!string.IsNullOrWhiteSpace(ex.Content)) {
+                    try {
+                        var apiMsg = JsonSerializer.Deserialize<ApiSuccessResponse>(ex.Content);
+                        if (!string.IsNullOrWhiteSpace(apiMsg?.Message))
+                            msg = apiMsg.Message;
+                    } catch { }
+                }
+                MessageBox.Show(msg, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
         }
 
         /// <summary>
         /// 方法 UpdateAsync 的说明
         /// </summary>
         public async Task<bool> UpdateAsync(DoctorDetailDto dto) {
-            var resp = await _doctorApi.UpdateAsync(dto);
-            if (!resp.Success)
-                throw new Exception(resp.Message ?? "保存医生失败");
-            return resp.Success;
+            try {
+                var resp = await _doctorApi.UpdateAsync(dto);
+                if (!resp.Success)
+                    MessageBox.Show(resp.Message ?? "保存医生失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return resp.Success;
+            } catch (ApiException ex) {
+                var msg = "保存医生失败";
+                if (!string.IsNullOrWhiteSpace(ex.Content)) {
+                    try {
+                        var apiMsg = JsonSerializer.Deserialize<ApiSuccessResponse>(ex.Content);
+                        if (!string.IsNullOrWhiteSpace(apiMsg?.Message))
+                            msg = apiMsg.Message;
+                    } catch { }
+                }
+                MessageBox.Show(msg, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
         }
 
         /// <summary>
