@@ -1,3 +1,4 @@
+using System.IO;
 ﻿using LYBT.Module.FormulaTemplates.Dtos;
 
 namespace LYBT.Module.FormulaTemplates.Interfaces {
@@ -41,5 +42,15 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         /// 导出全部模板数据
         /// </summary>
         Task<List<FormulaTemplateDetailDto>> ExportAsync();
+
+        /// <summary>
+        /// 从 Excel 流批量导入模板
+        /// </summary>
+        Task<int> ImportFromExcelAsync(Stream stream);
+
+        /// <summary>
+        /// 导出模板数据为 Excel
+        /// </summary>
+        Task<byte[]> ExportToExcelAsync();
     }
 }

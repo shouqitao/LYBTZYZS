@@ -10,6 +10,7 @@
 - 编辑药材信息（如单价、功效、单位）
 - 删除药材
 - 获取药材列表
+- Excel 导入导出
 
 ### 3. 输入输出规范
 
@@ -75,6 +76,8 @@ bool ok = await _herbService.BatchImportAsync(list);
 | `GET /api/herbs` | 已实现 |
 | `GET /api/herbs/{id}` | 已实现 |
 | `DELETE /api/herbs/{id}` | 已实现 |
-| `POST /api/herbs/import` | 未实现 | 控制器中未提供导入接口 |
+| `POST /api/herbs/import` | 已实现 | JSON 批量导入 |
+| `POST /api/herbs/importExcel` | 已实现 | Excel 批量导入 |
+| `GET /api/herbs/exportExcel` | 已实现 | Excel 导出 |
 
 

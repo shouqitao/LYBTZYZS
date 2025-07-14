@@ -3,6 +3,7 @@ using LYBT.Common.Models;
 using Refit;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Apis {
@@ -27,5 +28,12 @@ namespace LYBT.UI.WPF.Apis {
 
         [Post("/api/Herb/export")]
         Task<List<HerbDetailDto>> ExportAsync();
+
+        [Multipart]
+        [Post("/api/Herb/importExcel")]
+        Task<ImportCountResponse> ImportExcelAsync([AliasAs("file")] StreamPart file);
+
+        [Get("/api/Herb/exportExcel")]
+        Task<byte[]> ExportExcelAsync();
     }
 }

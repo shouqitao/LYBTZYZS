@@ -1,3 +1,4 @@
+using System.IO;
 ﻿using LYBT.Module.Herbs.Dtos;
 
 namespace LYBT.Module.Herbs.Interfaces {
@@ -41,5 +42,15 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// 导出药材数据
         /// </summary>
         Task<List<HerbDetailDto>> ExportAsync();
+
+        /// <summary>
+        /// 从 Excel 流批量导入药材
+        /// </summary>
+        Task<int> ImportFromExcelAsync(Stream stream);
+
+        /// <summary>
+        /// 导出药材数据为 Excel
+        /// </summary>
+        Task<byte[]> ExportToExcelAsync();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.Module.FormulaTemplates.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace LYBT.Module.FormulaTemplates.Controllers {
 
@@ -86,6 +87,20 @@ namespace LYBT.Module.FormulaTemplates.Controllers {
         public async Task<ActionResult<List<FormulaTemplateDetailDto>>> Export() {
             var data = await _service.ExportAsync();
             return Ok(data);
+        }
+
+        [HttpPost("importExcel")]
+        public async Task<ActionResult> ImportExcel(IFormFile file) {
+            if (file == null || file.Length == 0)
+                return BadRequest();
+            var count = await _service.ImportFromExcelAsync(file.OpenReadStream());
+            return Ok(new { Imported = count });
+        }
+
+        [HttpGet("exportExcel")]
+        public async Task<FileContentResult> ExportExcel() {
+            var bytes = await _service.ExportToExcelAsync();
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "templates.xlsx");
         }
     }
 }
