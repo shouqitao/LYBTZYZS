@@ -57,5 +57,10 @@ namespace LYBT.Module.Herbs.Repositories {
             _appDbContext.Herbs.Remove(model);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
+
+        public async Task<bool> AddRangeAsync(List<HerbModel> herbs) {
+            await _appDbContext.Herbs.AddRangeAsync(herbs);
+            return await _appDbContext.SaveChangesAsync() > 0;
+        }
     }
 }

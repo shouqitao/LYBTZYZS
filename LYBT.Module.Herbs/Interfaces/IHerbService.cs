@@ -31,5 +31,15 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// 删除药材
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 批量导入药材
+        /// </summary>
+        Task<int> ImportAsync(List<HerbImportDto> dtos);
+
+        /// <summary>
+        /// 导出药材数据
+        /// </summary>
+        Task<List<HerbDetailDto>> ExportAsync();
     }
 }

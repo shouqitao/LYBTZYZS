@@ -21,5 +21,11 @@ namespace LYBT.UI.WPF.Apis {
 
         [Delete("/api/Herb/{id}")]
         Task<ApiSuccessResponse> DeleteAsync(Guid id);
+
+        [Post("/api/Herb/import")]
+        Task<ApiSuccessResponse> ImportAsync([Body] List<HerbImportDto> dtos);
+
+        [Post("/api/Herb/export")]
+        Task<List<HerbDetailDto>> ExportAsync();
     }
 }

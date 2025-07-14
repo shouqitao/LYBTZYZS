@@ -69,5 +69,21 @@ namespace LYBT.Module.Herbs.Services {
         public async Task<bool> DeleteAsync(Guid id) {
             return await _repository.DeleteAsync(id);
         }
+
+        public async Task<int> ImportAsync(List<HerbImportDto> dtos) {
+            int count = 0;
+            foreach (var dto in dtos) {
+                var model = _mapper.Map<HerbModel>(dto);
+                model.Id = Guid.NewGuid();
+                if (await _repository.AddAsync(model))
+                    count++;
+            }
+            return count;
+        }
+
+        public async Task<List<HerbDetailDto>> ExportAsync() {
+            var list = await _repository.GetListAsync();
+            return _mapper.Map<List<HerbDetailDto>>(list);
+        }
     }
 }

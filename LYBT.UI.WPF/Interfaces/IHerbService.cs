@@ -10,5 +10,9 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<bool> AddAsync(HerbDetailDto dto);
         Task<bool> UpdateAsync(HerbDetailDto dto);
         Task<bool> DeleteAsync(Guid id);
+
+        Task<int> ImportAsync(IList<HerbDetailDto> dtos);
+
+        Task<IList<HerbDetailDto>> ExportAsync();
     }
 }

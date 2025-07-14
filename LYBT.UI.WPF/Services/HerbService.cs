@@ -80,5 +80,30 @@ namespace LYBT.UI.WPF.Services {
             var resp = await _api.DeleteAsync(id);
             return resp.Success;
         }
+
+        public async Task<int> ImportAsync(IList<HerbDetailDto> dtos) {
+            var list = new List<HerbImportDto>();
+            foreach (var d in dtos) {
+                list.Add(new HerbImportDto {
+                    Name = d.Name,
+                    Pinyin = d.Pinyin,
+                    Origin = d.Origin,
+                    Spec = d.Spec,
+                    Unit = d.Unit,
+                    Price = d.Price,
+                    Stock = d.Stock,
+                    BatchNo = d.BatchNo,
+                    ExpireDate = d.ExpireDate,
+                    Effect = d.Effect,
+                    Remark = d.Remark
+                });
+            }
+            var resp = await _api.ImportAsync(list);
+            return resp.Success ? list.Count : 0;
+        }
+
+        public async Task<IList<HerbDetailDto>> ExportAsync() {
+            return await _api.ExportAsync();
+        }
     }
 }

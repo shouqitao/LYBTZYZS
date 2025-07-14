@@ -75,5 +75,17 @@ namespace LYBT.Module.Herbs.Controllers {
                 return NotFound();
             return Ok("删除药材成功");
         }
+
+        [HttpPost("import")]
+        public async Task<ActionResult> Import([FromBody] List<HerbImportDto> dtos) {
+            var count = await _herbService.ImportAsync(dtos);
+            return Ok(new { Imported = count });
+        }
+
+        [HttpPost("export")]
+        public async Task<ActionResult<List<HerbDetailDto>>> Export() {
+            var data = await _herbService.ExportAsync();
+            return Ok(data);
+        }
     }
 }
