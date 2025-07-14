@@ -3,7 +3,9 @@ using LYBT.UI.WPF.Apis;
 using LYBT.UI.WPF.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using Refit;
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>
@@ -72,6 +74,20 @@ namespace LYBT.UI.WPF.Services {
 
         public async Task<IList<FormulaTemplateDetailDto>> ExportAsync() {
             return await _api.ExportAsync();
+        }
+
+        public async Task<int> ImportFromExcelAsync(string path) {
+            await using var fs = File.OpenRead(path);
+            var part = new StreamPart(fs, Path.GetFileName(path), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            var resp = await _api.ImportExcelAsync(part);
+            return resp.Imported;
+        }
+
+        public async Task<int> ExportToExcelAsync(string path) {
+            var bytes = await _api.ExportExcelAsync();
+            await File.WriteAllBytesAsync(path, bytes);
+            var list = await _api.GetListAsync();
+            return list.Count;
         }
     }
 }

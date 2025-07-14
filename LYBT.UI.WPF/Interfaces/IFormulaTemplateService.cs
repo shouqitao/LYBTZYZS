@@ -14,5 +14,9 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos);
 
         Task<IList<FormulaTemplateDetailDto>> ExportAsync();
+
+        Task<int> ImportFromExcelAsync(string path);
+
+        Task<int> ExportToExcelAsync(string path);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace LYBT.Module.Herbs.Controllers {
 
@@ -86,6 +87,20 @@ namespace LYBT.Module.Herbs.Controllers {
         public async Task<ActionResult<List<HerbDetailDto>>> Export() {
             var data = await _herbService.ExportAsync();
             return Ok(data);
+        }
+
+        [HttpPost("importExcel")]
+        public async Task<ActionResult> ImportExcel(IFormFile file) {
+            if (file == null || file.Length == 0)
+                return BadRequest();
+            var count = await _herbService.ImportFromExcelAsync(file.OpenReadStream());
+            return Ok(new { Imported = count });
+        }
+
+        [HttpGet("exportExcel")]
+        public async Task<FileContentResult> ExportExcel() {
+            var bytes = await _herbService.ExportToExcelAsync();
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "herbs.xlsx");
         }
     }
 }

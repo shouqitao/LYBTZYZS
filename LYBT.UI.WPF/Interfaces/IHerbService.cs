@@ -14,5 +14,9 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<int> ImportAsync(IList<HerbDetailDto> dtos);
 
         Task<IList<HerbDetailDto>> ExportAsync();
+
+        Task<int> ImportFromExcelAsync(string path);
+
+        Task<int> ExportToExcelAsync(string path);
     }
 }

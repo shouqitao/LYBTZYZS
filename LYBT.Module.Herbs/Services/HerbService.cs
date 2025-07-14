@@ -2,6 +2,8 @@
 using LYBT.Models;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Common.Helpers;
+using System.IO;
 
 namespace LYBT.Module.Herbs.Services {
 
@@ -84,6 +86,16 @@ namespace LYBT.Module.Herbs.Services {
         public async Task<List<HerbDetailDto>> ExportAsync() {
             var list = await _repository.GetListAsync();
             return _mapper.Map<List<HerbDetailDto>>(list);
+        }
+
+        public async Task<int> ImportFromExcelAsync(Stream stream) {
+            var dtos = ExcelHelper.ReadHerbs(stream);
+            return await ImportAsync(dtos);
+        }
+
+        public async Task<byte[]> ExportToExcelAsync() {
+            var data = await ExportAsync();
+            return ExcelHelper.WriteHerbs(data);
         }
     }
 }

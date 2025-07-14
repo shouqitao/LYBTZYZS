@@ -3,6 +3,7 @@ using LYBT.Common.Models;
 using Refit;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Apis {
@@ -27,5 +28,12 @@ namespace LYBT.UI.WPF.Apis {
 
         [Post("/api/FormulaTemplate/export")]
         Task<List<FormulaTemplateDetailDto>> ExportAsync();
+
+        [Multipart]
+        [Post("/api/FormulaTemplate/importExcel")]
+        Task<ImportCountResponse> ImportExcelAsync([AliasAs("file")] StreamPart file);
+
+        [Get("/api/FormulaTemplate/exportExcel")]
+        Task<byte[]> ExportExcelAsync();
     }
 }

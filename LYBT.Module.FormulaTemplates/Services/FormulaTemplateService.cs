@@ -2,6 +2,8 @@
 using LYBT.Models;
 using LYBT.Models.FormulaTemplates;
 using LYBT.Module.FormulaTemplates.Dtos;
+using LYBT.Common.Helpers;
+using System.IO;
 using LYBT.Module.FormulaTemplates.Interfaces;
 
 namespace LYBT.Module.FormulaTemplates.Services {
@@ -72,6 +74,16 @@ namespace LYBT.Module.FormulaTemplates.Services {
 
         public async Task<List<FormulaTemplateDetailDto>> ExportAsync() {
             return await _repository.ExportAsync();
+        }
+
+        public async Task<int> ImportFromExcelAsync(Stream stream) {
+            var dtos = ExcelHelper.ReadTemplates(stream);
+            return await ImportAsync(dtos);
+        }
+
+        public async Task<byte[]> ExportToExcelAsync() {
+            var data = await ExportAsync();
+            return ExcelHelper.WriteTemplates(data);
         }
     }
 }
