@@ -38,7 +38,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// <summary>搜索关键字</summary>
         public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
 
-        private string _editModeTitle = "新增医生档案";
+        private string _editModeTitle = "医生详情";
         /// <summary>右侧编辑区标题</summary>
         public string EditModeTitle { get => _editModeTitle; set => SetProperty(ref _editModeTitle, value); }
 
@@ -46,7 +46,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// <summary>是否可编辑</summary>
         public bool IsEditable { get => _isEditable; set => SetProperty(ref _isEditable, value); }
 
-        public DelegateCommand AddDoctorCommand { get; }
         public DelegateCommand EditDoctorCommand { get; }
         public DelegateCommand SaveDoctorCommand { get; }
         public DelegateCommand CancelCommand { get; }
@@ -59,7 +58,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             _doctorService = doctorService;
             DoctorProfileViewModel = new DoctorProfileViewModel(_doctorService, null, null); // 依赖注入可根据实际情况调整
             DoctorProfileViewModel.CancelAction = CancelEdit;
-            AddDoctorCommand = new DelegateCommand(AddDoctor);
             EditDoctorCommand = new DelegateCommand(EditDoctor, () => SelectedDoctor != null).ObservesProperty(() => SelectedDoctor);
             SaveDoctorCommand = new DelegateCommand(async () => await SaveDoctor(), () => IsEditable).ObservesProperty(() => IsEditable);
             CancelCommand = new DelegateCommand(CancelEdit);
@@ -87,29 +85,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 Doctors.Add(d);
         }
 
-        /// <summary>
-        /// 新增医生档案
-        /// </summary>
-        private void AddDoctor() {
-            var newDoctor = new DoctorDetailDto {
-                UserId = Guid.Empty,
-                Gender = Gender.Unknown,
-                Birthday = DateTime.Now,
-                Title = DoctorTitle.Junior,
-                Status = DoctorStatus.Active,
-                WorkStatus = DoctorWorkStatus.Clinic,
-                PinyinCode = string.Empty,
-                LicenseNumber = string.Empty,
-                Specialty = string.Empty,
-                ContactNumber = string.Empty,
-                Remark = string.Empty
-            };
-            DoctorProfileViewModel.Doctor = newDoctor;
-            DoctorProfileViewModel.Mode = ProfileMode.Create;
-            DoctorProfileViewModel.EditModeTitle = "新增医生档案";
-            DoctorProfileViewModel.IsEditable = true;
-            SelectedDoctor = null;
-        }
 
         /// <summary>
         /// 编辑医生档案
