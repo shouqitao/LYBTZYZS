@@ -4,6 +4,8 @@ using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
 using LYBT.Common.Models;
+using LYBT.Module.Users.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,10 +16,14 @@ namespace LYBT.Module.Doctors.Services {
     /// </summary>
     public class DoctorService : IDoctorService {
         private readonly IDoctorRepository _doctorRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public DoctorService(IDoctorRepository doctorRepository, IMapper mapper) {
+        public DoctorService(IDoctorRepository doctorRepository,
+            IUserRepository userRepository,
+            IMapper mapper) {
             _doctorRepository = doctorRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
 
@@ -45,9 +51,23 @@ namespace LYBT.Module.Doctors.Services {
         }
 
         public async Task<bool> AddAsync(DoctorDetailDto dto) {
+            if (dto.UserId == Guid.Empty)
+                throw new Exception("UserId不能为空");
+
+            var user = await _userRepository.GetByIdAsync(dto.UserId);
+            if (user == null)
+                throw new Exception("关联的用户不存在，请先创建用户。");
+
+            if (await _doctorRepository.GetByUserIdAsync(dto.UserId) != null)
+                throw new Exception("该用户已经关联医生档案，请勿重复创建。");
+
             var model = _mapper.Map<DoctorModel>(dto);
             model.Id = Guid.NewGuid();
-            return await _doctorRepository.AddAsync(model);
+            try {
+                return await _doctorRepository.AddAsync(model);
+            } catch (DbUpdateException ex) {
+                throw new Exception("保存医生信息时发生错误", ex);
+            }
         }
 
         public async Task<bool> UpdateAsync(DoctorDetailDto dto) {
