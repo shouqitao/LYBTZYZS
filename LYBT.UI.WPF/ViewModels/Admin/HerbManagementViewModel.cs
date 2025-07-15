@@ -19,6 +19,13 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private IList<HerbDto> _allHerbs = new List<HerbDto>();
         public ObservableCollection<HerbDto> Herbs { get; } = new();
 
+        private bool _isBusy;
+        public bool IsBusy
+        {
+            get => _isBusy;
+            set => SetProperty(ref _isBusy, value);
+        }
+
         private HerbDto? _selectedHerb;
         public HerbDto? SelectedHerb {
             get => _selectedHerb;
@@ -55,9 +62,15 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private async Task LoadAsync() {
-            var list = await _herbService.GetListAsync();
-            _allHerbs = list;
-            ApplyFilter();
+            IsBusy = true;
+            try {
+                var list = await _herbService.GetListAsync();
+                _allHerbs = list;
+                ApplyFilter();
+            }
+            finally {
+                IsBusy = false;
+            }
         }
 
         private void Search() => ApplyFilter();
