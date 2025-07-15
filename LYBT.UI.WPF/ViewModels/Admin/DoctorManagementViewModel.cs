@@ -5,7 +5,7 @@ using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.Common.Enums;
 using Prism.Commands;
-using Prism.Mvvm;
+using LYBT.UI.WPF.ViewModels.Base;
 using Refit;
 using System;
 using System.Collections.ObjectModel;
@@ -18,8 +18,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
     /// <summary>
     /// 医生管理视图模型
     /// </summary>
-    public class DoctorManagementViewModel : BindableBase {
-        public ObservableCollection<DoctorDto> Doctors { get; } = new();
+    public class DoctorManagementViewModel : BaseListViewModel<DoctorDto> {
+        public ObservableCollection<DoctorDto> Doctors => Items;
 
         private DoctorDto? _selectedDoctor;
         /// <summary>列表中选中的医生</summary>
@@ -61,8 +61,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             EditDoctorCommand = new DelegateCommand(EditDoctor, () => SelectedDoctor != null).ObservesProperty(() => SelectedDoctor);
             SaveDoctorCommand = new DelegateCommand(async () => await SaveDoctor(), () => IsEditable).ObservesProperty(() => IsEditable);
             CancelCommand = new DelegateCommand(CancelEdit);
-            SearchCommand = new DelegateCommand(async () => await LoadDoctors());
-            _ = LoadDoctors();
+            SearchCommand = new DelegateCommand(async () => await LoadPageAsync());
+            _ = LoadPageAsync();
         }
 
         /// <summary>
@@ -78,11 +78,11 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             }
         }
 
-        private async Task LoadDoctors() {
+        public override async Task LoadPageAsync() {
             var list = await _doctorService.SearchAsync(SearchKeyword);
-            Doctors.Clear();
+            Items.Clear();
             foreach (var d in list)
-                Doctors.Add(d);
+                Items.Add(d);
         }
 
 
@@ -130,7 +130,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 MessageBox.Show($"操作失败：{msg}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            await LoadDoctors();
+            await LoadPageAsync();
             DoctorProfileViewModel.Mode = ProfileMode.View;
             DoctorProfileViewModel.IsEditable = false;
             DoctorProfileViewModel.EditModeTitle = "医生详情";

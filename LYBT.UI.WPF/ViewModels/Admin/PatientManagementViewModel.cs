@@ -1,7 +1,7 @@
 using LYBT.Module.Patients.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using Prism.Commands;
-using Prism.Mvvm;
+using LYBT.UI.WPF.ViewModels.Base;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -9,9 +9,9 @@ using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.Common.Enums;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
-    public class PatientManagementViewModel : BindableBase {
+    public class PatientManagementViewModel : BaseListViewModel<PatientDetailDto> {
         private readonly IPatientService _patientService;
-        public ObservableCollection<PatientDetailDto> Patients { get; } = new();
+        public ObservableCollection<PatientDetailDto> Patients => Items;
 
         private PatientDetailDto? _selectedPatient;
         public PatientDetailDto? SelectedPatient {
@@ -37,17 +37,17 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public PatientManagementViewModel(IPatientService patientService, PatientProfileViewModel profileViewModel) {
             _patientService = patientService;
             PatientProfileViewModel = profileViewModel;
-            SearchCommand = new DelegateCommand(async () => await LoadPatients());
-            _ = LoadPatients();
+            SearchCommand = new DelegateCommand(async () => await LoadPageAsync());
+            _ = LoadPageAsync();
         }
 
-        private async Task LoadPatients() {
+        public override async Task LoadPageAsync() {
             var list = string.IsNullOrWhiteSpace(SearchKeyword)
                 ? await _patientService.GetAllAsync()
                 : await _patientService.SearchAsync(SearchKeyword);
-            Patients.Clear();
+            Items.Clear();
             foreach (var p in list)
-                Patients.Add(p);
+                Items.Add(p);
         }
 
         private async Task LoadProfileAsync(Guid id) {
