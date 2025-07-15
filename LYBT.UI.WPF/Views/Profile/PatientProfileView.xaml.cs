@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace LYBT.UI.WPF.Views.Main
+namespace LYBT.UI.WPF.Views.Profile
 {
     /// <summary>
     /// Interaction logic for PatientProfileView.xaml

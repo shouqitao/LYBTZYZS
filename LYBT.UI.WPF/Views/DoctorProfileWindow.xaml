@@ -1,7 +1,7 @@
 <Window x:Class="LYBT.UI.WPF.Views.DoctorProfileWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Main"
+        xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Profile"
         Title="医生档案" Height="720" Width="600">
     <main:DoctorProfileView />
 </Window>
