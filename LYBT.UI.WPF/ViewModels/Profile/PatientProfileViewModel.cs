@@ -5,14 +5,14 @@ using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using System.Collections.ObjectModel;
 using Prism.Commands;
-using Prism.Mvvm;
+using LYBT.UI.WPF.ViewModels.Base;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.UI.WPF.ViewModels.Main;
 
 namespace LYBT.UI.WPF.ViewModels.Profile {
-    public class PatientProfileViewModel : BindableBase {
+    public class PatientProfileViewModel : BaseProfileViewModel {
         private readonly IPatientService _patientService;
 
         private PatientDetailDto _patient = new();
@@ -28,24 +28,6 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             get => _editModeTitle;
             set => SetProperty(ref _editModeTitle, value);
         }
-
-        private bool _isEditable;
-        public bool IsEditable {
-            get => _isEditable;
-            set => SetProperty(ref _isEditable, value);
-        }
-
-        private ProfileMode _mode;
-        /// <summary>
-        /// 当前视图模式
-        /// </summary>
-        public ProfileMode Mode {
-            get => _mode;
-            set => SetProperty(ref _mode, value);
-        }
-
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand CancelCommand { get; }
 
         public Action? CancelAction { get; set; }
 
