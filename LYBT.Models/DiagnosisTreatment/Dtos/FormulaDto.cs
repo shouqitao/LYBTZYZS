@@ -1,4 +1,5 @@
-﻿using LYBT.Module.Herbs.Dtos;
+using LYBT.Module.Herbs.Dtos;
+using System.ComponentModel;
 
 namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
 
@@ -8,9 +9,11 @@ namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
     public class FormulaDto {
 
         /// <summary>药方名称</summary>
+        [DisplayName("药方名称")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>药材组成</summary>
+        [DisplayName("药材组成")]
         public List<HerbDto> Herbs { get; set; } = new();
 
         /// <summary>药方总价（自动计算）</summary>

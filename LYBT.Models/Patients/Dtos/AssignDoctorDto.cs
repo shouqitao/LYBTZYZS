@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace LYBT.Module.Patients.Dtos {
 
@@ -8,6 +9,7 @@ namespace LYBT.Module.Patients.Dtos {
     public class AssignDoctorDto {
 
         [Required]
+        [DisplayName("DoctorId")]
         public Guid DoctorId { get; set; }
     }
 }

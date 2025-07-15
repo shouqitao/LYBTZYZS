@@ -1,4 +1,5 @@
-﻿namespace LYBT.Module.FormulaTemplates.Dtos {
+using System.ComponentModel;
+namespace LYBT.Module.FormulaTemplates.Dtos {
 
     /// <summary>
     /// 经验方模板列表 DTO
@@ -6,9 +7,11 @@
     public class FormulaTemplateDto {
 
         /// <summary>模板ID</summary>
+        [DisplayName("模板ID")]
         public Guid Id { get; set; }
 
         /// <summary>模板名称</summary>
+        [DisplayName("模板名称")]
         public string Name { get; set; } = string.Empty;
     }
 }
