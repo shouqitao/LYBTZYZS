@@ -4,8 +4,9 @@
               xmlns:prism="http://prismlibrary.com/"
               xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
               xmlns:helpers="clr-namespace:LYBT.UI.WPF.Helpers"
-              xmlns:controls="clr-namespace:LYBT.UI.WPF.Controls"
-              prism:ViewModelLocator.AutoWireViewModel="True">
+               xmlns:controls="clr-namespace:LYBT.UI.WPF.Controls"
+               xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+               prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -39,18 +40,20 @@
                 <ColumnDefinition Width="1.8*"/>
             </Grid.ColumnDefinitions>
             <!-- 左侧列表区 -->
-            <DataGrid Grid.Column="0" ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
-                      AutoGenerateColumns="False" Margin="0,0,8,0" IsReadOnly="True">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="账号" Binding="{Binding UserName}" Width="*"/>
-                    <DataGridTextColumn Header="姓名" Binding="{Binding RealName}" Width="*"/>
-                    <DataGridTextColumn Header="角色" Binding="{Binding RolesText}" Width="*"/>
-                    <DataGridCheckBoxColumn Header="启用" Binding="{Binding IsActive}" Width="60"/>
-                    <DataGridTextColumn Header="最近登录" Binding="{Binding LastLoginTime}" Width="130"/>
-                    <DataGridTextColumn Header="邮箱" Binding="{Binding Email}" Width="110"/>
-                    <DataGridTextColumn Header="手机号" Binding="{Binding PhoneNumber}" Width="90"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <xctk:BusyIndicator Grid.Column="0" IsBusy="{Binding IsBusy}">
+                <DataGrid ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                          AutoGenerateColumns="False" Margin="0,0,8,0" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="账号" Binding="{Binding UserName}" Width="*"/>
+                        <DataGridTextColumn Header="姓名" Binding="{Binding RealName}" Width="*"/>
+                        <DataGridTextColumn Header="角色" Binding="{Binding RolesText}" Width="*"/>
+                        <DataGridCheckBoxColumn Header="启用" Binding="{Binding IsActive}" Width="60"/>
+                        <DataGridTextColumn Header="最近登录" Binding="{Binding LastLoginTime}" Width="130"/>
+                        <DataGridTextColumn Header="邮箱" Binding="{Binding Email}" Width="110"/>
+                        <DataGridTextColumn Header="手机号" Binding="{Binding PhoneNumber}" Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </xctk:BusyIndicator>
             <!-- 右侧详情区 -->
             <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1" IsEnabled="{Binding IsEditable}">
                 <StackPanel>

@@ -19,6 +19,16 @@ namespace LYBT.UI.WPF.ViewModels {
 
         public ObservableCollection<T> Items { get; } = new();
 
+        private bool _isBusy;
+        /// <summary>
+        /// Gets or sets whether the list is loading data.
+        /// </summary>
+        public bool IsBusy
+        {
+            get => _isBusy;
+            set => SetProperty(ref _isBusy, value);
+        }
+
         private int _currentPage = 1;
         public int CurrentPage { get => _currentPage; set => SetProperty(ref _currentPage, value); }
 
@@ -34,12 +44,18 @@ namespace LYBT.UI.WPF.ViewModels {
 
         public async Task LoadPageAsync(int page = 1) {
             if (page < 1) page = 1;
-            var result = await GetPagedAsync(page, PageSize);
-            Items.Clear();
-            foreach (var item in result.Items)
-                Items.Add(item);
-            CurrentPage = page;
-            TotalPages = (int)Math.Ceiling(result.TotalCount / (double)PageSize);
+            IsBusy = true;
+            try {
+                var result = await GetPagedAsync(page, PageSize);
+                Items.Clear();
+                foreach (var item in result.Items)
+                    Items.Add(item);
+                CurrentPage = page;
+                TotalPages = (int)Math.Ceiling(result.TotalCount / (double)PageSize);
+            }
+            finally {
+                IsBusy = false;
+            }
         }
     }
 }
