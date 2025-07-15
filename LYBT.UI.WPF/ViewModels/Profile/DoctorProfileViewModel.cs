@@ -4,6 +4,7 @@ using LYBT.Module.Users.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.ViewModels.Main;
+using LYBT.UI.WPF.ViewModels.Base;
 using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using System.Collections.ObjectModel;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Windows;
 
 namespace LYBT.UI.WPF.ViewModels.Profile {
-    public class DoctorProfileViewModel : BindableBase, INavigationAware {
+    public class DoctorProfileViewModel : BaseProfileViewModel, INavigationAware {
         private readonly IDoctorService _doctorService;
         private readonly IAuthService _authService;
         private readonly IUserService _userService;
@@ -31,23 +32,6 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public string? ContactNumber { get => Doctor.ContactNumber; set { Doctor.ContactNumber = value; RaisePropertyChanged(); } }
 
-        private bool _isEditable;
-        public bool IsEditable {
-            get => _isEditable;
-            set => SetProperty(ref _isEditable, value);
-        }
-
-        private ProfileMode _mode;
-        /// <summary>
-        /// 当前视图模式
-        /// </summary>
-        public ProfileMode Mode {
-            get => _mode;
-            set => SetProperty(ref _mode, value);
-        }
-
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand CancelCommand { get; }
 
         /// <summary>
         /// Optional action invoked when canceling editing. If not set,

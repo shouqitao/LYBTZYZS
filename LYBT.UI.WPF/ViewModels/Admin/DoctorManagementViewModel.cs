@@ -6,7 +6,7 @@ using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.Common.Models;
 using LYBT.UI.WPF.ViewModels;
 using Prism.Commands;
-using Prism.Mvvm;
+using LYBT.UI.WPF.ViewModels.Base;
 using Refit;
 using System;
 using System.Collections.ObjectModel;
@@ -62,7 +62,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             EditDoctorCommand = new DelegateCommand(EditDoctor, () => SelectedDoctor != null).ObservesProperty(() => SelectedDoctor);
             SaveDoctorCommand = new DelegateCommand(async () => await SaveDoctor(), () => IsEditable).ObservesProperty(() => IsEditable);
             CancelCommand = new DelegateCommand(CancelEdit);
+
             SearchCommand = new DelegateCommand(async () => await LoadPageAsync(1));
+
             _ = LoadPageAsync();
         }
 
@@ -79,9 +81,11 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             }
         }
 
+
         protected override async Task<PagedResultDto<DoctorDto>> GetPagedAsync(int page, int pageSize) {
             var query = new DoctorQueryDto { Keyword = SearchKeyword, Page = page, PageSize = pageSize };
             return await _doctorService.GetPagedAsync(query);
+
         }
 
 
@@ -129,7 +133,9 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 MessageBox.Show($"操作失败：{msg}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
             await LoadPageAsync(CurrentPage);
+
             DoctorProfileViewModel.Mode = ProfileMode.View;
             DoctorProfileViewModel.IsEditable = false;
             DoctorProfileViewModel.EditModeTitle = "医生详情";

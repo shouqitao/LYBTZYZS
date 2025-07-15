@@ -1,7 +1,7 @@
 using LYBT.Module.Patients.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using Prism.Commands;
-using Prism.Mvvm;
+using LYBT.UI.WPF.ViewModels.Base;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -39,6 +39,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public PatientManagementViewModel(IPatientService patientService, PatientProfileViewModel profileViewModel) {
             _patientService = patientService;
             PatientProfileViewModel = profileViewModel;
+
             SearchCommand = new DelegateCommand(async () => await LoadPageAsync(1));
             _ = LoadPageAsync();
         }
@@ -46,6 +47,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         protected override async Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(int page, int pageSize) {
             var query = new PatientPagedQueryDto { Keyword = SearchKeyword, Page = page, PageSize = pageSize };
             return await _patientService.GetPagedAsync(query);
+
         }
 
         private async Task LoadProfileAsync(Guid id) {
