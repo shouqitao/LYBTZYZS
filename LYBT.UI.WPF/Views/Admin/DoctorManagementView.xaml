@@ -6,7 +6,7 @@
              xmlns:enums="clr-namespace:LYBT.Common.Enums;assembly=LYBT.Common"
              xmlns:helpers="clr-namespace:LYBT.UI.WPF.Helpers"
              xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
-             xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Main"
+             xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Profile"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ObjectDataProvider x:Key="GenderValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
