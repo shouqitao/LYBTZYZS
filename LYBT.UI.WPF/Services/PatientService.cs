@@ -2,6 +2,7 @@ using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Records.Dtos;
 using LYBT.UI.WPF.Apis;
 using LYBT.UI.WPF.Interfaces;
+using LYBT.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -34,6 +35,10 @@ namespace LYBT.UI.WPF.Services {
 
         public async Task<IList<PatientDetailDto>> SearchAsync(string keyword) {
             return await _api.SearchAsync(keyword);
+        }
+
+        public async Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query) {
+            return await _api.GetPagedAsync(query);
         }
 
         public async Task<bool> DeleteAsync(Guid id) {

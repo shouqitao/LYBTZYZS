@@ -1,5 +1,6 @@
 ﻿using LYBT.Module.Users.Dtos;
 using LYBT.Common.Enums.Users;
+using LYBT.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 namespace LYBT.UI.WPF.Interfaces {
     public interface IUserService {
         Task<IList<UserDto>> SearchAsync(string keyword = "");
+        Task<PagedResultDto<UserDto>> SearchAsync(UserQueryDto query);
         Task<bool> AddUserAsync(UserCreateDto user);
         Task<bool> UpdateUserAsync(UserDetailDto user);
         Task<bool> DisableUserAsync(Guid id);

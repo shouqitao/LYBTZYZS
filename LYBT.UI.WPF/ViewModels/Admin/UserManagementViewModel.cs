@@ -7,6 +7,9 @@ using Refit;
 using System.Text.Json;
 using System.Linq;
 
+using LYBT.Common.Models;
+using LYBT.UI.WPF.ViewModels;
+
 using LYBT.Module.Doctors.Dtos;
 using LYBT.UI.WPF.ViewModels.Main;
 using LYBT.Common.Enums;
@@ -26,11 +29,11 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
     /// <summary>
     /// 类 UserManagementViewModel 的说明
     /// </summary>
-    public class UserManagementViewModel : BindableBase {
+    public class UserManagementViewModel : BaseListViewModel<UserDto> {
         /// <summary>
         /// 属性 Users 的说明
         /// </summary>
-        public ObservableCollection<UserDto> Users { get; } = new();
+        public ObservableCollection<UserDto> Users => Items;
         /// <summary>
         /// 属性 RoleList 的说明
         /// </summary>
@@ -141,7 +144,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             SaveUserCommand = new DelegateCommand(async () => await SaveUser(), () => EditingUser != null && IsEditable)
                 .ObservesProperty(() => EditingUser)
                 .ObservesProperty(() => IsEditable);
-            SearchCommand = new DelegateCommand(async () => await LoadUsers());
+            SearchCommand = new DelegateCommand(async () => await LoadPageAsync(1));
             DisableUserCommand = new DelegateCommand(async () => await DisableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             EnableUserCommand = new DelegateCommand(async () => await EnableUser(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
             ResetPasswordCommand = new DelegateCommand(async () => await ResetPassword(), () => SelectedUser != null).ObservesProperty(() => SelectedUser);
@@ -152,7 +155,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             CancelCommand = new DelegateCommand(CancelEdit);
 
             _ = LoadRoles();
-            _ = LoadUsers();
+            _ = LoadPageAsync();
         }
 
         /// <summary>
@@ -245,20 +248,20 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
                 return;
             }
             // 刷新列表
-            await LoadUsers();
+            await LoadPageAsync(CurrentPage);
             IsEditable = false;
             EditModeTitle = "用户详情";
         }
 
         /// <summary>
-        /// 方法 LoadUsers 的说明
+        /// 分页查询用户
         /// </summary>
-        private async Task LoadUsers() {
-            var list = await _userService.SearchAsync(SearchKeyword);
-            Users.Clear();
-            foreach (var u in list)
-                Users.Add(u);
+        private async Task<PagedResultDto<UserDto>> QueryUsersAsync(int page, int pageSize) {
+            var dto = new UserQueryDto { Keyword = SearchKeyword, Page = page, PageSize = pageSize };
+            return await _userService.SearchAsync(dto);
         }
+
+        protected override Task<PagedResultDto<UserDto>> GetPagedAsync(int page, int pageSize) => QueryUsersAsync(page, pageSize);
 
         /// <summary>
         /// 方法 DisableUser 的说明
@@ -267,7 +270,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             if (SelectedUser == null)
                 return;
             if (await _userService.DisableUserAsync(SelectedUser.Id))
-                await LoadUsers();
+                await LoadPageAsync(CurrentPage);
             else
                 MessageBox.Show("禁用用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -279,7 +282,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             if (SelectedUser == null)
                 return;
             if (await _userService.EnableUserAsync(SelectedUser.Id))
-                await LoadUsers();
+                await LoadPageAsync(CurrentPage);
             else
                 MessageBox.Show("启用用户失败。", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
         }

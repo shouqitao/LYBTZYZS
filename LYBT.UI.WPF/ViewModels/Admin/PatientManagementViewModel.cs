@@ -7,11 +7,13 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.Common.Enums;
+using LYBT.Common.Models;
+using LYBT.UI.WPF.ViewModels;
 
 namespace LYBT.UI.WPF.ViewModels.Admin {
-    public class PatientManagementViewModel : BindableBase {
+    public class PatientManagementViewModel : BaseListViewModel<PatientDetailDto> {
         private readonly IPatientService _patientService;
-        public ObservableCollection<PatientDetailDto> Patients { get; } = new();
+        public ObservableCollection<PatientDetailDto> Patients => Items;
 
         private PatientDetailDto? _selectedPatient;
         public PatientDetailDto? SelectedPatient {
@@ -37,17 +39,13 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public PatientManagementViewModel(IPatientService patientService, PatientProfileViewModel profileViewModel) {
             _patientService = patientService;
             PatientProfileViewModel = profileViewModel;
-            SearchCommand = new DelegateCommand(async () => await LoadPatients());
-            _ = LoadPatients();
+            SearchCommand = new DelegateCommand(async () => await LoadPageAsync(1));
+            _ = LoadPageAsync();
         }
 
-        private async Task LoadPatients() {
-            var list = string.IsNullOrWhiteSpace(SearchKeyword)
-                ? await _patientService.GetAllAsync()
-                : await _patientService.SearchAsync(SearchKeyword);
-            Patients.Clear();
-            foreach (var p in list)
-                Patients.Add(p);
+        protected override async Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(int page, int pageSize) {
+            var query = new PatientPagedQueryDto { Keyword = SearchKeyword, Page = page, PageSize = pageSize };
+            return await _patientService.GetPagedAsync(query);
         }
 
         private async Task LoadProfileAsync(Guid id) {

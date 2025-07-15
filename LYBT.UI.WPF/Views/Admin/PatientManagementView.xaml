@@ -4,6 +4,7 @@
               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
               xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Profile"
+              xmlns:controls="clr-namespace:LYBT.UI.WPF.Controls"
               xmlns:prism="http://prismlibrary.com/"
               mc:Ignorable="d"
               prism:ViewModelLocator.AutoWireViewModel="True">
@@ -11,6 +12,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <!-- 操作区 -->
         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
@@ -41,5 +43,6 @@
                 <main:PatientProfileView DataContext="{Binding PatientProfileViewModel}"/>
             </Border>
         </Grid>
+        <controls:PagingBar Grid.Row="2" Margin="0,8,0,0" />
     </Grid>
 </UserControl>

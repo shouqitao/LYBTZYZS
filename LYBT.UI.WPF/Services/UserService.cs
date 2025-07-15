@@ -1,5 +1,6 @@
 ﻿using LYBT.Module.Users.Dtos;
 using LYBT.Common.Enums.Users;
+using LYBT.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,11 @@ namespace LYBT.UI.WPF.Services {
         public async Task<IList<UserDto>> SearchAsync(string keyword = "") {
             var resp = await _userApi.SearchAsync(new UserQueryDto { Keyword = keyword, Page = 1, PageSize = 100 });
             return resp.Users;
+        }
+
+        public async Task<PagedResultDto<UserDto>> SearchAsync(UserQueryDto query) {
+            var resp = await _userApi.SearchAsync(query);
+            return new PagedResultDto<UserDto> { TotalCount = resp.Total, Items = resp.Users };
         }
 
         /// <summary>
