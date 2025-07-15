@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace LYBT.Module.Users.Dtos {
 
@@ -8,6 +9,7 @@ namespace LYBT.Module.Users.Dtos {
     public class BatchIdsDto {
 
         [Required]
+        [DisplayName("Ids")]
         public List<Guid> Ids { get; set; } = new();
     }
 }

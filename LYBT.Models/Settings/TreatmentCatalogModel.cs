@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace LYBT.Models.Settings {
 
@@ -7,17 +8,22 @@ namespace LYBT.Models.Settings {
     /// </summary>
     public class TreatmentCatalogModel {
         [Key]
+        [DisplayName("Id")]
         public Guid Id { get; set; }
 
         [Required, StringLength(64)]
+        [DisplayName("Name")]
         public string Name { get; set; } = string.Empty;
 
         [Required]
+        [DisplayName("Price")]
         public decimal Price { get; set; }
 
         [StringLength(128)]
+        [DisplayName("Description")]
         public string? Description { get; set; }
 
+        [DisplayName("IsEnabled")]
         public bool IsEnabled { get; set; } = true;
     }
 }

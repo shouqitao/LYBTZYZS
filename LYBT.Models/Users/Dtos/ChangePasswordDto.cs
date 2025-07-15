@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace LYBT.Module.Users.Dtos {
 
@@ -11,6 +12,7 @@ namespace LYBT.Module.Users.Dtos {
         /// 用户ID
         /// </summary>
         [Required]
+        [DisplayName("用户ID")]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -18,6 +20,7 @@ namespace LYBT.Module.Users.Dtos {
         /// </summary>
         [Required]
         [StringLength(32, MinimumLength = 6)]
+        [DisplayName("原密码")]
         public string OldPassword { get; set; } = string.Empty;
 
         /// <summary>
@@ -25,6 +28,7 @@ namespace LYBT.Module.Users.Dtos {
         /// </summary>
         [Required]
         [StringLength(32, MinimumLength = 6)]
+        [DisplayName("新密码")]
         public string NewPassword { get; set; } = string.Empty;
     }
 }

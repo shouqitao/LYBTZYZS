@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
 
@@ -9,14 +10,17 @@ namespace LYBT.Module.DiagnosisTreatment.Models.Dtos {
 
         /// <summary>项目名称（如“针灸”）</summary>
         [Required(ErrorMessage = "治疗项目名称不能为空")]
+        [DisplayName("项目名称（如“针灸”）")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>次数</summary>
         [Range(1, 99, ErrorMessage = "次数必须大于0")]
+        [DisplayName("次数")]
         public int Count { get; set; }
 
         /// <summary>单价</summary>
         [Range(0, double.MaxValue, ErrorMessage = "单价不能为负数")]
+        [DisplayName("单价")]
         public decimal Price { get; set; }
 
         /// <summary>小计（自动计算：单价 × 次数）</summary>

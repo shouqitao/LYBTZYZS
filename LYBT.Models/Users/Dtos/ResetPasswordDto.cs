@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace LYBT.Module.Users.Dtos {
 
@@ -12,6 +13,7 @@ namespace LYBT.Module.Users.Dtos {
         /// </summary>
         [Required(ErrorMessage = "新密码不能为空")]
         [StringLength(32, MinimumLength = 6)]
+        [DisplayName("新密码（必填）")]
         public string NewPassword { get; set; } = string.Empty;
     }
 }

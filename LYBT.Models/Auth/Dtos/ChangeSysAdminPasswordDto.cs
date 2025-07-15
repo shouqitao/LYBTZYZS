@@ -1,3 +1,4 @@
+using System.ComponentModel;
 namespace LYBT.Module.Auth.Dtos {
     /// <summary>
     /// 修改 sysadmin 密码 DTO
@@ -6,11 +7,13 @@ namespace LYBT.Module.Auth.Dtos {
         /// <summary>
         /// 原密码
         /// </summary>
+        [DisplayName("原密码")]
         public string OldPassword { get; set; } = string.Empty;
 
         /// <summary>
         /// 新密码
         /// </summary>
+        [DisplayName("新密码")]
         public string NewPassword { get; set; } = string.Empty;
     }
 }
