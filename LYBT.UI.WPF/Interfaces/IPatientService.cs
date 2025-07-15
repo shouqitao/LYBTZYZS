@@ -10,9 +10,10 @@ namespace LYBT.UI.WPF.Interfaces {
         Task<PatientDetailDto?> GetByIdAsync(Guid id);
         Task<IList<PatientDetailDto>> GetAllAsync();
         Task<IList<PatientDetailDto>> SearchAsync(string keyword);
+        Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query);
         Task<bool> AddAsync(PatientDetailDto dto);
         Task<bool> UpdateAsync(PatientDetailDto dto);
         Task<bool> DeleteAsync(Guid id);
-        // ¿É¸ù¾İĞèÒªÀ©Õ¹¸ü¶à·½·¨
+        // å¯æ ¹æ®éœ€è¦æ‰©å±•æ›´å¤šæ–¹æ³•
     }
 }
