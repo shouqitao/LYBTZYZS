@@ -19,14 +19,14 @@
         <TabItem Header="药材管理">
             <admin:HerbManagementView/>
         </TabItem>
+        <TabItem Header="经验方模板">
+            <admin:FormulaTemplatesManagementView/>
+        </TabItem>
         <TabItem Header="处方管理">
             <admin:PrescriptionManagementView/>
         </TabItem>
         <TabItem Header="病历管理">
             <admin:RecordManagementView/>
-        </TabItem>
-        <TabItem Header="经验方模板">
-            <admin:FormulaTemplatesManagementView/>
         </TabItem>
     </TabControl>
 </UserControl>
