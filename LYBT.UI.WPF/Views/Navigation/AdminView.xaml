@@ -8,7 +8,8 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <TabControl SelectedIndex="{Binding SelectedTabIndex}">
         <TabControl.Resources>
-            <Style TargetType="TabItem">
+            <!-- Preserve MaterialDesign underline styling for selected tab -->
+            <Style TargetType="TabItem" BasedOn="{StaticResource MaterialDesignTabItem}">
                 <Setter Property="Padding" Value="12,8" />
             </Style>
         </TabControl.Resources>
