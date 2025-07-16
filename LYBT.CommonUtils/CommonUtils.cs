@@ -1,16 +1,14 @@
-using System;
 using System.ComponentModel;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Reflection;
-using System.Linq;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.FormulaTemplates.Dtos;
-using Microsoft.International.Converters.PinYinConverter;
 using System.Text;
+using Microsoft.International.Converters.PinYinConverter;
 
 namespace LYBT.CommonUtils;
 
@@ -39,7 +37,8 @@ public static class CommonUtils {
 
         for (int i = 1; i <= sheet.LastRowNum; i++) {
             var row = sheet.GetRow(i);
-            if (row == null) continue;
+            if (row == null)
+                continue;
 
             bool empty = true;
             for (int c = start; c < start + 11; c++) {
@@ -49,7 +48,8 @@ public static class CommonUtils {
                     break;
                 }
             }
-            if (empty) continue;
+            if (empty)
+                continue;
 
             var dto = new HerbImportDto {
                 Name = row.GetCell(start)?.ToString() ?? string.Empty,
@@ -81,7 +81,7 @@ public static class CommonUtils {
         IWorkbook wb = new XSSFWorkbook();
         var sheet = wb.CreateSheet("Herbs");
         var header = sheet.CreateRow(0);
-        string[] props = {"Name","Pinyin","Origin","Spec","Unit","Price","Stock","BatchNo","ExpireDate","Effect","Remark"};
+        string[] props = { "Name", "Pinyin", "Origin", "Spec", "Unit", "Price", "Stock", "BatchNo", "ExpireDate", "Effect", "Remark" };
         for (int i = 0; i < props.Length; i++)
             header.CreateCell(i).SetCellValue(GetDisplayName(typeof(HerbDetailDto), props[i]));
         int r = 1;
@@ -113,7 +113,8 @@ public static class CommonUtils {
         var sheet = wb.GetSheetAt(0);
         for (int i = 1; i <= sheet.LastRowNum; i++) {
             var row = sheet.GetRow(i);
-            if (row == null) continue;
+            if (row == null)
+                continue;
             var herbsJson = row.GetCell(1)?.ToString() ?? "[]";
             List<HerbDto>? herbs = JsonSerializer.Deserialize<List<HerbDto>>(herbsJson);
             var dto = new FormulaTemplateImportDto {
@@ -130,11 +131,11 @@ public static class CommonUtils {
         IWorkbook wb = new XSSFWorkbook();
         var sheet = wb.CreateSheet("Templates");
         var header = sheet.CreateRow(0);
-        string[] props = {"Name","Herbs","Remark"};
-        for(int i=0;i<props.Length;i++)
+        string[] props = { "Name", "Herbs", "Remark" };
+        for (int i = 0; i < props.Length; i++)
             header.CreateCell(i).SetCellValue(GetDisplayName(typeof(FormulaTemplateDetailDto), props[i]));
-        int r=1;
-        foreach(var t in data) {
+        int r = 1;
+        foreach (var t in data) {
             var row = sheet.CreateRow(r++);
             row.CreateCell(0).SetCellValue(t.Name);
             row.CreateCell(1).SetCellValue(JsonSerializer.Serialize(t.Herbs));
@@ -164,7 +165,7 @@ public static class CommonUtils {
         idNumber = idNumber.Trim();
         if (!Regex.IsMatch(idNumber, "^\\d{17}[\\dXx]$"))
             return false;
-        int[] weight = {7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2};
+        int[] weight = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
         char[] codes = "10X98765432".ToCharArray();
         int sum = 0;
         for (int i = 0; i < 17; i++) {
