@@ -32,7 +32,8 @@
     <PackageReference Include="Refit" Version="8.0.0" />
     <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.6" />
-    <PackageReference Include="Xceed.Wpf.Toolkit" Version="4.6.0" />
+    <!-- Use the open source Extended WPF Toolkit which does not require a commercial license -->
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.7.25104.5739" />
   </ItemGroup>
 
   <ItemGroup>
