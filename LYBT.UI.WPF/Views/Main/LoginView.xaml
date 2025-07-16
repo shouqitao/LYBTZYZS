@@ -110,6 +110,7 @@
                                  Margin="0,0,0,15"
                                  FontSize="13"
                                  Background="White"
+                                 Foreground="Black"
                                  IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
 
                         <!-- 密码输入 -->
@@ -124,6 +125,7 @@
                                      FontSize="13"
                                      Padding="10,8"
                                      Background="White"
+                                     Foreground="Black"
                                      IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
 
                         <!-- 记住密码和清空按钮 -->
