@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="凌隐宝堂中医诊所"
         Icon="/Assets/icon.ico"
@@ -44,14 +45,14 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Margin="0,0,22,0">
-                        <Button Content="修改密码"
+                        <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="修改密码"
                     Width="100" Height="34"
                     Margin="0,0,10,0"
                     Command="{Binding ShowChangePasswordCommand}"
                     Background="#FF57606A" Foreground="White"
                     FontWeight="Bold" BorderThickness="0"
                     Cursor="Hand"/>
-                        <Button Content="修改信息"
+                        <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="修改信息"
                     Width="100" Height="34"
                     Margin="0,0,10,0"
                     Command="{Binding ShowChangeProfileCommand}"
@@ -59,7 +60,7 @@
                     FontWeight="Bold" BorderThickness="0"
                     Cursor="Hand"
                     Visibility="{Binding IsNotSysAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                        <Button Content="{Binding DoctorProfileButtonText}"
+                        <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="{Binding DoctorProfileButtonText}"
                     Width="120" Height="34"
                     Margin="0,0,10,0"
                     Visibility="{Binding IsDoctorRole, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -67,7 +68,7 @@
                     Background="#FF57606A" Foreground="White"
                     FontWeight="Bold" BorderThickness="0"
                     Cursor="Hand"/>
-                        <Button Content="退出登录"
+                        <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="退出登录"
                     Width="100" Height="34"
                     Command="{Binding LogoutCommand}"
                     Background="#FF57606A" Foreground="White"
