@@ -24,6 +24,7 @@
                 </StackPanel>
             </controls:CommonListView.ActionContent>
             <controls:CommonListView.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="160"/>
                 <DataGridTextColumn Header="患者" Binding="{Binding PatientName}" Width="*"/>
                 <DataGridTextColumn Header="诊断" Binding="{Binding Diagnosis}" Width="*"/>
                 <DataGridTextColumn Header="时间" Binding="{Binding RecordTime, StringFormat=yyyy-MM-dd HH:mm}" Width="150"/>
