@@ -33,6 +33,9 @@
                 <main:FormulaTemplatesProfileView DataContext="{Binding ProfileViewModel}" />
             </Border>
         </Grid>
-        <controls:PagingBar Grid.Row="2" Margin="0,8,0,0" />
+        <controls:PageManagerControl Grid.Row="2" Margin="0,8,0,0"
+                                     PageIndex="{Binding PageIndex}"
+                                     PageSize="{Binding PageSize}"
+                                     TotalCount="{Binding TotalCount}" />
     </Grid>
 </UserControl>
