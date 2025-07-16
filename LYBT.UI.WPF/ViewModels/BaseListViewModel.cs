@@ -11,6 +11,7 @@ namespace LYBT.UI.WPF.ViewModels {
     /// </summary>
     public abstract class BaseListViewModel<T> : BindableBase {
         protected BaseListViewModel() {
+            LoadPageCommand = new DelegateCommand(async () => await LoadPageAsync(PageIndex));
             NextPageCommand = new DelegateCommand(async () => await LoadPageAsync(CurrentPage + 1),
                 () => CurrentPage < TotalPages).ObservesProperty(() => CurrentPage).ObservesProperty(() => TotalPages);
             PrevPageCommand = new DelegateCommand(async () => await LoadPageAsync(CurrentPage - 1),
@@ -73,6 +74,7 @@ namespace LYBT.UI.WPF.ViewModels {
 
         public int PageSize { get; set; } = 20;
 
+        public DelegateCommand LoadPageCommand { get; }
         public DelegateCommand NextPageCommand { get; }
         public DelegateCommand PrevPageCommand { get; }
 

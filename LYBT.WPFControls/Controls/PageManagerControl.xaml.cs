@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Data;
 
 namespace LYBT.WPFControls {
     /// <summary>
@@ -69,6 +70,7 @@ namespace LYBT.WPFControls {
 
         private static void OnPagingPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (d is PageManagerControl c) {
+                BindingOperations.GetBindingExpression(c, e.Property)?.UpdateSource();
                 c.CommandManagerInvalidate();
                 c.PagingChanged?.Invoke(c, EventArgs.Empty);
             }
