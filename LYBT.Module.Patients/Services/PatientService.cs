@@ -8,6 +8,7 @@ using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Records.Dtos;
 using LYBT.Module.Records.Interfaces;
+using CommonUtil = LYBT.CommonUtils.CommonUtils;
 using System.Text.Json;
 
 namespace LYBT.Module.Patients.Services {
@@ -34,6 +35,7 @@ namespace LYBT.Module.Patients.Services {
         public async Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<PatientModel>(dto);
             model.Id = Guid.NewGuid();
+            model.PinyinCode = CommonUtil.GetPinyinCode(model.Name);
             var result = await _patientRepository.AddAsync(model);
 
             if (result) {
@@ -60,6 +62,7 @@ namespace LYBT.Module.Patients.Services {
 
             var oldJson = JsonSerializer.Serialize(model);
             _mapper.Map(dto, model);
+            model.PinyinCode = CommonUtil.GetPinyinCode(model.Name);
             var result = await _patientRepository.UpdateAsync(model);
 
             if (result) {

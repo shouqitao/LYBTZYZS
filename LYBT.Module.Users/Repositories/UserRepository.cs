@@ -68,9 +68,11 @@ namespace LYBT.Module.Users.Repositories {
 
             // 关键词（用户名、真实姓名）模糊查找
             if (!string.IsNullOrWhiteSpace(query.Keyword)) {
+                var keyword = query.Keyword.ToUpperInvariant();
                 dbSet = dbSet.Where(u =>
                     u.UserName.Contains(query.Keyword) ||
-                    u.RealName.Contains(query.Keyword));
+                    u.RealName.Contains(query.Keyword) ||
+                    u.PinyinCode.Contains(keyword));
             }
 
             // 角色筛选

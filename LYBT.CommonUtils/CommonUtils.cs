@@ -4,10 +4,13 @@ using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Reflection;
+using System.Linq;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.FormulaTemplates.Dtos;
+using Microsoft.International.Converters.PinYinConverter;
+using System.Text;
 
 namespace LYBT.CommonUtils;
 
@@ -169,5 +172,27 @@ public static class CommonUtils {
         }
         char code = codes[sum % 11];
         return char.ToUpperInvariant(idNumber[17]) == code;
+    }
+
+    /// <summary>
+    /// 根据中文名称生成拼音码（首字母缩写，全部大写）
+    /// </summary>
+    public static string GetPinyinCode(string? text) {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        foreach (var ch in text.Trim()) {
+            if (ChineseChar.IsValidChar(ch)) {
+                var cc = new ChineseChar(ch);
+                var py = cc.Pinyins.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p));
+                if (!string.IsNullOrEmpty(py))
+                    sb.Append(char.ToUpperInvariant(py[0]));
+            } else if (char.IsLetter(ch)) {
+                sb.Append(char.ToUpperInvariant(ch));
+            }
+        }
+
+        return sb.ToString();
     }
 }
