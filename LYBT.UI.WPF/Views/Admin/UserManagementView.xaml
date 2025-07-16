@@ -4,7 +4,7 @@
               xmlns:prism="http://prismlibrary.com/"
               xmlns:helpers="clr-namespace:LYBT.UI.WPF.Helpers"
               xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
-              xmlns:controls="clr-namespace:LYBT.UI.WPF.Controls"
+              xmlns:controls="clr-namespace:LYBT.WPFControls;assembly=LYBT.WPFControls"
               prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.ColumnDefinitions>

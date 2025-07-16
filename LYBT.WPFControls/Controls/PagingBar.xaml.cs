@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.UI.WPF.Controls {
+namespace LYBT.WPFControls {
     public partial class PagingBar : UserControl {
         public PagingBar() {
             InitializeComponent();

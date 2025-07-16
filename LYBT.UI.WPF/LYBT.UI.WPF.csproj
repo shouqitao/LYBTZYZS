@@ -53,6 +53,7 @@
     <ProjectReference Include="..\LYBT.Module.TreatmentRoom\LYBT.Module.TreatmentRoom.csproj" />
     <ProjectReference Include="..\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
     <ProjectReference Include="..\LYBT.CommonUtils\LYBT.CommonUtils.csproj" />
+    <ProjectReference Include="..\LYBT.WPFControls\LYBT.WPFControls.csproj" />
   </ItemGroup>
 
   <ItemGroup>

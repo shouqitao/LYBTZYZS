@@ -56,6 +56,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Tests", "LYBT.Tests\LY
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.CommonUtils", "LYBT.CommonUtils\LYBT.CommonUtils.csproj", "{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WPFControls", "LYBT.WPFControls\LYBT.WPFControls.csproj", "{D4612303-5A4F-4695-B249-772D1438E482}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -350,10 +352,22 @@ Global
 		{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|x64.ActiveCfg = Release|Any CPU
-		{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|x64.Build.0 = Release|Any CPU
-		{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|x86.ActiveCfg = Release|Any CPU
-		{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|x86.Build.0 = Release|Any CPU
-	EndGlobalSection
+{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|x64.Build.0 = Release|Any CPU
+{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|x86.ActiveCfg = Release|Any CPU
+{5BEA0C53-8287-493B-BF32-EBFAC61B9CBD}.Release|x86.Build.0 = Release|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Debug|x64.ActiveCfg = Debug|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Debug|x64.Build.0 = Debug|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Debug|x86.ActiveCfg = Debug|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Debug|x86.Build.0 = Debug|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Release|Any CPU.Build.0 = Release|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Release|x64.ActiveCfg = Release|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Release|x64.Build.0 = Release|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Release|x86.ActiveCfg = Release|Any CPU
+                {D4612303-5A4F-4695-B249-772D1438E482}.Release|x86.Build.0 = Release|Any CPU
+        EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection

@@ -4,7 +4,7 @@
               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
               xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Profile"
-              xmlns:controls="clr-namespace:LYBT.UI.WPF.Controls"
+              xmlns:controls="clr-namespace:LYBT.WPFControls;assembly=LYBT.WPFControls"
               xmlns:prism="http://prismlibrary.com/"
               mc:Ignorable="d"
               prism:ViewModelLocator.AutoWireViewModel="True">

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Profile"
-             xmlns:controls="clr-namespace:LYBT.UI.WPF.Controls"
+             xmlns:controls="clr-namespace:LYBT.WPFControls;assembly=LYBT.WPFControls"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.RowDefinitions>
