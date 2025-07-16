@@ -23,7 +23,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public ObservableCollection<EnumItem<Gender>> GenderList { get; } = EnumHelper.BuildComboBoxSource<Gender>();
 
-        private string _editModeTitle = "新增患者档案";
+        private string _editModeTitle = "患者详细信息";
         public string EditModeTitle {
             get => _editModeTitle;
             set => SetProperty(ref _editModeTitle, value);
@@ -48,15 +48,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
             switch (mode) {
                 case ProfileMode.Create:
-                    EditModeTitle = "新增患者档案";
+                    EditModeTitle = "新建患者信息";
                     IsEditable = true;
                     break;
                 case ProfileMode.Edit:
-                    EditModeTitle = "编辑患者档案";
+                    EditModeTitle = "编辑患者信息";
                     IsEditable = true;
                     break;
                 default:
-                    EditModeTitle = "患者详情";
+                    EditModeTitle = "患者详细信息";
                     IsEditable = false;
                     break;
             }
@@ -73,7 +73,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 MessageBox.Show("已保存", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 Mode = ProfileMode.View;
                 IsEditable = false;
-                EditModeTitle = "患者详情";
+                EditModeTitle = "患者详细信息";
             } else {
                 MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -90,7 +90,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             }
             Mode = ProfileMode.View;
             IsEditable = false;
-            EditModeTitle = "患者详情";
+            EditModeTitle = "患者详细信息";
         }
     }
 }

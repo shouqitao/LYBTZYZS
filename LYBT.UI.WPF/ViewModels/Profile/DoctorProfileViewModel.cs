@@ -27,7 +27,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         private UserDto? _user;
         public UserDto? User { get => _user; set => SetProperty(ref _user, value); }
 
-        private string _editModeTitle = "新增医生档案";
+        private string _editModeTitle = "医生详细信息";
         public string EditModeTitle { get => _editModeTitle; set => SetProperty(ref _editModeTitle, value); }
 
         public string? ContactNumber { get => Doctor.ContactNumber; set { Doctor.ContactNumber = value; RaisePropertyChanged(); } }
@@ -73,15 +73,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
             switch (mode) {
                 case ProfileMode.Create:
-                    EditModeTitle = "新增医生档案";
+                    EditModeTitle = "新建医生信息";
                     IsEditable = true;
                     break;
                 case ProfileMode.Edit:
-                    EditModeTitle = "编辑医生档案";
+                    EditModeTitle = "编辑医生信息";
                     IsEditable = true;
                     break;
                 default:
-                    EditModeTitle = "医生详情";
+                    EditModeTitle = "医生详细信息";
                     IsEditable = false;
                     break;
             }
@@ -135,7 +135,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             }
             Mode = ProfileMode.View;
             IsEditable = false;
-            EditModeTitle = "医生详情";
+            EditModeTitle = "医生详细信息";
         }
 
         private void Cancel() {
@@ -154,7 +154,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             }
             Mode = ProfileMode.View;
             IsEditable = false;
-            EditModeTitle = "医生详情";
+            EditModeTitle = "医生详细信息";
         }
 
         public async void OnNavigatedTo(NavigationContext navigationContext) {
