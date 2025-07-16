@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Input;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
@@ -14,6 +15,7 @@ namespace LYBT.WPFControls {
             Columns = new ObservableCollection<DataGridColumn>();
             InitializeComponent();
             Loaded += (_, __) => ApplyColumns();
+            PART_Pager.PagingChanged += (_, __) => ExecuteLoadPageCommand();
         }
 
         private void ApplyColumns() {
@@ -55,7 +57,9 @@ namespace LYBT.WPFControls {
         }
 
         public static readonly DependencyProperty SearchKeywordProperty =
-            DependencyProperty.Register(nameof(SearchKeyword), typeof(string), typeof(CommonListView));
+            DependencyProperty.Register(
+                nameof(SearchKeyword), typeof(string), typeof(CommonListView),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSearchKeywordChanged));
 
         public System.Windows.Input.ICommand? SearchCommand {
             get => (System.Windows.Input.ICommand?)GetValue(SearchCommandProperty);
@@ -64,6 +68,14 @@ namespace LYBT.WPFControls {
 
         public static readonly DependencyProperty SearchCommandProperty =
             DependencyProperty.Register(nameof(SearchCommand), typeof(System.Windows.Input.ICommand), typeof(CommonListView));
+
+        public ICommand? LoadPageCommand {
+            get => (ICommand?)GetValue(LoadPageCommandProperty);
+            set => SetValue(LoadPageCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty LoadPageCommandProperty =
+            DependencyProperty.Register(nameof(LoadPageCommand), typeof(ICommand), typeof(CommonListView));
 
         public bool IsBusy {
             get => (bool)GetValue(IsBusyProperty);
@@ -80,5 +92,20 @@ namespace LYBT.WPFControls {
 
         public static readonly DependencyProperty ShowPagingProperty =
             DependencyProperty.Register(nameof(ShowPaging), typeof(bool), typeof(CommonListView), new PropertyMetadata(true));
+
+        private static void OnSearchKeywordChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is CommonListView view)
+                view.ExecuteSearchCommand();
+        }
+
+        private void ExecuteSearchCommand() {
+            if (SearchCommand?.CanExecute(null) == true)
+                SearchCommand.Execute(null);
+        }
+
+        private void ExecuteLoadPageCommand() {
+            if (LoadPageCommand?.CanExecute(null) == true)
+                LoadPageCommand.Execute(null);
+        }
     }
 }
