@@ -113,10 +113,11 @@ namespace LYBT.Module.Doctors.Repositories {
                 .AsQueryable();
             
             if (!string.IsNullOrWhiteSpace(keyword)) {
-                query = query.Where(d => 
-                    d.User.RealName.Contains(keyword) || 
-                    (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(keyword)) || 
-                    d.PinyinCode.Contains(keyword));
+                var upper = keyword.ToUpperInvariant();
+                query = query.Where(d =>
+                    d.User.RealName.Contains(keyword) ||
+                    (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(keyword)) ||
+                    d.PinyinCode.Contains(upper));
             }
             
             return await query
@@ -131,10 +132,11 @@ namespace LYBT.Module.Doctors.Repositories {
                 .AsQueryable();
             
             if (!string.IsNullOrWhiteSpace(query.Keyword)) {
-                dbSet = dbSet.Where(d => 
-                    d.User.RealName.Contains(query.Keyword) || 
-                    (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(query.Keyword)) || 
-                    d.PinyinCode.Contains(query.Keyword));
+                var upper = query.Keyword.ToUpperInvariant();
+                dbSet = dbSet.Where(d =>
+                    d.User.RealName.Contains(query.Keyword) ||
+                    (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(query.Keyword)) ||
+                    d.PinyinCode.Contains(upper));
             }
             
             if (query.IsActive.HasValue) {

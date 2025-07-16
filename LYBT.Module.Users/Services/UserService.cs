@@ -9,6 +9,7 @@ using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
 using Microsoft.Extensions.Options;
 using LYBT.Module.Users.Interfaces;
+using CommonUtil = LYBT.CommonUtils.CommonUtils;
 
 namespace LYBT.Module.Users.Services {
 
@@ -82,6 +83,7 @@ namespace LYBT.Module.Users.Services {
                 Id = Guid.NewGuid(),
                 UserName = dto.UserName,
                 RealName = dto.RealName,
+                PinyinCode = CommonUtil.GetPinyinCode(dto.RealName),
                 Roles = roles,
                 IsActive = dto.IsActive,
                 Email = dto.Email,
@@ -120,6 +122,7 @@ namespace LYBT.Module.Users.Services {
             var oldSnapshot = System.Text.Json.JsonSerializer.Serialize(oldUser);
 
             oldUser.RealName = dto.RealName;
+            oldUser.PinyinCode = CommonUtil.GetPinyinCode(dto.RealName);
             var roles = dto.Roles ?? new List<UserRole>();
             oldUser.Roles = roles;
             oldUser.IsActive = dto.IsActive;

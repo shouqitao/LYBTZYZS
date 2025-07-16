@@ -31,6 +31,13 @@ namespace LYBT.Module.Users.Models {
         public string RealName { get; set; } = string.Empty;
 
         /// <summary>
+        /// 真实姓名拼音码
+        /// </summary>
+        [StringLength(32)]
+        [DisplayName("拼音码")]
+        public string PinyinCode { get; set; } = string.Empty;
+
+        /// <summary>
         /// 用户拥有的所有角色
         /// </summary>
         [Required]

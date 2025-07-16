@@ -18,7 +18,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\LYBT.Common\LYBT.Common.csproj" />
 		<ProjectReference Include="..\LYBT.Models\LYBT.Models.csproj" />
-		<ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
-	</ItemGroup>
+    <ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
+    <ProjectReference Include="..\LYBT.CommonUtils\LYBT.CommonUtils.csproj" />
+  </ItemGroup>
 
 </Project>

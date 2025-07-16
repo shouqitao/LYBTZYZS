@@ -28,8 +28,9 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<List<PatientModel>> GetListAsync(string? keyword = null, int page = 1, int pageSize = 20) {
             var query = _dbContext.Patients.AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword)) {
+                var upper = keyword.ToUpperInvariant();
                 query = query.Where(x => x.Name.Contains(keyword)
-                    || x.PinyinCode.Contains(keyword)
+                    || x.PinyinCode.Contains(upper)
                     || x.PhoneNumber.Contains(keyword));
             }
             return await query
@@ -63,8 +64,9 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<int> GetCountAsync(string? keyword = null) {
             var query = _dbContext.Patients.AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword)) {
+                var upper = keyword.ToUpperInvariant();
                 query = query.Where(x => x.Name.Contains(keyword)
-                    || x.PinyinCode.Contains(keyword)
+                    || x.PinyinCode.Contains(upper)
                     || x.PhoneNumber.Contains(keyword));
             }
             return await query.CountAsync();
@@ -98,8 +100,9 @@ namespace LYBT.Module.Patients.Repositories {
         }
 
         public async Task<List<PatientModel>> SearchAsync(string keyword) {
+            var upper = keyword.ToUpperInvariant();
             return await _dbContext.Patients
-                .Where(p => p.Name.Contains(keyword) || p.PinyinCode.Contains(keyword)
+                .Where(p => p.Name.Contains(keyword) || p.PinyinCode.Contains(upper)
                     || p.IDNumber.Contains(keyword) || p.PhoneNumber.Contains(keyword))
                 .OrderByDescending(p => p.Id)
                 .Take(20)

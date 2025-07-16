@@ -68,7 +68,8 @@ namespace LYBT.Module.Herbs.Repositories {
         public async Task<(List<HerbModel> list, int total)> GetPagedAsync(string? keyword, int page, int pageSize) {
             var query = _appDbContext.Herbs.AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword)) {
-                query = query.Where(h => h.Name.Contains(keyword) || (h.Pinyin != null && h.Pinyin.Contains(keyword)));
+                var upper = keyword.ToUpperInvariant();
+                query = query.Where(h => h.Name.Contains(keyword) || (h.Pinyin != null && h.Pinyin.Contains(upper)));
             }
             int total = await query.CountAsync();
             var list = await query.OrderByDescending(h => h.Name)

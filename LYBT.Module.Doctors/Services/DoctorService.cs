@@ -5,6 +5,7 @@ using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
 using LYBT.Common.Models;
 using LYBT.Module.Users.Interfaces;
+using CommonUtil = LYBT.CommonUtils.CommonUtils;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -73,6 +74,7 @@ namespace LYBT.Module.Doctors.Services {
             // to be non-null when saving entities. Assign the retrieved user to avoid
             // validation errors when calling SaveChangesAsync.
             model.User = user;
+            model.PinyinCode = CommonUtil.GetPinyinCode(user.RealName);
             try {
                 return await _doctorRepository.AddAsync(model);
             } catch (DbUpdateException ex) {
@@ -92,7 +94,7 @@ namespace LYBT.Module.Doctors.Services {
             model.Specialty = dto.Specialty;
             model.Status = dto.Status;
             model.WorkStatus = dto.WorkStatus;
-            model.PinyinCode = dto.PinyinCode;
+            model.PinyinCode = CommonUtil.GetPinyinCode(model.User.RealName);
             model.Remark = dto.Remark;
             model.ContactNumber = dto.ContactNumber;
             // 不更新UserId、User
