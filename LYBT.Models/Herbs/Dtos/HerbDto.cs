@@ -19,6 +19,14 @@ namespace LYBT.Module.Herbs.Dtos {
         [DisplayName("拼音码")]
         public string? Pinyin { get; set; }
 
+        /// <summary>产地</summary>
+        [DisplayName("产地")]
+        public string? Origin { get; set; }
+
+        /// <summary>规格</summary>
+        [DisplayName("规格")]
+        public string? Spec { get; set; }
+
         /// <summary>单位</summary>
         [DisplayName("单位")]
         public string? Unit { get; set; }
