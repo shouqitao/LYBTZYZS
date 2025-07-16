@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 
-namespace LYBT.UI.WPF.Controls {
+namespace LYBT.WPFControls {
     /// <summary>
     /// 通用列表控件，包含查询、数据表格与分页条。
     /// </summary>
