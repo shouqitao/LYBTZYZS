@@ -2,6 +2,7 @@
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using LYBT.Common.Models;
 
 namespace LYBT.Module.Herbs.Controllers {
 
@@ -27,6 +28,12 @@ namespace LYBT.Module.Herbs.Controllers {
         public async Task<ActionResult<List<HerbDto>>> GetList() {
             var list = await _herbService.GetListAsync();
             return Ok(list);
+        }
+
+        [HttpPost("paged")]
+        public async Task<ActionResult<PagedResultDto<HerbDto>>> GetPaged([FromBody] HerbPagedQueryDto query) {
+            var result = await _herbService.GetPagedAsync(query);
+            return Ok(result);
         }
 
         /// <summary>

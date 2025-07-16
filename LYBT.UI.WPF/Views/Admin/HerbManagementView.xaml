@@ -10,7 +10,7 @@
             <ColumnDefinition Width="2.2*"/>
             <ColumnDefinition Width="1.8*"/>
         </Grid.ColumnDefinitions>
-        <controls:CommonListView Grid.Column="0" ShowPaging="False"
+        <controls:CommonListView Grid.Column="0" ShowPaging="True"
                                  ItemsSource="{Binding Herbs}"
                                  SelectedItem="{Binding SelectedHerb, Mode=TwoWay}"
                                  SearchKeyword="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
