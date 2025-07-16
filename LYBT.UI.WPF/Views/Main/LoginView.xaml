@@ -91,7 +91,7 @@
                             IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
 
                     <!-- 登录表单内容 -->
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="200">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="240">
                         <TextBlock Text="用户登录"
                                    FontSize="20"
                                    FontWeight="Bold"
@@ -100,52 +100,39 @@
                                    Margin="0,0,0,25"/>
 
                         <!-- 用户名输入 -->
-                        <TextBlock Text="用户名"
-                                   FontSize="12"
-                                   Foreground="#666"
-                                   Margin="2,0,0,5"/>
-                        <TextBox Style="{StaticResource MaterialDesignOutlinedTextBox}" x:Name="userNameBox"
+                        <TextBox x:Name="userNameBox"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
-                                 Height="35"
+                                 materialDesign:HintAssist.Hint="用户名"
                                  Margin="0,0,0,15"
                                  FontSize="13"
-                                 Background="White"
-                                 Foreground="Black"
                                  IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
 
                         <!-- 密码输入 -->
-                        <TextBlock Text="密码"
-                                   FontSize="12"
-                                   Foreground="#666"
-                                   Margin="2,0,0,5"/>
-                        <PasswordBox Style="{StaticResource MaterialDesignOutlinedPasswordBox}" x:Name="passwordBox"
+                        <PasswordBox x:Name="passwordBox"
+                                     Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
                                      PasswordChanged="PasswordBox_PasswordChanged"
-                                     Height="35"
+                                     materialDesign:HintAssist.Hint="密码"
                                      Margin="0,0,0,15"
                                      FontSize="13"
-                                     Padding="10,8"
-                                     Background="White"
-                                     Foreground="Black"
                                      IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
 
                         <!-- 记住密码和清空按钮 -->
-                        <Grid Margin="0,0,0,20">
+                        <DockPanel Margin="0,0,0,20">
                             <CheckBox x:Name="ChkRememberMe"
                                       IsChecked="{Binding IsRemember}"
                                       Content="记住密码"
                                       FontSize="12"
-                                      HorizontalAlignment="Left"
+                                      DockPanel.Dock="Left"
                                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
                             <Button Content="清空"
                                     Command="{Binding ClearCommand}"
-                                    HorizontalAlignment="Right"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Foreground="#666"
+                                    Style="{StaticResource MaterialDesignFlatButton}"
                                     FontSize="12"
+                                    DockPanel.Dock="Right"
                                     Cursor="Hand"
                                     Padding="5,2"/>
-                        </Grid>
+                        </DockPanel>
 
                         <!-- 登录按钮 -->
                         <Button Style="{StaticResource MaterialDesignRaisedButton}" x:Name="BtnLogin"
@@ -158,8 +145,7 @@
                                 Background="#4CAF50"
                                 BorderThickness="0"
                                 Cursor="Hand"
-                                Margin="0,0,0,15">
-                        </Button>
+                                Margin="0,0,0,15"/>
 
                         <!-- 错误消息 -->
                         <TextBlock Text="{Binding ErrorMessage}"
