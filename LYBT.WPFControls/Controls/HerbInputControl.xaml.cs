@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using LYBT.Module.Herbs.Dtos;
-using LYBT.Models.Prescriptions.Dtos;
+using LYBT.Module.Prescriptions.Dtos;
 
 namespace LYBT.WPFControls {
     /// <summary>
