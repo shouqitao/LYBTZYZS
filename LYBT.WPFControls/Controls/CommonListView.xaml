@@ -29,7 +29,10 @@
                 <ProgressBar IsIndeterminate="True" Width="120" Height="4" />
             </StackPanel>
         </Border>
-        <controls:PagingBar Grid.Row="2" Margin="0,8,0,0"
-            Visibility="{Binding ShowPaging, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <controls:PageManagerControl Grid.Row="2" Margin="0,8,0,0"
+            Visibility="{Binding ShowPaging, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
+            PageIndex="{Binding PageIndex}"
+            PageSize="{Binding PageSize}"
+            TotalCount="{Binding TotalCount}"/>
     </Grid>
 </UserControl>
