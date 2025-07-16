@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
@@ -18,24 +19,48 @@ public static class CommonUtils {
         var result = new List<HerbImportDto>();
         IWorkbook wb = new XSSFWorkbook(stream);
         var sheet = wb.GetSheetAt(0);
+
+        var header = sheet.GetRow(0);
+        int start = 0;
+        if (header?.GetCell(0)?.ToString()?.Trim()
+                .Equals("Id", StringComparison.OrdinalIgnoreCase) == true)
+            start = 1;
+
         for (int i = 1; i <= sheet.LastRowNum; i++) {
             var row = sheet.GetRow(i);
             if (row == null) continue;
-            if (row.Cells.All(c => c == null || string.IsNullOrWhiteSpace(c.ToString())))
-                continue;
+
+            bool empty = true;
+            for (int c = start; c < start + 11; c++) {
+                var cell = row.GetCell(c);
+                if (cell != null && !string.IsNullOrWhiteSpace(cell.ToString())) {
+                    empty = false;
+                    break;
+                }
+            }
+            if (empty) continue;
+
             var dto = new HerbImportDto {
-                Name = row.GetCell(0)?.ToString() ?? string.Empty,
-                Pinyin = row.GetCell(1)?.ToString(),
-                Origin = row.GetCell(2)?.ToString(),
-                Spec = row.GetCell(3)?.ToString(),
-                Unit = row.GetCell(4)?.ToString(),
-                Price = (decimal)(row.GetCell(5)?.NumericCellValue ?? 0),
-                Stock = (int)(row.GetCell(6)?.NumericCellValue ?? 0),
-                BatchNo = row.GetCell(7)?.ToString(),
-                ExpireDate = row.GetCell(8)?.DateCellValue,
-                Effect = row.GetCell(9)?.ToString(),
-                Remark = row.GetCell(10)?.ToString()
+                Name = row.GetCell(start)?.ToString() ?? string.Empty,
+                Pinyin = row.GetCell(start + 1)?.ToString(),
+                Origin = row.GetCell(start + 2)?.ToString(),
+                Spec = row.GetCell(start + 3)?.ToString(),
+                Unit = row.GetCell(start + 4)?.ToString()
             };
+
+            decimal.TryParse(row.GetCell(start + 5)?.ToString(), out var price);
+            dto.Price = price;
+            int.TryParse(row.GetCell(start + 6)?.ToString(), out var stock);
+            dto.Stock = stock;
+
+            dto.BatchNo = row.GetCell(start + 7)?.ToString();
+
+            if (DateTime.TryParse(row.GetCell(start + 8)?.ToString(), out var exp))
+                dto.ExpireDate = exp;
+
+            dto.Effect = row.GetCell(start + 9)?.ToString();
+            dto.Remark = row.GetCell(start + 10)?.ToString();
+
             result.Add(dto);
         }
         return result;
