@@ -14,7 +14,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         private HerbDetailDto _herb = new();
         public HerbDetailDto Herb { get => _herb; set => SetProperty(ref _herb, value); }
 
-        private string _editModeTitle = "新增药材";
+        private string _editModeTitle = "药材详细信息";
         public string EditModeTitle { get => _editModeTitle; set => SetProperty(ref _editModeTitle, value); }
 
         private bool _isEditable;
@@ -54,15 +54,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
             switch (mode) {
                 case ProfileMode.Create:
-                    EditModeTitle = "新增药材";
+                    EditModeTitle = "新建药材信息";
                     IsEditable = true;
                     break;
                 case ProfileMode.Edit:
-                    EditModeTitle = "编辑药材";
+                    EditModeTitle = "编辑药材信息";
                     IsEditable = true;
                     break;
                 default:
-                    EditModeTitle = "药材详情";
+                    EditModeTitle = "药材详细信息";
                     IsEditable = false;
                     break;
             }
@@ -81,7 +81,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 else {
                     Mode = ProfileMode.View;
                     IsEditable = false;
-                    EditModeTitle = "药材详情";
+                    EditModeTitle = "药材详细信息";
                     CancelAction?.Invoke();
                 }
             } catch (Exception ex) {
@@ -92,7 +92,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         private void Cancel() {
             Mode = ProfileMode.View;
             IsEditable = false;
-            EditModeTitle = "药材详情";
+            EditModeTitle = "药材详细信息";
             CancelAction?.Invoke();
         }
     }

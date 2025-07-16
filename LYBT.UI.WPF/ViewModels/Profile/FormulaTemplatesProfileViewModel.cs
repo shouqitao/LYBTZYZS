@@ -31,7 +31,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             set => SetProperty(ref _selectedHerb, value);
         }
 
-        private string _editModeTitle = "新增模板";
+        private string _editModeTitle = "模板详细信息";
         public string EditModeTitle {
             get => _editModeTitle;
             set => SetProperty(ref _editModeTitle, value);
@@ -87,15 +87,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
             switch (mode) {
                 case ProfileMode.Create:
-                    EditModeTitle = "新增模板";
+                    EditModeTitle = "新建模板信息";
                     IsEditable = true;
                     break;
                 case ProfileMode.Edit:
-                    EditModeTitle = "编辑模板";
+                    EditModeTitle = "编辑模板信息";
                     IsEditable = true;
                     break;
                 default:
-                    EditModeTitle = "模板详情";
+                    EditModeTitle = "模板详细信息";
                     IsEditable = false;
                     break;
             }
@@ -123,7 +123,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             else {
                 Mode = ProfileMode.View;
                 IsEditable = false;
-                EditModeTitle = "模板详情";
+                EditModeTitle = "模板详细信息";
                 CancelAction?.Invoke();
             }
         }
@@ -131,7 +131,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         private void Cancel() {
             Mode = ProfileMode.View;
             IsEditable = false;
-            EditModeTitle = "模板详情";
+            EditModeTitle = "模板详细信息";
             CancelAction?.Invoke();
         }
     }
