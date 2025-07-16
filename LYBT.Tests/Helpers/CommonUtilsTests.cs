@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using CommonUtil = LYBT.CommonUtils.CommonUtils;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.FormulaTemplates.Dtos;
@@ -35,5 +37,33 @@ public class CommonUtilsTests {
         Assert.Equal("test", list[0].Name);
         Assert.Single(list[0].Herbs);
         Assert.Equal("黄芩", list[0].Herbs[0].Name);
+    }
+
+    [Fact]
+    public void ReadHerbs_HandlesInvalidValuesAndIdColumn() {
+        IWorkbook wb = new XSSFWorkbook();
+        var sheet = wb.CreateSheet("herbs");
+        var header = sheet.CreateRow(0);
+        string[] heads = {"Id","Name","Pinyin","Origin","Spec","Unit","Price","Stock","BatchNo","ExpireDate","Effect","Remark"};
+        for (int i = 0; i < heads.Length; i++)
+            header.CreateCell(i).SetCellValue(heads[i]);
+        var row = sheet.CreateRow(1);
+        row.CreateCell(0).SetCellValue("1");
+        row.CreateCell(1).SetCellValue("甘草");
+        row.CreateCell(6).SetCellValue("bad");
+        row.CreateCell(7).SetCellValue("nope");
+        row.CreateCell(9).SetCellValue("unknown");
+        using var ms = new MemoryStream();
+        wb.Write(ms, true);
+        ms.Position = 0;
+
+        var list = CommonUtil.ReadHerbs(ms);
+
+        Assert.Single(list);
+        var dto = list[0];
+        Assert.Equal("甘草", dto.Name);
+        Assert.Equal(0, dto.Price);
+        Assert.Equal(0, dto.Stock);
+        Assert.Null(dto.ExpireDate);
     }
 }
