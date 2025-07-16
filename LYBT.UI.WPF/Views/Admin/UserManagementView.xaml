@@ -5,7 +5,6 @@
               xmlns:converters="clr-namespace:LYBT.UI.WPF.Converters;assembly=LYBT.UI.WPF"
               xmlns:helpers="clr-namespace:LYBT.UI.WPF.Helpers"
                xmlns:controls="clr-namespace:LYBT.UI.WPF.Controls"
-               xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
                prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.RowDefinitions>
@@ -40,7 +39,7 @@
                 <ColumnDefinition Width="1.8*"/>
             </Grid.ColumnDefinitions>
             <!-- 左侧列表区 -->
-            <xctk:BusyIndicator Grid.Column="0" IsBusy="{Binding IsBusy}">
+            <Grid Grid.Column="0">
                 <DataGrid ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
                           AutoGenerateColumns="False" Margin="0,0,8,0" IsReadOnly="True">
                     <DataGrid.Columns>
@@ -53,7 +52,13 @@
                         <DataGridTextColumn Header="手机号" Binding="{Binding PhoneNumber}" Width="90"/>
                     </DataGrid.Columns>
                 </DataGrid>
-            </xctk:BusyIndicator>
+                <Border Background="#80000000"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="120" Height="4" />
+                    </StackPanel>
+                </Border>
+            </Grid>
             <!-- 右侧详情区 -->
             <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1" IsEnabled="{Binding IsEditable}">
                 <StackPanel>

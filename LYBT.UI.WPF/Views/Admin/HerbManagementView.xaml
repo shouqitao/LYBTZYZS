@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
                xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Profile"
-               xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
                prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.RowDefinitions>
@@ -27,7 +26,7 @@
                 <ColumnDefinition Width="1.8*"/>
             </Grid.ColumnDefinitions>
             <!-- 左侧列表 -->
-            <xctk:BusyIndicator Grid.Column="0" IsBusy="{Binding IsBusy}">
+            <Grid Grid.Column="0">
                 <DataGrid ItemsSource="{Binding Herbs}" SelectedItem="{Binding SelectedHerb, Mode=TwoWay}" AutoGenerateColumns="False" Margin="0,0,8,0" IsReadOnly="True">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
@@ -38,7 +37,12 @@
                         <DataGridTextColumn Header="单价" Binding="{Binding Price}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
-            </xctk:BusyIndicator>
+                <Border Background="#80000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="120" Height="4" />
+                    </StackPanel>
+                </Border>
+            </Grid>
             <!-- 右侧详情区 -->
             <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
                 <main:HerbProfileView DataContext="{Binding HerbProfileViewModel}" />
