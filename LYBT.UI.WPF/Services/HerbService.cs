@@ -1,6 +1,7 @@
 using LYBT.Module.Herbs.Dtos;
 using LYBT.UI.WPF.Apis;
 using LYBT.UI.WPF.Interfaces;
+using LYBT.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,6 +24,10 @@ namespace LYBT.UI.WPF.Services {
         /// </summary>
         public async Task<IList<HerbDto>> GetListAsync() {
             return await _api.GetListAsync();
+        }
+
+        public async Task<PagedResultDto<HerbDto>> GetPagedAsync(HerbPagedQueryDto query) {
+            return await _api.GetPagedAsync(query);
         }
 
         /// <summary>

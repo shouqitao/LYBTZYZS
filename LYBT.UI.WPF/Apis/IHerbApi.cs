@@ -12,6 +12,9 @@ namespace LYBT.UI.WPF.Apis {
         [Get("/api/herbs")]
         Task<List<HerbDto>> GetListAsync();
 
+        [Post("/api/herbs/paged")]
+        Task<PagedResultDto<HerbDto>> GetPagedAsync([Body] HerbPagedQueryDto query);
+
         [Get("/api/herbs/{id}")]
         Task<HerbDetailDto> GetByIdAsync(Guid id);
 

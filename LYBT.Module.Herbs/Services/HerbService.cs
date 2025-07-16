@@ -3,6 +3,7 @@ using CommonUtil = LYBT.CommonUtils.CommonUtils;
 using LYBT.Models;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Common.Models;
 
 namespace LYBT.Module.Herbs.Services {
 
@@ -35,6 +36,14 @@ namespace LYBT.Module.Herbs.Services {
         public async Task<List<HerbDto>> GetListAsync() {
             var list = await _repository.GetListAsync();
             return _mapper.Map<List<HerbDto>>(list);
+        }
+
+        public async Task<PagedResultDto<HerbDto>> GetPagedAsync(HerbPagedQueryDto query) {
+            var (models, total) = await _repository.GetPagedAsync(query.Keyword, query.Page, query.PageSize);
+            return new PagedResultDto<HerbDto> {
+                TotalCount = total,
+                Items = _mapper.Map<List<HerbDto>>(models)
+            };
         }
 
         /// <summary>

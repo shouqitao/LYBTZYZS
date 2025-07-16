@@ -36,5 +36,10 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// 批量新增药材
         /// </summary>
         Task<bool> AddRangeAsync(List<HerbModel> herbs);
+
+        /// <summary>
+        /// 分页查询药材
+        /// </summary>
+        Task<(List<HerbModel> list, int total)> GetPagedAsync(string? keyword, int page, int pageSize);
     }
 }

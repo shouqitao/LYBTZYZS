@@ -1,6 +1,8 @@
 ﻿using LYBT.Infrastructure;
 using LYBT.Models;
 using LYBT.Module.Herbs.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace LYBT.Module.Herbs.Repositories {
 
@@ -61,6 +63,19 @@ namespace LYBT.Module.Herbs.Repositories {
         public async Task<bool> AddRangeAsync(List<HerbModel> herbs) {
             await _appDbContext.Herbs.AddRangeAsync(herbs);
             return await _appDbContext.SaveChangesAsync() > 0;
+        }
+
+        public async Task<(List<HerbModel> list, int total)> GetPagedAsync(string? keyword, int page, int pageSize) {
+            var query = _appDbContext.Herbs.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(keyword)) {
+                query = query.Where(h => h.Name.Contains(keyword) || (h.Pinyin != null && h.Pinyin.Contains(keyword)));
+            }
+            int total = await query.CountAsync();
+            var list = await query.OrderByDescending(h => h.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return (list, total);
         }
     }
 }

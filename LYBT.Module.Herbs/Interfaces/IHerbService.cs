@@ -1,5 +1,6 @@
 using System.IO;
-﻿using LYBT.Module.Herbs.Dtos;
+using LYBT.Module.Herbs.Dtos;
+using LYBT.Common.Models;
 
 namespace LYBT.Module.Herbs.Interfaces {
 
@@ -17,6 +18,11 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// 获取药材列表
         /// </summary>
         Task<List<HerbDto>> GetListAsync();
+
+        /// <summary>
+        /// 分页查询药材
+        /// </summary>
+        Task<PagedResultDto<HerbDto>> GetPagedAsync(HerbPagedQueryDto query);
 
         /// <summary>
         /// 新增药材
