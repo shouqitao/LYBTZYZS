@@ -15,6 +15,7 @@
                                  SelectedItem="{Binding SelectedHerb, Mode=TwoWay}"
                                  SearchKeyword="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
                                  SearchCommand="{Binding SearchCommand}"
+                                 LoadPageCommand="{Binding LoadPageCommand}"
                                  IsBusy="{Binding IsBusy}">
             <controls:CommonListView.ActionContent>
                 <StackPanel Orientation="Horizontal">

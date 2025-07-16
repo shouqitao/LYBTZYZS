@@ -27,66 +27,56 @@
         </ObjectDataProvider>
     </UserControl.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <!-- 操作区 -->
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBox Width="180" Margin="0,0,8,0" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"/>
-            <Button Content="查找" Command="{Binding SearchCommand}" Margin="0,0,8,0"/>
-            <Button Content="修改医生档案" Command="{Binding EditDoctorCommand}" Margin="0,0,8,0"
-                    IsEnabled="{Binding SelectedDoctor, Converter={StaticResource NullToBoolConverter}}"/>
-        </StackPanel>
-        <!-- 内容区 -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2.2*"/>
-                <ColumnDefinition Width="1.8*"/>
-            </Grid.ColumnDefinitions>
-            <!-- 左侧列表区 -->
-            <DataGrid Grid.Column="0" ItemsSource="{Binding Doctors}" SelectedItem="{Binding SelectedDoctor, Mode=TwoWay}"
-                      AutoGenerateColumns="False" Margin="0,0,8,0" IsReadOnly="True">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="账号" Binding="{Binding UserName}" Width="*"/>
-                    <DataGridTextColumn Header="姓名" Binding="{Binding RealName}" Width="*"/>
-                    <DataGridTextColumn Header="联系号码" Binding="{Binding ContactNumber}" Width="*"/>
-                    <DataGridTemplateColumn Header="性别" Width="80">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Gender, Converter={StaticResource EnumDescriptionConverter}}" VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="出生日期" Binding="{Binding Birthday, StringFormat=yyyy-MM-dd}" Width="110"/>
-                    <DataGridTextColumn Header="拼音码" Binding="{Binding PinyinCode}" Width="*"/>
-                    <DataGridTextColumn Header="执业证号" Binding="{Binding LicenseNumber}" Width="*"/>
-                    <DataGridTemplateColumn Header="职称" Width="*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Title, Converter={StaticResource EnumDescriptionConverter}}" VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="状态" Width="80">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}" VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="备注" Binding="{Binding Remark}" Width="*"/>
-                </DataGrid.Columns>
-            </DataGrid>
-            <!-- 右侧档案区 -->
-            <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-                <main:DoctorProfileView DataContext="{Binding DoctorProfileViewModel}" />
-            </Border>
-        </Grid>
-        <controls:PageManagerControl Grid.Row="2" Margin="0,8,0,0"
-                                     PageIndex="{Binding PageIndex}"
-                                     PageSize="{Binding PageSize}"
-                                     TotalCount="{Binding TotalCount}" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2.2*"/>
+            <ColumnDefinition Width="1.8*"/>
+        </Grid.ColumnDefinitions>
+        <controls:CommonListView Grid.Column="0" ShowPaging="True"
+                                 ItemsSource="{Binding Doctors}"
+                                 SelectedItem="{Binding SelectedDoctor, Mode=TwoWay}"
+                                 SearchKeyword="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                                 SearchCommand="{Binding SearchCommand}"
+                                 LoadPageCommand="{Binding LoadPageCommand}"
+                                 IsBusy="{Binding IsBusy}">
+            <controls:CommonListView.ActionContent>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="修改医生档案" Command="{Binding EditDoctorCommand}" Margin="0,0,8,0"
+                            IsEnabled="{Binding SelectedDoctor, Converter={StaticResource NullToBoolConverter}}"/>
+                </StackPanel>
+            </controls:CommonListView.ActionContent>
+            <controls:CommonListView.Columns>
+                <DataGridTextColumn Header="账号" Binding="{Binding UserName}" Width="*"/>
+                <DataGridTextColumn Header="姓名" Binding="{Binding RealName}" Width="*"/>
+                <DataGridTextColumn Header="联系号码" Binding="{Binding ContactNumber}" Width="*"/>
+                <DataGridTemplateColumn Header="性别" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Gender, Converter={StaticResource EnumDescriptionConverter}}" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="出生日期" Binding="{Binding Birthday, StringFormat=yyyy-MM-dd}" Width="110"/>
+                <DataGridTextColumn Header="拼音码" Binding="{Binding PinyinCode}" Width="*"/>
+                <DataGridTextColumn Header="执业证号" Binding="{Binding LicenseNumber}" Width="*"/>
+                <DataGridTemplateColumn Header="职称" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title, Converter={StaticResource EnumDescriptionConverter}}" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="状态" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="备注" Binding="{Binding Remark}" Width="*"/>
+            </controls:CommonListView.Columns>
+        </controls:CommonListView>
+        <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+            <main:DoctorProfileView DataContext="{Binding DoctorProfileViewModel}" />
+        </Border>
     </Grid>
 </UserControl>
