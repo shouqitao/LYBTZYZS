@@ -81,3 +81,28 @@ bool ok = await _herbService.BatchImportAsync(list);
 | `GET /api/herbs/exportExcel` | 已实现 | Excel 导出 |
 
 
+### 7. Excel 导入格式
+
+导入药材时，Excel 文件的列顺序必须与 `HerbImportDto` 的字段一致，依次为：
+
+1. **Name**
+2. **Pinyin**
+3. **Origin**
+4. **Spec**
+5. **Unit**
+6. **Price**
+7. **Stock**
+8. **BatchNo**
+9. **ExpireDate**
+10. **Effect**
+11. **Remark**
+
+例如：
+
+| Name | Pinyin | Origin | Spec | Unit | Price | Stock | BatchNo | ExpireDate | Effect | Remark |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 黄芪 | huangqi | 山西 | 片 | g | 2.0 | 100 | B2025 | 2026-12-31 | 补气固表 | |
+
+通过 `/api/Herb/exportExcel` 导出的文件已经按照以上顺序生成，可直接作为导入模板。
+
+
