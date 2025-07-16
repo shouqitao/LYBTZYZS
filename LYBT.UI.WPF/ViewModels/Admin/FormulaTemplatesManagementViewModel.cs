@@ -101,7 +101,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private async Task ExportAsync() {
             var dlg = new Microsoft.Win32.SaveFileDialog {
                 Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
-                FileName = "templates.xlsx"
+                FileName = "经典方.xlsx"
             };
             if (dlg.ShowDialog() == true) {
                 try {

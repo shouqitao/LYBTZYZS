@@ -100,7 +100,7 @@ namespace LYBT.Module.FormulaTemplates.Controllers {
         [HttpGet("exportExcel")]
         public async Task<FileContentResult> ExportExcel() {
             var bytes = await _service.ExportToExcelAsync();
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "templates.xlsx");
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "经典方.xlsx");
         }
     }
 }

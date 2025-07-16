@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Text.Json;
+using System.Reflection;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using LYBT.Module.Herbs.Dtos;
@@ -15,6 +16,11 @@ namespace LYBT.CommonUtils;
 /// </summary>
 [Description("通用工具类")]
 public static class CommonUtils {
+    private static string GetDisplayName(Type type, string property) {
+        var prop = type.GetProperty(property);
+        var attr = prop?.GetCustomAttribute<DisplayNameAttribute>();
+        return attr?.DisplayName ?? property;
+    }
     public static List<HerbImportDto> ReadHerbs(Stream stream) {
         var result = new List<HerbImportDto>();
         IWorkbook wb = new XSSFWorkbook(stream);
@@ -22,8 +28,10 @@ public static class CommonUtils {
 
         var header = sheet.GetRow(0);
         int start = 0;
-        if (header?.GetCell(0)?.ToString()?.Trim()
-                .Equals("Id", StringComparison.OrdinalIgnoreCase) == true)
+        var first = header?.GetCell(0)?.ToString()?.Trim();
+        if (!string.IsNullOrEmpty(first) &&
+            (first.Equals("Id", StringComparison.OrdinalIgnoreCase) ||
+             first.Equals(GetDisplayName(typeof(HerbDetailDto), "Id"), StringComparison.OrdinalIgnoreCase)))
             start = 1;
 
         for (int i = 1; i <= sheet.LastRowNum; i++) {
@@ -70,9 +78,9 @@ public static class CommonUtils {
         IWorkbook wb = new XSSFWorkbook();
         var sheet = wb.CreateSheet("Herbs");
         var header = sheet.CreateRow(0);
-        string[] heads = {"Name","Pinyin","Origin","Spec","Unit","Price","Stock","BatchNo","ExpireDate","Effect","Remark"};
-        for (int i = 0; i < heads.Length; i++)
-            header.CreateCell(i).SetCellValue(heads[i]);
+        string[] props = {"Name","Pinyin","Origin","Spec","Unit","Price","Stock","BatchNo","ExpireDate","Effect","Remark"};
+        for (int i = 0; i < props.Length; i++)
+            header.CreateCell(i).SetCellValue(GetDisplayName(typeof(HerbDetailDto), props[i]));
         int r = 1;
         foreach (var h in data) {
             var row = sheet.CreateRow(r++);
@@ -119,9 +127,9 @@ public static class CommonUtils {
         IWorkbook wb = new XSSFWorkbook();
         var sheet = wb.CreateSheet("Templates");
         var header = sheet.CreateRow(0);
-        string[] heads = {"Name","Herbs","Remark"};
-        for(int i=0;i<heads.Length;i++)
-            header.CreateCell(i).SetCellValue(heads[i]);
+        string[] props = {"Name","Herbs","Remark"};
+        for(int i=0;i<props.Length;i++)
+            header.CreateCell(i).SetCellValue(GetDisplayName(typeof(FormulaTemplateDetailDto), props[i]));
         int r=1;
         foreach(var t in data) {
             var row = sheet.CreateRow(r++);

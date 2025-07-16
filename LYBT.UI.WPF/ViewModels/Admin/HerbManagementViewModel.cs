@@ -130,7 +130,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private async Task ExportAsync() {
             var dlg = new Microsoft.Win32.SaveFileDialog {
                 Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
-                FileName = "herbs.xlsx"
+                FileName = "药材.xlsx"
             };
             if (dlg.ShowDialog() == true) {
                 try {
