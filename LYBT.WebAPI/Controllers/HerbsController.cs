@@ -9,14 +9,14 @@ namespace LYBT.Module.Herbs.Controllers {
     /// 药材管理 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class HerbController : ControllerBase {
+    [Route("api/herbs")]
+    public class HerbsController : ControllerBase {
         private readonly IHerbService _herbService;
 
         /// <summary>
         /// 构造方法，注入药材服务
         /// </summary>
-        public HerbController(IHerbService herbService) {
+        public HerbsController(IHerbService herbService) {
             _herbService = herbService;
         }
 
