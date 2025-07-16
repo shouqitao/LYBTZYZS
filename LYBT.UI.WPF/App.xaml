@@ -6,8 +6,17 @@
                 xmlns:local="clr-namespace:LYBT.UI.WPF.Converters">
     <!-- 注意：移除了 StartupUri，以避免启动两个窗口 -->
     <Application.Resources>
-        <!-- 添加 BoolToVisibilityConverter 资源 -->
-        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MaterialDesign resource dictionaries -->
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepPurple.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- 添加 BoolToVisibilityConverter 资源 -->
+            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <!-- 反向布尔转换器 -->
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
@@ -24,7 +33,8 @@
         <!-- 枚举转描述特性 -->
         <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 
-        <!-- 空转布尔转换器 -->
-        <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
+            <!-- 空转布尔转换器 -->
+            <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
+        </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>
