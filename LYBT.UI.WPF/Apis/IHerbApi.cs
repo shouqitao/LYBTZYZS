@@ -9,32 +9,32 @@ using System.Threading.Tasks;
 
 namespace LYBT.UI.WPF.Apis {
     public interface IHerbApi {
-        [Get("/api/Herb")]
+        [Get("/api/herbs")]
         Task<List<HerbDto>> GetListAsync();
 
-        [Get("/api/Herb/{id}")]
+        [Get("/api/herbs/{id}")]
         Task<HerbDetailDto> GetByIdAsync(Guid id);
 
-        [Post("/api/Herb")]
+        [Post("/api/herbs")]
         Task<ApiSuccessResponse> AddAsync([Body] HerbCreateDto dto);
 
-        [Put("/api/Herb")]
+        [Put("/api/herbs")]
         Task<ApiSuccessResponse> UpdateAsync([Body] HerbEditDto dto);
 
-        [Delete("/api/Herb/{id}")]
+        [Delete("/api/herbs/{id}")]
         Task<ApiSuccessResponse> DeleteAsync(Guid id);
 
-        [Post("/api/Herb/import")]
+        [Post("/api/herbs/import")]
         Task<ApiSuccessResponse> ImportAsync([Body] List<HerbImportDto> dtos);
 
-        [Post("/api/Herb/export")]
+        [Post("/api/herbs/export")]
         Task<List<HerbDetailDto>> ExportAsync();
 
         [Multipart]
-        [Post("/api/Herb/importExcel")]
+        [Post("/api/herbs/importExcel")]
         Task<ImportCountResponse> ImportExcelAsync([AliasAs("file")] StreamPart file);
 
-        [Get("/api/Herb/exportExcel")]
+        [Get("/api/herbs/exportExcel")]
         Task<HttpContent> ExportExcelAsync();
     }
 }
