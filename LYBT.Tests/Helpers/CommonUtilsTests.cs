@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.ComponentModel;
+using System.Reflection;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using CommonUtil = LYBT.CommonUtils.CommonUtils;
@@ -11,6 +13,11 @@ using Xunit;
 namespace LYBT.Tests.Helpers;
 
 public class CommonUtilsTests {
+    private static string GetDisplayName(Type type, string property) {
+        var prop = type.GetProperty(property);
+        var attr = prop?.GetCustomAttribute<DisplayNameAttribute>();
+        return attr?.DisplayName ?? property;
+    }
     [Fact]
     public void HerbRoundTrip() {
         var data = new List<HerbDetailDto> {
@@ -44,7 +51,20 @@ public class CommonUtilsTests {
         IWorkbook wb = new XSSFWorkbook();
         var sheet = wb.CreateSheet("herbs");
         var header = sheet.CreateRow(0);
-        string[] heads = {"Id","Name","Pinyin","Origin","Spec","Unit","Price","Stock","BatchNo","ExpireDate","Effect","Remark"};
+        string[] heads = {
+            "Id",
+            GetDisplayName(typeof(HerbDetailDto), "Name"),
+            GetDisplayName(typeof(HerbDetailDto), "Pinyin"),
+            GetDisplayName(typeof(HerbDetailDto), "Origin"),
+            GetDisplayName(typeof(HerbDetailDto), "Spec"),
+            GetDisplayName(typeof(HerbDetailDto), "Unit"),
+            GetDisplayName(typeof(HerbDetailDto), "Price"),
+            GetDisplayName(typeof(HerbDetailDto), "Stock"),
+            GetDisplayName(typeof(HerbDetailDto), "BatchNo"),
+            GetDisplayName(typeof(HerbDetailDto), "ExpireDate"),
+            GetDisplayName(typeof(HerbDetailDto), "Effect"),
+            GetDisplayName(typeof(HerbDetailDto), "Remark")
+        };
         for (int i = 0; i < heads.Length; i++)
             header.CreateCell(i).SetCellValue(heads[i]);
         var row = sheet.CreateRow(1);

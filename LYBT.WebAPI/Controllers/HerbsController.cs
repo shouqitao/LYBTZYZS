@@ -100,7 +100,7 @@ namespace LYBT.Module.Herbs.Controllers {
         [HttpGet("exportExcel")]
         public async Task<FileContentResult> ExportExcel() {
             var bytes = await _herbService.ExportToExcelAsync();
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "herbs.xlsx");
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "药材.xlsx");
         }
     }
 }
