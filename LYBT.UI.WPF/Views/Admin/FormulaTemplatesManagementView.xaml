@@ -25,6 +25,7 @@
                 </StackPanel>
             </controls:CommonListView.ActionContent>
             <controls:CommonListView.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="160"/>
                 <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
             </controls:CommonListView.Columns>
         </controls:CommonListView>
