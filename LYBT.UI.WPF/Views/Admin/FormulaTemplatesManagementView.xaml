@@ -3,11 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Profile"
+             xmlns:controls="clr-namespace:LYBT.UI.WPF.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
             <Button Content="刷新" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
@@ -31,5 +33,6 @@
                 <main:FormulaTemplatesProfileView DataContext="{Binding ProfileViewModel}" />
             </Border>
         </Grid>
+        <controls:PagingBar Grid.Row="2" Margin="0,8,0,0" />
     </Grid>
 </UserControl>
