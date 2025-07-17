@@ -57,7 +57,7 @@
                         <TextBox Text="{Binding EditingUser.RealName}" Margin="0,0,0,8"
                                  IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
                         <TextBlock Text="角色" />
-                        <ListBox x:Name="RolesListBox"
+                        <ListBox
                                  ItemsSource="{Binding RoleList}"
                                  SelectionMode="Multiple"
                                  Margin="0,0,0,8"
