@@ -48,10 +48,12 @@ namespace LYBT.Module.Auth.Services {
                 }
 
                 var user = await _authRepository.GetByUsernameAsync(dto.Username);
+                bool userExistsInDb = user != null;
 
                 // If sysadmin user record does not exist in Users table,
                 // create a temporary in-memory user for authentication.
                 if (user == null && dto.Username == "sysadmin") {
+                    userExistsInDb = false;
                     user = new UserModel {
                         Id = Guid.NewGuid(),
                         UserName = "sysadmin",
@@ -126,7 +128,7 @@ namespace LYBT.Module.Auth.Services {
                 user.FailedLoginCount = 0;
                 user.LockoutEnd = null;
                 user.LastLoginTime = DateTime.Now;
-                if (await _authRepository.GetByUsernameAsync(user.UserName) != null) {
+                if (userExistsInDb) {
                     await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
                     await _authRepository.UpdateUserLoginProtectionAsync(user); // 需要实现此方法
                 }
