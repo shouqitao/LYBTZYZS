@@ -60,6 +60,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand ShowChangeProfileCommand { get; }
         public DelegateCommand ShowDoctorProfileCommand { get; }
         public DelegateCommand ShowPatientProfileCommand { get; }
+        public DelegateCommand ToggleThemeCommand { get; }
 
 
         private readonly IEventAggregator _eventAggregator;
@@ -67,12 +68,16 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         private readonly IAuthService _authService;
         private readonly IDoctorService _doctorService;
+        private readonly IThemeService _themeService;
 
-        public MainWindowViewModel(IEventAggregator eventAggregator, IRegionManager regionManager, IAuthService authService, IDoctorService doctorService) {
+        public MainWindowViewModel(IEventAggregator eventAggregator, IRegionManager regionManager,
+                                   IAuthService authService, IDoctorService doctorService,
+                                   IThemeService themeService) {
             _eventAggregator = eventAggregator;
             _regionManager = regionManager;
             _authService = authService;
             _doctorService = doctorService;
+            _themeService = themeService;
 
             // 订阅登录成功事件
             _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
@@ -83,6 +88,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
             ShowDoctorProfileCommand = new DelegateCommand(ShowDoctorProfile);
             ShowPatientProfileCommand = new DelegateCommand(ShowPatientProfile);
+            ToggleThemeCommand = new DelegateCommand(() => _themeService.ToggleTheme());
 
             System.Diagnostics.Debug.WriteLine("MainWindowViewModel constructed");
         }

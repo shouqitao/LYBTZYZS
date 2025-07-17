@@ -76,6 +76,8 @@ namespace LYBT.UI.WPF {
             var queueingService = new QueueingService(queueingApi);
             var diagnosisTreatmentService = new DiagnosisTreatmentService(diagnosisTreatmentApi);
 
+            var themeService = new ThemeService();
+
 
             // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
             containerRegistry.RegisterInstance(authApi);
@@ -112,6 +114,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IRecordService>(recordService);
             containerRegistry.RegisterInstance<IQueueingService>(queueingService);
             containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
+            containerRegistry.RegisterInstance<IThemeService>(themeService);
             // Register profile view models for dependency injection
             containerRegistry.Register<HerbProfileViewModel>();
             containerRegistry.Register<PrescriptionProfileViewModel>();
