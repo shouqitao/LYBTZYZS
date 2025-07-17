@@ -3,7 +3,6 @@ using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.Common.Enums;
 using LYBT.Module.Herbs.Dtos;
-using LYBT.Module.Prescriptions.Dtos;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -37,7 +36,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public int PageSize { get; set; } = 20;
 
         public ObservableCollection<FormulaTemplateDto> Templates { get; } = new();
-        public ObservableCollection<PrescriptionItemDto> InputItems { get; } = new();
         public ObservableCollection<HerbDto> Herbs { get; } = new();
 
         private FormulaTemplateDto? _selectedTemplate;
