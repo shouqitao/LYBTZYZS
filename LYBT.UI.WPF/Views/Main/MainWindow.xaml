@@ -21,16 +21,23 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Style="{StaticResource MaterialDesignToolButton}"
+                            Command="{Binding ToggleNavDrawerCommand}" 
+                            Margin="10,0">
+                        <materialDesign:PackIcon Kind="Menu"/>
+                    </Button>
                     <!-- Logo区域，假设logo图片为Images/logo.png -->
-                    <Image Source="/Assets/logo.png"
+                    <Image Grid.Column="1" Source="/Assets/logo.png"
                Height="70"
                Margin="20,0,10,0"
                VerticalAlignment="Center"/>
                     <!-- 标题 -->
-                    <TextBlock Grid.Column="1"
+                    <TextBlock Grid.Column="2"
                    Text="凌隐宝堂中医诊所"
                    Foreground="#FFD700"
                    FontSize="36"
@@ -40,7 +47,7 @@
                    HorizontalAlignment="Left"
                    Margin="0,0,0,0"/>
                     <!-- 右上角功能按钮 -->
-                    <StackPanel Grid.Column="2"
+                    <StackPanel Grid.Column="3"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"

@@ -26,6 +26,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         private readonly IRegionManager _regionManager;
+        private readonly MainWindowViewModel _mainWindow;
         /// <summary>
         /// 属性 NavigateCommand 的说明
         /// </summary>
@@ -33,6 +34,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         public HomeViewModel(IRegionManager regionManager) {
             _regionManager = regionManager;
+            _mainWindow = (MainWindowViewModel)Application.Current.MainWindow.DataContext;
             NavigateCommand = new DelegateCommand<NavigationItem>(Navigate);
             // 构造函数不再添加测试项
         }
@@ -51,6 +53,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 }
                 System.Diagnostics.Debug.WriteLine($"Navigating to: {item.TargetView}");
                 _regionManager.RequestNavigate("ContentRegion", item.TargetView);
+                _mainWindow.IsNavDrawerOpen = false;
             }
         }
 

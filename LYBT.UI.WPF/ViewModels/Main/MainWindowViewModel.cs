@@ -62,6 +62,20 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand ShowPatientProfileCommand { get; }
         public DelegateCommand ToggleThemeCommand { get; }
 
+        private bool _isNavDrawerOpen;
+        /// <summary>
+        /// 左侧导航抽屉是否展开
+        /// </summary>
+        public bool IsNavDrawerOpen {
+            get => _isNavDrawerOpen;
+            set => SetProperty(ref _isNavDrawerOpen, value);
+        }
+
+        /// <summary>
+        /// 切换导航抽屉
+        /// </summary>
+        public DelegateCommand ToggleNavDrawerCommand { get; }
+
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IRegionManager _regionManager;
@@ -89,6 +103,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             ShowDoctorProfileCommand = new DelegateCommand(ShowDoctorProfile);
             ShowPatientProfileCommand = new DelegateCommand(ShowPatientProfile);
             ToggleThemeCommand = new DelegateCommand(() => _themeService.ToggleTheme());
+            ToggleNavDrawerCommand = new DelegateCommand(() => IsNavDrawerOpen = !IsNavDrawerOpen);
 
             System.Diagnostics.Debug.WriteLine("MainWindowViewModel constructed");
         }
