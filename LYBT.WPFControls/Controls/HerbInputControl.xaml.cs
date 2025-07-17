@@ -145,12 +145,21 @@ namespace LYBT.WPFControls {
                     e.Handled = true;
                     PART_AmountBox.Focus();
                 }
+            } else if (e.Key == Key.Tab) {
+                if (IsSuggestionVisible && SelectedSuggestion != null) {
+                    // Use Tab to accept the suggestion and move focus
+                    HerbText = SelectedSuggestion.Name;
+                    IsSuggestionVisible = false;
+                }
             }
         }
 
         private void PART_SuggestionList_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Enter) {
                 if (SelectedSuggestion != null) {
+                    // confirm the selected herb and hide suggestion list
+                    HerbText = SelectedSuggestion.Name;
+                    IsSuggestionVisible = false;
                     PART_AmountBox.Focus();
                 }
             }
@@ -162,6 +171,12 @@ namespace LYBT.WPFControls {
                     AddCommand.Execute(null);
                     e.Handled = true;
                 }
+            }
+        }
+
+        private void PART_HerbBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) {
+            if (!PART_SuggestionList.IsKeyboardFocusWithin) {
+                IsSuggestionVisible = false;
             }
         }
     }
