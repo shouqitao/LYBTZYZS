@@ -91,8 +91,20 @@ namespace LYBT.UI.WPF.ViewModels {
                 CurrentPage = page;
                 TotalCount = result.TotalCount;
                 TotalPages = (int)Math.Ceiling(result.TotalCount / (double)PageSize);
-            }
-            finally {
+            } catch (Exception ex) {
+                // 当加载数据失败时，捕获异常并弹出提示，避免未处理的异常导致程序终止
+                string msg = ex.Message;
+                if (ex is Refit.ApiException apiEx && !string.IsNullOrWhiteSpace(apiEx.Content)) {
+                    try {
+                        var doc = System.Text.Json.JsonDocument.Parse(apiEx.Content);
+                        if (doc.RootElement.TryGetProperty("message", out var m))
+                            msg = m.GetString() ?? msg;
+                    } catch {
+                        // ignore parse errors
+                    }
+                }
+                System.Windows.MessageBox.Show($"加载数据失败：{msg}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            } finally {
                 IsBusy = false;
             }
         }
