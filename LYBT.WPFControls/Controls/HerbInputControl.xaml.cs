@@ -19,7 +19,6 @@ namespace LYBT.WPFControls {
             AddCommand = new RelayCommand(_ => AddCurrent(), _ => CanAdd());
             RemoveCommand = new RelayCommand(p => RemoveItem(p as PrescriptionItemDto));
             InitializeComponent();
-            DataContext = this;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
