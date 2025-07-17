@@ -54,7 +54,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <Button Content="添加药材" Command="{Binding AddItemCommand}" Margin="0,0,5,0"/>
                         </StackPanel>
-                        <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" AutoGenerateColumns="False" Height="200" Margin="0,0,0,10">
+                        <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" AutoGenerateColumns="False" CanUserAddRows="False" Height="200" Margin="0,0,0,10">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="药材" Binding="{Binding HerbName}" Width="*"/>
                                 <DataGridTextColumn Header="剂量" Binding="{Binding Quantity}" Width="80"/>
