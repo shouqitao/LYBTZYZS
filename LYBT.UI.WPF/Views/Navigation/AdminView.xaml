@@ -8,11 +8,15 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <TabControl SelectedIndex="{Binding SelectedTabIndex}">
         <TabControl.Resources>
-            <!-- Override MaterialDesignTabItem to draw selection overline -->
-            <ResourceDictionary Source="pack://application:,,,/LYBT.UI.WPF;component/Views/Navigation/Styles/AdminTabItemStyle.xaml" />
-            <Style TargetType="TabItem" BasedOn="{StaticResource MaterialDesignTabItem}">
-                <Setter Property="Padding" Value="12,8" />
-            </Style>
+            <ResourceDictionary>
+                <!-- Override MaterialDesignTabItem to draw selection overline -->
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="pack://application:,,,/LYBT.UI.WPF;component/Views/Navigation/Styles/AdminTabItemStyle.xaml" />
+                </ResourceDictionary.MergedDictionaries>
+                <Style TargetType="TabItem" BasedOn="{StaticResource MaterialDesignTabItem}">
+                    <Setter Property="Padding" Value="12,8" />
+                </Style>
+            </ResourceDictionary>
         </TabControl.Resources>
         <TabItem Header="用户管理">
             <admin:UserManagementView/>
