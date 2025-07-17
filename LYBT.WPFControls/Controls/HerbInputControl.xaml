@@ -18,7 +18,9 @@
                          Text="{Binding HerbText, ElementName=root, UpdateSourceTrigger=PropertyChanged}"
                          KeyDown="PART_HerbBox_KeyDown"
                          LostKeyboardFocus="PART_HerbBox_LostKeyboardFocus"/>
+
                 <Border Background="White" BorderBrush="#DDD" BorderThickness="1"
+
                         Visibility="{Binding IsSuggestionVisible, ElementName=root, Converter={StaticResource BoolToVisibilityConverter}}"
                         Margin="{Binding ElementName=PART_HerbBox, Path=ActualHeight, Converter={StaticResource TopMarginConverter}}">
                     <ListBox x:Name="PART_SuggestionList"

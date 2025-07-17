@@ -29,10 +29,17 @@ using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Logs.Mapping;
 using LYBT.Module.Logs.Repositories;
 using LYBT.Module.Logs.Services;
+using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Module.Prescriptions.Repositories;
+using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
+using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Module.Prescriptions.Mapping;
+using LYBT.Module.Prescriptions.Repositories;
+using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Queueing.Interfaces;
 using LYBT.Module.Queueing.Mapping;
 using LYBT.Module.Queueing.Repositories;
@@ -113,6 +120,10 @@ builder.Services.AddScoped<IRecordRepository, RecordRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 
+// 处方管理
+builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
+builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+
 // 同步管理
 builder.Services.AddScoped<ISyncService, SyncService>();
 builder.Services.AddScoped<ISyncRepository, SyncRepository>();
@@ -135,6 +146,7 @@ builder.Services.AddAutoMapper(
     typeof(FormulaTemplateMappingProfile),
     typeof(LogMappingProfile),
     typeof(SyncMappingProfile),
+    typeof(PrescriptionMappingProfile),
    typeof(SettingsMappingProfile)
 );
 

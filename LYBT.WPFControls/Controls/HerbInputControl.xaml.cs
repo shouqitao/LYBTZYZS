@@ -146,6 +146,7 @@ namespace LYBT.WPFControls {
                     PART_AmountBox.Focus();
                 }
             } else if (e.Key == Key.Tab) {
+
                 if (IsSuggestionVisible && FilteredHerbs.Count > 0) {
                     e.Handled = true;
                     PART_SuggestionList.Focus();
@@ -155,6 +156,7 @@ namespace LYBT.WPFControls {
                     else
                         index = (index + 1) % FilteredHerbs.Count;
                     PART_SuggestionList.SelectedIndex = index;
+
                 }
             }
         }
