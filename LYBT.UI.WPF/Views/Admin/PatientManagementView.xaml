@@ -3,7 +3,6 @@
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-              xmlns:main="clr-namespace:LYBT.UI.WPF.Views.Profile"
               xmlns:controls="clr-namespace:LYBT.WPFControls;assembly=LYBT.WPFControls"
               xmlns:prism="http://prismlibrary.com/"
               mc:Ignorable="d"
@@ -28,7 +27,46 @@
             </controls:CommonListView.Columns>
         </controls:CommonListView>
         <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <main:PatientProfileView DataContext="{Binding PatientProfileViewModel}"/>
+            <controls:CommonProfileView DataContext="{Binding PatientProfileViewModel}"
+                                       Title="{Binding EditModeTitle}"
+                                       SaveCommand="{Binding SaveCommand}"
+                                       CancelCommand="{Binding CancelCommand}"
+                                       IsEditable="{Binding IsEditable}">
+                <controls:CommonProfileView.ProfileContent>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="姓名" />
+                            <TextBox Text="{Binding Patient.Name}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="性别" />
+                            <ComboBox ItemsSource="{Binding GenderList}" SelectedValuePath="Value" DisplayMemberPath="Text"
+                                      SelectedValue="{Binding Patient.Gender}" Margin="0,0,0,8" IsEnabled="{Binding IsEditable}"/>
+                            <TextBlock Text="年龄" />
+                            <TextBox Text="{Binding Patient.Age}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="过敏史" />
+                            <TextBox Text="{Binding Patient.AllergyHistory}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="民族" />
+                            <TextBox Text="{Binding Patient.Ethnicity}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="联系电话" />
+                            <TextBox Text="{Binding Patient.PhoneNumber}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="地址" />
+                            <TextBox Text="{Binding Patient.Address}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="学历" />
+                            <TextBox Text="{Binding Patient.Education}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="职业" />
+                            <TextBox Text="{Binding Patient.Profession}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="证件类型" />
+                            <TextBox Text="{Binding Patient.IDType}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="证件号" />
+                            <TextBox Text="{Binding Patient.IDNumber}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="婚姻状况" />
+                            <TextBox Text="{Binding Patient.MaritalStatus}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Text="拼音码" />
+                            <TextBox Text="{Binding Patient.PinyinCode}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <CheckBox Content="特殊患者" IsChecked="{Binding Patient.IsSpecial}" Margin="0,0,0,8" IsEnabled="{Binding IsEditable}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </controls:CommonProfileView.ProfileContent>
+            </controls:CommonProfileView>
         </Border>
     </Grid>
 </UserControl>
