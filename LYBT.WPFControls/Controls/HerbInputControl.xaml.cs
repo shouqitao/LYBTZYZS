@@ -95,7 +95,8 @@ namespace LYBT.WPFControls {
             var items = Herbs.Where(h => !ItemsSource.Any(i => i.HerbId == h.Id) &&
                 (h.Name.Contains(text, StringComparison.OrdinalIgnoreCase) ||
                  (!string.IsNullOrEmpty(h.Pinyin) && h.Pinyin.Contains(text, StringComparison.OrdinalIgnoreCase)) ||
-                 (!string.IsNullOrEmpty(h.Pinyin) && GetInitials(h.Pinyin).StartsWith(text))));
+                 (!string.IsNullOrEmpty(h.Pinyin) && GetInitials(h.Pinyin).StartsWith(text))))
+                .Take(20); // limit suggestion count to avoid UI freeze with large lists
             foreach (var h in items)
                 FilteredHerbs.Add(h);
             IsSuggestionVisible = FilteredHerbs.Count > 0;
