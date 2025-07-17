@@ -16,6 +16,20 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
     public class RecordManagementViewModel : BindableBase {
         private readonly IRecordService _recordService;
 
+        private int _pageIndex = 1;
+        public int PageIndex {
+            get => _pageIndex;
+            set => SetProperty(ref _pageIndex, value);
+        }
+
+        private int _totalCount;
+        public int TotalCount {
+            get => _totalCount;
+            set => SetProperty(ref _totalCount, value);
+        }
+
+        public int PageSize { get; set; } = 20;
+
         /// <summary>病历列表</summary>
         public ObservableCollection<RecordDto> Records { get; } = new();
 
