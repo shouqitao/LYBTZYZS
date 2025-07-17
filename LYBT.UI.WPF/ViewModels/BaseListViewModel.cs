@@ -4,6 +4,7 @@ using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Refit;
 
 namespace LYBT.UI.WPF.ViewModels {
     /// <summary>
@@ -91,6 +92,9 @@ namespace LYBT.UI.WPF.ViewModels {
                 CurrentPage = page;
                 TotalCount = result.TotalCount;
                 TotalPages = (int)Math.Ceiling(result.TotalCount / (double)PageSize);
+            } catch (Refit.ValidationApiException vex) {
+                var msg = GetValidationMessage(vex);
+                System.Windows.MessageBox.Show($"加载数据失败：{msg}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             } catch (Exception ex) {
                 // 当加载数据失败时，捕获异常并弹出提示，避免未处理的异常导致程序终止
                 string msg = ex.Message;
@@ -107,6 +111,26 @@ namespace LYBT.UI.WPF.ViewModels {
             } finally {
                 IsBusy = false;
             }
+        }
+
+        private static string GetValidationMessage(Refit.ValidationApiException vex) {
+            var msg = vex.Message;
+            var details = vex.Content; // ProblemDetails
+            if (details != null) {
+                if (details.Errors != null && details.Errors.Count > 0) {
+                    var parts = new System.Collections.Generic.List<string>();
+                    foreach (var list in details.Errors.Values) {
+                        foreach (var item in list)
+                            if (!string.IsNullOrWhiteSpace(item))
+                                parts.Add(item);
+                    }
+                    if (parts.Count > 0)
+                        msg = string.Join("; ", parts);
+                } else if (!string.IsNullOrWhiteSpace(details.Title)) {
+                    msg = details.Title;
+                }
+            }
+            return msg;
         }
     }
 }
