@@ -22,6 +22,20 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private readonly IFormulaTemplateService _service;
         private readonly IHerbService _herbService;
 
+        private int _pageIndex = 1;
+        public int PageIndex {
+            get => _pageIndex;
+            set => SetProperty(ref _pageIndex, value);
+        }
+
+        private int _totalCount;
+        public int TotalCount {
+            get => _totalCount;
+            set => SetProperty(ref _totalCount, value);
+        }
+
+        public int PageSize { get; set; } = 20;
+
         public ObservableCollection<FormulaTemplateDto> Templates { get; } = new();
         public ObservableCollection<PrescriptionItemDto> InputItems { get; } = new();
         public ObservableCollection<HerbDto> Herbs { get; } = new();

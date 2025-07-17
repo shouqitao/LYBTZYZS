@@ -39,7 +39,7 @@
                 <DataGridTemplateColumn Header="" Width="40">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="×" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                            <Button Content="×" Command="{Binding RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" Width="24" Height="24"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

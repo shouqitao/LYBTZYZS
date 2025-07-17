@@ -15,6 +15,20 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
     /// </summary>
     public class PrescriptionManagementViewModel : BindableBase {
         private readonly IPrescriptionService _service;
+
+        private int _pageIndex = 1;
+        public int PageIndex {
+            get => _pageIndex;
+            set => SetProperty(ref _pageIndex, value);
+        }
+
+        private int _totalCount;
+        public int TotalCount {
+            get => _totalCount;
+            set => SetProperty(ref _totalCount, value);
+        }
+
+        public int PageSize { get; set; } = 20;
         public ObservableCollection<PrescriptionDto> Prescriptions { get; } = new();
 
         private PrescriptionDto? _selectedPrescription;
