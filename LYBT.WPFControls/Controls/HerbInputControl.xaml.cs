@@ -145,13 +145,33 @@ namespace LYBT.WPFControls {
                     e.Handled = true;
                     PART_AmountBox.Focus();
                 }
+            } else if (e.Key == Key.Tab) {
+                if (IsSuggestionVisible && FilteredHerbs.Count > 0) {
+                    e.Handled = true;
+                    PART_SuggestionList.Focus();
+                    var index = PART_SuggestionList.SelectedIndex;
+                    if (index < 0)
+                        index = 0;
+                    else
+                        index = (index + 1) % FilteredHerbs.Count;
+                    PART_SuggestionList.SelectedIndex = index;
+                }
             }
         }
 
         private void PART_SuggestionList_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Enter) {
                 if (SelectedSuggestion != null) {
+                    // confirm the selected herb and hide suggestion list
+                    HerbText = SelectedSuggestion.Name;
+                    IsSuggestionVisible = false;
                     PART_AmountBox.Focus();
+                }
+            } else if (e.Key == Key.Tab) {
+                if (FilteredHerbs.Count > 0) {
+                    e.Handled = true;
+                    var index = (PART_SuggestionList.SelectedIndex + 1) % FilteredHerbs.Count;
+                    PART_SuggestionList.SelectedIndex = index;
                 }
             }
         }
@@ -162,6 +182,12 @@ namespace LYBT.WPFControls {
                     AddCommand.Execute(null);
                     e.Handled = true;
                 }
+            }
+        }
+
+        private void PART_HerbBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) {
+            if (!PART_SuggestionList.IsKeyboardFocusWithin) {
+                IsSuggestionVisible = false;
             }
         }
     }
