@@ -36,6 +36,10 @@ using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
+using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Module.Prescriptions.Mapping;
+using LYBT.Module.Prescriptions.Repositories;
+using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Queueing.Interfaces;
 using LYBT.Module.Queueing.Mapping;
 using LYBT.Module.Queueing.Repositories;
@@ -142,6 +146,7 @@ builder.Services.AddAutoMapper(
     typeof(FormulaTemplateMappingProfile),
     typeof(LogMappingProfile),
     typeof(SyncMappingProfile),
+    typeof(PrescriptionMappingProfile),
    typeof(SettingsMappingProfile)
 );
 
