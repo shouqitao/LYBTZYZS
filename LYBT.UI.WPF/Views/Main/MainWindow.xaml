@@ -52,8 +52,10 @@
                                             VerticalAlignment="Center"
                                             Margin="0,0,22,0"
                                             StaysOpen="False"
-                                            PopupPlacement="Bottom">
-                        <materialDesign:PackIcon Kind="AccountCircle" />
+                                            PlacementMode="BottomAndAlignRightEdges">
+                        <materialDesign:PopupBox.ToggleContent>
+                            <materialDesign:PackIcon Kind="AccountCircle" />
+                        </materialDesign:PopupBox.ToggleContent>
                         <materialDesign:PopupBox.PopupContent>
                             <StackPanel Margin="8">
                                 <Button Style="{StaticResource MaterialDesignFlatButton}"
