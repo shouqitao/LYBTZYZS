@@ -52,7 +52,9 @@ namespace LYBT.Module.Herbs.Services {
         public async Task<bool> AddAsync(HerbCreateDto dto) {
             var model = _mapper.Map<HerbModel>(dto);
             model.Id = Guid.NewGuid();
-            model.Pinyin = CommonUtil.GetPinyinCode(model.Name);
+            model.Pinyin = string.IsNullOrWhiteSpace(dto.Pinyin)
+                ? CommonUtil.GetPinyinCode(model.Name)
+                : dto.Pinyin;
             return await _repository.AddAsync(model);
         }
 
@@ -64,7 +66,9 @@ namespace LYBT.Module.Herbs.Services {
             if (model == null)
                 return false;
             model.Name = dto.Name;
-            model.Pinyin = CommonUtil.GetPinyinCode(dto.Name);
+            model.Pinyin = string.IsNullOrWhiteSpace(dto.Pinyin)
+                ? CommonUtil.GetPinyinCode(dto.Name)
+                : dto.Pinyin;
             model.Origin = dto.Origin;
             model.Spec = dto.Spec;
             model.Unit = dto.Unit;
@@ -86,6 +90,7 @@ namespace LYBT.Module.Herbs.Services {
             foreach (var dto in dtos) {
                 var model = _mapper.Map<HerbModel>(dto);
                 model.Id = Guid.NewGuid();
+                model.Pinyin = CommonUtil.GetPinyinCode(model.Name);
                 if (await _repository.AddAsync(model))
                     count++;
             }

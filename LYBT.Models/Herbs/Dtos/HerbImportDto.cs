@@ -8,8 +8,6 @@ namespace LYBT.Module.Herbs.Dtos {
     public class HerbImportDto {
         [DisplayName("Name")]
         public string Name { get; set; } = string.Empty;
-        [DisplayName("Pinyin")]
-        public string? Pinyin { get; set; }
         [DisplayName("Origin")]
         public string? Origin { get; set; }
         [DisplayName("Spec")]
