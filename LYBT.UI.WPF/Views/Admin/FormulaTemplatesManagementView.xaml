@@ -44,7 +44,7 @@
                             <TextBlock Text="名称" Width="60"/>
                             <TextBox Text="{Binding Template.Name}" Width="300"/>
                         </StackPanel>
-                        <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" CanUserAddRows="False"
+                        <DataGrid x:Name="EditItemsGrid" ItemsSource="{Binding Items}" AutoGenerateColumns="False" CanUserAddRows="False"
                                   SelectedItem="{Binding SelectedItem}" Height="200" Margin="0,0,0,10"
                                   Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisibilityConverter}}"
                                   CellEditEnding="EditItemsGrid_CellEditEnding">
@@ -63,7 +63,8 @@
                                                       SelectedValue="{Binding HerbId, Mode=TwoWay}"
                                                       Text="{Binding HerbName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                       SelectionChanged="HerbComboBox_SelectionChanged"
-                                                      KeyUp="HerbComboBox_KeyUp"/>
+                                                      KeyUp="HerbComboBox_KeyUp"
+                                                      KeyDown="HerbComboBox_KeyDown"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>
