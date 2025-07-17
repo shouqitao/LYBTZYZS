@@ -1,39 +1,38 @@
-﻿<UserControl x:Class="LYBT.UI.WPF.Views.Main.HomeView"
+<UserControl x:Class="LYBT.UI.WPF.Views.Main.HomeView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="180"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <!-- 左侧导航区 -->
-        <ListBox Grid.Column="0"
-                 ItemsSource="{Binding NavigationItems}"
-                 Margin="5"
-                 Background="#F5F6FA"
-                 BorderThickness="0"
-                 SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Button Content="{Binding DisplayName}"
-                            Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding}"
-                            Margin="4,6,4,6"
-                            Padding="10,6"
-                            FontSize="15"
-                            FontWeight="SemiBold"
-                            Background="{Binding IsSelected, Converter={StaticResource SelectedNavButtonBackgroundConverter}, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
-                            Foreground="{Binding IsSelected, Converter={StaticResource SelectedNavButtonForegroundConverter}, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            HorizontalContentAlignment="Left"
-                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <!-- 右侧主内容区域 -->
-        <ContentControl Grid.Column="1" prism:RegionManager.RegionName="ContentRegion"/>
-    </Grid>
+    <materialDesign:DrawerHost IsLeftDrawerOpen="{Binding DataContext.IsNavDrawerOpen, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutoCloseDrawer="True">
+        <materialDesign:DrawerHost.LeftDrawerContent>
+            <ListBox Width="180"
+                     ItemsSource="{Binding NavigationItems}"
+                     Margin="5"
+                     Background="#F5F6FA"
+                     BorderThickness="0"
+                     SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Button Content="{Binding DisplayName}"
+                                Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Margin="4,6,4,6"
+                                Padding="10,6"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Background="{Binding IsSelected, Converter={StaticResource SelectedNavButtonBackgroundConverter}, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
+                                Foreground="{Binding IsSelected, Converter={StaticResource SelectedNavButtonForegroundConverter}, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                HorizontalContentAlignment="Left"
+                                Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </materialDesign:DrawerHost.LeftDrawerContent>
+        <Grid>
+            <ContentControl prism:RegionManager.RegionName="ContentRegion"/>
+        </Grid>
+    </materialDesign:DrawerHost>
 </UserControl>
