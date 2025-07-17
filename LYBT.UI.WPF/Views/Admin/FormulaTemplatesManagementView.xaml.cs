@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -26,6 +27,30 @@ namespace LYBT.UI.WPF.Views.Admin {
                 item.HerbId = herb.Id;
                 item.HerbName = herb.Name;
                 item.Unit = herb.Unit;
+                MoveToQuantityCell(cb);
+            }
+        }
+
+        private void HerbComboBox_KeyDown(object sender, KeyEventArgs e) {
+            if (ProfileVM == null) return;
+            if (sender is ComboBox cb && cb.IsDropDownOpen) {
+                if (e.Key == Key.Tab) {
+                    e.Handled = true;
+                    var count = cb.Items.Count;
+                    if (count > 0) {
+                        var index = cb.SelectedIndex < 0 ? 0 : (cb.SelectedIndex + 1) % count;
+                        cb.SelectedIndex = index;
+                    }
+                } else if (e.Key == Key.Enter) {
+                    e.Handled = true;
+                    if (cb.SelectedItem is HerbDto herb && cb.DataContext is PrescriptionItemDto item) {
+                        item.HerbId = herb.Id;
+                        item.HerbName = herb.Name;
+                        item.Unit = herb.Unit;
+                    }
+                    cb.IsDropDownOpen = false;
+                    MoveToQuantityCell(cb);
+                }
             }
         }
 
@@ -58,6 +83,20 @@ namespace LYBT.UI.WPF.Views.Admin {
             if (e.Row.Item is PrescriptionItemDto item) {
                 if (ProfileVM.Items.LastOrDefault() == item && item.HerbId != Guid.Empty && item.Quantity > 0) {
                     ProfileVM.Items.Add(new PrescriptionItemDto());
+                }
+            }
+        }
+
+        private void MoveToQuantityCell(ComboBox cb) {
+            if (EditItemsGrid.ItemContainerGenerator.ContainerFromItem(cb.DataContext) is DataGridRow row) {
+                EditItemsGrid.CommitEdit();
+                EditItemsGrid.CurrentCell = new DataGridCellInfo(row.Item, EditItemsGrid.Columns[1]);
+                EditItemsGrid.BeginEdit();
+                if (EditItemsGrid.CurrentCell.Column?.GetCellContent(row) is FrameworkElement el)
+                {
+                    el.Focus();
+                    if (el is TextBox tb)
+                        tb.SelectAll();
                 }
             }
         }
