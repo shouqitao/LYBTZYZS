@@ -44,7 +44,7 @@
                             <TextBlock Text="名称" Width="60"/>
                             <TextBox Text="{Binding Template.Name}" Width="300"/>
                         </StackPanel>
-                        <DataGrid x:Name="EditItemsGrid" ItemsSource="{Binding Items}" AutoGenerateColumns="False"
+                        <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False"
                                   SelectedItem="{Binding SelectedItem}" Height="200" Margin="0,0,0,10"
                                   Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisibilityConverter}}"
                                   CellEditEnding="EditItemsGrid_CellEditEnding">
