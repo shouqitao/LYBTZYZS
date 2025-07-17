@@ -11,7 +11,8 @@
             <ColumnDefinition Width="2.2*"/>
             <ColumnDefinition Width="1.8*"/>
         </Grid.ColumnDefinitions>
-        <controls:CommonListView Grid.Column="0"
+        <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+            <controls:CommonListView
                                  ItemsSource="{Binding Users}"
                                  SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
                                  SearchKeyword="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
@@ -42,8 +43,9 @@
                 <DataGridTextColumn Header="邮箱" Binding="{Binding Email}" Width="110"/>
                 <DataGridTextColumn Header="手机号" Binding="{Binding PhoneNumber}" Width="90"/>
             </controls:CommonListView.Columns>
-        </controls:CommonListView>
-        <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+            </controls:CommonListView>
+        </Border>
+        <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
             <controls:CommonProfileView Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveUserCommand}"
                                        CancelCommand="{Binding CancelCommand}"

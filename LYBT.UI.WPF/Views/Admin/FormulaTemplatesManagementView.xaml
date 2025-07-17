@@ -9,15 +9,16 @@
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <controls:HerbInputControl Grid.Row="0"
-                                      ItemsSource="{Binding InputItems}"
-                                      Herbs="{Binding Herbs}" Margin="0,0,0,8"/>
-            <controls:CommonListView Grid.Row="1" ShowPaging="False"
+        <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <controls:HerbInputControl Grid.Row="0"
+                                          ItemsSource="{Binding InputItems}"
+                                          Herbs="{Binding Herbs}" Margin="0,0,0,8"/>
+                <controls:CommonListView Grid.Row="1" ShowPaging="False"
                                      ItemsSource="{Binding Templates}"
                                      SelectedItem="{Binding SelectedTemplate, Mode=TwoWay}"
                                      SearchCommand="{Binding RefreshCommand}">
@@ -35,9 +36,10 @@
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="160"/>
                 <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
             </controls:CommonListView.Columns>
-            </controls:CommonListView>
-        </Grid>
-        <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+                </controls:CommonListView>
+            </Grid>
+        </Border>
+        <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
             <controls:CommonProfileView DataContext="{Binding ProfileViewModel}"
                                        Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveCommand}"

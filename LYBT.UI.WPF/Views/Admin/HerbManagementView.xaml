@@ -9,7 +9,8 @@
             <ColumnDefinition Width="2.2*"/>
             <ColumnDefinition Width="1.8*"/>
         </Grid.ColumnDefinitions>
-        <controls:CommonListView Grid.Column="0" ShowPaging="True"
+        <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+            <controls:CommonListView ShowPaging="True"
                                  ItemsSource="{Binding Herbs}"
                                  SelectedItem="{Binding SelectedHerb, Mode=TwoWay}"
                                  SearchKeyword="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
@@ -35,8 +36,9 @@
                 <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="*"/>
                 <DataGridTextColumn Header="单价" Binding="{Binding Price}" Width="*"/>
             </controls:CommonListView.Columns>
-        </controls:CommonListView>
-        <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+            </controls:CommonListView>
+        </Border>
+        <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
             <controls:CommonProfileView DataContext="{Binding HerbProfileViewModel}"
                                        Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveCommand}"
