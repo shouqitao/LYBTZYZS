@@ -1,6 +1,7 @@
 ﻿using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.Module.FormulaTemplates.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using LYBT.Common.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace LYBT.Module.FormulaTemplates.Controllers {
@@ -44,37 +45,37 @@ namespace LYBT.Module.FormulaTemplates.Controllers {
         /// 新增模板
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult> Add([FromBody] FormulaTemplateCreateDto dto) {
+        public async Task<ActionResult<ApiSuccessResponse>> Add([FromBody] FormulaTemplateCreateDto dto) {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ApiSuccessResponse { Success = false, Message = "参数验证失败" });
             var result = await _service.AddAsync(dto);
-            if (!result)
-                return BadRequest("新增模板失败");
-            return Ok("新增模板成功");
+            if (result)
+                return Ok(new ApiSuccessResponse { Success = true, Message = "新增模板成功" });
+            return BadRequest(new ApiSuccessResponse { Success = false, Message = "新增模板失败" });
         }
 
         /// <summary>
         /// 编辑模板
         /// </summary>
         [HttpPut]
-        public async Task<ActionResult> Update([FromBody] FormulaTemplateEditDto dto) {
+        public async Task<ActionResult<ApiSuccessResponse>> Update([FromBody] FormulaTemplateEditDto dto) {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ApiSuccessResponse { Success = false, Message = "参数验证失败" });
             var result = await _service.UpdateAsync(dto);
-            if (!result)
-                return BadRequest("编辑模板失败");
-            return Ok("编辑模板成功");
+            if (result)
+                return Ok(new ApiSuccessResponse { Success = true, Message = "编辑模板成功" });
+            return BadRequest(new ApiSuccessResponse { Success = false, Message = "编辑模板失败" });
         }
 
         /// <summary>
         /// 删除模板
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(Guid id) {
+        public async Task<ActionResult<ApiSuccessResponse>> Delete(Guid id) {
             var result = await _service.DeleteAsync(id);
             if (!result)
-                return NotFound();
-            return Ok("删除模板成功");
+                return NotFound(new ApiSuccessResponse { Success = false, Message = "删除模板失败" });
+            return Ok(new ApiSuccessResponse { Success = true, Message = "删除模板成功" });
         }
 
         [HttpPost("import")]
