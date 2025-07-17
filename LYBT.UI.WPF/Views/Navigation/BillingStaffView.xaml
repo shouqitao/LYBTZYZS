@@ -14,6 +14,11 @@
             <Button Content="刷新" Command="{Binding RefreshCommand}" Margin="0,0,8,0" />
             <Button Content="标记已支付" Command="{Binding MarkPaidCommand}" IsEnabled="{Binding SelectedBill, Converter={StaticResource NullToBoolConverter}}" />
         </StackPanel>
-        <controls:PendingPaymentListControl Grid.Row="1" ItemsSource="{Binding Bills}" SelectedItem="{Binding SelectedBill, Mode=TwoWay}" />
+        <controls:PendingCommonListControl Grid.Row="1" ItemsSource="{Binding Bills}" SelectedItem="{Binding SelectedBill, Mode=TwoWay}">
+            <DataGridTextColumn Header="病人" Binding="{Binding PatientName}" Width="*" />
+            <DataGridTextColumn Header="金额" Binding="{Binding TotalAmount}" Width="80" />
+            <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" />
+            <DataGridTextColumn Header="时间" Binding="{Binding BillingTime}" Width="130" />
+        </controls:PendingCommonListControl>
     </Grid>
 </UserControl>

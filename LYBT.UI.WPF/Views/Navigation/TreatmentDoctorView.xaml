@@ -17,7 +17,11 @@
             <Button Content="完成治疗" Command="{Binding FinishCommand}"
                     IsEnabled="{Binding SelectedTask, Converter={StaticResource NullToBoolConverter}}"/>
         </StackPanel>
-        <controls:PendingTreatmentListControl Grid.Row="1" ItemsSource="{Binding Tasks}"
-                                              SelectedItem="{Binding SelectedTask, Mode=TwoWay}" />
+        <controls:PendingCommonListControl Grid.Row="1" ItemsSource="{Binding Tasks}" SelectedItem="{Binding SelectedTask, Mode=TwoWay}">
+            <DataGridTextColumn Header="病人" Binding="{Binding PatientName}" Width="*" />
+            <DataGridTextColumn Header="项目" Binding="{Binding TreatmentItem}" Width="*" />
+            <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" />
+            <DataGridTextColumn Header="开始时间" Binding="{Binding StartTime, StringFormat=yyyy-MM-dd HH:mm}" Width="150" />
+        </controls:PendingCommonListControl>
     </Grid>
 </UserControl>

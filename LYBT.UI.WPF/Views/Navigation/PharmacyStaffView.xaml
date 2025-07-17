@@ -19,7 +19,11 @@
             <Button Content="标记已抓药" Command="{Binding MarkDispensedCommand}" IsEnabled="{Binding SelectedPending, Converter={StaticResource NullToBoolConverter}}" />
         </StackPanel>
 
-        <controls:PendingDispenseListControl Grid.Row="1" ItemsSource="{Binding PendingItems}" SelectedItem="{Binding SelectedPending, Mode=TwoWay}" />
+        <controls:PendingCommonListControl Grid.Row="1" ItemsSource="{Binding PendingItems}" SelectedItem="{Binding SelectedPending, Mode=TwoWay}">
+            <DataGridTextColumn Header="病人" Binding="{Binding PatientName}" Width="*" />
+            <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" />
+            <DataGridTextColumn Header="时间" Binding="{Binding DispenseTime}" Width="130" />
+        </controls:PendingCommonListControl>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,8">
             <Button Content="标记完成" Command="{Binding MarkCompletedCommand}" IsEnabled="{Binding SelectedProcessed, Converter={StaticResource NullToBoolConverter}}" />
