@@ -25,8 +25,9 @@ namespace LYBT.UI.WPF {
             // 1. 构造无Token的HttpClient，首次登录还没有token，正常用即可  
             string? baseUrl = ConfigurationManager.AppSettings["WebApiBaseUrl"];
 
-            if (string.IsNullOrEmpty(baseUrl)) {
-                throw new InvalidOperationException("WebApiBaseUrl is not configured in AppSettings.");
+            if (string.IsNullOrWhiteSpace(baseUrl)) {
+                // 如果配置缺失，默认回退到本地 Web API 地址
+                baseUrl = "http://localhost:5297/";
             }
 
             var tokenHandler = new TokenHandler { InnerHandler = new HttpClientHandler() };
