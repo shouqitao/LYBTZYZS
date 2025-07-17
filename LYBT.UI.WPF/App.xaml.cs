@@ -3,7 +3,6 @@ using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.Views;
 using LYBT.UI.WPF.Views.Admin;
 using LYBT.UI.WPF.Views.Main;
-using LYBT.UI.WPF.Views.Profile;
 using LYBT.UI.WPF.ViewModels.Profile;
 using Refit;
 using System.Configuration;
@@ -137,10 +136,6 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<TreatmentDoctorView>("TreatmentDoctorView");
             containerRegistry.RegisterForNavigation<ChangePasswordView>("ChangePasswordView");
             containerRegistry.RegisterForNavigation<ChangeProfileView>("ChangeProfileView");
-            containerRegistry.RegisterForNavigation<DoctorProfileView>("DoctorProfileView");
-            containerRegistry.RegisterForNavigation<PatientProfileView>("PatientProfileView");
-            containerRegistry.RegisterForNavigation<HerbProfileView>("HerbProfileView");
-            containerRegistry.RegisterForNavigation<FormulaTemplatesProfileView>("FormulaTemplatesProfileView");
 
         }
 
