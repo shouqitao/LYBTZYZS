@@ -4,7 +4,7 @@
              xmlns:prism="http://prismlibrary.com/"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <materialDesign:DrawerHost IsLeftDrawerOpen="{Binding DataContext.IsNavDrawerOpen, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutoCloseDrawer="True">
+    <materialDesign:DrawerHost IsLeftDrawerOpen="{Binding DataContext.IsNavDrawerOpen, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" LeftDrawerCloseOnClickAway="True">
         <materialDesign:DrawerHost.LeftDrawerContent>
             <ListBox Width="180"
                      ItemsSource="{Binding NavigationItems}"
