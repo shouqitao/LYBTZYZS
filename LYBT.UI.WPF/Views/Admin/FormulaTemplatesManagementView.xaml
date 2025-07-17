@@ -11,14 +11,7 @@
         </Grid.ColumnDefinitions>
         <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <controls:HerbInputControl Grid.Row="0"
-                                          ItemsSource="{Binding InputItems}"
-                                          Herbs="{Binding Herbs}" Margin="0,0,0,8"/>
-                <controls:CommonListView Grid.Row="1" ShowPaging="False"
+                <controls:CommonListView ShowPaging="False"
                                      ItemsSource="{Binding Templates}"
                                      SelectedItem="{Binding SelectedTemplate, Mode=TwoWay}"
                                      SearchCommand="{Binding RefreshCommand}">
@@ -51,13 +44,15 @@
                             <TextBlock Text="名称" Width="60"/>
                             <TextBox Text="{Binding Template.Name}" Width="300"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                            <Button Content="添加药材" Command="{Binding AddHerbCommand}" Margin="0,0,5,0"/>
-                            <Button Content="删除药材" Command="{Binding RemoveHerbCommand}" IsEnabled="{Binding SelectedHerb, Converter={StaticResource NullToBoolConverter}}"/>
-                        </StackPanel>
-                        <DataGrid ItemsSource="{Binding Herbs}" AutoGenerateColumns="False" SelectedItem="{Binding SelectedHerb}" Height="200" Margin="0,0,0,10">
+                        <controls:HerbInputControl ItemsSource="{Binding Items}"
+                                                  Herbs="{Binding AllHerbs}"
+                                                  Margin="0,0,0,8"
+                                                  Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" SelectedItem="{Binding SelectedItem}" Height="200" Margin="0,0,0,10" Visibility="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="药材" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="药材" Binding="{Binding HerbName}" Width="*"/>
+                                <DataGridTextColumn Header="剂量" Binding="{Binding Quantity}" Width="80"/>
+                                <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="80"/>
                             </DataGrid.Columns>
                         </DataGrid>
                         <TextBlock Text="备注"/>

@@ -1,5 +1,6 @@
 using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.Module.Herbs.Dtos;
+using LYBT.Module.Prescriptions.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -16,6 +17,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
     /// </summary>
     public class FormulaTemplatesProfileViewModel : BindableBase {
         private readonly IFormulaTemplateService _service;
+        private readonly IHerbService _herbService;
 
         private FormulaTemplateDetailDto _template = new();
         public FormulaTemplateDetailDto Template {
@@ -23,13 +25,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             set => SetProperty(ref _template, value);
         }
 
-        public ObservableCollection<HerbDto> Herbs { get; } = new();
+        public ObservableCollection<PrescriptionItemDto> Items { get; } = new();
 
-        private HerbDto? _selectedHerb;
-        public HerbDto? SelectedHerb {
-            get => _selectedHerb;
-            set => SetProperty(ref _selectedHerb, value);
+        private PrescriptionItemDto? _selectedItem;
+        public PrescriptionItemDto? SelectedItem {
+            get => _selectedItem;
+            set => SetProperty(ref _selectedItem, value);
         }
+
+        public ObservableCollection<HerbDto> AllHerbs { get; } = new();
 
         private string _editModeTitle = "模板详细信息";
         public string EditModeTitle {
@@ -59,12 +63,21 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public Action? CancelAction { get; set; }
 
-        public FormulaTemplatesProfileViewModel(IFormulaTemplateService service) {
+        public FormulaTemplatesProfileViewModel(IFormulaTemplateService service, IHerbService herbService) {
             _service = service;
+            _herbService = herbService;
             SaveCommand = new DelegateCommand(async () => await SaveAsync());
             CancelCommand = new DelegateCommand(Cancel);
             AddHerbCommand = new DelegateCommand(AddHerb);
-            RemoveHerbCommand = new DelegateCommand(RemoveHerb, () => SelectedHerb != null).ObservesProperty(() => SelectedHerb);
+            RemoveHerbCommand = new DelegateCommand(RemoveHerb, () => SelectedItem != null).ObservesProperty(() => SelectedItem);
+            _ = LoadAllHerbsAsync();
+        }
+
+        private async Task LoadAllHerbsAsync() {
+            var list = await _herbService.GetListAsync();
+            AllHerbs.Clear();
+            foreach (var h in list)
+                AllHerbs.Add(h);
         }
 
         public async Task LoadAsync(Guid? id = null, ProfileMode mode = ProfileMode.View) {
@@ -73,16 +86,16 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 var detail = await _service.GetByIdAsync(id.Value);
                 if (detail != null) {
                     Template = detail;
-                    Herbs.Clear();
+                    Items.Clear();
                     foreach (var h in detail.Herbs)
-                        Herbs.Add(h);
+                        Items.Add(new PrescriptionItemDto { HerbId = h.Id, HerbName = h.Name, Unit = h.Unit });
                 } else {
                     Template = new FormulaTemplateDetailDto();
-                    Herbs.Clear();
+                    Items.Clear();
                 }
             } else {
                 Template = new FormulaTemplateDetailDto();
-                Herbs.Clear();
+                Items.Clear();
             }
 
             switch (mode) {
@@ -102,16 +115,16 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         }
 
         private void AddHerb() {
-            Herbs.Add(new HerbDto());
+            Items.Add(new PrescriptionItemDto());
         }
 
         private void RemoveHerb() {
-            if (SelectedHerb != null)
-                Herbs.Remove(SelectedHerb);
+            if (SelectedItem != null)
+                Items.Remove(SelectedItem);
         }
 
         private async Task SaveAsync() {
-            Template.Herbs = Herbs.ToList();
+            Template.Herbs = Items.Select(i => new HerbDto { Id = i.HerbId, Name = i.HerbName, Unit = i.Unit }).ToList();
             bool ok;
             if (Template.Id == Guid.Empty) {
                 ok = await _service.AddAsync(Template);
