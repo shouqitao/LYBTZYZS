@@ -1,0 +1,52 @@
+<UserControl x:Class="LYBT.UI.WPF.Views.Main.DoctorProfileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:controls="clr-namespace:LYBT.WPFControls;assembly=LYBT.WPFControls"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <Grid>
+        <controls:CommonProfileView DataContext="{Binding}"
+                                   Title="{Binding EditModeTitle}"
+                                   SaveCommand="{Binding SaveCommand}"
+                                   CancelCommand="{Binding CancelCommand}"
+                                   IsEditable="{Binding IsEditable}">
+            <controls:CommonProfileView.ProfileContent>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="账号" />
+                        <TextBox Text="{Binding Doctor.UserName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
+                        <TextBlock Text="姓名" />
+                        <TextBox Text="{Binding Doctor.RealName, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,8"/>
+                        <TextBlock Text="联系号码" />
+                        <TextBox Text="{Binding Doctor.ContactNumber}" Margin="0,0,0,8"
+                                 IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <TextBlock Text="性别" />
+                        <ComboBox ItemsSource="{Binding GenderList}" SelectedValuePath="Value" DisplayMemberPath="Text"
+                                  SelectedValue="{Binding Doctor.Gender}" Margin="0,0,0,8"
+                                  IsEnabled="{Binding IsEditable}"/>
+                        <TextBlock Text="出生日期" />
+                        <DatePicker SelectedDate="{Binding Doctor.Birthday}" Margin="0,0,0,8"
+                                    IsEnabled="{Binding IsEditable}"/>
+                        <TextBlock Text="拼音码" />
+                        <TextBox Text="{Binding Doctor.PinyinCode}" Margin="0,0,0,8"
+                                 IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <TextBlock Text="执业证号" />
+                        <TextBox Text="{Binding Doctor.LicenseNumber}" Margin="0,0,0,8"
+                                 IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <TextBlock Text="职称" />
+                        <ComboBox ItemsSource="{Binding TitleList}" SelectedValuePath="Value" DisplayMemberPath="Text"
+                                  SelectedValue="{Binding Doctor.Title}" Margin="0,0,0,8"
+                                  IsEnabled="{Binding IsEditable}"/>
+                        <TextBlock Text="状态" />
+                        <ComboBox ItemsSource="{Binding StatusList}" SelectedValuePath="Value" DisplayMemberPath="Text"
+                                  SelectedValue="{Binding Doctor.Status}" Margin="0,0,0,8"
+                                  IsEnabled="{Binding IsEditable}"/>
+                        <TextBlock Text="备注" />
+                        <TextBox Text="{Binding Doctor.Remark}" Margin="0,0,0,8"
+                                 IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </controls:CommonProfileView.ProfileContent>
+        </controls:CommonProfileView>
+    </Grid>
+</UserControl>
