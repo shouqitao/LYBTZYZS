@@ -83,7 +83,7 @@
                             Margin="0,10,10,0"
                             Content="✕"
                             FontSize="15"
-                            Foreground="#B0B0B0"
+                            Foreground="#333333"
                             Background="Transparent"
                             BorderBrush="{x:Null}"
                             Cursor="Hand"
