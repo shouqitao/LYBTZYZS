@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LYBT.UI.WPF.Apis;
+using Refit;
+using System.Windows;
+using System.Text.Json;
 
 namespace LYBT.UI.WPF.Services {
     /// <summary>
@@ -89,12 +92,26 @@ namespace LYBT.UI.WPF.Services {
         /// 方法 ChangePasswordAsync 的说明
         /// </summary>
         public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
-            var resp = await _userApi.ChangePasswordAsync(new ChangePasswordDto {
-                UserId = id,
-                OldPassword = oldPassword,
-                NewPassword = newPassword
-            });
-            return resp.Success;
+            try {
+                var resp = await _userApi.ChangePasswordAsync(new ChangePasswordDto {
+                    UserId = id,
+                    OldPassword = oldPassword,
+                    NewPassword = newPassword
+                });
+                if (!resp.Success)
+                    MessageBox.Show(resp.Message ?? "修改密码失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return resp.Success;
+            } catch (ApiException ex) {
+                var msg = "修改密码失败";
+                if (!string.IsNullOrWhiteSpace(ex.Content)) {
+                    try {
+                        msg = JsonSerializer.Deserialize<ApiSuccessResponse>(ex.Content,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Message ?? msg;
+                    } catch { }
+                }
+                MessageBox.Show(msg, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
         }
 
         /// <summary>
