@@ -9,7 +9,8 @@
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <controls:CommonListView Grid.Column="0" ShowPaging="False"
+        <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+            <controls:CommonListView ShowPaging="False"
                                  ItemsSource="{Binding Prescriptions}"
                                  SelectedItem="{Binding SelectedPrescription, Mode=TwoWay}"
                                  SearchCommand="{Binding RefreshCommand}">
@@ -28,8 +29,9 @@
                 <DataGridTextColumn Header="患者" Binding="{Binding PatientId}" Width="*"/>
                 <DataGridTextColumn Header="医生" Binding="{Binding DoctorId}" Width="*"/>
             </controls:CommonListView.Columns>
-        </controls:CommonListView>
-        <Border Grid.Column="1" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
+            </controls:CommonListView>
+        </Border>
+        <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
             <controls:CommonProfileView DataContext="{Binding ProfileViewModel}"
                                        Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveCommand}"
