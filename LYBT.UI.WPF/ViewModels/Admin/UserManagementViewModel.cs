@@ -291,10 +291,22 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         /// 方法 LoadRoles 的说明
         /// </summary>
         private async Task LoadRoles() {
-            var roles = await _userService.GetRolesAsync();
-            RoleList.Clear();
-            foreach (var r in roles)
-                RoleList.Add(r);
+            try {
+                var roles = await _userService.GetRolesAsync();
+                RoleList.Clear();
+                foreach (var r in roles)
+                    RoleList.Add(r);
+            } catch (Exception ex) {
+                var msg = ex.Message;
+                if (ex is ApiException apiEx && !string.IsNullOrWhiteSpace(apiEx.Content)) {
+                    try {
+                        var doc = JsonDocument.Parse(apiEx.Content);
+                        if (doc.RootElement.TryGetProperty("message", out var m))
+                            msg = m.GetString() ?? msg;
+                    } catch { }
+                }
+                MessageBox.Show($"加载角色列表失败：{msg}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         /// <summary>
