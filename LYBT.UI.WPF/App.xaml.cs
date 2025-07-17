@@ -12,6 +12,7 @@ using System.Text.Json.Serialization;
 using System.Windows;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.Views.Navigation;
+using Prism.Mvvm;
 
 namespace LYBT.UI.WPF {
     /// <summary>
@@ -122,6 +123,8 @@ namespace LYBT.UI.WPF {
             containerRegistry.Register<FormulaTemplatesProfileViewModel>();
             containerRegistry.Register<DoctorProfileViewModel>();
             containerRegistry.Register<PatientProfileViewModel>();
+            // Map profile views to their view models where naming conventions don't match
+            ViewModelLocationProvider.Register<DoctorProfileView, DoctorProfileViewModel>();
             // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
             containerRegistry.RegisterForNavigation<MainWindow>("MainWindow");
