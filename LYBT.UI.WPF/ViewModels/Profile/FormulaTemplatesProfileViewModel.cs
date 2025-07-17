@@ -58,7 +58,6 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
-        public DelegateCommand AddHerbCommand { get; }
         public DelegateCommand RemoveHerbCommand { get; }
 
         public Action? CancelAction { get; set; }
@@ -68,7 +67,6 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             _herbService = herbService;
             SaveCommand = new DelegateCommand(async () => await SaveAsync());
             CancelCommand = new DelegateCommand(Cancel);
-            AddHerbCommand = new DelegateCommand(AddHerb);
             RemoveHerbCommand = new DelegateCommand(RemoveHerb, () => SelectedItem != null).ObservesProperty(() => SelectedItem);
             _ = LoadAllHerbsAsync();
         }
@@ -102,6 +100,8 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 case ProfileMode.Create:
                     EditModeTitle = "新建模板信息";
                     IsEditable = true;
+                    if (!Items.Any())
+                        Items.Add(new PrescriptionItemDto());
                     break;
                 case ProfileMode.Edit:
                     EditModeTitle = "编辑模板信息";
@@ -114,16 +114,24 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             }
         }
 
-        private void AddHerb() {
-            Items.Add(new PrescriptionItemDto());
-        }
-
         private void RemoveHerb() {
             if (SelectedItem != null)
                 Items.Remove(SelectedItem);
         }
 
         private async Task SaveAsync() {
+            // remove completely empty records
+            for (int i = Items.Count - 1; i >= 0; i--) {
+                var it = Items[i];
+                if (it.HerbId == Guid.Empty && string.IsNullOrWhiteSpace(it.HerbName) && it.Quantity == 0)
+                    Items.RemoveAt(i);
+            }
+
+            if (Items.Any(i => i.HerbId == Guid.Empty || string.IsNullOrWhiteSpace(i.HerbName) || i.Quantity <= 0)) {
+                MessageBox.Show("有不完整数据，请确认", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             Template.Herbs = Items.Select(i => new HerbDto { Id = i.HerbId, Name = i.HerbName, Unit = i.Unit }).ToList();
             bool ok;
             if (Template.Id == Guid.Empty) {
