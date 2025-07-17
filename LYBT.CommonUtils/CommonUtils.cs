@@ -41,7 +41,7 @@ public static class CommonUtils {
                 continue;
 
             bool empty = true;
-            for (int c = start; c < start + 11; c++) {
+            for (int c = start; c < start + 10; c++) {
                 var cell = row.GetCell(c);
                 if (cell != null && !string.IsNullOrWhiteSpace(cell.ToString())) {
                     empty = false;
@@ -53,24 +53,23 @@ public static class CommonUtils {
 
             var dto = new HerbImportDto {
                 Name = row.GetCell(start)?.ToString() ?? string.Empty,
-                Pinyin = row.GetCell(start + 1)?.ToString(),
-                Origin = row.GetCell(start + 2)?.ToString(),
-                Spec = row.GetCell(start + 3)?.ToString(),
-                Unit = row.GetCell(start + 4)?.ToString()
+                Origin = row.GetCell(start + 1)?.ToString(),
+                Spec = row.GetCell(start + 2)?.ToString(),
+                Unit = row.GetCell(start + 3)?.ToString()
             };
 
-            decimal.TryParse(row.GetCell(start + 5)?.ToString(), out var price);
+            decimal.TryParse(row.GetCell(start + 4)?.ToString(), out var price);
             dto.Price = price;
-            int.TryParse(row.GetCell(start + 6)?.ToString(), out var stock);
+            int.TryParse(row.GetCell(start + 5)?.ToString(), out var stock);
             dto.Stock = stock;
 
-            dto.BatchNo = row.GetCell(start + 7)?.ToString();
+            dto.BatchNo = row.GetCell(start + 6)?.ToString();
 
-            if (DateTime.TryParse(row.GetCell(start + 8)?.ToString(), out var exp))
+            if (DateTime.TryParse(row.GetCell(start + 7)?.ToString(), out var exp))
                 dto.ExpireDate = exp;
 
-            dto.Effect = row.GetCell(start + 9)?.ToString();
-            dto.Remark = row.GetCell(start + 10)?.ToString();
+            dto.Effect = row.GetCell(start + 8)?.ToString();
+            dto.Remark = row.GetCell(start + 9)?.ToString();
 
             result.Add(dto);
         }
@@ -81,26 +80,25 @@ public static class CommonUtils {
         IWorkbook wb = new XSSFWorkbook();
         var sheet = wb.CreateSheet("Herbs");
         var header = sheet.CreateRow(0);
-        string[] props = { "Name", "Pinyin", "Origin", "Spec", "Unit", "Price", "Stock", "BatchNo", "ExpireDate", "Effect", "Remark" };
+        string[] props = { "Name", "Origin", "Spec", "Unit", "Price", "Stock", "BatchNo", "ExpireDate", "Effect", "Remark" };
         for (int i = 0; i < props.Length; i++)
             header.CreateCell(i).SetCellValue(GetDisplayName(typeof(HerbDetailDto), props[i]));
         int r = 1;
         foreach (var h in data) {
             var row = sheet.CreateRow(r++);
             row.CreateCell(0).SetCellValue(h.Name);
-            row.CreateCell(1).SetCellValue(h.Pinyin ?? string.Empty);
-            row.CreateCell(2).SetCellValue(h.Origin ?? string.Empty);
-            row.CreateCell(3).SetCellValue(h.Spec ?? string.Empty);
-            row.CreateCell(4).SetCellValue(h.Unit ?? string.Empty);
-            row.CreateCell(5).SetCellValue((double)h.Price);
-            row.CreateCell(6).SetCellValue(h.Stock);
-            row.CreateCell(7).SetCellValue(h.BatchNo ?? string.Empty);
+            row.CreateCell(1).SetCellValue(h.Origin ?? string.Empty);
+            row.CreateCell(2).SetCellValue(h.Spec ?? string.Empty);
+            row.CreateCell(3).SetCellValue(h.Unit ?? string.Empty);
+            row.CreateCell(4).SetCellValue((double)h.Price);
+            row.CreateCell(5).SetCellValue(h.Stock);
+            row.CreateCell(6).SetCellValue(h.BatchNo ?? string.Empty);
             if (h.ExpireDate.HasValue)
-                row.CreateCell(8).SetCellValue(h.ExpireDate.Value);
+                row.CreateCell(7).SetCellValue(h.ExpireDate.Value);
             else
-                row.CreateCell(8).SetCellValue(string.Empty);
-            row.CreateCell(9).SetCellValue(h.Effect ?? string.Empty);
-            row.CreateCell(10).SetCellValue(h.Remark ?? string.Empty);
+                row.CreateCell(7).SetCellValue(string.Empty);
+            row.CreateCell(8).SetCellValue(h.Effect ?? string.Empty);
+            row.CreateCell(9).SetCellValue(h.Remark ?? string.Empty);
         }
         using var ms = new MemoryStream();
         wb.Write(ms, true);

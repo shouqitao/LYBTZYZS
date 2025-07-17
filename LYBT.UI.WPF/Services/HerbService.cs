@@ -93,7 +93,6 @@ namespace LYBT.UI.WPF.Services {
             foreach (var d in dtos) {
                 list.Add(new HerbImportDto {
                     Name = d.Name,
-                    Pinyin = d.Pinyin,
                     Origin = d.Origin,
                     Spec = d.Spec,
                     Unit = d.Unit,
