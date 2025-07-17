@@ -152,7 +152,7 @@
                                      FontSize="13"
                                      IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
 
-                        <!-- 记住密码和清空按钮 -->
+                        <!-- 记住密码 -->
                         <DockPanel Margin="0,0,0,20">
                             <CheckBox x:Name="ChkRememberMe"
                                       IsChecked="{Binding IsRemember}"
@@ -160,13 +160,6 @@
                                       FontSize="12"
                                       DockPanel.Dock="Left"
                                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"/>
-                            <Button Content="清空"
-                                    Command="{Binding ClearCommand}"
-                                    Style="{StaticResource MaterialDesignFlatButton}"
-                                    FontSize="12"
-                                    DockPanel.Dock="Right"
-                                    Cursor="Hand"
-                                    Padding="5,2"/>
                         </DockPanel>
 
                         <!-- 登录按钮 -->
@@ -180,6 +173,15 @@
                                 Background="#4CAF50"
                                 BorderThickness="0"
                                 Cursor="Hand"
+                                Margin="0,0,0,15"/>
+
+                        <!-- 清空按钮移动至此 -->
+                        <Button Content="清空"
+                                Command="{Binding ClearCommand}"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                FontSize="12"
+                                Cursor="Hand"
+                                Padding="5,2"
                                 Margin="0,0,0,15"/>
 
                         <!-- 错误消息 -->
