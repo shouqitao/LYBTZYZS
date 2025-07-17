@@ -18,11 +18,11 @@ namespace LYBT.Module.Herbs.Dtos {
         public string? Unit { get; set; }
         [DisplayName("Price")]
         public decimal Price { get; set; }
-        [DisplayName("Stock")]
+        [DisplayName("库存数量")]
         public int Stock { get; set; }
-        [DisplayName("BatchNo")]
+        [DisplayName("批号")]
         public string? BatchNo { get; set; }
-        [DisplayName("ExpireDate")]
+        [DisplayName("有效期")]
         public DateTime? ExpireDate { get; set; }
         [DisplayName("Effect")]
         public string? Effect { get; set; }

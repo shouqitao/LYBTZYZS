@@ -91,15 +91,15 @@ bool ok = await _herbService.BatchImportAsync(list);
 4. **Spec**
 5. **Unit**
 6. **Price**
-7. **Stock**
-8. **BatchNo**
-9. **ExpireDate**
+7. **库存数量**
+8. **批号**
+9. **有效期**
 10. **Effect**
 11. **Remark**
 
 例如：
 
-| Name | Pinyin | Origin | Spec | Unit | Price | Stock | BatchNo | ExpireDate | Effect | Remark |
+| Name | Pinyin | Origin | Spec | Unit | Price | 库存数量 | 批号 | 有效期 | Effect | Remark |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 黄芪 | huangqi | 山西 | 片 | g | 2.0 | 100 | B2025 | 2026-12-31 | 补气固表 | |
 
