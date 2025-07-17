@@ -6,10 +6,10 @@
              prism:ViewModelLocator.AutoWireViewModel="True">
     <materialDesign:DrawerHost IsLeftDrawerOpen="{Binding DataContext.IsNavDrawerOpen, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" LeftDrawerCloseOnClickAway="True">
         <materialDesign:DrawerHost.LeftDrawerContent>
-            <ListBox Width="180"
+            <ListBox Width="220"
                      ItemsSource="{Binding NavigationItems}"
                      Margin="5"
-                     Background="#F5F6FA"
+                     Background="#ECEFF1"
                      BorderThickness="0"
                      SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}">
                 <ListBox.ItemTemplate>

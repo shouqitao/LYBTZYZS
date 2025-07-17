@@ -46,47 +46,37 @@
                    VerticalAlignment="Center"
                    HorizontalAlignment="Left"
                    Margin="0,0,0,0"/>
-                    <!-- 右上角功能按钮 -->
-                    <StackPanel Grid.Column="3"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Margin="0,0,22,0">
-                        <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="修改密码"
-                    Width="100" Height="34"
-                    Margin="0,0,10,0"
-                    Command="{Binding ShowChangePasswordCommand}"
-                    Background="#FF57606A" Foreground="White"
-                    FontWeight="Bold" BorderThickness="0"
-                    Cursor="Hand"/>
-                        <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="修改信息"
-                    Width="100" Height="34"
-                    Margin="0,0,10,0"
-                    Command="{Binding ShowChangeProfileCommand}"
-                    Background="#FF57606A" Foreground="White"
-                    FontWeight="Bold" BorderThickness="0"
-                    Cursor="Hand"
-                    Visibility="{Binding IsNotSysAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                        <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="{Binding DoctorProfileButtonText}"
-                    Width="120" Height="34"
-                    Margin="0,0,10,0"
-                    Visibility="{Binding IsDoctorRole, Converter={StaticResource BoolToVisibilityConverter}}"
-                    Command="{Binding ShowDoctorProfileCommand}"
-                    Background="#FF57606A" Foreground="White"
-                    FontWeight="Bold" BorderThickness="0"
-                    Cursor="Hand"/>
-                        <Button Style="{StaticResource MaterialDesignToolButton}"
-                                Command="{Binding ToggleThemeCommand}"
-                                Margin="0,0,10,0">
-                            <materialDesign:PackIcon Kind="ThemeLightDark"/>
-                        </Button>
-                        <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="退出登录"
-                    Width="100" Height="34"
-                    Command="{Binding LogoutCommand}"
-                    Background="#FF57606A" Foreground="White"
-                    FontWeight="Bold" BorderThickness="0"
-                    Cursor="Hand"/>
-                    </StackPanel>
+                    <!-- 右上角菜单按钮 -->
+                    <materialDesign:PopupBox Grid.Column="3"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,22,0"
+                                            StaysOpen="False"
+                                            PopupPlacement="Bottom">
+                        <materialDesign:PackIcon Kind="AccountCircle" />
+                        <materialDesign:PopupBox.PopupContent>
+                            <StackPanel Margin="8">
+                                <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                        Content="修改密码"
+                                        Command="{Binding ShowChangePasswordCommand}"/>
+                                <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                        Content="修改信息"
+                                        Command="{Binding ShowChangeProfileCommand}"
+                                        Visibility="{Binding IsNotSysAdmin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                        Content="{Binding DoctorProfileButtonText}"
+                                        Command="{Binding ShowDoctorProfileCommand}"
+                                        Visibility="{Binding IsDoctorRole, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                        Content="主题切换"
+                                        Command="{Binding ToggleThemeCommand}"/>
+                                <Separator Margin="0,4"/>
+                                <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                        Content="退出登录"
+                                        Command="{Binding LogoutCommand}"/>
+                            </StackPanel>
+                        </materialDesign:PopupBox.PopupContent>
+                    </materialDesign:PopupBox>
                 </Grid>
             </Border>
             <!-- 主内容区域，加载 HomeView -->
