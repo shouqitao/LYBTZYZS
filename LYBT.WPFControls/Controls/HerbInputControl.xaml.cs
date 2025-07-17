@@ -146,10 +146,17 @@ namespace LYBT.WPFControls {
                     PART_AmountBox.Focus();
                 }
             } else if (e.Key == Key.Tab) {
-                if (IsSuggestionVisible && SelectedSuggestion != null) {
-                    // Use Tab to accept the suggestion and move focus
-                    HerbText = SelectedSuggestion.Name;
-                    IsSuggestionVisible = false;
+
+                if (IsSuggestionVisible && FilteredHerbs.Count > 0) {
+                    e.Handled = true;
+                    PART_SuggestionList.Focus();
+                    var index = PART_SuggestionList.SelectedIndex;
+                    if (index < 0)
+                        index = 0;
+                    else
+                        index = (index + 1) % FilteredHerbs.Count;
+                    PART_SuggestionList.SelectedIndex = index;
+
                 }
             }
         }
@@ -161,6 +168,12 @@ namespace LYBT.WPFControls {
                     HerbText = SelectedSuggestion.Name;
                     IsSuggestionVisible = false;
                     PART_AmountBox.Focus();
+                }
+            } else if (e.Key == Key.Tab) {
+                if (FilteredHerbs.Count > 0) {
+                    e.Handled = true;
+                    var index = (PART_SuggestionList.SelectedIndex + 1) % FilteredHerbs.Count;
+                    PART_SuggestionList.SelectedIndex = index;
                 }
             }
         }
