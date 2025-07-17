@@ -75,7 +75,11 @@ public class DoctorServiceTests
             .Callback<DoctorModel>(m => savedModel = m)
             .ReturnsAsync(true);
         var userRepo = new Mock<IUserRepository>();
-        var existingUser = new UserModel { RealName = "Test" };
+        var existingUser = new UserModel
+        {
+            RealName = "Test",
+            PinyinCode = CommonUtil.GetPinyinCode("Test")
+        };
         userRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(existingUser);
         var mapper = CreateMapper();
         var service = new DoctorService(repo.Object, userRepo.Object, mapper);
@@ -107,7 +111,7 @@ public class DoctorServiceTests
         Assert.Equal(dto.Specialty, savedModel.Specialty);
         Assert.Equal(dto.Status, savedModel.Status);
         Assert.Equal(dto.WorkStatus, savedModel.WorkStatus);
-        var expectedCode = CommonUtil.GetPinyinCode(existingUser.RealName);
+        var expectedCode = existingUser.PinyinCode;
         Assert.Equal(expectedCode, savedModel.PinyinCode);
         Assert.Equal(dto.Remark, savedModel.Remark);
         Assert.Equal(dto.ContactNumber, savedModel.ContactNumber);
@@ -121,7 +125,11 @@ public class DoctorServiceTests
         {
             Id = Guid.NewGuid(),
             UserId = Guid.NewGuid(),
-            User = new UserModel { RealName = "Old" }
+            User = new UserModel
+            {
+                RealName = "Old",
+                PinyinCode = CommonUtil.GetPinyinCode("Old")
+            }
         };
         var repo = new Mock<IDoctorRepository>();
         repo.Setup(r => r.GetByIdAsync(model.Id)).ReturnsAsync(model);
@@ -154,7 +162,7 @@ public class DoctorServiceTests
         Assert.Equal(dto.Specialty, model.Specialty);
         Assert.Equal(dto.Status, model.Status);
         Assert.Equal(dto.WorkStatus, model.WorkStatus);
-        var expectedCode2 = CommonUtil.GetPinyinCode(model.User.RealName);
+        var expectedCode2 = model.User.PinyinCode;
         Assert.Equal(expectedCode2, model.PinyinCode);
         Assert.Equal(dto.Remark, model.Remark);
         Assert.Equal(dto.ContactNumber, model.ContactNumber);

@@ -74,7 +74,7 @@ namespace LYBT.Module.Doctors.Services {
             // to be non-null when saving entities. Assign the retrieved user to avoid
             // validation errors when calling SaveChangesAsync.
             model.User = user;
-            model.PinyinCode = CommonUtil.GetPinyinCode(user.RealName);
+            model.PinyinCode = user.PinyinCode;
             try {
                 return await _doctorRepository.AddAsync(model);
             } catch (DbUpdateException ex) {
@@ -94,7 +94,7 @@ namespace LYBT.Module.Doctors.Services {
             model.Specialty = dto.Specialty;
             model.Status = dto.Status;
             model.WorkStatus = dto.WorkStatus;
-            model.PinyinCode = CommonUtil.GetPinyinCode(model.User.RealName);
+            model.PinyinCode = model.User.PinyinCode;
             model.Remark = dto.Remark;
             model.ContactNumber = dto.ContactNumber;
             // 不更新UserId、User
