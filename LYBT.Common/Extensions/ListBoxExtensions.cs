@@ -2,7 +2,7 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace LYBT.UI.WPF.Helpers {
+namespace LYBT.Common.Extensions {
     /// <summary>
     /// Provides binding support for <see cref="ListBox.SelectedItems"/>.
     /// </summary>
