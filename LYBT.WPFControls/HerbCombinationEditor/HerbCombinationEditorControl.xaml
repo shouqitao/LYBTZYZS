@@ -31,11 +31,11 @@
                     </DataGridTemplateColumn.CellTemplate>
                     <DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
-                            <ComboBox IsEditable="True" IsTextSearchEnabled="True" StaysOpenOnEdit="True"
-                                      ItemsSource="{Binding HerbCatalog, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            <ComboBox IsEditable="True" IsTextSearchEnabled="False" StaysOpenOnEdit="True"
+                                      ItemsSource="{Binding FilteredHerbCatalog, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                       DisplayMemberPath="Name" SelectedValuePath="Id" TextSearch.TextPath="Name"
                                       SelectedValue="{Binding HerbId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      SelectionChanged="HerbCombo_SelectionChanged" />
+                                      KeyUp="HerbCombo_KeyUp" SelectionChanged="HerbCombo_SelectionChanged" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
