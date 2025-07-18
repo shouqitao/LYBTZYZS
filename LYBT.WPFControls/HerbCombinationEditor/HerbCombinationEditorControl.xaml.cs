@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using MaterialDesignThemes.Wpf;
 using LYBT.Common.HerbCombination;
 using LYBT.Module.Herbs.Dtos;
 
@@ -201,7 +202,7 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
 
         private void HerbCombo_KeyUp(object sender, KeyEventArgs e)
         {
-            if (sender is ComboBox cb)
+            if (sender is AutoCompleteBox cb)
             {
                 UpdateFilter(cb.Text);
                 cb.IsDropDownOpen = FilteredHerbCatalog.Count > 0;
@@ -216,7 +217,7 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
 
         private void HerbCombo_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Tab && sender is ComboBox cb)
+            if (e.Key == Key.Tab && sender is AutoCompleteBox cb)
             {
                 if (FilteredHerbCatalog.Count > 0)
                 {
@@ -226,7 +227,7 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
                     e.Handled = true;
                 }
             }
-            else if (e.Key == Key.Enter && sender is ComboBox cbEnter)
+            else if (e.Key == Key.Enter && sender is AutoCompleteBox cbEnter)
             {
                 if (cbEnter.SelectedItem == null && FilteredHerbCatalog.Count == 1)
                     cbEnter.SelectedItem = FilteredHerbCatalog[0];
@@ -236,7 +237,7 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
 
         private void HerbCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.AddedItems.Count > 0 && sender is ComboBox cb && cb.DataContext is HerbCombinationItem item && e.AddedItems[0] is HerbDto dto)
+            if (e.AddedItems.Count > 0 && sender is AutoCompleteBox cb && cb.DataContext is HerbCombinationItem item && e.AddedItems[0] is HerbDto dto)
             {
                 item.HerbId = dto.Id.ToString();
                 item.Name = dto.Name;
@@ -269,12 +270,12 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
             }
         }
 
-        private ComboBox? GetEditingComboBox(DataGrid grid)
+        private AutoCompleteBox? GetEditingComboBox(DataGrid grid)
         {
-            if (grid.CurrentCell.Column.GetCellContent(grid.CurrentItem) is ComboBox cb)
+            if (grid.CurrentCell.Column.GetCellContent(grid.CurrentItem) is AutoCompleteBox cb)
                 return cb;
             if (grid.CurrentCell.Column.GetCellContent(grid.CurrentItem) is ContentPresenter cp)
-                return FindVisualChild<ComboBox>(cp);
+                return FindVisualChild<AutoCompleteBox>(cp);
             return null;
         }
 

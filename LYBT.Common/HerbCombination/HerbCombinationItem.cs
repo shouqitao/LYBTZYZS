@@ -3,20 +3,91 @@ namespace LYBT.Common.HerbCombination;
 /// <summary>
 /// Represents a single herb entry within a combination.
 /// </summary>
-public class HerbCombinationItem
+using System.ComponentModel;
+
+public class HerbCombinationItem : INotifyPropertyChanged
 {
     /// <summary>
     /// Linked herb identifier from the master Herbs table.
     /// </summary>
-    public string? HerbId { get; set; }
+    private string? _herbId;
+    public string? HerbId
+    {
+        get => _herbId;
+        set
+        {
+            _herbId = value;
+            OnPropertyChanged(nameof(HerbId));
+        }
+    }
 
-    public string Name { get; set; } = string.Empty;
+    private string _name = string.Empty;
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            _name = value;
+            OnPropertyChanged(nameof(Name));
+        }
+    }
 
-    public decimal? Dosage { get; set; }
+    private decimal? _dosage;
+    public decimal? Dosage
+    {
+        get => _dosage;
+        set
+        {
+            _dosage = value;
+            OnPropertyChanged(nameof(Dosage));
+        }
+    }
 
-    public string? Unit { get; set; }
+    private string? _unit;
+    public string? Unit
+    {
+        get => _unit;
+        set
+        {
+            _unit = value;
+            OnPropertyChanged(nameof(Unit));
+        }
+    }
 
-    public string? Usage { get; set; }
+    private string? _usage;
+    public string? Usage
+    {
+        get => _usage;
+        set
+        {
+            _usage = value;
+            OnPropertyChanged(nameof(Usage));
+        }
+    }
 
-    public string? Remark { get; set; }
+    private string? _remark;
+    public string? Remark
+    {
+        get => _remark;
+        set
+        {
+            _remark = value;
+            OnPropertyChanged(nameof(Remark));
+        }
+    }
+
+    private bool _hasError;
+    public bool HasError
+    {
+        get => _hasError;
+        set
+        {
+            _hasError = value;
+            OnPropertyChanged(nameof(HasError));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    private void OnPropertyChanged(string name) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

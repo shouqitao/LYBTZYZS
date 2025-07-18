@@ -98,6 +98,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         }
 
         private async Task SaveAsync() {
+            HerbEditor.CleanEmptyRows();
             if (!HerbEditor.Validate(out var msg)) {
                 MessageBox.Show(msg!, "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;

@@ -10,6 +10,19 @@ public class HerbCombinationEditorViewModel : INotifyPropertyChanged
 {
     public ObservableCollection<HerbCombinationItem> Items { get; } = new();
 
+    /// <summary>
+    /// Remove rows where both name and dosage are empty.
+    /// </summary>
+    public void CleanEmptyRows()
+    {
+        for (int i = Items.Count - 1; i >= 0; i--)
+        {
+            var it = Items[i];
+            if (string.IsNullOrWhiteSpace(it.Name) && it.Dosage == null)
+                Items.RemoveAt(i);
+        }
+    }
+
     private string _formulaName = string.Empty;
     public string FormulaName
     {
@@ -36,9 +49,11 @@ public class HerbCombinationEditorViewModel : INotifyPropertyChanged
         for (int i = 0; i < Items.Count; i++)
         {
             var it = Items[i];
-            if (string.IsNullOrWhiteSpace(it.HerbId) || string.IsNullOrWhiteSpace(it.Name) || it.Dosage == null)
+            bool error = string.IsNullOrWhiteSpace(it.HerbId) || string.IsNullOrWhiteSpace(it.Name) || it.Dosage == null;
+            it.HasError = error;
+            if (error)
             {
-                message = $"Row {i + 1} requires a valid herb and dosage";
+                message = "Incomplete herb information";
                 return false;
             }
         }
