@@ -6,7 +6,6 @@ using System.Windows;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Common.Enums;
-using LYBT.Common.HerbCombination;
 using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.Module.Herbs.Dtos;
@@ -25,7 +24,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             set => SetProperty(ref _template, value);
         }
 
-        public HerbCombinationEditorViewModel HerbEditor { get; } = new() { Mode = HerbEditorMode.Template };
+
 
         public ObservableCollection<HerbDto> HerbCatalog { get; } = new();
 
@@ -76,10 +75,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             foreach (var h in herbs)
                 HerbCatalog.Add(h);
 
-            HerbEditor.Items.Clear();
-            HerbEditor.FormulaName = Template.Name;
-            foreach (var h in Template.Herbs)
-                HerbEditor.Items.Add(new HerbCombinationItem { HerbId = h.Id.ToString(), Name = h.Name, Unit = h.Unit });
+
 
             var list = await _service.GetListAsync();
             FormulaNameCatalog.Clear();
@@ -91,8 +87,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 case ProfileMode.Create:
                     EditModeTitle = "新建模板信息";
                     IsEditable = true;
-                    if (HerbEditor.Items.Count == 0)
-                        HerbEditor.Items.Add(new HerbCombinationItem());
+
                     break;
                 case ProfileMode.Edit:
                     EditModeTitle = "编辑模板信息";
@@ -106,30 +101,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         }
 
         private async Task SaveAsync() {
-            HerbEditor.CleanEmptyRows();
-            if (!HerbEditor.Validate(out var msg)) {
-                MessageBox.Show(msg!, "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
 
-            Template.Name = HerbEditor.FormulaName;
-            Template.Herbs = HerbEditor.Items.Select(i => new HerbDto {
-                Id = Guid.TryParse(i.HerbId, out var id) ? id : Guid.Empty,
-                Name = i.Name,
-                Unit = i.Unit
-            }).ToList();
-
-            bool ok = Template.Id == Guid.Empty
-                ? await _service.AddAsync(Template)
-                : await _service.UpdateAsync(Template);
-            if (!ok)
-                MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
-            else {
-                Mode = ProfileMode.View;
-                IsEditable = false;
-                EditModeTitle = "模板详细信息";
-                CancelAction?.Invoke();
-            }
         }
 
         private void Cancel() {

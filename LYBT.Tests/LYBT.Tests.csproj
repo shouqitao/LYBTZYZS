@@ -35,4 +35,7 @@
     <ProjectReference Include="..\LYBT.CommonUtils\LYBT.CommonUtils.csproj" />
     <ProjectReference Include="..\LYBT.WebAPI\LYBT.WebAPI.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controls\" />
+  </ItemGroup>
 </Project>

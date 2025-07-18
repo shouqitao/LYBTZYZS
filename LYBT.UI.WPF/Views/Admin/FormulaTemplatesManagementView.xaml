@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
             xmlns:controls="clr-namespace:LYBT.WPFControls;assembly=LYBT.WPFControls"
-            xmlns:herb="clr-namespace:LYBT.WPFControls.HerbCombinationEditor;assembly=LYBT.WPFControls"
-             prism:ViewModelLocator.AutoWireViewModel="True">
+            prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -16,35 +15,27 @@
                                      ItemsSource="{Binding Templates}"
                                      SelectedItem="{Binding SelectedTemplate, Mode=TwoWay}"
                                      SearchCommand="{Binding RefreshCommand}">
-                <controls:CommonListView.ActionContent>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <Button Content="刷新" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
-                    <Button Content="新增" Command="{Binding AddCommand}" Margin="0,0,8,0"/>
-                    <Button Content="编辑" Command="{Binding EditCommand}" Margin="0,0,8,0" IsEnabled="{Binding SelectedTemplate, Converter={StaticResource NullToBoolConverter}}"/>
-                    <Button Content="删除" Command="{Binding DeleteCommand}" Margin="0,0,8,0" IsEnabled="{Binding SelectedTemplate, Converter={StaticResource NullToBoolConverter}}"/>
-                    <Button Content="批量导入经典方" Command="{Binding ImportCommand}" Margin="0,0,8,0"/>
-                    <Button Content="批量导出经典方" Command="{Binding ExportCommand}"/>
-                </StackPanel>
-            </controls:CommonListView.ActionContent>
-            <controls:CommonListView.Columns>
-                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="160"/>
-                <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
-            </controls:CommonListView.Columns>
+                    <controls:CommonListView.ActionContent>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <Button Content="刷新" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
+                            <Button Content="新增" Command="{Binding AddCommand}" Margin="0,0,8,0"/>
+                            <Button Content="编辑" Command="{Binding EditCommand}" Margin="0,0,8,0" IsEnabled="{Binding SelectedTemplate, Converter={StaticResource NullToBoolConverter}}"/>
+                            <Button Content="删除" Command="{Binding DeleteCommand}" Margin="0,0,8,0" IsEnabled="{Binding SelectedTemplate, Converter={StaticResource NullToBoolConverter}}"/>
+                            <Button Content="批量导入经典方" Command="{Binding ImportCommand}" Margin="0,0,8,0"/>
+                            <Button Content="批量导出经典方" Command="{Binding ExportCommand}"/>
+                        </StackPanel>
+                    </controls:CommonListView.ActionContent>
+                    <controls:CommonListView.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="160"/>
+                        <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
+                    </controls:CommonListView.Columns>
                 </controls:CommonListView>
             </Grid>
         </Border>
         <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
             <StackPanel DataContext="{Binding ProfileViewModel}">
                 <TextBlock Text="{Binding EditModeTitle}" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
-                <herb:HerbCombinationEditorControl Mode="Template" ShowFormulaName="True"
-                                                     HerbItems="{Binding HerbEditor.Items}"
-                                                     HerbCatalog="{Binding HerbCatalog}"
-                                                     FormulaName="{Binding HerbEditor.FormulaName}"
-                                                     FormulaNameCatalog="{Binding FormulaNameCatalog}"
-                                                     ReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"
-                                                     SaveCommand="{Binding SaveCommand}"
-                                                     CancelCommand="{Binding CancelCommand}"/>
-                <TextBlock Text="备注" Margin="0,8,0,0"/>
+
                 <TextBox Text="{Binding Template.Remark}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
             </StackPanel>
         </Border>
