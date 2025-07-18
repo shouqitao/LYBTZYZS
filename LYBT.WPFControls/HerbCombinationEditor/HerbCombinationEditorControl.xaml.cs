@@ -1,14 +1,18 @@
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using LYBT.Common.HerbCombination;
+using LYBT.Module.Herbs.Dtos;
 
 namespace LYBT.WPFControls.HerbCombinationEditor {
     public partial class HerbCombinationEditorControl : UserControl {
         public HerbCombinationEditorControl() {
             HerbItems = new ObservableCollection<HerbCombinationItem>();
             InitializeComponent();
+            Loaded += (_, __) => EnsureBlankRow();
         }
 
         public ObservableCollection<HerbCombinationItem> HerbItems {
@@ -75,6 +79,21 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
         public static readonly DependencyProperty CancelCommandProperty =
             DependencyProperty.Register(nameof(CancelCommand), typeof(ICommand), typeof(HerbCombinationEditorControl));
 
+        private void EnsureBlankRow()
+        {
+            if (!ReadOnly && HerbItems.Count == 0)
+                HerbItems.Add(new HerbCombinationItem());
+        }
+
+        public IEnumerable<HerbDto> HerbCatalog
+        {
+            get => (IEnumerable<HerbDto>)GetValue(HerbCatalogProperty);
+            set => SetValue(HerbCatalogProperty, value);
+        }
+
+        public static readonly DependencyProperty HerbCatalogProperty =
+            DependencyProperty.Register(nameof(HerbCatalog), typeof(IEnumerable<HerbDto>), typeof(HerbCombinationEditorControl), new PropertyMetadata(Array.Empty<HerbDto>()));
+
         private void Grid_PreviewKeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Tab && !ReadOnly) {
                 var grid = (DataGrid)sender;
@@ -92,6 +111,63 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
                         grid.BeginEdit();
                     }
                 });
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter && !ReadOnly) {
+                var grid = (DataGrid)sender;
+                var rowIndex = grid.Items.IndexOf(grid.CurrentItem);
+                var colIndex = grid.Columns.IndexOf(grid.CurrentCell.Column);
+                if (colIndex == grid.Columns.Count - 1 && rowIndex >= 0 && rowIndex < HerbItems.Count) {
+                    var item = HerbItems[rowIndex];
+                    if (!string.IsNullOrWhiteSpace(item.Name) && item.Dosage != null) {
+                        if (rowIndex == HerbItems.Count - 1)
+                            HerbItems.Add(new HerbCombinationItem());
+                        e.Handled = true;
+                        grid.Dispatcher.InvokeAsync(() => {
+                            grid.SelectedIndex = rowIndex + 1;
+                            grid.CurrentCell = new DataGridCellInfo(grid.Items[rowIndex + 1], grid.Columns[0]);
+                            grid.BeginEdit();
+                        });
+                    }
+                }
+            }
+        }
+
+        private void HerbCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && sender is ComboBox cb && cb.DataContext is HerbCombinationItem item && e.AddedItems[0] is HerbDto dto)
+            {
+                item.HerbId = dto.Id.ToString();
+                item.Name = dto.Name;
+                item.Unit = dto.Unit;
+            }
+        }
+
+        private void Grid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.Column.DisplayIndex == 0 && e.EditingElement is TextBox tb)
+            {
+                var input = tb.Text.Trim();
+                if (!string.IsNullOrEmpty(input))
+                {
+                    var matches = HerbCatalog.Where(h => string.Equals(h.Name, input, System.StringComparison.OrdinalIgnoreCase) || (h.Pinyin?.StartsWith(input, System.StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+                    if (matches.Count == 0)
+                    {
+                        MessageBox.Show("No such herb found in the database.", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else if (matches.Count == 1 && e.Row.Item is HerbCombinationItem item)
+                    {
+                        var dto = matches[0];
+                        item.HerbId = dto.Id.ToString();
+                        item.Name = dto.Name;
+                        item.Unit = dto.Unit;
+                        var grid = (DataGrid)sender;
+                        grid.Dispatcher.InvokeAsync(() => {
+                            grid.CurrentCell = new DataGridCellInfo(e.Row.Item, grid.Columns[1]);
+                            grid.BeginEdit();
+                        });
+                    }
+                }
             }
         }
     }

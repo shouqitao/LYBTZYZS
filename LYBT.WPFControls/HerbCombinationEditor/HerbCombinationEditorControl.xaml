@@ -21,9 +21,24 @@
         <DataGrid x:Name="PART_Grid" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
                   ItemsSource="{Binding HerbItems, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   IsReadOnly="{Binding ReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                  PreviewKeyDown="Grid_PreviewKeyDown">
+                  PreviewKeyDown="Grid_PreviewKeyDown" CellEditEnding="Grid_CellEditEnding">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="药材" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                <DataGridTemplateColumn Header="药材" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ComboBox IsEditable="True" IsTextSearchEnabled="True" StaysOpenOnEdit="True"
+                                      ItemsSource="{Binding HerbCatalog, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      DisplayMemberPath="Name" SelectedValuePath="Name"
+                                      SelectedValue="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      SelectionChanged="HerbCombo_SelectionChanged" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="剂量" Binding="{Binding Dosage, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
                 <DataGridTextColumn Header="单位" Binding="{Binding Unit, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
                 <DataGridTextColumn Header="用法" Binding="{Binding Usage, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
