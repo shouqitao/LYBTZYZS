@@ -35,6 +35,8 @@
 
             <!-- 空转布尔转换器 -->
             <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
+            <local:StringEqualsConverter x:Key="StringEqualsConverter"/>
+            <local:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>
