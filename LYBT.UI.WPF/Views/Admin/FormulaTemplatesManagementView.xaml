@@ -76,9 +76,7 @@
             </controls:CommonProfileView>
         </Border>
         <Border Grid.Column="2" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:QuickAddHerbsControl DataContext="{Binding ProfileViewModel}"
-                                           TargetItems="{Binding Items}"
-                                           Herbs="{Binding AllHerbs}"/>
+
         </Border>
     </Grid>
 </UserControl>
