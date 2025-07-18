@@ -23,8 +23,14 @@
                     <DataTemplate>
                         <ToggleButton Content="{Binding}"
                                       Margin="0,0,8,0"
-                                      IsChecked="{Binding SelectedCategory, ElementName=root, Converter={StaticResource StringEqualsConverter}, ConverterParameter={Binding}}"
-                                      Click="CategoryButton_Click"/>
+                                      Click="CategoryButton_Click">
+                            <ToggleButton.IsChecked>
+                                <MultiBinding Converter="{StaticResource StringEqualsMultiConverter}">
+                                    <Binding Path="SelectedCategory" ElementName="root"/>
+                                    <Binding />
+                                </MultiBinding>
+                            </ToggleButton.IsChecked>
+                        </ToggleButton>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
