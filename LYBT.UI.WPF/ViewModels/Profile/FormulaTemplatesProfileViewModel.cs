@@ -101,7 +101,24 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         }
 
         private async Task SaveAsync() {
-
+            try {
+                bool success;
+                if (Template.Id == Guid.Empty) {
+                    success = await _service.AddAsync(Template);
+                } else {
+                    success = await _service.UpdateAsync(Template);
+                }
+                if (!success)
+                    MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                else {
+                    Mode = ProfileMode.View;
+                    IsEditable = false;
+                    EditModeTitle = "模板详细信息";
+                    CancelAction?.Invoke();
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"保存失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Cancel() {

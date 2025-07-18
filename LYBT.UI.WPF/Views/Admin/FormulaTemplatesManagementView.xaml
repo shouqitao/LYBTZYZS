@@ -33,11 +33,23 @@
             </Grid>
         </Border>
         <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <StackPanel DataContext="{Binding ProfileViewModel}">
-                <TextBlock Text="{Binding EditModeTitle}" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
-
-                <TextBox Text="{Binding Template.Remark}" Margin="0,0,0,8" IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
-            </StackPanel>
+            <controls:CommonProfileView DataContext="{Binding ProfileViewModel}"
+                                       Title="{Binding EditModeTitle}"
+                                       SaveCommand="{Binding SaveCommand}"
+                                       CancelCommand="{Binding CancelCommand}"
+                                       IsEditable="{Binding IsEditable}">
+                <controls:CommonProfileView.ProfileContent>
+                    <StackPanel>
+                        <TextBlock Text="经验方名称" />
+                        <TextBox Text="{Binding Template.Name}" Margin="0,0,0,8"
+                                 IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <TextBlock Text="药材组合" />
+                        <TextBox Text="{Binding Template.Remark}" Margin="0,0,0,8"
+                                 AcceptsReturn="True" TextWrapping="Wrap"
+                                 IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+                </controls:CommonProfileView.ProfileContent>
+            </controls:CommonProfileView>
         </Border>
     </Grid>
 </UserControl>
