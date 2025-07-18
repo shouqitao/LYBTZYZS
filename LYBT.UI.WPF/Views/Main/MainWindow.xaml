@@ -11,11 +11,16 @@
         WindowStyle="None"
         ResizeMode="NoResize">
     <Grid>
+        <!-- 背景图片 -->
+        <Image Source="/Assets/bg.jpg" Stretch="UniformToFill" Opacity="0.6" Panel.ZIndex="0"/>
+
         <!-- 功能区：登录、修改密码等界面 -->
         <ContentControl prism:RegionManager.RegionName="FunctionRegion"
-                        Visibility="{Binding IsFunctionVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        Visibility="{Binding IsFunctionVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Panel.ZIndex="1"/>
         <!-- 主界面区域（登录后可见，初始隐藏） -->
-        <DockPanel Visibility="{Binding IsMainVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+        <DockPanel Visibility="{Binding IsMainVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                   Panel.ZIndex="1">
             <!-- 顶部Header -->
             <Border DockPanel.Dock="Top" Height="100" Background="#2C3E50">
                 <Grid>
