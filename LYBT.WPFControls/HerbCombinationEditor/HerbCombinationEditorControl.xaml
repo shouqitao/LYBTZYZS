@@ -35,7 +35,8 @@
                                       ItemsSource="{Binding FilteredHerbCatalog, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                       DisplayMemberPath="Name" SelectedValuePath="Id" TextSearch.TextPath="Name"
                                       SelectedValue="{Binding HerbId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      KeyUp="HerbCombo_KeyUp" SelectionChanged="HerbCombo_SelectionChanged" />
+                                      KeyUp="HerbCombo_KeyUp" KeyDown="HerbCombo_KeyDown"
+                                      SelectionChanged="HerbCombo_SelectionChanged" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using LYBT.Common.HerbCombination;
 using LYBT.Module.Herbs.Dtos;
 
@@ -122,8 +123,40 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
         }
 
         private void Grid_PreviewKeyDown(object sender, KeyEventArgs e) {
+            var grid = (DataGrid)sender;
+            int currentColIndex = grid.Columns.IndexOf(grid.CurrentCell.Column);
+            if (currentColIndex == 0 && (e.Key == Key.Tab || e.Key == Key.Enter) && !ReadOnly)
+            {
+                if (GetEditingComboBox(grid) is ComboBox cb)
+                {
+                    if (e.Key == Key.Tab)
+                    {
+                        if (FilteredHerbCatalog.Count > 0)
+                        {
+                            int next = cb.SelectedIndex < 0 ? 0 : (cb.SelectedIndex + 1) % FilteredHerbCatalog.Count;
+                            cb.SelectedIndex = next;
+                            cb.IsDropDownOpen = true;
+                            e.Handled = true;
+                            return;
+                        }
+                    }
+                    else if (e.Key == Key.Enter)
+                    {
+                        if (cb.SelectedItem == null && FilteredHerbCatalog.Count == 1)
+                            cb.SelectedItem = FilteredHerbCatalog[0];
+                        grid.CommitEdit();
+                        e.Handled = true;
+                        grid.Dispatcher.InvokeAsync(() =>
+                        {
+                            grid.CurrentCell = new DataGridCellInfo(grid.CurrentItem, grid.Columns[1]);
+                            grid.BeginEdit();
+                        });
+                        return;
+                    }
+                }
+            }
+
             if (e.Key == Key.Tab && !ReadOnly) {
-                var grid = (DataGrid)sender;
                 var row = grid.Items.IndexOf(grid.CurrentItem);
                 var col = grid.Columns.IndexOf(grid.CurrentCell.Column);
                 bool reverse = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
@@ -141,12 +174,11 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
                 e.Handled = true;
             }
             else if (e.Key == Key.Enter && !ReadOnly) {
-                var grid = (DataGrid)sender;
                 var rowIndex = grid.Items.IndexOf(grid.CurrentItem);
-                var colIndex = grid.Columns.IndexOf(grid.CurrentCell.Column);
+                var cellIndex = grid.Columns.IndexOf(grid.CurrentCell.Column);
                 if (rowIndex >= 0 && rowIndex < HerbItems.Count) {
                     var item = HerbItems[rowIndex];
-                    if (colIndex == 0) {
+                    if (cellIndex == 0) {
                         e.Handled = true;
                         grid.Dispatcher.InvokeAsync(() => {
                             grid.CurrentCell = new DataGridCellInfo(grid.Items[rowIndex], grid.Columns[1]);
@@ -182,6 +214,26 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
             }
         }
 
+        private void HerbCombo_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab && sender is ComboBox cb)
+            {
+                if (FilteredHerbCatalog.Count > 0)
+                {
+                    int next = cb.SelectedIndex < 0 ? 0 : (cb.SelectedIndex + 1) % FilteredHerbCatalog.Count;
+                    cb.SelectedIndex = next;
+                    cb.IsDropDownOpen = true;
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.Enter && sender is ComboBox cbEnter)
+            {
+                if (cbEnter.SelectedItem == null && FilteredHerbCatalog.Count == 1)
+                    cbEnter.SelectedItem = FilteredHerbCatalog[0];
+                cbEnter.IsDropDownOpen = false;
+            }
+        }
+
         private void HerbCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0 && sender is ComboBox cb && cb.DataContext is HerbCombinationItem item && e.AddedItems[0] is HerbDto dto)
@@ -200,7 +252,7 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
                 {
                     if (e.EditingElement is TextBox tb)
                         tb.Text = string.Empty;
-                    MessageBox.Show("No such herb found in the database.", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("No matching herb found", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                     item.Name = string.Empty;
                     item.Unit = null;
                     e.Cancel = true;
@@ -215,6 +267,29 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
                     }
                 }
             }
+        }
+
+        private ComboBox? GetEditingComboBox(DataGrid grid)
+        {
+            if (grid.CurrentCell.Column.GetCellContent(grid.CurrentItem) is ComboBox cb)
+                return cb;
+            if (grid.CurrentCell.Column.GetCellContent(grid.CurrentItem) is ContentPresenter cp)
+                return FindVisualChild<ComboBox>(cp);
+            return null;
+        }
+
+        private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T t)
+                    return t;
+                var result = FindVisualChild<T>(child);
+                if (result != null)
+                    return result;
+            }
+            return null;
         }
     }
 }
