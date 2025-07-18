@@ -7,23 +7,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-
 namespace LYBT.WPFControls {
     /// <summary>
-    /// Herb selection control with search and category filter.
+    /// Herb selection control with search support.
     /// </summary>
     public partial class QuickAddHerbsControl : UserControl {
         private IEnumerable<HerbDto> _herbs = Array.Empty<HerbDto>();
-        private readonly Dictionary<Guid, string> _categoryCache = new();
 
         public QuickAddHerbsControl() {
             InitializeComponent();
             AddHerbCommand = new DelegateCommand<HerbDto?>(AddHerb);
-            Categories.Add("全部");
-            Categories.Add("解表");
-            Categories.Add("清热");
-            Categories.Add("其他");
         }
 
         public IEnumerable<HerbDto>? Herbs {
@@ -53,19 +46,7 @@ namespace LYBT.WPFControls {
             DependencyProperty.Register(nameof(SearchText), typeof(string), typeof(QuickAddHerbsControl),
                 new PropertyMetadata(string.Empty, OnSearchTextChanged));
 
-        public ObservableCollection<string> Categories { get; } = new();
         public ObservableCollection<HerbDto> FilteredHerbs { get; } = new();
-
-        private string _selectedCategory = "全部";
-        public string SelectedCategory {
-            get => _selectedCategory;
-            set {
-                if (_selectedCategory != value) {
-                    _selectedCategory = value;
-                    UpdateFilter();
-                }
-            }
-        }
 
         public DelegateCommand<HerbDto?> AddHerbCommand { get; }
 
@@ -88,27 +69,8 @@ namespace LYBT.WPFControls {
                 query = query.Where(h => h.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
                     || (!string.IsNullOrEmpty(h.Pinyin) && h.Pinyin.Contains(SearchText, StringComparison.OrdinalIgnoreCase)));
             }
-            if (SelectedCategory != "全部")
-                query = query.Where(h => GetCategory(h) == SelectedCategory);
             foreach (var h in query)
                 FilteredHerbs.Add(h);
-        }
-
-        private string GetCategory(HerbDto herb) {
-            if (_categoryCache.TryGetValue(herb.Id, out var cat))
-                return cat;
-            if (!string.IsNullOrWhiteSpace(herb.Effect)) {
-                if (herb.Effect.Contains("解表"))
-                    cat = "解表";
-                else if (herb.Effect.Contains("清热"))
-                    cat = "清热";
-                else
-                    cat = "其他";
-            } else {
-                cat = "其他";
-            }
-            _categoryCache[herb.Id] = cat;
-            return cat;
         }
 
         private void AddHerb(HerbDto? herb) {
@@ -119,9 +81,5 @@ namespace LYBT.WPFControls {
             TargetItems.Add(new PrescriptionItemDto { HerbId = herb.Id, HerbName = herb.Name });
         }
 
-        private void CategoryButton_Click(object sender, RoutedEventArgs e) {
-            if (sender is ToggleButton btn && btn.Content is string cat)
-                SelectedCategory = cat;
-        }
     }
 }
