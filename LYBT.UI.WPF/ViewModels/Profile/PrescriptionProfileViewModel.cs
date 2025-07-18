@@ -6,6 +6,7 @@ using System.Windows;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Module.Prescriptions.Dtos;
+using LYBT.Module.Herbs.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.Common.Enums;
 
@@ -15,6 +16,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
     /// </summary>
     public class PrescriptionProfileViewModel : BindableBase {
         private readonly IPrescriptionService _service;
+        private readonly IHerbService _herbService;
 
         private PrescriptionDetailDto _prescription = new();
         public PrescriptionDetailDto Prescription {
@@ -23,6 +25,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         }
 
         public ObservableCollection<PrescriptionItemDto> Items { get; } = new();
+        public ObservableCollection<HerbDto> AllHerbs { get; } = new();
 
         private PrescriptionItemDto? _selectedItem;
         public PrescriptionItemDto? SelectedItem {
@@ -58,12 +61,14 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public Action? CancelAction { get; set; }
 
-        public PrescriptionProfileViewModel(IPrescriptionService service) {
+        public PrescriptionProfileViewModel(IPrescriptionService service, IHerbService herbService) {
             _service = service;
+            _herbService = herbService;
             SaveCommand = new DelegateCommand(async () => await SaveAsync());
             CancelCommand = new DelegateCommand(Cancel);
             AddItemCommand = new DelegateCommand(AddItem);
             RemoveItemCommand = new DelegateCommand<object?>(param => RemoveItem(param as PrescriptionItemDto));
+            _ = LoadHerbsAsync();
         }
 
         public async Task LoadAsync(Guid? id = null, ProfileMode mode = ProfileMode.View) {
@@ -132,6 +137,13 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             IsEditable = false;
             EditModeTitle = "处方详细信息";
             CancelAction?.Invoke();
+        }
+
+        private async Task LoadHerbsAsync() {
+            var list = await _herbService.GetListAsync();
+            AllHerbs.Clear();
+            foreach (var h in list)
+                AllHerbs.Add(h);
         }
     }
 }
