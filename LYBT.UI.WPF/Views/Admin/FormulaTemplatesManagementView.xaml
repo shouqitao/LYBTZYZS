@@ -43,7 +43,25 @@
                         <TextBlock Text="经验方名称" />
                         <TextBox Text="{Binding Template.Name}" Margin="0,0,0,8"
                                  IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
-                        <TextBlock Text="药材组合" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <Button Content="添加药材" Command="{Binding AddItemCommand}" Margin="0,0,5,0"/>
+                        </StackPanel>
+                        <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" AutoGenerateColumns="False" CanUserAddRows="False" Height="200" Margin="0,0,0,10">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="药材" Binding="{Binding HerbName}" Width="*"/>
+                                <DataGridTextColumn Header="剂量" Binding="{Binding Quantity}" Width="80"/>
+                                <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="80"/>
+                                <DataGridTemplateColumn Width="60">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="删除" Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <controls:QuickAddHerbsControl TargetItems="{Binding Items}" Herbs="{Binding AllHerbs}" Margin="0,0,0,10" />
+                        <TextBlock Text="备注" />
                         <TextBox Text="{Binding Template.Remark}" Margin="0,0,0,8"
                                  AcceptsReturn="True" TextWrapping="Wrap"
                                  IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
