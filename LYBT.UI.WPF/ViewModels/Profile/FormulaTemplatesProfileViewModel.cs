@@ -1,23 +1,22 @@
-using LYBT.Module.FormulaTemplates.Dtos;
-using LYBT.Module.Herbs.Dtos;
-using LYBT.Module.Prescriptions.Dtos;
-using LYBT.UI.WPF.Interfaces;
-using Prism.Commands;
-using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
-using LYBT.Common.Enums;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Prism.Commands;
+using Prism.Mvvm;
+using LYBT.Common.Enums;
+using LYBT.Common.HerbCombination;
+using LYBT.Module.FormulaTemplates.Dtos;
+using LYBT.UI.WPF.Interfaces;
+using LYBT.Module.Herbs.Dtos;
 
 namespace LYBT.UI.WPF.ViewModels.Profile {
     /// <summary>
-    /// 经验方模板详情与编辑视图模型
+    /// View model for formula template details and editing.
     /// </summary>
     public class FormulaTemplatesProfileViewModel : BindableBase {
         private readonly IFormulaTemplateService _service;
-        private readonly IHerbService _herbService;
 
         private FormulaTemplateDetailDto _template = new();
         public FormulaTemplateDetailDto Template {
@@ -25,15 +24,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             set => SetProperty(ref _template, value);
         }
 
-        public ObservableCollection<PrescriptionItemDto> Items { get; } = new();
-
-        private PrescriptionItemDto? _selectedItem;
-        public PrescriptionItemDto? SelectedItem {
-            get => _selectedItem;
-            set => SetProperty(ref _selectedItem, value);
-        }
-
-        public ObservableCollection<HerbDto> AllHerbs { get; } = new();
+        public HerbCombinationEditorViewModel HerbEditor { get; } = new() { Mode = HerbEditorMode.Template };
 
         private string _editModeTitle = "模板详细信息";
         public string EditModeTitle {
@@ -48,9 +39,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         }
 
         private ProfileMode _mode;
-        /// <summary>
-        /// 当前视图模式
-        /// </summary>
+        /// <summary>Current view mode</summary>
         public ProfileMode Mode {
             get => _mode;
             set => SetProperty(ref _mode, value);
@@ -58,50 +47,35 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
-        public DelegateCommand RemoveHerbCommand { get; }
 
         public Action? CancelAction { get; set; }
 
-        public FormulaTemplatesProfileViewModel(IFormulaTemplateService service, IHerbService herbService) {
+        public FormulaTemplatesProfileViewModel(IFormulaTemplateService service) {
             _service = service;
-            _herbService = herbService;
             SaveCommand = new DelegateCommand(async () => await SaveAsync());
             CancelCommand = new DelegateCommand(Cancel);
-            RemoveHerbCommand = new DelegateCommand(RemoveHerb, () => SelectedItem != null).ObservesProperty(() => SelectedItem);
-            _ = LoadAllHerbsAsync();
-        }
-
-        private async Task LoadAllHerbsAsync() {
-            var list = await _herbService.GetListAsync();
-            AllHerbs.Clear();
-            foreach (var h in list)
-                AllHerbs.Add(h);
         }
 
         public async Task LoadAsync(Guid? id = null, ProfileMode mode = ProfileMode.View) {
             Mode = mode;
             if (id.HasValue && id.Value != Guid.Empty) {
                 var detail = await _service.GetByIdAsync(id.Value);
-                if (detail != null) {
-                    Template = detail;
-                    Items.Clear();
-                    foreach (var h in detail.Herbs)
-                        Items.Add(new PrescriptionItemDto { HerbId = h.Id, HerbName = h.Name, Unit = h.Unit });
-                } else {
-                    Template = new FormulaTemplateDetailDto();
-                    Items.Clear();
-                }
+                Template = detail ?? new FormulaTemplateDetailDto();
             } else {
                 Template = new FormulaTemplateDetailDto();
-                Items.Clear();
             }
+
+            HerbEditor.Items.Clear();
+            HerbEditor.FormulaName = Template.Name;
+            foreach (var h in Template.Herbs)
+                HerbEditor.Items.Add(new HerbCombinationItem { HerbId = h.Id.ToString(), Name = h.Name, Unit = h.Unit });
 
             switch (mode) {
                 case ProfileMode.Create:
                     EditModeTitle = "新建模板信息";
                     IsEditable = true;
-                    if (!Items.Any())
-                        Items.Add(new PrescriptionItemDto());
+                    if (HerbEditor.Items.Count == 0)
+                        HerbEditor.Items.Add(new HerbCombinationItem());
                     break;
                 case ProfileMode.Edit:
                     EditModeTitle = "编辑模板信息";
@@ -114,31 +88,22 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             }
         }
 
-        private void RemoveHerb() {
-            if (SelectedItem != null)
-                Items.Remove(SelectedItem);
-        }
-
         private async Task SaveAsync() {
-            // remove completely empty records
-            for (int i = Items.Count - 1; i >= 0; i--) {
-                var it = Items[i];
-                if (it.HerbId == Guid.Empty && string.IsNullOrWhiteSpace(it.HerbName) && it.Quantity == 0)
-                    Items.RemoveAt(i);
-            }
-
-            if (Items.Any(i => i.HerbId == Guid.Empty || string.IsNullOrWhiteSpace(i.HerbName) || i.Quantity <= 0)) {
-                MessageBox.Show("有不完整数据，请确认", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            if (!HerbEditor.Validate(out var msg)) {
+                MessageBox.Show(msg!, "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            Template.Herbs = Items.Select(i => new HerbDto { Id = i.HerbId, Name = i.HerbName, Unit = i.Unit }).ToList();
-            bool ok;
-            if (Template.Id == Guid.Empty) {
-                ok = await _service.AddAsync(Template);
-            } else {
-                ok = await _service.UpdateAsync(Template);
-            }
+            Template.Name = HerbEditor.FormulaName;
+            Template.Herbs = HerbEditor.Items.Select(i => new HerbDto {
+                Id = Guid.TryParse(i.HerbId, out var id) ? id : Guid.Empty,
+                Name = i.Name,
+                Unit = i.Unit
+            }).ToList();
+
+            bool ok = Template.Id == Guid.Empty
+                ? await _service.AddAsync(Template)
+                : await _service.UpdateAsync(Template);
             if (!ok)
                 MessageBox.Show("保存失败", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
             else {
