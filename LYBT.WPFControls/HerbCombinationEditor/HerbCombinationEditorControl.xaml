@@ -41,12 +41,12 @@
                     </DataGridTemplateColumn.CellTemplate>
                     <DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
-                            <materialDesign:AutoCompleteBox IsTextCompletionEnabled="False" MinimumPrefixLength="0"
-                                                     ItemsSource="{Binding FilteredHerbCatalog, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                     DisplayMemberPath="Name" SelectedValuePath="Id"
-                                                     SelectedValue="{Binding HerbId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                     KeyUp="HerbCombo_KeyUp" KeyDown="HerbCombo_KeyDown"
-                                                     SelectionChanged="HerbCombo_SelectionChanged" />
+                            <ComboBox IsEditable="True"
+                                      ItemsSource="{Binding FilteredHerbCatalog, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      DisplayMemberPath="Name" SelectedValuePath="Id"
+                                      SelectedValue="{Binding HerbId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      KeyUp="HerbCombo_KeyUp" KeyDown="HerbCombo_KeyDown"
+                                      SelectionChanged="HerbCombo_SelectionChanged" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
