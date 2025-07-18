@@ -29,6 +29,8 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public ObservableCollection<HerbDto> HerbCatalog { get; } = new();
 
+        public ObservableCollection<string> FormulaNameCatalog { get; } = new();
+
         private string _editModeTitle = "模板详细信息";
         public string EditModeTitle {
             get => _editModeTitle;
@@ -78,6 +80,12 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             HerbEditor.FormulaName = Template.Name;
             foreach (var h in Template.Herbs)
                 HerbEditor.Items.Add(new HerbCombinationItem { HerbId = h.Id.ToString(), Name = h.Name, Unit = h.Unit });
+
+            var list = await _service.GetListAsync();
+            FormulaNameCatalog.Clear();
+            foreach (var t in list)
+                if (!string.IsNullOrWhiteSpace(t.Name))
+                    FormulaNameCatalog.Add(t.Name);
 
             switch (mode) {
                 case ProfileMode.Create:
