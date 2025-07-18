@@ -3,9 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.WPFControls"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:local="clr-namespace:LYBT.WPFControls.HerbCombinationEditor">
+             xmlns:local="clr-namespace:LYBT.WPFControls.HerbCombinationEditor"
+             xmlns:conv="clr-namespace:LYBT.WPFControls.Converters">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <conv:HideInTemplateConverter x:Key="HideInTemplateConverter" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -51,9 +53,12 @@
                     </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="剂量" Binding="{Binding Dosage, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
-                <DataGridTextColumn Header="单位" Binding="{Binding Unit, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
-                <DataGridTextColumn Header="用法" Binding="{Binding Usage, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                <DataGridTextColumn Header="备注" Binding="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" Width="150"/>
+                <DataGridTextColumn Header="单位" Binding="{Binding Unit, UpdateSourceTrigger=PropertyChanged}" Width="80"
+                                   Visibility="{Binding Mode, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource HideInTemplateConverter}}"/>
+                <DataGridTextColumn Header="用法" Binding="{Binding Usage, UpdateSourceTrigger=PropertyChanged}" Width="120"
+                                   Visibility="{Binding Mode, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource HideInTemplateConverter}}"/>
+                <DataGridTextColumn Header="备注" Binding="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" Width="150"
+                                   Visibility="{Binding Mode, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource HideInTemplateConverter}}"/>
             </DataGrid.Columns>
         </DataGrid>
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">

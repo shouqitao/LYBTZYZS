@@ -118,7 +118,7 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
                     h.Name.Contains(text, StringComparison.OrdinalIgnoreCase) ||
                     (!string.IsNullOrEmpty(h.Pinyin) && h.Pinyin.Contains(upper)));
             }
-            foreach (var h in query)
+            foreach (var h in query.Take(5))
                 FilteredHerbCatalog.Add(h);
         }
 
