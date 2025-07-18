@@ -9,6 +9,7 @@ using LYBT.Common.Enums;
 using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.Module.Herbs.Dtos;
+using LYBT.Module.Prescriptions.Dtos;
 
 namespace LYBT.UI.WPF.ViewModels.Profile {
     /// <summary>
@@ -22,6 +23,15 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         public FormulaTemplateDetailDto Template {
             get => _template;
             set => SetProperty(ref _template, value);
+        }
+
+        public ObservableCollection<PrescriptionItemDto> Items { get; } = new();
+        public ObservableCollection<HerbDto> AllHerbs { get; } = new();
+
+        private PrescriptionItemDto? _selectedItem;
+        public PrescriptionItemDto? SelectedItem {
+            get => _selectedItem;
+            set => SetProperty(ref _selectedItem, value);
         }
 
 
@@ -51,6 +61,8 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
+        public DelegateCommand AddItemCommand { get; }
+        public DelegateCommand<object?> RemoveItemCommand { get; }
 
         public Action? CancelAction { get; set; }
 
@@ -59,6 +71,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             _herbService = herbService;
             SaveCommand = new DelegateCommand(async () => await SaveAsync());
             CancelCommand = new DelegateCommand(Cancel);
+            AddItemCommand = new DelegateCommand(AddItem);
+            RemoveItemCommand = new DelegateCommand<object?>(param => RemoveItem(param as PrescriptionItemDto));
+            _ = LoadHerbsAsync();
         }
 
         public async Task LoadAsync(Guid? id = null, ProfileMode mode = ProfileMode.View) {
@@ -70,10 +85,17 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
                 Template = new FormulaTemplateDetailDto();
             }
 
+            Items.Clear();
+            foreach (var h in Template.Herbs)
+                Items.Add(new PrescriptionItemDto { HerbId = h.Id, HerbName = h.Name });
+
             var herbs = await _herbService.GetListAsync();
             HerbCatalog.Clear();
-            foreach (var h in herbs)
+            AllHerbs.Clear();
+            foreach (var h in herbs) {
                 HerbCatalog.Add(h);
+                AllHerbs.Add(h);
+            }
 
 
 
@@ -104,8 +126,10 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             try {
                 bool success;
                 if (Template.Id == Guid.Empty) {
+                    Template.Herbs = Items.Select(i => new HerbDto { Id = i.HerbId, Name = i.HerbName }).ToList();
                     success = await _service.AddAsync(Template);
                 } else {
+                    Template.Herbs = Items.Select(i => new HerbDto { Id = i.HerbId, Name = i.HerbName }).ToList();
                     success = await _service.UpdateAsync(Template);
                 }
                 if (!success)
@@ -126,6 +150,22 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             IsEditable = false;
             EditModeTitle = "模板详细信息";
             CancelAction?.Invoke();
+        }
+
+        private void AddItem() {
+            Items.Add(new PrescriptionItemDto());
+        }
+
+        private void RemoveItem(PrescriptionItemDto? item) {
+            if (item != null)
+                Items.Remove(item);
+        }
+
+        private async Task LoadHerbsAsync() {
+            var list = await _herbService.GetListAsync();
+            AllHerbs.Clear();
+            foreach (var h in list)
+                AllHerbs.Add(h);
         }
     }
 }
