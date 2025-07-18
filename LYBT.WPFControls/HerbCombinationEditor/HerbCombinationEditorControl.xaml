@@ -18,8 +18,23 @@
         <StackPanel Orientation="Horizontal" Margin="0,0,0,8"
                     Visibility="{Binding ShowFormulaName, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock Text="方名:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-            <TextBox Width="200"
-                     Text="{Binding FormulaName, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"/>
+            <Grid>
+                <TextBox x:Name="PART_FormulaNameBox" Width="200"
+                         Text="{Binding FormulaName, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         TextChanged="FormulaNameBox_TextChanged" KeyDown="FormulaNameBox_KeyDown"/>
+                <Popup x:Name="PART_NamePopup"
+                       PlacementTarget="{Binding ElementName=PART_FormulaNameBox}"
+                       Placement="Bottom" StaysOpen="False"
+                       IsOpen="{Binding IsNamePopupOpen, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                    <Border BorderBrush="Gray" BorderThickness="1" Background="White">
+                        <ListBox x:Name="PART_NameListBox"
+                                 ItemsSource="{Binding FilteredFormulaNames, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 SelectionChanged="NameListBox_SelectionChanged"
+                                 KeyDown="NameListBox_KeyDown"
+                                 Width="{Binding ElementName=PART_FormulaNameBox, Path=ActualWidth}"/>
+                    </Border>
+                </Popup>
+            </Grid>
         </StackPanel>
         <DataGrid x:Name="PART_Grid" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
                   ItemsSource="{Binding HerbItems, RelativeSource={RelativeSource AncestorType=UserControl}}"

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +40,24 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
 
         public static readonly DependencyProperty ShowFormulaNameProperty =
             DependencyProperty.Register(nameof(ShowFormulaName), typeof(bool), typeof(HerbCombinationEditorControl), new PropertyMetadata(false));
+
+        public IEnumerable<string> FormulaNameCatalog {
+            get => (IEnumerable<string>)GetValue(FormulaNameCatalogProperty);
+            set => SetValue(FormulaNameCatalogProperty, value);
+        }
+
+        public static readonly DependencyProperty FormulaNameCatalogProperty =
+            DependencyProperty.Register(nameof(FormulaNameCatalog), typeof(IEnumerable<string>), typeof(HerbCombinationEditorControl), new PropertyMetadata(Array.Empty<string>(), OnFormulaNameCatalogChanged));
+
+        public ObservableCollection<string> FilteredFormulaNames { get; } = new();
+
+        public bool IsNamePopupOpen {
+            get => (bool)GetValue(IsNamePopupOpenProperty);
+            set => SetValue(IsNamePopupOpenProperty, value);
+        }
+
+        public static readonly DependencyProperty IsNamePopupOpenProperty =
+            DependencyProperty.Register(nameof(IsNamePopupOpen), typeof(bool), typeof(HerbCombinationEditorControl));
 
         public bool ReadOnly {
             get => (bool)GetValue(ReadOnlyProperty);
@@ -104,10 +123,16 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
         private static void OnHerbCatalogChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is HerbCombinationEditorControl ctrl)
-                ctrl.UpdateFilter(string.Empty);
+                ctrl.UpdateHerbFilter(string.Empty);
         }
 
-        private void UpdateFilter(string text)
+        private static void OnFormulaNameCatalogChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is HerbCombinationEditorControl ctrl)
+                ctrl.UpdateNameFilter(ctrl.FormulaName);
+        }
+
+        private void UpdateHerbFilter(string text)
         {
             FilteredHerbCatalog.Clear();
             IEnumerable<HerbDto> query = HerbCatalog;
@@ -120,6 +145,19 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
             }
             foreach (var h in query.Take(5))
                 FilteredHerbCatalog.Add(h);
+        }
+
+        private void UpdateNameFilter(string text)
+        {
+            FilteredFormulaNames.Clear();
+            IEnumerable<string> src = FormulaNameCatalog ?? Array.Empty<string>();
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                src = src.Where(n => n.Contains(text, StringComparison.OrdinalIgnoreCase));
+            }
+            foreach (var n in src.Take(5))
+                FilteredFormulaNames.Add(n);
+            IsNamePopupOpen = FilteredFormulaNames.Count > 0;
         }
 
         private void Grid_PreviewKeyDown(object sender, KeyEventArgs e) {
@@ -203,7 +241,7 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
         {
             if (sender is ComboBox cb)
             {
-                UpdateFilter(cb.Text);
+                UpdateHerbFilter(cb.Text);
                 cb.IsDropDownOpen = FilteredHerbCatalog.Count > 0;
                 if (FilteredHerbCatalog.Count == 1 &&
                     FilteredHerbCatalog[0].Name.Equals(cb.Text, StringComparison.OrdinalIgnoreCase))
@@ -241,6 +279,48 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
                 item.HerbId = dto.Id.ToString();
                 item.Name = dto.Name;
                 item.Unit = dto.Unit;
+            }
+        }
+
+        private void FormulaNameBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox tb)
+                UpdateNameFilter(tb.Text);
+        }
+
+        private void FormulaNameBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab && FilteredFormulaNames.Count > 0)
+            {
+                int next = PART_NameListBox.SelectedIndex < 0 ? 0 : (PART_NameListBox.SelectedIndex + 1) % FilteredFormulaNames.Count;
+                PART_NameListBox.SelectedIndex = next;
+                IsNamePopupOpen = true;
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter && PART_NameListBox.SelectedIndex >= 0)
+            {
+                FormulaName = FilteredFormulaNames[PART_NameListBox.SelectedIndex];
+                IsNamePopupOpen = false;
+                e.Handled = true;
+            }
+        }
+
+        private void NameListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is string name)
+            {
+                FormulaName = name;
+                IsNamePopupOpen = false;
+            }
+        }
+
+        private void NameListBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && PART_NameListBox.SelectedIndex >= 0)
+            {
+                FormulaName = FilteredFormulaNames[PART_NameListBox.SelectedIndex];
+                IsNamePopupOpen = false;
+                e.Handled = true;
             }
         }
 

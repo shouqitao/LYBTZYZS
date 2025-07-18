@@ -40,6 +40,7 @@
                                                      HerbItems="{Binding HerbEditor.Items}"
                                                      HerbCatalog="{Binding HerbCatalog}"
                                                      FormulaName="{Binding HerbEditor.FormulaName}"
+                                                     FormulaNameCatalog="{Binding FormulaNameCatalog}"
                                                      ReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"
                                                      SaveCommand="{Binding SaveCommand}"
                                                      CancelCommand="{Binding CancelCommand}"/>
