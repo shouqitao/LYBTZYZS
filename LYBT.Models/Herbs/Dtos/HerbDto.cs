@@ -44,5 +44,9 @@ namespace LYBT.Module.Herbs.Dtos {
         public string? BatchNo { get; set; }
         [DisplayName("有效期")]
         public DateTime? ExpireDate { get; set; }
+
+        /// <summary>功效说明</summary>
+        [DisplayName("功效说明")]
+        public string? Effect { get; set; }
     }
 }

@@ -5,26 +5,26 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 
 namespace LYBT.WPFControls {
     /// <summary>
-    /// Control providing fuzzy search and batch import of herbs.
+    /// Herb selection control with search and category filter.
     /// </summary>
     public partial class QuickAddHerbsControl : UserControl {
         private IEnumerable<HerbDto> _herbs = Array.Empty<HerbDto>();
+        private readonly Dictionary<Guid, string> _categoryCache = new();
 
         public QuickAddHerbsControl() {
             InitializeComponent();
-            ImportCommand = new DelegateCommand(Import);
-            RemovePendingCommand = new DelegateCommand<PrescriptionItemDto?>(RemovePending);
+            AddHerbCommand = new DelegateCommand<HerbDto?>(AddHerb);
+            Categories.Add("全部");
+            Categories.Add("解表");
+            Categories.Add("清热");
+            Categories.Add("其他");
         }
-
-        public ObservableCollection<HerbDto> Suggestions { get; } = new();
-
-        public ObservableCollection<PrescriptionItemDto> Pending { get; } = new();
 
         public IEnumerable<HerbDto>? Herbs {
             get => (IEnumerable<HerbDto>?)GetValue(HerbsProperty);
@@ -53,58 +53,75 @@ namespace LYBT.WPFControls {
             DependencyProperty.Register(nameof(SearchText), typeof(string), typeof(QuickAddHerbsControl),
                 new PropertyMetadata(string.Empty, OnSearchTextChanged));
 
-        public DelegateCommand ImportCommand { get; }
-        public DelegateCommand<PrescriptionItemDto?> RemovePendingCommand { get; }
+        public ObservableCollection<string> Categories { get; } = new();
+        public ObservableCollection<HerbDto> FilteredHerbs { get; } = new();
+
+        private string _selectedCategory = "全部";
+        public string SelectedCategory {
+            get => _selectedCategory;
+            set {
+                if (_selectedCategory != value) {
+                    _selectedCategory = value;
+                    UpdateFilter();
+                }
+            }
+        }
+
+        public DelegateCommand<HerbDto?> AddHerbCommand { get; }
 
         private static void OnSearchTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (d is QuickAddHerbsControl c)
-                c.UpdateSuggestions();
+                c.UpdateFilter();
         }
 
         private static void OnHerbsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (d is QuickAddHerbsControl c) {
                 c._herbs = e.NewValue as IEnumerable<HerbDto> ?? Array.Empty<HerbDto>();
-                c.UpdateSuggestions();
+                c.UpdateFilter();
             }
         }
 
-        private void UpdateSuggestions() {
-            Suggestions.Clear();
-            if (string.IsNullOrWhiteSpace(SearchText))
-                return;
-            foreach (var h in _herbs.Where(h =>
-                h.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                (!string.IsNullOrEmpty(h.Pinyin) && h.Pinyin.Contains(SearchText, StringComparison.OrdinalIgnoreCase))))
-                Suggestions.Add(h);
-        }
-
-        private void SearchBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (e.AddedItems.Count > 0 && e.AddedItems[0] is HerbDto herb)
-                AddPending(herb);
-            ((ComboBox)sender).Text = string.Empty;
-            Suggestions.Clear();
-        }
-
-        private void AddPending(HerbDto herb) {
-            if (Pending.Any(p => p.HerbId == herb.Id))
-                return;
-            Pending.Add(new PrescriptionItemDto { HerbId = herb.Id, HerbName = herb.Name });
-        }
-
-        private void RemovePending(PrescriptionItemDto? item) {
-            if (item != null)
-                Pending.Remove(item);
-        }
-
-        private void Import() {
-            if (TargetItems == null)
-                return;
-            foreach (var p in Pending) {
-                if (TargetItems.Any(t => t.HerbId == p.HerbId))
-                    continue;
-                TargetItems.Add(new PrescriptionItemDto { HerbId = p.HerbId, HerbName = p.HerbName });
+        private void UpdateFilter() {
+            FilteredHerbs.Clear();
+            IEnumerable<HerbDto> query = _herbs;
+            if (!string.IsNullOrWhiteSpace(SearchText)) {
+                query = query.Where(h => h.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+                    || (!string.IsNullOrEmpty(h.Pinyin) && h.Pinyin.Contains(SearchText, StringComparison.OrdinalIgnoreCase)));
             }
-            Pending.Clear();
+            if (SelectedCategory != "全部")
+                query = query.Where(h => GetCategory(h) == SelectedCategory);
+            foreach (var h in query)
+                FilteredHerbs.Add(h);
+        }
+
+        private string GetCategory(HerbDto herb) {
+            if (_categoryCache.TryGetValue(herb.Id, out var cat))
+                return cat;
+            if (!string.IsNullOrWhiteSpace(herb.Effect)) {
+                if (herb.Effect.Contains("解表"))
+                    cat = "解表";
+                else if (herb.Effect.Contains("清热"))
+                    cat = "清热";
+                else
+                    cat = "其他";
+            } else {
+                cat = "其他";
+            }
+            _categoryCache[herb.Id] = cat;
+            return cat;
+        }
+
+        private void AddHerb(HerbDto? herb) {
+            if (herb == null || TargetItems == null)
+                return;
+            if (TargetItems.Any(t => t.HerbId == herb.Id))
+                return;
+            TargetItems.Add(new PrescriptionItemDto { HerbId = herb.Id, HerbName = herb.Name });
+        }
+
+        private void CategoryButton_Click(object sender, RoutedEventArgs e) {
+            if (sender is ToggleButton btn && btn.Content is string cat)
+                SelectedCategory = cat;
         }
     }
 }
