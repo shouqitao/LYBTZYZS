@@ -92,7 +92,34 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
         }
 
         public static readonly DependencyProperty HerbCatalogProperty =
-            DependencyProperty.Register(nameof(HerbCatalog), typeof(IEnumerable<HerbDto>), typeof(HerbCombinationEditorControl), new PropertyMetadata(Array.Empty<HerbDto>()));
+            DependencyProperty.Register(
+                nameof(HerbCatalog),
+                typeof(IEnumerable<HerbDto>),
+                typeof(HerbCombinationEditorControl),
+                new PropertyMetadata(Array.Empty<HerbDto>(), OnHerbCatalogChanged));
+
+        public ObservableCollection<HerbDto> FilteredHerbCatalog { get; } = new();
+
+        private static void OnHerbCatalogChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is HerbCombinationEditorControl ctrl)
+                ctrl.UpdateFilter(string.Empty);
+        }
+
+        private void UpdateFilter(string text)
+        {
+            FilteredHerbCatalog.Clear();
+            IEnumerable<HerbDto> query = HerbCatalog;
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                var upper = text.ToUpperInvariant();
+                query = query.Where(h =>
+                    h.Name.Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(h.Pinyin) && h.Pinyin.Contains(upper)));
+            }
+            foreach (var h in query)
+                FilteredHerbCatalog.Add(h);
+        }
 
         private void Grid_PreviewKeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Tab && !ReadOnly) {
@@ -117,18 +144,40 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
                 var grid = (DataGrid)sender;
                 var rowIndex = grid.Items.IndexOf(grid.CurrentItem);
                 var colIndex = grid.Columns.IndexOf(grid.CurrentCell.Column);
-                if (colIndex == grid.Columns.Count - 1 && rowIndex >= 0 && rowIndex < HerbItems.Count) {
+                if (rowIndex >= 0 && rowIndex < HerbItems.Count) {
                     var item = HerbItems[rowIndex];
-                    if (!string.IsNullOrWhiteSpace(item.Name) && item.Dosage != null) {
+                    if (colIndex == 0) {
+                        e.Handled = true;
+                        grid.Dispatcher.InvokeAsync(() => {
+                            grid.CurrentCell = new DataGridCellInfo(grid.Items[rowIndex], grid.Columns[1]);
+                            grid.BeginEdit();
+                        });
+                    }
+                    else if (!string.IsNullOrWhiteSpace(item.Name) && item.Dosage != null) {
+                        e.Handled = true;
                         if (rowIndex == HerbItems.Count - 1)
                             HerbItems.Add(new HerbCombinationItem());
-                        e.Handled = true;
                         grid.Dispatcher.InvokeAsync(() => {
                             grid.SelectedIndex = rowIndex + 1;
                             grid.CurrentCell = new DataGridCellInfo(grid.Items[rowIndex + 1], grid.Columns[0]);
                             grid.BeginEdit();
                         });
                     }
+                }
+            }
+        }
+
+        private void HerbCombo_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (sender is ComboBox cb)
+            {
+                UpdateFilter(cb.Text);
+                cb.IsDropDownOpen = FilteredHerbCatalog.Count > 0;
+                if (FilteredHerbCatalog.Count == 1 &&
+                    FilteredHerbCatalog[0].Name.Equals(cb.Text, StringComparison.OrdinalIgnoreCase))
+                {
+                    cb.SelectedItem = FilteredHerbCatalog[0];
+                    cb.IsDropDownOpen = false;
                 }
             }
         }
