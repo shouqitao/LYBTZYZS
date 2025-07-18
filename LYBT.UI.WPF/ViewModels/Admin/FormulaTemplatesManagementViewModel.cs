@@ -2,7 +2,6 @@ using LYBT.Module.FormulaTemplates.Dtos;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.Common.Enums;
-using LYBT.Module.Herbs.Dtos;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -19,7 +18,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
     /// </summary>
     public class FormulaTemplatesManagementViewModel : BindableBase {
         private readonly IFormulaTemplateService _service;
-        private readonly IHerbService _herbService;
 
         private int _pageIndex = 1;
         public int PageIndex {
@@ -36,7 +34,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public int PageSize { get; set; } = 20;
 
         public ObservableCollection<FormulaTemplateDto> Templates { get; } = new();
-        public ObservableCollection<HerbDto> Herbs { get; } = new();
 
         private FormulaTemplateDto? _selectedTemplate;
         public FormulaTemplateDto? SelectedTemplate {
@@ -53,9 +50,8 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public DelegateCommand ImportCommand { get; }
         public DelegateCommand ExportCommand { get; }
 
-        public FormulaTemplatesManagementViewModel(IFormulaTemplateService service, IHerbService herbService, FormulaTemplatesProfileViewModel profileViewModel) {
+        public FormulaTemplatesManagementViewModel(IFormulaTemplateService service, FormulaTemplatesProfileViewModel profileViewModel) {
             _service = service;
-            _herbService = herbService;
             ProfileViewModel = profileViewModel;
             RefreshCommand = new DelegateCommand(async () => await LoadAsync());
             AddCommand = new DelegateCommand(Add);
@@ -64,7 +60,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             ImportCommand = new DelegateCommand(async () => await ImportAsync());
             ExportCommand = new DelegateCommand(async () => await ExportAsync());
             _ = LoadAsync();
-            _ = LoadHerbsAsync();
         }
 
         private async Task LoadAsync() {
@@ -133,11 +128,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             }
         }
 
-        private async Task LoadHerbsAsync() {
-            var list = await _herbService.GetListAsync();
-            Herbs.Clear();
-            foreach (var h in list)
-                Herbs.Add(h);
-        }
+        
     }
 }
