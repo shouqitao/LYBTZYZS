@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using LYBT.Common.Models;
+using LYBT.Common.HerbCombination;
 using Xunit;
 
 namespace LYBT.Tests.Controls;
