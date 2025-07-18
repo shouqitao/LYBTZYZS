@@ -236,7 +236,10 @@
     <Setter Property="wpf:ColorZoneAssist.Background" Value="Transparent" />
     <Setter Property="wpf:ColorZoneAssist.Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type TabControl}}, Path=(wpf:ColorZoneAssist.Foreground), FallbackValue=Black}" />
     <Setter Property="wpf:ColorZoneAssist.Mode" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type TabControl}}, Path=(wpf:ColorZoneAssist.Mode), FallbackValue=Standard}" />
-    <Setter Property="wpf:DialogHost.RestoreFocusElement" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=TabControl}}" />
+      <!-- Explicitly bind to the ancestor TabControl instance. Without a Path or
+           explicit mode the default two-way binding can cause a runtime error. -->
+      <Setter Property="wpf:DialogHost.RestoreFocusElement"
+              Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=TabControl}, Path=., Mode=OneWay}" />
     <Setter Property="wpf:RippleAssist.Feedback" Value="{DynamicResource MaterialDesign.Brush.Button.Ripple}" />
     <Setter Property="wpf:TabAssist.HasFilledTab" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type TabControl}}, Path=(wpf:TabAssist.HasFilledTab), FallbackValue=False}" />
   </Style>
