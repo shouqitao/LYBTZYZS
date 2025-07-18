@@ -19,4 +19,14 @@ public class HerbCombinationEditorTests {
         Assert.False(ok);
         Assert.NotNull(msg);
     }
+
+    [Fact]
+    public void ValidateRequiresValidHerbId()
+    {
+        var vm = new HerbCombinationEditorViewModel { Mode = HerbEditorMode.Prescription };
+        vm.Items.Add(new HerbCombinationItem { Name = "test", Dosage = 1 });
+        bool ok = vm.Validate(out var msg);
+        Assert.False(ok);
+        Assert.Contains("Row 1", msg);
+    }
 }

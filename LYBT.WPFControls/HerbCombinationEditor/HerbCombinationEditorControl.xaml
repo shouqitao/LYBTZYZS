@@ -33,8 +33,8 @@
                         <DataTemplate>
                             <ComboBox IsEditable="True" IsTextSearchEnabled="True" StaysOpenOnEdit="True"
                                       ItemsSource="{Binding HerbCatalog, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                      DisplayMemberPath="Name" SelectedValuePath="Name"
-                                      SelectedValue="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      DisplayMemberPath="Name" SelectedValuePath="Id" TextSearch.TextPath="Name"
+                                      SelectedValue="{Binding HerbId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                       SelectionChanged="HerbCombo_SelectionChanged" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>

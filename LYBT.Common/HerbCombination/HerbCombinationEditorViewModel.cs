@@ -36,9 +36,9 @@ public class HerbCombinationEditorViewModel : INotifyPropertyChanged
         for (int i = 0; i < Items.Count; i++)
         {
             var it = Items[i];
-            if (string.IsNullOrWhiteSpace(it.Name) || it.Dosage == null)
+            if (string.IsNullOrWhiteSpace(it.HerbId) || string.IsNullOrWhiteSpace(it.Name) || it.Dosage == null)
             {
-                message = $"Row {i + 1} requires name and dosage";
+                message = $"Row {i + 1} requires a valid herb and dosage";
                 return false;
             }
         }
