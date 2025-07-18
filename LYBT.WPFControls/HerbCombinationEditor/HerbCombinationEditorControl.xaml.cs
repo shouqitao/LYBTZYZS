@@ -145,27 +145,24 @@ namespace LYBT.WPFControls.HerbCombinationEditor {
 
         private void Grid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
-            if (e.Column.DisplayIndex == 0 && e.EditingElement is TextBox tb)
+            if (e.Column.DisplayIndex == 0 && e.Row.Item is HerbCombinationItem item)
             {
-                var input = tb.Text.Trim();
-                if (!string.IsNullOrEmpty(input))
+                if (string.IsNullOrWhiteSpace(item.HerbId))
                 {
-                    var matches = HerbCatalog.Where(h => string.Equals(h.Name, input, System.StringComparison.OrdinalIgnoreCase) || (h.Pinyin?.StartsWith(input, System.StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
-                    if (matches.Count == 0)
+                    if (e.EditingElement is TextBox tb)
+                        tb.Text = string.Empty;
+                    MessageBox.Show("No such herb found in the database.", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    item.Name = string.Empty;
+                    item.Unit = null;
+                    e.Cancel = true;
+                }
+                else
+                {
+                    var dto = HerbCatalog.FirstOrDefault(h => h.Id.ToString() == item.HerbId);
+                    if (dto != null)
                     {
-                        MessageBox.Show("No such herb found in the database.", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                    else if (matches.Count == 1 && e.Row.Item is HerbCombinationItem item)
-                    {
-                        var dto = matches[0];
-                        item.HerbId = dto.Id.ToString();
                         item.Name = dto.Name;
                         item.Unit = dto.Unit;
-                        var grid = (DataGrid)sender;
-                        grid.Dispatcher.InvokeAsync(() => {
-                            grid.CurrentCell = new DataGridCellInfo(e.Row.Item, grid.Columns[1]);
-                            grid.BeginEdit();
-                        });
                     }
                 }
             }

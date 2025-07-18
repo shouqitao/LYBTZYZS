@@ -17,6 +17,7 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
     /// </summary>
     public class FormulaTemplatesProfileViewModel : BindableBase {
         private readonly IFormulaTemplateService _service;
+        private readonly IHerbService _herbService;
 
         private FormulaTemplateDetailDto _template = new();
         public FormulaTemplateDetailDto Template {
@@ -25,6 +26,8 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
         }
 
         public HerbCombinationEditorViewModel HerbEditor { get; } = new() { Mode = HerbEditorMode.Template };
+
+        public ObservableCollection<HerbDto> HerbCatalog { get; } = new();
 
         private string _editModeTitle = "模板详细信息";
         public string EditModeTitle {
@@ -50,8 +53,9 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
 
         public Action? CancelAction { get; set; }
 
-        public FormulaTemplatesProfileViewModel(IFormulaTemplateService service) {
+        public FormulaTemplatesProfileViewModel(IFormulaTemplateService service, IHerbService herbService) {
             _service = service;
+            _herbService = herbService;
             SaveCommand = new DelegateCommand(async () => await SaveAsync());
             CancelCommand = new DelegateCommand(Cancel);
         }
@@ -64,6 +68,11 @@ namespace LYBT.UI.WPF.ViewModels.Profile {
             } else {
                 Template = new FormulaTemplateDetailDto();
             }
+
+            var herbs = await _herbService.GetListAsync();
+            HerbCatalog.Clear();
+            foreach (var h in herbs)
+                HerbCatalog.Add(h);
 
             HerbEditor.Items.Clear();
             HerbEditor.FormulaName = Template.Name;

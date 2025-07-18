@@ -38,6 +38,7 @@
                 <TextBlock Text="{Binding EditModeTitle}" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
                 <herb:HerbCombinationEditorControl Mode="Template" ShowFormulaName="True"
                                                      HerbItems="{Binding HerbEditor.Items}"
+                                                     HerbCatalog="{Binding HerbCatalog}"
                                                      FormulaName="{Binding HerbEditor.FormulaName}"
                                                      ReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"
                                                      SaveCommand="{Binding SaveCommand}"
