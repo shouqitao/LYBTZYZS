@@ -18,6 +18,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private readonly IHerbService _herbService;
 
         public ObservableCollection<HerbDto> Herbs => Items;
+        public ObservableCollection<HerbDto> FilteredHerbs { get; } = new();
 
         private HerbDto? _selectedHerb;
         public HerbDto? SelectedHerb {
@@ -31,7 +32,15 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         private string _searchKeyword = string.Empty;
-        public string SearchKeyword { get => _searchKeyword; set => SetProperty(ref _searchKeyword, value); }
+        public string SearchKeyword
+        {
+            get => _searchKeyword;
+            set
+            {
+                if (SetProperty(ref _searchKeyword, value))
+                    UpdateFilter();
+            }
+        }
 
         public HerbProfileViewModel HerbProfileViewModel { get; }
 
@@ -51,12 +60,27 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             DeleteCommand = new DelegateCommand(async () => await DeleteAsync(), () => SelectedHerb != null).ObservesProperty(() => SelectedHerb);
             ImportCommand = new DelegateCommand(async () => await ImportAsync());
             ExportCommand = new DelegateCommand(async () => await ExportAsync());
+            Items.CollectionChanged += (_, __) => UpdateFilter();
             _ = LoadPageAsync();
         }
 
         protected override async Task<PagedResultDto<HerbDto>> GetPagedAsync(int page, int pageSize) {
             var query = new HerbPagedQueryDto { Keyword = SearchKeyword, Page = page, PageSize = pageSize };
             return await _herbService.GetPagedAsync(query);
+        }
+
+        private void UpdateFilter()
+        {
+            FilteredHerbs.Clear();
+            foreach (var h in Herbs)
+            {
+                if (string.IsNullOrWhiteSpace(SearchKeyword) ||
+                    h.Name.Contains(SearchKeyword, System.StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(h.Pinyin) && h.Pinyin.Contains(SearchKeyword, System.StringComparison.OrdinalIgnoreCase)))
+                {
+                    FilteredHerbs.Add(h);
+                }
+            }
         }
 
         private void Add() {

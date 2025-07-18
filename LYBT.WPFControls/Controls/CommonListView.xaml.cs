@@ -93,6 +93,19 @@ namespace LYBT.WPFControls {
         public static readonly DependencyProperty ShowPagingProperty =
             DependencyProperty.Register(nameof(ShowPaging), typeof(bool), typeof(CommonListView), new PropertyMetadata(true));
 
+        public string SearchHint
+        {
+            get => (string)GetValue(SearchHintProperty);
+            set => SetValue(SearchHintProperty, value);
+        }
+
+        public static readonly DependencyProperty SearchHintProperty =
+            DependencyProperty.Register(
+                nameof(SearchHint),
+                typeof(string),
+                typeof(CommonListView),
+                new PropertyMetadata("Search..."));
+
         private static void OnSearchKeywordChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
             if (d is CommonListView view)
                 view.ExecuteSearchCommand();
