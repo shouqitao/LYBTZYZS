@@ -32,3 +32,17 @@ LYBT.WebAPI 是一个 ASP.NET Core API，集成系统的业务模块并通过 RE
 - **Queueing**：排队列表和详情、新增/编辑/删除、取消排队。
 - **DiagnosisTreatment**：诊疗记录增删改查。
 - **Doctors/Registration/Prescriptions/Herbs/FormulaTemplates/Records/Settings/Sync** 等模块亦提供各自的 CRUD 与状态处理接口。
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```

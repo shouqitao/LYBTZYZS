@@ -105,3 +105,17 @@ bool ok = await _herbService.BatchImportAsync(list);
 通过 `/api/Herb/exportExcel` 导出的文件已经按照以上顺序生成，可直接作为导入模板。
 
 
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```
