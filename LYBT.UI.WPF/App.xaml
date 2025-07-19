@@ -18,11 +18,15 @@
             <!-- 添加 BoolToVisibilityConverter 资源 -->
             <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
+            <!-- 枚举转描述特性 -->
+            <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+
             <!-- 反向布尔转换器 -->
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-
-            <!-- 字符串到可见性转换器 -->
-            <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+            <local:MultiBooleanToVisibilityConverter x:Key="MultiBooleanToVisibilityConverter"/>
+            <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
+            <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 
             <!-- 导航按钮选中背景色转换器 -->
             <local:SelectedNavButtonBackgroundConverter x:Key="SelectedNavButtonBackgroundConverter" />
@@ -30,15 +34,15 @@
             <!-- 导航按钮选中前景色转换器 -->
             <local:SelectedNavButtonForegroundConverter x:Key="SelectedNavButtonForegroundConverter" />
 
-            <!-- 枚举转描述特性 -->
-            <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+
 
             <!-- 空转布尔转换器 -->
-            <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
+            <local:StringEmptyToVisibilityConverter x:Key="StringEmptyToVisibilityConverter"/>
+            <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <local:StringEqualsConverter x:Key="StringEqualsConverter"/>
             <local:StringEqualsMultiConverter x:Key="StringEqualsMultiConverter"/>
             <local:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
-            <local:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>           

@@ -244,7 +244,7 @@
                         </StackPanel>
 
                         <!-- 空状态提示 -->
-                        <Border Visibility="{Binding HasNavigationItems, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                        <Border Visibility="{Binding HasNavigationItems, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                 Background="{DynamicResource MaterialDesign.Brush.Background}"
                                 Margin="20"
                                 Padding="20"
@@ -358,7 +358,7 @@
                     </Grid>
 
                     <!-- 首次使用引导 -->
-                    <Border Visibility="{Binding HasNavigationItems, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                    <Border Visibility="{Binding HasNavigationItems, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                             Background="{DynamicResource MaterialDesign.Brush.Primary.Light}"
                             CornerRadius="10"
                             Padding="20"

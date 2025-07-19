@@ -1,9 +1,7 @@
 ﻿using LYBT.UI.WPF.Apis;
 using LYBT.UI.WPF.Services;
-using LYBT.UI.WPF.Views;
 using LYBT.UI.WPF.Views.Admin;
 using LYBT.UI.WPF.Views.Main;
-using LYBT.UI.WPF.Views.Components; // 新增：组件视图命名空间
 using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.UI.WPF.ViewModels.Components; // 新增：组件视图模型命名空间
 using LYBT.UI.WPF.ViewModels.Main; // 新增：主要视图模型命名空间
@@ -15,7 +13,6 @@ using System.Text.Json.Serialization;
 using System.Windows;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.Views.Navigation;
-using Prism.Mvvm;
 
 namespace LYBT.UI.WPF {
     /// <summary>
@@ -117,16 +114,13 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
             containerRegistry.RegisterInstance<IThemeService>(themeService);
 
-            // 6. 【更新】注册整合架构的组件视图模型（移除TopToolBar和UserMenu）
+            // 6. 【更新】注册整合架构的视图模型（只注册必要的ViewModel）
             containerRegistry.RegisterSingleton<NavigationDrawerViewModel>();
             containerRegistry.RegisterSingleton<WelcomePanelViewModel>();
             containerRegistry.RegisterSingleton<StatusBarViewModel>();
             containerRegistry.RegisterSingleton<IntegratedMainLayoutViewModel>();
 
-            // 7. 【更新】注册组件视图（移除TopToolBar和UserMenu）
-            containerRegistry.Register<NavigationDrawer>();
-            containerRegistry.Register<WelcomePanel>();
-            containerRegistry.Register<StatusBar>();
+            // 7. 【移除】不再需要注册单独的组件视图，因为它们已经直接嵌入到IntegratedMainLayout中
 
             // 8. 注册Profile视图模型（保持原有）
             containerRegistry.Register<HerbProfileViewModel>();

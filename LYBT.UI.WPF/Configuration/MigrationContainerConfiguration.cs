@@ -1,8 +1,6 @@
 ﻿using LYBT.UI.WPF.ViewModels.Components;
 using LYBT.UI.WPF.ViewModels.Main;
-using LYBT.UI.WPF.Views.Components;
 using LYBT.UI.WPF.Views.Main;
-using Prism.Ioc;
 
 namespace LYBT.UI.WPF.Configuration {
     /// <summary>
@@ -20,11 +18,6 @@ namespace LYBT.UI.WPF.Configuration {
 
             // 注册主布局视图模型
             containerRegistry.RegisterSingleton<IntegratedMainLayoutViewModel>();
-
-            // 注册新组件视图
-            containerRegistry.Register<NavigationDrawer>();
-            containerRegistry.Register<WelcomePanel>();
-            containerRegistry.Register<StatusBar>();
 
             // 注册主布局视图用于导航
             containerRegistry.RegisterForNavigation<IntegratedMainLayout>();
