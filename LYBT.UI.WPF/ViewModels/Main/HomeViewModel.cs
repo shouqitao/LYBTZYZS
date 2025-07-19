@@ -11,7 +11,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
     public class HomeViewModel : BindableBase, INavigationAware {
         private readonly IRegionManager _regionManager;
         private readonly MainWindowViewModel _mainWindow;
-        private readonly DispatcherTimer _navigationTimer;
+        private DispatcherTimer _navigationTimer;
 
         #region Properties
 
@@ -256,7 +256,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 // 执行导航
                 _regionManager.RequestNavigate("ContentRegion", item.TargetView, navigationResult => {
                     Application.Current.Dispatcher.Invoke(() => {
-                        if (navigationResult.Result == true) {
+                        if (navigationResult.Success) {
                             StatusMessage = $"已切换到 {item.DisplayName}";
                             AddToRecentItems(item);
                             NavigationCount++;

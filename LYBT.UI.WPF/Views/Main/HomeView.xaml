@@ -7,11 +7,6 @@
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <UserControl.Resources>
-        <!-- 转换器定义 -->
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
-        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
-
         <!-- 导航项样式 -->
         <Style x:Key="NavigationItemStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>

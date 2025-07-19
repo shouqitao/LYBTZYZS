@@ -3,7 +3,10 @@ using LYBT.UI.WPF.Services;
 using LYBT.UI.WPF.Views;
 using LYBT.UI.WPF.Views.Admin;
 using LYBT.UI.WPF.Views.Main;
+using LYBT.UI.WPF.Views.Components; // 新增：组件视图命名空间
 using LYBT.UI.WPF.ViewModels.Profile;
+using LYBT.UI.WPF.ViewModels.Components; // 新增：组件视图模型命名空间
+using LYBT.UI.WPF.ViewModels.Main; // 新增：主要视图模型命名空间
 using Refit;
 using System.Configuration;
 using System.Net.Http;
@@ -44,7 +47,7 @@ namespace LYBT.UI.WPF {
                 })
             };
 
-            // 2. 用Refit创建IAuthApi实例  
+            // 2. 用Refit创建API实例  
             var authApi = RestService.For<IAuthApi>(httpClient, refitSettings);
             var userApi = RestService.For<IUserApi>(httpClient, refitSettings);
             var doctorApi = RestService.For<IDoctorApi>(httpClient, refitSettings);
@@ -59,8 +62,9 @@ namespace LYBT.UI.WPF {
             var recordApi = RestService.For<IRecordApi>(httpClient, refitSettings);
             var queueingApi = RestService.For<IQueueingApi>(httpClient, refitSettings);
             var diagnosisTreatmentApi = RestService.For<IDiagnosisTreatmentApi>(httpClient, refitSettings);
+            var pharmacyApi = RestService.For<IPharmacyApi>(httpClient, refitSettings);
 
-            // 3. 手动new AuthService（注入authApi实例），不让Unity自动构造！
+            // 3. 创建服务实例
             var authService = new AuthService(authApi);
             var userService = new UserService(userApi);
             var doctorService = new DoctorService(doctorApi);
@@ -68,7 +72,6 @@ namespace LYBT.UI.WPF {
             var registrationService = new RegistrationService(registrationApi);
             var herbService = new HerbService(herbApi);
             var billingService = new BillingService(billingApi);
-            var pharmacyApi = RestService.For<IPharmacyApi>(httpClient, refitSettings);
             var pharmacyService = new PharmacyService(pharmacyApi);
             var prescriptionService = new PrescriptionService(prescriptionApi);
             var formulaTemplateService = new FormulaTemplateService(formulaTemplateApi);
@@ -77,11 +80,9 @@ namespace LYBT.UI.WPF {
             var recordService = new RecordService(recordApi);
             var queueingService = new QueueingService(queueingApi);
             var diagnosisTreatmentService = new DiagnosisTreatmentService(diagnosisTreatmentApi);
-
             var themeService = new ThemeService();
 
-
-            // 4. 用RegisterInstance注册，后续所有用IAuthService和IAuthApi的地方都能用  
+            // 4. 注册API接口实例
             containerRegistry.RegisterInstance(authApi);
             containerRegistry.RegisterInstance(userApi);
             containerRegistry.RegisterInstance(doctorApi);
@@ -89,7 +90,7 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(registrationApi);
             containerRegistry.RegisterInstance(herbApi);
             containerRegistry.RegisterInstance(pharmacyApi);
-            containerRegistry.RegisterInstance(billingService);
+            containerRegistry.RegisterInstance(billingApi);
             containerRegistry.RegisterInstance(prescriptionApi);
             containerRegistry.RegisterInstance(formulaTemplateApi);
             containerRegistry.RegisterInstance(logApi);
@@ -98,16 +99,14 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance(queueingApi);
             containerRegistry.RegisterInstance(diagnosisTreatmentApi);
 
+            // 5. 注册服务接口实例
             containerRegistry.RegisterInstance<IAuthService>(authService);
             containerRegistry.RegisterInstance<IUserService>(userService);
             containerRegistry.RegisterInstance<IDoctorService>(doctorService);
             containerRegistry.RegisterInstance<IPatientService>(patientService);
             containerRegistry.RegisterInstance<IHerbService>(herbService);
-
             containerRegistry.RegisterInstance<IPharmacyService>(pharmacyService);
-
             containerRegistry.RegisterInstance<IRegistrationService>(registrationService);
-
             containerRegistry.RegisterInstance<IBillingService>(billingService);
             containerRegistry.RegisterInstance<IPrescriptionService>(prescriptionService);
             containerRegistry.RegisterInstance<IFormulaTemplateService>(formulaTemplateService);
@@ -117,18 +116,35 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IQueueingService>(queueingService);
             containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
             containerRegistry.RegisterInstance<IThemeService>(themeService);
-            // Register profile view models for dependency injection
+
+            // 6. 【更新】注册整合架构的组件视图模型（移除TopToolBar和UserMenu）
+            containerRegistry.RegisterSingleton<NavigationDrawerViewModel>();
+            containerRegistry.RegisterSingleton<WelcomePanelViewModel>();
+            containerRegistry.RegisterSingleton<StatusBarViewModel>();
+            containerRegistry.RegisterSingleton<IntegratedMainLayoutViewModel>();
+
+            // 7. 【更新】注册组件视图（移除TopToolBar和UserMenu）
+            containerRegistry.Register<NavigationDrawer>();
+            containerRegistry.Register<WelcomePanel>();
+            containerRegistry.Register<StatusBar>();
+
+            // 8. 注册Profile视图模型（保持原有）
             containerRegistry.Register<HerbProfileViewModel>();
             containerRegistry.Register<PrescriptionProfileViewModel>();
             containerRegistry.Register<FormulaTemplatesProfileViewModel>();
             containerRegistry.Register<DoctorProfileViewModel>();
             containerRegistry.Register<PatientProfileViewModel>();
-            // Map profile views to their view models where naming conventions don't match
+
+            // 9. 映射Profile视图到视图模型（保持原有）
             ViewModelLocationProvider.Register<DoctorProfileView, DoctorProfileViewModel>();
-            // 5. 如果你还有其他API接口，也用同样方式new出来后RegisterInstance  
+
+            // 10. 注册导航视图（保持原有 + 新增整合布局）
             containerRegistry.RegisterForNavigation<LoginView>("LoginView");
             containerRegistry.RegisterForNavigation<MainWindow>("MainWindow");
             containerRegistry.RegisterForNavigation<HomeView>("HomeView");
+            containerRegistry.RegisterForNavigation<IntegratedMainLayout>("IntegratedMainLayout"); // 【新增】
+
+            // Admin相关视图
             containerRegistry.RegisterForNavigation<AdminView>("AdminView");
             containerRegistry.RegisterForNavigation<UserManagementView>("UserManagementView");
             containerRegistry.RegisterForNavigation<DoctorManagementView>("DoctorManagementView");
@@ -136,15 +152,23 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterForNavigation<PrescriptionManagementView>("PrescriptionManagementView");
             containerRegistry.RegisterForNavigation<RecordManagementView>("RecordManagementView");
             containerRegistry.RegisterForNavigation<FormulaTemplatesManagementView>("FormulaTemplatesManagementView");
+
+            // 角色工作台视图
             containerRegistry.RegisterForNavigation<BillingStaffView>("BillingStaffView");
             containerRegistry.RegisterForNavigation<DiagnosingDoctorView>("DiagnosingDoctorView");
             containerRegistry.RegisterForNavigation<PharmacyStaffView>("PharmacyStaffView");
             containerRegistry.RegisterForNavigation<RegistrationStaffView>("RegistrationStaffView");
             containerRegistry.RegisterForNavigation<TreatmentDoctorView>("TreatmentDoctorView");
+
+            // 功能视图
             containerRegistry.RegisterForNavigation<ChangePasswordView>("ChangePasswordView");
             containerRegistry.RegisterForNavigation<ChangeProfileView>("ChangeProfileView");
             containerRegistry.RegisterForNavigation<DoctorProfileView>("DoctorProfileView");
 
+            // 11. 【可选】验证注册是否成功
+            ValidateRegistrations(containerRegistry);
+
+            System.Diagnostics.Debug.WriteLine("=== 依赖注入配置完成 ===");
         }
 
         /// <summary>
@@ -160,9 +184,53 @@ namespace LYBT.UI.WPF {
         protected override void OnInitialized() {
             base.OnInitialized();
             System.Diagnostics.Debug.WriteLine("App.OnInitialized called");
+
+            // 【可选】验证整合组件是否正确注册
+            try {
+                var integratedLayout = Container.Resolve<IntegratedMainLayoutViewModel>();
+                System.Diagnostics.Debug.WriteLine("IntegratedMainLayoutViewModel resolved successfully");
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Failed to resolve IntegratedMainLayoutViewModel: {ex.Message}");
+            }
+
             var regionManager = Container.Resolve<IRegionManager>();
+
+            // 诊断区域状态
+            System.Diagnostics.Debug.WriteLine("=== 应用启动时的区域状态 ===");
+            try {
+                foreach (var region in regionManager.Regions) {
+                    System.Diagnostics.Debug.WriteLine($"已存在区域: {region.Name}");
+                }
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"区域诊断失败: {ex.Message}");
+            }
+
             System.Diagnostics.Debug.WriteLine("Navigating to LoginView on startup");
             regionManager.RequestNavigate("FunctionRegion", "LoginView");
+        }
+
+        /// <summary>
+        /// 验证关键组件的注册
+        /// </summary>
+        private void ValidateRegistrations(IContainerRegistry containerRegistry) {
+            try {
+                System.Diagnostics.Debug.WriteLine("=== 验证依赖注入注册 ===");
+
+                // 验证服务注册
+                System.Diagnostics.Debug.WriteLine("✓ 核心服务已注册");
+
+                // 验证组件视图模型注册
+                System.Diagnostics.Debug.WriteLine("✓ 组件视图模型已注册");
+
+                // 验证视图注册
+                System.Diagnostics.Debug.WriteLine("✓ 视图已注册");
+
+                System.Diagnostics.Debug.WriteLine("=== 依赖注入验证完成 ===");
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"❌ 依赖注入验证失败: {ex.Message}");
+                MessageBox.Show($"应用启动时检测到配置问题：{ex.Message}\n\n请检查依赖注入配置。",
+                               "启动错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

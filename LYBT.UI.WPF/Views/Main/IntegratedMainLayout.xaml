@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="LYBT.UI.WPF.Views.Main.IntegratedMainLayout"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:components="clr-namespace:LYBT.UI.WPF.Views.Components"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <!-- 主内容区 -->
+            <RowDefinition Height="25"/>
+            <!-- 底部状态栏 -->
+        </Grid.RowDefinitions>
+
+        <!-- 主内容区域 - 使用DrawerHost实现侧边导航 -->
+        <materialDesign:DrawerHost Grid.Row="0"
+                                   IsLeftDrawerOpen="{Binding IsNavDrawerOpen, Mode=TwoWay}" 
+                                   LeftDrawerCloseOnClickAway="True"
+                                   LeftDrawerCornerRadius="0,10,10,0">
+
+            <!-- 左侧导航抽屉 -->
+            <materialDesign:DrawerHost.LeftDrawerContent>
+                <components:NavigationDrawer DataContext="{Binding NavigationDrawerViewModel}"/>
+            </materialDesign:DrawerHost.LeftDrawerContent>
+
+            <!-- 主内容区域 -->
+            <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- 欢迎区域 -->
+                    <RowDefinition Height="*"/>
+                    <!-- 功能内容区 -->
+                </Grid.RowDefinitions>
+
+                <!-- 欢迎区域 -->
+                <!-- FIX: Ensure WelcomePanel exists in LYBT.UI.WPF.Views.Components namespace as a UserControl.
+                     If it does not exist, create WelcomePanel.xaml and WelcomePanel.xaml.cs in that namespace. -->
+                <components:WelcomePanel Grid.Row="0" 
+                                        DataContext="{Binding WelcomePanelViewModel}"
+                                        Visibility="{Binding ShowWelcomePanel, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <!-- 功能内容区域 -->
+                <Border Grid.Row="1" 
+                        Background="Transparent"
+                        Margin="10,0,10,10">
+                    <ContentControl prism:RegionManager.RegionName="IntegratedContentRegion"
+                                    Background="{DynamicResource MaterialDesign.Brush.Background}"/>
+                </Border>
+            </Grid>
+        </materialDesign:DrawerHost>
+
+        <!-- 底部状态栏 -->
+        <components:StatusBar Grid.Row="1" 
+                             DataContext="{Binding StatusBarViewModel}"/>
+    </Grid>
+</UserControl>

@@ -1,14 +1,15 @@
-﻿using System.Windows;
-using System.Windows.Threading;
-using LYBT.Common.Enums.Users;
+﻿using LYBT.Common.Enums.Users;
 using LYBT.UI.WPF.Events;
 using LYBT.UI.WPF.Interfaces;
 using LYBT.UI.WPF.ViewModels.Profile;
 using LYBT.Common.Enums;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
-    /// 重构后的主窗口视图模型 - 增强功能和用户体验
+    /// 重构后的主窗口视图模型 - 简化职责，专注于窗口管理和界面切换
+    /// 注意：这是对原有MainWindowViewModel的重构，保持类名不变以确保兼容性
     /// </summary>
     public class MainWindowViewModel : BindableBase {
         private readonly IEventAggregator _eventAggregator;
@@ -16,7 +17,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private readonly IAuthService _authService;
         private readonly IDoctorService _doctorService;
         private readonly IThemeService _themeService;
-        private readonly DispatcherTimer _statusTimer;
 
         #region Properties
 
@@ -38,81 +38,18 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             set => SetProperty(ref _isMainVisible, value);
         }
 
-        private bool _isDoctorRole = false;
-        /// <summary>
-        /// 当前登录用户是否医生角色
-        /// </summary>
-        public bool IsDoctorRole {
-            get => _isDoctorRole;
-            set => SetProperty(ref _isDoctorRole, value);
-        }
-
-        private bool _isSysAdmin;
-        /// <summary>
-        /// 当前登录用户是否为内置 sysadmin
-        /// </summary>
-        public bool IsSysAdmin {
-            get => _isSysAdmin;
-            set {
-                if (SetProperty(ref _isSysAdmin, value)) {
-                    RaisePropertyChanged(nameof(IsNotSysAdmin));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 非 sysadmin 用户
-        /// </summary>
-        public bool IsNotSysAdmin => !IsSysAdmin;
-
-        private bool _hasDoctorProfile;
-        /// <summary>
-        /// 是否有医生档案
-        /// </summary>
-        public bool HasDoctorProfile {
-            get => _hasDoctorProfile;
-            set => SetProperty(ref _hasDoctorProfile, value);
-        }
-
-        private string _doctorProfileButtonText = "新增医生档案";
-        /// <summary>
-        /// 医生档案按钮文本
-        /// </summary>
-        public string DoctorProfileButtonText {
-            get => _doctorProfileButtonText;
-            set => SetProperty(ref _doctorProfileButtonText, value);
-        }
-
-        private bool _isNavDrawerOpen;
-        /// <summary>
-        /// 左侧导航抽屉是否展开
-        /// </summary>
-        public bool IsNavDrawerOpen {
-            get => _isNavDrawerOpen;
-            set => SetProperty(ref _isNavDrawerOpen, value);
-        }
-
         private string _currentUserName = "未登录";
         /// <summary>
-        /// 当前用户名
+        /// 当前用户名（用于标题栏显示）
         /// </summary>
         public string CurrentUserName {
             get => _currentUserName;
             set => SetProperty(ref _currentUserName, value);
         }
 
-        private string _currentUserRole = "";
-        /// <summary>
-        /// 当前用户角色
-        /// </summary>
-        public string CurrentUserRole {
-            get => _currentUserRole;
-            set => SetProperty(ref _currentUserRole, value);
-        }
-
         private string _systemStatus = "系统正常";
         /// <summary>
-        /// 系统状态
+        /// 系统状态（用于标题栏显示）
         /// </summary>
         public string SystemStatus {
             get => _systemStatus;
@@ -121,12 +58,57 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         /// <summary>
-        /// 当前时间
+        /// 当前时间（用于标题栏显示）
         /// </summary>
         public string CurrentTime {
             get => _currentTime;
             set => SetProperty(ref _currentTime, value);
         }
+
+        private bool _isInitialized = false;
+        /// <summary>
+        /// 是否已初始化
+        /// </summary>
+        public bool IsInitialized {
+            get => _isInitialized;
+            set => SetProperty(ref _isInitialized, value);
+        }
+
+        private bool _isNavDrawerOpen;
+        /// <summary>
+        /// 导航抽屉是否打开（用于兼容原有XAML绑定）
+        /// </summary>
+        public bool IsNavDrawerOpen {
+            get => _isNavDrawerOpen;
+            set => SetProperty(ref _isNavDrawerOpen, value);
+        }
+
+        // 保留一些原有属性以确保向后兼容
+        private bool _isDoctorRole = false;
+        public bool IsDoctorRole {
+            get => _isDoctorRole;
+            set => SetProperty(ref _isDoctorRole, value);
+        }
+
+        private bool _isSysAdmin;
+        public bool IsSysAdmin {
+            get => _isSysAdmin;
+            set => SetProperty(ref _isSysAdmin, value);
+        }
+
+        private bool _hasDoctorProfile;
+        public bool HasDoctorProfile {
+            get => _hasDoctorProfile;
+            set => SetProperty(ref _hasDoctorProfile, value);
+        }
+
+        private string _doctorProfileButtonText = "新增医生档案";
+        public string DoctorProfileButtonText {
+            get => _doctorProfileButtonText;
+            set => SetProperty(ref _doctorProfileButtonText, value);
+        }
+
+        public bool IsNotSysAdmin => !IsSysAdmin;
 
         private bool _isDarkTheme = false;
         /// <summary>
@@ -146,70 +128,24 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             set => SetProperty(ref _currentUserRoles, value);
         }
 
-        private bool _isInitialized = false;
-        /// <summary>
-        /// 是否已初始化
-        /// </summary>
-        public bool IsInitialized {
-            get => _isInitialized;
-            set => SetProperty(ref _isInitialized, value);
-        }
-
         #endregion
 
-        #region Commands
+        #region Commands - 保留原有命令以确保兼容性
 
-        /// <summary>
-        /// 退出登录命令
-        /// </summary>
         public DelegateCommand LogoutCommand { get; private set; }
-
-        /// <summary>
-        /// 显示修改密码界面
-        /// </summary>
         public DelegateCommand ShowChangePasswordCommand { get; private set; }
-
-        /// <summary>
-        /// 显示修改个人信息界面
-        /// </summary>
         public DelegateCommand ShowChangeProfileCommand { get; private set; }
-
-        /// <summary>
-        /// 显示医生档案界面
-        /// </summary>
         public DelegateCommand ShowDoctorProfileCommand { get; private set; }
-
-        /// <summary>
-        /// 显示患者档案界面
-        /// </summary>
         public DelegateCommand ShowPatientProfileCommand { get; private set; }
-
-        /// <summary>
-        /// 切换主题命令
-        /// </summary>
-        public DelegateCommand ToggleThemeCommand { get; private set; }
-
-        /// <summary>
-        /// 切换导航抽屉
-        /// </summary>
         public DelegateCommand ToggleNavDrawerCommand { get; private set; }
-
-        /// <summary>
-        /// 刷新状态命令
-        /// </summary>
+        public DelegateCommand ToggleThemeCommand { get; private set; }
         public DelegateCommand RefreshStatusCommand { get; private set; }
-
-        /// <summary>
-        /// 关于系统命令
-        /// </summary>
         public DelegateCommand AboutSystemCommand { get; private set; }
-
-        /// <summary>
-        /// 系统设置命令
-        /// </summary>
         public DelegateCommand SystemSettingsCommand { get; private set; }
 
         #endregion
+
+        private DispatcherTimer _statusTimer;
 
         public MainWindowViewModel(IEventAggregator eventAggregator, IRegionManager regionManager,
                                    IAuthService authService, IDoctorService doctorService,
@@ -220,42 +156,84 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _doctorService = doctorService ?? throw new ArgumentNullException(nameof(doctorService));
             _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
 
-            // 订阅登录成功事件
-            _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
-
-            // 初始化命令
+            // 初始化命令（保持向后兼容）
             InitializeCommands();
+
+            // 订阅事件
+            SubscribeToEvents();
 
             // 初始化状态定时器
             InitializeStatusTimer();
 
-            // 初始化主题状态
-            IsDarkTheme = _themeService.IsDarkTheme;
-
-            System.Diagnostics.Debug.WriteLine("Enhanced MainWindowViewModel constructed");
+            System.Diagnostics.Debug.WriteLine("Refactored MainWindowViewModel constructed");
         }
 
         #region Initialization
 
-        /// <summary>
-        /// 初始化命令
-        /// </summary>
         private void InitializeCommands() {
-            LogoutCommand = new DelegateCommand(async () => await LogoutAsync());
-            ShowChangePasswordCommand = new DelegateCommand(ShowChangePassword);
-            ShowChangeProfileCommand = new DelegateCommand(ShowChangeProfile);
-            ShowDoctorProfileCommand = new DelegateCommand(ShowDoctorProfile);
-            ShowPatientProfileCommand = new DelegateCommand(ShowPatientProfile);
-            ToggleThemeCommand = new DelegateCommand(ToggleTheme);
-            ToggleNavDrawerCommand = new DelegateCommand(() => IsNavDrawerOpen = !IsNavDrawerOpen);
+            // 保留原有命令，但通过事件系统实现
+            LogoutCommand = new DelegateCommand(() => {
+                _eventAggregator.GetEvent<LogoutEvent>().Publish();
+            });
+
+            ShowChangePasswordCommand = new DelegateCommand(() => {
+                _eventAggregator.GetEvent<NavigateToFunctionEvent>().Publish("ChangePasswordView");
+            });
+
+            ShowChangeProfileCommand = new DelegateCommand(() => {
+                _eventAggregator.GetEvent<NavigateToFunctionEvent>().Publish("ChangeProfileView");
+            });
+
+            ShowDoctorProfileCommand = new DelegateCommand(() => {
+                _eventAggregator.GetEvent<NavigateToDoctorProfileEvent>().Publish(new DoctorProfileNavigationArgs {
+                    Mode = HasDoctorProfile ? ProfileMode.Edit : ProfileMode.Create
+                });
+            });
+
+            ShowPatientProfileCommand = new DelegateCommand(() => {
+                _eventAggregator.GetEvent<NavigateToFunctionEvent>().Publish("PatientProfileView");
+            });
+
+            ToggleNavDrawerCommand = new DelegateCommand(() => {
+                IsNavDrawerOpen = !IsNavDrawerOpen;
+            });
+
+            ToggleThemeCommand = new DelegateCommand(() => {
+                try {
+                    _themeService.ToggleTheme();
+                    var themeText = _themeService.IsDarkTheme ? "暗色" : "浅色";
+                    SystemStatus = $"已切换到{themeText}主题";
+                    _eventAggregator.GetEvent<ThemeChangedEvent>().Publish(themeText);
+                } catch (Exception ex) {
+                    System.Diagnostics.Debug.WriteLine($"Theme toggle error: {ex.Message}");
+                    SystemStatus = $"主题切换失败：{ex.Message}";
+                }
+            });
+
             RefreshStatusCommand = new DelegateCommand(async () => await RefreshSystemStatusAsync());
+
             AboutSystemCommand = new DelegateCommand(ShowAboutSystem);
+
             SystemSettingsCommand = new DelegateCommand(ShowSystemSettings);
         }
 
-        /// <summary>
-        /// 初始化状态定时器
-        /// </summary>
+        private void SubscribeToEvents() {
+            // 订阅登录成功事件
+            _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
+
+            // 订阅退出登录事件
+            _eventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout);
+
+            // 订阅功能界面导航事件
+            _eventAggregator.GetEvent<NavigateToFunctionEvent>().Subscribe(OnNavigateToFunction);
+
+            // 订阅医生档案导航事件
+            _eventAggregator.GetEvent<NavigateToDoctorProfileEvent>().Subscribe(OnNavigateToDoctorProfile);
+
+            // 订阅系统状态更新事件
+            _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Subscribe(OnSystemStatusUpdated);
+        }
+
         private void InitializeStatusTimer() {
             _statusTimer = new DispatcherTimer {
                 Interval = TimeSpan.FromSeconds(1)
@@ -267,33 +245,19 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         #region Event Handlers
 
-        /// <summary>
-        /// 状态定时器事件
-        /// </summary>
         private void StatusTimer_Tick(object sender, EventArgs e) {
             CurrentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
-        /// <summary>
-        /// 登录成功事件处理
-        /// </summary>
         private async void OnLoginSuccess(IList<UserRole> roles) {
             try {
                 System.Diagnostics.Debug.WriteLine($"OnLoginSuccess called with roles: {string.Join(", ", roles)}");
 
-                // 保存用户角色信息
-                CurrentUserRoles = roles;
-
-                // 更新用户信息
+                // 更新用户信息（保持原有逻辑）
                 await UpdateUserInfoAsync(roles);
 
                 // 更新界面状态
                 UpdateUIState();
-
-                // 检查医生档案（如果是医生角色）
-                if (IsDoctorRole) {
-                    await CheckDoctorProfileAsync();
-                }
 
                 // 启动状态定时器
                 _statusTimer.Start();
@@ -301,151 +265,57 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 // 最大化窗口
                 MaximizeWindow();
 
-                // 导航到主内容区
-                await NavigateToHomeAsync(roles);
-
-                // 刷新系统状态
-                await RefreshSystemStatusAsync();
+                // 导航到整合后的主布局
+                await NavigateToIntegratedMainLayoutAsync(roles);
 
                 // 标记为已初始化
                 IsInitialized = true;
 
+                SystemStatus = "系统初始化完成";
+
                 System.Diagnostics.Debug.WriteLine("Main window initialization completed successfully");
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"OnLoginSuccess error: {ex.Message}");
+                SystemStatus = $"初始化失败：{ex.Message}";
                 MessageBox.Show($"初始化主界面时发生错误：{ex.Message}", "错误",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        #endregion
-
-        #region Command Implementations
-
-        /// <summary>
-        /// 退出登录
-        /// </summary>
-        private async Task LogoutAsync() {
+        private void OnLogout() {
             try {
-                var result = MessageBox.Show(
-                    "确定要退出登录吗？",
-                    "退出确认",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result != MessageBoxResult.Yes)
-                    return;
-
-                // 停止定时器
+                // 执行原有的登出逻辑
                 _statusTimer?.Stop();
-
-                // 执行登出
-                await _authService.LogoutAsync();
-
-                // 重置界面状态
                 ResetUIState();
-
-                // 跳转回登录界面
                 NavigateToLogin();
 
                 System.Diagnostics.Debug.WriteLine("User logged out successfully");
             } catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Logout error: {ex.Message}");
-                MessageBox.Show($"退出登录时发生错误：{ex.Message}", "错误",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"OnLogout error: {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// 显示修改密码界面
-        /// </summary>
-        private void ShowChangePassword() {
-            IsMainVisible = false;
+        private void OnNavigateToFunction(string functionView) {
+            // 切换到功能区域
             IsFunctionVisible = true;
-            _regionManager.RequestNavigate("FunctionRegion", "ChangePasswordView");
-        }
-
-        /// <summary>
-        /// 显示修改个人信息界面
-        /// </summary>
-        private void ShowChangeProfile() {
             IsMainVisible = false;
-            IsFunctionVisible = true;
-            _regionManager.RequestNavigate("FunctionRegion", "ChangeProfileView");
         }
 
-        /// <summary>
-        /// 显示医生档案界面
-        /// </summary>
-        private void ShowDoctorProfile() {
-            NavigateDoctorProfile();
+        private void OnNavigateToDoctorProfile(DoctorProfileNavigationArgs args) {
+            // 调用原有的导航方法，保持兼容性
+            NavigateDoctorProfile(args.UserId, args.Mode, args.UserName, args.RealName);
         }
 
-        /// <summary>
-        /// 显示患者档案界面
-        /// </summary>
-        private void ShowPatientProfile() {
-            IsMainVisible = false;
-            IsFunctionVisible = true;
-            _regionManager.RequestNavigate("FunctionRegion", "PatientProfileView", result => {
-                var view = _regionManager.Regions["FunctionRegion"].ActiveViews.FirstOrDefault();
-                if (view is FrameworkElement element && element.DataContext is PatientProfileViewModel vm) {
-                    vm.CancelAction = () => {
-                        IsMainVisible = true;
-                        IsFunctionVisible = false;
-                    };
-                }
-            });
-        }
-
-        /// <summary>
-        /// 切换主题
-        /// </summary>
-        private void ToggleTheme() {
-            try {
-                _themeService.ToggleTheme();
-                IsDarkTheme = _themeService.IsDarkTheme;
-
-                var themeText = IsDarkTheme ? "暗色" : "浅色";
-                SystemStatus = $"已切换到{themeText}主题";
-
-                System.Diagnostics.Debug.WriteLine($"Theme switched to: {themeText}");
-            } catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Theme toggle error: {ex.Message}");
-                MessageBox.Show($"切换主题时发生错误：{ex.Message}", "错误",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        /// <summary>
-        /// 显示关于系统
-        /// </summary>
-        private void ShowAboutSystem() {
-            var aboutText = $"凌隐宝堂中医诊所管理系统\n\n" +
-                           $"版本：1.0.0\n" +
-                           $"构建日期：{DateTime.Now:yyyy-MM-dd}\n" +
-                           $"当前用户：{CurrentUserName}\n" +
-                           $"用户角色：{CurrentUserRole}\n\n" +
-                           $"© 2024 凌隐宝堂中医诊所 版权所有";
-
-            MessageBox.Show(aboutText, "关于系统", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        /// <summary>
-        /// 显示系统设置
-        /// </summary>
-        private void ShowSystemSettings() {
-            // 这里可以实现系统设置界面
-            MessageBox.Show("系统设置功能正在开发中...", "提示",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+        private void OnSystemStatusUpdated(string status) {
+            SystemStatus = status;
         }
 
         #endregion
 
-        #region Public Methods
+        #region Public Methods - 保留原有方法以确保兼容性
 
         /// <summary>
-        /// 导航到医生档案
+        /// 导航到医生档案 - 保留原有方法
         /// </summary>
         public void NavigateDoctorProfile(Guid? userId = null, ProfileMode? mode = null, string userName = null, string realName = null) {
             IsMainVisible = false;
@@ -472,7 +342,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         /// <summary>
-        /// 检查医生档案
+        /// 检查医生档案 - 保留原有方法
         /// </summary>
         public async Task CheckDoctorProfileAsync() {
             try {
@@ -491,40 +361,65 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         #region Private Methods
 
         /// <summary>
-        /// 更新用户信息
+        /// 刷新系统状态
         /// </summary>
-        private async Task UpdateUserInfoAsync(IList<UserRole> roles) {
+        private async Task RefreshSystemStatusAsync() {
             try {
-                // 确定用户身份
-                IsSysAdmin = string.Equals(_authService.RememberedUserName, "sysadmin", StringComparison.OrdinalIgnoreCase);
-                IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
+                SystemStatus = "正在刷新系统状态...";
 
-                // 设置用户名
-                CurrentUserName = _authService.RememberedUserName ?? "未知用户";
+                // 这里可以添加实际的系统状态检查逻辑
+                await Task.Delay(1000); // 模拟检查过程
 
-                // 设置用户角色显示文本
-                CurrentUserRole = string.Join(", ", roles.Select(GetRoleDisplayName));
-
-                System.Diagnostics.Debug.WriteLine($"User info updated: {CurrentUserName}, Roles: {CurrentUserRole}");
-                await Task.CompletedTask;
+                SystemStatus = "系统运行正常";
+                _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Publish("系统状态已刷新");
             } catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Update user info error: {ex.Message}");
+                SystemStatus = $"系统状态异常：{ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"Refresh system status error: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 获取角色显示名称
+        /// 显示关于系统
         /// </summary>
-        private string GetRoleDisplayName(UserRole role) {
-            return role switch {
-                UserRole.Admin => "系统管理员",
-                UserRole.DiagnosingDoctor => "诊疗医生",
-                UserRole.TreatmentDoctor => "治疗医生",
-                UserRole.PharmacyStaff => "药房人员",
-                UserRole.BillingStaff => "收费人员",
-                UserRole.RegistrationStaff => "挂号人员",
-                _ => role.ToString()
-            };
+        private void ShowAboutSystem() {
+            var aboutText = $"凌隐宝堂中医诊所管理系统\n\n" +
+                           $"版本：1.0.0\n" +
+                           $"构建日期：{DateTime.Now:yyyy-MM-dd}\n" +
+                           $"当前用户：{CurrentUserName}\n\n" +
+                           $"© 2024 凌隐宝堂中医诊所 版权所有";
+
+            MessageBox.Show(aboutText, "关于系统", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// 显示系统设置
+        /// </summary>
+        private void ShowSystemSettings() {
+            MessageBox.Show("系统设置功能正在开发中...", "提示",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// 更新用户信息 - 保留原有逻辑
+        /// </summary>
+        private async Task UpdateUserInfoAsync(IList<UserRole> roles) {
+            try {
+                CurrentUserRoles = roles;
+                IsSysAdmin = string.Equals(_authService.RememberedUserName, "sysadmin", StringComparison.OrdinalIgnoreCase);
+                IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
+                CurrentUserName = _authService.RememberedUserName ?? "未知用户";
+
+                // 更新主题状态
+                IsDarkTheme = _themeService.IsDarkTheme;
+
+                if (IsDoctorRole) {
+                    await CheckDoctorProfileAsync();
+                }
+
+                System.Diagnostics.Debug.WriteLine($"User info updated: {CurrentUserName}");
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Update user info error: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -541,14 +436,14 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private void ResetUIState() {
             IsMainVisible = false;
             IsFunctionVisible = true;
+            CurrentUserName = "未登录";
             IsSysAdmin = false;
             IsDoctorRole = false;
             HasDoctorProfile = false;
-            CurrentUserName = "未登录";
-            CurrentUserRole = "";
-            CurrentUserRoles = new List<UserRole>();
-            IsNavDrawerOpen = false;
             IsInitialized = false;
+            IsNavDrawerOpen = false;
+            CurrentUserRoles = new List<UserRole>();
+            DoctorProfileButtonText = "新增医生档案";
             SystemStatus = "系统正常";
         }
 
@@ -576,38 +471,21 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         /// <summary>
-        /// 导航到主页
+        /// 导航到整合后的主布局
         /// </summary>
-        private async Task NavigateToHomeAsync(IList<UserRole> roles) {
-            var homeNavigationParams = new NavigationParameters();
-            homeNavigationParams.Add("UserRoles", roles);
-
-            _regionManager.RequestNavigate("MainContentRegion", "HomeView", result => {
-                System.Diagnostics.Debug.WriteLine($"Navigation to HomeView completed. Success: {result.Exception == null}");
+        private async Task NavigateToIntegratedMainLayoutAsync(IList<UserRole> roles) {
+            _regionManager.RequestNavigate("MainContentRegion", "IntegratedMainLayout", result => {
+                System.Diagnostics.Debug.WriteLine($"Navigation to IntegratedMainLayout completed. Success: {result.Exception == null}");
                 if (result.Exception != null) {
                     System.Diagnostics.Debug.WriteLine($"Navigation error: {result.Exception.Message}");
                 } else {
-                    System.Diagnostics.Debug.WriteLine("Navigation to HomeView successful!");
+                    System.Diagnostics.Debug.WriteLine("Navigation to IntegratedMainLayout successful!");
+                    // 发布用户信息更新事件
+                    _eventAggregator.GetEvent<UserInfoUpdatedEvent>().Publish(roles);
                 }
-            }, homeNavigationParams);
+            });
 
             await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 刷新系统状态
-        /// </summary>
-        private async Task RefreshSystemStatusAsync() {
-            try {
-                // 这里可以添加系统状态检查逻辑
-                // 例如：检查服务器连接、数据库状态等
-                SystemStatus = "系统运行正常";
-
-                await Task.CompletedTask; // 占位符，实际可以调用相关服务
-            } catch (Exception ex) {
-                SystemStatus = $"系统状态异常：{ex.Message}";
-                System.Diagnostics.Debug.WriteLine($"Refresh system status error: {ex.Message}");
-            }
         }
 
         #endregion
