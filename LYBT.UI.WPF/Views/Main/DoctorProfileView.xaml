@@ -8,9 +8,11 @@
     <UserControl.Resources>
         <!-- 输入框样式 -->
         <Style x:Key="FormTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="12,16,12,8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- 只读输入框样式 -->
@@ -22,16 +24,20 @@
 
         <!-- 下拉框样式 -->
         <Style x:Key="FormComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignOutlinedComboBox}">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="12,16,12,8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- 日期选择器样式 -->
         <Style x:Key="FormDatePickerStyle" TargetType="DatePicker" BasedOn="{StaticResource MaterialDesignOutlinedDatePicker}">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="12,16,12,8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- 按钮样式 -->
@@ -112,18 +118,24 @@
                             <TextBox Style="{StaticResource ReadOnlyTextBoxStyle}"
                                      Text="{Binding Doctor.UserName, Mode=OneWay}"
                                      materialDesign:HintAssist.Hint="账号"
-                                     materialDesign:HintAssist.IsFloating="True"/>
+                                     materialDesign:HintAssist.IsFloating="True"
+                                     materialDesign:HintAssist.FloatingScale="0.75"
+                                     materialDesign:HintAssist.FloatingOffset="0,-20"/>
 
                             <!-- 姓名 -->
                             <TextBox Style="{StaticResource ReadOnlyTextBoxStyle}"
                                      Text="{Binding Doctor.RealName, Mode=OneWay}"
                                      materialDesign:HintAssist.Hint="姓名"
-                                     materialDesign:HintAssist.IsFloating="True"/>
+                                     materialDesign:HintAssist.IsFloating="True"
+                                     materialDesign:HintAssist.FloatingScale="0.75"
+                                     materialDesign:HintAssist.FloatingOffset="0,-20"/>
 
                             <!-- 联系号码 -->
                             <TextBox Text="{Binding Doctor.ContactNumber, UpdateSourceTrigger=PropertyChanged}"
                                      materialDesign:HintAssist.Hint="联系号码"
                                      materialDesign:HintAssist.IsFloating="True"
+                                     materialDesign:HintAssist.FloatingScale="0.75"
+                                     materialDesign:HintAssist.FloatingOffset="0,-20"
                                      IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"
                                      Style="{StaticResource FormTextBoxStyle}"/>
 
@@ -135,6 +147,8 @@
                                       SelectedValue="{Binding Doctor.Gender}"
                                       materialDesign:HintAssist.Hint="性别"
                                       materialDesign:HintAssist.IsFloating="True"
+                                      materialDesign:HintAssist.FloatingScale="0.75"
+                                      materialDesign:HintAssist.FloatingOffset="0,-20"
                                       IsEnabled="{Binding IsEditable}"/>
 
                             <!-- 出生日期 -->
@@ -142,6 +156,8 @@
                                         SelectedDate="{Binding Doctor.Birthday}"
                                         materialDesign:HintAssist.Hint="出生日期"
                                         materialDesign:HintAssist.IsFloating="True"
+                                        materialDesign:HintAssist.FloatingScale="0.75"
+                                        materialDesign:HintAssist.FloatingOffset="0,-20"
                                         IsEnabled="{Binding IsEditable}"/>
                         </StackPanel>
 
@@ -151,6 +167,8 @@
                             <TextBox Text="{Binding Doctor.PinyinCode, UpdateSourceTrigger=PropertyChanged}"
                                      materialDesign:HintAssist.Hint="拼音码"
                                      materialDesign:HintAssist.IsFloating="True"
+                                     materialDesign:HintAssist.FloatingScale="0.75"
+                                     materialDesign:HintAssist.FloatingOffset="0,-20"
                                      materialDesign:HintAssist.HelperText="用于快速检索"
                                      IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"
                                      Style="{StaticResource FormTextBoxStyle}"/>
@@ -159,6 +177,8 @@
                             <TextBox Text="{Binding Doctor.LicenseNumber, UpdateSourceTrigger=PropertyChanged}"
                                      materialDesign:HintAssist.Hint="执业证号"
                                      materialDesign:HintAssist.IsFloating="True"
+                                     materialDesign:HintAssist.FloatingScale="0.75"
+                                     materialDesign:HintAssist.FloatingOffset="0,-20"
                                      materialDesign:HintAssist.HelperText="医师执业证书编号"
                                      IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"
                                      Style="{StaticResource FormTextBoxStyle}"/>
@@ -171,6 +191,8 @@
                                       SelectedValue="{Binding Doctor.Title}"
                                       materialDesign:HintAssist.Hint="职称"
                                       materialDesign:HintAssist.IsFloating="True"
+                                      materialDesign:HintAssist.FloatingScale="0.75"
+                                      materialDesign:HintAssist.FloatingOffset="0,-20"
                                       IsEnabled="{Binding IsEditable}"/>
 
                             <!-- 状态 -->
@@ -181,19 +203,24 @@
                                       SelectedValue="{Binding Doctor.Status}"
                                       materialDesign:HintAssist.Hint="状态"
                                       materialDesign:HintAssist.IsFloating="True"
+                                      materialDesign:HintAssist.FloatingScale="0.75"
+                                      materialDesign:HintAssist.FloatingOffset="0,-20"
                                       IsEnabled="{Binding IsEditable}"/>
 
                             <!-- 备注 -->
                             <TextBox Text="{Binding Doctor.Remark, UpdateSourceTrigger=PropertyChanged}"
                                      materialDesign:HintAssist.Hint="备注"
                                      materialDesign:HintAssist.IsFloating="True"
+                                     materialDesign:HintAssist.FloatingScale="0.75"
+                                     materialDesign:HintAssist.FloatingOffset="0,-20"
                                      AcceptsReturn="True"
                                      TextWrapping="Wrap"
-                                     Height="80"
+                                     Height="100"
                                      VerticalContentAlignment="Top"
+                                     Padding="12,20,12,8"
                                      IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"
                                      Style="{StaticResource FormTextBoxStyle}"
-                                     Margin="0,0,0,16"/>
+                                     Margin="0,0,0,20"/>
                         </StackPanel>
                     </Grid>
                 </ScrollViewer>
