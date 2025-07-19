@@ -509,7 +509,8 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                     var window = Application.Current.MainWindow;
 
                     // 恢复到登录前的窗口状态
-                    window.WindowState = _originalWindowState;
+                    window.WindowState = WindowState.Maximized;
+                    //window.WindowState = _originalWindowState;
 
                     // 如果原来是普通窗口，恢复尺寸和位置
                     if (_originalWindowState == WindowState.Normal) {

@@ -63,7 +63,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Components\" />
     <Folder Include="Views\Navigation\" />
   </ItemGroup>
 

@@ -305,7 +305,7 @@
                                     VerticalAlignment="Center">
                             <TextBlock Text="凌隐宝堂中医诊所管理系统"
                                        Foreground="White"
-                                       FontSize="14"
+                                       FontSize="28"
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"/>
                         </StackPanel>
