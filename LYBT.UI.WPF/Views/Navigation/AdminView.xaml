@@ -30,7 +30,7 @@
         <TabItem Header="药材管理">
             <admin:HerbManagementView/>
         </TabItem>
-        <TabItem Header="经验方模板">
+        <TabItem Header="经验方管理">
             <admin:FormulaTemplatesManagementView/>
         </TabItem>
         <TabItem Header="处方管理">
