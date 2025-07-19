@@ -30,7 +30,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             set => SetProperty(ref _showWelcomePanel, value);
         }
 
-        // 子组件视图模型（移除TopToolBar和UserMenu）
+        // 子组件视图模型
         public NavigationDrawerViewModel NavigationDrawerViewModel { get; private set; }
         public WelcomePanelViewModel WelcomePanelViewModel { get; private set; }
         public StatusBarViewModel StatusBarViewModel { get; private set; }
@@ -41,6 +41,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         public DelegateCommand ToggleNavDrawerCommand { get; private set; }
         public DelegateCommand HideWelcomePanelCommand { get; private set; }
+        public DelegateCommand ShowWelcomePanelCommand { get; private set; }
 
         #endregion
 
@@ -54,7 +55,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
-            // 注入子组件视图模型（移除TopToolBar和UserMenu）
+            // 注入子组件视图模型
             NavigationDrawerViewModel = navigationDrawerViewModel ?? throw new ArgumentNullException(nameof(navigationDrawerViewModel));
             WelcomePanelViewModel = welcomePanelViewModel ?? throw new ArgumentNullException(nameof(welcomePanelViewModel));
             StatusBarViewModel = statusBarViewModel ?? throw new ArgumentNullException(nameof(statusBarViewModel));
@@ -67,7 +68,23 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         private void InitializeCommands() {
             ToggleNavDrawerCommand = new DelegateCommand(() => IsNavDrawerOpen = !IsNavDrawerOpen);
-            HideWelcomePanelCommand = new DelegateCommand(() => ShowWelcomePanel = false);
+
+            HideWelcomePanelCommand = new DelegateCommand(() => {
+                ShowWelcomePanel = false;
+                // 确保导航菜单在隐藏欢迎面板后仍然可以访问
+                IsNavDrawerOpen = false;
+            });
+
+            ShowWelcomePanelCommand = new DelegateCommand(() => {
+                ShowWelcomePanel = true;
+                // 清除当前功能区域的内容
+                try {
+                    var region = _regionManager.Regions["IntegratedContentRegion"];
+                    region.RemoveAll();
+                } catch (Exception ex) {
+                    System.Diagnostics.Debug.WriteLine($"Clear content region error: {ex.Message}");
+                }
+            });
         }
 
         private void SubscribeToEvents() {
@@ -115,63 +132,109 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         private void OnNavigationCompleted(string targetView) {
-            // 当导航到功能页面时，隐藏欢迎面板
-            if (!string.IsNullOrEmpty(targetView) && targetView != "HomeView") {
-                ShowWelcomePanel = false;
-            }
+            try {
+                System.Diagnostics.Debug.WriteLine($"Navigation completed to: {targetView}");
 
-            // 关闭导航抽屉
-            IsNavDrawerOpen = false;
+                // 当导航到功能页面时，隐藏欢迎面板，但保持导航菜单可用
+                if (!string.IsNullOrEmpty(targetView) &&
+                    targetView != "HomeView" &&
+                    targetView != "LoginView") {
+                    ShowWelcomePanel = false;
+                }
+
+                // 自动关闭导航抽屉（移动端体验）
+                IsNavDrawerOpen = false;
+
+                // 更新状态
+                StatusBarViewModel.UpdateSystemStatus($"已切换到 {targetView}");
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"OnNavigationCompleted error: {ex.Message}");
+            }
         }
 
         private void OnNavigateToFunction(string functionView) {
-            // 隐藏欢迎面板
-            ShowWelcomePanel = false;
+            try {
+                System.Diagnostics.Debug.WriteLine($"Navigate to function: {functionView}");
 
-            // 导航到功能界面
-            _regionManager.RequestNavigate("FunctionRegion", functionView);
+                // 隐藏欢迎面板
+                ShowWelcomePanel = false;
 
-            // 发布界面切换事件
-            _eventAggregator.GetEvent<NavigationCompletedEvent>().Publish(functionView);
+                // 导航到功能界面（登录、修改密码等）
+                _regionManager.RequestNavigate("FunctionRegion", functionView);
+
+                // 发布界面切换事件
+                _eventAggregator.GetEvent<NavigationCompletedEvent>().Publish(functionView);
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"OnNavigateToFunction error: {ex.Message}");
+            }
         }
 
         private void OnNavigateToIntegratedContent(NavigationArgs args) {
-            // 隐藏欢迎面板
-            ShowWelcomePanel = false;
+            try {
+                System.Diagnostics.Debug.WriteLine($"Navigate to integrated content: {args.TargetView}");
 
-            // 导航到集成内容区域
-            _regionManager.RequestNavigate("IntegratedContentRegion", args.TargetView);
+                // 隐藏欢迎面板
+                ShowWelcomePanel = false;
 
-            // 发布界面切换事件
-            _eventAggregator.GetEvent<NavigationCompletedEvent>().Publish(args.TargetView);
+                // 导航到集成内容区域
+                var parameters = new NavigationParameters();
+                foreach (var param in args.Parameters) {
+                    parameters.Add(param.Key, param.Value);
+                }
+
+                _regionManager.RequestNavigate("IntegratedContentRegion", args.TargetView, result => {
+                    if (result.Success) {
+                        // 发布界面切换事件
+                        _eventAggregator.GetEvent<NavigationCompletedEvent>().Publish(args.TargetView);
+                    } else {
+                        System.Diagnostics.Debug.WriteLine($"Navigation to {args.TargetView} failed: {result.Exception?.Message}");
+                        StatusBarViewModel.UpdateSystemStatus($"导航到 {args.TargetView} 失败");
+                    }
+                }, parameters);
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"OnNavigateToIntegratedContent error: {ex.Message}");
+                StatusBarViewModel.UpdateSystemStatus($"导航失败：{ex.Message}");
+            }
         }
 
         private void OnNavigateToDoctorProfile(DoctorProfileNavigationArgs args) {
-            // 隐藏欢迎面板
-            ShowWelcomePanel = false;
+            try {
+                System.Diagnostics.Debug.WriteLine($"Navigate to doctor profile: {args.Mode}");
 
-            // 准备导航参数
-            var parameters = new NavigationParameters { { "Mode", args.Mode } };
-            if (args.UserId != null)
-                parameters.Add("UserId", args.UserId.Value);
-            if (args.UserName != null)
-                parameters.Add("UserName", args.UserName);
-            if (args.RealName != null)
-                parameters.Add("RealName", args.RealName);
+                // 隐藏欢迎面板
+                ShowWelcomePanel = false;
 
-            // 导航到医生档案
-            _regionManager.RequestNavigate("FunctionRegion", "DoctorProfileView", parameters);
+                // 准备导航参数
+                var parameters = new NavigationParameters { { "Mode", args.Mode } };
+                if (args.UserId != null)
+                    parameters.Add("UserId", args.UserId.Value);
+                if (args.UserName != null)
+                    parameters.Add("UserName", args.UserName);
+                if (args.RealName != null)
+                    parameters.Add("RealName", args.RealName);
 
-            // 发布界面切换事件
-            _eventAggregator.GetEvent<NavigationCompletedEvent>().Publish("DoctorProfileView");
+                // 导航到医生档案
+                _regionManager.RequestNavigate("FunctionRegion", "DoctorProfileView", parameters);
+
+                // 发布界面切换事件
+                _eventAggregator.GetEvent<NavigationCompletedEvent>().Publish("DoctorProfileView");
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"OnNavigateToDoctorProfile error: {ex.Message}");
+            }
         }
 
         private void OnLogout() {
-            // 重置布局状态
-            ResetLayout();
+            try {
+                // 重置布局状态
+                ResetLayout();
 
-            // 导航回登录界面
-            _regionManager.RequestNavigate("FunctionRegion", "LoginView");
+                // 导航回登录界面
+                _regionManager.RequestNavigate("FunctionRegion", "LoginView");
+
+                System.Diagnostics.Debug.WriteLine("User logout completed in integrated layout");
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"OnLogout error: {ex.Message}");
+            }
         }
 
         #endregion
@@ -182,21 +245,40 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// 重置布局状态
         /// </summary>
         public void ResetLayout() {
-            ShowWelcomePanel = true;
-            IsNavDrawerOpen = false;
+            try {
+                ShowWelcomePanel = true;
+                IsNavDrawerOpen = false;
 
-            // 重置子组件状态（移除TopToolBar和UserMenu的重置）
-            NavigationDrawerViewModel.Reset();
-            WelcomePanelViewModel.Reset();
-            StatusBarViewModel.Reset();
+                // 清除内容区域
+                try {
+                    var region = _regionManager.Regions["IntegratedContentRegion"];
+                    region.RemoveAll();
+                } catch (Exception ex) {
+                    System.Diagnostics.Debug.WriteLine($"Clear region error: {ex.Message}");
+                }
+
+                // 重置子组件状态
+                NavigationDrawerViewModel.Reset();
+                WelcomePanelViewModel.Reset();
+                StatusBarViewModel.Reset();
+
+                System.Diagnostics.Debug.WriteLine("Layout reset completed");
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"ResetLayout error: {ex.Message}");
+            }
         }
 
         /// <summary>
         /// 清理资源
         /// </summary>
         public void Cleanup() {
-            WelcomePanelViewModel.Cleanup();
-            StatusBarViewModel.Cleanup();
+            try {
+                WelcomePanelViewModel.Cleanup();
+                StatusBarViewModel.Cleanup();
+                System.Diagnostics.Debug.WriteLine("Integrated layout cleanup completed");
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Cleanup error: {ex.Message}");
+            }
         }
 
         #endregion

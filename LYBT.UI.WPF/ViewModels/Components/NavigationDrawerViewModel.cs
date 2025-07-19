@@ -114,36 +114,31 @@ namespace LYBT.UI.WPF.ViewModels.Components {
             try {
                 SelectedNavigationItem = item;
 
-                // 检查目标视图是否存在
-                var viewType = typeof(NavigationDrawerViewModel).Assembly.GetType($"LYBT.UI.WPF.Views.Navigation.{item.TargetView}");
-                if (viewType == null) {
-                    MessageBox.Show($"功能 [{item.DisplayName}] 暂未开放或未实现。",
-                        "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
+                System.Diagnostics.Debug.WriteLine($"NavigationDrawer: Navigating to: {item.TargetView}");
 
-                System.Diagnostics.Debug.WriteLine($"Navigating to: {item.TargetView}");
+                // 通过事件系统发布导航请求
+                var args = new NavigationArgs {
+                    TargetView = item.TargetView,
+                    RegionName = "IntegratedContentRegion",
+                    Parameters = new Dictionary<string, object>()
+                };
 
-                // 执行导航
-                _regionManager.RequestNavigate("IntegratedContentRegion", item.TargetView, navigationResult => {
-                    Application.Current.Dispatcher.Invoke(() => {
-                        if (navigationResult.Success) {
-                            AddToRecentItems(item);
-                            NavigationCount++;
-                            _eventAggregator.GetEvent<NavigationCompletedEvent>().Publish(item.TargetView);
-                            _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Publish($"已切换到 {item.DisplayName}");
-                        } else {
-                            System.Diagnostics.Debug.WriteLine($"Navigation failed: {navigationResult.Exception?.Message}");
-                            _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Publish("导航失败");
-                        }
-                    });
-                });
+                _eventAggregator.GetEvent<NavigateToIntegratedContentEvent>().Publish(args);
+
+                // 记录访问
+                item.RecordAccess();
+                AddToRecentItems(item);
+                NavigationCount++;
+
+                // 更新状态
+                _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Publish($"正在切换到 {item.DisplayName}...");
 
                 await Task.Delay(100);
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
                 MessageBox.Show($"导航到 {item.DisplayName} 时发生错误：{ex.Message}",
                     "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Publish($"导航失败：{ex.Message}");
             }
         }
 
