@@ -12,14 +12,14 @@
             <ColumnDefinition Width="1.8*"/>
         </Grid.ColumnDefinitions>
         <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonListView
+            <controls:UserListView
                                  ItemsSource="{Binding Users}"
                                  SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
                                  SearchKeyword="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
                                  SearchCommand="{Binding SearchCommand}"
                                  LoadPageCommand="{Binding LoadPageCommand}"
                                  IsBusy="{Binding IsBusy}">
-            <controls:CommonListView.ActionContent>
+            <controls:UserListView.ActionContent>
                 <StackPanel Orientation="Horizontal">
                     <Button Content="新增用户" Command="{Binding AddUserCommand}" Margin="0,0,8,0"/>
                     <Button Content="编辑用户" Command="{Binding EditUserCommand}" Margin="0,0,8,0"
@@ -33,8 +33,8 @@
                     <Button Content="创建医生档案" Command="{Binding CreateDoctorProfileCommand}" Margin="0,0,8,0"
                             IsEnabled="{Binding SelectedUser, Converter={StaticResource NullToBoolConverter}}"/>
                 </StackPanel>
-            </controls:CommonListView.ActionContent>
-            <controls:CommonListView.Columns>
+            </controls:UserListView.ActionContent>
+            <controls:UserListView.Columns>
                 <DataGridTextColumn Header="账号" Binding="{Binding UserName}" Width="*"/>
                 <DataGridTextColumn Header="姓名" Binding="{Binding RealName}" Width="*"/>
                 <DataGridTextColumn Header="角色" Binding="{Binding RolesText}" Width="*"/>
@@ -42,15 +42,15 @@
                 <DataGridTextColumn Header="最近登录" Binding="{Binding LastLoginTime}" Width="130"/>
                 <DataGridTextColumn Header="邮箱" Binding="{Binding Email}" Width="110"/>
                 <DataGridTextColumn Header="手机号" Binding="{Binding PhoneNumber}" Width="90"/>
-            </controls:CommonListView.Columns>
-            </controls:CommonListView>
+            </controls:UserListView.Columns>
+            </controls:UserListView>
         </Border>
         <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonProfileView Title="{Binding EditModeTitle}"
+            <controls:UserProfileView Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveUserCommand}"
                                        CancelCommand="{Binding CancelCommand}"
                                        IsEditable="{Binding IsEditable}">
-                <controls:CommonProfileView.ProfileContent>
+                <controls:UserProfileView.ProfileContent>
                     <StackPanel>
                         <TextBlock Text="账号" />
                         <TextBox Text="{Binding EditingUser.UserName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"
@@ -79,8 +79,8 @@
                                  IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
                         <CheckBox Content="启用" IsChecked="{Binding EditingUser.IsActive}" Margin="0,0,0,10" IsEnabled="{Binding IsEditable}"/>
                     </StackPanel>
-                </controls:CommonProfileView.ProfileContent>
-            </controls:CommonProfileView>
+                </controls:UserProfileView.ProfileContent>
+            </controls:UserProfileView>
         </Border>
     </Grid>
 </UserControl>

@@ -5,12 +5,12 @@
              xmlns:controls="clr-namespace:LYBT.WPFControls;assembly=LYBT.WPFControls"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
-        <controls:CommonProfileView DataContext="{Binding}"
+        <controls:DoctorProfileView DataContext="{Binding}"
                                    Title="{Binding EditModeTitle}"
                                    SaveCommand="{Binding SaveCommand}"
                                    CancelCommand="{Binding CancelCommand}"
                                    IsEditable="{Binding IsEditable}">
-            <controls:CommonProfileView.ProfileContent>
+            <controls:DoctorProfileView.ProfileContent>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <TextBlock Text="账号" />
@@ -46,7 +46,7 @@
                                  IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
                     </StackPanel>
                 </ScrollViewer>
-            </controls:CommonProfileView.ProfileContent>
-        </controls:CommonProfileView>
+            </controls:DoctorProfileView.ProfileContent>
+        </controls:DoctorProfileView>
     </Grid>
 </UserControl>

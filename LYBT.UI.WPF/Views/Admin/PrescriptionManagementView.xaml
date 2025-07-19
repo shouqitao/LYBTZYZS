@@ -10,34 +10,34 @@
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonListView ShowPaging="False"
+            <controls:PrescriptionListView ShowPaging="False"
                                  ItemsSource="{Binding Prescriptions}"
                                  SelectedItem="{Binding SelectedPrescription, Mode=TwoWay}"
                                  SearchCommand="{Binding RefreshCommand}">
-            <controls:CommonListView.ActionContent>
+            <controls:PrescriptionListView.ActionContent>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <Button Content="刷新" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
                     <Button Content="新增" Command="{Binding AddCommand}" Margin="0,0,8,0"/>
                     <Button Content="编辑" Command="{Binding EditCommand}" Margin="0,0,8,0" IsEnabled="{Binding SelectedPrescription, Converter={StaticResource NullToBoolConverter}}"/>
                     <Button Content="删除" Command="{Binding DeleteCommand}" IsEnabled="{Binding SelectedPrescription, Converter={StaticResource NullToBoolConverter}}"/>
                 </StackPanel>
-            </controls:CommonListView.ActionContent>
-            <controls:CommonListView.Columns>
+            </controls:PrescriptionListView.ActionContent>
+            <controls:PrescriptionListView.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="160"/>
                 <DataGridTextColumn Header="创建时间" Binding="{Binding CreateTime}" Width="150"/>
                 <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="100"/>
                 <DataGridTextColumn Header="患者" Binding="{Binding PatientId}" Width="*"/>
                 <DataGridTextColumn Header="医生" Binding="{Binding DoctorId}" Width="*"/>
-            </controls:CommonListView.Columns>
-            </controls:CommonListView>
+            </controls:PrescriptionListView.Columns>
+            </controls:PrescriptionListView>
         </Border>
         <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonProfileView DataContext="{Binding ProfileViewModel}"
+            <controls:PrescriptionProfileView DataContext="{Binding ProfileViewModel}"
                                        Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveCommand}"
                                        CancelCommand="{Binding CancelCommand}"
                                        IsEditable="{Binding IsEditable}">
-                <controls:CommonProfileView.ProfileContent>
+                <controls:PrescriptionProfileView.ProfileContent>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="患者" Width="60"/>
@@ -71,8 +71,8 @@
                         </DataGrid>
                         <controls:QuickAddHerbsControl TargetItems="{Binding Items}" Herbs="{Binding AllHerbs}" Margin="0,0,0,10" />
                     </StackPanel>
-                </controls:CommonProfileView.ProfileContent>
-            </controls:CommonProfileView>
+                </controls:PrescriptionProfileView.ProfileContent>
+            </controls:PrescriptionProfileView>
         </Border>
     </Grid>
 </UserControl>
