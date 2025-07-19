@@ -43,6 +43,9 @@
             <local:StringEqualsMultiConverter x:Key="StringEqualsMultiConverter"/>
             <local:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
 
+            <local:RoleListToStringConverter x:Key="RoleListToStringConverter"/>
+            <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <local:LockoutStatusConverter x:Key="LockoutStatusConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>           

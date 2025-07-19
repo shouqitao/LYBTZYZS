@@ -18,7 +18,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         private string _searchKeyword = string.Empty;
         private bool _isBusy;
         private ObservableCollection<UserModel> _users = new();
-        private ObservableCollection<UserRole> _availableRoles = new();
 
         #endregion
 
@@ -62,6 +61,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             set {
                 _editingUser = value;
                 OnPropertyChanged();
+                OnEditingUserChanged(); // 调用partial方法
             }
         }
 
@@ -100,17 +100,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         /// <summary>
-        /// 所有可选的角色列表（用于角色选择界面）
-        /// </summary>
-        public ObservableCollection<UserRole> AvailableRoles {
-            get => _availableRoles;
-            set {
-                _availableRoles = value;
-                OnPropertyChanged();
-            }
-        }
-
-        /// <summary>
         /// 编辑模式标题
         /// </summary>
         public string EditModeTitle => IsEditable ? "编辑用户" : "用户详情";
@@ -132,7 +121,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
 
         #endregion
 
-        #region 命令属性
+        #region 基本命令
 
         public ICommand AddUserCommand { get; private set; }
         public ICommand EditUserCommand { get; private set; }
@@ -145,8 +134,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         public ICommand SearchCommand { get; private set; }
         public ICommand LoadPageCommand { get; private set; }
         public ICommand RefreshCommand { get; private set; }
-        public ICommand SelectAllRolesCommand { get; private set; }
-        public ICommand SelectNoneRolesCommand { get; private set; }
 
         #endregion
 
@@ -154,7 +141,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
 
         public UserManagementViewModel() {
             InitializeCommands();
-            InitializeRoleList();
+            InitializeRoleManagementFeatures(); // 初始化角色管理功能
             LoadUsersAsync();
         }
 
@@ -163,7 +150,7 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         #region 初始化方法
 
         /// <summary>
-        /// 初始化命令
+        /// 初始化基本命令
         /// </summary>
         private void InitializeCommands() {
             AddUserCommand = new RelayCommand(AddUser);
@@ -177,17 +164,17 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
             SearchCommand = new RelayCommand(SearchUsers);
             LoadPageCommand = new RelayCommand<int>(LoadPage);
             RefreshCommand = new RelayCommand(RefreshUsers);
-            SelectAllRolesCommand = new RelayCommand(SelectAllRoles, () => IsEditable && EditingUser != null);
-            SelectNoneRolesCommand = new RelayCommand(SelectNoneRoles, () => IsEditable && EditingUser != null);
         }
 
         /// <summary>
-        /// 初始化角色列表
+        /// 角色管理功能初始化（由扩展文件实现）
         /// </summary>
-        private void InitializeRoleList() {
-            var allRoles = Enum.GetValues<UserRole>();
-            _availableRoles = new ObservableCollection<UserRole>(allRoles);
-        }
+        partial void InitializeRoleManagementFeatures();
+
+        /// <summary>
+        /// 编辑用户变化时调用（由扩展文件实现）
+        /// </summary>
+        partial void OnEditingUserChanged();
 
         #endregion
 
@@ -410,30 +397,6 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
 
         #endregion
 
-        #region 角色管理方法
-
-        /// <summary>
-        /// 选择所有角色
-        /// </summary>
-        private void SelectAllRoles() {
-            if (EditingUser?.Roles == null)
-                return;
-
-            EditingUser.Roles.Clear();
-            foreach (var role in _availableRoles) {
-                EditingUser.Roles.Add(role);
-            }
-        }
-
-        /// <summary>
-        /// 清除所有角色
-        /// </summary>
-        private void SelectNoneRoles() {
-            EditingUser?.Roles?.Clear();
-        }
-
-        #endregion
-
         #region 搜索和分页方法
 
         /// <summary>
@@ -550,57 +513,5 @@ namespace LYBT.UI.WPF.ViewModels.Admin {
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// 简单的RelayCommand实现
-    /// </summary>
-    public class RelayCommand : ICommand {
-        private readonly Action _execute;
-        private readonly Func<bool>? _canExecute;
-
-        public RelayCommand(Action execute, Func<bool>? canExecute = null) {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
-        }
-
-        public event EventHandler? CanExecuteChanged {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
-
-        public bool CanExecute(object? parameter) {
-            return _canExecute?.Invoke() ?? true;
-        }
-
-        public void Execute(object? parameter) {
-            _execute();
-        }
-    }
-
-    /// <summary>
-    /// 带参数的RelayCommand实现
-    /// </summary>
-    public class RelayCommand<T> : ICommand {
-        private readonly Action<T> _execute;
-        private readonly Func<T, bool>? _canExecute;
-
-        public RelayCommand(Action<T> execute, Func<T, bool>? canExecute = null) {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
-        }
-
-        public event EventHandler? CanExecuteChanged {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
-
-        public bool CanExecute(object? parameter) {
-            return _canExecute?.Invoke((T)parameter!) ?? true;
-        }
-
-        public void Execute(object? parameter) {
-            _execute((T)parameter!);
-        }
     }
 }
