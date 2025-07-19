@@ -1,49 +1,136 @@
-using Prism.Mvvm;
+using LYBT.Common.Models;
 using Prism.Commands;
+using Prism.Mvvm;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Refit;
 
-namespace LYBT.UI.WPF.ViewModels.Base {
+namespace LYBT.UI.WPF.ViewModels {
     /// <summary>
-    /// Provides a paged list view model base.
+    /// 通用分页列表视图模型基类
     /// </summary>
-    /// <typeparam name="TDto">Dto type displayed in the list.</typeparam>
-    public abstract class BaseListViewModel<TDto> : BindableBase {
-        /// <summary>Collection of items for current page.</summary>
-        public ObservableCollection<TDto> Items { get; } = new();
-
-        private int _pageIndex = 1;
-        /// <summary>Current page index (1-based).</summary>
-        public int PageIndex {
-            get => _pageIndex;
-            set => SetProperty(ref _pageIndex, value);
-        }
-
-        private int _pageSize = 20;
-        /// <summary>Number of items per page.</summary>
-        public int PageSize {
-            get => _pageSize;
-            set => SetProperty(ref _pageSize, value);
-        }
-
-        private int _totalCount;
-        /// <summary>Total item count.</summary>
-        public int TotalCount {
-            get => _totalCount;
-            set => SetProperty(ref _totalCount, value);
-        }
-
-        /// <summary>Command loading the current page.</summary>
-        public DelegateCommand LoadPageCommand { get; }
-
+    public abstract class BaseListViewModel<T> : BindableBase {
         protected BaseListViewModel() {
-            LoadPageCommand = new DelegateCommand(async () => await LoadPageAsync());
+            LoadPageCommand = new DelegateCommand(async () => await LoadPageAsync(PageIndex));
+            NextPageCommand = new DelegateCommand(async () => await LoadPageAsync(CurrentPage + 1),
+                () => CurrentPage < TotalPages).ObservesProperty(() => CurrentPage).ObservesProperty(() => TotalPages);
+            PrevPageCommand = new DelegateCommand(async () => await LoadPageAsync(CurrentPage - 1),
+                () => CurrentPage > 1).ObservesProperty(() => CurrentPage);
         }
 
         /// <summary>
-        /// Loads items for the current page. Derived classes should override to
-        /// provide data retrieval logic.
+        /// Items for the current page.
         /// </summary>
-        public virtual Task LoadPageAsync() => Task.CompletedTask;
+        public ObservableCollection<T> Items { get; } = new();
+
+        /// <summary>
+        /// Alias of <see cref="Items"/> for convenience.
+        /// </summary>
+        public ObservableCollection<T> PagedList => Items;
+
+        private bool _isBusy;
+        /// <summary>
+        /// Gets or sets whether the list is loading data.
+        /// </summary>
+        public bool IsBusy
+        {
+            get => _isBusy;
+            set => SetProperty(ref _isBusy, value);
+        }
+
+        private int _currentPage = 1;
+        /// <summary>
+        /// Current page index (1-based).
+        /// </summary>
+        public int CurrentPage { get => _currentPage; set => SetProperty(ref _currentPage, value); }
+
+        /// <summary>
+        /// Alias of <see cref="CurrentPage"/>.
+        /// </summary>
+        public int PageIndex {
+            get => CurrentPage;
+            set => CurrentPage = value;
+        }
+
+        private int _totalPages = 1;
+        /// <summary>
+        /// Total number of pages.
+        /// </summary>
+        public int TotalPages { get => _totalPages; set => SetProperty(ref _totalPages, value); }
+
+        /// <summary>
+        /// Alias of <see cref="TotalPages"/>.
+        /// </summary>
+        public int TotalPage {
+            get => TotalPages;
+            set => TotalPages = value;
+        }
+
+        private int _totalCount;
+        /// <summary>
+        /// Total item count across all pages.
+        /// </summary>
+        public int TotalCount { get => _totalCount; set => SetProperty(ref _totalCount, value); }
+
+        public int PageSize { get; set; } = 20;
+
+        public DelegateCommand LoadPageCommand { get; }
+        public DelegateCommand NextPageCommand { get; }
+        public DelegateCommand PrevPageCommand { get; }
+
+        protected abstract Task<PagedResultDto<T>> GetPagedAsync(int page, int pageSize);
+
+        public async Task LoadPageAsync(int page = 1) {
+            if (page < 1) page = 1;
+            IsBusy = true;
+            try {
+                var result = await GetPagedAsync(page, PageSize);
+                Items.Clear();
+                foreach (var item in result.Items)
+                    Items.Add(item);
+                CurrentPage = page;
+                TotalCount = result.TotalCount;
+                TotalPages = (int)Math.Ceiling(result.TotalCount / (double)PageSize);
+            } catch (Refit.ValidationApiException vex) {
+                var msg = GetValidationMessage(vex);
+                System.Windows.MessageBox.Show($"加载数据失败：{msg}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            } catch (Exception ex) {
+                // 当加载数据失败时，捕获异常并弹出提示，避免未处理的异常导致程序终止
+                string msg = ex.Message;
+                if (ex is Refit.ApiException apiEx && !string.IsNullOrWhiteSpace(apiEx.Content)) {
+                    try {
+                        var doc = System.Text.Json.JsonDocument.Parse(apiEx.Content);
+                        if (doc.RootElement.TryGetProperty("message", out var m))
+                            msg = m.GetString() ?? msg;
+                    } catch {
+                        // ignore parse errors
+                    }
+                }
+                System.Windows.MessageBox.Show($"加载数据失败：{msg}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            } finally {
+                IsBusy = false;
+            }
+        }
+
+        private static string GetValidationMessage(Refit.ValidationApiException vex) {
+            var msg = vex.Message;
+            var details = vex.Content; // ProblemDetails
+            if (details != null) {
+                if (details.Errors != null && details.Errors.Count > 0) {
+                    var parts = new System.Collections.Generic.List<string>();
+                    foreach (var list in details.Errors.Values) {
+                        foreach (var item in list)
+                            if (!string.IsNullOrWhiteSpace(item))
+                                parts.Add(item);
+                    }
+                    if (parts.Count > 0)
+                        msg = string.Join("; ", parts);
+                } else if (!string.IsNullOrWhiteSpace(details.Title)) {
+                    msg = details.Title;
+                }
+            }
+            return msg;
+        }
     }
 }
