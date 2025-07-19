@@ -73,17 +73,29 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 ShowWelcomePanel = false;
                 // 确保导航菜单在隐藏欢迎面板后仍然可以访问
                 IsNavDrawerOpen = false;
+
+                System.Diagnostics.Debug.WriteLine("WelcomePanel hidden - switched to content view");
+                _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Publish("已切换到功能界面");
             });
 
             ShowWelcomePanelCommand = new DelegateCommand(() => {
+                // 显示欢迎面板（首页）
                 ShowWelcomePanel = true;
+
                 // 清除当前功能区域的内容
                 try {
                     var region = _regionManager.Regions["IntegratedContentRegion"];
                     region.RemoveAll();
+                    System.Diagnostics.Debug.WriteLine("Content region cleared - showing home page");
                 } catch (Exception ex) {
                     System.Diagnostics.Debug.WriteLine($"Clear content region error: {ex.Message}");
                 }
+
+                // 自动关闭导航抽屉
+                IsNavDrawerOpen = false;
+
+                System.Diagnostics.Debug.WriteLine("Returned to home page - welcome panel shown");
+                _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Publish("已返回首页");
             });
         }
 
@@ -121,10 +133,10 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 WelcomePanelViewModel.UpdateUserInfo(roles);
                 StatusBarViewModel.UpdateSystemStatus("用户登录成功");
 
-                // 显示欢迎面板
+                // 显示欢迎面板（首页）
                 ShowWelcomePanel = true;
 
-                System.Diagnostics.Debug.WriteLine("Integrated main layout initialized after login");
+                System.Diagnostics.Debug.WriteLine("Integrated main layout initialized after login - showing home page");
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"OnLoginSuccess error: {ex.Message}");
                 StatusBarViewModel.UpdateSystemStatus($"初始化失败：{ex.Message}");
@@ -138,8 +150,10 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 // 当导航到功能页面时，隐藏欢迎面板，但保持导航菜单可用
                 if (!string.IsNullOrEmpty(targetView) &&
                     targetView != "HomeView" &&
-                    targetView != "LoginView") {
+                    targetView != "LoginView" &&
+                    targetView != "IntegratedMainLayout") {
                     ShowWelcomePanel = false;
+                    System.Diagnostics.Debug.WriteLine($"Hidden welcome panel for navigation to: {targetView}");
                 }
 
                 // 自动关闭导航抽屉（移动端体验）
@@ -186,14 +200,21 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                     if (result.Success) {
                         // 发布界面切换事件
                         _eventAggregator.GetEvent<NavigationCompletedEvent>().Publish(args.TargetView);
+                        System.Diagnostics.Debug.WriteLine($"Successfully navigated to integrated content: {args.TargetView}");
                     } else {
                         System.Diagnostics.Debug.WriteLine($"Navigation to {args.TargetView} failed: {result.Exception?.Message}");
                         StatusBarViewModel.UpdateSystemStatus($"导航到 {args.TargetView} 失败");
+
+                        // 导航失败时返回首页
+                        ShowWelcomePanel = true;
                     }
                 }, parameters);
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"OnNavigateToIntegratedContent error: {ex.Message}");
                 StatusBarViewModel.UpdateSystemStatus($"导航失败：{ex.Message}");
+
+                // 出现异常时返回首页
+                ShowWelcomePanel = true;
             }
         }
 
@@ -262,7 +283,7 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 WelcomePanelViewModel.Reset();
                 StatusBarViewModel.Reset();
 
-                System.Diagnostics.Debug.WriteLine("Layout reset completed");
+                System.Diagnostics.Debug.WriteLine("Layout reset completed - returning to home page");
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"ResetLayout error: {ex.Message}");
             }

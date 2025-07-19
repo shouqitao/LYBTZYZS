@@ -13,64 +13,10 @@
         Background="{DynamicResource MaterialDesign.Brush.Background}">
 
     <Window.Resources>
-        <!-- 标题栏按钮样式 -->
-        <Style x:Key="TitleBarButtonStyle" TargetType="Button">
-            <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="46"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- 关闭按钮特殊样式 -->
-        <Style x:Key="CloseButtonStyle" TargetType="Button" BasedOn="{StaticResource TitleBarButtonStyle}">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#E81123"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#F1707A"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!-- 标题栏按钮样式已移除，因为不再需要自定义标题栏 -->
     </Window.Resources>
 
-    <!-- 窗口镶边设置 -->
-    <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="35" 
-                      CornerRadius="0" 
-                      GlassFrameThickness="1"
-                      UseAeroCaptionButtons="False"/>
-    </WindowChrome.WindowChrome>
+    <!-- 移除WindowChrome设置，因为不需要自定义标题栏 -->
 
     <Grid>
         <!-- 背景图片 -->
@@ -85,87 +31,12 @@
                         Panel.ZIndex="1"/>
 
         <!-- 主界面区域（登录后可见，初始隐藏） -->
-        <DockPanel Visibility="{Binding IsMainVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                   Panel.ZIndex="1">
-
-            <!-- 自定义标题栏 -->
-            <Border DockPanel.Dock="Top" 
-                    Height="35" 
-                    Background="{DynamicResource MaterialDesign.Brush.Primary}"
-                    Panel.ZIndex="10">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- 左侧：系统图标和标题 -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Image Source="/Assets/icon.ico" 
-                               Width="20" Height="20" 
-                               Margin="8,0,8,0"/>
-                        <TextBlock Text="凌隐宝堂中医诊所管理系统" 
-                                   Foreground="White"
-                                   FontSize="14" 
-                                   VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding CurrentUserName, StringFormat='- {0}'}" 
-                                   Foreground="White"
-                                   FontSize="12" 
-                                   Opacity="0.8"
-                                   VerticalAlignment="Center"
-                                   Margin="10,0,0,0"/>
-                    </StackPanel>
-
-                    <!-- 中间：状态信息 -->
-                    <StackPanel Grid.Column="1" 
-                                Orientation="Horizontal" 
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <TextBlock Text="{Binding SystemStatus}" 
-                                   Foreground="White"
-                                   FontSize="11" 
-                                   Opacity="0.9"/>
-                        <TextBlock Text=" | " 
-                                   Foreground="White"
-                                   FontSize="11" 
-                                   Opacity="0.7"
-                                   Margin="5,0"/>
-                        <TextBlock Text="{Binding CurrentTime}" 
-                                   Foreground="White"
-                                   FontSize="11" 
-                                   Opacity="0.9"/>
-                    </StackPanel>
-
-                    <!-- 右侧：窗口控制按钮 -->
-                    <StackPanel Grid.Column="2" 
-                                Orientation="Horizontal" 
-                                HorizontalAlignment="Right">
-                        <!-- 最小化按钮 -->
-                        <Button Style="{StaticResource TitleBarButtonStyle}"
-                                Click="MinimizeButton_Click"
-                                ToolTip="最小化">
-                            <materialDesign:PackIcon Kind="WindowMinimize" Width="12" Height="12"/>
-                        </Button>
-                        <!-- 最大化/还原按钮 -->
-                        <Button Style="{StaticResource TitleBarButtonStyle}"
-                                Click="MaximizeRestoreButton_Click"
-                                ToolTip="最大化/还原">
-                            <materialDesign:PackIcon x:Name="MaximizeIcon" Kind="WindowMaximize" Width="12" Height="12"/>
-                        </Button>
-                        <!-- 关闭按钮 -->
-                        <Button Style="{StaticResource CloseButtonStyle}"
-                                Click="CloseButton_Click"
-                                ToolTip="关闭">
-                            <materialDesign:PackIcon Kind="WindowClose" Width="12" Height="12"/>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
+        <!-- 移除DockPanel，直接使用Grid布局，不包含标题栏 -->
+        <Grid Visibility="{Binding IsMainVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+              Panel.ZIndex="1">
 
             <!-- 主要内容区域 - 加载整合后的主布局，保持原有结构兼容性 -->
-            <ContentControl DockPanel.Dock="Bottom"
-                           prism:RegionManager.RegionName="MainContentRegion"/>
-        </DockPanel>
+            <ContentControl prism:RegionManager.RegionName="MainContentRegion"/>
+        </Grid>
     </Grid>
 </Window>

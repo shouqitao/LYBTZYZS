@@ -68,7 +68,7 @@
             </Setter>
         </Style>
 
-        <!-- 顶部工具栏样式 -->
+        <!-- 顶部工具栏按钮样式 -->
         <Style x:Key="TopToolBarButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -97,203 +97,14 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <!-- 顶部工具栏 -->
             <RowDefinition Height="*"/>
             <!-- 主内容区 -->
             <RowDefinition Height="25"/>
             <!-- 底部状态栏 -->
         </Grid.RowDefinitions>
 
-        <!-- 顶部工具栏 - 始终可见 -->
-        <Border Grid.Row="0" 
-                Background="{DynamicResource MaterialDesign.Brush.Primary.Light}"
-                Padding="15,10"
-                Margin="10,10,10,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- 左侧：导航菜单按钮和标题 -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- 导航菜单切换按钮 -->
-                    <Button Style="{StaticResource TopToolBarButtonStyle}"
-                            Command="{Binding ToggleNavDrawerCommand}"
-                            ToolTip="显示/隐藏功能菜单"
-                            Foreground="White">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Menu" Width="20" Height="20"/>
-                            <TextBlock Text="功能菜单" Margin="5,0,0,0" FontSize="12"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- 返回首页按钮 -->
-                    <Button Style="{StaticResource TopToolBarButtonStyle}"
-                            Command="{Binding HideWelcomePanelCommand}"
-                            ToolTip="返回首页"
-                            Foreground="White"
-                            Margin="10,0,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Home" Width="18" Height="18"/>
-                            <TextBlock Text="首页" Margin="5,0,0,0" FontSize="12"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-
-                <!-- 中间：系统标题 -->
-                <StackPanel Grid.Column="1" 
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                    <TextBlock Text="凌隐宝堂中医诊所管理系统"
-                               Foreground="White"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding WelcomePanelViewModel.CurrentDateTime}"
-                               Foreground="White"
-                               FontSize="11"
-                               Opacity="0.8"
-                               HorizontalAlignment="Center"/>
-                </StackPanel>
-
-                <!-- 右侧：用户菜单 -->
-                <materialDesign:PopupBox Grid.Column="2"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Foreground="White"
-                                        StaysOpen="False"
-                                        PlacementMode="BottomAndAlignRightEdges">
-                    <materialDesign:PopupBox.ToggleContent>
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="AccountCircle" 
-                                                    Width="24" Height="24"/>
-                            <TextBlock Text="{Binding WelcomePanelViewModel.CurrentUserName}"
-                                       Margin="8,0,5,0"
-                                       VerticalAlignment="Center"
-                                       FontSize="12"/>
-                            <materialDesign:PackIcon Kind="ChevronDown" 
-                                                    Width="12" Height="12"
-                                                    VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </materialDesign:PopupBox.ToggleContent>
-                    <materialDesign:PopupBox.PopupContent>
-                        <StackPanel MinWidth="200">
-                            <!-- 用户信息显示 -->
-                            <Border Background="{DynamicResource MaterialDesign.Brush.Primary.Light}"
-                                    Padding="15,10"
-                                    Margin="-8,-8,-8,8">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding WelcomePanelViewModel.CurrentUserName}"
-                                               FontWeight="SemiBold"
-                                               Foreground="White"/>
-                                    <TextBlock Text="{Binding WelcomePanelViewModel.CurrentUserRole}"
-                                               FontSize="11"
-                                               Foreground="White"
-                                               Opacity="0.8"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- 功能菜单 -->
-                            <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                    Content="修改密码"
-                                    HorizontalContentAlignment="Left"
-                                    Command="{Binding WelcomePanelViewModel.ShowChangePasswordCommand}">
-                                <Button.ContentTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Key" 
-                                                                    Width="16" Height="16"
-                                                                    VerticalAlignment="Center"
-                                                                    Margin="0,0,10,0"/>
-                                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </Button.ContentTemplate>
-                            </Button>
-
-                            <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                    Content="修改信息"
-                                    HorizontalContentAlignment="Left"
-                                    Command="{Binding WelcomePanelViewModel.ShowChangeProfileCommand}"
-                                    Visibility="{Binding WelcomePanelViewModel.IsNotSysAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Button.ContentTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="AccountEdit" 
-                                                                    Width="16" Height="16"
-                                                                    VerticalAlignment="Center"
-                                                                    Margin="0,0,10,0"/>
-                                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </Button.ContentTemplate>
-                            </Button>
-
-                            <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                    Content="{Binding WelcomePanelViewModel.DoctorProfileButtonText}"
-                                    HorizontalContentAlignment="Left"
-                                    Command="{Binding WelcomePanelViewModel.ShowDoctorProfileCommand}"
-                                    Visibility="{Binding WelcomePanelViewModel.IsDoctorRole, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Button.ContentTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Doctor" 
-                                                                    Width="16" Height="16"
-                                                                    VerticalAlignment="Center"
-                                                                    Margin="0,0,10,0"/>
-                                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </Button.ContentTemplate>
-                            </Button>
-
-                            <Separator Margin="0,5"/>
-
-                            <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                    Content="主题切换"
-                                    HorizontalContentAlignment="Left"
-                                    Command="{Binding WelcomePanelViewModel.ToggleThemeCommand}">
-                                <Button.ContentTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Palette" 
-                                                                    Width="16" Height="16"
-                                                                    VerticalAlignment="Center"
-                                                                    Margin="0,0,10,0"/>
-                                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </Button.ContentTemplate>
-                            </Button>
-
-                            <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                    Content="退出登录"
-                                    HorizontalContentAlignment="Left"
-                                    Command="{Binding WelcomePanelViewModel.LogoutCommand}"
-                                    Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}">
-                                <Button.ContentTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="ExitToApp" 
-                                                                    Width="16" Height="16"
-                                                                    VerticalAlignment="Center"
-                                                                    Margin="0,0,10,0"/>
-                                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </Button.ContentTemplate>
-                            </Button>
-                        </StackPanel>
-                    </materialDesign:PopupBox.PopupContent>
-                </materialDesign:PopupBox>
-            </Grid>
-        </Border>
-
         <!-- 主内容区域 - 使用DrawerHost实现侧边导航 -->
-        <materialDesign:DrawerHost Grid.Row="1"
+        <materialDesign:DrawerHost Grid.Row="0"
                                    IsLeftDrawerOpen="{Binding IsNavDrawerOpen, Mode=TwoWay}" 
                                    LeftDrawerCloseOnClickAway="True"
                                    LeftDrawerCornerRadius="0,10,10,0">
@@ -397,9 +208,9 @@
                                     </Button.ContentTemplate>
                                 </Button>
 
-                                <Button Content="显示首页"
+                                <Button Content="返回首页"
                                         Style="{StaticResource MaterialDesignOutlinedButton}"
-                                        Command="{Binding HideWelcomePanelCommand}">
+                                        Command="{Binding ShowWelcomePanelCommand}">
                                     <Button.ContentTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">
@@ -443,87 +254,352 @@
 
             <!-- 主内容区域 -->
             <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
-                <!-- 欢迎区域和功能内容区二选一显示 -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- 简化的顶部工具栏 -->
+                    <RowDefinition Height="*"/>
+                    <!-- 主要内容区 -->
+                </Grid.RowDefinitions>
 
-                <!-- 欢迎区域 -->
-                <materialDesign:Card Margin="10" 
-                                    Padding="20" 
-                                    materialDesign:ElevationAssist.Elevation="Dp4"
-                                    Visibility="{Binding ShowWelcomePanel, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel>
-                        <!-- 欢迎标题 -->
-                        <TextBlock Text="{Binding WelcomePanelViewModel.WelcomeMessage}"
-                                   FontSize="28"
-                                   FontWeight="Bold"
-                                   Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,0,0,20"
-                                   HorizontalAlignment="Center"/>
+                <!-- 简化的顶部工具栏 - 只保留基本功能 -->
+                <Border Grid.Row="0" 
+                        Background="{DynamicResource MaterialDesign.Brush.Primary.Light}"
+                        Padding="15,8"
+                        Margin="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                        <!-- 快速操作区域 -->
-                        <Grid Visibility="{Binding WelcomePanelViewModel.HasNavigationItems, Converter={StaticResource BoolToVisibilityConverter}}"
-                              Margin="0,0,0,20">
-                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Style="{StaticResource QuickAccessButtonStyle}"
-                                        Command="{Binding WelcomePanelViewModel.OpenNavMenuCommand}"
-                                        Background="{DynamicResource MaterialDesign.Brush.Primary}">
-                                    <StackPanel>
-                                        <materialDesign:PackIcon Kind="Menu" Width="24" Height="24"/>
-                                        <TextBlock Text="功能菜单" FontSize="11" Margin="0,5,0,0"/>
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Style="{StaticResource QuickAccessButtonStyle}"
-                                        Command="{Binding WelcomePanelViewModel.RefreshMenuCommand}"
-                                        Background="{DynamicResource MaterialDesign.Brush.Secondary}">
-                                    <StackPanel>
-                                        <materialDesign:PackIcon Kind="Refresh" Width="24" Height="24"/>
-                                        <TextBlock Text="刷新" FontSize="11" Margin="0,5,0,0"/>
-                                    </StackPanel>
-                                </Button>
-                            </WrapPanel>
-                        </Grid>
-
-                        <!-- 首次使用引导 -->
-                        <Border Visibility="{Binding WelcomePanelViewModel.HasNavigationItems, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                                Background="{DynamicResource MaterialDesign.Brush.Primary.Light}"
-                                CornerRadius="10"
-                                Padding="20">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <materialDesign:PackIcon Kind="LightbulbOnOutline" 
-                                                            Width="24" Height="24"
-                                                            Foreground="White"
-                                                            VerticalAlignment="Center"
-                                                            Margin="0,0,10,0"/>
-                                    <TextBlock Text="使用提示"
-                                               FontSize="16"
-                                               FontWeight="SemiBold"
-                                               Foreground="White"
-                                               VerticalAlignment="Center"/>
+                        <!-- 左侧：导航菜单按钮 -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- 导航菜单切换按钮 -->
+                            <Button Style="{StaticResource TopToolBarButtonStyle}"
+                                    Command="{Binding ToggleNavDrawerCommand}"
+                                    ToolTip="显示/隐藏功能菜单"
+                                    Foreground="White">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Menu" Width="18" Height="18"/>
+                                    <TextBlock Text="菜单" Margin="5,0,0,0" FontSize="12"/>
                                 </StackPanel>
-                                <TextBlock Text="当前用户暂无可用功能权限。请联系系统管理员为您分配相应的角色权限，以便使用系统功能。"
-                                           FontSize="14"
-                                           Foreground="White"
-                                           TextWrapping="Wrap"
-                                           LineHeight="20"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </materialDesign:Card>
+                            </Button>
 
-                <!-- 功能内容区域 -->
-                <Border Background="Transparent"
-                        Margin="10"
-                        Visibility="{Binding ShowWelcomePanel, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                    <ContentControl prism:RegionManager.RegionName="IntegratedContentRegion"
-                                    Background="{DynamicResource MaterialDesign.Brush.Background}"/>
+                            <!-- 返回首页按钮 -->
+                            <Button Style="{StaticResource TopToolBarButtonStyle}"
+                                    Command="{Binding ShowWelcomePanelCommand}"
+                                    ToolTip="返回首页"
+                                    Foreground="White"
+                                    Margin="10,0,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Home" Width="16" Height="16"/>
+                                    <TextBlock Text="首页" Margin="5,0,0,0" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- 中间：系统标题 -->
+                        <StackPanel Grid.Column="1" 
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="凌隐宝堂中医诊所管理系统"
+                                       Foreground="White"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- 右侧：用户菜单 -->
+                        <materialDesign:PopupBox Grid.Column="2"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Foreground="White"
+                                                StaysOpen="False"
+                                                PlacementMode="BottomAndAlignRightEdges">
+                            <materialDesign:PopupBox.ToggleContent>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="AccountCircle" 
+                                                            Width="20" Height="20"/>
+                                    <TextBlock Text="{Binding WelcomePanelViewModel.CurrentUserName}"
+                                               Margin="8,0,5,0"
+                                               VerticalAlignment="Center"
+                                               FontSize="12"/>
+                                    <materialDesign:PackIcon Kind="ChevronDown" 
+                                                            Width="12" Height="12"
+                                                            VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </materialDesign:PopupBox.ToggleContent>
+                            <materialDesign:PopupBox.PopupContent>
+                                <StackPanel MinWidth="180">
+                                    <!-- 用户信息显示 -->
+                                    <Border Background="{DynamicResource MaterialDesign.Brush.Primary.Light}"
+                                            Padding="15,10"
+                                            Margin="-8,-8,-8,8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding WelcomePanelViewModel.CurrentUserName}"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="White"/>
+                                            <TextBlock Text="{Binding WelcomePanelViewModel.CurrentUserRole}"
+                                                       FontSize="11"
+                                                       Foreground="White"
+                                                       Opacity="0.8"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- 功能菜单 -->
+                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                            Content="修改密码"
+                                            HorizontalContentAlignment="Left"
+                                            Command="{Binding WelcomePanelViewModel.ShowChangePasswordCommand}">
+                                        <Button.ContentTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Key" 
+                                                                            Width="16" Height="16"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,10,0"/>
+                                                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </Button.ContentTemplate>
+                                    </Button>
+
+                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                            Content="修改信息"
+                                            HorizontalContentAlignment="Left"
+                                            Command="{Binding WelcomePanelViewModel.ShowChangeProfileCommand}"
+                                            Visibility="{Binding WelcomePanelViewModel.IsNotSysAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <Button.ContentTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="AccountEdit" 
+                                                                            Width="16" Height="16"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,10,0"/>
+                                                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </Button.ContentTemplate>
+                                    </Button>
+
+                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                            Content="{Binding WelcomePanelViewModel.DoctorProfileButtonText}"
+                                            HorizontalContentAlignment="Left"
+                                            Command="{Binding WelcomePanelViewModel.ShowDoctorProfileCommand}"
+                                            Visibility="{Binding WelcomePanelViewModel.IsDoctorRole, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <Button.ContentTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Doctor" 
+                                                                            Width="16" Height="16"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,10,0"/>
+                                                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </Button.ContentTemplate>
+                                    </Button>
+
+                                    <Separator Margin="0,5"/>
+
+                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                            Content="主题切换"
+                                            HorizontalContentAlignment="Left"
+                                            Command="{Binding WelcomePanelViewModel.ToggleThemeCommand}">
+                                        <Button.ContentTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Palette" 
+                                                                            Width="16" Height="16"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,10,0"/>
+                                                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </Button.ContentTemplate>
+                                    </Button>
+
+                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                            Content="退出登录"
+                                            HorizontalContentAlignment="Left"
+                                            Command="{Binding WelcomePanelViewModel.LogoutCommand}"
+                                            Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}">
+                                        <Button.ContentTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="ExitToApp" 
+                                                                            Width="16" Height="16"
+                                                                            VerticalAlignment="Center"
+                                                                            Margin="0,0,10,0"/>
+                                                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </Button.ContentTemplate>
+                                    </Button>
+                                </StackPanel>
+                            </materialDesign:PopupBox.PopupContent>
+                        </materialDesign:PopupBox>
+                    </Grid>
                 </Border>
+
+                <!-- 主要内容区 -->
+                <Grid Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.Background}">
+                    <!-- 欢迎区域和功能内容区二选一显示 -->
+
+                    <!-- 欢迎区域（首页） -->
+                    <materialDesign:Card Margin="10" 
+                                        Padding="30" 
+                                        materialDesign:ElevationAssist.Elevation="Dp4"
+                                        Visibility="{Binding ShowWelcomePanel, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel>
+                            <!-- 欢迎标题 -->
+                            <TextBlock Text="{Binding WelcomePanelViewModel.WelcomeMessage}"
+                                       FontSize="32"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,20"
+                                       HorizontalAlignment="Center"/>
+
+                            <!-- 日期时间信息 -->
+                            <TextBlock Text="{Binding WelcomePanelViewModel.CurrentDateTime}"
+                                       FontSize="18"
+                                       Opacity="0.8"
+                                       Margin="0,0,0,30"
+                                       HorizontalAlignment="Center"/>
+
+                            <!-- 快速操作区域 -->
+                            <Grid Visibility="{Binding WelcomePanelViewModel.HasNavigationItems, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  Margin="0,0,0,30">
+                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Style="{StaticResource QuickAccessButtonStyle}"
+                                            Command="{Binding WelcomePanelViewModel.OpenNavMenuCommand}"
+                                            Background="{DynamicResource MaterialDesign.Brush.Primary}">
+                                        <StackPanel>
+                                            <materialDesign:PackIcon Kind="Menu" Width="28" Height="28"/>
+                                            <TextBlock Text="功能菜单" FontSize="12" Margin="0,8,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <Button Style="{StaticResource QuickAccessButtonStyle}"
+                                            Command="{Binding WelcomePanelViewModel.RefreshMenuCommand}"
+                                            Background="{DynamicResource MaterialDesign.Brush.Secondary}">
+                                        <StackPanel>
+                                            <materialDesign:PackIcon Kind="Refresh" Width="28" Height="28"/>
+                                            <TextBlock Text="刷新菜单" FontSize="12" Margin="0,8,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <Button Style="{StaticResource QuickAccessButtonStyle}"
+                                            Command="{Binding WelcomePanelViewModel.ShowChangePasswordCommand}"
+                                            Background="#FF9800">
+                                        <StackPanel>
+                                            <materialDesign:PackIcon Kind="Key" Width="28" Height="28"/>
+                                            <TextBlock Text="修改密码" FontSize="12" Margin="0,8,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <Button Style="{StaticResource QuickAccessButtonStyle}"
+                                            Command="{Binding WelcomePanelViewModel.ToggleThemeCommand}"
+                                            Background="#795548">
+                                        <StackPanel>
+                                            <materialDesign:PackIcon Kind="Palette" Width="28" Height="28"/>
+                                            <TextBlock Text="主题切换" FontSize="12" Margin="0,8,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+                                </WrapPanel>
+                            </Grid>
+
+                            <!-- 系统信息展示区域 -->
+                            <Grid Margin="0,20,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 当前用户信息卡片 -->
+                                <materialDesign:Card Grid.Column="0" Margin="5" Padding="20" Background="{DynamicResource MaterialDesign.Brush.Primary}">
+                                    <StackPanel>
+                                        <materialDesign:PackIcon Kind="AccountCircle" Width="32" Height="32" Foreground="White" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="当前用户" FontSize="14" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                        <TextBlock Text="{Binding WelcomePanelViewModel.CurrentUserName}" FontSize="12" Foreground="White" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding WelcomePanelViewModel.CurrentUserRole}" FontSize="10" Foreground="White" Opacity="0.8" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </materialDesign:Card>
+
+                                <!-- 功能统计卡片 -->
+                                <materialDesign:Card Grid.Column="1" Margin="5" Padding="20" Background="{DynamicResource MaterialDesign.Brush.Secondary}">
+                                    <StackPanel>
+                                        <materialDesign:PackIcon Kind="Apps" Width="32" Height="32" Foreground="White" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="可用功能" FontSize="14" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
+                                            <TextBlock Text="共" FontSize="11" Foreground="White" Opacity="0.8"/>
+                                            <TextBlock Text="{Binding NavigationDrawerViewModel.NavigationCount}" FontSize="11" Foreground="White" Opacity="0.8" Margin="3,0,3,0"/>
+                                            <TextBlock Text="个功能模块" FontSize="11" Foreground="White" Opacity="0.8"/>
+                                        </StackPanel>
+                                        <TextBlock Text="点击菜单按钮访问" FontSize="10" Foreground="White" Opacity="0.8" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </materialDesign:Card>
+
+                                <!-- 系统状态卡片 -->
+                                <materialDesign:Card Grid.Column="2" Margin="5" Padding="20" Background="#4CAF50">
+                                    <StackPanel>
+                                        <materialDesign:PackIcon Kind="CheckCircle" Width="32" Height="32" Foreground="White" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="系统状态" FontSize="14" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                        <TextBlock Text="运行正常" FontSize="12" Foreground="White" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding StatusBarViewModel.CurrentTime, StringFormat='更新于 {0}'}" FontSize="10" Foreground="White" Opacity="0.8" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </materialDesign:Card>
+                            </Grid>
+
+                            <!-- 首次使用引导 -->
+                            <Border Visibility="{Binding WelcomePanelViewModel.HasNavigationItems, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                    Background="{DynamicResource MaterialDesign.Brush.Primary.Light}"
+                                    CornerRadius="10"
+                                    Padding="30"
+                                    Margin="0,20,0,0">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" 
+                                                HorizontalAlignment="Center" 
+                                                Margin="0,0,0,15">
+                                        <materialDesign:PackIcon Kind="LightbulbOnOutline" 
+                                                                Width="32" Height="32"
+                                                                Foreground="White"
+                                                                VerticalAlignment="Center"
+                                                                Margin="0,0,15,0"/>
+                                        <TextBlock Text="使用提示"
+                                                   FontSize="20"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="当前用户暂无可用功能权限。请联系系统管理员为您分配相应的角色权限，以便使用系统功能。"
+                                               FontSize="16"
+                                               Foreground="White"
+                                               TextWrapping="Wrap"
+                                               LineHeight="24"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </materialDesign:Card>
+
+                    <!-- 功能内容区域 -->
+                    <Border Background="Transparent"
+                            Margin="10"
+                            Visibility="{Binding ShowWelcomePanel, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <ContentControl prism:RegionManager.RegionName="IntegratedContentRegion"
+                                        Background="{DynamicResource MaterialDesign.Brush.Background}"/>
+                    </Border>
+                </Grid>
             </Grid>
         </materialDesign:DrawerHost>
 
         <!-- 底部状态栏 -->
-        <Border Grid.Row="2" 
+        <Border Grid.Row="1" 
                 Background="{DynamicResource MaterialDesign.Brush.Primary.Dark}"
                 BorderBrush="{DynamicResource MaterialDesign.Brush.TextBox.Border}"
                 BorderThickness="0,1,0,0">

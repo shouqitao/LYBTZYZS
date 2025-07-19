@@ -8,8 +8,7 @@ using System.Windows.Threading;
 
 namespace LYBT.UI.WPF.ViewModels.Main {
     /// <summary>
-    /// 重构后的主窗口视图模型 - 简化职责，专注于窗口管理和界面切换
-    /// 注意：这是对原有MainWindowViewModel的重构，保持类名不变以确保兼容性
+    /// 重构后的主窗口视图模型 - 修复退出登录后界面恢复问题
     /// </summary>
     public class MainWindowViewModel : BindableBase {
         private readonly IEventAggregator _eventAggregator;
@@ -17,6 +16,13 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private readonly IAuthService _authService;
         private readonly IDoctorService _doctorService;
         private readonly IThemeService _themeService;
+
+        // 保存登录前的窗口状态
+        private WindowState _originalWindowState;
+        private double _originalWidth;
+        private double _originalHeight;
+        private double _originalLeft;
+        private double _originalTop;
 
         #region Properties
 
@@ -156,6 +162,9 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             _doctorService = doctorService ?? throw new ArgumentNullException(nameof(doctorService));
             _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
 
+            // 保存初始窗口状态
+            SaveInitialWindowState();
+
             // 初始化命令（保持向后兼容）
             InitializeCommands();
 
@@ -165,10 +174,33 @@ namespace LYBT.UI.WPF.ViewModels.Main {
             // 初始化状态定时器
             InitializeStatusTimer();
 
-            System.Diagnostics.Debug.WriteLine("Refactored MainWindowViewModel constructed");
+            System.Diagnostics.Debug.WriteLine("Enhanced MainWindowViewModel constructed with logout fix");
         }
 
         #region Initialization
+
+        private void SaveInitialWindowState() {
+            try {
+                if (Application.Current?.MainWindow != null) {
+                    var window = Application.Current.MainWindow;
+                    _originalWindowState = window.WindowState;
+                    _originalWidth = window.Width;
+                    _originalHeight = window.Height;
+                    _originalLeft = window.Left;
+                    _originalTop = window.Top;
+
+                    System.Diagnostics.Debug.WriteLine($"Saved initial window state: {_originalWindowState}, Size: {_originalWidth}x{_originalHeight}, Position: {_originalLeft},{_originalTop}");
+                }
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"SaveInitialWindowState error: {ex.Message}");
+                // 设置默认值
+                _originalWindowState = WindowState.Normal;
+                _originalWidth = 420;
+                _originalHeight = 480;
+                _originalLeft = 0;
+                _originalTop = 0;
+            }
+        }
 
         private void InitializeCommands() {
             // 保留原有命令，但通过事件系统实现
@@ -256,14 +288,11 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 // 更新用户信息（保持原有逻辑）
                 await UpdateUserInfoAsync(roles);
 
-                // 更新界面状态
-                UpdateUIState();
+                // 更新界面状态 - 切换到主界面并最大化窗口
+                UpdateUIStateForLogin();
 
                 // 启动状态定时器
                 _statusTimer.Start();
-
-                // 最大化窗口
-                MaximizeWindow();
 
                 // 导航到整合后的主布局
                 await NavigateToIntegratedMainLayoutAsync(roles);
@@ -284,12 +313,19 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         private void OnLogout() {
             try {
+                System.Diagnostics.Debug.WriteLine("OnLogout: Starting logout process");
+
                 // 执行原有的登出逻辑
                 _statusTimer?.Stop();
                 ResetUIState();
+
+                // 恢复窗口到登录前的状态
+                RestoreLoginWindowState();
+
+                // 导航回登录界面
                 NavigateToLogin();
 
-                System.Diagnostics.Debug.WriteLine("User logged out successfully");
+                System.Diagnostics.Debug.WriteLine("User logged out successfully with window state restored");
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"OnLogout error: {ex.Message}");
             }
@@ -423,15 +459,18 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         }
 
         /// <summary>
-        /// 更新界面状态
+        /// 更新界面状态 - 登录后切换到主界面并最大化
         /// </summary>
-        private void UpdateUIState() {
+        private void UpdateUIStateForLogin() {
             IsFunctionVisible = false;
             IsMainVisible = true;
+
+            // 最大化窗口
+            MaximizeWindow();
         }
 
         /// <summary>
-        /// 重置界面状态
+        /// 重置界面状态 - 退出登录时恢复
         /// </summary>
         private void ResetUIState() {
             IsMainVisible = false;
@@ -451,8 +490,57 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// 最大化窗口
         /// </summary>
         private void MaximizeWindow() {
-            if (Application.Current?.MainWindow != null) {
-                Application.Current.MainWindow.WindowState = WindowState.Maximized;
+            try {
+                if (Application.Current?.MainWindow != null) {
+                    Application.Current.MainWindow.WindowState = WindowState.Maximized;
+                    System.Diagnostics.Debug.WriteLine("Window maximized after login");
+                }
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"MaximizeWindow error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 恢复登录窗口状态 - 关键修复方法
+        /// </summary>
+        private void RestoreLoginWindowState() {
+            try {
+                if (Application.Current?.MainWindow != null) {
+                    var window = Application.Current.MainWindow;
+
+                    // 恢复到登录前的窗口状态
+                    window.WindowState = _originalWindowState;
+
+                    // 如果原来是普通窗口，恢复尺寸和位置
+                    if (_originalWindowState == WindowState.Normal) {
+                        window.Width = _originalWidth > 0 ? _originalWidth : 420;
+                        window.Height = _originalHeight > 0 ? _originalHeight : 480;
+
+                        // 居中显示
+                        window.Left = (SystemParameters.PrimaryScreenWidth - window.Width) / 2;
+                        window.Top = (SystemParameters.PrimaryScreenHeight - window.Height) / 2;
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"Window state restored to: {window.WindowState}, Size: {window.Width}x{window.Height}");
+                }
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"RestoreLoginWindowState error: {ex.Message}");
+
+                // 如果恢复失败，至少确保窗口回到合理的登录状态
+                try {
+                    if (Application.Current?.MainWindow != null) {
+                        var window = Application.Current.MainWindow;
+                        window.WindowState = WindowState.Normal;
+                        window.Width = 420;
+                        window.Height = 480;
+                        window.Left = (SystemParameters.PrimaryScreenWidth - window.Width) / 2;
+                        window.Top = (SystemParameters.PrimaryScreenHeight - window.Height) / 2;
+
+                        System.Diagnostics.Debug.WriteLine("Window state restored to default login size");
+                    }
+                } catch (Exception innerEx) {
+                    System.Diagnostics.Debug.WriteLine($"Fallback window restore failed: {innerEx.Message}");
+                }
             }
         }
 
@@ -461,13 +549,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         /// </summary>
         private void NavigateToLogin() {
             _regionManager.RequestNavigate("FunctionRegion", "LoginView");
-
-            // 恢复窗口尺寸
-            if (Application.Current?.MainWindow != null) {
-                Application.Current.MainWindow.WindowState = WindowState.Normal;
-                Application.Current.MainWindow.Width = 420;
-                Application.Current.MainWindow.Height = 480;
-            }
         }
 
         /// <summary>
