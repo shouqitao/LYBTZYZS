@@ -12,11 +12,11 @@
         </Grid.ColumnDefinitions>
         <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
             <Grid>
-                <controls:CommonListView ShowPaging="False"
+                <controls:FormulaTemplateListView ShowPaging="False"
                                      ItemsSource="{Binding Templates}"
                                      SelectedItem="{Binding SelectedTemplate, Mode=TwoWay}"
                                      SearchCommand="{Binding RefreshCommand}">
-                    <controls:CommonListView.ActionContent>
+                    <controls:FormulaTemplateListView.ActionContent>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                             <Button Content="刷新" Command="{Binding RefreshCommand}" Margin="0,0,8,0"/>
                             <Button Content="新增" Command="{Binding AddCommand}" Margin="0,0,8,0"/>
@@ -25,21 +25,21 @@
                             <Button Content="批量导入经典方" Command="{Binding ImportCommand}" Margin="0,0,8,0"/>
                             <Button Content="批量导出经典方" Command="{Binding ExportCommand}"/>
                         </StackPanel>
-                    </controls:CommonListView.ActionContent>
-                    <controls:CommonListView.Columns>
+                    </controls:FormulaTemplateListView.ActionContent>
+                    <controls:FormulaTemplateListView.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="160"/>
                         <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
-                    </controls:CommonListView.Columns>
-                </controls:CommonListView>
+                    </controls:FormulaTemplateListView.Columns>
+                </controls:FormulaTemplateListView>
             </Grid>
         </Border>
         <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonProfileView DataContext="{Binding ProfileViewModel}"
+            <controls:FormulaTemplateProfileView DataContext="{Binding ProfileViewModel}"
                                        Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveCommand}"
                                        CancelCommand="{Binding CancelCommand}"
                                        IsEditable="{Binding IsEditable}">
-                <controls:CommonProfileView.ProfileContent>
+                <controls:FormulaTemplateProfileView.ProfileContent>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <Button Content="添加药材" Command="{Binding AddItemCommand}" Margin="0,0,5,0"/>
@@ -53,7 +53,7 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Content="删除"
-                                                    Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=controls:CommonProfileView}}"
+                                                    Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=controls:FormulaTemplateProfileView}}"
                                                     CommandParameter="{Binding}"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -74,8 +74,8 @@
                                      IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
                         </StackPanel>
                     </StackPanel>
-                </controls:CommonProfileView.ProfileContent>
-            </controls:CommonProfileView>
+                </controls:FormulaTemplateProfileView.ProfileContent>
+            </controls:FormulaTemplateProfileView>
         </Border>
         <Border Grid.Column="2" Margin="10,0,0,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
 

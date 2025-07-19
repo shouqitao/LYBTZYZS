@@ -13,28 +13,28 @@
             <ColumnDefinition Width="1.8*"/>
         </Grid.ColumnDefinitions>
         <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonListView ShowPaging="True"
+            <controls:PatientListView ShowPaging="True"
                                  ItemsSource="{Binding Patients}"
                                  SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
                                  SearchKeyword="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
                                  SearchCommand="{Binding SearchCommand}"
                                  LoadPageCommand="{Binding LoadPageCommand}">
-            <controls:CommonListView.Columns>
+            <controls:PatientListView.Columns>
                 <DataGridTextColumn Header="姓名" Binding="{Binding Name}" Width="100"/>
                 <DataGridTextColumn Header="性别" Binding="{Binding Gender}" Width="60"/>
                 <DataGridTextColumn Header="年龄" Binding="{Binding Age}" Width="60"/>
                 <DataGridTextColumn Header="手机号" Binding="{Binding PhoneNumber}" Width="120"/>
                 <DataGridTextColumn Header="地址" Binding="{Binding Address}" Width="200"/>
-            </controls:CommonListView.Columns>
-            </controls:CommonListView>
+            </controls:PatientListView.Columns>
+            </controls:PatientListView>
         </Border>
         <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonProfileView DataContext="{Binding PatientProfileViewModel}"
+            <controls:PatientProfileView DataContext="{Binding PatientProfileViewModel}"
                                        Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveCommand}"
                                        CancelCommand="{Binding CancelCommand}"
                                        IsEditable="{Binding IsEditable}">
-                <controls:CommonProfileView.ProfileContent>
+                <controls:PatientProfileView.ProfileContent>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <TextBlock Text="姓名" />
@@ -67,8 +67,8 @@
                             <CheckBox Content="特殊患者" IsChecked="{Binding Patient.IsSpecial}" Margin="0,0,0,8" IsEnabled="{Binding IsEditable}"/>
                         </StackPanel>
                     </ScrollViewer>
-                </controls:CommonProfileView.ProfileContent>
-            </controls:CommonProfileView>
+                </controls:PatientProfileView.ProfileContent>
+            </controls:PatientProfileView>
         </Border>
     </Grid>
 </UserControl>

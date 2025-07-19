@@ -12,20 +12,20 @@
             <ColumnDefinition Width="1.8*"/>
         </Grid.ColumnDefinitions>
         <Border Grid.Column="0" Margin="0,0,10,0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonListView ShowPaging="True"
+            <controls:DoctorListView ShowPaging="True"
                                  ItemsSource="{Binding Doctors}"
                                  SelectedItem="{Binding SelectedDoctor, Mode=TwoWay}"
                                  SearchKeyword="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
                                  SearchCommand="{Binding SearchCommand}"
                                  LoadPageCommand="{Binding LoadPageCommand}"
                                  IsBusy="{Binding IsBusy}">
-            <controls:CommonListView.ActionContent>
+            <controls:DoctorListView.ActionContent>
                 <StackPanel Orientation="Horizontal">
                     <Button Content="修改医生档案" Command="{Binding EditDoctorCommand}" Margin="0,0,8,0"
                             IsEnabled="{Binding SelectedDoctor, Converter={StaticResource NullToBoolConverter}}"/>
                 </StackPanel>
-            </controls:CommonListView.ActionContent>
-            <controls:CommonListView.Columns>
+            </controls:DoctorListView.ActionContent>
+            <controls:DoctorListView.Columns>
                 <DataGridTextColumn Header="账号" Binding="{Binding UserName}" Width="*"/>
                 <DataGridTextColumn Header="姓名" Binding="{Binding RealName}" Width="*"/>
                 <DataGridTextColumn Header="联系号码" Binding="{Binding ContactNumber}" Width="*"/>
@@ -54,16 +54,16 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="备注" Binding="{Binding Remark}" Width="*"/>
-            </controls:CommonListView.Columns>
-            </controls:CommonListView>
+            </controls:DoctorListView.Columns>
+            </controls:DoctorListView>
         </Border>
         <Border Grid.Column="1" Margin="0" Padding="18" Background="#FAFAFA" CornerRadius="8" BorderBrush="#CCC" BorderThickness="1">
-            <controls:CommonProfileView DataContext="{Binding DoctorProfileViewModel}"
+            <controls:DoctorProfileView DataContext="{Binding DoctorProfileViewModel}"
                                        Title="{Binding EditModeTitle}"
                                        SaveCommand="{Binding SaveCommand}"
                                        CancelCommand="{Binding CancelCommand}"
                                        IsEditable="{Binding IsEditable}">
-                <controls:CommonProfileView.ProfileContent>
+                <controls:DoctorProfileView.ProfileContent>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <TextBlock Text="账号" />
@@ -99,8 +99,8 @@
                                      IsReadOnly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"/>
                         </StackPanel>
                     </ScrollViewer>
-                </controls:CommonProfileView.ProfileContent>
-            </controls:CommonProfileView>
+                </controls:DoctorProfileView.ProfileContent>
+            </controls:DoctorProfileView>
         </Border>
     </Grid>
 </UserControl>
