@@ -59,3 +59,17 @@ var (list, total) = await _logService.GetLogsAsync(query);
 - `Task<bool> WriteAsync(LogDto dto)`
 - `Task<(IList<LogDto>, int)> GetLogsAsync(LogQueryDto query)`
 
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```

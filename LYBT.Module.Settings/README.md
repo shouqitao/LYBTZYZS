@@ -70,3 +70,17 @@ bool ok = await _diagnosisCatalogService.AddAsync(dto);
 | `GET /api/diagnosiscatalog` | 已实现 |
 
 
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```

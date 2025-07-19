@@ -121,7 +121,7 @@ This system follows a modular "Agent" architecture. Each business or supporting 
 - 各模块 AGENTS.md 文件详细定义请见对应模块目录
 - 系统整体支持横向扩展、新业务模块与第三方平台集成
 - `docs/quick_add_herbs.md` 介绍了“快速添加药材”功能的设计与交互细节
-## Running Tests
+## Running Tests / 运行测试
 
 Execute all unit tests with:
 
@@ -129,6 +129,10 @@ Execute all unit tests with:
  dotnet test
 ```
 
+使用以下命令运行所有单元测试：
 
+```bash
+ dotnet test
+```
 
 Unit tests now cover service ports of all modules and can be run with `dotnet test`.

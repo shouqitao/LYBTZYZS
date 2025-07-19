@@ -39,3 +39,17 @@
   - **TreatmentDoctor**：治疗任务进度管理。
 - **个人信息维护**：提供个人资料编辑、医生档案维护及修改密码功能。
 
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```
