@@ -77,7 +77,6 @@ namespace LYBT.UI.WPF {
             var recordService = new RecordService(recordApi);
             var queueingService = new QueueingService(queueingApi);
             var diagnosisTreatmentService = new DiagnosisTreatmentService(diagnosisTreatmentApi);
-            var themeService = new ThemeService();
 
             // 4. 注册API接口实例
             containerRegistry.RegisterInstance(authApi);
@@ -112,7 +111,6 @@ namespace LYBT.UI.WPF {
             containerRegistry.RegisterInstance<IRecordService>(recordService);
             containerRegistry.RegisterInstance<IQueueingService>(queueingService);
             containerRegistry.RegisterInstance<IDiagnosisTreatmentService>(diagnosisTreatmentService);
-            containerRegistry.RegisterInstance<IThemeService>(themeService);
 
             // 6. 【更新】注册整合架构的视图模型（只注册必要的ViewModel）
             containerRegistry.RegisterSingleton<NavigationDrawerViewModel>();

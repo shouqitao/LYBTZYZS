@@ -20,10 +20,6 @@ namespace LYBT.UI.WPF.Events {
     /// </summary>
     public class NavigateToDoctorProfileEvent : PubSubEvent<DoctorProfileNavigationArgs> { }
 
-    /// <summary>
-    /// 主题切换事件
-    /// </summary>
-    public class ThemeChangedEvent : PubSubEvent<string> { }
 
     /// <summary>
     /// 退出登录事件

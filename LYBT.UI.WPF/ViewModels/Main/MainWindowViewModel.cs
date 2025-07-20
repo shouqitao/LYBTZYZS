@@ -15,7 +15,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private readonly IRegionManager _regionManager;
         private readonly IAuthService _authService;
         private readonly IDoctorService _doctorService;
-        private readonly IThemeService _themeService;
 
         // 保存登录前的窗口状态
         private WindowState _originalWindowState;
@@ -116,14 +115,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
         public bool IsNotSysAdmin => !IsSysAdmin;
 
-        private bool _isDarkTheme = false;
-        /// <summary>
-        /// 是否为暗色主题
-        /// </summary>
-        public bool IsDarkTheme {
-            get => _isDarkTheme;
-            set => SetProperty(ref _isDarkTheme, value);
-        }
 
         private IList<UserRole> _currentUserRoles = new List<UserRole>();
         /// <summary>
@@ -144,7 +135,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         public DelegateCommand ShowDoctorProfileCommand { get; private set; }
         public DelegateCommand ShowPatientProfileCommand { get; private set; }
         public DelegateCommand ToggleNavDrawerCommand { get; private set; }
-        public DelegateCommand ToggleThemeCommand { get; private set; }
         public DelegateCommand RefreshStatusCommand { get; private set; }
         public DelegateCommand AboutSystemCommand { get; private set; }
         public DelegateCommand SystemSettingsCommand { get; private set; }
@@ -154,13 +144,11 @@ namespace LYBT.UI.WPF.ViewModels.Main {
         private DispatcherTimer _statusTimer;
 
         public MainWindowViewModel(IEventAggregator eventAggregator, IRegionManager regionManager,
-                                   IAuthService authService, IDoctorService doctorService,
-                                   IThemeService themeService) {
+                                   IAuthService authService, IDoctorService doctorService) {
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _doctorService = doctorService ?? throw new ArgumentNullException(nameof(doctorService));
-            _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
 
             // 保存初始窗口状态
             SaveInitialWindowState();
@@ -228,18 +216,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
 
             ToggleNavDrawerCommand = new DelegateCommand(() => {
                 IsNavDrawerOpen = !IsNavDrawerOpen;
-            });
-
-            ToggleThemeCommand = new DelegateCommand(() => {
-                try {
-                    _themeService.ToggleTheme();
-                    var themeText = _themeService.IsDarkTheme ? "暗色" : "浅色";
-                    SystemStatus = $"已切换到{themeText}主题";
-                    _eventAggregator.GetEvent<ThemeChangedEvent>().Publish(themeText);
-                } catch (Exception ex) {
-                    System.Diagnostics.Debug.WriteLine($"Theme toggle error: {ex.Message}");
-                    SystemStatus = $"主题切换失败：{ex.Message}";
-                }
             });
 
             RefreshStatusCommand = new DelegateCommand(async () => await RefreshSystemStatusAsync());
@@ -444,9 +420,6 @@ namespace LYBT.UI.WPF.ViewModels.Main {
                 IsSysAdmin = string.Equals(_authService.RememberedUserName, "sysadmin", StringComparison.OrdinalIgnoreCase);
                 IsDoctorRole = roles.Contains(UserRole.DiagnosingDoctor) || roles.Contains(UserRole.TreatmentDoctor);
                 CurrentUserName = _authService.RememberedUserName ?? "未知用户";
-
-                // 更新主题状态
-                IsDarkTheme = _themeService.IsDarkTheme;
 
                 if (IsDoctorRole) {
                     await CheckDoctorProfileAsync();
