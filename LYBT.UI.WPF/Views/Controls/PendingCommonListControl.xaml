@@ -1,7 +1,0 @@
-<UserControl x:Class="LYBT.UI.WPF.Views.Controls.PendingCommonListControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <DataGrid x:Name="PART_DataGrid" AutoGenerateColumns="False"
-              ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
-              SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}" />
-</UserControl>

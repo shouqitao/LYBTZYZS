@@ -1,51 +1,9 @@
-﻿<prism:PrismApplication
-                x:Class="LYBT.UI.WPF.App"
-                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                xmlns:prism="http://prismlibrary.com/"
-                xmlns:local="clr-namespace:LYBT.UI.WPF.Converters"
-                xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
-    <!-- 注意：移除了 StartupUri，以避免启动两个窗口 -->
+﻿<prism:PrismApplication x:Class="LYBT.UI.WPF.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:LYBT.UI.WPF"
+             xmlns:prism="http://prismlibrary.com/" >
     <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <!-- MaterialDesign resource dictionaries -->
-                <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="DeepPurple" SecondaryColor="Lime" />
-                <!-- Updated for MaterialDesignThemes v5 -->
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-
-            <!-- 添加 BoolToVisibilityConverter 资源 -->
-            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-
-            <!-- 枚举转描述特性 -->
-            <local:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-
-            <!-- 反向布尔转换器 -->
-            <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
-            <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
-            <local:MultiBooleanToVisibilityConverter x:Key="MultiBooleanToVisibilityConverter"/>
-            <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
-            <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
-
-            <!-- 导航按钮选中背景色转换器 -->
-            <local:SelectedNavButtonBackgroundConverter x:Key="SelectedNavButtonBackgroundConverter" />
-
-            <!-- 导航按钮选中前景色转换器 -->
-            <local:SelectedNavButtonForegroundConverter x:Key="SelectedNavButtonForegroundConverter" />
-
-
-
-            <!-- 空转布尔转换器 -->
-            <local:StringEmptyToVisibilityConverter x:Key="StringEmptyToVisibilityConverter"/>
-            <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-            <local:StringEqualsConverter x:Key="StringEqualsConverter"/>
-            <local:StringEqualsMultiConverter x:Key="StringEqualsMultiConverter"/>
-            <local:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
-
-            <local:RoleListToStringConverter x:Key="RoleListToStringConverter"/>
-            <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <local:LockoutStatusConverter x:Key="LockoutStatusConverter"/>
-        </ResourceDictionary>
+         
     </Application.Resources>
-</prism:PrismApplication>           
+</prism:PrismApplication>
