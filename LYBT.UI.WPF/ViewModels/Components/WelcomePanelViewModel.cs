@@ -20,7 +20,6 @@ namespace LYBT.UI.WPF.ViewModels.Components {
         private readonly IEventAggregator _eventAggregator;
         private readonly IAuthService _authService;
         private readonly IDoctorService _doctorService;
-        private readonly IThemeService _themeService;
         private DispatcherTimer _timer;
 
         #region Properties
@@ -122,7 +121,6 @@ namespace LYBT.UI.WPF.ViewModels.Components {
         public DelegateCommand ShowChangePasswordCommand { get; private set; }
         public DelegateCommand ShowChangeProfileCommand { get; private set; }
         public DelegateCommand ShowDoctorProfileCommand { get; private set; }
-        public DelegateCommand ToggleThemeCommand { get; private set; }
         public DelegateCommand SystemSettingsCommand { get; private set; }
         public DelegateCommand AboutSystemCommand { get; private set; }
         public DelegateCommand LogoutCommand { get; private set; }
@@ -130,11 +128,10 @@ namespace LYBT.UI.WPF.ViewModels.Components {
         #endregion
 
         public WelcomePanelViewModel(IEventAggregator eventAggregator, IAuthService authService,
-                                    IDoctorService doctorService, IThemeService themeService) {
+                                    IDoctorService doctorService) {
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _doctorService = doctorService ?? throw new ArgumentNullException(nameof(doctorService));
-            _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
 
             InitializeCommands();
             InitializeTimer();
@@ -165,19 +162,6 @@ namespace LYBT.UI.WPF.ViewModels.Components {
                 _eventAggregator.GetEvent<NavigateToDoctorProfileEvent>().Publish(new DoctorProfileNavigationArgs {
                     Mode = HasDoctorProfile ? ProfileMode.Edit : ProfileMode.Create
                 });
-            });
-
-            ToggleThemeCommand = new DelegateCommand(() => {
-                try {
-                    _themeService.ToggleTheme();
-                    var themeText = _themeService.IsDarkTheme ? "暗色" : "浅色";
-                    _eventAggregator.GetEvent<ThemeChangedEvent>().Publish(themeText);
-                    _eventAggregator.GetEvent<SystemStatusUpdatedEvent>().Publish($"已切换到{themeText}主题");
-                } catch (Exception ex) {
-                    System.Diagnostics.Debug.WriteLine($"Theme toggle error: {ex.Message}");
-                    MessageBox.Show($"切换主题时发生错误：{ex.Message}", "错误",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                }
             });
 
             SystemSettingsCommand = new DelegateCommand(() => {

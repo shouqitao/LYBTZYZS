@@ -401,24 +401,6 @@
                                         </Button.ContentTemplate>
                                     </Button>
 
-                                    <Separator Margin="0,5"/>
-
-                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                            Content="主题切换"
-                                            HorizontalContentAlignment="Left"
-                                            Command="{Binding WelcomePanelViewModel.ToggleThemeCommand}">
-                                        <Button.ContentTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <materialDesign:PackIcon Kind="Palette" 
-                                                                            Width="16" Height="16"
-                                                                            VerticalAlignment="Center"
-                                                                            Margin="0,0,10,0"/>
-                                                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </Button.ContentTemplate>
-                                    </Button>
 
                                     <Button Style="{StaticResource MaterialDesignFlatButton}"
                                             Content="退出登录"
@@ -500,14 +482,6 @@
                                         </StackPanel>
                                     </Button>
 
-                                    <Button Style="{StaticResource QuickAccessButtonStyle}"
-                                            Command="{Binding WelcomePanelViewModel.ToggleThemeCommand}"
-                                            Background="#795548">
-                                        <StackPanel>
-                                            <materialDesign:PackIcon Kind="Palette" Width="28" Height="28"/>
-                                            <TextBlock Text="主题切换" FontSize="12" Margin="0,8,0,0"/>
-                                        </StackPanel>
-                                    </Button>
                                 </WrapPanel>
                             </Grid>
 
