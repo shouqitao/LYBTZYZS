@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.Billing.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Billing.Interfaces;
 using LYBT.Common.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +11,10 @@ namespace LYBT.Module.Billing.Controllers {
     /// 费用结算 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class BillingController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class BillingController : ControllerBase {
         private readonly IBillingService _billingService;
 
         /// <summary>

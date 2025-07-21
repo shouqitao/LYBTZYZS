@@ -5,16 +5,16 @@ namespace LYBT.Common.Responses {
     /// 接口统一响应体
     /// </summary>
     public class ApiResponse<T> {
-        public int Code { get; set; } = 200;
-        public string Message { get; set; } = "操作成功";
-        public T? Data { get; set; } // Marked as nullable to resolve CS8618
+        public bool IsSuccess { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public T? Data { get; set; }
+        public int StatusCode { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-        public static ApiResponse<T> Success(T data, string message = "操作成功") {
-            return new ApiResponse<T> { Code = 200, Message = message, Data = data };
-        }
+        public static ApiResponse<T> Success(T data, string message = "Success")
+            => new() { IsSuccess = true, Data = data, Message = message, StatusCode = 200 };
 
-        public static ApiResponse<T> Fail(string message, int code = 500) {
-            return new ApiResponse<T> { Code = code, Message = message };
-        }
+        public static ApiResponse<T> Fail(string message, int statusCode = 400)
+            => new() { IsSuccess = false, Message = message, StatusCode = statusCode };
     }
 }

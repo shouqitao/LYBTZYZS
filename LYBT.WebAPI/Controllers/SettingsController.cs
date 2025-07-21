@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.Settings.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Settings.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +10,10 @@ namespace LYBT.Module.Settings.Controllers {
     /// 系统设置 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class SettingsController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class SettingsController : ControllerBase {
         private readonly ISettingsService _settingsService;
 
         /// <summary>

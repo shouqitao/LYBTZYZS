@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.DiagnosisTreatment.Interfaces;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.DiagnosisTreatment.Models.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +10,10 @@ namespace LYBT.Module.DiagnosisTreatment.Controllers {
     /// 诊疗 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class DiagnosisTreatmentController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class DiagnosisTreatmentController : ControllerBase {
         private readonly IDiagnosisTreatmentService _diagnosisTreatmentService;
 
         /// <summary>

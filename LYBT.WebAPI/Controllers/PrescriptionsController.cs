@@ -1,4 +1,6 @@
 using LYBT.Module.Prescriptions.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Prescriptions.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,8 +9,10 @@ namespace LYBT.WebAPI.Controllers {
     /// 处方管理 API
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class PrescriptionsController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class PrescriptionsController : ControllerBase {
         private readonly IPrescriptionService _service;
         public PrescriptionsController(IPrescriptionService service) {
             _service = service;

@@ -1,4 +1,6 @@
 ﻿using LYBT.Common.Enums.Users;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 /// 操作日志Web API控制器，提供日志写入与查询接口
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+[Authorize]
 public class LogController : ControllerBase {
     private readonly ILogService _logService;
 
