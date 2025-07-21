@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.TreatmentRoom.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.TreatmentRoom.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +10,10 @@ namespace LYBT.Module.TreatmentRoom.Controllers {
     /// 治疗室 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class TreatmentRoomController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class TreatmentRoomController : ControllerBase {
         private readonly ITreatmentRoomService _treatmentRoomService;
 
         /// <summary>

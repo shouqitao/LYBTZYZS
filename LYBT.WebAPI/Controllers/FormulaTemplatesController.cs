@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.FormulaTemplates.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.FormulaTemplates.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using LYBT.Common.Models;
@@ -10,8 +12,10 @@ namespace LYBT.Module.FormulaTemplates.Controllers {
     /// 经验方模板 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class FormulaTemplateController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class FormulaTemplateController : ControllerBase {
         private readonly IFormulaTemplateService _service;
 
         /// <summary>

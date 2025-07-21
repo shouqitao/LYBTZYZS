@@ -1,12 +1,16 @@
 using LYBT.Module.Settings.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Settings.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers {
 
     [ApiController]
-    [Route("api/[controller]")]
-    public class DiagnosisCatalogController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class DiagnosisCatalogController : ControllerBase {
         private readonly IDiagnosisCatalogService _service;
 
         public DiagnosisCatalogController(IDiagnosisCatalogService service) {

@@ -1,4 +1,6 @@
 using LYBT.Common.Models;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +11,10 @@ namespace LYBT.WebAPI.Controllers {
     /// 医生管理接口
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class DoctorsController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class DoctorsController : ControllerBase {
         private readonly IDoctorService _doctorService;
         public DoctorsController(IDoctorService doctorService) {
             _doctorService = doctorService;

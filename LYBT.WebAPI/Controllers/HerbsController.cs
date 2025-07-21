@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.Herbs.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +13,8 @@ namespace LYBT.Module.Herbs.Controllers {
     /// </summary>
     [ApiController]
     [Route("api/herbs")]
-    public class HerbsController : ControllerBase {
+    [Authorize]
+public class HerbsController : ControllerBase {
         private readonly IHerbService _herbService;
 
         /// <summary>

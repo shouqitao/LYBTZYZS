@@ -1,4 +1,6 @@
 ﻿using LYBT.Common.Enums;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Settings.Interfaces;
 using LYBT.Module.Sync.Dtos;
 using LYBT.Module.Sync.Interfaces;
@@ -10,8 +12,10 @@ namespace LYBT.Module.Sync.Controllers {
     /// 数据同步任务与日志 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class SyncController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class SyncController : ControllerBase {
         private readonly ISyncService _syncService;
         private readonly IGlobalSettingsService _settingsService;
 
