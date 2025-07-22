@@ -57,8 +57,8 @@ This system follows a modular "Agent" architecture. Each business or supporting 
 
 - **LYBT.WebAPI**：ASP.NET Core 后端，聚合各业务模块
 **LYBT.WebAPI**: ASP.NET Core API hosting all modules.
-- **LYBT.UI.WPF**：基于 WPF 的桌面客户端
-**LYBT.UI.WPF**: WPF desktop client built with Prism and Refit.
+
+> 本解决方案目前仅包含 Web API，原 WPF 客户端已移除。
 ---
 
 ## 模块协作关系
