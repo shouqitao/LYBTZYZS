@@ -60,11 +60,23 @@ namespace LYBT.Module.Herbs.Repositories {
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行AddRangeAsync操作。
+/// </summary>
+/// <param name="herbs">参数herbs</param>
+/// <returns>返回值</returns>
         public async Task<bool> AddRangeAsync(List<HerbModel> herbs) {
             await _appDbContext.Herbs.AddRangeAsync(herbs);
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行GetPagedAsync操作。
+/// </summary>
+/// <param name="keyword">参数keyword</param>
+/// <param name="page">参数page</param>
+/// <param name="pageSize">参数pageSize</param>
+/// <returns>返回值</returns>
         public async Task<(List<HerbModel> list, int total)> GetPagedAsync(string? keyword, int page, int pageSize) {
             var query = _appDbContext.Herbs.AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword)) {

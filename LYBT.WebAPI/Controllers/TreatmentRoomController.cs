@@ -13,6 +13,9 @@ namespace LYBT.Module.TreatmentRoom.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
+/// <summary>
+/// 表示TreatmentRoomController。
+/// </summary>
 public class TreatmentRoomController : ControllerBase {
         private readonly ITreatmentRoomService _treatmentRoomService;
 
@@ -27,6 +30,10 @@ public class TreatmentRoomController : ControllerBase {
         /// 获取治疗室单列表
         /// </summary>
         [HttpGet]
+/// <summary>
+/// 执行GetList操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<TreatmentRoomDto>>> GetList() {
             var list = await _treatmentRoomService.GetListAsync();
             return Ok(list);
@@ -36,6 +43,11 @@ public class TreatmentRoomController : ControllerBase {
         /// 获取治疗室单详情
         /// </summary>
         [HttpGet("{id}")]
+/// <summary>
+/// 执行GetById操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<TreatmentRoomDetailDto>> GetById(Guid id) {
             var detail = await _treatmentRoomService.GetByIdAsync(id);
             if (detail == null)
@@ -47,6 +59,11 @@ public class TreatmentRoomController : ControllerBase {
         /// 新增治疗室单
         /// </summary>
         [HttpPost]
+/// <summary>
+/// 执行Add操作。
+/// </summary>
+/// <param name="treatmentRoomCreateDto">参数treatmentRoomCreateDto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Add([FromBody] TreatmentRoomCreateDto treatmentRoomCreateDto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -62,6 +79,11 @@ public class TreatmentRoomController : ControllerBase {
         /// 编辑治疗室单
         /// </summary>
         [HttpPut]
+/// <summary>
+/// 执行Update操作。
+/// </summary>
+/// <param name="treatmentRoomEditDto">参数treatmentRoomEditDto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Update([FromBody] TreatmentRoomEditDto treatmentRoomEditDto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -77,6 +99,11 @@ public class TreatmentRoomController : ControllerBase {
         /// 删除治疗室单
         /// </summary>
         [HttpDelete("{id}")]
+/// <summary>
+/// 执行Delete操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Delete(Guid id) {
             var result = await _treatmentRoomService.DeleteAsync(id);
             if (!result)
@@ -85,6 +112,11 @@ public class TreatmentRoomController : ControllerBase {
         }
 
         [HttpGet("status/{status}")]
+/// <summary>
+/// 执行GetByStatus操作。
+/// </summary>
+/// <param name="status">参数status</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<TreatmentRoomDto>>> GetByStatus(string status) {
             var list = await _treatmentRoomService.GetByStatusAsync(status);
             return Ok(list);

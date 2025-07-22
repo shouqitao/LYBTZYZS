@@ -68,6 +68,11 @@ namespace LYBT.Module.TreatmentRoom.Services {
             return await _treatmentRoomRepository.DeleteAsync(id);
         }
 
+/// <summary>
+/// 执行GetByStatusAsync操作。
+/// </summary>
+/// <param name="status">参数status</param>
+/// <returns>返回值</returns>
         public async Task<List<TreatmentRoomDto>> GetByStatusAsync(string status) {
             var list = await _treatmentRoomRepository.GetByStatusAsync(status);
             return _mapper.Map<List<TreatmentRoomDto>>(list);

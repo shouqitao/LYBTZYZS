@@ -12,6 +12,9 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
+/// <summary>
+/// 表示PrescriptionsController。
+/// </summary>
 public class PrescriptionsController : ControllerBase {
         private readonly IPrescriptionService _service;
         public PrescriptionsController(IPrescriptionService service) {
@@ -19,12 +22,21 @@ public class PrescriptionsController : ControllerBase {
         }
 
         [HttpGet]
+/// <summary>
+/// 执行GetList操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<PrescriptionDto>>> GetList() {
             var list = await _service.GetAllAsync();
             return Ok(list);
         }
 
         [HttpGet("{id}")]
+/// <summary>
+/// 执行GetById操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<PrescriptionDetailDto>> GetById(string id) {
             var detail = await _service.GetByIdAsync(id);
             if (detail == null)
@@ -33,6 +45,11 @@ public class PrescriptionsController : ControllerBase {
         }
 
         [HttpPost]
+/// <summary>
+/// 执行Add操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Add([FromBody] PrescriptionCreateDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -41,6 +58,11 @@ public class PrescriptionsController : ControllerBase {
         }
 
         [HttpPut]
+/// <summary>
+/// 执行Update操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Update([FromBody] PrescriptionEditDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -49,12 +71,22 @@ public class PrescriptionsController : ControllerBase {
         }
 
         [HttpDelete("{id}")]
+/// <summary>
+/// 执行Delete操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Delete(string id) {
             var result = await _service.DeleteAsync(id, Guid.Empty, "system");
             return result ? Ok() : NotFound();
         }
 
         [HttpPost("void/{id}")]
+/// <summary>
+/// 执行Cancel操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Cancel(string id) {
             var result = await _service.CancelAsync(id, Guid.Empty, "system");
             return result ? Ok() : NotFound();

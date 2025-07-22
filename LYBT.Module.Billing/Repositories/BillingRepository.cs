@@ -77,6 +77,11 @@ namespace LYBT.Module.Billing.Repositories {
             return await Task.FromResult(list);
         }
 
+/// <summary>
+/// 执行GetByStatusAsync操作。
+/// </summary>
+/// <param name="status">参数status</param>
+/// <returns>返回值</returns>
         public async Task<List<BillingModel>> GetByStatusAsync(BillingStatus status) {
             var list = _appDbContext.Billings
                 .Where(b => b.Status == status && !b.IsDeleted)

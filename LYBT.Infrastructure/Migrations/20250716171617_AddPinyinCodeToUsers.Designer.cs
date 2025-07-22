@@ -13,6 +13,9 @@ namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20250716171617_AddPinyinCodeToUsers")]
+/// <summary>
+/// 表示AddPinyinCodeToUsers。
+/// </summary>
     partial class AddPinyinCodeToUsers
     {
         /// <inheritdoc />

@@ -69,6 +69,11 @@ namespace LYBT.Module.Billing.Services {
             return await _billingRepository.DeleteAsync(id);
         }
 
+/// <summary>
+/// 执行MarkAsPaidAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> MarkAsPaidAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
             if (model == null)
@@ -78,6 +83,11 @@ namespace LYBT.Module.Billing.Services {
             return await _billingRepository.UpdateAsync(model);
         }
 
+/// <summary>
+/// 执行MarkAsCompletedAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> MarkAsCompletedAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
             if (model == null)
@@ -87,6 +97,12 @@ namespace LYBT.Module.Billing.Services {
             return await _billingRepository.UpdateAsync(model);
         }
 
+/// <summary>
+/// 执行RequestRefundAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <param name="reason">参数reason</param>
+/// <returns>返回值</returns>
         public async Task<bool> RequestRefundAsync(Guid id, string reason) {
             var model = await _billingRepository.GetByIdAsync(id);
             if (model == null)
@@ -96,6 +112,11 @@ namespace LYBT.Module.Billing.Services {
             return await _billingRepository.UpdateAsync(model);
         }
 
+/// <summary>
+/// 执行ApproveRefundAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> ApproveRefundAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
             if (model == null)
@@ -105,6 +126,11 @@ namespace LYBT.Module.Billing.Services {
             return await _billingRepository.UpdateAsync(model);
         }
 
+/// <summary>
+/// 执行RejectRefundAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> RejectRefundAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
             if (model == null)
@@ -114,6 +140,11 @@ namespace LYBT.Module.Billing.Services {
             return await _billingRepository.UpdateAsync(model);
         }
 
+/// <summary>
+/// 执行CancelAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> CancelAsync(Guid id) {
             var model = await _billingRepository.GetByIdAsync(id);
             if (model == null)
@@ -123,22 +154,41 @@ namespace LYBT.Module.Billing.Services {
             return await _billingRepository.UpdateAsync(model);
         }
 
+/// <summary>
+/// 执行GetByPatientIdAsync操作。
+/// </summary>
+/// <param name="patientId">参数patientId</param>
+/// <returns>返回值</returns>
         public async Task<List<BillingDto>> GetByPatientIdAsync(Guid patientId) {
             var list = await _billingRepository.GetByPatientIdAsync(patientId);
             return _mapper.Map<List<BillingDto>>(list);
         }
 
+/// <summary>
+/// 执行SearchAsync操作。
+/// </summary>
+/// <param name="keyword">参数keyword</param>
+/// <returns>返回值</returns>
         public async Task<List<BillingDto>> SearchAsync(string keyword) {
             var list = await _billingRepository.SearchAsync(keyword);
             return _mapper.Map<List<BillingDto>>(list);
         }
 
+/// <summary>
+/// 执行GetRefundableBillsAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<List<BillingDto>> GetRefundableBillsAsync() {
             var list = await _billingRepository.SearchAsync(string.Empty);
             var refundable = list.Where(b => b.Status == BillingStatus.Paid).ToList();
             return _mapper.Map<List<BillingDto>>(refundable);
         }
 
+/// <summary>
+/// 执行GetByStatusAsync操作。
+/// </summary>
+/// <param name="status">参数status</param>
+/// <returns>返回值</returns>
         public async Task<List<BillingDto>> GetByStatusAsync(BillingStatus status) {
             var list = await _billingRepository.GetByStatusAsync(status);
             return _mapper.Map<List<BillingDto>>(list);

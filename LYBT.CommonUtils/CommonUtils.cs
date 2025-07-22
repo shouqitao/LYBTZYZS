@@ -17,11 +17,22 @@ namespace LYBT.CommonUtils;
 /// </summary>
 [Description("通用工具类")]
 public static class CommonUtils {
+/// <summary>
+/// 执行GetDisplayName操作。
+/// </summary>
+/// <param name="type">参数type</param>
+/// <param name="property">参数property</param>
+/// <returns>返回值</returns>
     private static string GetDisplayName(Type type, string property) {
         var prop = type.GetProperty(property);
         var attr = prop?.GetCustomAttribute<DisplayNameAttribute>();
         return attr?.DisplayName ?? property;
     }
+/// <summary>
+/// 执行ReadHerbs操作。
+/// </summary>
+/// <param name="stream">参数stream</param>
+/// <returns>返回值</returns>
     public static List<HerbImportDto> ReadHerbs(Stream stream) {
         var result = new List<HerbImportDto>();
         IWorkbook wb = new XSSFWorkbook(stream);
@@ -76,6 +87,11 @@ public static class CommonUtils {
         return result;
     }
 
+/// <summary>
+/// 执行WriteHerbs操作。
+/// </summary>
+/// <param name="data">参数data</param>
+/// <returns>返回值</returns>
     public static byte[] WriteHerbs(IEnumerable<HerbDetailDto> data) {
         IWorkbook wb = new XSSFWorkbook();
         var sheet = wb.CreateSheet("Herbs");
@@ -105,6 +121,11 @@ public static class CommonUtils {
         return ms.ToArray();
     }
 
+/// <summary>
+/// 执行ReadTemplates操作。
+/// </summary>
+/// <param name="stream">参数stream</param>
+/// <returns>返回值</returns>
     public static List<FormulaTemplateImportDto> ReadTemplates(Stream stream) {
         var result = new List<FormulaTemplateImportDto>();
         IWorkbook wb = new XSSFWorkbook(stream);
@@ -125,6 +146,11 @@ public static class CommonUtils {
         return result;
     }
 
+/// <summary>
+/// 执行WriteTemplates操作。
+/// </summary>
+/// <param name="data">参数data</param>
+/// <returns>返回值</returns>
     public static byte[] WriteTemplates(IEnumerable<FormulaTemplateDetailDto> data) {
         IWorkbook wb = new XSSFWorkbook();
         var sheet = wb.CreateSheet("Templates");
@@ -146,6 +172,11 @@ public static class CommonUtils {
 
     public static bool IsNetworkAvailable() => NetworkInterface.GetIsNetworkAvailable();
 
+/// <summary>
+/// 执行FormatPhone操作。
+/// </summary>
+/// <param name="phone">参数phone</param>
+/// <returns>返回值</returns>
     public static string FormatPhone(string? phone) {
         if (string.IsNullOrWhiteSpace(phone))
             return string.Empty;
@@ -157,6 +188,11 @@ public static class CommonUtils {
         return digits;
     }
 
+/// <summary>
+/// 执行CheckIdNumber操作。
+/// </summary>
+/// <param name="idNumber">参数idNumber</param>
+/// <returns>返回值</returns>
     public static bool CheckIdNumber(string? idNumber) {
         if (string.IsNullOrWhiteSpace(idNumber))
             return false;

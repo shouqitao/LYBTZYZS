@@ -25,33 +25,107 @@ namespace LYBT.Infrastructure {
     /// </summary>
     public class AppDbContext : DbContext {
 
+/// <summary>
+/// 执行base操作。
+/// </summary>
+/// <param name="options">参数options</param>
+/// <returns>返回值</returns>
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {
         }
 
         // ===== 主表 DbSet，全部要有 =====
+/// <summary>
+/// Users 属性。
+/// </summary>
         public DbSet<UserModel> Users { get; set; }
 
+/// <summary>
+/// Patients 属性。
+/// </summary>
         public DbSet<PatientModel> Patients { get; set; }
+/// <summary>
+/// Doctors 属性。
+/// </summary>
         public DbSet<DoctorModel> Doctors { get; set; }
+/// <summary>
+/// Registrations 属性。
+/// </summary>
         public DbSet<RegistrationModel> Registrations { get; set; }
+/// <summary>
+/// Queueings 属性。
+/// </summary>
         public DbSet<QueueingModel> Queueings { get; set; }
+/// <summary>
+/// DiagnosisTreatments 属性。
+/// </summary>
         public DbSet<DiagnosisTreatmentModel> DiagnosisTreatments { get; set; }
+/// <summary>
+/// Herbs 属性。
+/// </summary>
         public DbSet<HerbModel> Herbs { get; set; }
+/// <summary>
+/// FormulaTemplates 属性。
+/// </summary>
         public DbSet<FormulaTemplateModel> FormulaTemplates { get; set; }
+/// <summary>
+/// Logs 属性。
+/// </summary>
         public DbSet<LogModel> Logs { get; set; }
+/// <summary>
+/// SyncLogs 属性。
+/// </summary>
         public DbSet<SyncLogModel> SyncLogs { get; set; }
+/// <summary>
+/// SyncTasks 属性。
+/// </summary>
         public DbSet<SyncTaskModel> SyncTasks { get; set; }
+/// <summary>
+/// Billings 属性。
+/// </summary>
         public DbSet<BillingModel> Billings { get; set; }
+/// <summary>
+/// Pharmacies 属性。
+/// </summary>
         public DbSet<PharmacyModel> Pharmacies { get; set; }
+/// <summary>
+/// Prescriptions 属性。
+/// </summary>
         public DbSet<PrescriptionModel> Prescriptions { get; set; }
+/// <summary>
+/// PrescriptionItems 属性。
+/// </summary>
         public DbSet<PrescriptionItemModel> PrescriptionItems { get; set; }
+/// <summary>
+/// Records 属性。
+/// </summary>
         public DbSet<RecordModel> Records { get; set; }
+/// <summary>
+/// Settings 属性。
+/// </summary>
         public DbSet<SettingsModel> Settings { get; set; }
+/// <summary>
+/// DiagnosisCatalogs 属性。
+/// </summary>
         public DbSet<DiagnosisCatalogModel> DiagnosisCatalogs { get; set; }
+/// <summary>
+/// TreatmentCatalogs 属性。
+/// </summary>
         public DbSet<TreatmentCatalogModel> TreatmentCatalogs { get; set; }
+/// <summary>
+/// GlobalSettings 属性。
+/// </summary>
         public DbSet<GlobalSettingsModel> GlobalSettings { get; set; }
+/// <summary>
+/// TreatmentRooms 属性。
+/// </summary>
         public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; }
+/// <summary>
+/// SpecialPatientDoctors 属性。
+/// </summary>
         public DbSet<SpecialPatientDoctor> SpecialPatientDoctors { get; set; }
+/// <summary>
+/// AdminSecrets 属性。
+/// </summary>
         public DbSet<AdminSecretModel> AdminSecrets { get; set; }
 
         /// <summary>

@@ -10,12 +10,18 @@ namespace LYBT.Models.DiagnosisTreatment {
         /// 药方名称
         /// </summary>
         [DisplayName("药方名称")]
+/// <summary>
+/// Name 属性。
+/// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 药材明细列表
         /// </summary>
         [DisplayName("药材明细列表")]
+/// <summary>
+/// Herbs 属性。
+/// </summary>
         public List<HerbItemModel> Herbs { get; set; } = new();
 
         /// <summary>

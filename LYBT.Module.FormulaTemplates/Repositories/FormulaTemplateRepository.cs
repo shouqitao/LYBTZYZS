@@ -61,6 +61,11 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行ImportAsync操作。
+/// </summary>
+/// <param name="dtos">参数dtos</param>
+/// <returns>返回值</returns>
         public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos) {
             int count = 0;
             foreach (var dto in dtos) {
@@ -81,6 +86,10 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
             return count;
         }
 
+/// <summary>
+/// 执行ExportAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<List<FormulaTemplateDetailDto>> ExportAsync() {
             var list = _appDbContext.FormulaTemplates.ToList();
             return list.Select(m => new FormulaTemplateDetailDto {

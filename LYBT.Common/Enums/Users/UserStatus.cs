@@ -6,6 +6,9 @@ namespace LYBT.Common.Enums.Users {
     /// 用户账号状态
     /// </summary>
     [Description("用户状态")]
+/// <summary>
+/// 表示UserStatus。
+/// </summary>
     public enum UserStatus {
 
         /// <summary>

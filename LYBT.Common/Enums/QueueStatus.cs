@@ -6,6 +6,9 @@ namespace LYBT.Common.Enums {
     /// 排队状态枚举，带中文描述
     /// </summary>
     [Description("排队状态")]
+/// <summary>
+/// 表示QueueStatus。
+/// </summary>
     public enum QueueStatus {
 
         [Description("等待叫号")]

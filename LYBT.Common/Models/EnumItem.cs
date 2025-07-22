@@ -10,7 +10,13 @@ namespace LYBT.Common.Models {
             Value = value;
             Text = text;
         }
+/// <summary>
+/// Value 属性。
+/// </summary>
         public T Value { get; set; }
+/// <summary>
+/// Text 属性。
+/// </summary>
         public string Text { get; set; } = string.Empty;
     }
 }

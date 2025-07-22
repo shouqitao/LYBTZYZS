@@ -14,6 +14,9 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
+/// <summary>
+/// 表示DoctorsController。
+/// </summary>
 public class DoctorsController : ControllerBase {
         private readonly IDoctorService _doctorService;
         public DoctorsController(IDoctorService doctorService) {
@@ -21,6 +24,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpGet("search")]
+/// <summary>
+/// 执行Search操作。
+/// </summary>
+/// <param name="""">参数""</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<DoctorDto>>> Search([FromQuery] string keyword = "") {
             try {
                 var list = await _doctorService.SearchAsync(keyword ?? "");
@@ -31,6 +39,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpGet("{id}")]
+/// <summary>
+/// 执行GetById操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<DoctorDetailDto>> GetById(Guid id) {
             try {
                 var item = await _doctorService.GetByIdAsync(id);
@@ -41,6 +54,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpGet("by-user/{userId}")]
+/// <summary>
+/// 执行GetByUserId操作。
+/// </summary>
+/// <param name="userId">参数userId</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<DoctorDetailDto>> GetByUserId(Guid userId) {
             try {
                 var item = await _doctorService.GetByUserIdAsync(userId);
@@ -51,6 +69,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpPost("add")]
+/// <summary>
+/// 执行Add操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<ApiSuccessResponse>> Add([FromBody] DoctorDetailDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(new ApiSuccessResponse { Success = false, Count = 0, Message = "参数验证失败" });
@@ -65,6 +88,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpPut("update")]
+/// <summary>
+/// 执行Update操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<ApiSuccessResponse>> Update([FromBody] DoctorDetailDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(new ApiSuccessResponse { Success = false, Count = 0, Message = "参数验证失败" });
@@ -79,6 +107,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpPut("disable/{id}")]
+/// <summary>
+/// 执行Disable操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<IActionResult> Disable(Guid id) {
             try {
                 var ok = await _doctorService.DisableAsync(id);
@@ -89,6 +122,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpPut("enable/{id}")]
+/// <summary>
+/// 执行Enable操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<IActionResult> Enable(Guid id) {
             try {
                 var ok = await _doctorService.EnableAsync(id);
@@ -99,6 +137,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpPost("paged")]
+/// <summary>
+/// 执行GetPaged操作。
+/// </summary>
+/// <param name="query">参数query</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<PagedResultDto<DoctorDto>>> GetPaged([FromBody] DoctorQueryDto query) {
             try {
                 var result = await _doctorService.GetPagedAsync(query);
@@ -109,6 +152,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpPut("batch-disable")]
+/// <summary>
+/// 执行BatchDisable操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
             try {
                 var count = await _doctorService.BatchDisableAsync(dto.Ids);
@@ -119,6 +167,11 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpPut("batch-enable")]
+/// <summary>
+/// 执行BatchEnable操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
             try {
                 var count = await _doctorService.BatchEnableAsync(dto.Ids);
@@ -129,6 +182,10 @@ public class DoctorsController : ControllerBase {
         }
 
         [HttpGet("roles")]
+/// <summary>
+/// 执行GetRoles操作。
+/// </summary>
+/// <returns>返回值</returns>
         public IActionResult GetRoles() {
             try {
                 var roles = Enum.GetNames(typeof(LYBT.Common.Enums.Users.UserRole));

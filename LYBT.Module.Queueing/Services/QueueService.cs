@@ -74,10 +74,20 @@ namespace LYBT.Module.Queueing.Services {
             return await _repository.CancelAsync(id);
         }
 
+/// <summary>
+/// 执行CompleteAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> CompleteAsync(Guid id) {
             return await _repository.CompleteAsync(id);
         }
 
+/// <summary>
+/// 执行HoldAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> HoldAsync(Guid id) {
             return await _repository.HoldAsync(id);
         }

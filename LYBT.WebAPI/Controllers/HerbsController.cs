@@ -14,6 +14,9 @@ namespace LYBT.Module.Herbs.Controllers {
     [ApiController]
     [Route("api/herbs")]
     [Authorize]
+/// <summary>
+/// 表示HerbsController。
+/// </summary>
 public class HerbsController : ControllerBase {
         private readonly IHerbService _herbService;
 
@@ -28,12 +31,21 @@ public class HerbsController : ControllerBase {
         /// 获取药材列表
         /// </summary>
         [HttpGet]
+/// <summary>
+/// 执行GetList操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<HerbDto>>> GetList() {
             var list = await _herbService.GetListAsync();
             return Ok(list);
         }
 
         [HttpPost("paged")]
+/// <summary>
+/// 执行GetPaged操作。
+/// </summary>
+/// <param name="query">参数query</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<PagedResultDto<HerbDto>>> GetPaged([FromBody] HerbPagedQueryDto query) {
             var result = await _herbService.GetPagedAsync(query);
             return Ok(result);
@@ -43,6 +55,11 @@ public class HerbsController : ControllerBase {
         /// 获取药材详情
         /// </summary>
         [HttpGet("{id}")]
+/// <summary>
+/// 执行GetById操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<HerbDetailDto>> GetById(Guid id) {
             var detail = await _herbService.GetByIdAsync(id);
             if (detail == null)
@@ -54,6 +71,11 @@ public class HerbsController : ControllerBase {
         /// 新增药材
         /// </summary>
         [HttpPost]
+/// <summary>
+/// 执行Add操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Add([FromBody] HerbCreateDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -67,6 +89,11 @@ public class HerbsController : ControllerBase {
         /// 编辑药材
         /// </summary>
         [HttpPut]
+/// <summary>
+/// 执行Update操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Update([FromBody] HerbEditDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -80,6 +107,11 @@ public class HerbsController : ControllerBase {
         /// 删除药材
         /// </summary>
         [HttpDelete("{id}")]
+/// <summary>
+/// 执行Delete操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Delete(Guid id) {
             var result = await _herbService.DeleteAsync(id);
             if (!result)
@@ -88,18 +120,32 @@ public class HerbsController : ControllerBase {
         }
 
         [HttpPost("import")]
+/// <summary>
+/// 执行Import操作。
+/// </summary>
+/// <param name="dtos">参数dtos</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Import([FromBody] List<HerbImportDto> dtos) {
             var count = await _herbService.ImportAsync(dtos);
             return Ok(new { Imported = count });
         }
 
         [HttpPost("export")]
+/// <summary>
+/// 执行Export操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<HerbDetailDto>>> Export() {
             var data = await _herbService.ExportAsync();
             return Ok(data);
         }
 
         [HttpPost("importExcel")]
+/// <summary>
+/// 执行ImportExcel操作。
+/// </summary>
+/// <param name="file">参数file</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> ImportExcel(IFormFile file) {
             if (file == null || file.Length == 0)
                 return BadRequest();
@@ -108,6 +154,10 @@ public class HerbsController : ControllerBase {
         }
 
         [HttpGet("exportExcel")]
+/// <summary>
+/// 执行ExportExcel操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<FileContentResult> ExportExcel() {
             var bytes = await _herbService.ExportToExcelAsync();
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "药材.xlsx");

@@ -11,19 +11,31 @@ namespace LYBT.Module.Sync.Dtos {
         /// <summary>同步任务ID</summary>
         [Required(ErrorMessage = "同步任务ID不能为空")]
         [DisplayName("同步任务ID")]
+/// <summary>
+/// Id 属性。
+/// </summary>
         public Guid Id { get; set; }
 
         /// <summary>任务状态</summary>
         [Required(ErrorMessage = "任务状态不能为空")]
         [DisplayName("任务状态")]
+/// <summary>
+/// Status 属性。
+/// </summary>
         public string Status { get; set; } = string.Empty;
 
         /// <summary>实际执行时间</summary>
         [DisplayName("实际执行时间")]
+/// <summary>
+/// ExecuteTime 属性。
+/// </summary>
         public DateTime? ExecuteTime { get; set; }
 
         /// <summary>备注</summary>
         [DisplayName("备注")]
+/// <summary>
+/// Remark 属性。
+/// </summary>
         public string? Remark { get; set; }
     }
 }

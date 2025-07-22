@@ -8,11 +8,17 @@ namespace LYBT.Module.Billing.Dtos {
     public class RequestRefundDto {
         [Required]
         [DisplayName("BillingId")]
+/// <summary>
+/// BillingId 属性。
+/// </summary>
         public Guid BillingId { get; set; }
 
         [Required]
         [StringLength(128, ErrorMessage = "˿ɲܳ128ַ")]
         [DisplayName("Reason")]
+/// <summary>
+/// Reason 属性。
+/// </summary>
         public string Reason { get; set; } = string.Empty;
     }
 
@@ -22,6 +28,9 @@ namespace LYBT.Module.Billing.Dtos {
     public class RefundActionDto {
         [Required]
         [DisplayName("BillingId")]
+/// <summary>
+/// BillingId 属性。
+/// </summary>
         public Guid BillingId { get; set; }
     }
 }

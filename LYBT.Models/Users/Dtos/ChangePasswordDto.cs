@@ -13,6 +13,9 @@ namespace LYBT.Module.Users.Dtos {
         /// </summary>
         [Required]
         [DisplayName("用户ID")]
+/// <summary>
+/// UserId 属性。
+/// </summary>
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -21,6 +24,9 @@ namespace LYBT.Module.Users.Dtos {
         [Required]
         [StringLength(32, MinimumLength = 6)]
         [DisplayName("原密码")]
+/// <summary>
+/// OldPassword 属性。
+/// </summary>
         public string OldPassword { get; set; } = string.Empty;
 
         /// <summary>
@@ -29,6 +35,9 @@ namespace LYBT.Module.Users.Dtos {
         [Required]
         [StringLength(32, MinimumLength = 6)]
         [DisplayName("新密码")]
+/// <summary>
+/// NewPassword 属性。
+/// </summary>
         public string NewPassword { get; set; } = string.Empty;
     }
 }

@@ -5,6 +5,9 @@ namespace LYBT.Common.Enums {
     /// Profile view mode
     /// </summary>
     [Description("档案模式")]
+/// <summary>
+/// 表示ProfileMode。
+/// </summary>
     public enum ProfileMode {
         [Description("查看")]
         View = 0,

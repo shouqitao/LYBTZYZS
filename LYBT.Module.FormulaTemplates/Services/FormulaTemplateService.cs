@@ -68,19 +68,37 @@ namespace LYBT.Module.FormulaTemplates.Services {
             return await _repository.DeleteAsync(id);
         }
 
+/// <summary>
+/// 执行ImportAsync操作。
+/// </summary>
+/// <param name="dtos">参数dtos</param>
+/// <returns>返回值</returns>
         public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos) {
             return await _repository.ImportAsync(dtos);
         }
 
+/// <summary>
+/// 执行ExportAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<List<FormulaTemplateDetailDto>> ExportAsync() {
             return await _repository.ExportAsync();
         }
 
+/// <summary>
+/// 执行ImportFromExcelAsync操作。
+/// </summary>
+/// <param name="stream">参数stream</param>
+/// <returns>返回值</returns>
         public async Task<int> ImportFromExcelAsync(Stream stream) {
             var dtos = CommonUtil.ReadTemplates(stream);
             return await ImportAsync(dtos);
         }
 
+/// <summary>
+/// 执行ExportToExcelAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<byte[]> ExportToExcelAsync() {
             var data = await ExportAsync();
             return CommonUtil.WriteTemplates(data);

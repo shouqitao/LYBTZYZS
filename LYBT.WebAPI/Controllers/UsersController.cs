@@ -13,6 +13,9 @@ using LYBT.Module.Users.Interfaces;
 [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize] // 全部接口必须登录
+/// <summary>
+/// 表示UsersController。
+/// </summary>
 public class UsersController : ControllerBase {
     private readonly IUserService _userService;
 
@@ -20,6 +23,10 @@ public class UsersController : ControllerBase {
         _userService = userService;
     }
 
+/// <summary>
+/// 执行GetOperator操作。
+/// </summary>
+/// <returns>返回值</returns>
     private (Guid operatorId, string operatorName) GetOperator() {
         var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var userName = User?.Identity?.Name;
@@ -32,6 +39,11 @@ public class UsersController : ControllerBase {
     /// 分页查找用户（关键词、角色、状态筛选）
     /// </summary>
     [HttpGet("search")]
+/// <summary>
+/// 执行Search操作。
+/// </summary>
+/// <param name="query">参数query</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> Search([FromQuery] UserQueryDto query) {
         var (users, total) = await _userService.SearchAsync(query);
         return Ok(new { total, users });
@@ -41,6 +53,11 @@ public class UsersController : ControllerBase {
     /// 新增用户，密码将设为配置的默认值
     /// </summary>
     [HttpPost("add")]
+/// <summary>
+/// 执行Add操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> Add([FromBody] UserCreateDto dto) {
         var (operatorId, operatorName) = GetOperator();
         try {
@@ -55,6 +72,11 @@ public class UsersController : ControllerBase {
     /// 编辑用户
     /// </summary>
     [HttpPut("update")]
+/// <summary>
+/// 执行Update操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> Update([FromBody] UserDetailDto dto) {
         var (operatorId, operatorName) = GetOperator();
         try {
@@ -69,6 +91,11 @@ public class UsersController : ControllerBase {
     /// 禁用用户
     /// </summary>
     [HttpPost("disable/{id}")]
+/// <summary>
+/// 执行Disable操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> Disable(Guid id) {
         var (operatorId, operatorName) = GetOperator();
         try {
@@ -83,6 +110,11 @@ public class UsersController : ControllerBase {
     /// 启用用户
     /// </summary>
     [HttpPost("enable/{id}")]
+/// <summary>
+/// 执行Enable操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> Enable(Guid id) {
         var (operatorId, operatorName) = GetOperator();
         try {
@@ -97,6 +129,11 @@ public class UsersController : ControllerBase {
     /// 批量禁用
     /// </summary>
     [HttpPost("batchDisable")]
+/// <summary>
+/// 执行BatchDisable操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
         var (operatorId, operatorName) = GetOperator();
         var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
@@ -107,6 +144,11 @@ public class UsersController : ControllerBase {
     /// 批量启用
     /// </summary>
     [HttpPost("batchEnable")]
+/// <summary>
+/// 执行BatchEnable操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
         var (operatorId, operatorName) = GetOperator();
         var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
@@ -117,6 +159,11 @@ public class UsersController : ControllerBase {
     /// 管理员重置密码，恢复为默认值
     /// </summary>
     [HttpPost("resetPassword/{id}")]
+/// <summary>
+/// 执行ResetPassword操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> ResetPassword(Guid id) {
         var (operatorId, operatorName) = GetOperator();
         try {
@@ -131,6 +178,11 @@ public class UsersController : ControllerBase {
     /// 用户修改密码
     /// </summary>
     [HttpPost("changePassword")]
+/// <summary>
+/// 执行ChangePassword操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto) {
         var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userId, out var id))
@@ -144,6 +196,11 @@ public class UsersController : ControllerBase {
     /// 用户修改个人信息
     /// </summary>
     [HttpPost("changeProfile")]
+/// <summary>
+/// 执行ChangeProfile操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> ChangeProfile([FromBody] ChangeProfileDto dto) {
         var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userId, out var id))
@@ -157,6 +214,10 @@ public class UsersController : ControllerBase {
     /// 获取所有角色
     /// </summary>
     [HttpGet("getRoles")]
+/// <summary>
+/// 执行GetRoles操作。
+/// </summary>
+/// <returns>返回值</returns>
     public IActionResult GetRoles() {
         var roles = _userService.GetRoles();
         return Ok(roles);
@@ -166,6 +227,11 @@ public class UsersController : ControllerBase {
     /// 根据Id获取用户详情
     /// </summary>
     [HttpGet("getById/{id}")]
+/// <summary>
+/// 执行GetById操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
     public async Task<IActionResult> GetById(Guid id) {
         var user = await _userService.GetByIdAsync(id);
         return user == null ? NotFound() : Ok(user);
