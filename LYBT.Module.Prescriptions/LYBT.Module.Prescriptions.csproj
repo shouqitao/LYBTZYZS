@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Prism.Core" Version="9.0.537" />
     <PackageReference Include="AutoMapper" Version="14.0.0" />
   </ItemGroup>
 
