@@ -1,15 +1,11 @@
 [
-  {
-    "Name": "LYBT",
-    "Projects": [
-      {
-        "Path": "LYBT.UI.WPF\\LYBT.UI.WPF.csproj",
-        "Action": "Start"
-      },
-      {
-        "Path": "LYBT.WebAPI\\LYBT.WebAPI.csproj",
-        "Action": "Start"
-      }
-    ]
-  }
+    {
+      "Name": "LYBT",
+      "Projects": [
+        {
+          "Path": "LYBT.WebAPI\\LYBT.WebAPI.csproj",
+          "Action": "Start"
+        }
+      ]
+    }
 ]
