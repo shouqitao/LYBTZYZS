@@ -10,7 +10,6 @@
 - 编辑药材信息（如单价、功效、单位）
 - 删除药材
 - 获取药材列表
-- Excel 导入导出
 
 ### 3. 输入输出规范
 
@@ -77,34 +76,6 @@ bool ok = await _herbService.BatchImportAsync(list);
 | `GET /api/herbs/{id}` | 已实现 |
 | `DELETE /api/herbs/{id}` | 已实现 |
 | `POST /api/herbs/import` | 已实现 | JSON 批量导入 |
-| `POST /api/herbs/importExcel` | 已实现 | Excel 批量导入 |
-| `GET /api/herbs/exportExcel` | 已实现 | Excel 导出 |
-
-
-### 7. Excel 导入格式
-
-导入药材时，Excel 文件的列顺序必须与 `HerbImportDto` 的字段一致，依次为：
-
-1. **Name**
-2. **Origin**
-3. **Spec**
-4. **Unit**
-5. **Price**
-6. **库存数量**
-7. **批号**
-8. **有效期**
-9. **Effect**
-10. **Remark**
-
-例如：
-
-| Name | Origin | Spec | Unit | Price | 库存数量 | 批号 | 有效期 | Effect | Remark |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 黄芪 | 山西 | 片 | g | 2.0 | 100 | B2025 | 2026-12-31 | 补气固表 | |
-
-通过 `/api/Herb/exportExcel` 导出的文件已经按照以上顺序生成，可直接作为导入模板。
-
-
 
 ## Running Tests / 运行测试
 
