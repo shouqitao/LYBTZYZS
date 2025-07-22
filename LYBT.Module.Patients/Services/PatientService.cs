@@ -32,13 +32,13 @@ namespace LYBT.Module.Patients.Services {
             _recordService = recordService;
         }
 
-/// <summary>
-/// 执行AddAsync操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <param name="operatorId">参数operatorId</param>
-/// <param name="operatorName">参数operatorName</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 新增患者档案，并记录操作日志
+        /// </summary>
+        /// <param name="dto">患者详细信息</param>
+        /// <param name="operatorId">执行人员的标识</param>
+        /// <param name="operatorName">执行人员姓名</param>
+        /// <returns>新增是否成功</returns>
         public async Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<PatientModel>(dto);
             model.Id = Guid.NewGuid();
@@ -125,30 +125,30 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
-/// <summary>
-/// 执行GetByIdAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 根据患者Id获取患者详情
+        /// </summary>
+        /// <param name="id">患者唯一标识</param>
+        /// <returns>患者详细信息，未找到则返回 null</returns>
         public async Task<PatientDetailDto> GetByIdAsync(Guid id) {
             var model = await _patientRepository.GetByIdAsync(id);
             return model == null ? null : _mapper.Map<PatientDetailDto>(model);
         }
 
-/// <summary>
-/// 执行GetAllAsync操作。
-/// </summary>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 获取所有患者列表
+        /// </summary>
+        /// <returns>患者信息集合</returns>
         public async Task<List<PatientDetailDto>> GetAllAsync() {
             var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
-/// <summary>
-/// 执行GetPagedAsync操作。
-/// </summary>
-/// <param name="query">参数query</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 按条件分页查询患者信息
+        /// </summary>
+        /// <param name="query">查询条件，包含关键字及分页参数</param>
+        /// <returns>分页结果</returns>
         public async Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query) {
             var list = await _patientRepository.GetListAsync(query.Keyword, query.Page, query.PageSize);
             var total = await _patientRepository.GetCountAsync(query.Keyword);

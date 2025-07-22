@@ -14,7 +14,7 @@ using LYBT.Common.Enums.Users;
 namespace LYBT.Module.Auth.Services {
 
     /// <summary>
-    /// 登录验证服务实现
+    /// 认证模块核心服务，实现用户登录验证、令牌生成及登录日志记录
     /// </summary>
     public class AuthService : IAuthService {
         private readonly IAuthRepository _authRepository;
@@ -29,11 +29,11 @@ namespace LYBT.Module.Auth.Services {
             _logService = logService;
         }
 
-/// <summary>
-/// 执行LoginAsync操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 用户登录并校验凭据，成功后返回用户信息并记录登录日志
+        /// </summary>
+        /// <param name="dto">登录请求参数，包含用户名、密码、客户端信息等</param>
+        /// <returns>登录成功的用户信息，失败返回 null</returns>
         public async Task<UserDto?> LoginAsync(LoginRequestDto dto) {
             try {
                 // 多方式认证扩展点
@@ -168,11 +168,11 @@ namespace LYBT.Module.Auth.Services {
 
         }
 
-/// <summary>
-/// 执行LogoutAsync操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 用户登出并写入日志
+        /// </summary>
+        /// <param name="dto">登出请求参数，包含用户名等信息</param>
+        /// <returns>登出是否成功</returns>
         public async Task<bool> LogoutAsync(LogoutRequestDto dto) {
             var user = await _authRepository.GetByUsernameAsync(dto.Username);
             string operatorName = user?.RealName;
@@ -193,11 +193,11 @@ namespace LYBT.Module.Auth.Services {
             return true;
         }
 
-/// <summary>
-/// 执行ChangeSysAdminPasswordAsync操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 修改系统管理员密码，先校验旧密码
+        /// </summary>
+        /// <param name="dto">修改密码请求，包含旧密码和新密码</param>
+        /// <returns>修改是否成功</returns>
         public async Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto) {
             var hash = await _authRepository.GetAdminPasswordHashAsync("sysadmin");
             if (string.IsNullOrEmpty(hash))
