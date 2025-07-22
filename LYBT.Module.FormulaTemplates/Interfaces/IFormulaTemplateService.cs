@@ -43,14 +43,5 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         /// </summary>
         Task<List<FormulaTemplateDetailDto>> ExportAsync();
 
-        /// <summary>
-        /// 从 Excel 流批量导入模板
-        /// </summary>
-        Task<int> ImportFromExcelAsync(Stream stream);
-
-        /// <summary>
-        /// 导出模板数据为 Excel
-        /// </summary>
-        Task<byte[]> ExportToExcelAsync();
     }
 }
