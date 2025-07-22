@@ -49,14 +49,5 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// </summary>
         Task<List<HerbDetailDto>> ExportAsync();
 
-        /// <summary>
-        /// 从 Excel 流批量导入药材
-        /// </summary>
-        Task<int> ImportFromExcelAsync(Stream stream);
-
-        /// <summary>
-        /// 导出药材数据为 Excel
-        /// </summary>
-        Task<byte[]> ExportToExcelAsync();
     }
 }

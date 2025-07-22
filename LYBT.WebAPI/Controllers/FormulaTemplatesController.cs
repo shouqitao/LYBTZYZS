@@ -130,27 +130,5 @@ public class FormulaTemplateController : ControllerBase {
             return Ok(data);
         }
 
-        [HttpPost("importExcel")]
-/// <summary>
-/// 执行ImportExcel操作。
-/// </summary>
-/// <param name="file">参数file</param>
-/// <returns>返回值</returns>
-        public async Task<ActionResult> ImportExcel(IFormFile file) {
-            if (file == null || file.Length == 0)
-                return BadRequest();
-            var count = await _service.ImportFromExcelAsync(file.OpenReadStream());
-            return Ok(new { Imported = count });
-        }
-
-        [HttpGet("exportExcel")]
-/// <summary>
-/// 执行ExportExcel操作。
-/// </summary>
-/// <returns>返回值</returns>
-        public async Task<FileContentResult> ExportExcel() {
-            var bytes = await _service.ExportToExcelAsync();
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "经典方.xlsx");
-        }
     }
 }
