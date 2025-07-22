@@ -60,3 +60,17 @@ var isOk = CommonUtils.CheckIdNumber("440101199912121234");
 - 枚举转中文辅助（`.ToChinese()`）
 - `LogHelper` 基础日志工具
 
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```

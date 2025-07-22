@@ -11,8 +11,9 @@ namespace LYBT.WebAPI.Controllers {
     /// 认证相关接口
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+public class AuthController : ControllerBase {
         private readonly IAuthService _authService;
         private readonly JwtOptions _jwtOptions;
 

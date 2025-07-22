@@ -1,35 +1,49 @@
-## AGENTS.md �� ����ģ��ģ�飨LYBT.Models��
+## AGENTS.md — 数据模型模块（LYBT.Models）
 
-### 1. Agent ����
+### 1. Agent 概述
 
-����ģ��ģ�鸺����ȫϵͳ������ĵ�ʵ���ࡢ���ݴ������DTO������ҳ�Ͳ�ѯģ�ͣ���ҵ���߼������ݷ��ʡ��ӿڴ���Ļ����ṹ�㡣
+数据模型模块负责定义全系统领域核心的实体类、数据传输对象（DTO）、分页和查询模型，是业务逻辑、数据访问、接口传输的基础结构层。
 
-### 2. ��������
+### 2. 核心能力
 
-- ��������ҵ�����ʵ�壨Model������ UserModel��PatientModel��DoctorModel��RegistrationModel��PrescriptionModel��BillingModel��LogModel��SyncTaskModel��TreatmentRoomModel ��
-- ������ Model ��Ӧ�����ݴ������Dto������ UserDto��PatientDto��PrescriptionDto��RecordDto��... ��
-- �ṩ��ҳ����/����ṹ�����ò�ѯ����
-- Լ��ʵ���ֶ����͡�����/�Ǳ������ע���������֤
+- 定义所有业务核心实体（Model），如 UserModel、PatientModel、DoctorModel、RegistrationModel、PrescriptionModel、BillingModel、LogModel、SyncTaskModel、TreatmentRoomModel 等
+- 定义与 Model 对应的数据传输对象（Dto），如 UserDto、PatientDto、PrescriptionDto、RecordDto、... 等
+- 提供分页参数/结果结构、常用查询对象
+- 约定实体字段类型、必填/非必填、数据注释与基础验证
 
-### 3. ��������淶
+### 3. 输入输出规范
 
-#### ����
+#### 输入
 
-- ͨ����ֱ�ӱ�ҵ����ã�Ϊ��ҵ��ģ�鷽��/�ӿ��ṩ���������������
+- 通常不直接被业务调用；为各业务模块方法/接口提供输入输出类型声明
 
-#### ���
+#### 输出
 
-- ��Ϊ���ݿ�ʵ��ģ�����ͱ�ҵ���/�ִ���/ǰ�˵���
 
-### 4. Э��������ģ��
+## Running Tests / 运行测试
 
-- **ҵ��ģ��**���综�ߡ�ҽ�������ơ����õȣ�ȫ���������� Model 
-- **������ʩģ��**��ʹ��ʵ�嶨���������ݿ���ṹ
-- **ͨ��ģ��**�������ֶ���ͨ��ö��
+Execute this project's unit tests with:
 
-### 5. ʾ������
+```bash
+dotnet test
+```
 
-#### ����ʵ�壨�粡�ˣ�
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```
+- 作为数据库实体模型类型被业务层/仓储层/前端调用
+
+### 4. 协作与依赖模块
+
+- **业务模块**：如患者、医生、诊疗、费用等，全部依赖核心 Model 
+- **基础设施模块**：使用实体定义生成数据库表结构
+- **通用模块**：部分字段用通用枚举
+
+### 5. 示例场景
+
+#### 新增实体（如病人）
 
 ```csharp
 public class PatientModel {
@@ -40,7 +54,7 @@ public class PatientModel {
 }
 ```
 
-### 6. ��Ҫ����ʾ��
+### 6. 主要类型示例
 
-- ʵ�壺UserModel��PatientModel��DoctorModel��RegistrationModel��QueueingModel��DiagnosisTreatmentModel��PrescriptionModel��HerbModel��FormulaTemplateModel��BillingModel��PharmacyModel��RecordModel��LogModel��SyncTaskModel��TreatmentRoomModel ��
+- 实体：UserModel、PatientModel、DoctorModel、RegistrationModel、QueueingModel、DiagnosisTreatmentModel、PrescriptionModel、HerbModel、FormulaTemplateModel、BillingModel、PharmacyModel、RecordModel、LogModel、SyncTaskModel、TreatmentRoomModel 等
 

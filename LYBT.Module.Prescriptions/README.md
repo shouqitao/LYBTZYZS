@@ -23,3 +23,17 @@
 - `Task<bool> UpdateAsync(PrescriptionEditDto dto, Guid operatorId, string operatorName)`
 - `Task<bool> DeleteAsync(string id, Guid operatorId, string operatorName)`
 - `Task<bool> CancelAsync(string id, Guid operatorId, string operatorName)`
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```

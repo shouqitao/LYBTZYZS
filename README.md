@@ -1,37 +1,64 @@
 # AGENTS.md — 项目总览（shouqitao/LYBTZYZS）
 
 本系统采用“模块化+Agent”设计，每个业务与支撑模块均提供自己的 Agent 能力。各模块协同构成完整的中医诊所信息化平台，实现从患者建档、挂号、诊疗、处方、配药、收费、病历、到系统配置、数据同步、日志审计等全业务闭环。
+This system follows a modular "Agent" architecture. Each business or supporting module exposes its own agent service to form a comprehensive TCM clinic platform, covering patient registration, queuing, diagnosis, prescriptions, pharmacy, billing, medical records, configuration, data sync and logging.
 
 ---
 
 ## 主要业务模块 AGENTS
 
-- **用户模块（Users）**：账号管理、角色分配、密码维护
-- **患者模块（Patients）**：患者信息建档、查询、编辑、模糊搜索、身份证读取
-- **医生模块（Doctors）**：医生档案管理、职称、状态、执业权限
-- **挂号模块（Registration）**：挂号、急诊挂号、挂号-排队联动
-- **排队模块（Queueing）**：门诊队列生成、就诊顺序控制
-- **诊疗模块（DiagnosisTreatment）**：诊断记录、治疗项目、结构化药方
-- **处方模块（Prescriptions）**：药方开具、剂量与金额、导入经验方
-- **药材模块（Herbs）**：中药材目录、单价、功效、批量导入
-- **药方模板模块（FormulaTemplates）**：常用/经典药方模板，处方快速生成
-- **费用模块（Billing）**：账单生成、挂号费/处方费/治疗费统计、支付/退费
-- **药房模块（Pharmacy）**：处方配药、抓药、代煎、药房队列与状态
-- **病历模块（Records）**：完整诊疗过程记录、共享、权限控制
-- **系统设置模块（Settings）**：全局参数、诊断目录、治疗目录、共享策略
-- **日志模块（Logs）**：全模块操作日志、分页查询、审计追溯
-- **数据同步模块（Sync）**：同步任务、同步日志、自动/手动模式
-- **诊疗室模块（TreatmentRoom）**：诊疗室管理、辅助治疗队列、任务分配
+- **用户模块（Users）**：账号管理、角色分配、密码维护  
+**Users Module**: manage accounts, assign roles and maintain passwords.
+- **患者模块（Patients）**：患者信息建档、查询、编辑、模糊搜索、身份证读取  
+**Patients Module**: create and search patient records with ID card reading.
+- **医生模块（Doctors）**：医生档案管理、职称、状态、执业权限  
+**Doctors Module**: maintain doctor profiles, titles and practice permissions.
+- **挂号模块（Registration）**：挂号、急诊挂号、挂号-排队联动  
+**Registration Module**: handle normal and emergency registration with queue integration.
+- **排队模块（Queueing）**：门诊队列生成、就诊顺序控制  
+**Queueing Module**: manage visit queues and consultation order.
+- **诊疗模块（DiagnosisTreatment）**：诊断记录、治疗项目、结构化药方  
+**DiagnosisTreatment Module**: record diagnoses, treatments and structured prescriptions.
+- **处方模块（Prescriptions）**：药方开具、剂量与金额、导入经验方  
+**Prescriptions Module**: manage prescriptions, dosage and cost, import templates.
+- **药材模块（Herbs）**：中药材目录、单价、功效、批量导入  
+**Herbs Module**: maintain herbal catalog, prices and effects with bulk import.
+- **药方模板模块（FormulaTemplates）**：常用/经典药方模板，处方快速生成  
+**FormulaTemplates Module**: store common formula templates for quick prescriptions.
+- **费用模块（Billing）**：账单生成、挂号费/处方费/治疗费统计、支付/退费  
+**Billing Module**: generate bills, track fees and manage payments or refunds.
+- **药房模块（Pharmacy）**：处方配药、抓药、代煎、药房队列与状态  
+**Pharmacy Module**: dispense prescriptions, decoction and manage pharmacy queue.
+- **病历模块（Records）**：完整诊疗过程记录、共享、权限控制  
+**Records Module**: maintain medical histories with sharing and permissions.
+- **系统设置模块（Settings）**：全局参数、诊断目录、治疗目录、共享策略  
+**Settings Module**: global parameters, diagnosis and treatment catalogs and sharing policies.
+- **日志模块（Logs）**：全模块操作日志、分页查询、审计追溯  
+**Logs Module**: record operations across modules for audit and query.
+- **数据同步模块（Sync）**：同步任务、同步日志、自动/手动模式  
+**Sync Module**: data synchronization tasks and logs with auto/manual modes.
+- **诊疗室模块（TreatmentRoom）**：诊疗室管理、辅助治疗队列、任务分配  
+**TreatmentRoom Module**: manage treatment rooms and task queues.
 
 ---
 
 ## 支撑与通用模块 AGENTS
 
-- **通用模块（Common）**：基础枚举、响应对象、扩展方法、统一工具
-- **数据模型模块（Models）**：实体Model/Dto/分页/查询等核心结构
-- **基础设施模块（Infrastructure）**：EF数据库上下文、种子数据、自动仓储注入
-- **认证模块（Auth）**：用户身份验证、Token发放、登录日志、权限基础
+- **通用模块（Common）**：基础枚举、响应对象、扩展方法、统一工具  
+**Common Module**: base enums, API responses and utilities.
+- **数据模型模块（Models）**：实体Model/Dto/分页/查询等核心结构  
+**Models Module**: core entities, DTOs and paging structures.
+- **基础设施模块（Infrastructure）**：EF数据库上下文、种子数据、自动仓储注入  
+**Infrastructure Module**: EF Core DbContext, seed data and repository injection.
+- **认证模块（Auth）**：用户身份验证、Token发放、登录日志、权限基础  
+**Auth Module**: user authentication, token issuance and login logs.
 
+## 其它项目 / Other Projects
+
+- **LYBT.WebAPI**：ASP.NET Core 后端，聚合各业务模块
+**LYBT.WebAPI**: ASP.NET Core API hosting all modules.
+- **LYBT.UI.WPF**：基于 WPF 的桌面客户端
+**LYBT.UI.WPF**: WPF desktop client built with Prism and Refit.
 ---
 
 ## 模块协作关系
@@ -93,7 +120,8 @@
 
 - 各模块 AGENTS.md 文件详细定义请见对应模块目录
 - 系统整体支持横向扩展、新业务模块与第三方平台集成
-## Running Tests
+- `docs/quick_add_herbs.md` 介绍了“快速添加药材”功能的设计与交互细节
+## Running Tests / 运行测试
 
 Execute all unit tests with:
 
@@ -101,6 +129,10 @@ Execute all unit tests with:
  dotnet test
 ```
 
+使用以下命令运行所有单元测试：
 
+```bash
+ dotnet test
+```
 
 Unit tests now cover service ports of all modules and can be run with `dotnet test`.

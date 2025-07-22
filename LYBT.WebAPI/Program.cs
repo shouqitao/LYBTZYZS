@@ -4,7 +4,6 @@
 using LYBT.Infrastructure;
 using LYBT.Infrastructure.Auth.Extensions;
 using LYBT.Infrastructure.Exceptions;
-using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Helpers;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
@@ -29,10 +28,13 @@ using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Logs.Mapping;
 using LYBT.Module.Logs.Repositories;
 using LYBT.Module.Logs.Services;
+using LYBT.Module.Prescriptions.Repositories;
+using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
+using LYBT.Module.Prescriptions.Mapping;
 using LYBT.Module.Queueing.Interfaces;
 using LYBT.Module.Queueing.Mapping;
 using LYBT.Module.Queueing.Repositories;
@@ -63,6 +65,8 @@ using LYBT.Module.Users.Services;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Interfaces;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,6 +117,10 @@ builder.Services.AddScoped<IRecordRepository, RecordRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 
+// 处方管理
+builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
+builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+
 // 同步管理
 builder.Services.AddScoped<ISyncService, SyncService>();
 builder.Services.AddScoped<ISyncRepository, SyncRepository>();
@@ -135,6 +143,7 @@ builder.Services.AddAutoMapper(
     typeof(FormulaTemplateMappingProfile),
     typeof(LogMappingProfile),
     typeof(SyncMappingProfile),
+    typeof(PrescriptionMappingProfile),
    typeof(SettingsMappingProfile)
 );
 
@@ -143,6 +152,18 @@ builder.Services.AddAutoMapper(
 builder.Services.AddControllers().AddJsonOptions(o => {
     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddApiVersioning(opt =>
+{
+    opt.AssumeDefaultVersionWhenUnspecified = true;
+    opt.DefaultApiVersion = new ApiVersion(1, 0);
+    opt.ReportApiVersions = true;
+    opt.ApiVersionReader = ApiVersionReader.Combine(
+        new UrlSegmentApiVersionReader(),
+        new HeaderApiVersionReader("X-Version"));
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {

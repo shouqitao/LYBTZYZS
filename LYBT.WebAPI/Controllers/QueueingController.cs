@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.Queueing.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Queueing.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +10,10 @@ namespace LYBT.Module.Queueing.Controllers {
     /// 排队管理 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class QueueingController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class QueueingController : ControllerBase {
         private readonly IQueueingService _queueingService;
 
         /// <summary>

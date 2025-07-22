@@ -71,3 +71,17 @@ await _diagnosisService.AddAsync(dto);
 | `POST /api/diagnosis/importtemplate` | 未实现 | 未找到对应接口 |
 
 
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```

@@ -77,3 +77,17 @@ bool ok = await _recordService.ShareAsync(shareDto);
 | `GET /api/records/{id}` | 已实现 | `RecordsController.GetById` |
 
 
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```

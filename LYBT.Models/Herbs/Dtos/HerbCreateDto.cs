@@ -34,11 +34,11 @@ namespace LYBT.Module.Herbs.Dtos {
         [DisplayName("单价")]
         public decimal Price { get; set; }
 
-        [DisplayName("Stock")]
+        [DisplayName("库存数量")]
         public int Stock { get; set; }
-        [DisplayName("BatchNo")]
+        [DisplayName("批号")]
         public string? BatchNo { get; set; }
-        [DisplayName("ExpireDate")]
+        [DisplayName("有效期")]
         public DateTime? ExpireDate { get; set; }
 
         /// <summary>功效说明</summary>

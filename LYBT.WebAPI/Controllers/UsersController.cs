@@ -1,4 +1,5 @@
 ﻿using LYBT.Module.Users.Dtos;
+using LYBT.Common.Responses;
 using LYBT.Module.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,8 @@ using LYBT.Module.Users.Interfaces;
 /// 用户管理控制器，提供RESTful API接口
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize] // 全部接口必须登录
 public class UsersController : ControllerBase {
     private readonly IUserService _userService;

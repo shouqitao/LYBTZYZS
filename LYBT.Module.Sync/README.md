@@ -71,3 +71,17 @@ bool ok = await _syncService.WriteLogAsync(logDto);
 - `Task<bool> CheckConnectionStatusAsync()`
 - `Task<bool> TriggerManualSyncAsync()`
 
+
+## Running Tests / 运行测试
+
+Execute this project's unit tests with:
+
+```bash
+dotnet test
+```
+
+使用以下命令运行本项目的单元测试：
+
+```bash
+dotnet test
+```

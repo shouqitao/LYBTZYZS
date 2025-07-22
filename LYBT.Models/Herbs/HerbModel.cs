@@ -10,31 +10,31 @@ namespace LYBT.Models {
     public class HerbModel {
 
         [Key]
-        [DisplayName("Id")]
+        [DisplayName("编号")]
         public Guid Id { get; set; }
 
         [Required, StringLength(64)]
-        [DisplayName("Name")]
+        [DisplayName("名称")]
         public string Name { get; set; } = string.Empty;
 
         [StringLength(32)]
-        [DisplayName("Pinyin")]
+        [DisplayName("拼音")]
         public string? Pinyin { get; set; }
 
         [StringLength(64)]
-        [DisplayName("Origin")]
+        [DisplayName("产地")]
         public string? Origin { get; set; }
 
         [StringLength(32)]
-        [DisplayName("Spec")]
+        [DisplayName("规格")]
         public string? Spec { get; set; }
 
         [StringLength(16)]
-        [DisplayName("Unit")]
+        [DisplayName("单位")]
         public string? Unit { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        [DisplayName("Price")]
+        [DisplayName("价格")]
         public decimal Price { get; set; }
 
         /// <summary>
@@ -57,11 +57,11 @@ namespace LYBT.Models {
         public DateTime? ExpireDate { get; set; }
 
         [StringLength(128)]
-        [DisplayName("Effect")]
+        [DisplayName("功效")]
         public string? Effect { get; set; }
 
         [StringLength(256)]
-        [DisplayName("Remark")]
+        [DisplayName("备注")]
         public string? Remark { get; set; }
     }
 }

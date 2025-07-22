@@ -1,11 +1,15 @@
 using LYBT.Module.Settings.Interfaces;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers {
 
     [ApiController]
-    [Route("api/[controller]")]
-    public class EnumMappingsController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class EnumMappingsController : ControllerBase {
         private readonly IEnumMappingsService _service;
 
         public EnumMappingsController(IEnumMappingsService service) {

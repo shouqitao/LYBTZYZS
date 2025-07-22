@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.Pharmacy.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Pharmacy.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +10,10 @@ namespace LYBT.Module.Pharmacy.Controllers {
     /// 药房 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class PharmacyController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class PharmacyController : ControllerBase {
         private readonly IPharmacyService _pharmacyService;
 
         /// <summary>

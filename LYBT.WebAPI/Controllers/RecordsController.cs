@@ -1,4 +1,6 @@
 ﻿using LYBT.Module.Records.Dtos;
+using LYBT.Common.Responses;
+using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Records.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +10,10 @@ namespace LYBT.Module.Records.Controllers {
     /// 病历 API 控制器
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
-    public class RecordController : ControllerBase {
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
+public class RecordController : ControllerBase {
         private readonly IRecordService _recordService;
 
         /// <summary>
