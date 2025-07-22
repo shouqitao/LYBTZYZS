@@ -12,9 +12,6 @@ namespace LYBT.Models.Billing {
 
         [Key]
         [DisplayName("Id")]
-/// <summary>
-/// Id 属性。
-/// </summary>
         public Guid Id { get; set; }
 
         /// <summary>
@@ -22,9 +19,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [StringLength(64)]
         [DisplayName("账单业务编码（如流水号，可选）")]
-/// <summary>
-/// BillingId 属性。
-/// </summary>
         public string BillingId { get; set; } = string.Empty;
 
         /// <summary>
@@ -32,18 +26,12 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Required]
         [DisplayName("病人ID")]
-/// <summary>
-/// PatientId 属性。
-/// </summary>
         public Guid PatientId { get; set; }
 
         /// <summary>
         /// 对应处方ID
         /// </summary>
         [DisplayName("对应处方ID")]
-/// <summary>
-/// PrescriptionId 属性。
-/// </summary>
         public Guid? PrescriptionId { get; set; }
 
         /// <summary>
@@ -51,9 +39,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Required]
         [DisplayName("账单明细项目（建议用 Json 字段保存）")]
-/// <summary>
-/// Items 属性。
-/// </summary>
         public List<BillingItem> Items { get; set; } = new();
 
         /// <summary>
@@ -62,9 +47,6 @@ namespace LYBT.Models.Billing {
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [DisplayName("账单总金额")]
-/// <summary>
-/// TotalAmount 属性。
-/// </summary>
         public decimal TotalAmount { get; set; }
 
         /// <summary>
@@ -72,9 +54,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Column(TypeName = "decimal(18,2)")]
         [DisplayName("已缴金额")]
-/// <summary>
-/// PaidAmount 属性。
-/// </summary>
         public decimal PaidAmount { get; set; }
 
         /// <summary>
@@ -82,9 +61,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Required]
         [DisplayName("当前状态")]
-/// <summary>
-/// Status 属性。
-/// </summary>
         public BillingStatus Status { get; set; } = BillingStatus.Pending;
 
         /// <summary>
@@ -92,9 +68,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [StringLength(32)]
         [DisplayName("缴费方式（现金、微信等）")]
-/// <summary>
-/// PaymentMethod 属性。
-/// </summary>
         public string PaymentMethod { get; set; } = string.Empty;
 
         /// <summary>
@@ -102,9 +75,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Required]
         [DisplayName("开单医生ID")]
-/// <summary>
-/// DoctorId 属性。
-/// </summary>
         public Guid DoctorId { get; set; }
 
         /// <summary>
@@ -112,36 +82,24 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Required]
         [DisplayName("创建时间")]
-/// <summary>
-/// CreatedTime 属性。
-/// </summary>
         public DateTime CreatedTime { get; set; } = DateTime.Now;
 
         /// <summary>
         /// 支付时间
         /// </summary>
         [DisplayName("支付时间")]
-/// <summary>
-/// PaidTime 属性。
-/// </summary>
         public DateTime? PaidTime { get; set; }
 
         /// <summary>
         /// 完成时间
         /// </summary>
         [DisplayName("完成时间")]
-/// <summary>
-/// CompletedTime 属性。
-/// </summary>
         public DateTime? CompletedTime { get; set; }
 
         /// <summary>
         /// 退款时间
         /// </summary>
         [DisplayName("退款时间")]
-/// <summary>
-/// RefundTime 属性。
-/// </summary>
         public DateTime? RefundTime { get; set; }
 
         /// <summary>
@@ -149,18 +107,12 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [StringLength(128)]
         [DisplayName("退款理由")]
-/// <summary>
-/// RefundReason 属性。
-/// </summary>
         public string? RefundReason { get; set; }
 
         /// <summary>
         /// 是否删除
         /// </summary>
         [DisplayName("是否删除")]
-/// <summary>
-/// IsDeleted 属性。
-/// </summary>
         public bool IsDeleted { get; set; } = false;
 
         /// <summary>
@@ -168,9 +120,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Required]
         [DisplayName("账单时间（如有二次缴费等场景可与 CreateTime 区分）")]
-/// <summary>
-/// BillingTime 属性。
-/// </summary>
         public DateTime BillingTime { get; set; } = DateTime.Now;
 
         /// <summary>
@@ -178,9 +127,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [StringLength(256)]
         [DisplayName("备注")]
-/// <summary>
-/// Remark 属性。
-/// </summary>
         public string? Remark { get; set; }
     }
 
@@ -193,9 +139,6 @@ namespace LYBT.Models.Billing {
         /// 明细主键ID（如不用单独建表可省略）
         /// </summary>
         [DisplayName("明细主键ID（如不用单独建表可省略）")]
-/// <summary>
-/// ItemId 属性。
-/// </summary>
         public Guid ItemId { get; set; } = Guid.NewGuid();
 
         /// <summary>
@@ -203,9 +146,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Required, StringLength(64)]
         [DisplayName("项目名称")]
-/// <summary>
-/// Name 属性。
-/// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
@@ -213,9 +153,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Column(TypeName = "decimal(18,2)")]
         [DisplayName("单价")]
-/// <summary>
-/// UnitPrice 属性。
-/// </summary>
         public decimal UnitPrice { get; set; }
 
         /// <summary>
@@ -223,9 +160,6 @@ namespace LYBT.Models.Billing {
         /// </summary>
         [Column(TypeName = "decimal(18,2)")]
         [DisplayName("数量")]
-/// <summary>
-/// Quantity 属性。
-/// </summary>
         public decimal Quantity { get; set; }
 
         /// <summary>

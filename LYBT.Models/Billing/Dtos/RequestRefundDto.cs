@@ -3,34 +3,25 @@ using System.ComponentModel;
 
 namespace LYBT.Module.Billing.Dtos {
     /// <summary>
-    /// ˿ DTO
+    /// 退款申请 DTO
     /// </summary>
     public class RequestRefundDto {
         [Required]
         [DisplayName("BillingId")]
-/// <summary>
-/// BillingId 属性。
-/// </summary>
         public Guid BillingId { get; set; }
 
         [Required]
-        [StringLength(128, ErrorMessage = "˿ɲܳ128ַ")]
+        [StringLength(128, ErrorMessage = "原因长度不能超过128个字符")]
         [DisplayName("Reason")]
-/// <summary>
-/// Reason 属性。
-/// </summary>
         public string Reason { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// ˿ DTOͬ/ܾ
+    /// 退款审核 DTO
     /// </summary>
     public class RefundActionDto {
         [Required]
         [DisplayName("BillingId")]
-/// <summary>
-/// BillingId 属性。
-/// </summary>
         public Guid BillingId { get; set; }
     }
 }
