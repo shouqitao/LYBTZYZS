@@ -29,6 +29,11 @@ namespace LYBT.Module.Auth.Services {
             _logService = logService;
         }
 
+/// <summary>
+/// 执行LoginAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<UserDto?> LoginAsync(LoginRequestDto dto) {
             try {
                 // 多方式认证扩展点
@@ -163,6 +168,11 @@ namespace LYBT.Module.Auth.Services {
 
         }
 
+/// <summary>
+/// 执行LogoutAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<bool> LogoutAsync(LogoutRequestDto dto) {
             var user = await _authRepository.GetByUsernameAsync(dto.Username);
             string operatorName = user?.RealName;
@@ -183,6 +193,11 @@ namespace LYBT.Module.Auth.Services {
             return true;
         }
 
+/// <summary>
+/// 执行ChangeSysAdminPasswordAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto) {
             var hash = await _authRepository.GetAdminPasswordHashAsync("sysadmin");
             if (string.IsNullOrEmpty(hash))

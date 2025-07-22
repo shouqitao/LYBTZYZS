@@ -10,18 +10,27 @@ namespace LYBT.Models.DiagnosisTreatment {
         /// 治疗项目名称（如“针灸”）
         /// </summary>
         [DisplayName("治疗项目名称（如“针灸”）")]
+/// <summary>
+/// Name 属性。
+/// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 次数
         /// </summary>
         [DisplayName("次数")]
+/// <summary>
+/// Count 属性。
+/// </summary>
         public int Count { get; set; }
 
         /// <summary>
         /// 单价
         /// </summary>
         [DisplayName("单价")]
+/// <summary>
+/// Price 属性。
+/// </summary>
         public decimal Price { get; set; }
 
         /// <summary>

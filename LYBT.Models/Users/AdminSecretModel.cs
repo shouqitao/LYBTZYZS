@@ -7,16 +7,25 @@ namespace LYBT.Module.Users.Models {
     /// </summary>
     public class AdminSecretModel {
 
-        /// <summary>Primary key</summary>
+        /// <summary>主键</summary>
         [DisplayName("Primary key")]
+/// <summary>
+/// Id 属性。
+/// </summary>
         public Guid Id { get; set; }
 
-        /// <summary>Administrator username</summary>
+        /// <summary>管理员用户名</summary>
         [DisplayName("Administrator username")]
+/// <summary>
+/// UserName 属性。
+/// </summary>
         public string UserName { get; set; } = string.Empty;
 
-        /// <summary>Password hash</summary>
+        /// <summary>密码哈希</summary>
         [DisplayName("Password hash")]
+/// <summary>
+/// PasswordHash 属性。
+/// </summary>
         public string PasswordHash { get; set; } = string.Empty;
     }
 }

@@ -11,8 +11,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
+/// <summary>
+/// 表示AppDbContextModelSnapshot。
+/// </summary>
     partial class AppDbContextModelSnapshot : ModelSnapshot
     {
+/// <summary>
+/// 执行BuildModel操作。
+/// </summary>
+/// <param name="modelBuilder">参数modelBuilder</param>
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

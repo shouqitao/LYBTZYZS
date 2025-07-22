@@ -2,6 +2,9 @@ using LYBT.Models.Settings;
 
 namespace LYBT.Module.Settings.Interfaces {
 
+/// <summary>
+/// 表示IDiagnosisCatalogRepository。
+/// </summary>
     public interface IDiagnosisCatalogRepository {
 
         Task<List<DiagnosisCatalogModel>> GetAllAsync();

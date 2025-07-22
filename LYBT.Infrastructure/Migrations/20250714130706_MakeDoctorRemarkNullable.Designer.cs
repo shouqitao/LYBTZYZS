@@ -13,6 +13,9 @@ namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20250714130706_MakeDoctorRemarkNullable")]
+/// <summary>
+/// 表示MakeDoctorRemarkNullable。
+/// </summary>
     partial class MakeDoctorRemarkNullable
     {
         /// <inheritdoc />

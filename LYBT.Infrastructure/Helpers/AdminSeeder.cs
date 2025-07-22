@@ -9,6 +9,11 @@ namespace LYBT.Infrastructure.Helpers {
     /// </summary>
     public static class AdminSeeder {
 
+/// <summary>
+/// 执行Seed操作。
+/// </summary>
+/// <param name="context">参数context</param>
+/// <param name="defaultPassword">参数defaultPassword</param>
         public static void Seed(AppDbContext context, string defaultPassword) {
             // Default sysadmin credentials stored only in AdminSecrets table.
             // No corresponding record in Users table.

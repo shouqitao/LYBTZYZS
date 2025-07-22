@@ -10,24 +10,36 @@ namespace LYBT.Models {
         /// 药材ID（关联药材主数据）
         /// </summary>
         [DisplayName("药材ID（关联药材主数据）")]
+/// <summary>
+/// HerbId 属性。
+/// </summary>
         public Guid HerbId { get; set; }
 
         /// <summary>
         /// 药材名称
         /// </summary>
         [DisplayName("药材名称")]
+/// <summary>
+/// Name 属性。
+/// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 剂量
         /// </summary>
         [DisplayName("剂量")]
+/// <summary>
+/// Amount 属性。
+/// </summary>
         public decimal Amount { get; set; }
 
         /// <summary>
         /// 单价
         /// </summary>
         [DisplayName("单价")]
+/// <summary>
+/// UnitPrice 属性。
+/// </summary>
         public decimal UnitPrice { get; set; }
 
         /// <summary>

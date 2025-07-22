@@ -10,30 +10,51 @@ namespace LYBT.Module.Billing.Dtos {
 
         /// <summary>账单ID</summary>
         [DisplayName("账单ID")]
+/// <summary>
+/// Id 属性。
+/// </summary>
         public Guid Id { get; set; }
 
         /// <summary>病人姓名</summary>
         [DisplayName("病人姓名")]
+/// <summary>
+/// PatientName 属性。
+/// </summary>
         public string PatientName { get; set; } = string.Empty;
 
         /// <summary>账单总金额</summary>
         [DisplayName("账单总金额")]
+/// <summary>
+/// TotalAmount 属性。
+/// </summary>
         public decimal TotalAmount { get; set; }
 
         /// <summary>已缴金额</summary>
         [DisplayName("已缴金额")]
+/// <summary>
+/// PaidAmount 属性。
+/// </summary>
         public decimal PaidAmount { get; set; }
 
         /// <summary>账单状态</summary>
         [DisplayName("账单状态")]
+/// <summary>
+/// Status 属性。
+/// </summary>
         public BillingStatus Status { get; set; }
 
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
+/// <summary>
+/// CreatedTime 属性。
+/// </summary>
         public DateTime CreatedTime { get; set; }
 
         /// <summary>账单时间</summary>
         [DisplayName("账单时间")]
+/// <summary>
+/// BillingTime 属性。
+/// </summary>
         public DateTime BillingTime { get; set; }
     }
 }

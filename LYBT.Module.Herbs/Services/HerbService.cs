@@ -38,6 +38,11 @@ namespace LYBT.Module.Herbs.Services {
             return _mapper.Map<List<HerbDto>>(list);
         }
 
+/// <summary>
+/// 执行GetPagedAsync操作。
+/// </summary>
+/// <param name="query">参数query</param>
+/// <returns>返回值</returns>
         public async Task<PagedResultDto<HerbDto>> GetPagedAsync(HerbPagedQueryDto query) {
             var (models, total) = await _repository.GetPagedAsync(query.Keyword, query.Page, query.PageSize);
             return new PagedResultDto<HerbDto> {
@@ -85,6 +90,11 @@ namespace LYBT.Module.Herbs.Services {
             return await _repository.DeleteAsync(id);
         }
 
+/// <summary>
+/// 执行ImportAsync操作。
+/// </summary>
+/// <param name="dtos">参数dtos</param>
+/// <returns>返回值</returns>
         public async Task<int> ImportAsync(List<HerbImportDto> dtos) {
             int count = 0;
             foreach (var dto in dtos) {
@@ -97,16 +107,29 @@ namespace LYBT.Module.Herbs.Services {
             return count;
         }
 
+/// <summary>
+/// 执行ExportAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<List<HerbDetailDto>> ExportAsync() {
             var list = await _repository.GetListAsync();
             return _mapper.Map<List<HerbDetailDto>>(list);
         }
 
+/// <summary>
+/// 执行ImportFromExcelAsync操作。
+/// </summary>
+/// <param name="stream">参数stream</param>
+/// <returns>返回值</returns>
         public async Task<int> ImportFromExcelAsync(Stream stream) {
             var dtos = CommonUtil.ReadHerbs(stream);
             return await ImportAsync(dtos);
         }
 
+/// <summary>
+/// 执行ExportToExcelAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<byte[]> ExportToExcelAsync() {
             var data = await ExportAsync();
             return CommonUtil.WriteHerbs(data);

@@ -1,7 +1,19 @@
 namespace LYBT.Common.Models {
+/// <summary>
+/// è¡¨ç¤ºApiSuccessResponseã€‚
+/// </summary>
     public class ApiSuccessResponse {
+/// <summary>
+/// Success å±æ€§ã€‚
+/// </summary>
         public bool Success { get; set; }
+/// <summary>
+/// Count å±æ€§ã€‚
+/// </summary>
         public int? Count { get; set; }
-        public string? Message { get; set; } // ĞÂÔö£ºÓÃÓÚ´«µİ´íÎóĞÅÏ¢
+/// <summary>
+/// Message å±æ€§ã€‚
+/// </summary>
+        public string? Message { get; set; } // Ú´İ´Ï¢
     }
 }

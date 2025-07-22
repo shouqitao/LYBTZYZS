@@ -13,6 +13,9 @@ namespace LYBT.Module.DiagnosisTreatment.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
+/// <summary>
+/// 表示DiagnosisTreatmentController。
+/// </summary>
 public class DiagnosisTreatmentController : ControllerBase {
         private readonly IDiagnosisTreatmentService _diagnosisTreatmentService;
 
@@ -27,6 +30,10 @@ public class DiagnosisTreatmentController : ControllerBase {
         /// 获取诊疗列表
         /// </summary>
         [HttpGet]
+/// <summary>
+/// 执行GetList操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<DiagnosisTreatmentDto>>> GetList() {
             var list = await _diagnosisTreatmentService.GetListAsync();
             return Ok(list);
@@ -36,6 +43,11 @@ public class DiagnosisTreatmentController : ControllerBase {
         /// 获取诊疗详情
         /// </summary>
         [HttpGet("{id}")]
+/// <summary>
+/// 执行GetById操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<DiagnosisTreatmentDetailDto>> GetById(Guid id) {
             var detail = await _diagnosisTreatmentService.GetByIdAsync(id);
             if (detail == null)
@@ -47,6 +59,11 @@ public class DiagnosisTreatmentController : ControllerBase {
         /// 新增诊疗
         /// </summary>
         [HttpPost]
+/// <summary>
+/// 执行Add操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Add([FromBody] DiagnosisTreatmentCreateDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -62,6 +79,11 @@ public class DiagnosisTreatmentController : ControllerBase {
         /// 编辑诊疗
         /// </summary>
         [HttpPut]
+/// <summary>
+/// 执行Update操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Update([FromBody] DiagnosisTreatmentEditDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -77,6 +99,11 @@ public class DiagnosisTreatmentController : ControllerBase {
         /// 删除诊疗
         /// </summary>
         [HttpDelete("{id}")]
+/// <summary>
+/// 执行Delete操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Delete(Guid id) {
             var result = await _diagnosisTreatmentService.DeleteAsync(id);
             if (!result)

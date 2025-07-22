@@ -275,6 +275,10 @@ namespace LYBT.Module.Users.Services {
             return await _userRepository.UpdateAsync(user);
         }
 
+/// <summary>
+/// 执行GetRoles操作。
+/// </summary>
+/// <returns>返回值</returns>
         public List<UserRole> GetRoles() {
             return Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToList();
         }

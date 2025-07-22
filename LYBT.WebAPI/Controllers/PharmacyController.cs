@@ -13,6 +13,9 @@ namespace LYBT.Module.Pharmacy.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
+/// <summary>
+/// 表示PharmacyController。
+/// </summary>
 public class PharmacyController : ControllerBase {
         private readonly IPharmacyService _pharmacyService;
 
@@ -27,6 +30,10 @@ public class PharmacyController : ControllerBase {
         /// 获取待抓药的处方列表
         /// </summary>
         [HttpGet("waiting")]
+/// <summary>
+/// 执行GetWaitingList操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<PharmacyDto>>> GetWaitingList() {
             var list = await _pharmacyService.GetWaitingListAsync();
             return Ok(list);
@@ -36,6 +43,10 @@ public class PharmacyController : ControllerBase {
         /// 获取药房单列表
         /// </summary>
         [HttpGet]
+/// <summary>
+/// 执行GetList操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<PharmacyDto>>> GetList() {
             var list = await _pharmacyService.GetListAsync();
             return Ok(list);
@@ -45,6 +56,11 @@ public class PharmacyController : ControllerBase {
         /// 获取药房单详情
         /// </summary>
         [HttpGet("{id}")]
+/// <summary>
+/// 执行GetById操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<PharmacyDetailDto>> GetById(Guid id) {
             var detail = await _pharmacyService.GetByIdAsync(id);
             if (detail == null)
@@ -56,6 +72,11 @@ public class PharmacyController : ControllerBase {
         /// 新增药房单
         /// </summary>
         [HttpPost]
+/// <summary>
+/// 执行Add操作。
+/// </summary>
+/// <param name="pharmacyCreateDto">参数pharmacyCreateDto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Add([FromBody] PharmacyCreateDto pharmacyCreateDto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -71,6 +92,11 @@ public class PharmacyController : ControllerBase {
         /// 编辑药房单
         /// </summary>
         [HttpPut]
+/// <summary>
+/// 执行Update操作。
+/// </summary>
+/// <param name="pharmacyEditDto">参数pharmacyEditDto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Update([FromBody] PharmacyEditDto pharmacyEditDto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -86,6 +112,11 @@ public class PharmacyController : ControllerBase {
         /// 删除药房单
         /// </summary>
         [HttpDelete("{id}")]
+/// <summary>
+/// 执行Delete操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Delete(Guid id) {
             var result = await _pharmacyService.DeleteAsync(id);
             if (!result)
@@ -97,6 +128,11 @@ public class PharmacyController : ControllerBase {
         /// 标记处方为已抓药
         /// </summary>
         [HttpPost("{id}/prepared")]
+/// <summary>
+/// 执行MarkAsPrepared操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> MarkAsPrepared(Guid id) {
             var result = await _pharmacyService.MarkAsPreparedAsync(id);
             if (!result)

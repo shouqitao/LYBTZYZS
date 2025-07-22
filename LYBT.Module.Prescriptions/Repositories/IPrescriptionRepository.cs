@@ -1,6 +1,9 @@
 using LYBT.Models.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Repositories {
+/// <summary>
+/// 表示IPrescriptionRepository。
+/// </summary>
     public interface IPrescriptionRepository {
         Task<PrescriptionModel?> GetByIdAsync(Guid id);
         Task<List<PrescriptionModel>> GetListAsync();

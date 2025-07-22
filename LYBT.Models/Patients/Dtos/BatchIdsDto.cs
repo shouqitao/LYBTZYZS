@@ -10,6 +10,9 @@ namespace LYBT.Module.Patients.Dtos {
 
         [Required]
         [DisplayName("Ids")]
+/// <summary>
+/// Ids 属性。
+/// </summary>
         public List<Guid> Ids { get; set; } = new();
     }
 }

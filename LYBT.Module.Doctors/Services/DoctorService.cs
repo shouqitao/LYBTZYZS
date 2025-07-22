@@ -30,21 +30,41 @@ namespace LYBT.Module.Doctors.Services {
             _mapper = mapper;
         }
 
+/// <summary>
+/// 执行GetByIdAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<DoctorDetailDto?> GetByIdAsync(Guid id) {
             var model = await _doctorRepository.GetByIdAsync(id);
             return model == null ? null : _mapper.Map<DoctorDetailDto>(model);
         }
 
+/// <summary>
+/// 执行GetByUserIdAsync操作。
+/// </summary>
+/// <param name="userId">参数userId</param>
+/// <returns>返回值</returns>
         public async Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId) {
             var model = await _doctorRepository.GetByUserIdAsync(userId);
             return model == null ? null : _mapper.Map<DoctorDetailDto>(model);
         }
 
+/// <summary>
+/// 执行SearchAsync操作。
+/// </summary>
+/// <param name="keyword">参数keyword</param>
+/// <returns>返回值</returns>
         public async Task<List<DoctorDto>> SearchAsync(string keyword) {
             var list = await _doctorRepository.SearchAsync(keyword);
             return _mapper.Map<List<DoctorDto>>(list);
         }
 
+/// <summary>
+/// 执行GetPagedAsync操作。
+/// </summary>
+/// <param name="query">参数query</param>
+/// <returns>返回值</returns>
         public async Task<PagedResultDto<DoctorDto>> GetPagedAsync(DoctorQueryDto query) {
             var (models, total) = await _doctorRepository.GetPagedAsync(query);
             return new PagedResultDto<DoctorDto> {
@@ -53,6 +73,11 @@ namespace LYBT.Module.Doctors.Services {
             };
         }
 
+/// <summary>
+/// 执行AddAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<bool> AddAsync(DoctorDetailDto dto) {
 
             if (dto.UserId == Guid.Empty)
@@ -82,6 +107,11 @@ namespace LYBT.Module.Doctors.Services {
             }
         }
 
+/// <summary>
+/// 执行UpdateAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<bool> UpdateAsync(DoctorDetailDto dto) {
             var model = await _doctorRepository.GetByIdAsync(dto.Id);
             if (model == null)
@@ -101,18 +131,38 @@ namespace LYBT.Module.Doctors.Services {
             return await _doctorRepository.UpdateAsync(model);
         }
 
+/// <summary>
+/// 执行DisableAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> DisableAsync(Guid id) {
             return await _doctorRepository.DisableAsync(id);
         }
 
+/// <summary>
+/// 执行EnableAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> EnableAsync(Guid id) {
             return await _doctorRepository.EnableAsync(id);
         }
 
+/// <summary>
+/// 执行BatchDisableAsync操作。
+/// </summary>
+/// <param name="ids">参数ids</param>
+/// <returns>返回值</returns>
         public async Task<int> BatchDisableAsync(List<Guid> ids) {
             return await _doctorRepository.BatchDisableAsync(ids);
         }
 
+/// <summary>
+/// 执行BatchEnableAsync操作。
+/// </summary>
+/// <param name="ids">参数ids</param>
+/// <returns>返回值</returns>
         public async Task<int> BatchEnableAsync(List<Guid> ids) {
             return await _doctorRepository.BatchEnableAsync(ids);
         }

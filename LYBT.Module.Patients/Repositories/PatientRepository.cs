@@ -16,15 +16,32 @@ namespace LYBT.Module.Patients.Repositories {
             _dbContext = dbContext;
         }
 
+/// <summary>
+/// 执行AddAsync操作。
+/// </summary>
+/// <param name="patient">参数patient</param>
+/// <returns>返回值</returns>
         public async Task<bool> AddAsync(PatientModel patient) {
             await _dbContext.Patients.AddAsync(patient);
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行GetByIdAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<PatientModel?> GetByIdAsync(Guid id) {
             return await _dbContext.Patients.FindAsync(id);
         }
 
+/// <summary>
+/// 执行GetListAsync操作。
+/// </summary>
+/// <param name="null">参数null</param>
+/// <param name="1">参数1</param>
+/// <param name="20">参数20</param>
+/// <returns>返回值</returns>
         public async Task<List<PatientModel>> GetListAsync(string? keyword = null, int page = 1, int pageSize = 20) {
             var query = _dbContext.Patients.AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword)) {
@@ -40,11 +57,21 @@ namespace LYBT.Module.Patients.Repositories {
                 .ToListAsync();
         }
 
+/// <summary>
+/// 执行UpdateAsync操作。
+/// </summary>
+/// <param name="patient">参数patient</param>
+/// <returns>返回值</returns>
         public async Task<bool> UpdateAsync(PatientModel patient) {
             _dbContext.Patients.Update(patient);
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行DeleteAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> DeleteAsync(Guid id) {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
@@ -53,14 +80,29 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行GetByIDNumberAsync操作。
+/// </summary>
+/// <param name="idNumber">参数idNumber</param>
+/// <returns>返回值</returns>
         public async Task<PatientModel?> GetByIDNumberAsync(string idNumber) {
             return await _dbContext.Patients.FirstOrDefaultAsync(x => x.IDNumber == idNumber);
         }
 
+/// <summary>
+/// 执行GetByPhoneNumberAsync操作。
+/// </summary>
+/// <param name="phoneNumber">参数phoneNumber</param>
+/// <returns>返回值</returns>
         public async Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber) {
             return await _dbContext.Patients.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
         }
 
+/// <summary>
+/// 执行GetCountAsync操作。
+/// </summary>
+/// <param name="null">参数null</param>
+/// <returns>返回值</returns>
         public async Task<int> GetCountAsync(string? keyword = null) {
             var query = _dbContext.Patients.AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword)) {
@@ -72,6 +114,11 @@ namespace LYBT.Module.Patients.Repositories {
             return await query.CountAsync();
         }
 
+/// <summary>
+/// 执行EnableAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> EnableAsync(Guid id) {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
@@ -81,6 +128,11 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行DisableAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<bool> DisableAsync(Guid id) {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
@@ -90,6 +142,11 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行BatchDisableAsync操作。
+/// </summary>
+/// <param name="ids">参数ids</param>
+/// <returns>返回值</returns>
         public async Task<int> BatchDisableAsync(List<Guid> ids) {
             var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
             foreach (var p in list) {
@@ -99,6 +156,11 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.SaveChangesAsync();
         }
 
+/// <summary>
+/// 执行SearchAsync操作。
+/// </summary>
+/// <param name="keyword">参数keyword</param>
+/// <returns>返回值</returns>
         public async Task<List<PatientModel>> SearchAsync(string keyword) {
             var upper = keyword.ToUpperInvariant();
             return await _dbContext.Patients
@@ -109,6 +171,11 @@ namespace LYBT.Module.Patients.Repositories {
                 .ToListAsync();
         }
 
+/// <summary>
+/// 执行GetForDoctorAsync操作。
+/// </summary>
+/// <param name="doctorId">参数doctorId</param>
+/// <returns>返回值</returns>
         public async Task<List<PatientModel>> GetForDoctorAsync(Guid doctorId) {
             var query = _dbContext.Patients.Where(p => !p.IsSpecial);
             var specialIds = await _dbContext.SpecialPatientDoctors
@@ -119,6 +186,12 @@ namespace LYBT.Module.Patients.Repositories {
             return await query.ToListAsync();
         }
 
+/// <summary>
+/// 执行AssignDoctorAsync操作。
+/// </summary>
+/// <param name="patientId">参数patientId</param>
+/// <param name="doctorId">参数doctorId</param>
+/// <returns>返回值</returns>
         public async Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId) {
             var relation = new SpecialPatientDoctor {
                 Id = Guid.NewGuid(),

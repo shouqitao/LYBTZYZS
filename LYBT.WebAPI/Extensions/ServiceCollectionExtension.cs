@@ -52,6 +52,11 @@ namespace LYBT.WebAPI.Extensions;
 /// </summary>
 public static class ServiceCollectionExtension
 {
+/// <summary>
+/// 执行AddLybtModules操作。
+/// </summary>
+/// <param name="services">参数services</param>
+/// <returns>返回值</returns>
     public static IServiceCollection AddLybtModules(this IServiceCollection services)
     {
         // 用户管理

@@ -32,6 +32,13 @@ namespace LYBT.Module.Patients.Services {
             _recordService = recordService;
         }
 
+/// <summary>
+/// 执行AddAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<PatientModel>(dto);
             model.Id = Guid.NewGuid();
@@ -55,6 +62,13 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
+/// <summary>
+/// 执行UpdateAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             var model = await _patientRepository.GetByIdAsync(dto.Id);
             if (model == null)
@@ -83,6 +97,13 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
+/// <summary>
+/// 执行DeleteAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
             var patient = await _patientRepository.GetByIdAsync(id);
             var result = await _patientRepository.DeleteAsync(id);
@@ -104,16 +125,30 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
+/// <summary>
+/// 执行GetByIdAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<PatientDetailDto> GetByIdAsync(Guid id) {
             var model = await _patientRepository.GetByIdAsync(id);
             return model == null ? null : _mapper.Map<PatientDetailDto>(model);
         }
 
+/// <summary>
+/// 执行GetAllAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<List<PatientDetailDto>> GetAllAsync() {
             var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
+/// <summary>
+/// 执行GetPagedAsync操作。
+/// </summary>
+/// <param name="query">参数query</param>
+/// <returns>返回值</returns>
         public async Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query) {
             var list = await _patientRepository.GetListAsync(query.Keyword, query.Page, query.PageSize);
             var total = await _patientRepository.GetCountAsync(query.Keyword);
@@ -123,6 +158,13 @@ namespace LYBT.Module.Patients.Services {
             };
         }
 
+/// <summary>
+/// 执行BatchDeleteAsync操作。
+/// </summary>
+/// <param name="ids">参数ids</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<int> BatchDeleteAsync(List<string> ids, Guid operatorId, string operatorName) {
             int count = 0;
             foreach (var id in ids) {
@@ -132,6 +174,13 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
+/// <summary>
+/// 执行EnableAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName) {
             var result = await _patientRepository.EnableAsync(id);
             if (result) {
@@ -149,6 +198,13 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
+/// <summary>
+/// 执行DisableAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName) {
             var result = await _patientRepository.DisableAsync(id);
             if (result) {
@@ -166,6 +222,13 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
+/// <summary>
+/// 执行BatchDisableAsync操作。
+/// </summary>
+/// <param name="ids">参数ids</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
             var count = await _patientRepository.BatchDisableAsync(ids);
             if (count > 0) {
@@ -183,16 +246,34 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
+/// <summary>
+/// 执行SearchAsync操作。
+/// </summary>
+/// <param name="keyword">参数keyword</param>
+/// <returns>返回值</returns>
         public async Task<List<PatientDetailDto>> SearchAsync(string keyword) {
             var list = await _patientRepository.SearchAsync(keyword);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
+/// <summary>
+/// 执行GetForDoctorAsync操作。
+/// </summary>
+/// <param name="doctorId">参数doctorId</param>
+/// <returns>返回值</returns>
         public async Task<List<PatientDetailDto>> GetForDoctorAsync(Guid doctorId) {
             var list = await _patientRepository.GetForDoctorAsync(doctorId);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
+/// <summary>
+/// 执行AssignDoctorAsync操作。
+/// </summary>
+/// <param name="patientId">参数patientId</param>
+/// <param name="doctorId">参数doctorId</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
             var result = await _patientRepository.AssignDoctorAsync(patientId, doctorId);
             if (result) {
@@ -210,6 +291,13 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
+/// <summary>
+/// 执行ImportAsync操作。
+/// </summary>
+/// <param name="dtos">参数dtos</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<int> ImportAsync(List<PatientDetailDto> dtos, Guid operatorId, string operatorName) {
             int count = 0;
             foreach (var dto in dtos) {
@@ -219,11 +307,20 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
+/// <summary>
+/// 执行ExportAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<List<PatientDetailDto>> ExportAsync() {
             var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
+/// <summary>
+/// 执行GetHistoryRecordsAsync操作。
+/// </summary>
+/// <param name="patientId">参数patientId</param>
+/// <returns>返回值</returns>
         public async Task<List<RecordDto>> GetHistoryRecordsAsync(Guid patientId) {
             var records = await _recordService.GetByPatientIdAsync(patientId);
             return records;

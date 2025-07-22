@@ -14,6 +14,11 @@ namespace LYBT.Infrastructure.Exceptions {
             _next = next;
         }
 
+/// <summary>
+/// 执行InvokeAsync操作。
+/// </summary>
+/// <param name="context">参数context</param>
+/// <returns>返回值</returns>
         public async Task InvokeAsync(HttpContext context) {
             try {
                 await _next(context);
@@ -24,6 +29,13 @@ namespace LYBT.Infrastructure.Exceptions {
             }
         }
 
+/// <summary>
+/// 执行HandleExceptionAsync操作。
+/// </summary>
+/// <param name="context">参数context</param>
+/// <param name="message">参数message</param>
+/// <param name="statusCode">参数statusCode</param>
+/// <returns>返回值</returns>
         private static Task HandleExceptionAsync(HttpContext context, string message, int statusCode) {
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;

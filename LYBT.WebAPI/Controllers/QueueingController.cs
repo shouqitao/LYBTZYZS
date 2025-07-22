@@ -13,6 +13,9 @@ namespace LYBT.Module.Queueing.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
+/// <summary>
+/// 表示QueueingController。
+/// </summary>
 public class QueueingController : ControllerBase {
         private readonly IQueueingService _queueingService;
 
@@ -27,6 +30,10 @@ public class QueueingController : ControllerBase {
         /// 获取排队列表
         /// </summary>
         [HttpGet]
+/// <summary>
+/// 执行GetList操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<ActionResult<List<QueueingDto>>> GetList() {
             var list = await _queueingService.GetListAsync();
             return Ok(list);
@@ -36,6 +43,11 @@ public class QueueingController : ControllerBase {
         /// 获取排队详情
         /// </summary>
         [HttpGet("{id}")]
+/// <summary>
+/// 执行GetById操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult<QueueingDetailDto>> GetById(Guid id) {
             var detail = await _queueingService.GetByIdAsync(id);
             if (detail == null)
@@ -47,6 +59,11 @@ public class QueueingController : ControllerBase {
         /// 新增排队
         /// </summary>
         [HttpPost]
+/// <summary>
+/// 执行Add操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Add([FromBody] QueueingCreateDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -60,6 +77,11 @@ public class QueueingController : ControllerBase {
         /// 编辑排队
         /// </summary>
         [HttpPut]
+/// <summary>
+/// 执行Update操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Update([FromBody] QueueingEditDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -73,6 +95,11 @@ public class QueueingController : ControllerBase {
         /// 删除排队
         /// </summary>
         [HttpDelete("{id}")]
+/// <summary>
+/// 执行Delete操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Delete(Guid id) {
             var result = await _queueingService.DeleteAsync(id);
             if (!result)
@@ -84,6 +111,11 @@ public class QueueingController : ControllerBase {
         /// 取消排队
         /// </summary>
         [HttpPost("cancel/{id}")]
+/// <summary>
+/// 执行Cancel操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Cancel(Guid id) {
             var result = await _queueingService.CancelAsync(id);
             if (!result)
@@ -92,6 +124,11 @@ public class QueueingController : ControllerBase {
         }
 
         [HttpPost("complete/{id}")]
+/// <summary>
+/// 执行Complete操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Complete(Guid id) {
             var result = await _queueingService.CompleteAsync(id);
             if (!result)
@@ -100,6 +137,11 @@ public class QueueingController : ControllerBase {
         }
 
         [HttpPost("hold/{id}")]
+/// <summary>
+/// 执行Hold操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<ActionResult> Hold(Guid id) {
             var result = await _queueingService.HoldAsync(id);
             if (!result)

@@ -4,8 +4,15 @@ using System.Reflection;
 
 namespace LYBT.Module.Settings.Services {
 
+/// <summary>
+/// 表示EnumMappingsService。
+/// </summary>
     public class EnumMappingsService : IEnumMappingsService {
 
+/// <summary>
+/// 执行GetAllAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public Task<Dictionary<string, Dictionary<int, string>>> GetAllAsync() {
             var result = new Dictionary<string, Dictionary<int, string>>();
             var enumTypes = Assembly.Load("LYBT.Common").GetTypes()

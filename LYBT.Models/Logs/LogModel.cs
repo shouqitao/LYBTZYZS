@@ -12,78 +12,117 @@ namespace LYBT.Models.Logs {
         /// 日志ID（主键，唯一标识一条日志）
         /// </summary>
         [DisplayName("日志ID（主键，唯一标识一条日志）")]
+/// <summary>
+/// Id 属性。
+/// </summary>
         public Guid Id { get; set; }
 
         /// <summary>
         /// 日志类型（如操作日志、系统日志、登录日志等）
         /// </summary>
         [DisplayName("日志类型（如操作日志、系统日志、登录日志等）")]
+/// <summary>
+/// LogType 属性。
+/// </summary>
         public LogType LogType { get; set; }
 
         /// <summary>
         /// 操作对象类型（如用户、患者、病历、药方等）
         /// </summary>
         [DisplayName("操作对象类型（如用户、患者、病历、药方等）")]
+/// <summary>
+/// ObjectType 属性。
+/// </summary>
         public ObjectType ObjectType { get; set; }
 
         /// <summary>
         /// 操作对象ID（如用户ID、病历ID等，便于跨模块检索）
         /// </summary>
         [DisplayName("操作对象ID（如用户ID、病历ID等，便于跨模块检索）")]
+/// <summary>
+/// ObjectId 属性。
+/// </summary>
         public Guid ObjectId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// 操作类型（如新增、编辑、禁用、登录等，建议使用枚举）
         /// </summary>
         [DisplayName("操作类型（如新增、编辑、禁用、登录等，建议使用枚举）")]
+/// <summary>
+/// ActionType 属性。
+/// </summary>
         public ActionType ActionType { get; set; }
 
         /// <summary>
         /// 操作者ID（当前执行操作的用户ID）
         /// </summary>
         [DisplayName("操作者ID（当前执行操作的用户ID）")]
+/// <summary>
+/// OperatorId 属性。
+/// </summary>
         public Guid OperatorId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// 操作者姓名（便于日志列表直接展示）
         /// </summary>
         [DisplayName("操作者姓名（便于日志列表直接展示）")]
+/// <summary>
+/// OperatorName 属性。
+/// </summary>
         public string? OperatorName { get; set; }
 
         /// <summary>
         /// 日志生成时间（操作发生的时间）
         /// </summary>
         [DisplayName("日志生成时间（操作发生的时间）")]
+/// <summary>
+/// LogTime 属性。
+/// </summary>
         public DateTime LogTime { get; set; } = DateTime.Now;
 
         /// <summary>
         /// 操作内容简要描述（如“编辑用户资料”、“禁用病历”等）
         /// </summary>
         [DisplayName("操作内容简要描述（如“编辑用户资料”、“禁用病历”等）")]
+/// <summary>
+/// Content 属性。
+/// </summary>
         public string? Content { get; set; }
 
         /// <summary>
         /// 操作前内容快照（JSON序列化格式，便于比对变更前后数据）
         /// </summary>
         [DisplayName("操作前内容快照（JSON序列化格式，便于比对变更前后数据）")]
+/// <summary>
+/// OldValue 属性。
+/// </summary>
         public string? OldValue { get; set; }
 
         /// <summary>
         /// 操作后内容快照（JSON序列化格式，便于比对变更前后数据）
         /// </summary>
         [DisplayName("操作后内容快照（JSON序列化格式，便于比对变更前后数据）")]
+/// <summary>
+/// NewValue 属性。
+/// </summary>
         public string? NewValue { get; set; }
 
         /// <summary>
         /// 操作来源IP地址（用于安全审计和溯源）
         /// </summary>
         [DisplayName("操作来源IP地址（用于安全审计和溯源）")]
+/// <summary>
+/// IP 属性。
+/// </summary>
         public string? IP { get; set; }
 
         /// <summary>
         /// 备注（可选，补充说明内容）
         /// </summary>
         [DisplayName("备注（可选，补充说明内容）")]
+/// <summary>
+/// Remark 属性。
+/// </summary>
         public string? Remark { get; set; }
     }
 }

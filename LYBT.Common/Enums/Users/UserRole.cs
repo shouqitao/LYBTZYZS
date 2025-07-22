@@ -6,6 +6,9 @@ namespace LYBT.Common.Enums.Users {
     /// 系统用户角色枚举
     /// </summary>
     [Description("用户角色")]
+/// <summary>
+/// 表示UserRole。
+/// </summary>
     public enum UserRole {
 
         /// <summary>挂号人员</summary>

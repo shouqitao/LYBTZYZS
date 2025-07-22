@@ -30,6 +30,11 @@ namespace LYBT.Module.Doctors.Repositories {
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
 
+/// <summary>
+/// 执行GetByUserIdAsync操作。
+/// </summary>
+/// <param name="userId">参数userId</param>
+/// <returns>返回值</returns>
         public async Task<DoctorModel?> GetByUserIdAsync(Guid userId) {
             return await _appDbContext.Doctors
                 .Include(d => d.User)
@@ -91,6 +96,11 @@ namespace LYBT.Module.Doctors.Repositories {
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行BatchDisableAsync操作。
+/// </summary>
+/// <param name="ids">参数ids</param>
+/// <returns>返回值</returns>
         public async Task<int> BatchDisableAsync(List<Guid> ids) {
             var list = await _appDbContext.Doctors.Where(d => ids.Contains(d.Id)).ToListAsync();
             foreach (var d in list)
@@ -99,6 +109,11 @@ namespace LYBT.Module.Doctors.Repositories {
             return await _appDbContext.SaveChangesAsync();
         }
 
+/// <summary>
+/// 执行BatchEnableAsync操作。
+/// </summary>
+/// <param name="ids">参数ids</param>
+/// <returns>返回值</returns>
         public async Task<int> BatchEnableAsync(List<Guid> ids) {
             var list = await _appDbContext.Doctors.Where(d => ids.Contains(d.Id)).ToListAsync();
             foreach (var d in list)
@@ -107,6 +122,11 @@ namespace LYBT.Module.Doctors.Repositories {
             return await _appDbContext.SaveChangesAsync();
         }
 
+/// <summary>
+/// 执行SearchAsync操作。
+/// </summary>
+/// <param name="keyword">参数keyword</param>
+/// <returns>返回值</returns>
         public async Task<List<DoctorModel>> SearchAsync(string keyword) {
             var query = _appDbContext.Doctors
                 .Include(d => d.User)
@@ -126,6 +146,11 @@ namespace LYBT.Module.Doctors.Repositories {
                 .ToListAsync();
         }
 
+/// <summary>
+/// 执行GetPagedAsync操作。
+/// </summary>
+/// <param name="query">参数query</param>
+/// <returns>返回值</returns>
         public async Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query) {
             var dbSet = _appDbContext.Doctors
                 .Include(d => d.User)
@@ -153,6 +178,12 @@ namespace LYBT.Module.Doctors.Repositories {
             return (list, total);
         }
 
+/// <summary>
+/// 执行UpdatePasswordAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <param name="passwordHash">参数passwordHash</param>
+/// <returns>返回值</returns>
         public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash) {
             var model = await _appDbContext.Doctors.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
             if (model == null)

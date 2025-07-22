@@ -58,6 +58,11 @@ namespace LYBT.Module.TreatmentRoom.Repositories {
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
+/// <summary>
+/// 执行GetByStatusAsync操作。
+/// </summary>
+/// <param name="status">参数status</param>
+/// <returns>返回值</returns>
         public async Task<List<TreatmentRoomModel>> GetByStatusAsync(string status) {
             var list = _appDbContext.TreatmentRooms
                 .Where(t => t.Status == status)

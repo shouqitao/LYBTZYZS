@@ -23,11 +23,20 @@ namespace LYBT.Module.Prescriptions.Services {
             _mapper = mapper;
         }
 
+/// <summary>
+/// 执行GetAllAsync操作。
+/// </summary>
+/// <returns>返回值</returns>
         public async Task<List<PrescriptionDto>> GetAllAsync() {
             var list = await _repository.GetListAsync();
             return _mapper.Map<List<PrescriptionDto>>(list);
         }
 
+/// <summary>
+/// 执行GetByIdAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <returns>返回值</returns>
         public async Task<PrescriptionDetailDto?> GetByIdAsync(string id) {
             if (!Guid.TryParse(id, out var gid))
                 return null;
@@ -35,6 +44,13 @@ namespace LYBT.Module.Prescriptions.Services {
             return model == null ? null : _mapper.Map<PrescriptionDetailDto>(model);
         }
 
+/// <summary>
+/// 执行CreateAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> CreateAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<PrescriptionModel>(dto);
             model.Id = Guid.NewGuid();
@@ -53,6 +69,13 @@ namespace LYBT.Module.Prescriptions.Services {
             return success;
         }
 
+/// <summary>
+/// 执行UpdateAsync操作。
+/// </summary>
+/// <param name="dto">参数dto</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> UpdateAsync(PrescriptionEditDto dto, Guid operatorId, string operatorName) {
             var old = await _repository.GetByIdAsync(dto.Id);
             if (old == null) return false;
@@ -73,6 +96,13 @@ namespace LYBT.Module.Prescriptions.Services {
             return success;
         }
 
+/// <summary>
+/// 执行DeleteAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> DeleteAsync(string id, Guid operatorId, string operatorName) {
             if (!Guid.TryParse(id, out var gid))
                 return false;
@@ -94,6 +124,13 @@ namespace LYBT.Module.Prescriptions.Services {
             return success;
         }
 
+/// <summary>
+/// 执行CancelAsync操作。
+/// </summary>
+/// <param name="id">参数id</param>
+/// <param name="operatorId">参数operatorId</param>
+/// <param name="operatorName">参数operatorName</param>
+/// <returns>返回值</returns>
         public async Task<bool> CancelAsync(string id, Guid operatorId, string operatorName) {
             if (!Guid.TryParse(id, out var gid))
                 return false;

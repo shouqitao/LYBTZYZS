@@ -3,6 +3,9 @@ using LYBT.Models.Prescriptions;
 using LYBT.Module.Prescriptions.Dtos;
 
 namespace LYBT.Module.Prescriptions.Mapping {
+/// <summary>
+/// 表示PrescriptionMappingProfile。
+/// </summary>
     public class PrescriptionMappingProfile : Profile {
         public PrescriptionMappingProfile() {
             CreateMap<PrescriptionModel, PrescriptionDto>();

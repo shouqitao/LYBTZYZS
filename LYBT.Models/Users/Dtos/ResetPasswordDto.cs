@@ -14,6 +14,9 @@ namespace LYBT.Module.Users.Dtos {
         [Required(ErrorMessage = "新密码不能为空")]
         [StringLength(32, MinimumLength = 6)]
         [DisplayName("新密码（必填）")]
+/// <summary>
+/// NewPassword 属性。
+/// </summary>
         public string NewPassword { get; set; } = string.Empty;
     }
 }

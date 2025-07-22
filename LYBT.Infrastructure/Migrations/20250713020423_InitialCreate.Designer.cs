@@ -13,6 +13,9 @@ namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20250713020423_InitialCreate")]
+/// <summary>
+/// 表示InitialCreate。
+/// </summary>
     partial class InitialCreate
     {
         /// <inheritdoc />
