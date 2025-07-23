@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Auth;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
@@ -13,9 +14,18 @@ namespace LYBT.Module.Auth {
         /// <summary>
         /// 注册登录验证相关服务
         /// </summary>
-        public static void Register(IServiceCollection services) {
+        public static IServiceCollection AddAuthModule(this IServiceCollection services) {
+            // 注册仓储
             services.AddScoped<IAuthRepository, AuthRepository>();
+
+            // 注册服务
+            services.AddScoped<SysAdminHandler>();
             services.AddScoped<IAuthService, AuthService>();
+
+            // 注册配置选项
+            services.AddOptions<AuthOptions>();
+
+            return services;
         }
     }
 }

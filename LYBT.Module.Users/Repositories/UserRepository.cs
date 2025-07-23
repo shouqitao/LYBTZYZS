@@ -4,7 +4,6 @@ using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace LYBT.Module.Users.Repositories {
 
     /// <summary>
@@ -40,6 +39,7 @@ namespace LYBT.Module.Users.Repositories {
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
                 return false;
+
             user.IsActive = false;
             _dbContext.Users.Update(user);
             return await _dbContext.SaveChangesAsync() > 0;
@@ -52,6 +52,7 @@ namespace LYBT.Module.Users.Repositories {
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
                 return false;
+
             user.IsActive = true;
             _dbContext.Users.Update(user);
             return await _dbContext.SaveChangesAsync() > 0;
@@ -63,10 +64,10 @@ namespace LYBT.Module.Users.Repositories {
         public async Task<(IList<UserModel> users, int total)> GetPagedAsync(UserQueryDto query) {
             var dbSet = _dbContext.Users.AsQueryable();
 
-            // Hide built-in sysadmin from normal listing
+            // 隐藏内置的sysadmin用户
             dbSet = dbSet.Where(u => u.UserName != "sysadmin");
 
-            // 关键词（用户名、真实姓名）模糊查找
+            // 关键词（用户名、真实姓名、拼音码）模糊查找
             if (!string.IsNullOrWhiteSpace(query.Keyword)) {
                 var keyword = query.Keyword.ToUpperInvariant();
                 dbSet = dbSet.Where(u =>
@@ -85,7 +86,10 @@ namespace LYBT.Module.Users.Repositories {
                 dbSet = dbSet.Where(u => u.IsActive == query.IsActive.Value);
             }
 
+            // 获取总数
             int total = await dbSet.CountAsync();
+
+            // 分页查询
             int skip = (query.Page - 1) * query.PageSize;
             var users = await dbSet
                 .OrderByDescending(u => u.CreatedTime)
@@ -112,6 +116,15 @@ namespace LYBT.Module.Users.Repositories {
         }
 
         /// <summary>
+        /// 根据ID列表批量获取用户
+        /// </summary>
+        public async Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids) {
+            return await _dbContext.Users
+                .Where(u => ids.Contains(u.Id))
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 校验用户名是否存在
         /// </summary>
         public async Task<bool> ExistsByUsernameAsync(string userName) {
@@ -125,6 +138,7 @@ namespace LYBT.Module.Users.Repositories {
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
                 return false;
+
             user.PasswordHash = passwordHash;
             _dbContext.Users.Update(user);
             return await _dbContext.SaveChangesAsync() > 0;
@@ -134,12 +148,11 @@ namespace LYBT.Module.Users.Repositories {
         /// 批量更新启用状态
         /// </summary>
         public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive) {
-            var users = await _dbContext.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
-            foreach (var u in users) {
-                u.IsActive = isActive;
-            }
-            _dbContext.Users.UpdateRange(users);
-            return await _dbContext.SaveChangesAsync();
+            var affectedRows = await _dbContext.Users
+                .Where(u => ids.Contains(u.Id))
+                .ExecuteUpdateAsync(u => u.SetProperty(p => p.IsActive, isActive));
+
+            return affectedRows;
         }
     }
 }

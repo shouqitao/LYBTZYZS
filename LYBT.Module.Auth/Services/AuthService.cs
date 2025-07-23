@@ -1,15 +1,14 @@
 using AutoMapper;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Extensions.Options;
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Helpers;
+using LYBT.Infrastructure.Auth;
 using LYBT.Module.Auth.Dtos;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
-using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Auth.Services {
 
@@ -20,203 +19,302 @@ namespace LYBT.Module.Auth.Services {
         private readonly IAuthRepository _authRepository;
         private readonly IMapper _mapper;
         private readonly ILogService _logService;
-        private const int MaxFailedLoginCount = 5; // 超过5次锁定
-        private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
+        private readonly SysAdminHandler _sysAdminHandler;
+        private readonly AuthOptions _authOptions;
 
-        public AuthService(IAuthRepository authRepository, IMapper mapper, ILogService logService) {
+        public AuthService(
+            IAuthRepository authRepository,
+            IMapper mapper,
+            ILogService logService,
+            SysAdminHandler sysAdminHandler,
+            IOptions<AuthOptions> authOptions) {
             _authRepository = authRepository;
             _mapper = mapper;
             _logService = logService;
+            _sysAdminHandler = sysAdminHandler;
+            _authOptions = authOptions.Value;
         }
 
         /// <summary>
         /// 用户登录并校验凭据，成功后返回用户信息并记录登录日志
         /// </summary>
-        /// <param name="dto">登录请求参数，包含用户名、密码、客户端信息等</param>
-        /// <returns>登录成功的用户信息，失败返回 null</returns>
         public async Task<UserDto?> LoginAsync(LoginRequestDto dto) {
             try {
-                // 多方式认证扩展点
-                if (!string.IsNullOrEmpty(dto.LoginType) && dto.LoginType != "Password") {
-                    // 这里只做分支预留，后续可扩展微信、钉钉、OAuth等
-                    await _logService.AddLogAsync(new LogDto {
-                        LogType = LogType.Login,
-                        ObjectType = ObjectType.User,
-                        ObjectId = Guid.Empty,
-                        ActionType = ActionType.Login,
-                        OperatorId = Guid.Empty,
-                        OperatorName = dto.Username,
-                        Content = $"Login failed: login type {dto.LoginType} not supported | IP: {dto.ClientIp} | UA: {dto.UserAgent}",
-                        LogTime = DateTime.Now
-                    });
+                // 1. 验证登录类型
+                var loginTypeValidation = ValidateLoginType(dto);
+                if (!loginTypeValidation.IsValid) {
+                    await LogFailedLogin(Guid.Empty, dto.Username, loginTypeValidation.ErrorMessage, dto);
                     return null;
                 }
 
-                var user = await _authRepository.GetByUsernameAsync(dto.Username);
-                bool userExistsInDb = user != null;
-
-                // If sysadmin user record does not exist in Users table,
-                // create a temporary in-memory user for authentication.
-                if (user == null && dto.Username == "sysadmin") {
-                    userExistsInDb = false;
-                    user = new UserModel {
-                        Id = Guid.NewGuid(),
-                        UserName = "sysadmin",
-                        RealName = "系统管理员",
-                        Roles = new List<UserRole> { UserRole.Admin },
-                        IsActive = true,
-                        CreatedTime = DateTime.Now,
-                        PasswordHash = string.Empty
-                    };
-                }
-
-                // 强制保证 sysadmin 角色为 Admin
-                if (user != null && user.UserName == "sysadmin") {
-                    user.Roles = new List<UserRole> { UserRole.Admin };
-                }
-
-                // 账号不存在或未启用
-                if (user == null || !user.IsActive) {
-                    await _logService.AddLogAsync(new LogDto {
-                        LogType = LogType.Login,
-                        ObjectType = ObjectType.User,
-                        ObjectId = user?.Id ?? Guid.Empty,
-                        ActionType = ActionType.Login,
-                        OperatorId = user?.Id ?? Guid.Empty,
-                        OperatorName = user?.RealName ?? dto.Username,
-                        Content = $"Login failed: user not found or inactive | IP: {dto.ClientIp} | UA: {dto.UserAgent}",
-                        LogTime = DateTime.Now
-                    });
+                // 2. 获取用户信息
+                var user = await GetUserForAuthentication(dto.Username);
+                if (user == null) {
+                    await LogFailedLogin(Guid.Empty, dto.Username, "用户不存在或未启用", dto);
                     return null;
                 }
 
-                // 检查账号是否被锁定
-                if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.Now) {
-                    await _logService.AddLogAsync(new LogDto {
-                        LogType = LogType.Login,
-                        ObjectType = ObjectType.User,
-                        ObjectId = user.Id,
-                        ActionType = ActionType.Login,
-                        OperatorId = user.Id,
-                        OperatorName = user.RealName,
-                        Content = $"Login failed: account locked until {user.LockoutEnd.Value:yyyy-MM-dd HH:mm:ss} | IP: {dto.ClientIp} | UA: {dto.UserAgent}",
-                        LogTime = DateTime.Now
-                    });
+                // 3. 检查账户锁定状态
+                var lockoutCheck = CheckAccountLockout(user);
+                if (lockoutCheck.IsLocked) {
+                    await LogFailedLogin(user.Id, user.RealName, lockoutCheck.ErrorMessage, dto);
                     return null;
                 }
 
-                var storedHash = user.UserName == "sysadmin"
-                    ? await _authRepository.GetAdminPasswordHashAsync(user.UserName) ?? string.Empty
-                    : user.PasswordHash;
-
-                if (!PasswordHelper.Verify(storedHash, dto.Password)) {
-                    // 登录失败计数+1
-                    user.FailedLoginCount++;
-                    if (user.FailedLoginCount >= MaxFailedLoginCount) {
-                        user.LockoutEnd = DateTime.Now.Add(LockoutDuration);
-                    }
-                    await _authRepository.UpdateUserLoginProtectionAsync(user); // 需要实现此方法
-                    await _logService.AddLogAsync(new LogDto {
-                        LogType = LogType.Login,
-                        ObjectType = ObjectType.User,
-                        ObjectId = user.Id,
-                        ActionType = ActionType.Login,
-                        OperatorId = user.Id,
-                        OperatorName = user.RealName,
-                        Content = $"Login failed: wrong password, failed count {user.FailedLoginCount} | IP: {dto.ClientIp} | UA: {dto.UserAgent}",
-                        LogTime = DateTime.Now
-                    });
+                // 4. 验证密码
+                var passwordValidation = await ValidatePasswordAsync(user, dto.Password);
+                if (!passwordValidation.IsValid) {
+                    await HandleFailedLoginAsync(user, dto, passwordValidation.ErrorMessage);
                     return null;
                 }
 
-                // 登录成功，重置失败次数和锁定状态
-                user.FailedLoginCount = 0;
-                user.LockoutEnd = null;
-                user.LastLoginTime = DateTime.Now;
-                if (userExistsInDb) {
-                    await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
-                    await _authRepository.UpdateUserLoginProtectionAsync(user); // 需要实现此方法
-                }
+                // 5. 处理登录成功
+                return await HandleSuccessfulLoginAsync(user, dto);
 
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Login,
-                    ObjectType = ObjectType.User,
-                    ObjectId = user.Id,
-                    ActionType = ActionType.Login,
-                    OperatorId = user.Id,
-                    OperatorName = user.RealName,
-                    Content = $"Login success | IP: {dto.ClientIp} | UA: {dto.UserAgent}",
-                    LogTime = user.LastLoginTime.Value
-                });
-
-                return _mapper.Map<UserDto>(user);
             } catch (Exception ex) {
-                // 记录详细异常日志
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Login,
-                    ObjectType = ObjectType.User,
-                    ObjectId = Guid.Empty,
-                    ActionType = ActionType.Login,
-                    OperatorId = Guid.Empty,
-                    OperatorName = dto.Username,
-                    Content = $"Login exception: {ex.Message} {ex.StackTrace}",
-                    LogTime = DateTime.Now
-                });
-                throw; // 保持原有500响应
+                await LogLoginException(dto.Username, ex, dto);
+                throw;
             }
-
-
         }
 
         /// <summary>
         /// 用户登出并写入日志
         /// </summary>
-        /// <param name="dto">登出请求参数，包含用户名等信息</param>
-        /// <returns>登出是否成功</returns>
         public async Task<bool> LogoutAsync(LogoutRequestDto dto) {
             var user = await _authRepository.GetByUsernameAsync(dto.Username);
-            string operatorName = user?.RealName;
-            if (string.IsNullOrEmpty(operatorName) && dto.Username == "sysadmin")
-                operatorName = "系统管理员";
-            if (string.IsNullOrEmpty(operatorName))
-                operatorName = dto.Username;
-            await _logService.AddLogAsync(new LogDto {
-                LogType = LogType.Login,
-                ObjectType = ObjectType.User,
-                ObjectId = user?.Id ?? Guid.Empty,
-                ActionType = ActionType.Logout,
-                OperatorId = user?.Id ?? Guid.Empty,
-                OperatorName = operatorName,
-                Content = "Logout",
-                LogTime = DateTime.Now
-            });
+            var operatorName = GetOperatorName(user, dto.Username);
+
+            await LogUserAction(
+                user?.Id ?? Guid.Empty,
+                operatorName,
+                ActionType.Logout,
+                "用户登出"
+            );
+
             return true;
         }
 
         /// <summary>
         /// 修改系统管理员密码，先校验旧密码
         /// </summary>
-        /// <param name="dto">修改密码请求，包含旧密码和新密码</param>
-        /// <returns>修改是否成功</returns>
         public async Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto) {
-            var hash = await _authRepository.GetAdminPasswordHashAsync("sysadmin");
-            if (string.IsNullOrEmpty(hash))
+            var currentHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
+            if (string.IsNullOrEmpty(currentHash)) {
                 return false;
-            if (!PasswordHelper.Verify(hash, dto.OldPassword))
+            }
+
+            if (!PasswordHelper.Verify(currentHash, dto.OldPassword)) {
                 return false;
+            }
+
             var newHash = PasswordHelper.Hash(dto.NewPassword);
             await _authRepository.UpdateAdminPasswordHashAsync("sysadmin", newHash);
-            await _logService.AddLogAsync(new LogDto {
-                LogType = LogType.Operation,
-                ObjectType = ObjectType.User,
-                ObjectId = Guid.Empty,
-                ActionType = ActionType.Edit,
-                OperatorId = Guid.Empty,
-                OperatorName = "sysadmin",
-                Content = "Change sysadmin password",
-                LogTime = DateTime.Now
-            });
+
+            await LogUserAction(
+                Guid.Empty,
+                "sysadmin",
+                ActionType.Edit,
+                "修改系统管理员密码"
+            );
+
             return true;
         }
+
+        #region 私有辅助方法
+
+        /// <summary>
+        /// 验证登录类型
+        /// </summary>
+        private (bool IsValid, string ErrorMessage) ValidateLoginType(LoginRequestDto dto) {
+            if (string.IsNullOrEmpty(dto.LoginType)) {
+                dto.LoginType = "Password";
+            }
+
+            if (!_authOptions.SupportedLoginTypes.Contains(dto.LoginType)) {
+                return (false, $"不支持的登录类型: {dto.LoginType}");
+            }
+
+            return (true, string.Empty);
+        }
+
+        /// <summary>
+        /// 获取用于认证的用户信息
+        /// </summary>
+        private async Task<UserModel?> GetUserForAuthentication(string username) {
+            // 处理系统管理员
+            if (_sysAdminHandler.IsSysAdmin(username)) {
+                return await _sysAdminHandler.GetSysAdminUserAsync(username);
+            }
+
+            // 获取普通用户
+            var user = await _authRepository.GetByUsernameAsync(username);
+            if (user == null || !user.IsActive) {
+                return null;
+            }
+
+            return user;
+        }
+
+        /// <summary>
+        /// 检查账户锁定状态
+        /// </summary>
+        private (bool IsLocked, string ErrorMessage) CheckAccountLockout(UserModel user) {
+            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.Now) {
+                var lockoutEndTime = user.LockoutEnd.Value.ToString("yyyy-MM-dd HH:mm:ss");
+                return (true, $"账户已锁定至 {lockoutEndTime}");
+            }
+
+            return (false, string.Empty);
+        }
+
+        /// <summary>
+        /// 验证密码
+        /// </summary>
+        private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(UserModel user, string password) {
+            string storedHash;
+
+            if (_sysAdminHandler.IsSysAdmin(user.UserName)) {
+                storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync() ?? string.Empty;
+            } else {
+                storedHash = user.PasswordHash;
+            }
+
+            if (string.IsNullOrEmpty(storedHash)) {
+                return (false, "用户密码未设置");
+            }
+
+            if (!PasswordHelper.Verify(storedHash, password)) {
+                return (false, "密码错误");
+            }
+
+            return (true, string.Empty);
+        }
+
+        /// <summary>
+        /// 处理登录失败
+        /// </summary>
+        private async Task HandleFailedLoginAsync(UserModel user, LoginRequestDto dto, string reason) {
+            // 增加失败次数
+            user.FailedLoginCount++;
+
+            // 检查是否需要锁定账户
+            if (user.FailedLoginCount >= _authOptions.MaxFailedLoginAttempts) {
+                user.LockoutEnd = DateTime.Now.Add(_authOptions.AccountLockoutDuration);
+            }
+
+            // 更新用户锁定信息（仅对非sysadmin用户）
+            if (!_sysAdminHandler.IsSysAdmin(user.UserName)) {
+                await _authRepository.UpdateUserLoginProtectionAsync(user);
+            }
+
+            var message = $"{reason}，失败次数: {user.FailedLoginCount}";
+            if (user.LockoutEnd.HasValue) {
+                message += $"，账户已锁定至: {user.LockoutEnd.Value:yyyy-MM-dd HH:mm:ss}";
+            }
+
+            await LogFailedLogin(user.Id, user.RealName, message, dto);
+        }
+
+        /// <summary>
+        /// 处理登录成功
+        /// </summary>
+        private async Task<UserDto> HandleSuccessfulLoginAsync(UserModel user, LoginRequestDto dto) {
+            // 重置失败计数和锁定状态
+            user.FailedLoginCount = 0;
+            user.LockoutEnd = null;
+            user.LastLoginTime = DateTime.Now;
+
+            // 更新数据库（仅对非sysadmin用户）
+            if (!_sysAdminHandler.IsSysAdmin(user.UserName)) {
+                await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
+                await _authRepository.UpdateUserLoginProtectionAsync(user);
+            }
+
+            // 记录成功日志
+            await LogSuccessfulLogin(user, dto);
+
+            return _mapper.Map<UserDto>(user);
+        }
+
+        /// <summary>
+        /// 记录登录失败日志
+        /// </summary>
+        private async Task LogFailedLogin(Guid userId, string operatorName, string reason, LoginRequestDto dto) {
+            if (!_authOptions.EnableDetailedLoginLogging)
+                return;
+
+            var content = $"登录失败: {reason}";
+            if (!string.IsNullOrEmpty(dto.ClientIp)) {
+                content += $" | IP: {dto.ClientIp}";
+            }
+            if (!string.IsNullOrEmpty(dto.UserAgent)) {
+                content += $" | UA: {dto.UserAgent}";
+            }
+
+            await LogUserAction(userId, operatorName, ActionType.Login, content);
+        }
+
+        /// <summary>
+        /// 记录登录成功日志
+        /// </summary>
+        private async Task LogSuccessfulLogin(UserModel user, LoginRequestDto dto) {
+            if (!_authOptions.EnableDetailedLoginLogging)
+                return;
+
+            var content = "登录成功";
+            if (!string.IsNullOrEmpty(dto.ClientIp)) {
+                content += $" | IP: {dto.ClientIp}";
+            }
+            if (!string.IsNullOrEmpty(dto.UserAgent)) {
+                content += $" | UA: {dto.UserAgent}";
+            }
+
+            await LogUserAction(user.Id, user.RealName, ActionType.Login, content);
+        }
+
+        /// <summary>
+        /// 记录登录异常日志
+        /// </summary>
+        private async Task LogLoginException(string username, Exception ex, LoginRequestDto dto) {
+            var content = $"登录异常: {ex.Message}";
+            if (!string.IsNullOrEmpty(dto.ClientIp)) {
+                content += $" | IP: {dto.ClientIp}";
+            }
+
+            await LogUserAction(Guid.Empty, username, ActionType.Login, content);
+        }
+
+        /// <summary>
+        /// 统一的用户操作日志记录
+        /// </summary>
+        private async Task LogUserAction(Guid userId, string operatorName, ActionType actionType, string content) {
+            await _logService.AddLogAsync(new LogDto {
+                LogType = LogType.Login,
+                ObjectType = ObjectType.User,
+                ObjectId = userId,
+                ActionType = actionType,
+                OperatorId = userId,
+                OperatorName = operatorName,
+                Content = content,
+                LogTime = DateTime.Now
+            });
+        }
+
+        /// <summary>
+        /// 获取操作人姓名
+        /// </summary>
+        private string GetOperatorName(UserModel? user, string fallbackUsername) {
+            if (!string.IsNullOrEmpty(user?.RealName)) {
+                return user.RealName;
+            }
+
+            if (_sysAdminHandler.IsSysAdmin(fallbackUsername)) {
+                return "系统管理员";
+            }
+
+            return fallbackUsername;
+        }
+
+        #endregion
     }
 }

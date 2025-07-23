@@ -44,6 +44,11 @@ namespace LYBT.Module.Users.Interfaces {
         Task<UserModel?> GetByIdAsync(Guid id);
 
         /// <summary>
+        /// 根据ID列表批量获取用户
+        /// </summary>
+        Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids);
+
+        /// <summary>
         /// 校验用户名是否存在
         /// </summary>
         Task<bool> ExistsByUsernameAsync(string userName);

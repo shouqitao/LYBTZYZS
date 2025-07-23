@@ -1,14 +1,13 @@
 ﻿using LYBT.Common.Enums.Logs;
-using System.Collections.Generic;
-using System.Linq;
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Helpers;
 using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
-using Microsoft.Extensions.Options;
 using LYBT.Module.Users.Interfaces;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
 using CommonUtil = LYBT.CommonUtils.CommonUtils;
 
 namespace LYBT.Module.Users.Services {
@@ -18,10 +17,13 @@ namespace LYBT.Module.Users.Services {
     /// </summary>
     public class UserService : IUserService {
         private readonly IUserRepository _userRepository;
-        private readonly ILogService _logService; // 日志服务
+        private readonly ILogService _logService;
         private readonly UserOptions _options;
 
-        public UserService(IUserRepository userRepository, ILogService logService, IOptions<UserOptions> options) {
+        public UserService(
+            IUserRepository userRepository,
+            ILogService logService,
+            IOptions<UserOptions> options) {
             _userRepository = userRepository;
             _logService = logService;
             _options = options.Value;
@@ -32,21 +34,7 @@ namespace LYBT.Module.Users.Services {
         /// </summary>
         public async Task<(IList<UserDto> users, int total)> SearchAsync(UserQueryDto query) {
             var (models, total) = await _userRepository.GetPagedAsync(query);
-            var users = new List<UserDto>();
-            foreach (var m in models) {
-                users.Add(new UserDto {
-                    Id = m.Id,
-                    UserName = m.UserName,
-                    RealName = m.RealName,
-                    Role = m.Roles.FirstOrDefault(),
-                    Roles = m.Roles,
-                    IsActive = m.IsActive,
-                    CreatedTime = m.CreatedTime,
-                    LastLoginTime = m.LastLoginTime,
-                    Email = m.Email,
-                    PhoneNumber = m.PhoneNumber
-                });
-            }
+            var users = models.Select(MapToUserDto).ToList();
             return (users, total);
         }
 
@@ -54,59 +42,27 @@ namespace LYBT.Module.Users.Services {
         /// 根据ID获取用户详情
         /// </summary>
         public async Task<UserDto?> GetByIdAsync(Guid id) {
-            var m = await _userRepository.GetByIdAsync(id);
-            if (m == null)
-                return null;
-            return new UserDto {
-                Id = m.Id,
-                UserName = m.UserName,
-                RealName = m.RealName,
-                Role = m.Roles.FirstOrDefault(),
-                Roles = m.Roles,
-                IsActive = m.IsActive,
-                CreatedTime = m.CreatedTime,
-                LastLoginTime = m.LastLoginTime,
-                Email = m.Email,
-                PhoneNumber = m.PhoneNumber
-            };
+            var model = await _userRepository.GetByIdAsync(id);
+            return model != null ? MapToUserDto(model) : null;
         }
 
         /// <summary>
         /// 新增用户
         /// </summary>
         public async Task<bool> AddAsync(UserCreateDto dto, Guid operatorId, string operatorName) {
-            if (await _userRepository.ExistsByUsernameAsync(dto.UserName))
-                throw new Exception("用户名已存在");
+            await ValidateUserCreation(dto);
 
-            var roles = dto.Roles ?? new List<UserRole>();
-            var user = new UserModel {
-                Id = Guid.NewGuid(),
-                UserName = dto.UserName,
-                RealName = dto.RealName,
-                PinyinCode = CommonUtil.GetPinyinCode(dto.RealName),
-                Roles = roles,
-                IsActive = dto.IsActive,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                CreatedTime = DateTime.Now,
-
-                PasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword)
-            };
+            var user = CreateUserFromDto(dto);
             var result = await _userRepository.AddAsync(user);
 
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.User,
-                    ObjectId = user.Id,
-                    ActionType = ActionType.Create,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = $"新增用户：{user.UserName}",
-                    NewValue = System.Text.Json.JsonSerializer.Serialize(user)
-                });
+                await LogUserOperation(
+                    user.Id, ActionType.Create, operatorId, operatorName,
+                    $"新增用户：{user.UserName}",
+                    newValue: user
+                );
             }
+
             return result;
         }
 
@@ -114,37 +70,20 @@ namespace LYBT.Module.Users.Services {
         /// 编辑用户
         /// </summary>
         public async Task<bool> UpdateAsync(UserDetailDto dto, Guid operatorId, string operatorName) {
-            var oldUser = await _userRepository.GetByIdAsync(dto.Id);
-            if (oldUser == null)
-                throw new Exception("用户不存在");
+            var existingUser = await GetExistingUser(dto.Id);
+            var oldSnapshot = JsonSerializer.Serialize(existingUser);
 
-            // 记录修改前的数据以便日志审计
-            var oldSnapshot = System.Text.Json.JsonSerializer.Serialize(oldUser);
-
-            oldUser.RealName = dto.RealName;
-            oldUser.PinyinCode = CommonUtil.GetPinyinCode(dto.RealName);
-            var roles = dto.Roles ?? new List<UserRole>();
-            oldUser.Roles = roles;
-            oldUser.IsActive = dto.IsActive;
-            oldUser.Email = dto.Email;
-            oldUser.PhoneNumber = dto.PhoneNumber;
-
-            var result = await _userRepository.UpdateAsync(oldUser);
+            UpdateUserFromDto(existingUser, dto);
+            var result = await _userRepository.UpdateAsync(existingUser);
 
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.User,
-                    ObjectId = oldUser.Id,
-                    ActionType = ActionType.Edit,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = $"修改用户信息：{oldUser.UserName}",
-                    OldValue = oldSnapshot,
-                    NewValue = System.Text.Json.JsonSerializer.Serialize(oldUser)
-                });
+                await LogUserOperation(
+                    existingUser.Id, ActionType.Edit, operatorId, operatorName,
+                    $"修改用户信息：{existingUser.UserName}",
+                    oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
+                );
             }
+
             return result;
         }
 
@@ -152,25 +91,17 @@ namespace LYBT.Module.Users.Services {
         /// 禁用用户
         /// </summary>
         public async Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName) {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-                throw new Exception("用户不存在");
-
+            var user = await GetExistingUser(id);
             var result = await _userRepository.DisableAsync(id);
 
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.User,
-                    ObjectId = id,
-                    ActionType = ActionType.Disable,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = $"禁用用户：{user.UserName}",
-                    OldValue = System.Text.Json.JsonSerializer.Serialize(user)
-                });
+                await LogUserOperation(
+                    id, ActionType.Disable, operatorId, operatorName,
+                    $"禁用用户：{user.UserName}",
+                    oldValue: JsonSerializer.Serialize(user)
+                );
             }
+
             return result;
         }
 
@@ -178,25 +109,17 @@ namespace LYBT.Module.Users.Services {
         /// 启用用户
         /// </summary>
         public async Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName) {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-                throw new Exception("用户不存在");
-
+            var user = await GetExistingUser(id);
             var result = await _userRepository.EnableAsync(id);
 
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.User,
-                    ObjectId = id,
-                    ActionType = ActionType.Enable,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = $"启用用户：{user.UserName}",
-                    OldValue = System.Text.Json.JsonSerializer.Serialize(user)
-                });
+                await LogUserOperation(
+                    id, ActionType.Enable, operatorId, operatorName,
+                    $"启用用户：{user.UserName}",
+                    oldValue: JsonSerializer.Serialize(user)
+                );
             }
+
             return result;
         }
 
@@ -204,48 +127,61 @@ namespace LYBT.Module.Users.Services {
         /// 批量禁用用户
         /// </summary>
         public async Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
-            int count = 0;
-            foreach (var id in ids) {
-                if (await DisableAsync(id, operatorId, operatorName))
-                    count++;
+            ValidateBatchOperation(ids);
+
+            var users = await GetUsersByIds(ids);
+            var updatedCount = await _userRepository.UpdateActiveStatusAsync(ids, false);
+
+            if (updatedCount > 0) {
+                await LogBatchUserOperation(
+                    users, ActionType.Disable, operatorId, operatorName,
+                    $"批量禁用 {updatedCount} 个用户"
+                );
             }
-            return count;
+
+            return updatedCount;
         }
 
         /// <summary>
         /// 批量启用用户
         /// </summary>
         public async Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
-            int count = 0;
-            foreach (var id in ids) {
-                if (await EnableAsync(id, operatorId, operatorName))
-                    count++;
+            ValidateBatchOperation(ids);
+
+            var users = await GetUsersByIds(ids);
+            var updatedCount = await _userRepository.UpdateActiveStatusAsync(ids, true);
+
+            if (updatedCount > 0) {
+                await LogBatchUserOperation(
+                    users, ActionType.Enable, operatorId, operatorName,
+                    $"批量启用 {updatedCount} 个用户"
+                );
             }
-            return count;
+
+            return updatedCount;
         }
 
         /// <summary>
         /// 管理员重置密码
         /// </summary>
         public async Task<bool> ResetPasswordAsync(Guid id, Guid operatorId, string operatorName) {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-                throw new Exception("用户不存在");
+            var user = await GetExistingUser(id);
 
-            user.PasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword);
-            var result = await _userRepository.UpdateAsync(user);
+            var newPasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword);
+            var result = await _userRepository.UpdatePasswordAsync(id, newPasswordHash);
+
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.User,
-                    ObjectId = id,
-                    ActionType = ActionType.ResetPassword,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = $"重置用户密码：{user.UserName}"
-                });
+                await LogUserOperation(
+                    id, ActionType.ResetPassword, operatorId, operatorName,
+                    $"重置用户密码：{user.UserName}"
+                );
+
+                // TODO: 根据配置决定是否发送密码重置通知
+                if (_options.SendPasswordResetNotification) {
+                    await SendPasswordResetNotification(user);
+                }
             }
+
             return result;
         }
 
@@ -253,34 +189,216 @@ namespace LYBT.Module.Users.Services {
         /// 用户修改密码
         /// </summary>
         public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-                return false;
-            if (!PasswordHelper.Verify(user.PasswordHash, oldPassword))
-                return false;
-            user.PasswordHash = PasswordHelper.Hash(newPassword);
-            return await _userRepository.UpdateAsync(user);
+            var user = await GetExistingUser(id);
+
+            if (!PasswordHelper.Verify(user.PasswordHash, oldPassword)) {
+                throw new UnauthorizedAccessException("原密码错误");
+            }
+
+            var newPasswordHash = PasswordHelper.Hash(newPassword);
+            var result = await _userRepository.UpdatePasswordAsync(id, newPasswordHash);
+
+            if (result) {
+                await LogUserOperation(
+                    id, ActionType.Edit, id, user.RealName,
+                    "用户修改个人密码"
+                );
+            }
+
+            return result;
         }
 
         /// <summary>
         /// 用户修改个人信息
         /// </summary>
         public async Task<bool> ChangeProfileAsync(Guid id, string realName, string? email, string? phoneNumber) {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-                return false;
+            var user = await GetExistingUser(id);
+            var oldSnapshot = JsonSerializer.Serialize(user);
+
             user.RealName = realName;
+            user.PinyinCode = CommonUtil.GetPinyinCode(realName);
             user.Email = email;
             user.PhoneNumber = phoneNumber;
-            return await _userRepository.UpdateAsync(user);
+
+            var result = await _userRepository.UpdateAsync(user);
+
+            if (result) {
+                await LogUserOperation(
+                    id, ActionType.Edit, id, user.RealName,
+                    "用户修改个人信息",
+                    oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(user)
+                );
+            }
+
+            return result;
         }
 
-/// <summary>
-/// 执行GetRoles操作。
-/// </summary>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 获取系统所有角色
+        /// </summary>
         public List<UserRole> GetRoles() {
             return Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToList();
         }
+
+        #region 私有辅助方法
+
+        /// <summary>
+        /// 映射用户模型到DTO
+        /// </summary>
+        private UserDto MapToUserDto(UserModel model) {
+            return new UserDto {
+                Id = model.Id,
+                UserName = model.UserName,
+                RealName = model.RealName,
+                Roles = model.Roles,
+                IsActive = model.IsActive,
+                CreatedTime = model.CreatedTime,
+                LastLoginTime = model.LastLoginTime,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber
+            };
+        }
+
+        /// <summary>
+        /// 从DTO创建用户模型
+        /// </summary>
+        private UserModel CreateUserFromDto(UserCreateDto dto) {
+            return new UserModel {
+                Id = Guid.NewGuid(),
+                UserName = dto.UserName,
+                RealName = dto.RealName,
+                PinyinCode = CommonUtil.GetPinyinCode(dto.RealName),
+                Roles = dto.Roles ?? new List<UserRole>(),
+                IsActive = dto.IsActive,
+                Email = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                CreatedTime = DateTime.Now,
+                PasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword)
+            };
+        }
+
+        /// <summary>
+        /// 从DTO更新用户模型
+        /// </summary>
+        private void UpdateUserFromDto(UserModel user, UserDetailDto dto) {
+            user.RealName = dto.RealName;
+            user.PinyinCode = CommonUtil.GetPinyinCode(dto.RealName);
+            user.Roles = dto.Roles ?? new List<UserRole>();
+            user.IsActive = dto.IsActive;
+            user.Email = dto.Email;
+            user.PhoneNumber = dto.PhoneNumber;
+        }
+
+        /// <summary>
+        /// 验证用户创建请求
+        /// </summary>
+        private async Task ValidateUserCreation(UserCreateDto dto) {
+            if (await _userRepository.ExistsByUsernameAsync(dto.UserName)) {
+                throw new InvalidOperationException("用户名已存在");
+            }
+
+            if (dto.Roles == null || dto.Roles.Count == 0) {
+                throw new ArgumentException("用户至少需要分配一个角色");
+            }
+        }
+
+        /// <summary>
+        /// 获取现有用户（不存在时抛出异常）
+        /// </summary>
+        private async Task<UserModel> GetExistingUser(Guid id) {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null) {
+                throw new InvalidOperationException("用户不存在");
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 根据ID列表获取用户列表
+        /// </summary>
+        private async Task<List<UserModel>> GetUsersByIds(List<Guid> ids) {
+            var users = new List<UserModel>();
+            foreach (var id in ids) {
+                var user = await _userRepository.GetByIdAsync(id);
+                if (user != null) {
+                    users.Add(user);
+                }
+            }
+            return users;
+        }
+
+        /// <summary>
+        /// 验证批量操作
+        /// </summary>
+        private void ValidateBatchOperation(List<Guid> ids) {
+            if (ids == null || ids.Count == 0) {
+                throw new ArgumentException("批量操作的ID列表不能为空");
+            }
+
+            if (ids.Count > _options.MaxBatchOperationSize) {
+                throw new ArgumentException($"批量操作数量不能超过 {_options.MaxBatchOperationSize}");
+            }
+        }
+
+        /// <summary>
+        /// 统一的用户操作日志记录
+        /// </summary>
+        private async Task LogUserOperation(
+            Guid userId, ActionType actionType, Guid operatorId, string operatorName,
+            string content, string? oldValue = null, object? newValue = null) {
+
+            if (!_options.EnableDetailedAuditLogging)
+                return;
+
+            await _logService.AddLogAsync(new LogDto {
+                LogType = LogType.Operation,
+                ObjectType = ObjectType.User,
+                ObjectId = userId,
+                ActionType = actionType,
+                OperatorId = operatorId,
+                OperatorName = operatorName,
+                LogTime = DateTime.Now,
+                Content = content,
+                OldValue = oldValue,
+                NewValue = newValue != null ? JsonSerializer.Serialize(newValue) : null
+            });
+        }
+
+        /// <summary>
+        /// 批量操作日志记录
+        /// </summary>
+        private async Task LogBatchUserOperation(
+            List<UserModel> users, ActionType actionType, Guid operatorId, string operatorName,
+            string content) {
+
+            if (!_options.EnableDetailedAuditLogging)
+                return;
+
+            var userNames = string.Join(", ", users.Select(u => u.UserName));
+            var detailedContent = $"{content}: {userNames}";
+
+            await _logService.AddLogAsync(new LogDto {
+                LogType = LogType.Operation,
+                ObjectType = ObjectType.User,
+                ObjectId = Guid.Empty, // 批量操作使用空ID
+                ActionType = actionType,
+                OperatorId = operatorId,
+                OperatorName = operatorName,
+                LogTime = DateTime.Now,
+                Content = detailedContent,
+                NewValue = JsonSerializer.Serialize(users.Select(u => new { u.Id, u.UserName }).ToList())
+            });
+        }
+
+        /// <summary>
+        /// 发送密码重置通知（待实现）
+        /// </summary>
+        private async Task SendPasswordResetNotification(UserModel user) {
+            // TODO: 实现密码重置通知功能
+            // 可以发送邮件、短信或系统内通知
+            await Task.CompletedTask;
+        }
+
+        #endregion
     }
 }
