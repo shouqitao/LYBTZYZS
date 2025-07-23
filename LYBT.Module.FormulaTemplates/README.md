@@ -10,7 +10,6 @@
 - 编辑药方模板（添加/修改/删除药材）
 - 删除药方模板
 - 获取模板列表及详情
-- Excel 导入导出
 
 ### 3. 输入输出规范
 
@@ -66,10 +65,6 @@ bool success = await _formulaTemplateService.AddAsync(dto);
 | `GET /api/formulatemplates/{id}` | 已实现 | |
 | `DELETE /api/formulatemplates/{id}` | 已实现 | |
 | `POST /api/formulatemplates/import` | 已实现 | JSON 批量导入 |
-| `POST /api/formulatemplates/importExcel` | 已实现 | Excel 批量导入 |
-| `GET /api/formulatemplates/exportExcel` | 已实现 | Excel 导出 |
-
-
 
 ## Running Tests / 运行测试
 
