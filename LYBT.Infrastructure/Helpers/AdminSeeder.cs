@@ -1,4 +1,5 @@
 using LYBT.Common.Helpers;
+using LYBT.Module.Users.Data;
 
 namespace LYBT.Infrastructure.Helpers {
 
@@ -12,7 +13,7 @@ namespace LYBT.Infrastructure.Helpers {
         /// </summary>
         /// <param name="context">参数context</param>
         /// <param name="defaultPassword">参数defaultPassword</param>
-        public static void Seed(AppDbContext context, string defaultPassword) {
+        public static void Seed(UsersDbContext context, string defaultPassword) {
             // Default sysadmin credentials stored only in AdminSecrets table.
             // No corresponding record in Users table.
             if (!context.AdminSecrets.Any(s => s.UserName == "sysadmin")) {

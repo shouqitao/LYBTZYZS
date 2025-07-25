@@ -60,6 +60,7 @@ using LYBT.Module.Users.Mapping;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
 using LYBT.WebAPI.Extensions;
+using LYBT.Module.Users.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
@@ -74,9 +75,7 @@ builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDe
 
 // =========== 1. 注册所有模块的 Service 和 Repository ===========
 
-// 用户管理
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+// 用户管理 registered via module
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -176,6 +175,8 @@ builder.Services.AddCorsPolicy();
 var connection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connection));
+// Users module context
+builder.Services.AddUsersModule(connection);
 
 // =========== 5. JWT 认证配置 ===========
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -189,7 +190,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 // ensure default admin user exists
 using (var scope = app.Services.CreateScope()) {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var context = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     var opts = scope.ServiceProvider.GetRequiredService<IOptions<UserOptions>>();
     AdminSeeder.Seed(context, opts.Value.DefaultUserPassword);
 }
