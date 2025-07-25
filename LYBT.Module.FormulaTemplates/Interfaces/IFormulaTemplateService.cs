@@ -1,5 +1,4 @@
-using System.IO;
-﻿using LYBT.Module.FormulaTemplates.Dtos;
+using LYBT.Module.FormulaTemplates.Models.Dtos;
 
 namespace LYBT.Module.FormulaTemplates.Interfaces {
 
@@ -42,6 +41,5 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         /// 导出全部模板数据
         /// </summary>
         Task<List<FormulaTemplateDetailDto>> ExportAsync();
-
     }
 }

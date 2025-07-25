@@ -1,5 +1,5 @@
-using LYBT.Models.FormulaTemplates;
-using LYBT.Module.FormulaTemplates.Dtos;
+using LYBT.Module.FormulaTemplates.Models;
+using LYBT.Module.FormulaTemplates.Models.Dtos;
 
 namespace LYBT.Module.FormulaTemplates.Interfaces {
 

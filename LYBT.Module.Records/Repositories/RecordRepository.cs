@@ -1,6 +1,6 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models.Records;
 using LYBT.Module.Records.Interfaces;
+using LYBT.Module.Records.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Records.Repositories {
@@ -59,11 +59,11 @@ namespace LYBT.Module.Records.Repositories {
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
-/// <summary>
-/// 执行GetListByPatientIdAsync操作。
-/// </summary>
-/// <param name="patientId">参数patientId</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行GetListByPatientIdAsync操作。
+        /// </summary>
+        /// <param name="patientId">参数patientId</param>
+        /// <returns>返回值</returns>
         public async Task<List<RecordModel>> GetListByPatientIdAsync(Guid patientId) {
             return await _appDbContext.Records
                 .Where(r => r.PatientId == patientId)
@@ -71,11 +71,11 @@ namespace LYBT.Module.Records.Repositories {
                 .ToListAsync();
         }
 
-/// <summary>
-/// 执行GetSharedRecordsAsync操作。
-/// </summary>
-/// <param name="doctorId">参数doctorId</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行GetSharedRecordsAsync操作。
+        /// </summary>
+        /// <param name="doctorId">参数doctorId</param>
+        /// <returns>返回值</returns>
         public async Task<List<RecordModel>> GetSharedRecordsAsync(Guid doctorId) {
             var list = await _appDbContext.Records
                 .Where(r => r.IsShared)

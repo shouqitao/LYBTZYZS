@@ -1,12 +1,14 @@
 using AutoMapper;
-using LYBT.Models.Prescriptions;
-using LYBT.Module.Prescriptions.Dtos;
+using LYBT.Module.Prescriptions.Models;
+using LYBT.Module.Prescriptions.Models.Dtos;
 
 namespace LYBT.Module.Prescriptions.Mapping {
-/// <summary>
-/// 表示PrescriptionMappingProfile。
-/// </summary>
+
+    /// <summary>
+    /// 表示PrescriptionMappingProfile。
+    /// </summary>
     public class PrescriptionMappingProfile : Profile {
+
         public PrescriptionMappingProfile() {
             CreateMap<PrescriptionModel, PrescriptionDto>();
             CreateMap<PrescriptionModel, PrescriptionDetailDto>();

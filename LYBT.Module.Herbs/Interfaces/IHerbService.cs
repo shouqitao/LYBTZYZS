@@ -1,7 +1,7 @@
 using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Models;
 using LYBT.Module.Herbs.Dtos;
-using System.IO;
+using LYBT.Module.Herbs.Models.Dtos;
 
 namespace LYBT.Module.Herbs.Interfaces {
 
@@ -103,6 +103,5 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// </summary>
         /// <returns>状态统计字典</returns>
         Task<Dictionary<HerbStatus, int>> GetStatusStatisticsAsync();
-
     }
 }

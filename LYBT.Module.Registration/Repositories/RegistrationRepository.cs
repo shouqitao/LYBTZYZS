@@ -1,7 +1,7 @@
-﻿using LYBT.Infrastructure;
-using LYBT.Models.Registration;
+﻿using LYBT.Common.Enums;
+using LYBT.Infrastructure;
 using LYBT.Module.Registration.Interfaces;
-using LYBT.Common.Enums;
+using LYBT.Module.Registration.Models;
 
 namespace LYBT.Module.Registration.Repositories {
 

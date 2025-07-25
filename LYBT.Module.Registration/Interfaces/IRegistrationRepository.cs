@@ -1,4 +1,4 @@
-﻿using LYBT.Models.Registration;
+﻿using LYBT.Module.Registration.Models;
 
 namespace LYBT.Module.Registration.Interfaces {
 

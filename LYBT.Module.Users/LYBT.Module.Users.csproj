@@ -8,7 +8,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<PackageReference Include="AutoMapper" Version="14.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
 		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.6" />
@@ -16,7 +15,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\LYBT.Common\LYBT.Common.csproj" />
-		<ProjectReference Include="..\LYBT.Models\LYBT.Models.csproj" />
     <ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
     <ProjectReference Include="..\LYBT.CommonUtils\LYBT.CommonUtils.csproj" />
   </ItemGroup>

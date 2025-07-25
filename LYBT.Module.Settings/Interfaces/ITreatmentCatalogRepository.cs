@@ -1,10 +1,10 @@
-using LYBT.Models.Settings;
+using LYBT.Module.Settings.Models;
 
 namespace LYBT.Module.Settings.Interfaces {
 
-/// <summary>
-/// 表示ITreatmentCatalogRepository。
-/// </summary>
+    /// <summary>
+    /// 表示ITreatmentCatalogRepository。
+    /// </summary>
     public interface ITreatmentCatalogRepository {
 
         Task<List<TreatmentCatalogModel>> GetAllAsync();

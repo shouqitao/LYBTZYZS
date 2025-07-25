@@ -28,13 +28,13 @@ using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Logs.Mapping;
 using LYBT.Module.Logs.Repositories;
 using LYBT.Module.Logs.Services;
-using LYBT.Module.Prescriptions.Repositories;
-using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
 using LYBT.Module.Prescriptions.Mapping;
+using LYBT.Module.Prescriptions.Repositories;
+using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Queueing.Interfaces;
 using LYBT.Module.Queueing.Mapping;
 using LYBT.Module.Queueing.Repositories;
@@ -47,33 +47,32 @@ using LYBT.Module.Registration.Mapping;
 using LYBT.Module.Registration.Repositories;
 using LYBT.Module.Registration.Services;
 using LYBT.Module.Settings.Interfaces;
+using LYBT.Module.Settings.Mapping;
 using LYBT.Module.Settings.Repositories;
 using LYBT.Module.Settings.Services;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Mapping;
 using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
-using LYBT.Module.Users.Mapping;
 using LYBT.Module.Users;
-using LYBT.WebAPI.Extensions;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using LYBT.Module.Settings.Mapping;
-using LYBT.Module.Users.Services;
-using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Interfaces;
-using Microsoft.Extensions.Options;
+using LYBT.Module.Users.Mapping;
+using LYBT.Module.Users.Repositories;
+using LYBT.Module.Users.Services;
+using LYBT.WebAPI.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDefaults"));
 
 // =========== 1. 注册所有模块的 Service 和 Repository ===========
-
 
 // 用户管理
 builder.Services.AddScoped<IUserService, UserService>();
@@ -129,7 +128,6 @@ builder.Services.AddScoped<ISyncRepository, SyncRepository>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
 
-
 // =========== 2. 注册所有模块的 AutoMapper 配置文件 ===========
 
 builder.Services.AddAutoMapper(
@@ -156,8 +154,7 @@ builder.Services.AddControllers().AddJsonOptions(o => {
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddApiVersioning(opt =>
-{
+builder.Services.AddApiVersioning(opt => {
     opt.AssumeDefaultVersionWhenUnspecified = true;
     opt.DefaultApiVersion = new ApiVersion(1, 0);
     opt.ReportApiVersions = true;

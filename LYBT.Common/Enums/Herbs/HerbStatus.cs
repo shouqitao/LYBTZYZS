@@ -9,6 +9,7 @@ namespace LYBT.Common.Enums.Herbs {
     /// 药材状态枚举
     /// </summary>
     public enum HerbStatus {
+
         /// <summary>
         /// 停用 - 不能开具处方，但保留历史记录
         /// </summary>

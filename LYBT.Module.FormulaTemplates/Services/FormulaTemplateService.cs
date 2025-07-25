@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using LYBT.Models;
-using LYBT.Models.FormulaTemplates;
-using LYBT.Module.FormulaTemplates.Dtos;
-using CommonUtil = LYBT.CommonUtils.CommonUtils;
-using System.IO;
 using LYBT.Module.FormulaTemplates.Interfaces;
+using LYBT.Module.FormulaTemplates.Models;
+using LYBT.Module.FormulaTemplates.Models.Dtos;
 
 namespace LYBT.Module.FormulaTemplates.Services {
 
@@ -68,22 +65,21 @@ namespace LYBT.Module.FormulaTemplates.Services {
             return await _repository.DeleteAsync(id);
         }
 
-/// <summary>
-/// 执行ImportAsync操作。
-/// </summary>
-/// <param name="dtos">参数dtos</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行ImportAsync操作。
+        /// </summary>
+        /// <param name="dtos">参数dtos</param>
+        /// <returns>返回值</returns>
         public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos) {
             return await _repository.ImportAsync(dtos);
         }
 
-/// <summary>
-/// 执行ExportAsync操作。
-/// </summary>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行ExportAsync操作。
+        /// </summary>
+        /// <returns>返回值</returns>
         public async Task<List<FormulaTemplateDetailDto>> ExportAsync() {
             return await _repository.ExportAsync();
         }
-
     }
 }

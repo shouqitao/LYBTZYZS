@@ -1,10 +1,7 @@
-﻿using LYBT.Common.Models;
+﻿using LYBT.Common.Enums.Users;
+using LYBT.Common.Models;
 using LYBT.Common.Responses;
-using LYBT.Module.Doctors.Dtos;
-using LYBT.Common.Enums.Users;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using LYBT.Module.Doctors.Models.Dtos;
 
 namespace LYBT.Module.Doctors.Interfaces {
 

@@ -1,21 +1,5 @@
 ﻿using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Enums.Users;
-using LYBT.Models;
-using LYBT.Models.Billing;
-using LYBT.Models.DiagnosisTreatment;
-using LYBT.Models.Doctors;
-using LYBT.Models.FormulaTemplates;
-using LYBT.Models.Herbs;
-using LYBT.Models.Logs;
-using LYBT.Models.Patients;
-using LYBT.Models.Pharmacy;
-using LYBT.Models.Prescriptions;
-using LYBT.Models.Queueing;
-using LYBT.Models.Records;
-using LYBT.Models.Registration;
-using LYBT.Models.Settings;
-using LYBT.Models.TreatmentRoom;
-using LYBT.Module.Users.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -34,9 +18,11 @@ namespace LYBT.Infrastructure {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {
+        }
 
         #region DbSets - 主表定义
+
         public DbSet<UserModel> Users { get; set; }
         public DbSet<PatientModel> Patients { get; set; }
         public DbSet<DoctorModel> Doctors { get; set; }
@@ -60,7 +46,8 @@ namespace LYBT.Infrastructure {
         public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; }
         public DbSet<SpecialPatientDoctor> SpecialPatientDoctors { get; set; }
         public DbSet<AdminSecretModel> AdminSecrets { get; set; }
-        #endregion
+
+        #endregion DbSets - 主表定义
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -327,7 +314,7 @@ namespace LYBT.Infrastructure {
             herbEntity.HasIndex(h => h.Status)
                 .HasDatabaseName("IX_Herbs_Status");
 
-            // 复合索引：状态和过期时间 - 新增  
+            // 复合索引：状态和过期时间 - 新增
             herbEntity.HasIndex(h => new { h.Status, h.ExpireDate })
                 .HasDatabaseName("IX_Herbs_Status_ExpireDate");
 
@@ -351,7 +338,7 @@ namespace LYBT.Infrastructure {
                 .HasDefaultValue(HerbStatus.Active);
         }
 
-        #endregion
+        #endregion 模块化配置方法
 
         #region 辅助方法
 
@@ -379,7 +366,7 @@ namespace LYBT.Infrastructure {
             );
         }
 
-        #endregion
+        #endregion 辅助方法
     }
 
     /// <summary>

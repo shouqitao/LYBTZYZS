@@ -1,6 +1,6 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models.Queueing;
 using LYBT.Module.Queueing.Interfaces;
+using LYBT.Module.Queueing.Models;
 
 namespace LYBT.Module.Queueing.Repositories {
 
@@ -70,11 +70,11 @@ namespace LYBT.Module.Queueing.Repositories {
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
-/// <summary>
-/// 执行CompleteAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行CompleteAsync操作。
+        /// </summary>
+        /// <param name="id">参数id</param>
+        /// <returns>返回值</returns>
         public async Task<bool> CompleteAsync(Guid id) {
             var model = await _appDbContext.Queueings.FindAsync(id);
             if (model == null)
@@ -84,11 +84,11 @@ namespace LYBT.Module.Queueing.Repositories {
             return await _appDbContext.SaveChangesAsync() > 0;
         }
 
-/// <summary>
-/// 执行HoldAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行HoldAsync操作。
+        /// </summary>
+        /// <param name="id">参数id</param>
+        /// <returns>返回值</returns>
         public async Task<bool> HoldAsync(Guid id) {
             var model = await _appDbContext.Queueings.FindAsync(id);
             if (model == null)

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Reflection;
@@ -9,6 +8,7 @@ namespace LYBT.Common.Extensions {
     /// Enum 扩展方法 - 性能优化版本
     /// </summary>
     public static class EnumExtensions {
+
         // 使用缓存避免反射性能开销
         private static readonly ConcurrentDictionary<Enum, string> _descriptionCache = new();
 

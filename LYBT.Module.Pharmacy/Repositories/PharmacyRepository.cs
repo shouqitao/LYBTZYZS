@@ -1,7 +1,7 @@
 ﻿using LYBT.Common.Enums;
 using LYBT.Infrastructure;
-using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Interfaces;
+using LYBT.Module.Pharmacy.Models;
 
 namespace LYBT.Module.Pharmacy.Repositories {
 

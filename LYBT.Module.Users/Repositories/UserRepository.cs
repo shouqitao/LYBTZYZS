@@ -1,5 +1,4 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Models;
 using Microsoft.EntityFrameworkCore;

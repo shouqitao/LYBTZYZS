@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using LYBT.Models.Registration;
-using LYBT.Module.Registration.Dtos;
+using LYBT.Module.Registration.Models;
+using LYBT.Module.Registration.Models.Dtos;
 
 namespace LYBT.Module.Registration.Mapping {
 

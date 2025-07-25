@@ -1,6 +1,6 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models;
 using LYBT.Module.Sync.Interfaces;
+using LYBT.Module.Sync.Models;
 
 namespace LYBT.Module.Sync.Repositories {
 

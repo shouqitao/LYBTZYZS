@@ -1,4 +1,4 @@
-﻿using LYBT.Models.TreatmentRoom;
+﻿using LYBT.Module.TreatmentRoom.Models;
 
 namespace LYBT.Module.TreatmentRoom.Interfaces {
 

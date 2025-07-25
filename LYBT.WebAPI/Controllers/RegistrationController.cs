@@ -1,10 +1,9 @@
-﻿using LYBT.Module.Registration.Dtos;
-using LYBT.Common.Responses;
-using LYBT.Module.Registration.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+﻿using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registration.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace LYBT.Module.Registration.Controllers {
+namespace LYBT.WebAPI.Controllers {
 
     /// <summary>
     /// 挂号管理 API 控制器
@@ -13,9 +12,6 @@ namespace LYBT.Module.Registration.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-/// <summary>
-/// 表示RegistrationController。
-/// </summary>
     public class RegistrationController : ControllerBase {
         private readonly IRegistrationService _registrationService;
 
@@ -30,10 +26,6 @@ namespace LYBT.Module.Registration.Controllers {
         /// 获取挂号列表
         /// </summary>
         [HttpGet]
-/// <summary>
-/// 执行GetList操作。
-/// </summary>
-/// <returns>返回值</returns>
         public async Task<ActionResult<List<RegistrationDto>>> GetList() {
             var list = await _registrationService.GetListAsync();
             return Ok(list);
@@ -43,11 +35,6 @@ namespace LYBT.Module.Registration.Controllers {
         /// 获取挂号详情
         /// </summary>
         [HttpGet("{id}")]
-/// <summary>
-/// 执行GetById操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult<RegistrationDetailDto>> GetById(Guid id) {
             var detail = await _registrationService.GetByIdAsync(id);
             if (detail == null)
@@ -59,11 +46,6 @@ namespace LYBT.Module.Registration.Controllers {
         /// 新增挂号
         /// </summary>
         [HttpPost]
-/// <summary>
-/// 执行Add操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult> Add([FromBody] RegistrationCreateDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -77,11 +59,6 @@ namespace LYBT.Module.Registration.Controllers {
         /// 编辑挂号
         /// </summary>
         [HttpPut]
-/// <summary>
-/// 执行Update操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult> Update([FromBody] RegistrationEditDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -95,11 +72,6 @@ namespace LYBT.Module.Registration.Controllers {
         /// 删除挂号
         /// </summary>
         [HttpDelete("{id}")]
-/// <summary>
-/// 执行Delete操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult> Delete(Guid id) {
             var result = await _registrationService.DeleteAsync(id);
             if (!result)
@@ -111,11 +83,6 @@ namespace LYBT.Module.Registration.Controllers {
         /// 取消挂号（软删除）
         /// </summary>
         [HttpPost("cancel/{id}")]
-/// <summary>
-/// 执行Cancel操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult> Cancel(Guid id) {
             var result = await _registrationService.CancelAsync(id);
             if (!result)

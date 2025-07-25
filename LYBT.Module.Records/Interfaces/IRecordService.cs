@@ -1,4 +1,5 @@
 ﻿using LYBT.Module.Records.Dtos;
+using LYBT.Module.Records.Models.Dtos;
 
 namespace LYBT.Module.Records.Interfaces {
 

@@ -6,9 +6,6 @@ namespace LYBT.Common.Enums {
     /// 医生状态（是否在职）
     /// </summary>
     [Description("医生状态")]
-/// <summary>
-/// 表示DoctorStatus。
-/// </summary>
     public enum DoctorStatus {
 
         [Description("在职")]

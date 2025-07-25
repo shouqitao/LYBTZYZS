@@ -1,4 +1,4 @@
-﻿using LYBT.Models.DiagnosisTreatment;
+﻿using LYBT.Module.DiagnosisTreatment.Models;
 
 namespace LYBT.Module.DiagnosisTreatment.Interfaces {
 

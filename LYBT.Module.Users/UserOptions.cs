@@ -4,6 +4,7 @@ namespace LYBT.Module.Users {
     /// 用户模块的配置项
     /// </summary>
     public class UserOptions {
+
         /// <summary>
         /// 新建用户的默认密码
         /// </summary>

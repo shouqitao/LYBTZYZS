@@ -1,5 +1,4 @@
 ﻿using LYBT.Common.Enums.Users;
-using LYBT.Module.Users.Dtos;
 
 namespace LYBT.Module.Users.Interfaces {
 

@@ -6,9 +6,6 @@ namespace LYBT.Common.Enums.Logs {
     /// 操作类型枚举（用于系统日志记录）
     /// </summary>
     [Description("日志操作类型")]
-/// <summary>
-/// 表示LogActionType。
-/// </summary>
     public enum LogActionType {
 
         [Description("新增")]

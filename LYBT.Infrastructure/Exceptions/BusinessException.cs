@@ -5,11 +5,11 @@ namespace LYBT.Infrastructure.Exceptions {
     /// </summary>
     public class BusinessException : Exception {
 
-/// <summary>
-/// 执行base操作。
-/// </summary>
-/// <param name="message">参数message</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行base操作。
+        /// </summary>
+        /// <param name="message">参数message</param>
+        /// <returns>返回值</returns>
         public BusinessException(string message) : base(message) {
         }
     }

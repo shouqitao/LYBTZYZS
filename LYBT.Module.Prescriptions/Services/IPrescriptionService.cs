@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Prescriptions.Dtos;
+﻿using LYBT.Module.Prescriptions.Models.Dtos;
 
 namespace LYBT.Module.Prescriptions.Services {
 

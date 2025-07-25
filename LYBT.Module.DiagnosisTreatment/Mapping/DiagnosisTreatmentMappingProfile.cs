@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
-using LYBT.Models;
-using LYBT.Models.DiagnosisTreatment;
+using LYBT.Module.DiagnosisTreatment.Models;
 using LYBT.Module.DiagnosisTreatment.Models.Dtos;
-using LYBT.Module.Herbs.Dtos;
+using LYBT.Module.Herbs.Models.Dtos;
 
 namespace LYBT.Module.DiagnosisTreatment.Mapping {
 

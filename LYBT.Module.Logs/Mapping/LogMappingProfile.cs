@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using LYBT.Models.Logs;
-using LYBT.Module.Logs.Dtos;
+using LYBT.Module.Logs.Models;
+using LYBT.Module.Logs.Models.Dtos;
 
 namespace LYBT.Module.Logs.Mapping {
 

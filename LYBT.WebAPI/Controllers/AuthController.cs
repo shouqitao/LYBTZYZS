@@ -1,7 +1,7 @@
-using LYBT.Infrastructure.Auth;
-using LYBT.Module.Auth.Dtos;
 using LYBT.Common.Responses;
+using LYBT.Infrastructure.Auth;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Module.Auth.Models.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -13,10 +13,7 @@ namespace LYBT.WebAPI.Controllers {
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-/// <summary>
-/// 表示AuthController。
-/// </summary>
-public class AuthController : ControllerBase {
+    public class AuthController : ControllerBase {
         private readonly IAuthService _authService;
         private readonly JwtOptions _jwtOptions;
 
@@ -29,11 +26,6 @@ public class AuthController : ControllerBase {
         /// 用户登录
         /// </summary>
         [HttpPost("login")]
-/// <summary>
-/// 执行Login操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse<object>.Fail("参数无效", 400));
@@ -52,11 +44,6 @@ public class AuthController : ControllerBase {
         /// 用户登出
         /// </summary>
         [HttpPost("logout")]
-/// <summary>
-/// 执行Logout操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
         public async Task<IActionResult> Logout([FromBody] LogoutRequestDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse<object>.Fail("参数无效", 400));
@@ -68,11 +55,6 @@ public class AuthController : ControllerBase {
         /// 修改 sysadmin 密码
         /// </summary>
         [HttpPost("changeSysAdminPassword")]
-/// <summary>
-/// 执行ChangeSysAdminPassword操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
         public async Task<IActionResult> ChangeSysAdminPassword([FromBody] ChangeSysAdminPasswordDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse<object>.Fail("参数无效", 400));

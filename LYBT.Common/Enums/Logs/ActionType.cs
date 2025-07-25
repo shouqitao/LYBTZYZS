@@ -6,9 +6,6 @@ namespace LYBT.Common.Enums.Logs {
     /// 操作类型枚举
     /// </summary>
     [Description("操作类型")]
-/// <summary>
-/// 表示ActionType。
-/// </summary>
     public enum ActionType {
 
         /// <summary>

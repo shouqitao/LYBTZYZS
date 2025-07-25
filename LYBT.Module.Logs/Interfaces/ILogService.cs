@@ -1,5 +1,5 @@
 using LYBT.Common.Enums.Users;
-using LYBT.Module.Logs.Dtos;
+using LYBT.Module.Logs.Models.Dtos;
 
 namespace LYBT.Module.Logs.Interfaces {
 

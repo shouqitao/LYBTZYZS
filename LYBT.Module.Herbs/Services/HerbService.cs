@@ -1,9 +1,14 @@
 ﻿using AutoMapper;
-using CommonUtil = LYBT.CommonUtils.CommonUtils;
+using LYBT.Common.Enums.Herbs;
+using LYBT.Common.Extensions;
+using LYBT.Common.Models;
+using LYBT.Infrastructure;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Common.Models;
-using LYBT.Models.Herbs;
+using LYBT.Module.Herbs.Models;
+using LYBT.Module.Herbs.Models.Dtos;
+using Microsoft.EntityFrameworkCore;
+using CommonUtil = LYBT.CommonUtils.CommonUtils;
 
 namespace LYBT.Module.Herbs.Services {
 
@@ -13,13 +18,15 @@ namespace LYBT.Module.Herbs.Services {
     public class HerbService : IHerbService {
         private readonly IHerbRepository _repository;
         private readonly IMapper _mapper;
+        private readonly AppDbContext _context;
 
         /// <summary>
         /// 构造方法，注入仓储与对象映射
         /// </summary>
-        public HerbService(IHerbRepository repository, IMapper mapper) {
+        public HerbService(IHerbRepository repository, IMapper mapper, AppDbContext context) {
             _repository = repository;
             _mapper = mapper;
+            _context = context;
         }
 
         /// <summary>
@@ -27,7 +34,12 @@ namespace LYBT.Module.Herbs.Services {
         /// </summary>
         public async Task<HerbDetailDto?> GetByIdAsync(Guid id) {
             var model = await _repository.GetByIdAsync(id);
-            return model == null ? null : _mapper.Map<HerbDetailDto>(model);
+            if (model == null)
+                return null;
+
+            var dto = _mapper.Map<HerbDetailDto>(model);
+            dto.StatusDescription = model.Status.GetDescription();
+            return dto;
         }
 
         /// <summary>
@@ -35,19 +47,74 @@ namespace LYBT.Module.Herbs.Services {
         /// </summary>
         public async Task<List<HerbDto>> GetListAsync() {
             var list = await _repository.GetListAsync();
-            return _mapper.Map<List<HerbDto>>(list);
+            var dtos = _mapper.Map<List<HerbDto>>(list);
+
+            // 设置状态描述
+            foreach (var dto in dtos) {
+                var model = list.First(x => x.Id == dto.Id);
+                dto.StatusDescription = model.Status.GetDescription();
+            }
+
+            return dtos;
         }
 
-/// <summary>
-/// 执行GetPagedAsync操作。
-/// </summary>
-/// <param name="query">参数query</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 分页查询药材
+        /// </summary>
         public async Task<PagedResultDto<HerbDto>> GetPagedAsync(HerbPagedQueryDto query) {
-            var (models, total) = await _repository.GetPagedAsync(query.Keyword, query.Page, query.PageSize);
+            // 构建查询条件
+            var dbQuery = _context.Herbs.AsQueryable();
+
+            // 关键词搜索
+            if (!string.IsNullOrWhiteSpace(query.Keyword)) {
+                var keyword = query.Keyword.Trim();
+                var upper = keyword.ToUpperInvariant();
+                dbQuery = dbQuery.Where(h => h.Name.Contains(keyword) ||
+                                            (h.Pinyin != null && h.Pinyin.Contains(upper)));
+            }
+
+            // 状态筛选
+            if (query.Status.HasValue) {
+                dbQuery = dbQuery.Where(h => h.Status == query.Status.Value);
+            }
+
+            // 是否包含停用药材
+            if (!query.IncludeInactive) {
+                dbQuery = dbQuery.Where(h => h.Status != HerbStatus.Inactive);
+            }
+
+            // 库存不足筛选
+            if (query.OnlyLowStock) {
+                dbQuery = dbQuery.Where(h => h.Stock <= query.LowStockThreshold);
+            }
+
+            // 即将过期筛选
+            if (query.OnlyExpiring) {
+                var expiringDate = DateTime.UtcNow.AddDays(query.ExpiringDays);
+                dbQuery = dbQuery.Where(h => h.ExpireDate.HasValue && h.ExpireDate <= expiringDate);
+            }
+
+            // 获取总数
+            var total = await dbQuery.CountAsync();
+
+            // 分页查询
+            var models = await dbQuery
+                .OrderByDescending(h => h.CreatedAt)
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<HerbDto>>(models);
+
+            // 设置状态描述
+            foreach (var dto in dtos) {
+                var model = models.First(x => x.Id == dto.Id);
+                dto.StatusDescription = model.Status.GetDescription();
+            }
+
             return new PagedResultDto<HerbDto> {
                 TotalCount = total,
-                Items = _mapper.Map<List<HerbDto>>(models)
+                Items = dtos
             };
         }
 
@@ -60,6 +127,7 @@ namespace LYBT.Module.Herbs.Services {
             model.Pinyin = string.IsNullOrWhiteSpace(dto.Pinyin)
                 ? CommonUtil.GetPinyinCode(model.Name)
                 : dto.Pinyin;
+            model.CreatedAt = DateTime.UtcNow;
             return await _repository.AddAsync(model);
         }
 
@@ -70,6 +138,7 @@ namespace LYBT.Module.Herbs.Services {
             var model = await _repository.GetByIdAsync(dto.Id);
             if (model == null)
                 return false;
+
             model.Name = dto.Name;
             model.Pinyin = string.IsNullOrWhiteSpace(dto.Pinyin)
                 ? CommonUtil.GetPinyinCode(dto.Name)
@@ -78,8 +147,14 @@ namespace LYBT.Module.Herbs.Services {
             model.Spec = dto.Spec;
             model.Unit = dto.Unit;
             model.Price = dto.Price;
+            model.Stock = dto.Stock;
+            model.BatchNo = dto.BatchNo;
+            model.ExpireDate = dto.ExpireDate;
             model.Effect = dto.Effect;
             model.Remark = dto.Remark;
+            model.Status = dto.Status;
+            model.UpdatedAt = DateTime.UtcNow;
+
             return await _repository.UpdateAsync(model);
         }
 
@@ -90,31 +165,166 @@ namespace LYBT.Module.Herbs.Services {
             return await _repository.DeleteAsync(id);
         }
 
-/// <summary>
-/// 执行ImportAsync操作。
-/// </summary>
-/// <param name="dtos">参数dtos</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 批量导入药材
+        /// </summary>
         public async Task<int> ImportAsync(List<HerbImportDto> dtos) {
-            int count = 0;
+            var models = new List<HerbModel>();
             foreach (var dto in dtos) {
                 var model = _mapper.Map<HerbModel>(dto);
                 model.Id = Guid.NewGuid();
                 model.Pinyin = CommonUtil.GetPinyinCode(model.Name);
-                if (await _repository.AddAsync(model))
-                    count++;
+                model.CreatedAt = DateTime.UtcNow;
+                models.Add(model);
             }
+
+            var result = await _repository.AddRangeAsync(models);
+            return result ? models.Count : 0;
+        }
+
+        /// <summary>
+        /// 导出药材数据
+        /// </summary>
+        public async Task<List<HerbDetailDto>> ExportAsync() {
+            var list = await _repository.GetListAsync();
+            var dtos = _mapper.Map<List<HerbDetailDto>>(list);
+
+            // 设置状态描述
+            foreach (var dto in dtos) {
+                var model = list.First(x => x.Id == dto.Id);
+                dto.StatusDescription = model.Status.GetDescription();
+            }
+
+            return dtos;
+        }
+
+        /// <summary>
+        /// 更新药材状态
+        /// </summary>
+        public async Task<bool> UpdateStatusAsync(HerbStatusUpdateDto dto) {
+            var model = await _repository.GetByIdAsync(dto.Id);
+            if (model == null)
+                return false;
+
+            model.Status = dto.Status;
+            model.UpdatedAt = DateTime.UtcNow;
+            // 如果有原因，可以记录到备注中
+            if (!string.IsNullOrWhiteSpace(dto.Reason)) {
+                model.Remark = $"{model.Remark} [状态变更: {dto.Reason}]".Trim();
+            }
+
+            return await _repository.UpdateAsync(model);
+        }
+
+        /// <summary>
+        /// 批量更新药材状态
+        /// </summary>
+        public async Task<int> BatchUpdateStatusAsync(HerbBatchStatusUpdateDto dto) {
+            var models = await _context.Herbs
+                .Where(h => dto.Ids.Contains(h.Id))
+                .ToListAsync();
+
+            int count = 0;
+            foreach (var model in models) {
+                model.Status = dto.Status;
+                model.UpdatedAt = DateTime.UtcNow;
+                if (!string.IsNullOrWhiteSpace(dto.Reason)) {
+                    model.Remark = $"{model.Remark} [批量状态变更: {dto.Reason}]".Trim();
+                }
+                count++;
+            }
+
+            await _context.SaveChangesAsync();
             return count;
         }
 
-/// <summary>
-/// 执行ExportAsync操作。
-/// </summary>
-/// <returns>返回值</returns>
-        public async Task<List<HerbDetailDto>> ExportAsync() {
-            var list = await _repository.GetListAsync();
-            return _mapper.Map<List<HerbDetailDto>>(list);
+        /// <summary>
+        /// 根据状态获取药材列表
+        /// </summary>
+        public async Task<List<HerbDto>> GetByStatusAsync(HerbStatus status) {
+            var models = await _context.Herbs
+                .Where(h => h.Status == status)
+                .OrderByDescending(h => h.CreatedAt)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<HerbDto>>(models);
+            foreach (var dto in dtos) {
+                dto.StatusDescription = status.GetDescription();
+            }
+
+            return dtos;
         }
 
+        /// <summary>
+        /// 获取可用药材列表（状态为Active）
+        /// </summary>
+        public async Task<List<HerbDto>> GetAvailableHerbsAsync() {
+            return await GetByStatusAsync(HerbStatus.Active);
+        }
+
+        /// <summary>
+        /// 获取缺货药材列表
+        /// </summary>
+        public async Task<List<HerbDto>> GetOutOfStockHerbsAsync() {
+            return await GetByStatusAsync(HerbStatus.OutOfStock);
+        }
+
+        /// <summary>
+        /// 获取即将过期药材列表
+        /// </summary>
+        public async Task<List<HerbDto>> GetExpiringHerbsAsync(int days = 30) {
+            var expiringDate = DateTime.UtcNow.AddDays(days);
+            var models = await _context.Herbs
+                .Where(h => h.ExpireDate.HasValue && h.ExpireDate <= expiringDate && h.Status == HerbStatus.Active)
+                .OrderBy(h => h.ExpireDate)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<HerbDto>>(models);
+            foreach (var dto in dtos) {
+                var model = models.First(x => x.Id == dto.Id);
+                dto.StatusDescription = model.Status.GetDescription();
+            }
+
+            return dtos;
+        }
+
+        /// <summary>
+        /// 检查药材状态并自动更新过期药材
+        /// </summary>
+        public async Task<int> CheckAndUpdateExpiredHerbsAsync() {
+            var expiredHerbs = await _context.Herbs
+                .Where(h => h.ExpireDate.HasValue &&
+                           h.ExpireDate <= DateTime.UtcNow &&
+                           h.Status != HerbStatus.Expired)
+                .ToListAsync();
+
+            foreach (var herb in expiredHerbs) {
+                herb.Status = HerbStatus.Expired;
+                herb.UpdatedAt = DateTime.UtcNow;
+                herb.Remark = $"{herb.Remark} [系统自动标记为过期]".Trim();
+            }
+
+            await _context.SaveChangesAsync();
+            return expiredHerbs.Count;
+        }
+
+        /// <summary>
+        /// 获取药材状态统计信息
+        /// </summary>
+        public async Task<Dictionary<HerbStatus, int>> GetStatusStatisticsAsync() {
+            var statistics = await _context.Herbs
+                .GroupBy(h => h.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Status, x => x.Count);
+
+            // 确保所有状态都有统计数据，即使数量为0
+            foreach (HerbStatus status in Enum.GetValues<HerbStatus>()) {
+                if (!statistics.ContainsKey(status)) {
+                    statistics[status] = 0;
+                }
+            }
+
+            return statistics;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using LYBT.Models.Settings;
+﻿using LYBT.Module.Settings.Models;
 
 namespace LYBT.Module.Settings.Interfaces {
 

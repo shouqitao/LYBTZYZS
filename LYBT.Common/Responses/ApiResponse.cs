@@ -6,6 +6,7 @@ namespace LYBT.Common.Responses {
     /// 接口统一响应体 - 优化版本
     /// </summary>
     public class ApiResponse<T> {
+
         /// <summary>
         /// 是否成功
         /// </summary>
@@ -159,6 +160,7 @@ namespace LYBT.Common.Responses {
     /// 非泛型版本的API响应
     /// </summary>
     public class ApiResponse : ApiResponse<object> {
+
         public new static ApiResponse Success(string message = "操作成功") {
             return new ApiResponse {
                 IsSuccess = true,

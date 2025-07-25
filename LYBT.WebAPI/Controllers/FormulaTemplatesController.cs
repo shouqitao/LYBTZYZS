@@ -1,12 +1,10 @@
-﻿using LYBT.Module.FormulaTemplates.Dtos;
-using LYBT.Common.Responses;
-using Microsoft.AspNetCore.Authorization;
+﻿using LYBT.Common.Models;
 using LYBT.Module.FormulaTemplates.Interfaces;
+using LYBT.Module.FormulaTemplates.Models.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using LYBT.Common.Models;
-using Microsoft.AspNetCore.Http;
 
-namespace LYBT.Module.FormulaTemplates.Controllers {
+namespace LYBT.WebAPI.Controllers {
 
     /// <summary>
     /// 经验方模板 API 控制器
@@ -15,10 +13,7 @@ namespace LYBT.Module.FormulaTemplates.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-/// <summary>
-/// 表示FormulaTemplateController。
-/// </summary>
-public class FormulaTemplateController : ControllerBase {
+    public class FormulaTemplateController : ControllerBase {
         private readonly IFormulaTemplateService _service;
 
         /// <summary>
@@ -32,10 +27,6 @@ public class FormulaTemplateController : ControllerBase {
         /// 获取所有模板列表
         /// </summary>
         [HttpGet]
-/// <summary>
-/// 执行GetList操作。
-/// </summary>
-/// <returns>返回值</returns>
         public async Task<ActionResult<List<FormulaTemplateDto>>> GetList() {
             var list = await _service.GetListAsync();
             return Ok(list);
@@ -45,11 +36,6 @@ public class FormulaTemplateController : ControllerBase {
         /// 获取模板详情
         /// </summary>
         [HttpGet("{id}")]
-/// <summary>
-/// 执行GetById操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult<FormulaTemplateDetailDto>> GetById(Guid id) {
             var detail = await _service.GetByIdAsync(id);
             if (detail == null)
@@ -61,11 +47,6 @@ public class FormulaTemplateController : ControllerBase {
         /// 新增模板
         /// </summary>
         [HttpPost]
-/// <summary>
-/// 执行Add操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult<ApiSuccessResponse>> Add([FromBody] FormulaTemplateCreateDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(new ApiSuccessResponse { Success = false, Message = "参数验证失败" });
@@ -79,11 +60,6 @@ public class FormulaTemplateController : ControllerBase {
         /// 编辑模板
         /// </summary>
         [HttpPut]
-/// <summary>
-/// 执行Update操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult<ApiSuccessResponse>> Update([FromBody] FormulaTemplateEditDto dto) {
             if (!ModelState.IsValid)
                 return BadRequest(new ApiSuccessResponse { Success = false, Message = "参数验证失败" });
@@ -97,11 +73,6 @@ public class FormulaTemplateController : ControllerBase {
         /// 删除模板
         /// </summary>
         [HttpDelete("{id}")]
-/// <summary>
-/// 执行Delete操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult<ApiSuccessResponse>> Delete(Guid id) {
             var result = await _service.DeleteAsync(id);
             if (!result)
@@ -110,25 +81,15 @@ public class FormulaTemplateController : ControllerBase {
         }
 
         [HttpPost("import")]
-/// <summary>
-/// 执行Import操作。
-/// </summary>
-/// <param name="dtos">参数dtos</param>
-/// <returns>返回值</returns>
         public async Task<ActionResult<object>> Import([FromBody] List<FormulaTemplateImportDto> dtos) {
             var count = await _service.ImportAsync(dtos);
             return Ok(new { Imported = count });
         }
 
         [HttpPost("export")]
-/// <summary>
-/// 执行Export操作。
-/// </summary>
-/// <returns>返回值</returns>
         public async Task<ActionResult<List<FormulaTemplateDetailDto>>> Export() {
             var data = await _service.ExportAsync();
             return Ok(data);
         }
-
     }
 }

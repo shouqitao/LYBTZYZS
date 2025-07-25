@@ -1,4 +1,4 @@
-﻿using LYBT.Models.Queueing;
+﻿using LYBT.Module.Queueing.Models;
 
 namespace LYBT.Module.Queueing.Interfaces {
 

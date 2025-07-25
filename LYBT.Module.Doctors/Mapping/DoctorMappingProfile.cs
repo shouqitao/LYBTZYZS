@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
-using LYBT.Models.Doctors;
-using LYBT.Module.Doctors.Dtos;
+using LYBT.Module.Doctors.Models;
+using LYBT.Module.Doctors.Models.Dtos;
 
 namespace LYBT.Module.Doctors.Mapping {
+
     /// <summary>
     /// 医生实体与DTO的AutoMapper映射配置
     /// </summary>
     public class DoctorMappingProfile : Profile {
+
         public DoctorMappingProfile() {
             // DoctorModel -> DoctorDto 映射 (用于列表)
             CreateMap<DoctorModel, DoctorDto>()

@@ -6,9 +6,6 @@ namespace LYBT.Common.Enums.Logs {
     /// 日志类型枚举
     /// </summary>
     [Description("日志类型")]
-/// <summary>
-/// 表示LogType。
-/// </summary>
     public enum LogType {
 
         /// <summary>

@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums;
-using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Dtos;
 using LYBT.Module.Pharmacy.Interfaces;
+using LYBT.Module.Pharmacy.Models;
+using LYBT.Module.Pharmacy.Models.Dtos;
 
 namespace LYBT.Module.Pharmacy.Services {
 

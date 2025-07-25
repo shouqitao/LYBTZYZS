@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using LYBT.Models.Pharmacy;
-using LYBT.Module.Pharmacy.Dtos;
+using LYBT.Module.Pharmacy.Models;
+using LYBT.Module.Pharmacy.Models.Dtos;
 
 namespace LYBT.Module.Pharmacy.Mapping {
 

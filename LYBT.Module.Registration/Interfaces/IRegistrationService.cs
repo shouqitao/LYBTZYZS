@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Registration.Dtos;
+﻿using LYBT.Module.Registration.Models.Dtos;
 
 namespace LYBT.Module.Registration.Interfaces {
 

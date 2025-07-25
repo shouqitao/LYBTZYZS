@@ -4,6 +4,7 @@
     /// 认证模块配置选项
     /// </summary>
     public class AuthOptions {
+
         /// <summary>
         /// 最大登录失败次数，超过后锁定账户
         /// </summary>

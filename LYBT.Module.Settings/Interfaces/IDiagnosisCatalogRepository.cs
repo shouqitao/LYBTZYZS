@@ -1,10 +1,10 @@
-using LYBT.Models.Settings;
+using LYBT.Module.Settings.Models;
 
 namespace LYBT.Module.Settings.Interfaces {
 
-/// <summary>
-/// 表示IDiagnosisCatalogRepository。
-/// </summary>
+    /// <summary>
+    /// 表示IDiagnosisCatalogRepository。
+    /// </summary>
     public interface IDiagnosisCatalogRepository {
 
         Task<List<DiagnosisCatalogModel>> GetAllAsync();

@@ -1,10 +1,10 @@
-using LYBT.Module.Settings.Dtos;
+using LYBT.Module.Settings.Models.Dtos;
 
 namespace LYBT.Module.Settings.Interfaces {
 
-/// <summary>
-/// 表示IDiagnosisCatalogService。
-/// </summary>
+    /// <summary>
+    /// 表示IDiagnosisCatalogService。
+    /// </summary>
     public interface IDiagnosisCatalogService {
 
         Task<List<DiagnosisCatalogDto>> GetAllAsync();

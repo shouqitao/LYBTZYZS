@@ -1,14 +1,12 @@
 using AutoMapper;
-using Microsoft.Extensions.Options;
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Auth;
-using LYBT.Module.Auth.Dtos;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Logs.Dtos;
+using LYBT.Module.Auth.Models.Dtos;
 using LYBT.Module.Logs.Interfaces;
-using LYBT.Module.Users.Dtos;
 using LYBT.Module.Users.Models;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Auth.Services {
 
@@ -70,7 +68,6 @@ namespace LYBT.Module.Auth.Services {
 
                 // 5. 处理登录成功
                 return await HandleSuccessfulLoginAsync(user, dto);
-
             } catch (Exception ex) {
                 await LogLoginException(dto.Username, ex, dto);
                 throw;
@@ -315,6 +312,6 @@ namespace LYBT.Module.Auth.Services {
             return fallbackUsername;
         }
 
-        #endregion
+        #endregion 私有辅助方法
     }
 }

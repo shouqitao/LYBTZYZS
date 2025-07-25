@@ -1,13 +1,9 @@
 ﻿using LYBT.Common.Enums;
 using LYBT.Infrastructure;
-using LYBT.Models.Doctors;
-using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
+using LYBT.Module.Doctors.Models;
+using LYBT.Module.Doctors.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LYBT.Module.Doctors.Repositories {
 

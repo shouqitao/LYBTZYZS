@@ -1,8 +1,5 @@
-﻿using LYBT.Models.Doctors;
-using LYBT.Module.Doctors.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LYBT.Module.Doctors.Models;
+using LYBT.Module.Doctors.Models.Dtos;
 
 namespace LYBT.Module.Doctors.Interfaces {
 

@@ -6,9 +6,6 @@ namespace LYBT.Common.Enums {
     /// 挂号类型枚举（英文命名，描述为中文）
     /// </summary>
     [Description("挂号类型")]
-/// <summary>
-/// 表示RegistrationType。
-/// </summary>
     public enum RegistrationType {
 
         [Description("普通挂号")]

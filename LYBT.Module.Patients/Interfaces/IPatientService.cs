@@ -1,7 +1,7 @@
-﻿using LYBT.Common.Models;
+﻿using LYBT.Common.Enums.Users;
+using LYBT.Common.Models;
 using LYBT.Module.Patients.Dtos;
-using LYBT.Module.Records.Dtos;
-using LYBT.Common.Enums.Users;
+using LYBT.Module.Records.Models.Dtos;
 
 namespace LYBT.Module.Patients.Interfaces {
 
@@ -118,6 +118,7 @@ namespace LYBT.Module.Patients.Interfaces {
     /// 快速患者创建 DTO
     /// </summary>
     public class QuickPatientCreateDto {
+
         /// <summary>姓名</summary>
         public string Name { get; set; } = string.Empty;
 

@@ -1,5 +1,5 @@
 ﻿using LYBT.Common.Enums;
-using LYBT.Models.Pharmacy;
+using LYBT.Module.Pharmacy.Models;
 
 namespace LYBT.Module.Pharmacy.Interfaces {
 

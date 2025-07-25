@@ -1,0 +1,15 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+namespace LYBT.Module.Patients.Models.Dtos {
+
+    /// <summary>
+    /// 批量操作患者ID列表 DTO
+    /// </summary>
+    public class BatchIdsDto {
+
+        [Required]
+        [DisplayName("Ids")]
+        public List<Guid> Ids { get; set; } = new();
+    }
+}

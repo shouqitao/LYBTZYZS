@@ -1,18 +1,15 @@
 ﻿using AutoMapper;
+using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
 using LYBT.Common.Responses;
 using LYBT.Infrastructure.Exceptions;
-using LYBT.Models.Doctors;
-using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
+using LYBT.Module.Doctors.Models;
+using LYBT.Module.Doctors.Models.Dtos;
 using LYBT.Module.Users.Interfaces;
-using LYBT.CommonUtils;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Doctors.Services {
+
     /// <summary>
     /// 医生业务服务实现类
     /// </summary>

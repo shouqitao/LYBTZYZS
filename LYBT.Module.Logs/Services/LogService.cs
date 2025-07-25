@@ -1,8 +1,7 @@
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Enums.Users;
-using LYBT.Models.Logs;
-using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
+using LYBT.Module.Logs.Models.Dtos;
 
 namespace LYBT.Module.Logs.Services {
 

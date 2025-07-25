@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums.Logs;
-using LYBT.Models.Records;
-using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Records.Dtos;
 using LYBT.Module.Records.Interfaces;
+using LYBT.Module.Records.Models;
+using LYBT.Module.Records.Models.Dtos;
 using System.Text.Json;
 
 namespace LYBT.Module.Records.Services {
@@ -136,22 +136,22 @@ namespace LYBT.Module.Records.Services {
             return result;
         }
 
-/// <summary>
-/// 执行GetByPatientIdAsync操作。
-/// </summary>
-/// <param name="patientId">参数patientId</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行GetByPatientIdAsync操作。
+        /// </summary>
+        /// <param name="patientId">参数patientId</param>
+        /// <returns>返回值</returns>
         public async Task<List<RecordDto>> GetByPatientIdAsync(Guid patientId) {
             var list = await _recordRepository.GetListByPatientIdAsync(patientId);
             return _mapper.Map<List<RecordDto>>(list);
         }
 
-/// <summary>
-/// 执行MarkAsSharedAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <param name="doctorIds">参数doctorIds</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行MarkAsSharedAsync操作。
+        /// </summary>
+        /// <param name="id">参数id</param>
+        /// <param name="doctorIds">参数doctorIds</param>
+        /// <returns>返回值</returns>
         public async Task<bool> MarkAsSharedAsync(Guid id, List<string> doctorIds) {
             var model = await _recordRepository.GetByIdAsync(id);
             if (model == null)
@@ -161,11 +161,11 @@ namespace LYBT.Module.Records.Services {
             return await _recordRepository.UpdateAsync(model);
         }
 
-/// <summary>
-/// 执行RevokeSharingAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行RevokeSharingAsync操作。
+        /// </summary>
+        /// <param name="id">参数id</param>
+        /// <returns>返回值</returns>
         public async Task<bool> RevokeSharingAsync(Guid id) {
             var model = await _recordRepository.GetByIdAsync(id);
             if (model == null)
@@ -175,11 +175,11 @@ namespace LYBT.Module.Records.Services {
             return await _recordRepository.UpdateAsync(model);
         }
 
-/// <summary>
-/// 执行GetSharedRecordsAsync操作。
-/// </summary>
-/// <param name="doctorId">参数doctorId</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行GetSharedRecordsAsync操作。
+        /// </summary>
+        /// <param name="doctorId">参数doctorId</param>
+        /// <returns>返回值</returns>
         public async Task<List<RecordDto>> GetSharedRecordsAsync(Guid doctorId) {
             var list = await _recordRepository.GetSharedRecordsAsync(doctorId);
             return _mapper.Map<List<RecordDto>>(list);

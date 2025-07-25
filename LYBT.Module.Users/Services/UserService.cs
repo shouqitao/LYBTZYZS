@@ -1,11 +1,9 @@
 ﻿using LYBT.Common.Enums.Logs;
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Helpers;
-using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
-using LYBT.Module.Users.Dtos;
-using LYBT.Module.Users.Models;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Models;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using CommonUtil = LYBT.CommonUtils.CommonUtils;
@@ -357,7 +355,6 @@ namespace LYBT.Module.Users.Services {
         private async Task LogUserOperation(
             Guid userId, ActionType actionType, Guid operatorId, string operatorName,
             string content, string? oldValue = null, object? newValue = null) {
-
             if (!_options.EnableDetailedAuditLogging)
                 return;
 
@@ -381,7 +378,6 @@ namespace LYBT.Module.Users.Services {
         private async Task LogBatchUserOperation(
             List<UserModel> users, ActionType actionType, Guid operatorId, string operatorName,
             string content) {
-
             if (!_options.EnableDetailedAuditLogging)
                 return;
 
@@ -410,6 +406,6 @@ namespace LYBT.Module.Users.Services {
             await Task.CompletedTask;
         }
 
-        #endregion
+        #endregion 私有辅助方法
     }
 }

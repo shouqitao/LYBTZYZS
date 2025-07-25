@@ -1,11 +1,9 @@
-﻿using LYBT.Module.Users.Dtos;
-using LYBT.Common.Responses;
-using LYBT.Module.Users;
+﻿using LYBT.Common.Enums.Users;
+using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using LYBT.Module.Users.Interfaces;
-using LYBT.Common.Enums.Users;
 
 /// <summary>
 /// 用户管理控制器，提供RESTful API接口

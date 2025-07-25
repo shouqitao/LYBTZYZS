@@ -1,13 +1,14 @@
-﻿using LYBT.Common.Models;
+﻿using LYBT.Common.Enums.Users;
+using LYBT.Common.Models;
 using LYBT.Common.Responses;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Records.Dtos;
+using LYBT.Module.Patients.Models.Dtos;
+using LYBT.Module.Records.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
-using LYBT.Common.Enums.Users;
 
 namespace LYBT.WebAPI.Controllers {
 

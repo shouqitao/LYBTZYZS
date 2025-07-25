@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums;
-using LYBT.Models.Registration;
-using LYBT.Module.Registration.Dtos;
-using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Queueing.Interfaces;
-using LYBT.Models.Queueing;
+using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registration.Models;
+using LYBT.Module.Registration.Models.Dtos;
 
 namespace LYBT.Module.Registration.Services {
 

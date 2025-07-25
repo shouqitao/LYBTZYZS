@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
-using LYBT.Models.Records;
 using LYBT.Module.Records.Dtos;
+using LYBT.Module.Records.Models;
+using LYBT.Module.Records.Models.Dtos;
 
 namespace LYBT.Module.Records.Mapping {
 

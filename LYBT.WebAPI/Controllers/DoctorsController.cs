@@ -1,8 +1,8 @@
+using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
 using LYBT.Common.Responses;
-using LYBT.Common.Enums.Users;
-using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
+using LYBT.Module.Doctors.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;

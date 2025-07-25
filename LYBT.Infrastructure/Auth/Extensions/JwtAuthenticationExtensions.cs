@@ -11,12 +11,12 @@ namespace LYBT.Infrastructure.Auth.Extensions {
     /// </summary>
     public static class JwtAuthenticationExtensions {
 
-/// <summary>
-/// 执行AddJwtAuthentication操作。
-/// </summary>
-/// <param name="services">参数services</param>
-/// <param name="configuration">参数configuration</param>
-/// <returns>返回值</returns>
+        /// <summary>
+        /// 执行AddJwtAuthentication操作。
+        /// </summary>
+        /// <param name="services">参数services</param>
+        /// <param name="configuration">参数configuration</param>
+        /// <returns>返回值</returns>
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration) {
             var jwtSection = configuration.GetSection("JwtOptions");
             services.Configure<JwtOptions>(jwtSection);

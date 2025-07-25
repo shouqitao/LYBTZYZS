@@ -2,15 +2,14 @@
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
-using LYBT.Models.Patients;
-using LYBT.Module.Logs.Dtos;
 using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Records.Dtos;
+using LYBT.Module.Patients.Models;
 using LYBT.Module.Records.Interfaces;
-using CommonUtil = LYBT.CommonUtils.CommonUtils;
+using LYBT.Module.Records.Models.Dtos;
 using System.Text.Json;
+using CommonUtil = LYBT.CommonUtils.CommonUtils;
 
 namespace LYBT.Module.Patients.Services {
 

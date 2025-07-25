@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using LYBT.Models.Settings;
-using LYBT.Module.Settings.Dtos;
 using LYBT.Module.Settings.Interfaces;
+using LYBT.Module.Settings.Models;
+using LYBT.Module.Settings.Models.Dtos;
 
 namespace LYBT.Module.Settings.Services {
 

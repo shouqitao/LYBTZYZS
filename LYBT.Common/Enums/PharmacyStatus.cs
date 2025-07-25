@@ -6,9 +6,6 @@ namespace LYBT.Common.Enums {
     /// 药房处方状态枚举
     /// </summary>
     [Description("药房状态")]
-/// <summary>
-/// 表示PharmacyStatus。
-/// </summary>
     public enum PharmacyStatus {
 
         /// <summary>待抓药</summary>

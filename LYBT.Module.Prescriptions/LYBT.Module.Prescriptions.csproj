@@ -22,7 +22,6 @@
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
     <ProjectReference Include="..\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\LYBT.Models\LYBT.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>

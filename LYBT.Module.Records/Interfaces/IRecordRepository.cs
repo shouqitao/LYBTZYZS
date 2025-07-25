@@ -1,4 +1,4 @@
-﻿using LYBT.Models.Records;
+﻿using LYBT.Module.Records.Models;
 
 namespace LYBT.Module.Records.Interfaces {
 

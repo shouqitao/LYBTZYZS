@@ -1,5 +1,4 @@
-﻿using LYBT.Module.Users.Dtos;
-using LYBT.Module.Users.Models;
+﻿using LYBT.Module.Users.Models;
 
 namespace LYBT.Module.Users.Interfaces {
 

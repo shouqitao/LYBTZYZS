@@ -1,7 +1,7 @@
 ﻿using LYBT.Common.Enums.Patient;
 using LYBT.Infrastructure;
-using LYBT.Models.Patients;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Patients.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Patients.Repositories {

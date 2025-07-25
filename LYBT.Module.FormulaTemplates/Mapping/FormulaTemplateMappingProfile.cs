@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
-using LYBT.Models;
-using LYBT.Models.FormulaTemplates;
-using LYBT.Module.FormulaTemplates.Dtos;
-using LYBT.Module.Herbs.Dtos;
+using LYBT.Module.FormulaTemplates.Models;
+using LYBT.Module.FormulaTemplates.Models.Dtos;
+using LYBT.Module.Herbs.Models.Dtos;
 
 namespace LYBT.Module.FormulaTemplates.Mapping {
 

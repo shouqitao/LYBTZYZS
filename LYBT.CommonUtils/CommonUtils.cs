@@ -1,9 +1,9 @@
-using System.ComponentModel;
-using System.Net.NetworkInformation;
-using System.Text.RegularExpressions;
-using System.Text;
 using Microsoft.International.Converters.PinYinConverter;
 using System.Collections.Concurrent;
+using System.ComponentModel;
+using System.Net.NetworkInformation;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace LYBT.CommonUtils;
 
@@ -22,6 +22,7 @@ public static partial class CommonUtils {
 
     // 身份证校验权重和校验码（避免重复计算）
     private static readonly int[] IdWeights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
+
     private static readonly char[] IdCodes = "10X98765432".ToCharArray();
 
     // 拼音码缓存

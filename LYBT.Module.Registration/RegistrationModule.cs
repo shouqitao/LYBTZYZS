@@ -1,8 +1,8 @@
-﻿using LYBT.Module.Registration.Interfaces;
+﻿using LYBT.Module.Queueing.Interfaces;
+using LYBT.Module.Queueing.Repositories;
+using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Repositories;
 using LYBT.Module.Registration.Services;
-using LYBT.Module.Queueing.Interfaces;
-using LYBT.Module.Queueing.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Registration {

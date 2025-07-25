@@ -1,16 +1,16 @@
-using System;
-using System.Collections.ObjectModel;
 using LYBT.Common.Extensions;
 using LYBT.Common.Models;
-
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 
 namespace LYBT.Common.Helpers {
+
     /// <summary>
     /// Helper methods for working with enums.
     /// </summary>
     [Description("枚举工具类")]
     public static class EnumHelper {
+
         /// <summary>
         /// Build an observable collection suitable for binding to a ComboBox.
         /// Each item contains the enum value and its description text.

@@ -1,6 +1,6 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models.DiagnosisTreatment;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
+using LYBT.Module.DiagnosisTreatment.Models;
 
 namespace LYBT.Module.DiagnosisTreatment.Repositories {
 

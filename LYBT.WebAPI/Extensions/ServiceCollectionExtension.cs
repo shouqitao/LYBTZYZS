@@ -1,10 +1,6 @@
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
-using Microsoft.Extensions.DependencyInjection;
-using LYBT.Module.Billing.Interfaces;
-using LYBT.Module.Billing.Repositories;
-using LYBT.Module.Billing.Services;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
 using LYBT.Module.DiagnosisTreatment.Repositories;
 using LYBT.Module.DiagnosisTreatment.Services;
@@ -23,7 +19,6 @@ using LYBT.Module.Logs.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
-using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Queueing.Interfaces;
@@ -50,15 +45,14 @@ namespace LYBT.WebAPI.Extensions;
 /// <summary>
 /// 所有模块服务注入
 /// </summary>
-public static class ServiceCollectionExtension
-{
-/// <summary>
-/// 执行AddLybtModules操作。
-/// </summary>
-/// <param name="services">参数services</param>
-/// <returns>返回值</returns>
-    public static IServiceCollection AddLybtModules(this IServiceCollection services)
-    {
+public static class ServiceCollectionExtension {
+
+    /// <summary>
+    /// 执行AddLybtModules操作。
+    /// </summary>
+    /// <param name="services">参数services</param>
+    /// <returns>返回值</returns>
+    public static IServiceCollection AddLybtModules(this IServiceCollection services) {
         // 用户管理
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserRepository, UserRepository>();
@@ -116,4 +110,3 @@ public static class ServiceCollectionExtension
         return services;
     }
 }
-
