@@ -1,11 +1,13 @@
 ﻿using LYBT.Common.Models;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Records.Dtos;
+using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Patients.Interfaces {
 
     /// <summary>
     /// 病人服务接口，负责业务逻辑处理
+    /// 实现软删除策略：患者只能禁用/启用，不能物理删除
     /// </summary>
     public interface IPatientService {
 
@@ -20,29 +22,22 @@ namespace LYBT.Module.Patients.Interfaces {
         Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 删除单个病人
-        /// </summary>
-        Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName);
-
-        /// <summary>
         /// 根据Id获取病人信息
+        /// 根据当前操作者角色决定是否包含禁用患者
         /// </summary>
-        Task<PatientDetailDto?> GetByIdAsync(Guid id);
+        Task<PatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
 
         /// <summary>
         /// 获取全部病人信息
+        /// 根据当前操作者角色决定是否包含禁用患者
         /// </summary>
-        Task<List<PatientDetailDto>> GetAllAsync();
+        Task<List<PatientDetailDto>> GetAllAsync(UserRole currentUserRole);
 
         /// <summary>
         /// 分页条件查询
+        /// 根据当前操作者角色决定是否包含禁用患者
         /// </summary>
-        Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query);
-
-        /// <summary>
-        /// 批量删除病人
-        /// </summary>
-        Task<int> BatchDeleteAsync(List<Guid> ids, Guid operatorId, string operatorName);
+        Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query, UserRole currentUserRole);
 
         /// <summary>
         /// 启用患者
@@ -50,7 +45,7 @@ namespace LYBT.Module.Patients.Interfaces {
         Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 禁用患者
+        /// 禁用患者（软删除）
         /// </summary>
         Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName);
 
@@ -60,19 +55,27 @@ namespace LYBT.Module.Patients.Interfaces {
         Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 根据关键词搜索患者
+        /// 批量启用患者
         /// </summary>
-        Task<List<PatientDetailDto>> SearchAsync(string keyword);
+        Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 根据关键词搜索患者
+        /// 根据当前操作者角色决定是否包含禁用患者
+        /// </summary>
+        Task<List<PatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole);
 
         /// <summary>
         /// 智能搜索患者（支持精确匹配和模糊搜索）
+        /// 根据当前操作者角色决定是否包含禁用患者
         /// </summary>
-        Task<List<PatientDetailDto>> SmartSearchAsync(string keyword);
+        Task<List<PatientDetailDto>> SmartSearchAsync(string keyword, UserRole currentUserRole);
 
         /// <summary>
         /// 获取指定医生可访问患者
+        /// 根据当前操作者角色决定是否包含禁用患者
         /// </summary>
-        Task<List<PatientDetailDto>> GetForDoctorAsync(Guid doctorId);
+        Task<List<PatientDetailDto>> GetForDoctorAsync(Guid doctorId, UserRole currentUserRole);
 
         /// <summary>
         /// 将患者授权给指定医生
@@ -86,8 +89,9 @@ namespace LYBT.Module.Patients.Interfaces {
 
         /// <summary>
         /// 导出患者数据
+        /// 根据当前操作者角色决定是否包含禁用患者
         /// </summary>
-        Task<List<PatientDetailDto>> ExportAsync();
+        Task<List<PatientDetailDto>> ExportAsync(UserRole currentUserRole);
 
         /// <summary>
         /// 获取患者历史病历
@@ -103,6 +107,11 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 验证患者数据
         /// </summary>
         Task<ValidationResult> ValidatePatientAsync(PatientDetailDto dto, bool isUpdate = false);
+
+        /// <summary>
+        /// 获取启用的患者列表
+        /// </summary>
+        Task<List<PatientDetailDto>> GetActivePatientsAsync();
     }
 
     /// <summary>

@@ -10,13 +10,15 @@ namespace LYBT.Module.Users.Interfaces {
 
         /// <summary>
         /// 分页/条件查找用户
+        /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        Task<(IList<UserDto> users, int total)> SearchAsync(UserQueryDto query);
+        Task<(IList<UserDto> users, int total)> SearchAsync(UserQueryDto query, UserRole currentUserRole);
 
         /// <summary>
         /// 根据ID获取用户详情
+        /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        Task<UserDto?> GetByIdAsync(Guid id);
+        Task<UserDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
 
         /// <summary>
         /// 新增用户
@@ -29,7 +31,7 @@ namespace LYBT.Module.Users.Interfaces {
         Task<bool> UpdateAsync(UserDetailDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 禁用用户
+        /// 禁用用户（软删除）
         /// </summary>
         Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName);
 
@@ -67,5 +69,10 @@ namespace LYBT.Module.Users.Interfaces {
         /// 获取系统所有角色
         /// </summary>
         List<UserRole> GetRoles();
+
+        /// <summary>
+        /// 获取启用的用户列表
+        /// </summary>
+        Task<List<UserDto>> GetActiveUsersAsync();
     }
 }

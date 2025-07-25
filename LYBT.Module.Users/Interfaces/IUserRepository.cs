@@ -30,8 +30,9 @@ namespace LYBT.Module.Users.Interfaces {
 
         /// <summary>
         /// 分页条件查找用户（支持关键词、角色、状态筛选）
+        /// 管理员可以查询所有用户（包括禁用的），普通用户只能查询启用的用户
         /// </summary>
-        Task<(IList<UserModel> users, int total)> GetPagedAsync(UserQueryDto query);
+        Task<(IList<UserModel> users, int total)> GetPagedAsync(UserQueryDto query, bool includeDisabled = false);
 
         /// <summary>
         /// 根据用户名查找用户（登录或唯一性校验）
@@ -40,16 +41,17 @@ namespace LYBT.Module.Users.Interfaces {
 
         /// <summary>
         /// 根据用户ID查找（用于编辑、禁用等内部操作）
+        /// 管理员可以查询所有用户，普通用户只能查询启用的用户
         /// </summary>
-        Task<UserModel?> GetByIdAsync(Guid id);
+        Task<UserModel?> GetByIdAsync(Guid id, bool includeDisabled = false);
 
         /// <summary>
         /// 根据ID列表批量获取用户
         /// </summary>
-        Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids);
+        Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false);
 
         /// <summary>
-        /// 校验用户名是否存在
+        /// 校验用户名是否存在（包括禁用用户）
         /// </summary>
         Task<bool> ExistsByUsernameAsync(string userName);
 
@@ -62,5 +64,10 @@ namespace LYBT.Module.Users.Interfaces {
         /// 批量更新启用状态
         /// </summary>
         Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive);
+
+        /// <summary>
+        /// 获取启用的用户列表
+        /// </summary>
+        Task<List<UserModel>> GetActiveUsersAsync();
     }
 }

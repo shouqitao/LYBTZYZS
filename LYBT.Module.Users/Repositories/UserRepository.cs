@@ -8,6 +8,7 @@ namespace LYBT.Module.Users.Repositories {
 
     /// <summary>
     /// 用户仓储实现类（基于EF Core）
+    /// 实现软删除策略：用户只能禁用/启用，不能物理删除
     /// </summary>
     public class UserRepository : IUserRepository {
         private readonly AppDbContext _dbContext;
@@ -33,7 +34,7 @@ namespace LYBT.Module.Users.Repositories {
         }
 
         /// <summary>
-        /// 禁用用户
+        /// 禁用用户（软删除）
         /// </summary>
         public async Task<bool> DisableAsync(Guid id) {
             var user = await _dbContext.Users.FindAsync(id);
@@ -60,12 +61,18 @@ namespace LYBT.Module.Users.Repositories {
 
         /// <summary>
         /// 分页条件查找用户
+        /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<(IList<UserModel> users, int total)> GetPagedAsync(UserQueryDto query) {
+        public async Task<(IList<UserModel> users, int total)> GetPagedAsync(UserQueryDto query, bool includeDisabled = false) {
             var dbSet = _dbContext.Users.AsQueryable();
 
             // 隐藏内置的sysadmin用户
             dbSet = dbSet.Where(u => u.UserName != "sysadmin");
+
+            // 权限控制：非管理员只能看到启用的用户
+            if (!includeDisabled) {
+                dbSet = dbSet.Where(u => u.IsActive);
+            }
 
             // 关键词（用户名、真实姓名、拼音码）模糊查找
             if (!string.IsNullOrWhiteSpace(query.Keyword)) {
@@ -101,7 +108,7 @@ namespace LYBT.Module.Users.Repositories {
         }
 
         /// <summary>
-        /// 根据用户名查找
+        /// 根据用户名查找（包括禁用用户，用于登录验证）
         /// </summary>
         public async Task<UserModel?> GetByUsernameAsync(string userName) {
             return await _dbContext.Users
@@ -110,22 +117,34 @@ namespace LYBT.Module.Users.Repositories {
 
         /// <summary>
         /// 根据ID查找
+        /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<UserModel?> GetByIdAsync(Guid id) {
-            return await _dbContext.Users.FindAsync(id);
+        public async Task<UserModel?> GetByIdAsync(Guid id, bool includeDisabled = false) {
+            var query = _dbContext.Users.AsQueryable();
+
+            if (!includeDisabled) {
+                query = query.Where(u => u.IsActive);
+            }
+
+            return await query.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         /// <summary>
         /// 根据ID列表批量获取用户
+        /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids) {
-            return await _dbContext.Users
-                .Where(u => ids.Contains(u.Id))
-                .ToListAsync();
+        public async Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false) {
+            var query = _dbContext.Users.Where(u => ids.Contains(u.Id));
+
+            if (!includeDisabled) {
+                query = query.Where(u => u.IsActive);
+            }
+
+            return await query.ToListAsync();
         }
 
         /// <summary>
-        /// 校验用户名是否存在
+        /// 校验用户名是否存在（包括禁用用户）
         /// </summary>
         public async Task<bool> ExistsByUsernameAsync(string userName) {
             return await _dbContext.Users.AnyAsync(u => u.UserName == userName);
@@ -153,6 +172,16 @@ namespace LYBT.Module.Users.Repositories {
                 .ExecuteUpdateAsync(u => u.SetProperty(p => p.IsActive, isActive));
 
             return affectedRows;
+        }
+
+        /// <summary>
+        /// 获取启用的用户列表
+        /// </summary>
+        public async Task<List<UserModel>> GetActiveUsersAsync() {
+            return await _dbContext.Users
+                .Where(u => u.IsActive && u.UserName != "sysadmin")
+                .OrderBy(u => u.RealName)
+                .ToListAsync();
         }
     }
 }

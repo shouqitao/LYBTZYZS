@@ -8,18 +8,21 @@ namespace LYBT.Module.Doctors.Interfaces {
 
     /// <summary>
     /// 医生仓储接口
+    /// 实现软删除策略：医生只能禁用/启用，不能物理删除
     /// </summary>
     public interface IDoctorRepository {
 
         /// <summary>
         /// 根据ID获取医生详情
+        /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
-        Task<DoctorModel?> GetByIdAsync(Guid id);
+        Task<DoctorModel?> GetByIdAsync(Guid id, bool includeDisabled = false);
 
         /// <summary>
         /// 根据用户ID获取医生详情
+        /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
-        Task<DoctorModel?> GetByUserIdAsync(Guid userId);
+        Task<DoctorModel?> GetByUserIdAsync(Guid userId, bool includeDisabled = false);
 
         /// <summary>
         /// 获取所有在职医生列表
@@ -28,13 +31,15 @@ namespace LYBT.Module.Doctors.Interfaces {
 
         /// <summary>
         /// 搜索医生
+        /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
-        Task<List<DoctorModel>> SearchAsync(string keyword);
+        Task<List<DoctorModel>> SearchAsync(string keyword, bool includeDisabled = false);
 
         /// <summary>
         /// 分页获取医生
+        /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
-        Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query);
+        Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query, bool includeDisabled = false);
 
         /// <summary>
         /// 新增医生
@@ -47,7 +52,7 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<bool> UpdateAsync(DoctorModel model);
 
         /// <summary>
-        /// 禁用医生
+        /// 禁用医生（软删除）
         /// </summary>
         Task<bool> DisableAsync(Guid id);
 
@@ -67,13 +72,14 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<int> BatchEnableAsync(List<Guid> ids);
 
         /// <summary>
-        /// 检查医生是否存在
+        /// 检查医生是否存在（包括禁用的医生）
         /// </summary>
         Task<bool> ExistsAsync(Guid id);
 
         /// <summary>
         /// 根据拼音码搜索医生
+        /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
-        Task<List<DoctorModel>> SearchByPinyinAsync(string pinyin);
+        Task<List<DoctorModel>> SearchByPinyinAsync(string pinyin, bool includeDisabled = false);
     }
 }
