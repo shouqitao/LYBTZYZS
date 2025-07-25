@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums.Logs;
+using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
 using LYBT.Models.Patients;
 using LYBT.Module.Logs.Dtos;
@@ -15,6 +16,7 @@ namespace LYBT.Module.Patients.Services {
 
     /// <summary>
     /// 病人服务实现（业务逻辑层）
+    /// 实现软删除策略：患者只能禁用/启用，不能物理删除
     /// </summary>
     public class PatientService : IPatientService {
         private readonly IPatientRepository _patientRepository;
@@ -76,7 +78,7 @@ namespace LYBT.Module.Patients.Services {
         }
 
         public async Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
-            var model = await _patientRepository.GetByIdAsync(dto.Id);
+            var model = await _patientRepository.GetByIdAsync(dto.Id, true); // 管理员更新时包含禁用患者
             if (model == null)
                 throw new ArgumentException("病人不存在");
 
@@ -118,96 +120,38 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
-        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
-            var patient = await _patientRepository.GetByIdAsync(id);
-            if (patient == null) {
-                return false;
-            }
-
-            var result = await _patientRepository.DeleteAsync(id);
-
-            if (result) {
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = patient.Id,
-                    ActionType = ActionType.Delete,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = $"删除患者：{patient.Name}",
-                    OldValue = JsonSerializer.Serialize(patient)
-                });
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// 根据患者Id获取患者详情
+        /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<PatientDetailDto?> GetByIdAsync(Guid id) {
-            var model = await _patientRepository.GetByIdAsync(id);
+        public async Task<PatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
+            bool includeDisabled = currentUserRole == UserRole.Admin;
+            var model = await _patientRepository.GetByIdAsync(id, includeDisabled);
             return model == null ? null : _mapper.Map<PatientDetailDto>(model);
         }
 
         /// <summary>
         /// 获取所有患者列表
+        /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetAllAsync() {
-            var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue);
+        public async Task<List<PatientDetailDto>> GetAllAsync(UserRole currentUserRole) {
+            bool includeDisabled = currentUserRole == UserRole.Admin;
+            var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue, includeDisabled);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         /// <summary>
         /// 按条件分页查询患者信息
+        /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query) {
-            var list = await _patientRepository.GetListAsync(query.Keyword, query.Page, query.PageSize);
-            var total = await _patientRepository.GetCountAsync(query.Keyword);
+        public async Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query, UserRole currentUserRole) {
+            bool includeDisabled = currentUserRole == UserRole.Admin;
+            var list = await _patientRepository.GetListAsync(query.Keyword, query.Page, query.PageSize, includeDisabled);
+            var total = await _patientRepository.GetCountAsync(query.Keyword, includeDisabled);
             return new PagedResultDto<PatientDetailDto> {
                 TotalCount = total,
                 Items = list.Select(_mapper.Map<PatientDetailDto>).ToList()
             };
-        }
-
-        /// <summary>
-        /// 批量删除患者（优化后的实现）
-        /// </summary>
-        public async Task<int> BatchDeleteAsync(List<Guid> ids, Guid operatorId, string operatorName) {
-            if (!ids.Any())
-                return 0;
-
-            // 获取要删除的患者信息（用于日志记录）
-            var patients = new List<PatientModel>();
-            foreach (var id in ids) {
-                var patient = await _patientRepository.GetByIdAsync(id);
-                if (patient != null) {
-                    patients.Add(patient);
-                }
-            }
-
-            if (!patients.Any())
-                return 0;
-
-            var validIds = patients.Select(p => p.Id).ToList();
-            var result = await _patientRepository.BatchDeleteAsync(validIds);
-
-            if (result > 0) {
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = Guid.Empty,
-                    ActionType = ActionType.Delete,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = $"批量删除患者：{result}人",
-                    OldValue = JsonSerializer.Serialize(patients.Select(p => new { p.Id, p.Name }))
-                });
-            }
-
-            return result;
         }
 
         public async Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName) {
@@ -261,36 +205,57 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
-        public async Task<List<PatientDetailDto>> SearchAsync(string keyword) {
-            var list = await _patientRepository.SearchAsync(keyword);
+        public async Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
+            var count = await _patientRepository.BatchEnableAsync(ids);
+            if (count > 0) {
+                await _logService.AddLogAsync(new LogDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Patient,
+                    ObjectId = Guid.Empty,
+                    ActionType = ActionType.Enable,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    LogTime = DateTime.Now,
+                    Content = $"批量启用患者：{count}人"
+                });
+            }
+            return count;
+        }
+
+        public async Task<List<PatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole) {
+            bool includeDisabled = currentUserRole == UserRole.Admin;
+            var list = await _patientRepository.SearchAsync(keyword, includeDisabled);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         /// <summary>
         /// 智能搜索患者（精确匹配优先，然后模糊搜索）
+        /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<List<PatientDetailDto>> SmartSearchAsync(string keyword) {
+        public async Task<List<PatientDetailDto>> SmartSearchAsync(string keyword, UserRole currentUserRole) {
+            bool includeDisabled = currentUserRole == UserRole.Admin;
             var results = new List<PatientModel>();
 
             // 先进行精确匹配
-            var exactResults = await _patientRepository.ExactSearchAsync(keyword);
+            var exactResults = await _patientRepository.ExactSearchAsync(keyword, includeDisabled);
             results.AddRange(exactResults);
 
             // 如果精确匹配没有结果，进行模糊搜索
             if (!results.Any()) {
-                var fuzzyResults = await _patientRepository.SearchAsync(keyword);
+                var fuzzyResults = await _patientRepository.SearchAsync(keyword, includeDisabled);
                 results.AddRange(fuzzyResults);
             } else {
                 // 如果有精确匹配，再补充一些模糊搜索结果
-                var fuzzyResults = await _patientRepository.SearchAsync(keyword);
+                var fuzzyResults = await _patientRepository.SearchAsync(keyword, includeDisabled);
                 results.AddRange(fuzzyResults.Where(f => !results.Any(r => r.Id == f.Id)).Take(10));
             }
 
             return results.Take(20).Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
-        public async Task<List<PatientDetailDto>> GetForDoctorAsync(Guid doctorId) {
-            var list = await _patientRepository.GetForDoctorAsync(doctorId);
+        public async Task<List<PatientDetailDto>> GetForDoctorAsync(Guid doctorId, UserRole currentUserRole) {
+            bool includeDisabled = currentUserRole == UserRole.Admin;
+            var list = await _patientRepository.GetForDoctorAsync(doctorId, includeDisabled);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
@@ -325,8 +290,9 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
-        public async Task<List<PatientDetailDto>> ExportAsync() {
-            var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue);
+        public async Task<List<PatientDetailDto>> ExportAsync(UserRole currentUserRole) {
+            bool includeDisabled = currentUserRole == UserRole.Admin;
+            var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue, includeDisabled);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
@@ -412,6 +378,11 @@ namespace LYBT.Module.Patients.Services {
             }
 
             return result;
+        }
+
+        public async Task<List<PatientDetailDto>> GetActivePatientsAsync() {
+            var patients = await _patientRepository.GetActivePatientsAsync();
+            return patients.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         /// <summary>

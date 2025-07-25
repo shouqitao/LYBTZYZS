@@ -57,7 +57,7 @@ namespace LYBT.WebAPI.Controllers {
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _doctorService.GetPagedAsync(query, operatorRole);
 
-                if (result.Success) {
+                if (result.IsSuccess) {
                     return Ok(result);
                 } else {
                     return BadRequest(ApiResponse<object>.Fail(result.Message));
@@ -81,12 +81,12 @@ namespace LYBT.WebAPI.Controllers {
                 var cacheKey = $"doctor_search:{keyword}:{operatorRole}";
                 if (!_cache.TryGetValue(cacheKey, out ApiResponse<List<DoctorDto>>? result)) {
                     result = await _doctorService.SearchAsync(keyword, operatorRole);
-                    if (result.Success) {
+                    if (result.IsSuccess) {
                         _cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
                     }
                 }
 
-                return result.Success ? Ok(result) : BadRequest(result);
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "搜索医生失败，关键词: {Keyword}", keyword);
                 return StatusCode(500, ApiResponse<object>.Fail("搜索医生失败"));
@@ -102,12 +102,12 @@ namespace LYBT.WebAPI.Controllers {
                 // 缓存在职医生列表
                 if (!_cache.TryGetValue("active_doctors", out ApiResponse<List<DoctorDto>>? result)) {
                     result = await _doctorService.GetActiveDoctorsAsync();
-                    if (result.Success) {
+                    if (result.IsSuccess) {
                         _cache.Set("active_doctors", result, TimeSpan.FromMinutes(10));
                     }
                 }
 
-                return result.Success ? Ok(result) : BadRequest(result);
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取在职医生列表失败");
                 return StatusCode(500, ApiResponse<object>.Fail("获取在职医生列表失败"));
@@ -131,12 +131,12 @@ namespace LYBT.WebAPI.Controllers {
                 var cacheKey = $"doctor_detail:{id}:{operatorRole}";
                 if (!_cache.TryGetValue(cacheKey, out ApiResponse<DoctorDetailDto>? result)) {
                     result = await _doctorService.GetByIdAsync(id, operatorRole);
-                    if (result.Success) {
+                    if (result.IsSuccess) {
                         _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
                     }
                 }
 
-                return result.Success ? Ok(result) : NotFound(result);
+                return result.IsSuccess ? Ok(result) : NotFound(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取医生详情失败，ID: {DoctorId}", id);
                 return StatusCode(500, ApiResponse<object>.Fail("获取医生详情失败"));
@@ -157,7 +157,7 @@ namespace LYBT.WebAPI.Controllers {
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _doctorService.GetByUserIdAsync(userId, operatorRole);
 
-                return result.Success ? Ok(result) : NotFound(result);
+                return result.IsSuccess ? Ok(result) : NotFound(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "根据用户ID获取医生失败，用户ID: {UserId}", userId);
                 return StatusCode(500, ApiResponse<object>.Fail("根据用户ID获取医生失败"));
@@ -178,13 +178,13 @@ namespace LYBT.WebAPI.Controllers {
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _doctorService.AddAsync(dto);
 
-                if (result.Success) {
+                if (result.IsSuccess) {
                     // 清除相关缓存
                     _cache.Remove("active_doctors");
                     _logger.LogInformation("医生档案创建成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
                 }
 
-                return result.Success ? Ok(result) : BadRequest(result);
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "新增医生失败");
                 return StatusCode(500, ApiResponse<object>.Fail("新增医生失败"));
@@ -205,7 +205,7 @@ namespace LYBT.WebAPI.Controllers {
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _doctorService.UpdateAsync(dto);
 
-                if (result.Success) {
+                if (result.IsSuccess) {
                     // 清除相关缓存
                     _cache.Remove($"doctor_detail:{dto.Id}:Admin");
                     _cache.Remove($"doctor_detail:{dto.Id}:DiagnosingDoctor");
@@ -215,7 +215,7 @@ namespace LYBT.WebAPI.Controllers {
                         dto.Id, operatorName, operatorId);
                 }
 
-                return result.Success ? Ok(result) : BadRequest(result);
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "更新医生信息失败，医生ID: {DoctorId}", dto.Id);
                 return StatusCode(500, ApiResponse<object>.Fail("更新医生信息失败"));
@@ -235,14 +235,14 @@ namespace LYBT.WebAPI.Controllers {
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _doctorService.DisableAsync(id);
 
-                if (result.Success) {
+                if (result.IsSuccess) {
                     // 清除相关缓存
                     ClearDoctorCache(id);
                     _logger.LogInformation("医生已禁用，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
                         id, operatorName, operatorId);
                 }
 
-                return result.Success ? Ok(result) : NotFound(result);
+                return result.IsSuccess ? Ok(result) : NotFound(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "禁用医生失败，医生ID: {DoctorId}", id);
                 return StatusCode(500, ApiResponse<object>.Fail("禁用医生失败"));
@@ -262,14 +262,14 @@ namespace LYBT.WebAPI.Controllers {
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _doctorService.EnableAsync(id);
 
-                if (result.Success) {
+                if (result.IsSuccess) {
                     // 清除相关缓存
                     ClearDoctorCache(id);
                     _logger.LogInformation("医生已启用，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
                         id, operatorName, operatorId);
                 }
 
-                return result.Success ? Ok(result) : NotFound(result);
+                return result.IsSuccess ? Ok(result) : NotFound(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "启用医生失败，医生ID: {DoctorId}", id);
                 return StatusCode(500, ApiResponse<object>.Fail("启用医生失败"));
@@ -289,14 +289,14 @@ namespace LYBT.WebAPI.Controllers {
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _doctorService.BatchDisableAsync(dto.Ids);
 
-                if (result.Success) {
+                if (result.IsSuccess) {
                     // 清除所有医生相关缓存
                     ClearAllDoctorCache();
                     _logger.LogInformation("批量禁用医生成功，数量: {Count}，操作者: {OperatorName}({OperatorId})",
                         result.Data, operatorName, operatorId);
                 }
 
-                return result.Success ? Ok(result) : BadRequest(result);
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "批量禁用医生失败");
                 return StatusCode(500, ApiResponse<object>.Fail("批量禁用医生失败"));
@@ -316,14 +316,14 @@ namespace LYBT.WebAPI.Controllers {
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _doctorService.BatchEnableAsync(dto.Ids);
 
-                if (result.Success) {
+                if (result.IsSuccess) {
                     // 清除所有医生相关缓存
                     ClearAllDoctorCache();
                     _logger.LogInformation("批量启用医生成功，数量: {Count}，操作者: {OperatorName}({OperatorId})",
                         result.Data, operatorName, operatorId);
                 }
 
-                return result.Success ? Ok(result) : BadRequest(result);
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "批量启用医生失败");
                 return StatusCode(500, ApiResponse<object>.Fail("批量启用医生失败"));

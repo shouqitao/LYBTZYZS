@@ -31,18 +31,26 @@ namespace LYBT.Module.Users.Services {
 
         /// <summary>
         /// 分页/条件查找用户
+        /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        public async Task<(IList<UserDto> users, int total)> SearchAsync(UserQueryDto query) {
-            var (models, total) = await _userRepository.GetPagedAsync(query);
+        public async Task<(IList<UserDto> users, int total)> SearchAsync(UserQueryDto query, UserRole currentUserRole) {
+            // 管理员可以查看所有用户（包括禁用的），普通用户只能查看启用的用户
+            bool includeDisabled = currentUserRole == UserRole.Admin;
+
+            var (models, total) = await _userRepository.GetPagedAsync(query, includeDisabled);
             var users = models.Select(MapToUserDto).ToList();
             return (users, total);
         }
 
         /// <summary>
         /// 根据ID获取用户详情
+        /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        public async Task<UserDto?> GetByIdAsync(Guid id) {
-            var model = await _userRepository.GetByIdAsync(id);
+        public async Task<UserDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
+            // 管理员可以查看所有用户（包括禁用的），普通用户只能查看启用的用户
+            bool includeDisabled = currentUserRole == UserRole.Admin;
+
+            var model = await _userRepository.GetByIdAsync(id, includeDisabled);
             return model != null ? MapToUserDto(model) : null;
         }
 
@@ -240,6 +248,14 @@ namespace LYBT.Module.Users.Services {
             return Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToList();
         }
 
+        /// <summary>
+        /// 获取启用的用户列表
+        /// </summary>
+        public async Task<List<UserDto>> GetActiveUsersAsync() {
+            var users = await _userRepository.GetActiveUsersAsync();
+            return users.Select(MapToUserDto).ToList();
+        }
+
         #region 私有辅助方法
 
         /// <summary>
@@ -306,7 +322,8 @@ namespace LYBT.Module.Users.Services {
         /// 获取现有用户（不存在时抛出异常）
         /// </summary>
         private async Task<UserModel> GetExistingUser(Guid id) {
-            var user = await _userRepository.GetByIdAsync(id);
+            // 内部方法总是包含禁用用户，确保操作能正常进行
+            var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
             if (user == null) {
                 throw new InvalidOperationException("用户不存在");
             }
@@ -317,14 +334,8 @@ namespace LYBT.Module.Users.Services {
         /// 根据ID列表获取用户列表
         /// </summary>
         private async Task<List<UserModel>> GetUsersByIds(List<Guid> ids) {
-            var users = new List<UserModel>();
-            foreach (var id in ids) {
-                var user = await _userRepository.GetByIdAsync(id);
-                if (user != null) {
-                    users.Add(user);
-                }
-            }
-            return users;
+            // 内部方法总是包含禁用用户，确保批量操作能正常进行
+            return await _userRepository.GetUsersByIdsAsync(ids, includeDisabled: true);
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using LYBT.Models;
+using LYBT.Models.Herbs;
 using LYBT.Module.Herbs.Dtos;
 
 namespace LYBT.Module.Herbs.Mapping {

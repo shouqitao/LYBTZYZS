@@ -8,6 +8,7 @@ namespace LYBT.Module.Patients.Repositories {
 
     /// <summary>
     /// 病人仓储实现，负责数据库具体操作
+    /// 实现软删除策略：患者只能禁用/启用，不能物理删除
     /// </summary>
     public class PatientRepository : IPatientRepository {
         private readonly AppDbContext _dbContext;
@@ -21,12 +22,23 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-        public async Task<PatientModel?> GetByIdAsync(Guid id) {
-            return await _dbContext.Patients.FindAsync(id);
+        public async Task<PatientModel?> GetByIdAsync(Guid id, bool includeDisabled = false) {
+            var query = _dbContext.Patients.AsQueryable();
+
+            if (!includeDisabled) {
+                query = query.Where(p => p.Status == PatientStatus.Active);
+            }
+
+            return await query.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<List<PatientModel>> GetListAsync(string? keyword = null, int page = 1, int pageSize = 20) {
+        public async Task<List<PatientModel>> GetListAsync(string? keyword = null, int page = 1, int pageSize = 20, bool includeDisabled = false) {
             var query = _dbContext.Patients.AsQueryable();
+
+            // 权限控制：是否包含禁用患者
+            if (!includeDisabled) {
+                query = query.Where(p => p.Status == PatientStatus.Active);
+            }
 
             if (!string.IsNullOrWhiteSpace(keyword)) {
                 var upper = keyword.ToUpperInvariant();
@@ -47,64 +59,6 @@ namespace LYBT.Module.Patients.Repositories {
             patient.UpdatedAt = DateTime.Now;
             _dbContext.Patients.Update(patient);
             return await _dbContext.SaveChangesAsync() > 0;
-        }
-
-        public async Task<bool> DeleteAsync(Guid id) {
-            var entity = await _dbContext.Patients.FindAsync(id);
-            if (entity == null)
-                return false;
-            _dbContext.Patients.Remove(entity);
-            return await _dbContext.SaveChangesAsync() > 0;
-        }
-
-        public async Task<int> BatchDeleteAsync(List<Guid> ids) {
-            var entities = await _dbContext.Patients
-                .Where(p => ids.Contains(p.Id))
-                .ToListAsync();
-
-            if (!entities.Any())
-                return 0;
-
-            _dbContext.Patients.RemoveRange(entities);
-            return await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task<PatientModel?> GetByIDNumberAsync(string idNumber) {
-            return await _dbContext.Patients.FirstOrDefaultAsync(x => x.IDNumber == idNumber);
-        }
-
-        public async Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber) {
-            return await _dbContext.Patients.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
-        }
-
-        public async Task<bool> IsIDNumberExistsAsync(string idNumber, Guid? excludeId = null) {
-            var query = _dbContext.Patients.Where(p => p.IDNumber == idNumber);
-            if (excludeId.HasValue) {
-                query = query.Where(p => p.Id != excludeId.Value);
-            }
-            return await query.AnyAsync();
-        }
-
-        public async Task<bool> IsPhoneNumberExistsAsync(string phoneNumber, Guid? excludeId = null) {
-            var query = _dbContext.Patients.Where(p => p.PhoneNumber == phoneNumber);
-            if (excludeId.HasValue) {
-                query = query.Where(p => p.Id != excludeId.Value);
-            }
-            return await query.AnyAsync();
-        }
-
-        public async Task<int> GetCountAsync(string? keyword = null) {
-            var query = _dbContext.Patients.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(keyword)) {
-                var upper = keyword.ToUpperInvariant();
-                query = query.Where(x => x.Name.Contains(keyword)
-                    || x.PinyinCode.Contains(upper)
-                    || x.PhoneNumber.Contains(keyword)
-                    || x.IDNumber.Contains(keyword));
-            }
-
-            return await query.CountAsync();
         }
 
         public async Task<bool> EnableAsync(Guid id) {
@@ -137,9 +91,69 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<List<PatientModel>> SearchAsync(string keyword) {
+        public async Task<int> BatchEnableAsync(List<Guid> ids) {
+            var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
+            foreach (var p in list) {
+                p.Status = PatientStatus.Active;
+                p.UpdatedAt = DateTime.Now;
+            }
+            _dbContext.Patients.UpdateRange(list);
+            return await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<PatientModel?> GetByIDNumberAsync(string idNumber) {
+            return await _dbContext.Patients.FirstOrDefaultAsync(x => x.IDNumber == idNumber);
+        }
+
+        public async Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber) {
+            return await _dbContext.Patients.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
+        }
+
+        public async Task<bool> IsIDNumberExistsAsync(string idNumber, Guid? excludeId = null) {
+            var query = _dbContext.Patients.Where(p => p.IDNumber == idNumber);
+            if (excludeId.HasValue) {
+                query = query.Where(p => p.Id != excludeId.Value);
+            }
+            return await query.AnyAsync();
+        }
+
+        public async Task<bool> IsPhoneNumberExistsAsync(string phoneNumber, Guid? excludeId = null) {
+            var query = _dbContext.Patients.Where(p => p.PhoneNumber == phoneNumber);
+            if (excludeId.HasValue) {
+                query = query.Where(p => p.Id != excludeId.Value);
+            }
+            return await query.AnyAsync();
+        }
+
+        public async Task<int> GetCountAsync(string? keyword = null, bool includeDisabled = false) {
+            var query = _dbContext.Patients.AsQueryable();
+
+            // 权限控制：是否包含禁用患者
+            if (!includeDisabled) {
+                query = query.Where(p => p.Status == PatientStatus.Active);
+            }
+
+            if (!string.IsNullOrWhiteSpace(keyword)) {
+                var upper = keyword.ToUpperInvariant();
+                query = query.Where(x => x.Name.Contains(keyword)
+                    || x.PinyinCode.Contains(upper)
+                    || x.PhoneNumber.Contains(keyword)
+                    || x.IDNumber.Contains(keyword));
+            }
+
+            return await query.CountAsync();
+        }
+
+        public async Task<List<PatientModel>> SearchAsync(string keyword, bool includeDisabled = false) {
+            var query = _dbContext.Patients.AsQueryable();
+
+            // 权限控制：是否包含禁用患者
+            if (!includeDisabled) {
+                query = query.Where(p => p.Status == PatientStatus.Active);
+            }
+
             var upper = keyword.ToUpperInvariant();
-            return await _dbContext.Patients
+            return await query
                 .Where(p => p.Name.Contains(keyword)
                     || p.PinyinCode.Contains(upper)
                     || p.IDNumber.Contains(keyword)
@@ -149,18 +163,24 @@ namespace LYBT.Module.Patients.Repositories {
                 .ToListAsync();
         }
 
-        public async Task<List<PatientModel>> ExactSearchAsync(string keyword) {
+        public async Task<List<PatientModel>> ExactSearchAsync(string keyword, bool includeDisabled = false) {
             var results = new List<PatientModel>();
 
+            // 基础查询，是否包含禁用患者
+            var baseQuery = _dbContext.Patients.AsQueryable();
+            if (!includeDisabled) {
+                baseQuery = baseQuery.Where(p => p.Status == PatientStatus.Active);
+            }
+
             // 精确匹配手机号
-            var phoneMatch = await _dbContext.Patients
+            var phoneMatch = await baseQuery
                 .FirstOrDefaultAsync(p => p.PhoneNumber == keyword);
             if (phoneMatch != null) {
                 results.Add(phoneMatch);
             }
 
             // 精确匹配身份证号
-            var idMatch = await _dbContext.Patients
+            var idMatch = await baseQuery
                 .FirstOrDefaultAsync(p => p.IDNumber == keyword);
             if (idMatch != null && !results.Any(r => r.Id == idMatch.Id)) {
                 results.Add(idMatch);
@@ -169,13 +189,27 @@ namespace LYBT.Module.Patients.Repositories {
             return results;
         }
 
-        public async Task<List<PatientModel>> GetForDoctorAsync(Guid doctorId) {
-            var query = _dbContext.Patients.Where(p => !p.IsSpecial);
+        public async Task<List<PatientModel>> GetForDoctorAsync(Guid doctorId, bool includeDisabled = false) {
+            // 获取普通患者（非特殊患者）
+            var normalQuery = _dbContext.Patients.Where(p => !p.IsSpecial);
+
+            // 获取授权给该医生的特殊患者ID
             var specialIds = await _dbContext.SpecialPatientDoctors
                 .Where(s => s.DoctorId == doctorId)
                 .Select(s => s.PatientId)
                 .ToListAsync();
-            query = query.Union(_dbContext.Patients.Where(p => specialIds.Contains(p.Id)));
+
+            // 获取特殊患者
+            var specialQuery = _dbContext.Patients.Where(p => specialIds.Contains(p.Id));
+
+            // 合并查询
+            var query = normalQuery.Union(specialQuery);
+
+            // 权限控制：是否包含禁用患者
+            if (!includeDisabled) {
+                query = query.Where(p => p.Status == PatientStatus.Active);
+            }
+
             return await query.ToListAsync();
         }
 
@@ -202,6 +236,13 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<bool> IsDoctorAssignedAsync(Guid patientId, Guid doctorId) {
             return await _dbContext.SpecialPatientDoctors
                 .AnyAsync(s => s.PatientId == patientId && s.DoctorId == doctorId);
+        }
+
+        public async Task<List<PatientModel>> GetActivePatientsAsync() {
+            return await _dbContext.Patients
+                .Where(p => p.Status == PatientStatus.Active)
+                .OrderBy(p => p.Name)
+                .ToListAsync();
         }
     }
 }

@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Common.Enums;
 using System.ComponentModel;
+using LYBT.Models.Herbs;
 
 namespace LYBT.Models.Pharmacy {
 

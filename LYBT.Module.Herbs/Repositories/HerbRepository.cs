@@ -1,5 +1,5 @@
 ﻿using LYBT.Infrastructure;
-using LYBT.Models;
+using LYBT.Models.Herbs;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;

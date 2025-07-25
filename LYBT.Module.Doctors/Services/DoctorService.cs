@@ -10,6 +10,7 @@ using LYBT.CommonUtils;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Common.Enums.Users;
 
 namespace LYBT.Module.Doctors.Services {
     /// <summary>
@@ -29,13 +30,21 @@ namespace LYBT.Module.Doctors.Services {
             _mapper = mapper;
         }
 
-        public async Task<ApiResponse<DoctorDetailDto>> GetByIdAsync(Guid id) {
+        /// <summary>
+        /// 检查当前用户是否可以查看禁用医生
+        /// </summary>
+        private bool CanViewDisabledDoctors(UserRole userRole) {
+            return userRole == UserRole.Admin;
+        }
+
+        public async Task<ApiResponse<DoctorDetailDto>> GetByIdAsync(Guid id, UserRole currentUserRole) {
             try {
                 if (id == Guid.Empty) {
                     return ApiResponse<DoctorDetailDto>.Fail("医生ID不能为空");
                 }
 
-                var model = await _doctorRepository.GetByIdAsync(id);
+                var includeDisabled = CanViewDisabledDoctors(currentUserRole);
+                var model = await _doctorRepository.GetByIdAsync(id, includeDisabled);
                 if (model == null) {
                     return ApiResponse<DoctorDetailDto>.Fail("医生不存在");
                 }
@@ -47,13 +56,14 @@ namespace LYBT.Module.Doctors.Services {
             }
         }
 
-        public async Task<ApiResponse<DoctorDetailDto>> GetByUserIdAsync(Guid userId) {
+        public async Task<ApiResponse<DoctorDetailDto>> GetByUserIdAsync(Guid userId, UserRole currentUserRole) {
             try {
                 if (userId == Guid.Empty) {
                     return ApiResponse<DoctorDetailDto>.Fail("用户ID不能为空");
                 }
 
-                var model = await _doctorRepository.GetByUserIdAsync(userId);
+                var includeDisabled = CanViewDisabledDoctors(currentUserRole);
+                var model = await _doctorRepository.GetByUserIdAsync(userId, includeDisabled);
                 if (model == null) {
                     return ApiResponse<DoctorDetailDto>.Fail("该用户未关联医生档案");
                 }
@@ -65,9 +75,10 @@ namespace LYBT.Module.Doctors.Services {
             }
         }
 
-        public async Task<ApiResponse<List<DoctorDto>>> SearchAsync(string keyword) {
+        public async Task<ApiResponse<List<DoctorDto>>> SearchAsync(string keyword, UserRole currentUserRole) {
             try {
-                var models = await _doctorRepository.SearchAsync(keyword ?? string.Empty);
+                var includeDisabled = CanViewDisabledDoctors(currentUserRole);
+                var models = await _doctorRepository.SearchAsync(keyword ?? string.Empty, includeDisabled);
                 var dtos = _mapper.Map<List<DoctorDto>>(models);
                 return ApiResponse<List<DoctorDto>>.Success(dtos);
             } catch (Exception ex) {
@@ -75,7 +86,7 @@ namespace LYBT.Module.Doctors.Services {
             }
         }
 
-        public async Task<ApiResponse<PagedResultDto<DoctorDto>>> GetPagedAsync(DoctorQueryDto query) {
+        public async Task<ApiResponse<PagedResultDto<DoctorDto>>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole) {
             try {
                 // 参数验证
                 if (query.Page < 1)
@@ -83,7 +94,8 @@ namespace LYBT.Module.Doctors.Services {
                 if (query.PageSize < 1 || query.PageSize > 100)
                     query.PageSize = 20;
 
-                var (models, total) = await _doctorRepository.GetPagedAsync(query);
+                var includeDisabled = CanViewDisabledDoctors(currentUserRole);
+                var (models, total) = await _doctorRepository.GetPagedAsync(query, includeDisabled);
                 var dtos = _mapper.Map<List<DoctorDto>>(models);
 
                 var result = new PagedResultDto<DoctorDto> {
@@ -115,7 +127,7 @@ namespace LYBT.Module.Doctors.Services {
                 }
 
                 // 检查用户是否已关联医生档案
-                var existingDoctor = await _doctorRepository.GetByUserIdAsync(dto.UserId);
+                var existingDoctor = await _doctorRepository.GetByUserIdAsync(dto.UserId, true);
                 if (existingDoctor != null) {
                     return ApiResponse<bool>.Fail("该用户已关联医生档案，请勿重复创建");
                 }
@@ -154,7 +166,7 @@ namespace LYBT.Module.Doctors.Services {
                 }
 
                 // 获取现有医生信息
-                var model = await _doctorRepository.GetByIdAsync(dto.Id);
+                var model = await _doctorRepository.GetByIdAsync(dto.Id, true);
                 if (model == null) {
                     return ApiResponse<bool>.Fail("医生不存在");
                 }
@@ -262,7 +274,7 @@ namespace LYBT.Module.Doctors.Services {
                     return ApiResponse<bool>.Fail("用户ID不能为空");
                 }
 
-                var doctor = await _doctorRepository.GetByUserIdAsync(userId);
+                var doctor = await _doctorRepository.GetByUserIdAsync(userId, true);
                 return ApiResponse<bool>.Success(doctor != null);
             } catch (Exception ex) {
                 return ApiResponse<bool>.Fail($"检查用户关联状态失败：{ex.Message}");

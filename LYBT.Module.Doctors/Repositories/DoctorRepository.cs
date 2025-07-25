@@ -21,16 +21,28 @@ namespace LYBT.Module.Doctors.Repositories {
             _context = context;
         }
 
-        public async Task<DoctorModel?> GetByIdAsync(Guid id) {
-            return await _context.Doctors
+        public async Task<DoctorModel?> GetByIdAsync(Guid id, bool includeDisabled = false) {
+            var query = _context.Doctors
                 .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.Id == id);
+                .Where(d => d.Id == id);
+
+            if (!includeDisabled) {
+                query = query.Where(d => d.Status == DoctorStatus.Active);
+            }
+
+            return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<DoctorModel?> GetByUserIdAsync(Guid userId) {
-            return await _context.Doctors
+        public async Task<DoctorModel?> GetByUserIdAsync(Guid userId, bool includeDisabled = false) {
+            var query = _context.Doctors
                 .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.UserId == userId);
+                .Where(d => d.UserId == userId);
+
+            if (!includeDisabled) {
+                query = query.Where(d => d.Status == DoctorStatus.Active);
+            }
+
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<List<DoctorModel>> GetActiveDoctorsAsync() {
@@ -41,10 +53,14 @@ namespace LYBT.Module.Doctors.Repositories {
                 .ToListAsync();
         }
 
-        public async Task<List<DoctorModel>> SearchAsync(string keyword) {
+        public async Task<List<DoctorModel>> SearchAsync(string keyword, bool includeDisabled = false) {
             var query = _context.Doctors
                 .Include(d => d.User)
                 .AsQueryable();
+
+            if (!includeDisabled) {
+                query = query.Where(d => d.Status == DoctorStatus.Active);
+            }
 
             if (!string.IsNullOrWhiteSpace(keyword)) {
                 var upperKeyword = keyword.ToUpperInvariant();
@@ -63,10 +79,14 @@ namespace LYBT.Module.Doctors.Repositories {
                 .ToListAsync();
         }
 
-        public async Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query) {
+        public async Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query, bool includeDisabled = false) {
             var dbQuery = _context.Doctors
                 .Include(d => d.User)
                 .AsQueryable();
+
+            if (!includeDisabled) {
+                dbQuery = dbQuery.Where(d => d.Status == DoctorStatus.Active);
+            }
 
             // 关键词搜索
             if (!string.IsNullOrWhiteSpace(query.Keyword)) {
@@ -187,15 +207,20 @@ namespace LYBT.Module.Doctors.Repositories {
             return await _context.Doctors.AnyAsync(d => d.Id == id);
         }
 
-        public async Task<List<DoctorModel>> SearchByPinyinAsync(string pinyin) {
+        public async Task<List<DoctorModel>> SearchByPinyinAsync(string pinyin, bool includeDisabled = false) {
             if (string.IsNullOrWhiteSpace(pinyin)) {
                 return new List<DoctorModel>();
             }
 
-            var upperPinyin = pinyin.ToUpperInvariant();
-            return await _context.Doctors
+            var query = _context.Doctors
                 .Include(d => d.User)
-                .Where(d => d.PinyinCode.Contains(upperPinyin))
+                .Where(d => d.PinyinCode.Contains(pinyin.ToUpperInvariant()));
+
+            if (!includeDisabled) {
+                query = query.Where(d => d.Status == DoctorStatus.Active);
+            }
+
+            return await query
                 .OrderBy(d => d.User.RealName)
                 .Take(20)
                 .ToListAsync();

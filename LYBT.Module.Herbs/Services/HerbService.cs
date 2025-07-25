@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using CommonUtil = LYBT.CommonUtils.CommonUtils;
-using LYBT.Models;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Common.Models;
+using LYBT.Models.Herbs;
 
 namespace LYBT.Module.Herbs.Services {
 
