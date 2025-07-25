@@ -13,7 +13,7 @@ namespace LYBT.Common.Enums.Users {
 
         /// <summary>挂号人员</summary>
         [Description("挂号人员")]
-        RegistrationStaff = 0,
+        Staff = 0,
 
         /// <summary>主治医生</summary>
         [Description("主治医生")]
@@ -21,7 +21,7 @@ namespace LYBT.Common.Enums.Users {
 
         /// <summary>收费人员</summary>
         [Description("收费人员")]
-        BillingStaff = 2,
+        CashierStaff = 2,
 
         /// <summary>药剂师</summary>
         [Description("药剂师")]
@@ -29,7 +29,7 @@ namespace LYBT.Common.Enums.Users {
 
         /// <summary>理疗师</summary>
         [Description("理疗师")]
-        TreatmentDoctor = 4,
+        PhysiotherapyStaff = 4,
 
         /// <summary>系统管理员</summary>
         [Description("管理员")]

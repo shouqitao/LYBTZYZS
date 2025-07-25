@@ -1,198 +1,402 @@
 using LYBT.Common.Models;
 using LYBT.Common.Responses;
-using Microsoft.AspNetCore.Authorization;
+using LYBT.Common.Enums.Users;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using System.Security.Claims;
 
 namespace LYBT.WebAPI.Controllers {
 
     /// <summary>
     /// 医生管理接口
+    /// 实现软删除策略：医生只能禁用/启用，不提供删除接口
     /// </summary>
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    /// <summary>
-    /// 表示DoctorsController。
-    /// </summary>
     public class DoctorsController : ControllerBase {
         private readonly IDoctorService _doctorService;
-        public DoctorsController(IDoctorService doctorService) {
+        private readonly IMemoryCache _cache;
+        private readonly ILogger<DoctorsController> _logger;
+
+        public DoctorsController(
+            IDoctorService doctorService,
+            IMemoryCache cache,
+            ILogger<DoctorsController> logger) {
             _doctorService = doctorService;
+            _cache = cache;
+            _logger = logger;
         }
 
-        [HttpGet("search")]
         /// <summary>
-        /// 执行Search操作。
+        /// 获取当前操作者信息
         /// </summary>
-        /// <param name="""">参数""</param>
-        /// <returns>返回值</returns>
-        public async Task<ActionResult<List<DoctorDto>>> Search([FromQuery] string keyword = "") {
-            try {
-                var list = await _doctorService.SearchAsync(keyword ?? "");
-                return Ok(list);
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"搜索医生失败: {ex.Message}", details = ex.ToString() });
+        private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = User?.Identity?.Name;
+            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
+                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.Staff;
+                return (opId, userName, role);
             }
+            throw new UnauthorizedAccessException("未登录或用户信息无效");
         }
 
-        [HttpGet("{id}")]
         /// <summary>
-        /// 执行GetById操作。
+        /// 分页查询医生列表
+        /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
-        /// <param name="id">参数id</param>
-        /// <returns>返回值</returns>
-        public async Task<ActionResult<DoctorDetailDto>> GetById(Guid id) {
-            try {
-                var item = await _doctorService.GetByIdAsync(id);
-                return item == null ? NotFound() : Ok(item);
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"获取医生详情失败: {ex.Message}" });
-            }
-        }
-
-        [HttpGet("by-user/{userId}")]
-        /// <summary>
-        /// 执行GetByUserId操作。
-        /// </summary>
-        /// <param name="userId">参数userId</param>
-        /// <returns>返回值</returns>
-        public async Task<ActionResult<DoctorDetailDto>> GetByUserId(Guid userId) {
-            try {
-                var item = await _doctorService.GetByUserIdAsync(userId);
-                return item == null ? NotFound() : Ok(item);
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"根据用户ID获取医生失败: {ex.Message}" });
-            }
-        }
-
-        [HttpPost("add")]
-        /// <summary>
-        /// 执行Add操作。
-        /// </summary>
-        /// <param name="dto">参数dto</param>
-        /// <returns>返回值</returns>
-        public async Task<ActionResult<ApiSuccessResponse>> Add([FromBody] DoctorDetailDto dto) {
-            if (!ModelState.IsValid)
-                return BadRequest(new ApiSuccessResponse { Success = false, Count = 0, Message = "参数验证失败" });
-            try {
-                var result = await _doctorService.AddAsync(dto);
-                if (result)
-                    return Ok(new ApiSuccessResponse { Success = true, Message = "新增成功" });
-                return BadRequest(new ApiSuccessResponse { Success = false, Message = "新增失败" });
-            } catch (Exception ex) {
-                return BadRequest(new ApiSuccessResponse { Success = false, Count = 0, Message = ex.Message });
-            }
-        }
-
-        [HttpPut("update")]
-        /// <summary>
-        /// 执行Update操作。
-        /// </summary>
-        /// <param name="dto">参数dto</param>
-        /// <returns>返回值</returns>
-        public async Task<ActionResult<ApiSuccessResponse>> Update([FromBody] DoctorDetailDto dto) {
-            if (!ModelState.IsValid)
-                return BadRequest(new ApiSuccessResponse { Success = false, Count = 0, Message = "参数验证失败" });
-            try {
-                var result = await _doctorService.UpdateAsync(dto);
-                if (result)
-                    return Ok(new ApiSuccessResponse { Success = true, Message = "保存成功" });
-                return BadRequest(new ApiSuccessResponse { Success = false, Message = "保存失败" });
-            } catch (Exception ex) {
-                return BadRequest(new ApiSuccessResponse { Success = false, Count = 0, Message = ex.Message });
-            }
-        }
-
-        [HttpPut("disable/{id}")]
-        /// <summary>
-        /// 执行Disable操作。
-        /// </summary>
-        /// <param name="id">参数id</param>
-        /// <returns>返回值</returns>
-        public async Task<IActionResult> Disable(Guid id) {
-            try {
-                var ok = await _doctorService.DisableAsync(id);
-                return ok ? Ok(new ApiSuccessResponse { Success = true, Message = "禁用成功" }) : NotFound();
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"禁用医生失败: {ex.Message}" });
-            }
-        }
-
-        [HttpPut("enable/{id}")]
-        /// <summary>
-        /// 执行Enable操作。
-        /// </summary>
-        /// <param name="id">参数id</param>
-        /// <returns>返回值</returns>
-        public async Task<IActionResult> Enable(Guid id) {
-            try {
-                var ok = await _doctorService.EnableAsync(id);
-                return ok ? Ok(new ApiSuccessResponse { Success = true, Message = "启用成功" }) : NotFound();
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"启用医生失败: {ex.Message}" });
-            }
-        }
-
         [HttpPost("paged")]
-        /// <summary>
-        /// 执行GetPaged操作。
-        /// </summary>
-        /// <param name="query">参数query</param>
-        /// <returns>返回值</returns>
-        public async Task<ActionResult<PagedResultDto<DoctorDto>>> GetPaged([FromBody] DoctorQueryDto query) {
+        public async Task<ActionResult<ApiResponse<PagedResultDto<DoctorDto>>>> GetPaged([FromBody] DoctorQueryDto query) {
             try {
-                var result = await _doctorService.GetPagedAsync(query);
+                var (_, _, operatorRole) = GetOperator();
+                var result = await _doctorService.GetPagedAsync(query, operatorRole);
+
+                if (result.Success) {
+                    return Ok(result);
+                } else {
+                    return BadRequest(ApiResponse<object>.Fail(result.Message));
+                }
+            } catch (Exception ex) {
+                _logger.LogError(ex, "分页查询医生失败");
+                return StatusCode(500, ApiResponse<object>.Fail("分页查询医生失败"));
+            }
+        }
+
+        /// <summary>
+        /// 搜索医生
+        /// 权限控制：禁用的医生仅管理员可查询
+        /// </summary>
+        [HttpGet("search")]
+        public async Task<ActionResult<ApiResponse<List<DoctorDto>>>> Search([FromQuery] string keyword = "") {
+            try {
+                var (_, _, operatorRole) = GetOperator();
+
+                // 缓存搜索结果
+                var cacheKey = $"doctor_search:{keyword}:{operatorRole}";
+                if (!_cache.TryGetValue(cacheKey, out ApiResponse<List<DoctorDto>>? result)) {
+                    result = await _doctorService.SearchAsync(keyword, operatorRole);
+                    if (result.Success) {
+                        _cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+                    }
+                }
+
+                return result.Success ? Ok(result) : BadRequest(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "搜索医生失败，关键词: {Keyword}", keyword);
+                return StatusCode(500, ApiResponse<object>.Fail("搜索医生失败"));
+            }
+        }
+
+        /// <summary>
+        /// 获取所有在职医生列表（不分页）
+        /// </summary>
+        [HttpGet("active")]
+        public async Task<ActionResult<ApiResponse<List<DoctorDto>>>> GetActiveList() {
+            try {
+                // 缓存在职医生列表
+                if (!_cache.TryGetValue("active_doctors", out ApiResponse<List<DoctorDto>>? result)) {
+                    result = await _doctorService.GetActiveDoctorsAsync();
+                    if (result.Success) {
+                        _cache.Set("active_doctors", result, TimeSpan.FromMinutes(10));
+                    }
+                }
+
+                return result.Success ? Ok(result) : BadRequest(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "获取在职医生列表失败");
+                return StatusCode(500, ApiResponse<object>.Fail("获取在职医生列表失败"));
+            }
+        }
+
+        /// <summary>
+        /// 根据ID获取医生详情
+        /// 权限控制：禁用的医生仅管理员可查询
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ApiResponse<DoctorDetailDto>>> GetById(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("医生ID不能为空"));
+                }
+
+                var (_, _, operatorRole) = GetOperator();
+
+                // 缓存医生详情
+                var cacheKey = $"doctor_detail:{id}:{operatorRole}";
+                if (!_cache.TryGetValue(cacheKey, out ApiResponse<DoctorDetailDto>? result)) {
+                    result = await _doctorService.GetByIdAsync(id, operatorRole);
+                    if (result.Success) {
+                        _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+                    }
+                }
+
+                return result.Success ? Ok(result) : NotFound(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "获取医生详情失败，ID: {DoctorId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("获取医生详情失败"));
+            }
+        }
+
+        /// <summary>
+        /// 根据用户ID获取医生详情
+        /// 权限控制：禁用的医生仅管理员可查询
+        /// </summary>
+        [HttpGet("by-user/{userId}")]
+        public async Task<ActionResult<ApiResponse<DoctorDetailDto>>> GetByUserId(Guid userId) {
+            try {
+                if (userId == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("用户ID不能为空"));
+                }
+
+                var (_, _, operatorRole) = GetOperator();
+                var result = await _doctorService.GetByUserIdAsync(userId, operatorRole);
+
+                return result.Success ? Ok(result) : NotFound(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "根据用户ID获取医生失败，用户ID: {UserId}", userId);
+                return StatusCode(500, ApiResponse<object>.Fail("根据用户ID获取医生失败"));
+            }
+        }
+
+        /// <summary>
+        /// 新增医生
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult<ApiResponse<bool>>> Add([FromBody] DoctorDetailDto dto) {
+            try {
+                if (!ModelState.IsValid) {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{string.Join("; ", errors)}"));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _doctorService.AddAsync(dto);
+
+                if (result.Success) {
+                    // 清除相关缓存
+                    _cache.Remove("active_doctors");
+                    _logger.LogInformation("医生档案创建成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
+                }
+
+                return result.Success ? Ok(result) : BadRequest(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "新增医生失败");
+                return StatusCode(500, ApiResponse<object>.Fail("新增医生失败"));
+            }
+        }
+
+        /// <summary>
+        /// 更新医生信息
+        /// </summary>
+        [HttpPut]
+        public async Task<ActionResult<ApiResponse<bool>>> Update([FromBody] DoctorDetailDto dto) {
+            try {
+                if (!ModelState.IsValid) {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{string.Join("; ", errors)}"));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _doctorService.UpdateAsync(dto);
+
+                if (result.Success) {
+                    // 清除相关缓存
+                    _cache.Remove($"doctor_detail:{dto.Id}:Admin");
+                    _cache.Remove($"doctor_detail:{dto.Id}:DiagnosingDoctor");
+                    _cache.Remove($"doctor_detail:{dto.Id}:Staff");
+                    _cache.Remove("active_doctors");
+                    _logger.LogInformation("医生信息更新成功，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
+                        dto.Id, operatorName, operatorId);
+                }
+
+                return result.Success ? Ok(result) : BadRequest(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "更新医生信息失败，医生ID: {DoctorId}", dto.Id);
+                return StatusCode(500, ApiResponse<object>.Fail("更新医生信息失败"));
+            }
+        }
+
+        /// <summary>
+        /// 禁用医生（软删除）
+        /// </summary>
+        [HttpPatch("{id}/disable")]
+        public async Task<ActionResult<ApiResponse<bool>>> Disable(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("医生ID不能为空"));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _doctorService.DisableAsync(id);
+
+                if (result.Success) {
+                    // 清除相关缓存
+                    ClearDoctorCache(id);
+                    _logger.LogInformation("医生已禁用，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
+                        id, operatorName, operatorId);
+                }
+
+                return result.Success ? Ok(result) : NotFound(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "禁用医生失败，医生ID: {DoctorId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("禁用医生失败"));
+            }
+        }
+
+        /// <summary>
+        /// 启用医生
+        /// </summary>
+        [HttpPatch("{id}/enable")]
+        public async Task<ActionResult<ApiResponse<bool>>> Enable(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("医生ID不能为空"));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _doctorService.EnableAsync(id);
+
+                if (result.Success) {
+                    // 清除相关缓存
+                    ClearDoctorCache(id);
+                    _logger.LogInformation("医生已启用，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
+                        id, operatorName, operatorId);
+                }
+
+                return result.Success ? Ok(result) : NotFound(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "启用医生失败，医生ID: {DoctorId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("启用医生失败"));
+            }
+        }
+
+        /// <summary>
+        /// 批量禁用医生
+        /// </summary>
+        [HttpPatch("batch-disable")]
+        public async Task<ActionResult<ApiResponse<int>>> BatchDisable([FromBody] BatchIdsDto dto) {
+            try {
+                if (dto?.Ids == null || dto.Ids.Count == 0) {
+                    return BadRequest(ApiResponse<object>.Fail("请选择要禁用的医生"));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _doctorService.BatchDisableAsync(dto.Ids);
+
+                if (result.Success) {
+                    // 清除所有医生相关缓存
+                    ClearAllDoctorCache();
+                    _logger.LogInformation("批量禁用医生成功，数量: {Count}，操作者: {OperatorName}({OperatorId})",
+                        result.Data, operatorName, operatorId);
+                }
+
+                return result.Success ? Ok(result) : BadRequest(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "批量禁用医生失败");
+                return StatusCode(500, ApiResponse<object>.Fail("批量禁用医生失败"));
+            }
+        }
+
+        /// <summary>
+        /// 批量启用医生
+        /// </summary>
+        [HttpPatch("batch-enable")]
+        public async Task<ActionResult<ApiResponse<int>>> BatchEnable([FromBody] BatchIdsDto dto) {
+            try {
+                if (dto?.Ids == null || dto.Ids.Count == 0) {
+                    return BadRequest(ApiResponse<object>.Fail("请选择要启用的医生"));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _doctorService.BatchEnableAsync(dto.Ids);
+
+                if (result.Success) {
+                    // 清除所有医生相关缓存
+                    ClearAllDoctorCache();
+                    _logger.LogInformation("批量启用医生成功，数量: {Count}，操作者: {OperatorName}({OperatorId})",
+                        result.Data, operatorName, operatorId);
+                }
+
+                return result.Success ? Ok(result) : BadRequest(result);
+            } catch (Exception ex) {
+                _logger.LogError(ex, "批量启用医生失败");
+                return StatusCode(500, ApiResponse<object>.Fail("批量启用医生失败"));
+            }
+        }
+
+        /// <summary>
+        /// 检查用户是否已关联医生档案
+        /// </summary>
+        [HttpGet("check-user-link/{userId}")]
+        public async Task<ActionResult<ApiResponse<bool>>> CheckUserLink(Guid userId) {
+            try {
+                if (userId == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("用户ID不能为空"));
+                }
+
+                var result = await _doctorService.IsUserLinkedToDoctorAsync(userId);
                 return Ok(result);
             } catch (Exception ex) {
-                return StatusCode(500, new { message = $"分页查询医生失败: {ex.Message}" });
+                _logger.LogError(ex, "检查用户关联状态失败，用户ID: {UserId}", userId);
+                return StatusCode(500, ApiResponse<object>.Fail("检查用户关联状态失败"));
             }
         }
 
-        [HttpPut("batch-disable")]
         /// <summary>
-        /// 执行BatchDisable操作。
+        /// 获取用户角色枚举列表
         /// </summary>
-        /// <param name="dto">参数dto</param>
-        /// <returns>返回值</returns>
-        public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
-            try {
-                var count = await _doctorService.BatchDisableAsync(dto.Ids);
-                return Ok(new ApiSuccessResponse { Success = true, Count = count, Message = $"成功禁用 {count} 个医生" });
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"批量禁用医生失败: {ex.Message}" });
-            }
-        }
-
-        [HttpPut("batch-enable")]
-        /// <summary>
-        /// 执行BatchEnable操作。
-        /// </summary>
-        /// <param name="dto">参数dto</param>
-        /// <returns>返回值</returns>
-        public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
-            try {
-                var count = await _doctorService.BatchEnableAsync(dto.Ids);
-                return Ok(new ApiSuccessResponse { Success = true, Count = count, Message = $"成功启用 {count} 个医生" });
-            } catch (Exception ex) {
-                return StatusCode(500, new { message = $"批量启用医生失败: {ex.Message}" });
-            }
-        }
-
         [HttpGet("roles")]
-        /// <summary>
-        /// 执行GetRoles操作。
-        /// </summary>
-        /// <returns>返回值</returns>
-        public IActionResult GetRoles() {
+        public ActionResult<ApiResponse<object>> GetRoles() {
             try {
-                var roles = Enum.GetNames(typeof(LYBT.Common.Enums.Users.UserRole));
-                return Ok(roles);
+                var roles = Enum.GetValues<UserRole>()
+                    .Select(role => new {
+                        value = (int)role,
+                        name = role.ToString(),
+                        description = role switch {
+                            UserRole.Admin => "管理员",
+                            UserRole.DiagnosingDoctor => "医生",
+                            UserRole.PharmacyStaff => "药剂师",
+                            UserRole.PhysiotherapyStaff => "理疗师",
+                            UserRole.CashierStaff => "收银员",
+                            UserRole.Staff => "前台",
+                            _ => role.ToString()
+                        }
+                    })
+                    .ToList();
+
+                return Ok(ApiResponse<object>.Success(roles));
             } catch (Exception ex) {
-                return StatusCode(500, new { message = $"获取角色列表失败: {ex.Message}" });
+                _logger.LogError(ex, "获取角色列表失败");
+                return StatusCode(500, ApiResponse<object>.Fail("获取角色列表失败"));
             }
+        }
+
+        /// <summary>
+        /// 清除指定医生的缓存
+        /// </summary>
+        private void ClearDoctorCache(Guid doctorId) {
+            var roleKeys = new[] { "Admin", "DiagnosingDoctor", "Staff" };
+            foreach (var role in roleKeys) {
+                _cache.Remove($"doctor_detail:{doctorId}:{role}");
+            }
+            _cache.Remove("active_doctors");
+        }
+
+        /// <summary>
+        /// 清除所有医生相关缓存
+        /// </summary>
+        private void ClearAllDoctorCache() {
+            // 简单方式：移除已知的缓存键
+            _cache.Remove("active_doctors");
+
+            // 在生产环境中，可能需要实现更复杂的缓存清理策略
+            // 例如使用缓存标签或者缓存前缀来批量清理
         }
     }
 }
