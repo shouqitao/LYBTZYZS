@@ -12,115 +12,78 @@ namespace LYBT.Models.Doctors {
     /// </summary>
     public class DoctorModel {
         [Key]
-        [DisplayName("Id")]
-/// <summary>
-/// Id 属性。
-/// </summary>
+        [DisplayName("医生ID")]
         public Guid Id { get; set; }
 
         [Required]
-        [DisplayName("Gender")]
-/// <summary>
-/// Gender 属性。
-/// </summary>
+        [DisplayName("性别")]
         public Gender Gender { get; set; } = Gender.Unknown;
 
-        [DisplayName("Age")]
-/// <summary>
-/// Age 属性。
-/// </summary>
-        public int Age { get; set; } = 0;
-
         [Required]
-        [DisplayName("Title")]
-/// <summary>
-/// Title 属性。
-/// </summary>
+        [DisplayName("职称")]
         public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
 
         [StringLength(64)]
-        [DisplayName("Specialty")]
-/// <summary>
-/// Specialty 属性。
-/// </summary>
+        [DisplayName("专科")]
         public string Specialty { get; set; } = string.Empty;
 
         [Required]
-        [DisplayName("Status")]
-/// <summary>
-/// Status 属性。
-/// </summary>
+        [DisplayName("在职状态")]
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
 
         [Required]
-        [DisplayName("WorkStatus")]
-/// <summary>
-/// WorkStatus 属性。
-/// </summary>
+        [DisplayName("工作状态")]
         public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
 
         [Required]
-        [DisplayName("CreatedTime")]
-/// <summary>
-/// CreatedTime 属性。
-/// </summary>
+        [DisplayName("创建时间")]
         public DateTime CreatedTime { get; set; } = DateTime.Now;
 
         [StringLength(256)]
-        [DisplayName("Remark")]
-/// <summary>
-/// Remark 属性。
-/// </summary>
+        [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        [DisplayName("Birthday")]
-/// <summary>
-/// Birthday 属性。
-/// </summary>
+        [Required]
+        [DisplayName("出生日期")]
         public DateTime Birthday { get; set; }
 
         [StringLength(32)]
-        [DisplayName("LicenseNumber")]
-/// <summary>
-/// LicenseNumber 属性。
-/// </summary>
+        [DisplayName("执业证号")]
         public string? LicenseNumber { get; set; }
 
         [StringLength(32)]
-        [DisplayName("PinyinCode")]
-/// <summary>
-/// PinyinCode 属性。
-/// </summary>
+        [DisplayName("拼音码")]
         public string PinyinCode { get; set; } = string.Empty;
 
         [StringLength(32)]
-        [DisplayName("ContactNumber")]
-/// <summary>
-/// ContactNumber 属性。
-/// </summary>
-        public string? ContactNumber { get; set; } // 医生对外联系方式
+        [DisplayName("联系电话")]
+        public string? ContactNumber { get; set; }
 
         [Required]
-        [DisplayName("UserId")]
-/// <summary>
-/// UserId 属性。
-/// </summary>
+        [DisplayName("关联用户ID")]
         public Guid UserId { get; set; }
 
         [Required]
-        [DisplayName("User")]
-/// <summary>
-/// User 属性。
-/// </summary>
+        [DisplayName("关联用户")]
         public virtual UserModel User { get; set; } = null!;
 
         /// <summary>
-        /// 授权可查看的特殊病人关系集合
+        /// 计算年龄
         /// </summary>
-        [DisplayName("授权可查看的特殊病人关系集合")]
-/// <summary>
-/// SpecialPatientPatients 属性。
-/// </summary>
-        public virtual ICollection<SpecialPatientDoctor> SpecialPatientPatients { get; set; } = new List<SpecialPatientDoctor>();
+        public int Age {
+            get {
+                var today = DateTime.Today;
+                var age = today.Year - Birthday.Year;
+                if (Birthday.Date > today.AddYears(-age))
+                    age--;
+                return age;
+            }
+        }
+
+        /// <summary>
+        /// 特殊患者关系集合
+        /// </summary>
+        [DisplayName("特殊患者关系")]
+        public virtual ICollection<SpecialPatientDoctor> SpecialPatients { get; set; } = new List<SpecialPatientDoctor>();
     }
 }

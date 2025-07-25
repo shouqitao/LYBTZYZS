@@ -27,7 +27,7 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 根据Id获取病人信息
         /// </summary>
-        Task<PatientDetailDto> GetByIdAsync(Guid id);
+        Task<PatientDetailDto?> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 获取全部病人信息
@@ -42,7 +42,7 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 批量删除病人
         /// </summary>
-        Task<int> BatchDeleteAsync(List<string> ids, Guid operatorId, string operatorName);
+        Task<int> BatchDeleteAsync(List<Guid> ids, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 启用患者
@@ -63,6 +63,11 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 根据关键词搜索患者
         /// </summary>
         Task<List<PatientDetailDto>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 智能搜索患者（支持精确匹配和模糊搜索）
+        /// </summary>
+        Task<List<PatientDetailDto>> SmartSearchAsync(string keyword);
 
         /// <summary>
         /// 获取指定医生可访问患者
@@ -88,5 +93,50 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 获取患者历史病历
         /// </summary>
         Task<List<RecordDto>> GetHistoryRecordsAsync(Guid patientId);
+
+        /// <summary>
+        /// 快速创建患者（用于快速看诊场景）
+        /// </summary>
+        Task<PatientDetailDto> QuickCreateAsync(QuickPatientCreateDto dto, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 验证患者数据
+        /// </summary>
+        Task<ValidationResult> ValidatePatientAsync(PatientDetailDto dto, bool isUpdate = false);
+    }
+
+    /// <summary>
+    /// 快速患者创建 DTO
+    /// </summary>
+    public class QuickPatientCreateDto {
+        /// <summary>姓名</summary>
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>性别</summary>
+        public Common.Enums.Gender Gender { get; set; }
+
+        /// <summary>手机号（可选）</summary>
+        public string? PhoneNumber { get; set; }
+
+        /// <summary>身份证号（可选）</summary>
+        public string? IDNumber { get; set; }
+
+        /// <summary>地址（可选）</summary>
+        public string? Address { get; set; }
+
+        /// <summary>年龄（如果没有身份证号）</summary>
+        public int? Age { get; set; }
+    }
+
+    /// <summary>
+    /// 验证结果
+    /// </summary>
+    public class ValidationResult {
+        public bool IsValid => !Errors.Any();
+        public List<string> Errors { get; set; } = new();
+
+        public void AddError(string error) {
+            Errors.Add(error);
+        }
     }
 }

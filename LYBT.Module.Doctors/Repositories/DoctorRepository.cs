@@ -4,193 +4,201 @@ using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LYBT.Module.Doctors.Repositories {
 
     /// <summary>
-    /// 医生仓储实现类，实现医生数据库操作
+    /// 医生仓储实现类
     /// </summary>
     public class DoctorRepository : IDoctorRepository {
-        private readonly AppDbContext _appDbContext;
+        private readonly AppDbContext _context;
 
-        /// <summary>
-        /// 构造方法，注入数据库上下文
-        /// </summary>
-        public DoctorRepository(AppDbContext appDbContext) {
-            _appDbContext = appDbContext;
+        public DoctorRepository(AppDbContext context) {
+            _context = context;
         }
 
-        /// <summary>
-        /// 获取医生详情
-        /// </summary>
         public async Task<DoctorModel?> GetByIdAsync(Guid id) {
-            return await _appDbContext.Doctors
+            return await _context.Doctors
                 .Include(d => d.User)
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
 
-/// <summary>
-/// 执行GetByUserIdAsync操作。
-/// </summary>
-/// <param name="userId">参数userId</param>
-/// <returns>返回值</returns>
         public async Task<DoctorModel?> GetByUserIdAsync(Guid userId) {
-            return await _appDbContext.Doctors
+            return await _context.Doctors
                 .Include(d => d.User)
                 .FirstOrDefaultAsync(d => d.UserId == userId);
         }
 
-        /// <summary>
-        /// 获取所有医生
-        /// </summary>
-        public async Task<List<DoctorModel>> GetListAsync() {
-            return await _appDbContext.Doctors
+        public async Task<List<DoctorModel>> GetActiveDoctorsAsync() {
+            return await _context.Doctors
                 .Include(d => d.User)
-                .OrderByDescending(d => d.CreatedTime)
+                .Where(d => d.Status == DoctorStatus.Active)
+                .OrderBy(d => d.User.RealName)
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// 新增医生
-        /// </summary>
-        public async Task<bool> AddAsync(DoctorModel doctorModel) {
-            _appDbContext.Doctors.Add(doctorModel);
-            if (doctorModel.User != null &&
-                _appDbContext.Entry(doctorModel.User).State == EntityState.Detached) {
-                _appDbContext.Users.Add(doctorModel.User);
-            }
-            return await _appDbContext.SaveChangesAsync() > 0;
-        }
-
-        /// <summary>
-        /// 更新医生
-        /// </summary>
-        public async Task<bool> UpdateAsync(DoctorModel doctorModel) {
-            _appDbContext.Doctors.Update(doctorModel);
-            _appDbContext.Users.Update(doctorModel.User);
-            return await _appDbContext.SaveChangesAsync() > 0;
-        }
-
-        /// <summary>
-        /// 禁用医生
-        /// </summary>
-        public async Task<bool> DisableAsync(Guid id) {
-            var model = await _appDbContext.Doctors.FindAsync(id);
-            if (model == null)
-                return false;
-            model.Status = DoctorStatus.Inactive;
-            _appDbContext.Doctors.Update(model);
-            return await _appDbContext.SaveChangesAsync() > 0;
-        }
-
-        /// <summary>
-        /// 启用医生
-        /// </summary>
-        public async Task<bool> EnableAsync(Guid id) {
-            var model = await _appDbContext.Doctors.FindAsync(id);
-            if (model == null)
-                return false;
-            model.Status = DoctorStatus.Active;
-            _appDbContext.Doctors.Update(model);
-            return await _appDbContext.SaveChangesAsync() > 0;
-        }
-
-/// <summary>
-/// 执行BatchDisableAsync操作。
-/// </summary>
-/// <param name="ids">参数ids</param>
-/// <returns>返回值</returns>
-        public async Task<int> BatchDisableAsync(List<Guid> ids) {
-            var list = await _appDbContext.Doctors.Where(d => ids.Contains(d.Id)).ToListAsync();
-            foreach (var d in list)
-                d.Status = DoctorStatus.Inactive;
-            _appDbContext.Doctors.UpdateRange(list);
-            return await _appDbContext.SaveChangesAsync();
-        }
-
-/// <summary>
-/// 执行BatchEnableAsync操作。
-/// </summary>
-/// <param name="ids">参数ids</param>
-/// <returns>返回值</returns>
-        public async Task<int> BatchEnableAsync(List<Guid> ids) {
-            var list = await _appDbContext.Doctors.Where(d => ids.Contains(d.Id)).ToListAsync();
-            foreach (var d in list)
-                d.Status = DoctorStatus.Active;
-            _appDbContext.Doctors.UpdateRange(list);
-            return await _appDbContext.SaveChangesAsync();
-        }
-
-/// <summary>
-/// 执行SearchAsync操作。
-/// </summary>
-/// <param name="keyword">参数keyword</param>
-/// <returns>返回值</returns>
         public async Task<List<DoctorModel>> SearchAsync(string keyword) {
-            var query = _appDbContext.Doctors
+            var query = _context.Doctors
                 .Include(d => d.User)
                 .AsQueryable();
-            
+
             if (!string.IsNullOrWhiteSpace(keyword)) {
-                var upper = keyword.ToUpperInvariant();
+                var upperKeyword = keyword.ToUpperInvariant();
                 query = query.Where(d =>
                     d.User.RealName.Contains(keyword) ||
+                    d.User.UserName.Contains(keyword) ||
                     (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(keyword)) ||
-                    d.PinyinCode.Contains(upper));
+                    d.PinyinCode.Contains(upperKeyword) ||
+                    (d.LicenseNumber != null && d.LicenseNumber.Contains(keyword)) ||
+                    d.Specialty.Contains(keyword));
             }
-            
+
             return await query
                 .OrderByDescending(d => d.CreatedTime)
-                .Take(20)
+                .Take(50) // 限制搜索结果数量
                 .ToListAsync();
         }
 
-/// <summary>
-/// 执行GetPagedAsync操作。
-/// </summary>
-/// <param name="query">参数query</param>
-/// <returns>返回值</returns>
         public async Task<(List<DoctorModel> list, int total)> GetPagedAsync(DoctorQueryDto query) {
-            var dbSet = _appDbContext.Doctors
+            var dbQuery = _context.Doctors
                 .Include(d => d.User)
                 .AsQueryable();
-            
+
+            // 关键词搜索
             if (!string.IsNullOrWhiteSpace(query.Keyword)) {
-                var upper = query.Keyword.ToUpperInvariant();
-                dbSet = dbSet.Where(d =>
+                var upperKeyword = query.Keyword.ToUpperInvariant();
+                dbQuery = dbQuery.Where(d =>
                     d.User.RealName.Contains(query.Keyword) ||
+                    d.User.UserName.Contains(query.Keyword) ||
                     (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(query.Keyword)) ||
-                    d.PinyinCode.Contains(upper));
+                    d.PinyinCode.Contains(upperKeyword) ||
+                    (d.LicenseNumber != null && d.LicenseNumber.Contains(query.Keyword)) ||
+                    d.Specialty.Contains(query.Keyword));
             }
-            
+
+            // 状态筛选
             if (query.IsActive.HasValue) {
                 var status = query.IsActive.Value ? DoctorStatus.Active : DoctorStatus.Inactive;
-                dbSet = dbSet.Where(d => d.Status == status);
+                dbQuery = dbQuery.Where(d => d.Status == status);
             }
-            
-            int total = await dbSet.CountAsync();
-            var list = await dbSet.OrderByDescending(d => d.CreatedTime)
+
+            // 计算总数
+            var total = await dbQuery.CountAsync();
+
+            // 分页查询
+            var list = await dbQuery
+                .OrderByDescending(d => d.CreatedTime)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
-            
+
             return (list, total);
         }
 
-/// <summary>
-/// 执行UpdatePasswordAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <param name="passwordHash">参数passwordHash</param>
-/// <returns>返回值</returns>
-        public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash) {
-            var model = await _appDbContext.Doctors.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
-            if (model == null)
+        public async Task<bool> AddAsync(DoctorModel model) {
+            try {
+                _context.Doctors.Add(model);
+
+                // 如果User实体处于未跟踪状态，需要附加到上下文
+                if (_context.Entry(model.User).State == EntityState.Detached) {
+                    _context.Users.Attach(model.User);
+                }
+
+                return await _context.SaveChangesAsync() > 0;
+            } catch {
                 return false;
-            model.User.PasswordHash = passwordHash;
-            _appDbContext.Users.Update(model.User);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            }
+        }
+
+        public async Task<bool> UpdateAsync(DoctorModel model) {
+            try {
+                _context.Doctors.Update(model);
+
+                // 只更新User的必要字段，避免冲突
+                if (model.User != null) {
+                    _context.Entry(model.User).Property(u => u.PinyinCode).IsModified = true;
+                }
+
+                return await _context.SaveChangesAsync() > 0;
+            } catch {
+                return false;
+            }
+        }
+
+        public async Task<bool> DisableAsync(Guid id) {
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor == null)
+                return false;
+
+            doctor.Status = DoctorStatus.Inactive;
+            _context.Doctors.Update(doctor);
+
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> EnableAsync(Guid id) {
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor == null)
+                return false;
+
+            doctor.Status = DoctorStatus.Active;
+            _context.Doctors.Update(doctor);
+
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<int> BatchDisableAsync(List<Guid> ids) {
+            if (ids == null || ids.Count == 0)
+                return 0;
+
+            var doctors = await _context.Doctors
+                .Where(d => ids.Contains(d.Id))
+                .ToListAsync();
+
+            foreach (var doctor in doctors) {
+                doctor.Status = DoctorStatus.Inactive;
+            }
+
+            _context.Doctors.UpdateRange(doctors);
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> BatchEnableAsync(List<Guid> ids) {
+            if (ids == null || ids.Count == 0)
+                return 0;
+
+            var doctors = await _context.Doctors
+                .Where(d => ids.Contains(d.Id))
+                .ToListAsync();
+
+            foreach (var doctor in doctors) {
+                doctor.Status = DoctorStatus.Active;
+            }
+
+            _context.Doctors.UpdateRange(doctors);
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> ExistsAsync(Guid id) {
+            return await _context.Doctors.AnyAsync(d => d.Id == id);
+        }
+
+        public async Task<List<DoctorModel>> SearchByPinyinAsync(string pinyin) {
+            if (string.IsNullOrWhiteSpace(pinyin)) {
+                return new List<DoctorModel>();
+            }
+
+            var upperPinyin = pinyin.ToUpperInvariant();
+            return await _context.Doctors
+                .Include(d => d.User)
+                .Where(d => d.PinyinCode.Contains(upperPinyin))
+                .OrderBy(d => d.User.RealName)
+                .Take(20)
+                .ToListAsync();
         }
     }
 }

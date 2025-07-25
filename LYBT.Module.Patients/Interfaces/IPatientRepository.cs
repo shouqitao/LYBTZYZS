@@ -33,6 +33,11 @@ namespace LYBT.Module.Patients.Interfaces {
         Task<bool> DeleteAsync(Guid id);
 
         /// <summary>
+        /// 批量删除病人记录
+        /// </summary>
+        Task<int> BatchDeleteAsync(List<Guid> ids);
+
+        /// <summary>
         /// 通过身份证号查找病人
         /// </summary>
         Task<PatientModel?> GetByIDNumberAsync(string idNumber);
@@ -41,6 +46,16 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 通过手机号查找病人
         /// </summary>
         Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber);
+
+        /// <summary>
+        /// 检查身份证号是否存在（排除指定ID）
+        /// </summary>
+        Task<bool> IsIDNumberExistsAsync(string idNumber, Guid? excludeId = null);
+
+        /// <summary>
+        /// 检查手机号是否存在（排除指定ID）
+        /// </summary>
+        Task<bool> IsPhoneNumberExistsAsync(string phoneNumber, Guid? excludeId = null);
 
         /// <summary>
         /// 获取病人总数（可用于分页）
@@ -68,6 +83,11 @@ namespace LYBT.Module.Patients.Interfaces {
         Task<List<PatientModel>> SearchAsync(string keyword);
 
         /// <summary>
+        /// 精确匹配搜索（手机号、身份证号）
+        /// </summary>
+        Task<List<PatientModel>> ExactSearchAsync(string keyword);
+
+        /// <summary>
         /// 获取指定医生可访问的患者列表
         /// </summary>
         Task<List<PatientModel>> GetForDoctorAsync(Guid doctorId);
@@ -76,5 +96,10 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 为患者授权医生
         /// </summary>
         Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId);
+
+        /// <summary>
+        /// 检查医生是否已被授权访问患者
+        /// </summary>
+        Task<bool> IsDoctorAssignedAsync(Guid patientId, Guid doctorId);
     }
 }

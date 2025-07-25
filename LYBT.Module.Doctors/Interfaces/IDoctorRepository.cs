@@ -1,15 +1,18 @@
 ﻿using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LYBT.Module.Doctors.Interfaces {
 
     /// <summary>
-    /// 医生仓储接口，定义医生数据操作
+    /// 医生仓储接口
     /// </summary>
     public interface IDoctorRepository {
 
         /// <summary>
-        /// 获取医生详情
+        /// 根据ID获取医生详情
         /// </summary>
         Task<DoctorModel?> GetByIdAsync(Guid id);
 
@@ -19,9 +22,9 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<DoctorModel?> GetByUserIdAsync(Guid userId);
 
         /// <summary>
-        /// 获取所有医生列表（不分页）
+        /// 获取所有在职医生列表
         /// </summary>
-        Task<List<DoctorModel>> GetListAsync();
+        Task<List<DoctorModel>> GetActiveDoctorsAsync();
 
         /// <summary>
         /// 搜索医生
@@ -36,12 +39,12 @@ namespace LYBT.Module.Doctors.Interfaces {
         /// <summary>
         /// 新增医生
         /// </summary>
-        Task<bool> AddAsync(DoctorModel doctorModel);
+        Task<bool> AddAsync(DoctorModel model);
 
         /// <summary>
         /// 更新医生
         /// </summary>
-        Task<bool> UpdateAsync(DoctorModel doctorModel);
+        Task<bool> UpdateAsync(DoctorModel model);
 
         /// <summary>
         /// 禁用医生
@@ -64,8 +67,13 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<int> BatchEnableAsync(List<Guid> ids);
 
         /// <summary>
-        /// 更新密码
+        /// 检查医生是否存在
         /// </summary>
-        Task<bool> UpdatePasswordAsync(Guid id, string passwordHash);
+        Task<bool> ExistsAsync(Guid id);
+
+        /// <summary>
+        /// 根据拼音码搜索医生
+        /// </summary>
+        Task<List<DoctorModel>> SearchByPinyinAsync(string pinyin);
     }
 }

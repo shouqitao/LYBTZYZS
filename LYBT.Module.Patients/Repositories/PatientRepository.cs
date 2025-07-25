@@ -16,62 +16,39 @@ namespace LYBT.Module.Patients.Repositories {
             _dbContext = dbContext;
         }
 
-/// <summary>
-/// 执行AddAsync操作。
-/// </summary>
-/// <param name="patient">参数patient</param>
-/// <returns>返回值</returns>
         public async Task<bool> AddAsync(PatientModel patient) {
             await _dbContext.Patients.AddAsync(patient);
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-/// <summary>
-/// 执行GetByIdAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<PatientModel?> GetByIdAsync(Guid id) {
             return await _dbContext.Patients.FindAsync(id);
         }
 
-/// <summary>
-/// 执行GetListAsync操作。
-/// </summary>
-/// <param name="null">参数null</param>
-/// <param name="1">参数1</param>
-/// <param name="20">参数20</param>
-/// <returns>返回值</returns>
         public async Task<List<PatientModel>> GetListAsync(string? keyword = null, int page = 1, int pageSize = 20) {
             var query = _dbContext.Patients.AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(keyword)) {
                 var upper = keyword.ToUpperInvariant();
                 query = query.Where(x => x.Name.Contains(keyword)
                     || x.PinyinCode.Contains(upper)
-                    || x.PhoneNumber.Contains(keyword));
+                    || x.PhoneNumber.Contains(keyword)
+                    || x.IDNumber.Contains(keyword));
             }
+
             return await query
-                .OrderByDescending(x => x.Id)
+                .OrderByDescending(x => x.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
         }
 
-/// <summary>
-/// 执行UpdateAsync操作。
-/// </summary>
-/// <param name="patient">参数patient</param>
-/// <returns>返回值</returns>
         public async Task<bool> UpdateAsync(PatientModel patient) {
+            patient.UpdatedAt = DateTime.Now;
             _dbContext.Patients.Update(patient);
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-/// <summary>
-/// 执行DeleteAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<bool> DeleteAsync(Guid id) {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
@@ -80,102 +57,118 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-/// <summary>
-/// 执行GetByIDNumberAsync操作。
-/// </summary>
-/// <param name="idNumber">参数idNumber</param>
-/// <returns>返回值</returns>
+        public async Task<int> BatchDeleteAsync(List<Guid> ids) {
+            var entities = await _dbContext.Patients
+                .Where(p => ids.Contains(p.Id))
+                .ToListAsync();
+
+            if (!entities.Any())
+                return 0;
+
+            _dbContext.Patients.RemoveRange(entities);
+            return await _dbContext.SaveChangesAsync();
+        }
+
         public async Task<PatientModel?> GetByIDNumberAsync(string idNumber) {
             return await _dbContext.Patients.FirstOrDefaultAsync(x => x.IDNumber == idNumber);
         }
 
-/// <summary>
-/// 执行GetByPhoneNumberAsync操作。
-/// </summary>
-/// <param name="phoneNumber">参数phoneNumber</param>
-/// <returns>返回值</returns>
         public async Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber) {
             return await _dbContext.Patients.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
         }
 
-/// <summary>
-/// 执行GetCountAsync操作。
-/// </summary>
-/// <param name="null">参数null</param>
-/// <returns>返回值</returns>
+        public async Task<bool> IsIDNumberExistsAsync(string idNumber, Guid? excludeId = null) {
+            var query = _dbContext.Patients.Where(p => p.IDNumber == idNumber);
+            if (excludeId.HasValue) {
+                query = query.Where(p => p.Id != excludeId.Value);
+            }
+            return await query.AnyAsync();
+        }
+
+        public async Task<bool> IsPhoneNumberExistsAsync(string phoneNumber, Guid? excludeId = null) {
+            var query = _dbContext.Patients.Where(p => p.PhoneNumber == phoneNumber);
+            if (excludeId.HasValue) {
+                query = query.Where(p => p.Id != excludeId.Value);
+            }
+            return await query.AnyAsync();
+        }
+
         public async Task<int> GetCountAsync(string? keyword = null) {
             var query = _dbContext.Patients.AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(keyword)) {
                 var upper = keyword.ToUpperInvariant();
                 query = query.Where(x => x.Name.Contains(keyword)
                     || x.PinyinCode.Contains(upper)
-                    || x.PhoneNumber.Contains(keyword));
+                    || x.PhoneNumber.Contains(keyword)
+                    || x.IDNumber.Contains(keyword));
             }
+
             return await query.CountAsync();
         }
 
-/// <summary>
-/// 执行EnableAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<bool> EnableAsync(Guid id) {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
                 return false;
             entity.Status = PatientStatus.Active;
+            entity.UpdatedAt = DateTime.Now;
             _dbContext.Patients.Update(entity);
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-/// <summary>
-/// 执行DisableAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
         public async Task<bool> DisableAsync(Guid id) {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
                 return false;
             entity.Status = PatientStatus.Disabled;
+            entity.UpdatedAt = DateTime.Now;
             _dbContext.Patients.Update(entity);
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-/// <summary>
-/// 执行BatchDisableAsync操作。
-/// </summary>
-/// <param name="ids">参数ids</param>
-/// <returns>返回值</returns>
         public async Task<int> BatchDisableAsync(List<Guid> ids) {
             var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
             foreach (var p in list) {
                 p.Status = PatientStatus.Disabled;
+                p.UpdatedAt = DateTime.Now;
             }
             _dbContext.Patients.UpdateRange(list);
             return await _dbContext.SaveChangesAsync();
         }
 
-/// <summary>
-/// 执行SearchAsync操作。
-/// </summary>
-/// <param name="keyword">参数keyword</param>
-/// <returns>返回值</returns>
         public async Task<List<PatientModel>> SearchAsync(string keyword) {
             var upper = keyword.ToUpperInvariant();
             return await _dbContext.Patients
-                .Where(p => p.Name.Contains(keyword) || p.PinyinCode.Contains(upper)
-                    || p.IDNumber.Contains(keyword) || p.PhoneNumber.Contains(keyword))
-                .OrderByDescending(p => p.Id)
+                .Where(p => p.Name.Contains(keyword)
+                    || p.PinyinCode.Contains(upper)
+                    || p.IDNumber.Contains(keyword)
+                    || p.PhoneNumber.Contains(keyword))
+                .OrderByDescending(p => p.CreatedAt)
                 .Take(20)
                 .ToListAsync();
         }
 
-/// <summary>
-/// 执行GetForDoctorAsync操作。
-/// </summary>
-/// <param name="doctorId">参数doctorId</param>
-/// <returns>返回值</returns>
+        public async Task<List<PatientModel>> ExactSearchAsync(string keyword) {
+            var results = new List<PatientModel>();
+
+            // 精确匹配手机号
+            var phoneMatch = await _dbContext.Patients
+                .FirstOrDefaultAsync(p => p.PhoneNumber == keyword);
+            if (phoneMatch != null) {
+                results.Add(phoneMatch);
+            }
+
+            // 精确匹配身份证号
+            var idMatch = await _dbContext.Patients
+                .FirstOrDefaultAsync(p => p.IDNumber == keyword);
+            if (idMatch != null && !results.Any(r => r.Id == idMatch.Id)) {
+                results.Add(idMatch);
+            }
+
+            return results;
+        }
+
         public async Task<List<PatientModel>> GetForDoctorAsync(Guid doctorId) {
             var query = _dbContext.Patients.Where(p => !p.IsSpecial);
             var specialIds = await _dbContext.SpecialPatientDoctors
@@ -186,21 +179,29 @@ namespace LYBT.Module.Patients.Repositories {
             return await query.ToListAsync();
         }
 
-/// <summary>
-/// 执行AssignDoctorAsync操作。
-/// </summary>
-/// <param name="patientId">参数patientId</param>
-/// <param name="doctorId">参数doctorId</param>
-/// <returns>返回值</returns>
         public async Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId) {
+            // 检查是否已经授权
+            var exists = await _dbContext.SpecialPatientDoctors
+                .AnyAsync(s => s.PatientId == patientId && s.DoctorId == doctorId);
+
+            if (exists) {
+                return true; // 已经授权，直接返回成功
+            }
+
             var relation = new SpecialPatientDoctor {
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
                 DoctorId = doctorId,
                 CreatedAt = DateTime.Now
             };
+
             await _dbContext.SpecialPatientDoctors.AddAsync(relation);
             return await _dbContext.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> IsDoctorAssignedAsync(Guid patientId, Guid doctorId) {
+            return await _dbContext.SpecialPatientDoctors
+                .AnyAsync(s => s.PatientId == patientId && s.DoctorId == doctorId);
         }
     }
 }

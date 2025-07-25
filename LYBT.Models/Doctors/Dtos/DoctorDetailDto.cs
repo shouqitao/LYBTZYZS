@@ -1,88 +1,89 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using LYBT.Common.Enums;
 using System.ComponentModel;
 
 namespace LYBT.Module.Doctors.Dtos {
     /// <summary>
-    /// 医生详情 DTO（仅包含医生专属字段和UserId，姓名等通过User获取）
+    /// 医生详情 DTO
     /// </summary>
     public class DoctorDetailDto {
-        [DisplayName("Id")]
-/// <summary>
-/// Id 属性。
-/// </summary>
+        [DisplayName("医生ID")]
         public Guid Id { get; set; }
-        [DisplayName("UserId")]
-/// <summary>
-/// UserId 属性。
-/// </summary>
+
+        [Required(ErrorMessage = "关联用户ID不能为空")]
+        [DisplayName("关联用户ID")]
         public Guid UserId { get; set; }
-        [DisplayName("Gender")]
-/// <summary>
-/// Gender 属性。
-/// </summary>
+
+        [Required(ErrorMessage = "性别不能为空")]
+        [DisplayName("性别")]
         public Gender Gender { get; set; } = Gender.Unknown;
-        [DisplayName("Birthday")]
-/// <summary>
-/// Birthday 属性。
-/// </summary>
-        public DateTime? Birthday { get; set; }
-        [DisplayName("Title")]
-/// <summary>
-/// Title 属性。
-/// </summary>
+
+        [Required(ErrorMessage = "出生日期不能为空")]
+        [DisplayName("出生日期")]
+        public DateTime Birthday { get; set; }
+
+        [Required(ErrorMessage = "职称不能为空")]
+        [DisplayName("职称")]
         public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
-        [DisplayName("LicenseNumber")]
-/// <summary>
-/// LicenseNumber 属性。
-/// </summary>
+
+        [StringLength(32, ErrorMessage = "执业证号长度不能超过32个字符")]
+        [DisplayName("执业证号")]
         public string? LicenseNumber { get; set; }
-        [DisplayName("Specialty")]
-/// <summary>
-/// Specialty 属性。
-/// </summary>
+
+        [Required(ErrorMessage = "专科不能为空")]
+        [StringLength(64, ErrorMessage = "专科长度不能超过64个字符")]
+        [DisplayName("专科")]
         public string Specialty { get; set; } = string.Empty;
-        [DisplayName("Status")]
-/// <summary>
-/// Status 属性。
-/// </summary>
+
+        [DisplayName("在职状态")]
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
-        [DisplayName("WorkStatus")]
-/// <summary>
-/// WorkStatus 属性。
-/// </summary>
+
+        [DisplayName("工作状态")]
         public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
-        [DisplayName("PinyinCode")]
-/// <summary>
-/// PinyinCode 属性。
-/// </summary>
+
+        [StringLength(32, ErrorMessage = "拼音码长度不能超过32个字符")]
+        [DisplayName("拼音码")]
         public string PinyinCode { get; set; } = string.Empty;
-        [DisplayName("Remark")]
-/// <summary>
-/// Remark 属性。
-/// </summary>
+
+        [StringLength(256, ErrorMessage = "备注长度不能超过256个字符")]
+        [DisplayName("备注")]
         public string? Remark { get; set; }
-        [DisplayName("ContactNumber")]
-/// <summary>
-/// ContactNumber 属性。
-/// </summary>
-        public string? ContactNumber { get; set; } // 医生对外联系方式
+
+        [Phone(ErrorMessage = "联系电话格式不正确")]
+        [StringLength(32, ErrorMessage = "联系电话长度不能超过32个字符")]
+        [DisplayName("联系电话")]
+        public string? ContactNumber { get; set; }
+
+        [DisplayName("创建时间")]
+        public DateTime CreatedTime { get; set; }
 
         // 关联的用户信息（只读）
-        [DisplayName("UserName")]
-/// <summary>
-/// UserName 属性。
-/// </summary>
+        [DisplayName("用户名")]
         public string? UserName { get; set; }
-        [DisplayName("RealName")]
-/// <summary>
-/// RealName 属性。
-/// </summary>
+
+        [DisplayName("真实姓名")]
         public string? RealName { get; set; }
-        [DisplayName("PhoneNumber")]
-/// <summary>
-/// PhoneNumber 属性。
-/// </summary>
+
+        [Phone(ErrorMessage = "手机号格式不正确")]
+        [DisplayName("手机号")]
         public string? PhoneNumber { get; set; }
+
+        [EmailAddress(ErrorMessage = "邮箱格式不正确")]
+        [DisplayName("邮箱")]
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// 计算年龄
+        /// </summary>
+        public int Age {
+            get {
+                var today = DateTime.Today;
+                var age = today.Year - Birthday.Year;
+                if (Birthday.Date > today.AddYears(-age))
+                    age--;
+                return age;
+            }
+        }
     }
 }

@@ -1,28 +1,27 @@
 ﻿using AutoMapper;
-using LYBT.Common.Helpers;
+using LYBT.Common.Models;
+using LYBT.Common.Responses;
+using LYBT.Infrastructure.Exceptions;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Dtos;
 using LYBT.Module.Doctors.Interfaces;
-using LYBT.Common.Models;
 using LYBT.Module.Users.Interfaces;
-using CommonUtil = LYBT.CommonUtils.CommonUtils;
-
-using Microsoft.EntityFrameworkCore;
-
+using LYBT.CommonUtils;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace LYBT.Module.Doctors.Services {
     /// <summary>
-    /// 医生业务服务实现类，实现医生业务逻辑
+    /// 医生业务服务实现类
     /// </summary>
     public class DoctorService : IDoctorService {
         private readonly IDoctorRepository _doctorRepository;
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public DoctorService(IDoctorRepository doctorRepository,
+        public DoctorService(
+            IDoctorRepository doctorRepository,
             IUserRepository userRepository,
             IMapper mapper) {
             _doctorRepository = doctorRepository;
@@ -30,141 +29,244 @@ namespace LYBT.Module.Doctors.Services {
             _mapper = mapper;
         }
 
-/// <summary>
-/// 执行GetByIdAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
-        public async Task<DoctorDetailDto?> GetByIdAsync(Guid id) {
-            var model = await _doctorRepository.GetByIdAsync(id);
-            return model == null ? null : _mapper.Map<DoctorDetailDto>(model);
-        }
-
-/// <summary>
-/// 执行GetByUserIdAsync操作。
-/// </summary>
-/// <param name="userId">参数userId</param>
-/// <returns>返回值</returns>
-        public async Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId) {
-            var model = await _doctorRepository.GetByUserIdAsync(userId);
-            return model == null ? null : _mapper.Map<DoctorDetailDto>(model);
-        }
-
-/// <summary>
-/// 执行SearchAsync操作。
-/// </summary>
-/// <param name="keyword">参数keyword</param>
-/// <returns>返回值</returns>
-        public async Task<List<DoctorDto>> SearchAsync(string keyword) {
-            var list = await _doctorRepository.SearchAsync(keyword);
-            return _mapper.Map<List<DoctorDto>>(list);
-        }
-
-/// <summary>
-/// 执行GetPagedAsync操作。
-/// </summary>
-/// <param name="query">参数query</param>
-/// <returns>返回值</returns>
-        public async Task<PagedResultDto<DoctorDto>> GetPagedAsync(DoctorQueryDto query) {
-            var (models, total) = await _doctorRepository.GetPagedAsync(query);
-            return new PagedResultDto<DoctorDto> {
-                TotalCount = total,
-                Items = _mapper.Map<List<DoctorDto>>(models)
-            };
-        }
-
-/// <summary>
-/// 执行AddAsync操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
-        public async Task<bool> AddAsync(DoctorDetailDto dto) {
-
-            if (dto.UserId == Guid.Empty)
-                throw new Exception("UserId不能为空");
-
-
-            var user = await _userRepository.GetByIdAsync(dto.UserId);
-            if (user == null)
-                throw new Exception("关联的用户不存在，请先创建用户。");
-
-
-            if (await _doctorRepository.GetByUserIdAsync(dto.UserId) != null)
-                throw new Exception("该用户已经关联医生档案，请勿重复创建。");
-
-
-            var model = _mapper.Map<DoctorModel>(dto);
-            model.Id = Guid.NewGuid();
-            // EF Core requires the User navigation property for required relationships
-            // to be non-null when saving entities. Assign the retrieved user to avoid
-            // validation errors when calling SaveChangesAsync.
-            model.User = user;
-            model.PinyinCode = user.PinyinCode;
+        public async Task<ApiResponse<DoctorDetailDto>> GetByIdAsync(Guid id) {
             try {
-                return await _doctorRepository.AddAsync(model);
-            } catch (DbUpdateException ex) {
-                throw new Exception("保存医生信息时发生错误", ex);
+                if (id == Guid.Empty) {
+                    return ApiResponse<DoctorDetailDto>.Fail("医生ID不能为空");
+                }
+
+                var model = await _doctorRepository.GetByIdAsync(id);
+                if (model == null) {
+                    return ApiResponse<DoctorDetailDto>.Fail("医生不存在");
+                }
+
+                var dto = _mapper.Map<DoctorDetailDto>(model);
+                return ApiResponse<DoctorDetailDto>.Success(dto);
+            } catch (Exception ex) {
+                return ApiResponse<DoctorDetailDto>.Fail($"获取医生详情失败：{ex.Message}");
             }
         }
 
-/// <summary>
-/// 执行UpdateAsync操作。
-/// </summary>
-/// <param name="dto">参数dto</param>
-/// <returns>返回值</returns>
-        public async Task<bool> UpdateAsync(DoctorDetailDto dto) {
-            var model = await _doctorRepository.GetByIdAsync(dto.Id);
-            if (model == null)
-                throw new Exception("医生不存在。");
-            // 只允许更新医生表自身字段，不允许更新User相关（账号、姓名）
-            model.Gender = dto.Gender;
-            model.Birthday = dto.Birthday ?? model.Birthday;
-            model.Title = dto.Title;
-            model.LicenseNumber = dto.LicenseNumber;
-            model.Specialty = dto.Specialty;
-            model.Status = dto.Status;
-            model.WorkStatus = dto.WorkStatus;
-            model.PinyinCode = model.User.PinyinCode;
-            model.Remark = dto.Remark;
-            model.ContactNumber = dto.ContactNumber;
-            // 不更新UserId、User
-            return await _doctorRepository.UpdateAsync(model);
+        public async Task<ApiResponse<DoctorDetailDto>> GetByUserIdAsync(Guid userId) {
+            try {
+                if (userId == Guid.Empty) {
+                    return ApiResponse<DoctorDetailDto>.Fail("用户ID不能为空");
+                }
+
+                var model = await _doctorRepository.GetByUserIdAsync(userId);
+                if (model == null) {
+                    return ApiResponse<DoctorDetailDto>.Fail("该用户未关联医生档案");
+                }
+
+                var dto = _mapper.Map<DoctorDetailDto>(model);
+                return ApiResponse<DoctorDetailDto>.Success(dto);
+            } catch (Exception ex) {
+                return ApiResponse<DoctorDetailDto>.Fail($"获取医生详情失败：{ex.Message}");
+            }
         }
 
-/// <summary>
-/// 执行DisableAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
-        public async Task<bool> DisableAsync(Guid id) {
-            return await _doctorRepository.DisableAsync(id);
+        public async Task<ApiResponse<List<DoctorDto>>> SearchAsync(string keyword) {
+            try {
+                var models = await _doctorRepository.SearchAsync(keyword ?? string.Empty);
+                var dtos = _mapper.Map<List<DoctorDto>>(models);
+                return ApiResponse<List<DoctorDto>>.Success(dtos);
+            } catch (Exception ex) {
+                return ApiResponse<List<DoctorDto>>.Fail($"搜索医生失败：{ex.Message}");
+            }
         }
 
-/// <summary>
-/// 执行EnableAsync操作。
-/// </summary>
-/// <param name="id">参数id</param>
-/// <returns>返回值</returns>
-        public async Task<bool> EnableAsync(Guid id) {
-            return await _doctorRepository.EnableAsync(id);
+        public async Task<ApiResponse<PagedResultDto<DoctorDto>>> GetPagedAsync(DoctorQueryDto query) {
+            try {
+                // 参数验证
+                if (query.Page < 1)
+                    query.Page = 1;
+                if (query.PageSize < 1 || query.PageSize > 100)
+                    query.PageSize = 20;
+
+                var (models, total) = await _doctorRepository.GetPagedAsync(query);
+                var dtos = _mapper.Map<List<DoctorDto>>(models);
+
+                var result = new PagedResultDto<DoctorDto> {
+                    TotalCount = total,
+                    Items = dtos
+                };
+
+                return ApiResponse<PagedResultDto<DoctorDto>>.Success(result);
+            } catch (Exception ex) {
+                return ApiResponse<PagedResultDto<DoctorDto>>.Fail($"获取医生列表失败：{ex.Message}");
+            }
         }
 
-/// <summary>
-/// 执行BatchDisableAsync操作。
-/// </summary>
-/// <param name="ids">参数ids</param>
-/// <returns>返回值</returns>
-        public async Task<int> BatchDisableAsync(List<Guid> ids) {
-            return await _doctorRepository.BatchDisableAsync(ids);
+        public async Task<ApiResponse<bool>> AddAsync(DoctorDetailDto dto) {
+            try {
+                // 参数验证
+                if (dto.UserId == Guid.Empty) {
+                    return ApiResponse<bool>.Fail("关联用户ID不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Specialty)) {
+                    return ApiResponse<bool>.Fail("专科不能为空");
+                }
+
+                // 检查用户是否存在
+                var user = await _userRepository.GetByIdAsync(dto.UserId);
+                if (user == null) {
+                    return ApiResponse<bool>.Fail("关联的用户不存在，请先创建用户");
+                }
+
+                // 检查用户是否已关联医生档案
+                var existingDoctor = await _doctorRepository.GetByUserIdAsync(dto.UserId);
+                if (existingDoctor != null) {
+                    return ApiResponse<bool>.Fail("该用户已关联医生档案，请勿重复创建");
+                }
+
+                // 创建医生实体
+                var model = _mapper.Map<DoctorModel>(dto);
+                model.Id = Guid.NewGuid();
+                model.User = user;
+                model.CreatedTime = DateTime.Now;
+
+                // 生成拼音码
+                model.PinyinCode = CommonUtils.CommonUtils.GetPinyinCode(user.RealName);
+
+                var result = await _doctorRepository.AddAsync(model);
+                var message = result ? "医生档案创建成功" : "医生档案创建失败";
+
+                return result
+                    ? ApiResponse<bool>.Success(true, message)
+                    : ApiResponse<bool>.Fail(message);
+            } catch (BusinessException ex) {
+                return ApiResponse<bool>.Fail(ex.Message);
+            } catch (Exception ex) {
+                return ApiResponse<bool>.Fail($"创建医生档案失败：{ex.Message}");
+            }
         }
 
-/// <summary>
-/// 执行BatchEnableAsync操作。
-/// </summary>
-/// <param name="ids">参数ids</param>
-/// <returns>返回值</returns>
-        public async Task<int> BatchEnableAsync(List<Guid> ids) {
-            return await _doctorRepository.BatchEnableAsync(ids);
+        public async Task<ApiResponse<bool>> UpdateAsync(DoctorDetailDto dto) {
+            try {
+                // 参数验证
+                if (dto.Id == Guid.Empty) {
+                    return ApiResponse<bool>.Fail("医生ID不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Specialty)) {
+                    return ApiResponse<bool>.Fail("专科不能为空");
+                }
+
+                // 获取现有医生信息
+                var model = await _doctorRepository.GetByIdAsync(dto.Id);
+                if (model == null) {
+                    return ApiResponse<bool>.Fail("医生不存在");
+                }
+
+                // 更新医生字段（不更新UserId、User等关键字段）
+                model.Gender = dto.Gender;
+                model.Birthday = dto.Birthday;
+                model.Title = dto.Title;
+                model.LicenseNumber = dto.LicenseNumber;
+                model.Specialty = dto.Specialty;
+                model.Status = dto.Status;
+                model.WorkStatus = dto.WorkStatus;
+                model.Remark = dto.Remark;
+                model.ContactNumber = dto.ContactNumber;
+
+                // 更新拼音码
+                model.PinyinCode = CommonUtils.CommonUtils.GetPinyinCode(model.User.RealName);
+
+                var result = await _doctorRepository.UpdateAsync(model);
+                var message = result ? "医生信息更新成功" : "医生信息更新失败";
+
+                return result
+                    ? ApiResponse<bool>.Success(true, message)
+                    : ApiResponse<bool>.Fail(message);
+            } catch (BusinessException ex) {
+                return ApiResponse<bool>.Fail(ex.Message);
+            } catch (Exception ex) {
+                return ApiResponse<bool>.Fail($"更新医生信息失败：{ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<bool>> DisableAsync(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return ApiResponse<bool>.Fail("医生ID不能为空");
+                }
+
+                var result = await _doctorRepository.DisableAsync(id);
+                var message = result ? "医生已禁用" : "禁用医生失败";
+
+                return result
+                    ? ApiResponse<bool>.Success(true, message)
+                    : ApiResponse<bool>.Fail(message);
+            } catch (Exception ex) {
+                return ApiResponse<bool>.Fail($"禁用医生失败：{ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<bool>> EnableAsync(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return ApiResponse<bool>.Fail("医生ID不能为空");
+                }
+
+                var result = await _doctorRepository.EnableAsync(id);
+                var message = result ? "医生已启用" : "启用医生失败";
+
+                return result
+                    ? ApiResponse<bool>.Success(true, message)
+                    : ApiResponse<bool>.Fail(message);
+            } catch (Exception ex) {
+                return ApiResponse<bool>.Fail($"启用医生失败：{ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<int>> BatchDisableAsync(List<Guid> ids) {
+            try {
+                if (ids == null || ids.Count == 0) {
+                    return ApiResponse<int>.Fail("请选择要禁用的医生");
+                }
+
+                var count = await _doctorRepository.BatchDisableAsync(ids);
+                return ApiResponse<int>.Success(count, $"成功禁用 {count} 名医生");
+            } catch (Exception ex) {
+                return ApiResponse<int>.Fail($"批量禁用医生失败：{ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<int>> BatchEnableAsync(List<Guid> ids) {
+            try {
+                if (ids == null || ids.Count == 0) {
+                    return ApiResponse<int>.Fail("请选择要启用的医生");
+                }
+
+                var count = await _doctorRepository.BatchEnableAsync(ids);
+                return ApiResponse<int>.Success(count, $"成功启用 {count} 名医生");
+            } catch (Exception ex) {
+                return ApiResponse<int>.Fail($"批量启用医生失败：{ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<List<DoctorDto>>> GetActiveDoctorsAsync() {
+            try {
+                var models = await _doctorRepository.GetActiveDoctorsAsync();
+                var dtos = _mapper.Map<List<DoctorDto>>(models);
+                return ApiResponse<List<DoctorDto>>.Success(dtos);
+            } catch (Exception ex) {
+                return ApiResponse<List<DoctorDto>>.Fail($"获取在职医生列表失败：{ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<bool>> IsUserLinkedToDoctorAsync(Guid userId) {
+            try {
+                if (userId == Guid.Empty) {
+                    return ApiResponse<bool>.Fail("用户ID不能为空");
+                }
+
+                var doctor = await _doctorRepository.GetByUserIdAsync(userId);
+                return ApiResponse<bool>.Success(doctor != null);
+            } catch (Exception ex) {
+                return ApiResponse<bool>.Fail($"检查用户关联状态失败：{ex.Message}");
+            }
         }
     }
 }

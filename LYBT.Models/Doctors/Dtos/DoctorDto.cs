@@ -4,84 +4,72 @@ using System.ComponentModel;
 
 namespace LYBT.Module.Doctors.Dtos {
     /// <summary>
-    /// 医生列表 DTO（仅包含医生专属字段和UserId，姓名等通过User获取）
+    /// 医生列表 DTO
     /// </summary>
     public class DoctorDto {
-        [DisplayName("Id")]
-/// <summary>
-/// Id 属性。
-/// </summary>
+        [DisplayName("医生ID")]
         public Guid Id { get; set; }
-        [DisplayName("UserId")]
-/// <summary>
-/// UserId 属性。
-/// </summary>
+
+        [DisplayName("关联用户ID")]
         public Guid UserId { get; set; }
-        [DisplayName("Birthday")]
-/// <summary>
-/// Birthday 属性。
-/// </summary>
-        public DateTime? Birthday { get; set; }
-        [DisplayName("Title")]
-/// <summary>
-/// Title 属性。
-/// </summary>
+
+        [DisplayName("出生日期")]
+        public DateTime Birthday { get; set; }
+
+        [DisplayName("职称")]
         public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
-        [DisplayName("LicenseNumber")]
-/// <summary>
-/// LicenseNumber 属性。
-/// </summary>
+
+        [DisplayName("执业证号")]
         public string? LicenseNumber { get; set; }
-        [DisplayName("Specialty")]
-/// <summary>
-/// Specialty 属性。
-/// </summary>
+
+        [DisplayName("专科")]
         public string Specialty { get; set; } = string.Empty;
-        [DisplayName("Status")]
-/// <summary>
-/// Status 属性。
-/// </summary>
+
+        [DisplayName("在职状态")]
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
-        [DisplayName("WorkStatus")]
-/// <summary>
-/// WorkStatus 属性。
-/// </summary>
+
+        [DisplayName("工作状态")]
         public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
-        [DisplayName("PinyinCode")]
-/// <summary>
-/// PinyinCode 属性。
-/// </summary>
+
+        [DisplayName("拼音码")]
         public string PinyinCode { get; set; } = string.Empty;
-        [DisplayName("Remark")]
-/// <summary>
-/// Remark 属性。
-/// </summary>
+
+        [DisplayName("备注")]
         public string? Remark { get; set; }
-        [DisplayName("ContactNumber")]
-/// <summary>
-/// ContactNumber 属性。
-/// </summary>
-        public string? ContactNumber { get; set; } // 医生对外联系方式
+
+        [DisplayName("联系电话")]
+        public string? ContactNumber { get; set; }
+
+        [DisplayName("性别")]
+        public Gender Gender { get; set; }
+
+        [DisplayName("创建时间")]
+        public DateTime CreatedTime { get; set; }
+
         // 用户信息（只读）
-        [DisplayName("UserName")]
-/// <summary>
-/// UserName 属性。
-/// </summary>
+        [DisplayName("用户名")]
         public string? UserName { get; set; }
-        [DisplayName("RealName")]
-/// <summary>
-/// RealName 属性。
-/// </summary>
+
+        [DisplayName("真实姓名")]
         public string? RealName { get; set; }
-        [DisplayName("PhoneNumber")]
-/// <summary>
-/// PhoneNumber 属性。
-/// </summary>
+
+        [DisplayName("手机号")]
         public string? PhoneNumber { get; set; }
-        [DisplayName("Gender")]
-/// <summary>
-/// Gender 属性。
-/// </summary>
-        public Gender Gender { get; set; } // 新增性别字段
+
+        [DisplayName("邮箱")]
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// 计算年龄
+        /// </summary>
+        public int Age {
+            get {
+                var today = DateTime.Today;
+                var age = today.Year - Birthday.Year;
+                if (Birthday.Date > today.AddYears(-age))
+                    age--;
+                return age;
+            }
+        }
     }
 }
