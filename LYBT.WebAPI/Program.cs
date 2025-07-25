@@ -55,6 +55,7 @@ using LYBT.Module.Sync.Mapping;
 using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
 using LYBT.Module.Users;
+using LYBT.Module.Patients;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Mapping;
 using LYBT.Module.Users.Repositories;
@@ -79,9 +80,7 @@ builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDe
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// 病人管理
-builder.Services.AddScoped<IPatientService, PatientService>();
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+// 病人管理 handled by PatientsModule
 
 // 医生管理
 builder.Services.AddScoped<IDoctorService, DoctorService>();
@@ -177,6 +176,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connection));
 // Users module context
 builder.Services.AddUsersModule(connection);
+builder.Services.AddPatientsModule(connection);
 
 // =========== 5. JWT 认证配置 ===========
 builder.Services.AddJwtAuthentication(builder.Configuration);
