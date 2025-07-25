@@ -12,45 +12,45 @@ namespace LYBT.Module.Users.Dtos {
         /// 关键词（支持用户名或真实姓名模糊查询）
         /// </summary>
         [DisplayName("关键词（支持用户名或真实姓名模糊查询）")]
-/// <summary>
-/// Keyword 属性。
-/// </summary>
+        /// <summary>
+        /// Keyword 属性。
+        /// </summary>
         public string? Keyword { get; set; }
 
         /// <summary>
         /// 用户角色列表（可选，多选）
         /// </summary>
         [DisplayName("用户角色列表（可选，多选）")]
-/// <summary>
-/// Roles 属性。
-/// </summary>
+        /// <summary>
+        /// Roles 属性。
+        /// </summary>
         public List<UserRole>? Roles { get; set; }
 
         /// <summary>
         /// 启用状态（可选条件）
         /// </summary>
         [DisplayName("启用状态（可选条件）")]
-/// <summary>
-/// IsActive 属性。
-/// </summary>
+        /// <summary>
+        /// IsActive 属性。
+        /// </summary>
         public bool? IsActive { get; set; }
 
         /// <summary>
         /// 当前页码（默认1）
         /// </summary>
         [DisplayName("当前页码（默认1）")]
-/// <summary>
-/// Page 属性。
-/// </summary>
+        /// <summary>
+        /// Page 属性。
+        /// </summary>
         public int Page { get; set; } = 1;
 
         /// <summary>
         /// 每页条数（默认20）
         /// </summary>
         [DisplayName("每页条数（默认20）")]
-/// <summary>
-/// PageSize 属性。
-/// </summary>
+        /// <summary>
+        /// PageSize 属性。
+        /// </summary>
         public int PageSize { get; set; } = 20;
     }
 }

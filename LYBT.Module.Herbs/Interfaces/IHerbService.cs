@@ -1,6 +1,7 @@
-using System.IO;
-using LYBT.Module.Herbs.Dtos;
+using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Models;
+using LYBT.Module.Herbs.Dtos;
+using System.IO;
 
 namespace LYBT.Module.Herbs.Interfaces {
 
@@ -48,6 +49,60 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// 导出药材数据
         /// </summary>
         Task<List<HerbDetailDto>> ExportAsync();
+
+        // 需要在现有 IHerbService 接口中添加以下方法：
+
+        /// <summary>
+        /// 更新药材状态
+        /// </summary>
+        /// <param name="dto">状态更新DTO</param>
+        /// <returns>是否成功</returns>
+        Task<bool> UpdateStatusAsync(HerbStatusUpdateDto dto);
+
+        /// <summary>
+        /// 批量更新药材状态
+        /// </summary>
+        /// <param name="dto">批量状态更新DTO</param>
+        /// <returns>成功更新的数量</returns>
+        Task<int> BatchUpdateStatusAsync(HerbBatchStatusUpdateDto dto);
+
+        /// <summary>
+        /// 根据状态获取药材列表
+        /// </summary>
+        /// <param name="status">药材状态</param>
+        /// <returns>药材列表</returns>
+        Task<List<HerbDto>> GetByStatusAsync(HerbStatus status);
+
+        /// <summary>
+        /// 获取可用药材列表（状态为Active）
+        /// </summary>
+        /// <returns>可用药材列表</returns>
+        Task<List<HerbDto>> GetAvailableHerbsAsync();
+
+        /// <summary>
+        /// 获取缺货药材列表
+        /// </summary>
+        /// <returns>缺货药材列表</returns>
+        Task<List<HerbDto>> GetOutOfStockHerbsAsync();
+
+        /// <summary>
+        /// 获取即将过期药材列表
+        /// </summary>
+        /// <param name="days">过期预警天数，默认30天</param>
+        /// <returns>即将过期药材列表</returns>
+        Task<List<HerbDto>> GetExpiringHerbsAsync(int days = 30);
+
+        /// <summary>
+        /// 检查药材状态并自动更新过期药材
+        /// </summary>
+        /// <returns>更新的药材数量</returns>
+        Task<int> CheckAndUpdateExpiredHerbsAsync();
+
+        /// <summary>
+        /// 获取药材状态统计信息
+        /// </summary>
+        /// <returns>状态统计字典</returns>
+        Task<Dictionary<HerbStatus, int>> GetStatusStatisticsAsync();
 
     }
 }

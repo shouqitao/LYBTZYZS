@@ -1,4 +1,5 @@
-﻿using LYBT.Common.Enums.Users;
+﻿using LYBT.Common.Enums.Herbs;
+using LYBT.Common.Enums.Users;
 using LYBT.Models;
 using LYBT.Models.Billing;
 using LYBT.Models.DiagnosisTreatment;
@@ -18,6 +19,7 @@ using LYBT.Module.Users.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Text.Json;
 
 namespace LYBT.Infrastructure {
@@ -305,7 +307,7 @@ namespace LYBT.Infrastructure {
         }
 
         /// <summary>
-        /// 配置药材模块
+        /// 配置药材模块 - 更新版本
         /// </summary>
         private static void ConfigureHerbModule(ModelBuilder modelBuilder) {
             var herbEntity = modelBuilder.Entity<HerbModel>();
@@ -321,9 +323,32 @@ namespace LYBT.Infrastructure {
             herbEntity.HasIndex(h => h.Pinyin)
                 .HasDatabaseName("IX_Herbs_Pinyin");
 
-            // 药材状态索引
+            // 药材状态索引 - 新增
             herbEntity.HasIndex(h => h.Status)
                 .HasDatabaseName("IX_Herbs_Status");
+
+            // 复合索引：状态和过期时间 - 新增  
+            herbEntity.HasIndex(h => new { h.Status, h.ExpireDate })
+                .HasDatabaseName("IX_Herbs_Status_ExpireDate");
+
+            // 复合索引：状态和库存 - 新增
+            herbEntity.HasIndex(h => new { h.Status, h.Stock })
+                .HasDatabaseName("IX_Herbs_Status_Stock");
+
+            // 创建时间索引 - 新增
+            herbEntity.HasIndex(h => h.CreatedAt)
+                .HasDatabaseName("IX_Herbs_CreatedAt");
+
+            // 更新时间索引 - 新增
+            herbEntity.HasIndex(h => h.UpdatedAt)
+                .HasDatabaseName("IX_Herbs_UpdatedAt");
+
+            // 设置字段默认值
+            herbEntity.Property(h => h.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            herbEntity.Property(h => h.Status)
+                .HasDefaultValue(HerbStatus.Active);
         }
 
         #endregion
@@ -349,8 +374,8 @@ namespace LYBT.Infrastructure {
         private static ValueComparer<List<T>> CreateListComparer<T>() {
             return new ValueComparer<List<T>>(
                 (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-                c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v?.GetHashCode() ?? 0)),
-                c => c?.ToList() ?? new List<T>()
+                c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v != null ? v.GetHashCode() : 0)),
+                c => c != null ? c.ToList() : new List<T>()
             );
         }
 
@@ -372,11 +397,18 @@ namespace LYBT.Infrastructure {
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             };
 
-            return propertyBuilder
-                .HasConversion(
-                    v => v == null ? null : JsonSerializer.Serialize(v, jsonOptions),
-                    v => string.IsNullOrEmpty(v) ? null : JsonSerializer.Deserialize<T>(v, jsonOptions))
-                .Metadata.SetValueComparer(CreateJsonComparer<T>(jsonOptions));
+            var converter = new ValueConverter<T, string>(
+                v => v == null ? null : JsonSerializer.Serialize(v, jsonOptions),
+                v => string.IsNullOrEmpty(v) ? null : JsonSerializer.Deserialize<T>(v, jsonOptions)
+            );
+
+            var comparer = CreateJsonComparer<T>(jsonOptions);
+
+            // 分别设置转换器和比较器，然后返回 PropertyBuilder
+            var result = propertyBuilder.HasConversion(converter);
+            result.Metadata.SetValueComparer(comparer);
+
+            return result;
         }
 
         /// <summary>
