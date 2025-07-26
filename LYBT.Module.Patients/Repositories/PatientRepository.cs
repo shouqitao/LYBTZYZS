@@ -1,5 +1,5 @@
 ﻿using LYBT.Common.Enums.Patient;
-using LYBT.Infrastructure;
+using LYBT.Module.Patients.Data;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Models;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +11,9 @@ namespace LYBT.Module.Patients.Repositories {
     /// 实现软删除策略：患者只能禁用/启用，不能物理删除
     /// </summary>
     public class PatientRepository : IPatientRepository {
-        private readonly AppDbContext _dbContext;
+        private readonly PatientsDbContext _dbContext;
 
-        public PatientRepository(AppDbContext dbContext) {
+        public PatientRepository(PatientsDbContext dbContext) {
             _dbContext = dbContext;
         }
 
