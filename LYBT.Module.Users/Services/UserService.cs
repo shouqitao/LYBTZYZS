@@ -1,12 +1,12 @@
 ﻿using LYBT.Common.Enums.Logs;
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Helpers;
-using LYBT.Module.Logs.Interfaces;
+using LYBT.Infrastructure.Logging;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Models;
+using LYBT.Module.Users.Models.Dtos;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
-using CommonUtil = LYBT.CommonUtils.CommonUtils;
 
 namespace LYBT.Module.Users.Services {
 
@@ -15,12 +15,12 @@ namespace LYBT.Module.Users.Services {
     /// </summary>
     public class UserService : IUserService {
         private readonly IUserRepository _userRepository;
-        private readonly ILogService _logService;
+        private readonly IUnifiedLogService _logService;
         private readonly UserOptions _options;
 
         public UserService(
             IUserRepository userRepository,
-            ILogService logService,
+            IUnifiedLogService logService,
             IOptions<UserOptions> options) {
             _userRepository = userRepository;
             _logService = logService;
@@ -222,7 +222,7 @@ namespace LYBT.Module.Users.Services {
             var oldSnapshot = JsonSerializer.Serialize(user);
 
             user.RealName = realName;
-            user.PinyinCode = CommonUtil.GetPinyinCode(realName);
+            user.PinyinCode = CommonHelper.GetPinyinCode(realName);
             user.Email = email;
             user.PhoneNumber = phoneNumber;
 
@@ -281,7 +281,7 @@ namespace LYBT.Module.Users.Services {
                 Id = Guid.NewGuid(),
                 UserName = dto.UserName,
                 RealName = dto.RealName,
-                PinyinCode = CommonUtil.GetPinyinCode(dto.RealName),
+                PinyinCode = CommonHelper.GetPinyinCode(dto.RealName),
                 Roles = dto.Roles ?? new List<UserRole>(),
                 IsActive = dto.IsActive,
                 Email = dto.Email,
@@ -296,7 +296,7 @@ namespace LYBT.Module.Users.Services {
         /// </summary>
         private void UpdateUserFromDto(UserModel user, UserDetailDto dto) {
             user.RealName = dto.RealName;
-            user.PinyinCode = CommonUtil.GetPinyinCode(dto.RealName);
+            user.PinyinCode = CommonHelper.GetPinyinCode(dto.RealName);
             user.Roles = dto.Roles ?? new List<UserRole>();
             user.IsActive = dto.IsActive;
             user.Email = dto.Email;
@@ -358,18 +358,15 @@ namespace LYBT.Module.Users.Services {
             if (!_options.EnableDetailedAuditLogging)
                 return;
 
-            await _logService.AddLogAsync(new LogDto {
-                LogType = LogType.Operation,
-                ObjectType = ObjectType.User,
-                ObjectId = userId,
-                ActionType = actionType,
-                OperatorId = operatorId,
-                OperatorName = operatorName,
-                LogTime = DateTime.Now,
-                Content = content,
-                OldValue = oldValue,
-                NewValue = newValue != null ? JsonSerializer.Serialize(newValue) : null
-            });
+            await _logService.LogUserActionAsync(
+                operatorId, 
+                operatorName, 
+                (LogActionType)actionType,
+                "Users",
+                "UserManagement", 
+                content,
+                parameters: newValue != null ? JsonSerializer.Serialize(newValue) : null
+            );
         }
 
         /// <summary>
@@ -384,17 +381,15 @@ namespace LYBT.Module.Users.Services {
             var userNames = string.Join(", ", users.Select(u => u.UserName));
             var detailedContent = $"{content}: {userNames}";
 
-            await _logService.AddLogAsync(new LogDto {
-                LogType = LogType.Operation,
-                ObjectType = ObjectType.User,
-                ObjectId = Guid.Empty, // 批量操作使用空ID
-                ActionType = actionType,
-                OperatorId = operatorId,
-                OperatorName = operatorName,
-                LogTime = DateTime.Now,
-                Content = detailedContent,
-                NewValue = JsonSerializer.Serialize(users.Select(u => new { u.Id, u.UserName }).ToList())
-            });
+            await _logService.LogUserActionAsync(
+                operatorId,
+                operatorName,
+                (LogActionType)actionType,
+                "Users",
+                "BatchUserManagement",
+                detailedContent,
+                parameters: JsonSerializer.Serialize(users.Select(u => new { u.Id, u.UserName }).ToList())
+            );
         }
 
         /// <summary>

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Remove-Item -Path \"D:\\source\\repos\\LYBTZYZS\\LYBT.Infrastructure\\Auth\" -Recurse -Force)",
+      "Bash(rm:*)",
+      "Bash(sed:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet build)",
+      "Bash(dotnet build:*)",
+      "Bash(grep:*)"
+    ],
+    "deny": []
+  }
+}

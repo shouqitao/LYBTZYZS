@@ -1,4 +1,5 @@
-﻿using LYBT.Infrastructure;
+﻿using LYBT.Common.Enums.Diagnostics;
+using LYBT.Module.Queueing.Data;
 using LYBT.Module.Queueing.Interfaces;
 using LYBT.Module.Queueing.Models;
 
@@ -8,66 +9,66 @@ namespace LYBT.Module.Queueing.Repositories {
     /// 排队仓储实现类，实现数据库操作
     /// </summary>
     public class QueueingRepository : IQueueingRepository {
-        private readonly AppDbContext _appDbContext;
+        private readonly QueueingDbContext _queueingDbContext;
 
         /// <summary>
         /// 构造方法，注入数据库上下文
         /// </summary>
-        public QueueingRepository(AppDbContext appDbContext) {
-            _appDbContext = appDbContext;
+        public QueueingRepository(QueueingDbContext queueingDbContext) {
+            _queueingDbContext = queueingDbContext;
         }
 
         /// <summary>
         /// 根据ID获取排队详情
         /// </summary>
         public async Task<QueueingModel?> GetByIdAsync(Guid id) {
-            return await _appDbContext.Queueings.FindAsync(id);
+            return await _queueingDbContext.Queueings.FindAsync(id);
         }
 
         /// <summary>
         /// 获取所有排队信息
         /// </summary>
         public async Task<List<QueueingModel>> GetListAsync() {
-            return await Task.FromResult(_appDbContext.Queueings.ToList());
+            return await Task.FromResult(_queueingDbContext.Queueings.ToList());
         }
 
         /// <summary>
         /// 新增排队信息
         /// </summary>
         public async Task<bool> AddAsync(QueueingModel model) {
-            _appDbContext.Queueings.Add(model);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            _queueingDbContext.Queueings.Add(model);
+            return await _queueingDbContext.SaveChangesAsync() > 0;
         }
 
         /// <summary>
         /// 更新排队信息
         /// </summary>
         public async Task<bool> UpdateAsync(QueueingModel model) {
-            _appDbContext.Queueings.Update(model);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            _queueingDbContext.Queueings.Update(model);
+            return await _queueingDbContext.SaveChangesAsync() > 0;
         }
 
         /// <summary>
         /// 删除排队信息
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
-            var model = await _appDbContext.Queueings.FindAsync(id);
+            var model = await _queueingDbContext.Queueings.FindAsync(id);
             if (model == null)
                 return false;
-            _appDbContext.Queueings.Remove(model);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            _queueingDbContext.Queueings.Remove(model);
+            return await _queueingDbContext.SaveChangesAsync() > 0;
         }
 
         /// <summary>
         /// 取消排队信息，标记状态为已取消
         /// </summary>
         public async Task<bool> CancelAsync(Guid id) {
-            var model = await _appDbContext.Queueings.FindAsync(id);
+            var model = await _queueingDbContext.Queueings.FindAsync(id);
             if (model == null)
                 return false;
-            model.Status = LYBT.Common.Enums.QueueStatus.Cancelled;
-            _appDbContext.Queueings.Update(model);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            model.Status = QueueStatus.Cancelled;
+            _queueingDbContext.Queueings.Update(model);
+            return await _queueingDbContext.SaveChangesAsync() > 0;
         }
 
         /// <summary>
@@ -76,12 +77,12 @@ namespace LYBT.Module.Queueing.Repositories {
         /// <param name="id">参数id</param>
         /// <returns>返回值</returns>
         public async Task<bool> CompleteAsync(Guid id) {
-            var model = await _appDbContext.Queueings.FindAsync(id);
+            var model = await _queueingDbContext.Queueings.FindAsync(id);
             if (model == null)
                 return false;
-            model.Status = LYBT.Common.Enums.QueueStatus.Finished;
-            _appDbContext.Queueings.Update(model);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            model.Status = QueueStatus.Completed;
+            _queueingDbContext.Queueings.Update(model);
+            return await _queueingDbContext.SaveChangesAsync() > 0;
         }
 
         /// <summary>
@@ -90,12 +91,12 @@ namespace LYBT.Module.Queueing.Repositories {
         /// <param name="id">参数id</param>
         /// <returns>返回值</returns>
         public async Task<bool> HoldAsync(Guid id) {
-            var model = await _appDbContext.Queueings.FindAsync(id);
+            var model = await _queueingDbContext.Queueings.FindAsync(id);
             if (model == null)
                 return false;
-            model.Status = LYBT.Common.Enums.QueueStatus.OnHold;
-            _appDbContext.Queueings.Update(model);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            model.Status = QueueStatus.Skipped;
+            _queueingDbContext.Queueings.Update(model);
+            return await _queueingDbContext.SaveChangesAsync() > 0;
         }
     }
 }

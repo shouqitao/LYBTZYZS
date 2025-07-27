@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LYBT.Common.Enums.System;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Models;
 using LYBT.Module.Sync.Models.Dtos;
@@ -75,8 +76,8 @@ namespace LYBT.Module.Sync.Services {
         /// </summary>
         public async Task<bool> TriggerManualSyncAsync() {
             var log = new SyncLogCreateDto {
-                Mode = Common.Enums.SyncMode.Manual,
-                Status = Common.Enums.SyncStatus.Success,
+                Mode = SyncMode.Manual,
+                Status = SyncStatus.Completed,
                 Message = "Manual sync triggered"
             };
             return await AddLogAsync(log);

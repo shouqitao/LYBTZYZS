@@ -1,4 +1,4 @@
-using LYBT.Common.Enums.Prescriptions;
+using LYBT.Common.Enums.Diagnostics;
 using System.ComponentModel;
 
 namespace LYBT.Module.Prescriptions.Models.Dtos {

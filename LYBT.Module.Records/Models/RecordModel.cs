@@ -1,3 +1,4 @@
+using LYBT.Module.DiagnosisTreatment.Models;
 using System.ComponentModel;
 
 namespace LYBT.Module.Records.Models {

@@ -2,10 +2,12 @@ using AutoMapper;
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Auth;
+using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models.Dtos;
-using LYBT.Module.Logs.Interfaces;
 using LYBT.Module.Users.Models;
+using LYBT.Module.Users.Models.Dtos;
 using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Auth.Services {
@@ -16,14 +18,14 @@ namespace LYBT.Module.Auth.Services {
     public class AuthService : IAuthService {
         private readonly IAuthRepository _authRepository;
         private readonly IMapper _mapper;
-        private readonly ILogService _logService;
+        private readonly IUnifiedLogService _logService;
         private readonly SysAdminHandler _sysAdminHandler;
         private readonly AuthOptions _authOptions;
 
         public AuthService(
             IAuthRepository authRepository,
             IMapper mapper,
-            ILogService logService,
+            IUnifiedLogService logService,
             SysAdminHandler sysAdminHandler,
             IOptions<AuthOptions> authOptions) {
             _authRepository = authRepository;
@@ -285,16 +287,20 @@ namespace LYBT.Module.Auth.Services {
         /// 统一的用户操作日志记录
         /// </summary>
         private async Task LogUserAction(Guid userId, string operatorName, ActionType actionType, string content) {
-            await _logService.AddLogAsync(new LogDto {
-                LogType = LogType.Login,
-                ObjectType = ObjectType.User,
-                ObjectId = userId,
-                ActionType = actionType,
-                OperatorId = userId,
-                OperatorName = operatorName,
-                Content = content,
-                LogTime = DateTime.Now
-            });
+            if (actionType == ActionType.Login) {
+                await _logService.LogUserLoginAsync(userId, operatorName, "", "", true);
+            } else if (actionType == ActionType.Logout) {
+                await _logService.LogUserLogoutAsync(userId, operatorName, "");
+            } else {
+                await _logService.LogUserActionAsync(
+                    userId,
+                    operatorName,
+                    (LogActionType)actionType,
+                    "Auth",
+                    "Authentication",
+                    content
+                );
+            }
         }
 
         /// <summary>

@@ -15,7 +15,8 @@
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Common\LYBT.Common.csproj" />
     <ProjectReference Include="..\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+    <ProjectReference Include="..\LYBT.Module.DiagnosisTreatment\LYBT.Module.DiagnosisTreatment.csproj" />
   </ItemGroup>
 
 </Project>

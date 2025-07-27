@@ -1,3 +1,4 @@
+using LYBT.Module.Users.Models.Dtos;
 using System.ComponentModel;
 
 namespace LYBT.Module.Auth.Models.Dtos {
@@ -13,6 +14,6 @@ namespace LYBT.Module.Auth.Models.Dtos {
 
         /// <summary>用户信息</summary>
         [DisplayName("用户信息")]
-        public Users.Dtos.UserDto User { get; set; } = new();
+        public UserDto User { get; set; } = new();
     }
 }

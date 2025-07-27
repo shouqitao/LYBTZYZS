@@ -1,5 +1,5 @@
-using LYBT.Common.Enums.Prescriptions;
-using LYBT.Infrastructure;
+using LYBT.Common.Enums.Diagnostics;
+using LYBT.Module.Prescriptions.Data;
 using LYBT.Module.Prescriptions.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +9,10 @@ namespace LYBT.Module.Prescriptions.Repositories {
     /// 表示PrescriptionRepository。
     /// </summary>
     public class PrescriptionRepository : IPrescriptionRepository {
-        private readonly AppDbContext _db;
+        private readonly PrescriptionDbContext _context;
 
-        public PrescriptionRepository(AppDbContext db) {
-            _db = db;
+        public PrescriptionRepository(PrescriptionDbContext context) {
+            _context = context;
         }
 
         /// <summary>
@@ -21,7 +21,7 @@ namespace LYBT.Module.Prescriptions.Repositories {
         /// <param name="id">参数id</param>
         /// <returns>返回值</returns>
         public async Task<PrescriptionModel?> GetByIdAsync(Guid id) {
-            return await _db.Prescriptions
+            return await _context.Prescriptions
                 .Include(p => p.Items)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
@@ -31,7 +31,7 @@ namespace LYBT.Module.Prescriptions.Repositories {
         /// </summary>
         /// <returns>返回值</returns>
         public async Task<List<PrescriptionModel>> GetListAsync() {
-            return await _db.Prescriptions
+            return await _context.Prescriptions
                 .Include(p => p.Items)
                 .ToListAsync();
         }
@@ -42,8 +42,8 @@ namespace LYBT.Module.Prescriptions.Repositories {
         /// <param name="model">参数model</param>
         /// <returns>返回值</returns>
         public async Task<bool> AddAsync(PrescriptionModel model) {
-            _db.Prescriptions.Add(model);
-            return await _db.SaveChangesAsync() > 0;
+            _context.Prescriptions.Add(model);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
@@ -52,8 +52,8 @@ namespace LYBT.Module.Prescriptions.Repositories {
         /// <param name="model">参数model</param>
         /// <returns>返回值</returns>
         public async Task<bool> UpdateAsync(PrescriptionModel model) {
-            _db.Prescriptions.Update(model);
-            return await _db.SaveChangesAsync() > 0;
+            _context.Prescriptions.Update(model);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
@@ -62,11 +62,11 @@ namespace LYBT.Module.Prescriptions.Repositories {
         /// <param name="id">参数id</param>
         /// <returns>返回值</returns>
         public async Task<bool> DeleteAsync(Guid id) {
-            var m = await _db.Prescriptions.FindAsync(id);
+            var m = await _context.Prescriptions.FindAsync(id);
             if (m == null)
                 return false;
-            _db.Prescriptions.Remove(m);
-            return await _db.SaveChangesAsync() > 0;
+            _context.Prescriptions.Remove(m);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
@@ -75,12 +75,12 @@ namespace LYBT.Module.Prescriptions.Repositories {
         /// <param name="id">参数id</param>
         /// <returns>返回值</returns>
         public async Task<bool> CancelAsync(Guid id) {
-            var model = await _db.Prescriptions.FindAsync(id);
+            var model = await _context.Prescriptions.FindAsync(id);
             if (model == null)
                 return false;
             model.Status = PrescriptionStatus.Cancelled;
-            _db.Prescriptions.Update(model);
-            return await _db.SaveChangesAsync() > 0;
+            _context.Prescriptions.Update(model);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

@@ -1,4 +1,5 @@
 using LYBT.Common.Enums;
+using LYBT.Common.Enums.System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -17,7 +18,7 @@ namespace LYBT.Module.Sync.Models.Dtos {
         /// <summary>同步状态</summary>
         [Required(ErrorMessage = "同步状态不能为空")]
         [DisplayName("同步状态")]
-        public SyncStatus Status { get; set; } = SyncStatus.Success;
+        public SyncStatus Status { get; set; } = SyncStatus.Completed;
 
         /// <summary>同步时间</summary>
         [DisplayName("同步时间")]

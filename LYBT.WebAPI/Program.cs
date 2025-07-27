@@ -2,6 +2,7 @@
 /// WebAPI 程序入口，配置并启动应用
 /// </summary>
 using LYBT.Infrastructure;
+using LYBT.Infrastructure.Extensions;
 using LYBT.Infrastructure.Auth.Extensions;
 using LYBT.Infrastructure.Exceptions;
 using LYBT.Infrastructure.Helpers;
@@ -110,9 +111,9 @@ builder.Services.AddScoped<IFormulaTemplateRepository, FormulaTemplateRepository
 builder.Services.AddScoped<IRecordService, RecordService>();
 builder.Services.AddScoped<IRecordRepository, RecordRepository>();
 
-// 日志管理
-builder.Services.AddScoped<ILogService, LogService>();
-builder.Services.AddScoped<ILogRepository, LogRepository>();
+// 日志管理 - 使用统一日志服务
+// builder.Services.AddScoped<ILogService, LogService>();
+// builder.Services.AddScoped<ILogRepository, LogRepository>();
 
 // 处方管理
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
@@ -122,9 +123,9 @@ builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 builder.Services.AddScoped<ISyncService, SyncService>();
 builder.Services.AddScoped<ISyncRepository, SyncRepository>();
 
-// 设置管理
-builder.Services.AddScoped<ISettingsService, SettingsService>();
-builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
+// 设置管理 - 使用统一配置服务
+// builder.Services.AddScoped<ISettingsService, SettingsService>();
+// builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
 
 // =========== 2. 注册所有模块的 AutoMapper 配置文件 ===========
 
@@ -169,20 +170,31 @@ builder.Services.AddSwaggerGen(options => {
 });
 builder.Services.AddCorsPolicy();
 
-// =========== 4. 注册数据库上下文 ===========
+// =========== 4. 注册数据库上下文和模块 ===========
 
 var connection = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connection));
-// Users module context
-builder.Services.AddUsersModule(connection);
-// Patients module context
-builder.Services.AddPatientsModule(connection);
 
-// =========== 5. JWT 认证配置 ===========
+// 注册各个模块的DbContext和服务
+builder.Services.AddUsersModule(connection);
+builder.Services.AddPatientsModule(connection);
+builder.Services.AddDoctorsModule(connection);
+// builder.Services.AddDiagnosticsModule(connection);  // 新的诊断模块
+// builder.Services.AddHerbsModule(connection);
+// builder.Services.AddPrescriptionsModule(connection);
+// builder.Services.AddPharmacyModule(connection);
+// builder.Services.AddBillingModule(connection);
+
+// 移除旧的AppDbContext注册
+// builder.Services.AddDbContext<AppDbContext>(options =>
+//     options.UseSqlServer(connection));
+
+// =========== 5. 注册统一基础设施服务 ===========
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// =========== 6. JWT 认证配置 ===========
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// =========== 6. 启动Web应用 ===========
+// =========== 7. 启动Web应用 ===========
 
 var app = builder.Build();
 
@@ -191,7 +203,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 // ensure default admin user exists
 using (var scope = app.Services.CreateScope()) {
-    var context = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+    var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
     var opts = scope.ServiceProvider.GetRequiredService<IOptions<UserOptions>>();
     AdminSeeder.Seed(context, opts.Value.DefaultUserPassword);
 }

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums.Logs;
-using LYBT.Module.Logs.Interfaces;
+using LYBT.Infrastructure.Logging;
 using LYBT.Module.Records.Dtos;
 using LYBT.Module.Records.Interfaces;
 using LYBT.Module.Records.Models;
@@ -15,12 +15,12 @@ namespace LYBT.Module.Records.Services {
     public class RecordService : IRecordService {
         private readonly IRecordRepository _recordRepository;
         private readonly IMapper _mapper;
-        private readonly ILogService _logService;
+        private readonly IUnifiedLogService _logService;
 
         /// <summary>
         /// 构造方法，注入仓储和映射服务
         /// </summary>
-        public RecordService(IRecordRepository recordRepository, IMapper mapper, ILogService logService) {
+        public RecordService(IRecordRepository recordRepository, IMapper mapper, IUnifiedLogService logService) {
             _recordRepository = recordRepository;
             _mapper = mapper;
             _logService = logService;

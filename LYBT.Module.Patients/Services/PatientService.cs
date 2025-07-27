@@ -2,7 +2,7 @@
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
-using LYBT.Module.Logs.Interfaces;
+using LYBT.Infrastructure.Logging;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Models;
@@ -20,12 +20,12 @@ namespace LYBT.Module.Patients.Services {
     public class PatientService : IPatientService {
         private readonly IPatientRepository _patientRepository;
         private readonly IMapper _mapper;
-        private readonly ILogService _logService;
+        private readonly IUnifiedLogService _logService;
         private readonly IRecordService _recordService;
 
         public PatientService(IPatientRepository patientRepository,
             IMapper mapper,
-            ILogService logService,
+            IUnifiedLogService logService,
             IRecordService recordService) {
             _patientRepository = patientRepository;
             _mapper = mapper;
@@ -60,17 +60,8 @@ namespace LYBT.Module.Patients.Services {
             var result = await _patientRepository.AddAsync(model);
 
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = model.Id,
-                    ActionType = ActionType.Create,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = $"新增患者：{model.Name}",
-                    NewValue = JsonSerializer.Serialize(model)
-                });
+                await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create, 
+                    $"新增患者：{model.Name}", JsonSerializer.Serialize(model));
             }
 
             return result;
@@ -329,17 +320,8 @@ namespace LYBT.Module.Patients.Services {
             await _patientRepository.AddAsync(model);
 
             // 记录日志
-            await _logService.AddLogAsync(new LogDto {
-                LogType = LogType.Operation,
-                ObjectType = ObjectType.Patient,
-                ObjectId = model.Id,
-                ActionType = ActionType.Create,
-                OperatorId = operatorId,
-                OperatorName = operatorName,
-                LogTime = DateTime.Now,
-                Content = $"快速创建患者：{model.Name}",
-                NewValue = JsonSerializer.Serialize(model)
-            });
+            await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create, 
+                $"快速创建患者：{model.Name}", JsonSerializer.Serialize(model));
 
             return _mapper.Map<PatientDetailDto>(model);
         }
@@ -412,6 +394,22 @@ namespace LYBT.Module.Patients.Services {
                 age--;
             }
             return age;
+        }
+
+        /// <summary>
+        /// 统一的患者操作日志记录
+        /// </summary>
+        private async Task LogPatientOperationAsync(Guid operatorId, string operatorName, 
+            LogActionType actionType, string content, string? parameters = null) {
+            await _logService.LogUserActionAsync(
+                operatorId,
+                operatorName,
+                actionType,
+                "Patients",
+                "PatientManagement",
+                content,
+                parameters: parameters
+            );
         }
     }
 }

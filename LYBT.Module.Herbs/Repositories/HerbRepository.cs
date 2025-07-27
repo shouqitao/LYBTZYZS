@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure;
+﻿using LYBT.Module.Herbs.Data;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Models;
 using Microsoft.EntityFrameworkCore;
@@ -10,14 +10,14 @@ namespace LYBT.Module.Herbs.Repositories {
     /// 药材仓储实现类，实现数据库操作
     /// </summary>
     public class HerbRepository : IHerbRepository {
-        private readonly AppDbContext _appDbContext;
+        private readonly HerbDbContext _herbDbContext;
         private readonly ILogger<HerbRepository> _logger;
 
         /// <summary>
         /// 构造方法，注入数据库上下文
         /// </summary>
-        public HerbRepository(AppDbContext appDbContext, ILogger<HerbRepository> logger) {
-            _appDbContext = appDbContext;
+        public HerbRepository(HerbDbContext herbDbContext, ILogger<HerbRepository> logger) {
+            _herbDbContext = herbDbContext;
             _logger = logger;
         }
 
@@ -26,7 +26,7 @@ namespace LYBT.Module.Herbs.Repositories {
         /// </summary>
         public async Task<HerbModel?> GetByIdAsync(Guid id) {
             try {
-                return await _appDbContext.Herbs
+                return await _herbDbContext.Herbs
                     .AsNoTracking()
                     .FirstOrDefaultAsync(h => h.Id == id);
             } catch (Exception ex) {
@@ -40,7 +40,7 @@ namespace LYBT.Module.Herbs.Repositories {
         /// </summary>
         public async Task<List<HerbModel>> GetListAsync() {
             try {
-                return await _appDbContext.Herbs
+                return await _herbDbContext.Herbs
                     .AsNoTracking()
                     .OrderByDescending(h => h.CreatedAt)
                     .ToListAsync();
@@ -55,8 +55,8 @@ namespace LYBT.Module.Herbs.Repositories {
         /// </summary>
         public async Task<bool> AddAsync(HerbModel herb) {
             try {
-                _appDbContext.Herbs.Add(herb);
-                var result = await _appDbContext.SaveChangesAsync();
+                _herbDbContext.Herbs.Add(herb);
+                var result = await _herbDbContext.SaveChangesAsync();
                 return result > 0;
             } catch (Exception ex) {
                 _logger.LogError(ex, "新增药材失败，药材名称: {HerbName}", herb.Name);
@@ -69,8 +69,8 @@ namespace LYBT.Module.Herbs.Repositories {
         /// </summary>
         public async Task<bool> UpdateAsync(HerbModel herb) {
             try {
-                _appDbContext.Herbs.Update(herb);
-                var result = await _appDbContext.SaveChangesAsync();
+                _herbDbContext.Herbs.Update(herb);
+                var result = await _herbDbContext.SaveChangesAsync();
                 return result > 0;
             } catch (Exception ex) {
                 _logger.LogError(ex, "更新药材失败，药材ID: {HerbId}", herb.Id);
@@ -83,14 +83,14 @@ namespace LYBT.Module.Herbs.Repositories {
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
             try {
-                var model = await _appDbContext.Herbs.FindAsync(id);
+                var model = await _herbDbContext.Herbs.FindAsync(id);
                 if (model == null) {
                     _logger.LogWarning("尝试删除不存在的药材，ID: {HerbId}", id);
                     return false;
                 }
 
-                _appDbContext.Herbs.Remove(model);
-                var result = await _appDbContext.SaveChangesAsync();
+                _herbDbContext.Herbs.Remove(model);
+                var result = await _herbDbContext.SaveChangesAsync();
                 return result > 0;
             } catch (Exception ex) {
                 _logger.LogError(ex, "删除药材失败，药材ID: {HerbId}", id);
@@ -107,8 +107,8 @@ namespace LYBT.Module.Herbs.Repositories {
                     return false;
                 }
 
-                await _appDbContext.Herbs.AddRangeAsync(herbs);
-                var result = await _appDbContext.SaveChangesAsync();
+                await _herbDbContext.Herbs.AddRangeAsync(herbs);
+                var result = await _herbDbContext.SaveChangesAsync();
                 return result > 0;
             } catch (Exception ex) {
                 _logger.LogError(ex, "批量新增药材失败，数量: {Count}", herbs?.Count ?? 0);
@@ -121,12 +121,12 @@ namespace LYBT.Module.Herbs.Repositories {
         /// </summary>
         public async Task<(List<HerbModel> list, int total)> GetPagedAsync(string? keyword, int page, int pageSize) {
             try {
-                var query = _appDbContext.Herbs.AsNoTracking().AsQueryable();
+                var query = _herbDbContext.Herbs.AsNoTracking().AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(keyword)) {
                     var upper = keyword.ToUpperInvariant();
                     query = query.Where(h => h.Name.Contains(keyword) ||
-                                           (h.Pinyin != null && h.Pinyin.Contains(upper)));
+                                           (h.PinyinCode != null && h.PinyinCode.Contains(upper)));
                 }
 
                 int total = await query.CountAsync();
@@ -149,7 +149,7 @@ namespace LYBT.Module.Herbs.Repositories {
         /// </summary>
         public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null) {
             try {
-                var query = _appDbContext.Herbs.AsNoTracking()
+                var query = _herbDbContext.Herbs.AsNoTracking()
                     .Where(h => h.Name == name);
 
                 if (excludeId.HasValue) {
@@ -168,9 +168,9 @@ namespace LYBT.Module.Herbs.Repositories {
         /// </summary>
         public async Task<List<HerbModel>> SearchByPinyinAsync(string pinyin) {
             try {
-                return await _appDbContext.Herbs
+                return await _herbDbContext.Herbs
                     .AsNoTracking()
-                    .Where(h => h.Pinyin != null && h.Pinyin.Contains(pinyin.ToUpperInvariant()))
+                    .Where(h => h.PinyinCode != null && h.PinyinCode.Contains(pinyin.ToUpperInvariant()))
                     .OrderBy(h => h.Name)
                     .ToListAsync();
             } catch (Exception ex) {

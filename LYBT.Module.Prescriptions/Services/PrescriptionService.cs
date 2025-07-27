@@ -1,6 +1,6 @@
 using AutoMapper;
 using LYBT.Common.Enums.Logs;
-using LYBT.Module.Logs.Interfaces;
+using LYBT.Infrastructure.Logging;
 using LYBT.Module.Prescriptions.Models;
 using LYBT.Module.Prescriptions.Models.Dtos;
 using LYBT.Module.Prescriptions.Repositories;
@@ -13,10 +13,10 @@ namespace LYBT.Module.Prescriptions.Services {
     /// </summary>
     public class PrescriptionService : IPrescriptionService {
         private readonly IPrescriptionRepository _repository;
-        private readonly ILogService _logService;
+        private readonly IUnifiedLogService _logService;
         private readonly IMapper _mapper;
 
-        public PrescriptionService(IPrescriptionRepository repository, ILogService logService, IMapper mapper) {
+        public PrescriptionService(IPrescriptionRepository repository, IUnifiedLogService logService, IMapper mapper) {
             _repository = repository;
             _logService = logService;
             _mapper = mapper;

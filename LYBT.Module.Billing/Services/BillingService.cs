@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums;
+using LYBT.Common.Enums.System;
 using LYBT.Module.Billing.Interfaces;
 using LYBT.Module.Billing.Models;
 using LYBT.Module.Billing.Models.Dtos;

@@ -5,8 +5,7 @@ namespace LYBT.Common.Models {
     /// </summary>
     public class EnumItem<T> where T : Enum {
 
-        public EnumItem() {
-        }
+        public EnumItem() { }
 
         public EnumItem(T value, string text) {
             Value = value;

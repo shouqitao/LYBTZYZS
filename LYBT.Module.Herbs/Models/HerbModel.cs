@@ -20,7 +20,7 @@ namespace LYBT.Module.Herbs.Models {
 
         [StringLength(32)]
         [DisplayName("拼音")]
-        public string? Pinyin { get; set; }
+        public string? PinyinCode { get; set; }
 
         [StringLength(64)]
         [DisplayName("产地")]

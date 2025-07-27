@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums;
+using LYBT.Common.Enums.Diagnostics;
 using LYBT.Module.Queueing.Interfaces;
 using LYBT.Module.Queueing.Models;
 using LYBT.Module.Queueing.Models.Dtos;

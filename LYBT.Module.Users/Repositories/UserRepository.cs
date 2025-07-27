@@ -1,6 +1,7 @@
 ﻿using LYBT.Module.Users.Data;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Models;
+using LYBT.Module.Users.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Users.Repositories {
@@ -10,9 +11,9 @@ namespace LYBT.Module.Users.Repositories {
     /// 实现软删除策略：用户只能禁用/启用，不能物理删除
     /// </summary>
     public class UserRepository : IUserRepository {
-        private readonly UsersDbContext _dbContext;
+        private readonly UserDbContext _dbContext;
 
-        public UserRepository(UsersDbContext dbContext) {
+        public UserRepository(UserDbContext dbContext) {
             _dbContext = dbContext;
         }
 

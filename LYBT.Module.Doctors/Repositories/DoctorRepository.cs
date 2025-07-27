@@ -1,5 +1,5 @@
-﻿using LYBT.Common.Enums;
-using LYBT.Infrastructure;
+﻿using LYBT.Common.Enums.Doctors;
+using LYBT.Module.Doctors.Data;
 using LYBT.Module.Doctors.Interfaces;
 using LYBT.Module.Doctors.Models;
 using LYBT.Module.Doctors.Models.Dtos;
@@ -11,9 +11,9 @@ namespace LYBT.Module.Doctors.Repositories {
     /// 医生仓储实现类
     /// </summary>
     public class DoctorRepository : IDoctorRepository {
-        private readonly AppDbContext _context;
+        private readonly DoctorDbContext _context;
 
-        public DoctorRepository(AppDbContext context) {
+        public DoctorRepository(DoctorDbContext context) {
             _context = context;
         }
 

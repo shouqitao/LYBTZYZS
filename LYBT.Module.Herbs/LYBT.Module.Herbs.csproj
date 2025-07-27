@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Common\LYBT.Common.csproj" />
-    <ProjectReference Include="..\LYBT.CommonUtils\LYBT.CommonUtils.csproj" />
     <ProjectReference Include="..\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
   </ItemGroup>
 

@@ -1,3 +1,5 @@
+using LYBT.Module.DiagnosisTreatment.Models;
+using LYBT.Module.Herbs.Models;
 using System.ComponentModel;
 
 namespace LYBT.Module.Records.Dtos {
@@ -49,7 +51,7 @@ namespace LYBT.Module.Records.Dtos {
 
         /// <summary>药材组成</summary>
         [DisplayName("药材组成")]
-        public List<HerbItemModel>? HerbalFormula { get; set; }
+        public List<HerbModel>? HerbalFormula { get; set; }
 
         /// <summary>辅助治疗方案</summary>
         [DisplayName("辅助治疗方案")]

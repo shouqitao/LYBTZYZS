@@ -1,4 +1,4 @@
-using LYBT.Common.Enums.Prescriptions;
+using LYBT.Common.Enums.Diagnostics;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 

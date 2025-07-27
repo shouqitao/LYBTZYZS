@@ -1,3 +1,4 @@
+using LYBT.Module.DiagnosisTreatment.Models;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 

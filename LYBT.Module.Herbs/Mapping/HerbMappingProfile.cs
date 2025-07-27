@@ -37,7 +37,7 @@ namespace LYBT.Module.Herbs.Mapping {
             // 导入映射
             CreateMap<HerbImportDto, HerbModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Pinyin, opt => opt.Ignore())
+                .ForMember(dest => dest.PinyinCode, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())

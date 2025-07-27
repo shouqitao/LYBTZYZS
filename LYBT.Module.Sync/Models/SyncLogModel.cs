@@ -1,4 +1,5 @@
 using LYBT.Common.Enums;
+using LYBT.Common.Enums.System;
 using System.ComponentModel;
 
 namespace LYBT.Module.Sync.Models {
@@ -22,7 +23,7 @@ namespace LYBT.Module.Sync.Models {
 
         /// <summary>同步状态</summary>
         [DisplayName("同步状态")]
-        public SyncStatus Status { get; set; } = SyncStatus.Success;
+        public SyncStatus Status { get; set; } = SyncStatus.Completed;
 
         /// <summary>错误或成功信息</summary>
         [DisplayName("错误或成功信息")]

@@ -27,18 +27,16 @@
 		<ProjectReference Include="..\LYBT.Module.Doctors\LYBT.Module.Doctors.csproj" />
 		<ProjectReference Include="..\LYBT.Module.FormulaTemplates\LYBT.Module.FormulaTemplates.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
-		<ProjectReference Include="..\LYBT.Module.Logs\LYBT.Module.Logs.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Pharmacy\LYBT.Module.Pharmacy.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Queueing\LYBT.Module.Queueing.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Records\LYBT.Module.Records.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
-		<ProjectReference Include="..\LYBT.Module.Settings\LYBT.Module.Settings.csproj" />
 		<ProjectReference Include="..\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
 		<ProjectReference Include="..\LYBT.Module.TreatmentRoom\LYBT.Module.TreatmentRoom.csproj" />
-                <ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
-                <ProjectReference Include="..\LYBT.CommonUtils\LYBT.CommonUtils.csproj" />
-        </ItemGroup>
+		<ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+		<ProjectReference Include="..\LYBT.Module.Diagnostics\LYBT.Module.Diagnostics.csproj" />
+	</ItemGroup>
 
 </Project>

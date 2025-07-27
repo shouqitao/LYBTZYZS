@@ -23,7 +23,10 @@ namespace LYBT.Common.Enums.Logs {
         [Description("登录")]
         Login = 4,
 
+        [Description("登出")]
+        Logout = 5,
+
         [Description("同步")]
-        Sync = 5
+        Sync = 6
     }
 }

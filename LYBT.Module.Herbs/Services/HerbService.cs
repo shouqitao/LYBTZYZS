@@ -2,13 +2,12 @@
 using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Extensions;
 using LYBT.Common.Models;
-using LYBT.Infrastructure;
+using LYBT.Module.Herbs.Data;
 using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Models;
 using LYBT.Module.Herbs.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
-using CommonUtil = LYBT.CommonUtils.CommonUtils;
 
 namespace LYBT.Module.Herbs.Services {
 
@@ -18,15 +17,24 @@ namespace LYBT.Module.Herbs.Services {
     public class HerbService : IHerbService {
         private readonly IHerbRepository _repository;
         private readonly IMapper _mapper;
-        private readonly AppDbContext _context;
+        private readonly HerbDbContext _context;
 
         /// <summary>
         /// 构造方法，注入仓储与对象映射
         /// </summary>
-        public HerbService(IHerbRepository repository, IMapper mapper, AppDbContext context) {
+        public HerbService(IHerbRepository repository, IMapper mapper, HerbDbContext context) {
             _repository = repository;
             _mapper = mapper;
             _context = context;
+        }
+
+        /// <summary>
+        /// 简单的拼音码生成方法
+        /// </summary>
+        private static string GetSimplePinyinCode(string name) {
+            if (string.IsNullOrWhiteSpace(name)) return string.Empty;
+            // 简化实现：只取第一个字符的大写
+            return name.Substring(0, Math.Min(name.Length, 1)).ToUpperInvariant();
         }
 
         /// <summary>
@@ -70,7 +78,7 @@ namespace LYBT.Module.Herbs.Services {
                 var keyword = query.Keyword.Trim();
                 var upper = keyword.ToUpperInvariant();
                 dbQuery = dbQuery.Where(h => h.Name.Contains(keyword) ||
-                                            (h.Pinyin != null && h.Pinyin.Contains(upper)));
+                                            (h.PinyinCode != null && h.PinyinCode.Contains(upper)));
             }
 
             // 状态筛选
@@ -124,8 +132,8 @@ namespace LYBT.Module.Herbs.Services {
         public async Task<bool> AddAsync(HerbCreateDto dto) {
             var model = _mapper.Map<HerbModel>(dto);
             model.Id = Guid.NewGuid();
-            model.Pinyin = string.IsNullOrWhiteSpace(dto.Pinyin)
-                ? CommonUtil.GetPinyinCode(model.Name)
+            model.PinyinCode = string.IsNullOrWhiteSpace(dto.Pinyin)
+                ? GetSimplePinyinCode(model.Name)
                 : dto.Pinyin;
             model.CreatedAt = DateTime.UtcNow;
             return await _repository.AddAsync(model);
@@ -140,8 +148,8 @@ namespace LYBT.Module.Herbs.Services {
                 return false;
 
             model.Name = dto.Name;
-            model.Pinyin = string.IsNullOrWhiteSpace(dto.Pinyin)
-                ? CommonUtil.GetPinyinCode(dto.Name)
+            model.PinyinCode = string.IsNullOrWhiteSpace(dto.Pinyin)
+                ? GetSimplePinyinCode(dto.Name)
                 : dto.Pinyin;
             model.Origin = dto.Origin;
             model.Spec = dto.Spec;
@@ -173,7 +181,7 @@ namespace LYBT.Module.Herbs.Services {
             foreach (var dto in dtos) {
                 var model = _mapper.Map<HerbModel>(dto);
                 model.Id = Guid.NewGuid();
-                model.Pinyin = CommonUtil.GetPinyinCode(model.Name);
+                model.PinyinCode = GetSimplePinyinCode(model.Name);
                 model.CreatedAt = DateTime.UtcNow;
                 models.Add(model);
             }

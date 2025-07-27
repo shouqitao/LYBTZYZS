@@ -1,0 +1,266 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
+using LYBT.Infrastructure.Authentication;
+using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Caching;
+using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Configuration;
+using LYBT.Infrastructure.Data;
+
+namespace LYBT.Infrastructure.Extensions {
+
+    /// <summary>
+    /// 服务集合扩展方法
+    /// </summary>
+    public static class ServiceCollectionExtensions {
+
+        /// <summary>
+        /// 添加JWT认证服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration) {
+            var jwtSection = configuration.GetSection("JwtOptions");
+            services.Configure<JwtOptions>(jwtSection);
+
+            var jwtOptions = jwtSection.Get<JwtOptions>();
+            if (jwtOptions == null) {
+                throw new InvalidOperationException("JWT configuration is missing");
+            }
+
+            services.AddAuthentication(options => {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options => {
+                options.TokenValidationParameters = new TokenValidationParameters {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
+                    ClockSkew = TimeSpan.FromSeconds(jwtOptions.ClockSkewSeconds)
+                };
+
+                options.Events = new JwtBearerEvents {
+                    OnMessageReceived = context => {
+                        // 支持从查询参数中获取令牌（用于SignalR等场景）
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub")) {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context => {
+                        // 记录认证失败日志
+                        // TODO: 添加日志记录
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            // 注册认证相关服务
+            services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
+            services.AddScoped<IAuthorizationService, AuthorizationService>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// 添加认证配置
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddAuthConfiguration(this IServiceCollection services, IConfiguration configuration) {
+            services.Configure<AuthOptions>(configuration.GetSection("AuthOptions"));
+            return services;
+        }
+
+        /// <summary>
+        /// 添加CORS策略
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="policyName">策略名称</param>
+        /// <param name="allowedOrigins">允许的来源</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddCorsPolicies(this IServiceCollection services, string policyName = "DefaultPolicy", params string[] allowedOrigins) {
+            services.AddCors(options => {
+                options.AddPolicy(policyName, builder => {
+                    if (allowedOrigins?.Length > 0) {
+                        builder.WithOrigins(allowedOrigins);
+                    } else {
+                        builder.AllowAnyOrigin();
+                    }
+                    
+                    builder.AllowAnyMethod()
+                           .AllowAnyHeader();
+
+                    if (allowedOrigins?.Length > 0) {
+                        builder.AllowCredentials();
+                    }
+                });
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// 添加缓存服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddCachingServices(this IServiceCollection services, IConfiguration configuration) {
+            services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
+            
+            var cacheOptions = configuration.GetSection("CacheOptions").Get<CacheOptions>() ?? new CacheOptions();
+
+            switch (cacheOptions.CacheType.ToLower()) {
+                case "memory":
+                    services.AddMemoryCache(options => {
+                        options.SizeLimit = cacheOptions.MemoryCache.SizeLimit * 1024 * 1024; // 转换为字节
+                        options.CompactionPercentage = cacheOptions.MemoryCache.CompactionPercentage;
+                    });
+                    services.AddScoped<ICacheService, MemoryCacheService>();
+                    break;
+
+                case "distributed":
+                case "sqlserver":
+                    if (!string.IsNullOrEmpty(cacheOptions.SqlServerConnectionString)) {
+                        services.AddDistributedSqlServerCache(options => {
+                            options.ConnectionString = cacheOptions.SqlServerConnectionString;
+                            options.SchemaName = "dbo";
+                            options.TableName = "CacheEntries";
+                        });
+                    }
+                    services.AddScoped<ICacheService, DistributedCacheService>();
+                    break;
+
+                case "redis":
+                    if (!string.IsNullOrEmpty(cacheOptions.RedisConnectionString)) {
+                        services.AddStackExchangeRedisCache(options => {
+                            options.Configuration = cacheOptions.RedisConnectionString;
+                            options.InstanceName = cacheOptions.DistributedCache.InstanceName;
+                        });
+                    }
+                    services.AddScoped<ICacheService, DistributedCacheService>();
+                    break;
+
+                default:
+                    // 默认使用内存缓存
+                    services.AddMemoryCache();
+                    services.AddScoped<ICacheService, MemoryCacheService>();
+                    break;
+            }
+
+            return services;
+        }
+
+        /// <summary>
+        /// 添加API版本控制
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddApiVersioning(this IServiceCollection services) {
+            services.AddEndpointsApiExplorer();
+            
+            // 注意：这里简化了API版本控制的配置，如果需要更详细的配置，请单独处理
+            services.AddApiVersioning();
+
+            return services;
+        }
+
+        /// <summary>
+        /// 添加基础设施数据库上下文
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddInfrastructureDbContext(this IServiceCollection services, IConfiguration configuration) {
+            var connectionString = configuration.GetConnectionString("InfrastructureConnection") 
+                                 ?? configuration.GetConnectionString("DefaultConnection");
+            
+            if (string.IsNullOrEmpty(connectionString)) {
+                throw new InvalidOperationException("Infrastructure database connection string is not configured");
+            }
+
+            services.AddDbContext<InfrastructureDbContext>(options => {
+                options.UseSqlServer(connectionString, sqlOptions => {
+                    sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                });
+                options.EnableSensitiveDataLogging(false);
+                options.EnableServiceProviderCaching();
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// 添加统一日志服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddUnifiedLogging(this IServiceCollection services) {
+            services.AddScoped<IUnifiedLogService, UnifiedLogService>();
+            return services;
+        }
+
+        /// <summary>
+        /// 添加统一配置服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddUnifiedConfiguration(this IServiceCollection services) {
+            services.AddScoped<IUnifiedConfigService, UnifiedConfigService>();
+            return services;
+        }
+
+        /// <summary>
+        /// 添加所有基础设施服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration) {
+            // 添加数据库上下文
+            services.AddInfrastructureDbContext(configuration);
+            
+            // 添加缓存服务
+            services.AddCachingServices(configuration);
+            
+            // 添加JWT认证
+            services.AddJwtAuthentication(configuration);
+            
+            // 添加认证配置
+            services.AddAuthConfiguration(configuration);
+            
+            // 添加统一日志服务
+            services.AddUnifiedLogging();
+            
+            // 添加统一配置服务
+            services.AddUnifiedConfiguration();
+            
+            // 添加CORS策略
+            services.AddCorsPolicies();
+            
+            // 添加API版本控制
+            services.AddApiVersioning();
+
+            return services;
+        }
+    }
+}
