@@ -1,4 +1,5 @@
-﻿using LYBT.Common.Enums.Users;
+﻿using LYBT.Common.Enums.System;
+using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Records.Models.Dtos;
@@ -123,7 +124,7 @@ namespace LYBT.Module.Patients.Interfaces {
         public string Name { get; set; } = string.Empty;
 
         /// <summary>性别</summary>
-        public Common.Enums.Gender Gender { get; set; }
+        public Gender Gender { get; set; }
 
         /// <summary>手机号（可选）</summary>
         public string? PhoneNumber { get; set; }

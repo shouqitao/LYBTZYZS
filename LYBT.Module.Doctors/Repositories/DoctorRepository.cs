@@ -118,12 +118,6 @@ namespace LYBT.Module.Doctors.Repositories {
         public async Task<bool> AddAsync(DoctorModel model) {
             try {
                 _context.Doctors.Add(model);
-
-                // 如果User实体处于未跟踪状态，需要附加到上下文
-                if (_context.Entry(model.User).State == EntityState.Detached) {
-                    _context.Users.Attach(model.User);
-                }
-
                 return await _context.SaveChangesAsync() > 0;
             } catch {
                 return false;

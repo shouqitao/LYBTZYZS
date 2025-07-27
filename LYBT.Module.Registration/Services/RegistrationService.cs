@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums;
+using LYBT.Common.Enums.Diagnostics;
 using LYBT.Module.Queueing.Interfaces;
+using LYBT.Module.Queueing.Models;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Models;
 using LYBT.Module.Registration.Models.Dtos;
@@ -47,7 +49,7 @@ namespace LYBT.Module.Registration.Services {
             var model = _mapper.Map<RegistrationModel>(dto);
             model.Id = Guid.NewGuid();
             model.RegistrationTime = DateTime.Now;
-            model.Status = RegistrationStatus.Pending;
+            model.Status = RegistrationStatus.Registered;
             if (Guid.TryParse(dto.PatientId, out var patId))
                 model.PatientId = patId;
             if (Guid.TryParse(dto.DoctorId, out var docId))

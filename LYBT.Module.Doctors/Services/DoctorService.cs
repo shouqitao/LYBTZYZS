@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums.Users;
+using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using LYBT.Common.Responses;
-using LYBT.Infrastructure.Exceptions;
 using LYBT.Module.Doctors.Interfaces;
 using LYBT.Module.Doctors.Models;
 using LYBT.Module.Doctors.Models.Dtos;
@@ -136,7 +136,7 @@ namespace LYBT.Module.Doctors.Services {
                 model.CreatedTime = DateTime.Now;
 
                 // 生成拼音码
-                model.PinyinCode = CommonUtils.CommonUtils.GetPinyinCode(user.RealName);
+                model.PinyinCode = CommonHelper.GetPinyinCode(user.RealName);
 
                 var result = await _doctorRepository.AddAsync(model);
                 var message = result ? "医生档案创建成功" : "医生档案创建失败";
@@ -144,8 +144,6 @@ namespace LYBT.Module.Doctors.Services {
                 return result
                     ? ApiResponse<bool>.Success(true, message)
                     : ApiResponse<bool>.Fail(message);
-            } catch (BusinessException ex) {
-                return ApiResponse<bool>.Fail(ex.Message);
             } catch (Exception ex) {
                 return ApiResponse<bool>.Fail($"创建医生档案失败：{ex.Message}");
             }
@@ -180,7 +178,7 @@ namespace LYBT.Module.Doctors.Services {
                 model.ContactNumber = dto.ContactNumber;
 
                 // 更新拼音码
-                model.PinyinCode = CommonUtils.CommonUtils.GetPinyinCode(model.User.RealName);
+                model.PinyinCode = CommonHelper.GetPinyinCode(model.User.RealName);
 
                 var result = await _doctorRepository.UpdateAsync(model);
                 var message = result ? "医生信息更新成功" : "医生信息更新失败";
@@ -188,8 +186,6 @@ namespace LYBT.Module.Doctors.Services {
                 return result
                     ? ApiResponse<bool>.Success(true, message)
                     : ApiResponse<bool>.Fail(message);
-            } catch (BusinessException ex) {
-                return ApiResponse<bool>.Fail(ex.Message);
             } catch (Exception ex) {
                 return ApiResponse<bool>.Fail($"更新医生信息失败：{ex.Message}");
             }

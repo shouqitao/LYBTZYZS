@@ -5,7 +5,9 @@ namespace LYBT.Common.Models {
     /// </summary>
     public class EnumItem<T> where T : Enum {
 
-        public EnumItem() { }
+        public EnumItem() {
+            Value = default!;
+        }
 
         public EnumItem(T value, string text) {
             Value = value;

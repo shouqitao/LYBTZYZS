@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums.Logs;
 using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Module.Records.Dtos;
 using LYBT.Module.Records.Interfaces;
 using LYBT.Module.Records.Models;
@@ -54,15 +55,14 @@ namespace LYBT.Module.Records.Services {
             var result = await _recordRepository.AddAsync(model);
 
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Record,
                     ObjectId = model.Id,
                     ActionType = ActionType.Create,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = "新增病历",
+                        Content = "新增病历",
                     NewValue = JsonSerializer.Serialize(model)
                 });
             }
@@ -95,15 +95,14 @@ namespace LYBT.Module.Records.Services {
             var result = await _recordRepository.UpdateAsync(model);
 
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Record,
                     ObjectId = model.Id,
                     ActionType = ActionType.Edit,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = "编辑病历",
+                        Content = "编辑病历",
                     OldValue = oldJson,
                     NewValue = JsonSerializer.Serialize(recordEditDto)
                 });
@@ -120,15 +119,14 @@ namespace LYBT.Module.Records.Services {
             var result = await _recordRepository.DeleteAsync(id);
 
             if (result && record != null) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Record,
                     ObjectId = id,
                     ActionType = ActionType.Other,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
-                    Content = "删除病历",
+                        Content = "删除病历",
                     OldValue = JsonSerializer.Serialize(record)
                 });
             }

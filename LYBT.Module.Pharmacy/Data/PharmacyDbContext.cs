@@ -19,9 +19,10 @@ namespace LYBT.Module.Pharmacy.Data {
             var entity = modelBuilder.Entity<PharmacyModel>();
             entity.ToTable("Pharmacies");
             entity.HasKey(p => p.Id);
-            entity.HasIndex(p => p.Name).HasDatabaseName("IX_Pharmacies_Name");
-            entity.HasIndex(p => p.Location).HasDatabaseName("IX_Pharmacies_Location");
-            entity.HasIndex(p => p.IsActive).HasDatabaseName("IX_Pharmacies_IsActive");
+            entity.HasIndex(p => p.PrescriptionId).HasDatabaseName("IX_Pharmacies_PrescriptionId");
+            entity.HasIndex(p => p.PatientId).HasDatabaseName("IX_Pharmacies_PatientId");
+            entity.HasIndex(p => p.Status).HasDatabaseName("IX_Pharmacies_Status");
+            entity.HasIndex(p => p.CreateTime).HasDatabaseName("IX_Pharmacies_CreateTime");
         }
     }
 }

@@ -1,5 +1,6 @@
 using LYBT.Common.Enums.Doctors;
 using LYBT.Common.Enums.System;
+using LYBT.Module.Patients.Models;
 using LYBT.Module.Users.Models;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -21,7 +22,7 @@ namespace LYBT.Module.Doctors.Models {
 
         [Required]
         [DisplayName("职称")]
-        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
+        public DoctorTitle Title { get; set; } = DoctorTitle.ChiefPhysician;
 
         [StringLength(64)]
         [DisplayName("专科")]
@@ -33,7 +34,7 @@ namespace LYBT.Module.Doctors.Models {
 
         [Required]
         [DisplayName("工作状态")]
-        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
+        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.OnDuty;
 
         [Required]
         [DisplayName("创建时间")]

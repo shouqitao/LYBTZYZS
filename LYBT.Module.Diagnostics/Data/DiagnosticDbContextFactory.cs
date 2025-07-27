@@ -17,7 +17,7 @@ namespace LYBT.Module.Diagnostics.Data {
 
             var optionsBuilder = new DbContextOptionsBuilder<DiagnosticDbContext>();
             var connectionString = configuration.GetConnectionString("DefaultConnection") 
-                                  ?? "Server=(localdb)\\mssqllocaldb;Database=LYBTDiagnostics;Trusted_Connection=true;";
+                                  ?? "Server=(localdb)\\mssqllocaldb;Database=LYBTDB;Trusted_Connection=true;";
 
             optionsBuilder.UseSqlServer(connectionString, options => {
                 options.MigrationsAssembly("LYBT.Module.Diagnostics");

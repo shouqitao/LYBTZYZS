@@ -1,5 +1,6 @@
 using LYBT.Common.Enums;
-using LYBT.Common.Enums.Patient;
+using LYBT.Common.Enums.Patients;
+using LYBT.Common.Enums.System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -87,7 +88,7 @@ namespace LYBT.Module.Patients.Models {
 
         [Required]
         [DisplayName("Status")]
-        public PatientStatus Status { get; set; } = PatientStatus.Active;
+        public PatientStatus Status { get; set; } = PatientStatus.Normal;
 
         [StringLength(128)]
         [DisplayName("DisableReason")]

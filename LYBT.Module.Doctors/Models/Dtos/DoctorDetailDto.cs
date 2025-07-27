@@ -27,7 +27,7 @@ namespace LYBT.Module.Doctors.Models.Dtos {
 
         [Required(ErrorMessage = "职称不能为空")]
         [DisplayName("职称")]
-        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
+        public DoctorTitle Title { get; set; } = DoctorTitle.AttendingPhysician;
 
         [StringLength(32, ErrorMessage = "执业证号长度不能超过32个字符")]
         [DisplayName("执业证号")]
@@ -42,7 +42,7 @@ namespace LYBT.Module.Doctors.Models.Dtos {
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
 
         [DisplayName("工作状态")]
-        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
+        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.OnDuty;
 
         [StringLength(32, ErrorMessage = "拼音码长度不能超过32个字符")]
         [DisplayName("拼音码")]

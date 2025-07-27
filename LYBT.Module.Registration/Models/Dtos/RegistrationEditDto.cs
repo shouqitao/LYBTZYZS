@@ -1,4 +1,4 @@
-using LYBT.Common.Enums;
+using LYBT.Common.Enums.Diagnostics;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -17,7 +17,7 @@ namespace LYBT.Module.Registration.Models.Dtos {
         /// <summary>挂号类型</summary>
         [Required(ErrorMessage = "挂号类型不能为空")]
         [DisplayName("挂号类型")]
-        public RegistrationType RegistrationType { get; set; } = RegistrationType.General;
+        public RegistrationType RegistrationType { get; set; } = RegistrationType.Normal;
 
         /// <summary>医生ID</summary>
         [DisplayName("医生ID")]

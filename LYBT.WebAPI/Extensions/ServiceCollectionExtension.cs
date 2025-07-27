@@ -13,9 +13,6 @@ using LYBT.Module.FormulaTemplates.Services;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
-using LYBT.Module.Logs.Interfaces;
-using LYBT.Module.Logs.Repositories;
-using LYBT.Module.Logs.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
@@ -30,9 +27,6 @@ using LYBT.Module.Records.Services;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Repositories;
 using LYBT.Module.Registration.Services;
-using LYBT.Module.Settings.Interfaces;
-using LYBT.Module.Settings.Repositories;
-using LYBT.Module.Settings.Services;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
@@ -91,9 +85,6 @@ public static class ServiceCollectionExtension {
         services.AddScoped<IRecordService, RecordService>();
         services.AddScoped<IRecordRepository, RecordRepository>();
 
-        // 日志管理
-        services.AddScoped<ILogService, LogService>();
-        services.AddScoped<ILogRepository, LogRepository>();
 
         // 处方管理
         services.AddScoped<IPrescriptionService, PrescriptionService>();
@@ -103,9 +94,6 @@ public static class ServiceCollectionExtension {
         services.AddScoped<ISyncService, SyncService>();
         services.AddScoped<ISyncRepository, SyncRepository>();
 
-        // 设置管理
-        services.AddScoped<ISettingsService, SettingsService>();
-        services.AddScoped<ISettingsRepository, SettingsRepository>();
 
         return services;
     }

@@ -23,10 +23,19 @@ namespace LYBT.Module.FormulaTemplates.Data {
             entity.ToTable("FormulaTemplates");
             entity.HasKey(f => f.Id);
             entity.HasIndex(f => f.Name).HasDatabaseName("IX_FormulaTemplates_Name");
-            entity.HasIndex(f => f.PinyinCode).HasDatabaseName("IX_FormulaTemplates_PinyinCode");
-            entity.HasIndex(f => f.Category).HasDatabaseName("IX_FormulaTemplates_Category");
-            entity.HasIndex(f => f.IsActive).HasDatabaseName("IX_FormulaTemplates_IsActive");
-            entity.HasIndex(f => f.CreatedAt).HasDatabaseName("IX_FormulaTemplates_CreatedAt");
+            
+            // Configure owned entity for Herbs collection
+            entity.OwnsMany(f => f.Herbs, herbs => {
+                herbs.WithOwner().HasForeignKey("FormulaTemplateId");
+                herbs.Property<int>("Id");
+                herbs.HasKey("Id");
+                herbs.ToTable("FormulaTemplateHerbs");
+                herbs.Property(h => h.HerbId);
+                herbs.Property(h => h.HerbName).HasMaxLength(200);
+                herbs.Property(h => h.Quantity).HasColumnType("decimal(10,3)");
+                herbs.Property(h => h.Unit).HasMaxLength(50);
+                herbs.Property(h => h.Usage).HasMaxLength(500);
+            });
         }
     }
 }

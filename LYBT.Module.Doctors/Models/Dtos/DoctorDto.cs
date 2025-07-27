@@ -19,7 +19,7 @@ namespace LYBT.Module.Doctors.Models.Dtos {
         public DateTime Birthday { get; set; }
 
         [DisplayName("职称")]
-        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
+        public DoctorTitle Title { get; set; } = DoctorTitle.AttendingPhysician;
 
         [DisplayName("执业证号")]
         public string? LicenseNumber { get; set; }
@@ -31,7 +31,7 @@ namespace LYBT.Module.Doctors.Models.Dtos {
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
 
         [DisplayName("工作状态")]
-        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
+        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.OnDuty;
 
         [DisplayName("拼音码")]
         public string PinyinCode { get; set; } = string.Empty;

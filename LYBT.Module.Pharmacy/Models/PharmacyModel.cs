@@ -1,5 +1,5 @@
 using LYBT.Common.Enums;
-using LYBT.Common.Enums.System;
+using LYBT.Common.Enums.Diagnostics;
 using LYBT.Module.Herbs.Models;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -36,7 +36,7 @@ namespace LYBT.Module.Pharmacy.Models {
 
         [Required]
         [DisplayName("Status")]
-        public PharmacyStatus Status { get; set; }
+        public TreatmentTaskStatus Status { get; set; }
 
         [Required]
         [DisplayName("CreateTime")]

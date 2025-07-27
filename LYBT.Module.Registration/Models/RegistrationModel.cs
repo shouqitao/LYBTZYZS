@@ -1,4 +1,4 @@
-using LYBT.Common.Enums;
+using LYBT.Common.Enums.Diagnostics;
 using System.ComponentModel;
 
 namespace LYBT.Module.Registration.Models {
@@ -42,7 +42,7 @@ namespace LYBT.Module.Registration.Models {
         /// 挂号类型（如普通、复诊、急诊），使用 RegistrationType 枚举
         /// </summary>
         [DisplayName("挂号类型（如普通、复诊、急诊），使用 RegistrationType 枚举")]
-        public RegistrationType RegistrationType { get; set; } = RegistrationType.General;
+        public RegistrationType RegistrationType { get; set; } = RegistrationType.Normal;
 
         /// <summary>
         /// 是否为医生直接挂号（如医生自己操作挂号流程，true 表示医生直接挂号）
@@ -54,7 +54,7 @@ namespace LYBT.Module.Registration.Models {
         /// 挂号状态（如“待看诊”、“已完成”、“取消”），使用 RegistrationStatus 枚举
         /// </summary>
         [DisplayName("挂号状态（如“待看诊”、“已完成”、“取消”），使用 RegistrationStatus 枚举")]
-        public RegistrationStatus Status { get; set; } = RegistrationStatus.Pending;
+        public RegistrationStatus Status { get; set; } = RegistrationStatus.Registered;
 
         /// <summary>
         /// 挂号时间

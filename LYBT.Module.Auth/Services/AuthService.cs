@@ -1,7 +1,7 @@
 using AutoMapper;
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Helpers;
-using LYBT.Infrastructure.Auth;
+using LYBT.Infrastructure.Authentication;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Options;
 using LYBT.Module.Auth.Interfaces;

@@ -1,6 +1,6 @@
-﻿using LYBT.Common.Enums;
+﻿using LYBT.Common.Enums.Diagnostics;
 using LYBT.Common.Enums.System;
-using LYBT.Infrastructure;
+using LYBT.Module.Pharmacy.Data;
 using LYBT.Module.Pharmacy.Interfaces;
 using LYBT.Module.Pharmacy.Models;
 
@@ -10,61 +10,61 @@ namespace LYBT.Module.Pharmacy.Repositories {
     /// 药房仓储实现类，封装与数据库的交互
     /// </summary>
     public class PharmacyRepository : IPharmacyRepository {
-        private readonly AppDbContext _appDbContext;
+        private readonly PharmacyDbContext _context;
 
         /// <summary>
         /// 构造函数，注入数据库上下文
         /// </summary>
-        public PharmacyRepository(AppDbContext appDbContext) {
-            _appDbContext = appDbContext;
+        public PharmacyRepository(PharmacyDbContext context) {
+            _context = context;
         }
 
         /// <summary>
         /// 根据ID获取药房记录
         /// </summary>
         public async Task<PharmacyModel?> GetByIdAsync(Guid id) {
-            return await _appDbContext.Pharmacies.FindAsync(id);
+            return await _context.Pharmacies.FindAsync(id);
         }
 
         /// <summary>
         /// 获取所有药房记录
         /// </summary>
         public async Task<List<PharmacyModel>> GetListAsync() {
-            return await Task.FromResult(_appDbContext.Pharmacies.ToList());
+            return await Task.FromResult(_context.Pharmacies.ToList());
         }
 
         /// <summary>
         /// 新增药房记录
         /// </summary>
         public async Task<bool> AddAsync(PharmacyModel pharmacyModel) {
-            _appDbContext.Pharmacies.Add(pharmacyModel);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            _context.Pharmacies.Add(pharmacyModel);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
         /// 更新药房记录
         /// </summary>
         public async Task<bool> UpdateAsync(PharmacyModel pharmacyModel) {
-            _appDbContext.Pharmacies.Update(pharmacyModel);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            _context.Pharmacies.Update(pharmacyModel);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
         /// 删除药房记录
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
-            var pharmacyModel = await _appDbContext.Pharmacies.FindAsync(id);
+            var pharmacyModel = await _context.Pharmacies.FindAsync(id);
             if (pharmacyModel == null)
                 return false;
-            _appDbContext.Pharmacies.Remove(pharmacyModel);
-            return await _appDbContext.SaveChangesAsync() > 0;
+            _context.Pharmacies.Remove(pharmacyModel);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
         /// 根据状态获取药房记录列表
         /// </summary>
-        public async Task<List<PharmacyModel>> GetByStatusAsync(PharmacyStatus status) {
-            return await Task.FromResult(_appDbContext.Pharmacies
+        public async Task<List<PharmacyModel>> GetByStatusAsync(TreatmentTaskStatus status) {
+            return await Task.FromResult(_context.Pharmacies
                 .Where(p => p.Status == status)
                 .ToList());
         }

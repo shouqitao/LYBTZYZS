@@ -1,6 +1,7 @@
 using AutoMapper;
 using LYBT.Common.Enums.Logs;
 using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Module.Prescriptions.Models;
 using LYBT.Module.Prescriptions.Models.Dtos;
 using LYBT.Module.Prescriptions.Repositories;
@@ -54,14 +55,13 @@ namespace LYBT.Module.Prescriptions.Services {
             var model = _mapper.Map<PrescriptionModel>(dto);
             model.Id = Guid.NewGuid();
             var success = await _repository.AddAsync(model);
-            await _logService.AddLogAsync(new LogDto {
+            await _logService.CreateLogAsync(new LogCreateDto {
                 LogType = LogType.Operation,
                 ObjectType = ObjectType.Prescription,
                 ObjectId = model.Id,
                 ActionType = ActionType.Create,
                 OperatorId = operatorId,
                 OperatorName = operatorName,
-                LogTime = DateTime.Now,
                 Content = "新增处方",
                 NewValue = JsonSerializer.Serialize(model)
             });
@@ -81,14 +81,13 @@ namespace LYBT.Module.Prescriptions.Services {
                 return false;
             var model = _mapper.Map(dto, old);
             var success = await _repository.UpdateAsync(model);
-            await _logService.AddLogAsync(new LogDto {
+            await _logService.CreateLogAsync(new LogCreateDto {
                 LogType = LogType.Operation,
                 ObjectType = ObjectType.Prescription,
                 ObjectId = model.Id,
                 ActionType = ActionType.Edit,
                 OperatorId = operatorId,
                 OperatorName = operatorName,
-                LogTime = DateTime.Now,
                 Content = "编辑处方",
                 OldValue = JsonSerializer.Serialize(old),
                 NewValue = JsonSerializer.Serialize(model)
@@ -110,14 +109,13 @@ namespace LYBT.Module.Prescriptions.Services {
             if (item == null)
                 return false;
             var success = await _repository.DeleteAsync(gid);
-            await _logService.AddLogAsync(new LogDto {
+            await _logService.CreateLogAsync(new LogCreateDto {
                 LogType = LogType.Operation,
                 ObjectType = ObjectType.Prescription,
                 ObjectId = gid,
                 ActionType = ActionType.Other,
                 OperatorId = operatorId,
                 OperatorName = operatorName,
-                LogTime = DateTime.Now,
                 Content = "删除处方",
                 OldValue = JsonSerializer.Serialize(item)
             });
@@ -138,14 +136,13 @@ namespace LYBT.Module.Prescriptions.Services {
             if (model == null)
                 return false;
             var success = await _repository.CancelAsync(gid);
-            await _logService.AddLogAsync(new LogDto {
+            await _logService.CreateLogAsync(new LogCreateDto {
                 LogType = LogType.Operation,
                 ObjectType = ObjectType.Prescription,
                 ObjectId = gid,
                 ActionType = ActionType.Edit,
                 OperatorId = operatorId,
                 OperatorName = operatorName,
-                LogTime = DateTime.Now,
                 Content = "作废处方",
                 OldValue = JsonSerializer.Serialize(model)
             });

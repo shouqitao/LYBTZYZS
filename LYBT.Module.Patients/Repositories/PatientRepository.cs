@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Enums.Patient;
+﻿using LYBT.Common.Enums.Patients;
 using LYBT.Module.Patients.Data;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Models;
@@ -26,7 +26,7 @@ namespace LYBT.Module.Patients.Repositories {
             var query = _dbContext.Patients.AsQueryable();
 
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Active);
+                query = query.Where(p => p.Status == Common.Enums.Patients.PatientStatus.Normal);
             }
 
             return await query.FirstOrDefaultAsync(p => p.Id == id);
@@ -37,7 +37,7 @@ namespace LYBT.Module.Patients.Repositories {
 
             // 权限控制：是否包含禁用患者
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Active);
+                query = query.Where(p => p.Status == PatientStatus.Normal);
             }
 
             if (!string.IsNullOrWhiteSpace(keyword)) {
@@ -65,7 +65,7 @@ namespace LYBT.Module.Patients.Repositories {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
                 return false;
-            entity.Status = PatientStatus.Active;
+            entity.Status = PatientStatus.Normal;
             entity.UpdatedAt = DateTime.Now;
             _dbContext.Patients.Update(entity);
             return await _dbContext.SaveChangesAsync() > 0;
@@ -75,7 +75,7 @@ namespace LYBT.Module.Patients.Repositories {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
                 return false;
-            entity.Status = PatientStatus.Disabled;
+            entity.Status = PatientStatus.Inactive;
             entity.UpdatedAt = DateTime.Now;
             _dbContext.Patients.Update(entity);
             return await _dbContext.SaveChangesAsync() > 0;
@@ -84,7 +84,7 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<int> BatchDisableAsync(List<Guid> ids) {
             var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
             foreach (var p in list) {
-                p.Status = PatientStatus.Disabled;
+                p.Status = PatientStatus.Inactive;
                 p.UpdatedAt = DateTime.Now;
             }
             _dbContext.Patients.UpdateRange(list);
@@ -94,7 +94,7 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<int> BatchEnableAsync(List<Guid> ids) {
             var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
             foreach (var p in list) {
-                p.Status = PatientStatus.Active;
+                p.Status = PatientStatus.Normal;
                 p.UpdatedAt = DateTime.Now;
             }
             _dbContext.Patients.UpdateRange(list);
@@ -130,7 +130,7 @@ namespace LYBT.Module.Patients.Repositories {
 
             // 权限控制：是否包含禁用患者
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Active);
+                query = query.Where(p => p.Status == PatientStatus.Normal);
             }
 
             if (!string.IsNullOrWhiteSpace(keyword)) {
@@ -149,7 +149,7 @@ namespace LYBT.Module.Patients.Repositories {
 
             // 权限控制：是否包含禁用患者
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Active);
+                query = query.Where(p => p.Status == PatientStatus.Normal);
             }
 
             var upper = keyword.ToUpperInvariant();
@@ -169,7 +169,7 @@ namespace LYBT.Module.Patients.Repositories {
             // 基础查询，是否包含禁用患者
             var baseQuery = _dbContext.Patients.AsQueryable();
             if (!includeDisabled) {
-                baseQuery = baseQuery.Where(p => p.Status == PatientStatus.Active);
+                baseQuery = baseQuery.Where(p => p.Status == PatientStatus.Normal);
             }
 
             // 精确匹配手机号
@@ -207,7 +207,7 @@ namespace LYBT.Module.Patients.Repositories {
 
             // 权限控制：是否包含禁用患者
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Active);
+                query = query.Where(p => p.Status == PatientStatus.Normal);
             }
 
             return await query.ToListAsync();
@@ -240,7 +240,7 @@ namespace LYBT.Module.Patients.Repositories {
 
         public async Task<List<PatientModel>> GetActivePatientsAsync() {
             return await _dbContext.Patients
-                .Where(p => p.Status == PatientStatus.Active)
+                .Where(p => p.Status == PatientStatus.Normal)
                 .OrderBy(p => p.Name)
                 .ToListAsync();
         }

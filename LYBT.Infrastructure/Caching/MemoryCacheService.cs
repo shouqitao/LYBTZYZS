@@ -127,7 +127,11 @@ namespace LYBT.Infrastructure.Caching {
             try {
                 await Task.CompletedTask;
                 if (_memoryCache.TryGetValue(key, out var value)) {
-                    await SetAsync(key, value, expiry);
+                    // Use reflection to call SetAsync with the correct type argument
+                    var valueType = value?.GetType() ?? typeof(object);
+                    var method = typeof(MemoryCacheService).GetMethod(nameof(SetAsync))!
+                        .MakeGenericMethod(valueType);
+                    await (Task<bool>)method.Invoke(this, new object[] { key, value, expiry })!;
                     return true;
                 }
                 return false;

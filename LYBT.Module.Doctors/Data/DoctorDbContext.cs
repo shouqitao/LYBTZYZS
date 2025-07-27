@@ -19,10 +19,10 @@ namespace LYBT.Module.Doctors.Data {
             var entity = modelBuilder.Entity<DoctorModel>();
             entity.ToTable("Doctors");
             entity.HasKey(d => d.Id);
-            entity.HasIndex(d => d.Name).HasDatabaseName("IX_Doctors_Name");
+            entity.HasIndex(d => d.UserId).HasDatabaseName("IX_Doctors_UserId");
             entity.HasIndex(d => d.PinyinCode).HasDatabaseName("IX_Doctors_PinyinCode");
-            entity.HasIndex(d => d.IsActive).HasDatabaseName("IX_Doctors_IsActive");
-            entity.HasIndex(d => d.Department).HasDatabaseName("IX_Doctors_Department");
+            entity.HasIndex(d => d.Status).HasDatabaseName("IX_Doctors_Status");
+            entity.HasIndex(d => d.Specialty).HasDatabaseName("IX_Doctors_Specialty");
             entity.HasIndex(d => d.Title).HasDatabaseName("IX_Doctors_Title");
         }
     }

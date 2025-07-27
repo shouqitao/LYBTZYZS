@@ -1,5 +1,5 @@
 ﻿using LYBT.Common.Enums;
-using LYBT.Common.Enums.System;
+using LYBT.Common.Enums.Diagnostics;
 using LYBT.Module.Pharmacy.Models;
 
 namespace LYBT.Module.Pharmacy.Interfaces {
@@ -37,6 +37,6 @@ namespace LYBT.Module.Pharmacy.Interfaces {
         /// <summary>
         /// 根据状态获取药房记录列表
         /// </summary>
-        Task<List<PharmacyModel>> GetByStatusAsync(PharmacyStatus status);
+        Task<List<PharmacyModel>> GetByStatusAsync(TreatmentTaskStatus status);
     }
 }

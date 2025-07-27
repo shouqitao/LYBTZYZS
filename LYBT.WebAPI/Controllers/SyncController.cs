@@ -1,7 +1,8 @@
 ﻿using LYBT.Common.Enums;
-using LYBT.Module.Settings.Interfaces;
+using LYBT.Common.Enums.System;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Models.Dtos;
+using LYBT.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,14 +17,14 @@ namespace LYBT.WebAPI.Controllers {
     [Authorize]
     public class SyncController : ControllerBase {
         private readonly ISyncService _syncService;
-        private readonly IGlobalSettingsService _settingsService;
+        private readonly IUnifiedConfigService _configService;
 
         /// <summary>
         /// 构造方法，注入同步服务
         /// </summary>
-        public SyncController(ISyncService syncService, IGlobalSettingsService settingsService) {
+        public SyncController(ISyncService syncService, IUnifiedConfigService configService) {
             _syncService = syncService;
-            _settingsService = settingsService;
+            _configService = configService;
         }
 
         // ================= 日志相关 ===================
@@ -103,8 +104,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpGet("mode")]
         public async Task<ActionResult<SyncMode>> GetSyncMode() {
-            var settings = await _settingsService.GetAsync();
-            return Ok(settings?.SyncMode ?? SyncMode.Auto);
+            var syncMode = await _configService.GetSettingAsync<SyncMode>("SyncMode", SyncMode.Auto);
+            return Ok(syncMode);
         }
 
         /// <summary>
@@ -112,11 +113,7 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPost("mode")]
         public async Task<ActionResult> SetSyncMode([FromBody] SyncMode mode) {
-            var settings = await _settingsService.GetAsync() ?? new Settings.Dtos.GlobalSettingsDto();
-            settings.SyncMode = mode;
-            var result = await _settingsService.SaveAsync(settings);
-            if (!result)
-                return BadRequest();
+            await _configService.SetSettingAsync("SyncMode", mode, "系统同步模式", "Sync");
             return Ok();
         }
 

@@ -1,5 +1,6 @@
 using LYBT.Common.Responses;
-using LYBT.Infrastructure.Auth;
+using LYBT.Infrastructure.Authentication;
+using LYBT.Infrastructure.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models.Dtos;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +16,11 @@ namespace LYBT.WebAPI.Controllers {
     [Route("api/v{version:apiVersion}/[controller]")]
     public class AuthController : ControllerBase {
         private readonly IAuthService _authService;
-        private readonly JwtOptions _jwtOptions;
+        private readonly IJwtAuthenticationService _jwtService;
 
-        public AuthController(IAuthService authService, IOptions<JwtOptions> jwtOptions) {
+        public AuthController(IAuthService authService, IJwtAuthenticationService jwtService) {
             _authService = authService;
-            _jwtOptions = jwtOptions.Value;
+            _jwtService = jwtService;
         }
 
         /// <summary>
@@ -36,7 +37,7 @@ namespace LYBT.WebAPI.Controllers {
             if (user == null)
                 return Unauthorized(ApiResponse<object>.Fail("用户名或密码错误", 401));
 
-            var token = JwtHelper.GenerateToken(user.Id.ToString(), user.UserName, _jwtOptions);
+            var token = _jwtService.GenerateToken(user.Id.ToString(), user.UserName, user.Roles.Select(r => r.ToString()));
             return Ok(ApiResponse<LoginResponseDto>.Success(new LoginResponseDto { Token = token, User = user }));
         }
 

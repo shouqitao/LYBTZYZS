@@ -1,15 +1,16 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Enums.Users;
+using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Module.Patients.Dtos;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Models;
 using LYBT.Module.Records.Interfaces;
 using LYBT.Module.Records.Models.Dtos;
 using System.Text.Json;
-using CommonUtil = LYBT.CommonUtils.CommonUtils;
 
 namespace LYBT.Module.Patients.Services {
 
@@ -45,12 +46,12 @@ namespace LYBT.Module.Patients.Services {
 
             var model = _mapper.Map<PatientModel>(dto);
             model.Id = Guid.NewGuid();
-            model.PinyinCode = CommonUtil.GetPinyinCode(model.Name);
+            model.PinyinCode = CommonHelper.GetPinyinCode(model.Name);
             model.CreatedAt = DateTime.Now;
             model.UpdatedAt = DateTime.Now;
 
             // 如果有身份证号，尝试解析出生日期和年龄
-            if (!string.IsNullOrEmpty(model.IDNumber) && CommonUtil.CheckIdNumber(model.IDNumber)) {
+            if (!string.IsNullOrEmpty(model.IDNumber) && CommonHelper.CheckIdNumber(model.IDNumber)) {
                 model.DateOfBirth = ExtractBirthDateFromIDNumber(model.IDNumber);
                 if (model.DateOfBirth.HasValue) {
                     model.Age = CalculateAge(model.DateOfBirth.Value);
@@ -80,10 +81,10 @@ namespace LYBT.Module.Patients.Services {
 
             var oldJson = JsonSerializer.Serialize(model);
             _mapper.Map(dto, model);
-            model.PinyinCode = CommonUtil.GetPinyinCode(model.Name);
+            model.PinyinCode = CommonHelper.GetPinyinCode(model.Name);
 
             // 如果身份证号变了，重新解析出生日期和年龄
-            if (!string.IsNullOrEmpty(model.IDNumber) && CommonUtil.CheckIdNumber(model.IDNumber)) {
+            if (!string.IsNullOrEmpty(model.IDNumber) && CommonHelper.CheckIdNumber(model.IDNumber)) {
                 model.DateOfBirth = ExtractBirthDateFromIDNumber(model.IDNumber);
                 if (model.DateOfBirth.HasValue) {
                     model.Age = CalculateAge(model.DateOfBirth.Value);
@@ -93,14 +94,13 @@ namespace LYBT.Module.Patients.Services {
             var result = await _patientRepository.UpdateAsync(model);
 
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = model.Id,
                     ActionType = ActionType.Edit,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
                     Content = $"编辑患者：{model.Name}",
                     OldValue = oldJson,
                     NewValue = JsonSerializer.Serialize(dto)
@@ -147,14 +147,13 @@ namespace LYBT.Module.Patients.Services {
         public async Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName) {
             var result = await _patientRepository.EnableAsync(id);
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = id,
                     ActionType = ActionType.Enable,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
                     Content = $"启用患者：{id}"
                 });
             }
@@ -164,14 +163,13 @@ namespace LYBT.Module.Patients.Services {
         public async Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName) {
             var result = await _patientRepository.DisableAsync(id);
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = id,
                     ActionType = ActionType.Disable,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
                     Content = $"禁用患者：{id}"
                 });
             }
@@ -181,14 +179,13 @@ namespace LYBT.Module.Patients.Services {
         public async Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
             var count = await _patientRepository.BatchDisableAsync(ids);
             if (count > 0) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = Guid.Empty,
                     ActionType = ActionType.Disable,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
                     Content = $"批量禁用患者：{count}人"
                 });
             }
@@ -198,14 +195,13 @@ namespace LYBT.Module.Patients.Services {
         public async Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
             var count = await _patientRepository.BatchEnableAsync(ids);
             if (count > 0) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = Guid.Empty,
                     ActionType = ActionType.Enable,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
                     Content = $"批量启用患者：{count}人"
                 });
             }
@@ -252,14 +248,13 @@ namespace LYBT.Module.Patients.Services {
         public async Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
             var result = await _patientRepository.AssignDoctorAsync(patientId, doctorId);
             if (result) {
-                await _logService.AddLogAsync(new LogDto {
+                await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = patientId,
                     ActionType = ActionType.Other,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    LogTime = DateTime.Now,
                     Content = $"授权患者{patientId}给医生{doctorId}"
                 });
             }
@@ -302,13 +297,13 @@ namespace LYBT.Module.Patients.Services {
                 PhoneNumber = dto.PhoneNumber ?? "",
                 IDNumber = dto.IDNumber ?? "",
                 Address = dto.Address ?? "",
-                PinyinCode = CommonUtil.GetPinyinCode(dto.Name),
+                PinyinCode = CommonHelper.GetPinyinCode(dto.Name),
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
 
             // 如果提供了身份证，尝试解析年龄和出生日期
-            if (!string.IsNullOrEmpty(dto.IDNumber) && CommonUtil.CheckIdNumber(dto.IDNumber)) {
+            if (!string.IsNullOrEmpty(dto.IDNumber) && CommonHelper.CheckIdNumber(dto.IDNumber)) {
                 model.DateOfBirth = ExtractBirthDateFromIDNumber(dto.IDNumber);
                 if (model.DateOfBirth.HasValue) {
                     model.Age = CalculateAge(model.DateOfBirth.Value);
@@ -339,7 +334,7 @@ namespace LYBT.Module.Patients.Services {
 
             // 身份证号码验证
             if (!string.IsNullOrEmpty(dto.IDNumber)) {
-                if (!CommonUtil.CheckIdNumber(dto.IDNumber)) {
+                if (!CommonHelper.CheckIdNumber(dto.IDNumber)) {
                     result.AddError("身份证号码格式不正确");
                 } else {
                     // 检查重复性

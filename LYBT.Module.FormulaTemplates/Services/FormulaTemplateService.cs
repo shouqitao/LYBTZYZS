@@ -53,7 +53,7 @@ namespace LYBT.Module.FormulaTemplates.Services {
             if (model == null)
                 return false;
             model.Name = dto.Name;
-            model.Herbs = _mapper.Map<List<HerbItemModel>>(dto.Herbs);
+            model.Herbs = _mapper.Map<List<FormulaTemplateHerbItem>>(dto.Herbs);
             model.Remark = dto.Remark;
             return await _repository.UpdateAsync(model);
         }

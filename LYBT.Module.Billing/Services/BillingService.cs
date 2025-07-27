@@ -93,7 +93,7 @@ namespace LYBT.Module.Billing.Services {
             var model = await _billingRepository.GetByIdAsync(id);
             if (model == null)
                 return false;
-            model.Status = BillingStatus.Completed;
+            model.Status = BillingStatus.Paid;
             model.CompletedTime = DateTime.Now;
             return await _billingRepository.UpdateAsync(model);
         }
@@ -108,7 +108,7 @@ namespace LYBT.Module.Billing.Services {
             var model = await _billingRepository.GetByIdAsync(id);
             if (model == null)
                 return false;
-            model.Status = BillingStatus.RefundRequested;
+            model.Status = BillingStatus.Pending; // Request submitted, pending refund processing
             model.RefundReason = reason;
             return await _billingRepository.UpdateAsync(model);
         }

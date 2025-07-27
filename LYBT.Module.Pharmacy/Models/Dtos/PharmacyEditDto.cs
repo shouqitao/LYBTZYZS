@@ -1,5 +1,5 @@
 using LYBT.Common.Enums;
-using LYBT.Common.Enums.System;
+using LYBT.Common.Enums.Diagnostics;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -26,7 +26,7 @@ namespace LYBT.Module.Pharmacy.Dtos {
 
         /// <summary>药房状态</summary>
         [DisplayName("药房状态")]
-        public PharmacyStatus Status { get; set; }
+        public TreatmentTaskStatus Status { get; set; }
 
         /// <summary>备注</summary>
         [DisplayName("备注")]
