@@ -8,6 +8,17 @@
 /LYBT.Common/obj
 /LYBT.Infrastructure/obj
 /LYBT.Models/obj
+
+# Windows系统相关文件
+nul
+**/nul
+Thumbs.db
+Desktop.ini
+
+# 临时文件和缓存
+*.tmp
+*.temp
+.cache/
 /LYBT.Module.Billing/obj
 /LYBT.Module.DiagnosisTreatment/obj
 /LYBT.Module.Doctors/obj

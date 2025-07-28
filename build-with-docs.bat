@@ -7,6 +7,7 @@ echo.
 
 REM 构建所有模块项目（这将触发文档复制）
 dotnet build LYBT.Common --verbosity minimal
+dotnet build LYBT.Models --verbosity minimal
 dotnet build LYBT.Infrastructure --verbosity minimal
 dotnet build LYBT.Module.Auth --verbosity minimal
 dotnet build LYBT.Module.Billing --verbosity minimal

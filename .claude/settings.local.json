@@ -68,7 +68,8 @@
       "Bash(dotnet ef migrations:*)",
       "Bash(dotnet ef database drop:*)",
       "Bash(Remove-Item:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(dir:*)"
     ],
     "deny": []
   }
