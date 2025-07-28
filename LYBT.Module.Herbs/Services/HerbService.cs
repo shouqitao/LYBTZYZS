@@ -151,7 +151,7 @@ namespace LYBT.Module.Herbs.Services {
                 ? GetSimplePinyinCode(dto.Name)
                 : dto.Pinyin;
             model.Origin = dto.Origin;
-            model.Spec = dto.Spec;
+            model.Specification = dto.Spec;
             model.Unit = dto.Unit;
             model.Price = dto.Price;
             model.Stock = dto.Stock;

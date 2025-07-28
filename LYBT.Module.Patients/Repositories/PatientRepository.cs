@@ -1,7 +1,7 @@
 ﻿using LYBT.Common.Enums.Patients;
 using LYBT.Common.Helpers;
+using LYBT.Infrastructure.Data;
 using LYBT.Models.Patients;
-using LYBT.Module.Patients.Data;
 using LYBT.Module.Patients.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +9,12 @@ namespace LYBT.Module.Patients.Repositories {
 
     /// <summary>
     /// 病人仓储实现，负责数据库具体操作
-    /// 实现软删除策略：患者只能禁用/启用，不能物理删除
+    /// 实现软删除策略：患者档案只能禁用/启用，不能物理删除
     /// </summary>
     public class PatientRepository : IPatientRepository {
-        private readonly PatientsDbContext _dbContext;
+        private readonly AppDbContext _dbContext;
 
-        public PatientRepository(PatientsDbContext dbContext) {
+        public PatientRepository(AppDbContext dbContext) {
             _dbContext = dbContext;
         }
 
@@ -36,7 +36,7 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<List<PatientModel>> GetListAsync(string? keyword = null, int page = 1, int pageSize = 20, bool includeDisabled = false) {
             var query = _dbContext.Patients.AsQueryable();
 
-            // 权限控制：是否包含禁用患者
+            // 权限控制：是否包含禁用患者档案
             if (!includeDisabled) {
                 query = query.Where(p => p.Status == PatientStatus.Normal);
             }
@@ -129,7 +129,7 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<int> GetCountAsync(string? keyword = null, bool includeDisabled = false) {
             var query = _dbContext.Patients.AsQueryable();
 
-            // 权限控制：是否包含禁用患者
+            // 权限控制：是否包含禁用患者档案
             if (!includeDisabled) {
                 query = query.Where(p => p.Status == PatientStatus.Normal);
             }
@@ -148,7 +148,7 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<List<PatientModel>> SearchAsync(string keyword, bool includeDisabled = false) {
             var query = _dbContext.Patients.AsQueryable();
 
-            // 权限控制：是否包含禁用患者
+            // 权限控制：是否包含禁用患者档案
             if (!includeDisabled) {
                 query = query.Where(p => p.Status == PatientStatus.Normal);
             }
@@ -167,7 +167,7 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<List<PatientModel>> ExactSearchAsync(string keyword, bool includeDisabled = false) {
             var results = new List<PatientModel>();
 
-            // 基础查询，是否包含禁用患者
+            // 基础查询，是否包含禁用患者档案
             var baseQuery = _dbContext.Patients.AsQueryable();
             if (!includeDisabled) {
                 baseQuery = baseQuery.Where(p => p.Status == PatientStatus.Normal);
@@ -198,7 +198,7 @@ namespace LYBT.Module.Patients.Repositories {
         }
 
         /// <summary>
-        /// 根据身份证号获取患者列表（用于重复检查）
+        /// 根据身份证号获取患者档案列表（用于重复检查）
         /// </summary>
         public async Task<List<PatientModel>> GetPatientsByIdNumberAsync(string idNumber) {
             if (string.IsNullOrEmpty(idNumber))
@@ -210,7 +210,7 @@ namespace LYBT.Module.Patients.Repositories {
         }
 
         /// <summary>
-        /// 根据姓名和手机号获取患者列表（用于重复检查）
+        /// 根据姓名和手机号获取患者档案列表（用于重复检查）
         /// </summary>
         public async Task<List<PatientModel>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber) {
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phoneNumber))
@@ -222,7 +222,7 @@ namespace LYBT.Module.Patients.Repositories {
         }
 
         /// <summary>
-        /// 根据相似姓名获取患者列表（用于重复检查）
+        /// 根据相似姓名获取患者档案列表（用于重复检查）
         /// </summary>
         public async Task<List<PatientModel>> GetPatientsBySimilarNameAsync(string name) {
             if (string.IsNullOrEmpty(name))
@@ -237,6 +237,29 @@ namespace LYBT.Module.Patients.Repositories {
                            name.Contains(p.Name))
                 .Where(p => p.Name != name) // 排除完全相同的姓名
                 .Take(10) // 限制返回数量
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 根据身份证号获取患者档案（用于查询或创建场景）
+        /// </summary>
+        public async Task<PatientModel?> GetByIdNumberAsync(string idNumber) {
+            if (string.IsNullOrEmpty(idNumber))
+                return null;
+
+            return await _dbContext.Patients
+                .FirstOrDefaultAsync(p => p.IDNumber == idNumber);
+        }
+
+        /// <summary>
+        /// 根据姓名获取患者档案列表（用于查询或创建场景）
+        /// </summary>
+        public async Task<List<PatientModel>> GetByNameAsync(string name) {
+            if (string.IsNullOrEmpty(name))
+                return new List<PatientModel>();
+
+            return await _dbContext.Patients
+                .Where(p => p.Name == name)
                 .ToListAsync();
         }
     }

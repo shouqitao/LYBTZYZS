@@ -190,7 +190,7 @@ namespace LYBT.Infrastructure.Extensions {
                 throw new InvalidOperationException("Infrastructure database connection string is not configured");
             }
 
-            services.AddDbContext<InfrastructureDbContext>(options => {
+            services.AddDbContext<AppDbContext>(options => {
                 options.UseSqlServer(connectionString, sqlOptions => {
                     sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
                     sqlOptions.EnableRetryOnFailure(

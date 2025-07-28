@@ -37,7 +37,7 @@ namespace LYBT.Models.Users {
         public string PinyinCode { get; set; } = string.Empty;
 
         /// <summary>
-        /// 五笔码
+        /// 真实姓名五笔码
         /// </summary>
         [StringLength(32)]
         [DisplayName("五笔码")]

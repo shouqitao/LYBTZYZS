@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Models.Patients {
 
     /// <summary>
-    /// 给患者授权医生 DTO
+    /// 给患者档案授权医生 DTO
     /// </summary>
     public class AssignDoctorDto {
 

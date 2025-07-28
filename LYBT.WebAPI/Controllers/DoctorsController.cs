@@ -87,7 +87,7 @@ namespace LYBT.WebAPI.Controllers {
                     }
                 }
 
-                return result.IsSuccess ? Ok(result) : BadRequest(result);
+                return result?.IsSuccess == true ? Ok(result) : BadRequest(result ?? ApiResponse<List<DoctorDto>>.Fail("搜索失败"));
             } catch (Exception ex) {
                 _logger.LogError(ex, "搜索医生失败，关键词: {Keyword}", keyword);
                 return StatusCode(500, ApiResponse<object>.Fail("搜索医生失败"));
@@ -108,7 +108,7 @@ namespace LYBT.WebAPI.Controllers {
                     }
                 }
 
-                return result.IsSuccess ? Ok(result) : BadRequest(result);
+                return result?.IsSuccess == true ? Ok(result) : BadRequest(result ?? ApiResponse<List<DoctorDto>>.Fail("获取失败"));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取在职医生列表失败");
                 return StatusCode(500, ApiResponse<object>.Fail("获取在职医生列表失败"));
@@ -137,7 +137,7 @@ namespace LYBT.WebAPI.Controllers {
                     }
                 }
 
-                return result.IsSuccess ? Ok(result) : NotFound(result);
+                return result?.IsSuccess == true ? Ok(result) : NotFound(result ?? ApiResponse<DoctorDetailDto>.Fail("未找到"));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取医生详情失败，ID: {DoctorId}", id);
                 return StatusCode(500, ApiResponse<object>.Fail("获取医生详情失败"));

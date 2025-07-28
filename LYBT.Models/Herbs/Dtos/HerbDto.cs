@@ -19,6 +19,10 @@ namespace LYBT.Models.Herbs {
         [DisplayName("拼音码")]
         public string? Pinyin { get; set; }
 
+        /// <summary>五笔码</summary>
+        [DisplayName("五笔码")]
+        public string? WuBi { get; set; }
+
         /// <summary>产地</summary>
         [DisplayName("产地")]
         public string? Origin { get; set; }

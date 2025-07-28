@@ -4,14 +4,14 @@ using System.ComponentModel;
 namespace LYBT.Models.Patients {
 
     /// <summary>
-    /// 快速创建患者DTO (医生可以跳过挂号直接创建患者并发起看诊)
+    /// 快速创建患者档案DTO (医生可以跳过挂号直接创建患者档案并发起看诊)
     /// </summary>
     public class QuickPatientCreateDto {
 
         /// <summary>
-        /// 患者姓名
+        /// 患者档案姓名
         /// </summary>
-        [DisplayName("患者姓名")]
+        [DisplayName("患者档案姓名")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>

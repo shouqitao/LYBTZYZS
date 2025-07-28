@@ -14,7 +14,7 @@ namespace LYBT.WebAPI.Controllers {
 
     /// <summary>
     /// 病人管理API接口
-    /// 实现软删除策略：患者只能禁用/启用，不提供删除接口
+    /// 实现软删除策略：患者档案档案只能禁用/启用，不提供删除接口
     /// </summary>
     [ApiController]
     [ApiVersion("1.0")]
@@ -53,10 +53,10 @@ namespace LYBT.WebAPI.Controllers {
             try {
                 var result = await _patientService.AddAsync(dto, operatorId, operatorName);
                 return result
-                    ? Ok(ApiResponse<object>.Success(null, "患者创建成功"))
-                    : BadRequest(ApiResponse<object>.Fail("患者创建失败，必填项不完整或已存在"));
+                    ? Ok(ApiResponse<object>.Success(new { }, "患者档案创建成功"))
+                    : BadRequest(ApiResponse<object>.Fail("患者档案创建失败，必填项不完整或已存在"));
             } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail($"患者创建失败：{ex.Message}"));
+                return BadRequest(ApiResponse<object>.Fail($"患者档案创建失败：{ex.Message}"));
             }
         }
 
@@ -70,36 +70,36 @@ namespace LYBT.WebAPI.Controllers {
             try {
                 var result = await _patientService.UpdateAsync(dto, operatorId, operatorName);
                 return result
-                    ? Ok(ApiResponse<object>.Success(null, "患者信息更新成功"))
-                    : BadRequest(ApiResponse<object>.Fail("患者信息更新失败，必填项不完整或患者不存在"));
+                    ? Ok(ApiResponse<object>.Success(new { }, "患者档案信息更新成功"))
+                    : BadRequest(ApiResponse<object>.Fail("患者档案信息更新失败，必填项不完整或患者档案不存在"));
             } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail($"患者信息更新失败：{ex.Message}"));
+                return BadRequest(ApiResponse<object>.Fail($"患者档案信息更新失败：{ex.Message}"));
             }
         }
 
         /// <summary>
-        /// 启用患者
+        /// 启用患者档案
         /// </summary>
         [HttpPatch("{id}/enable")]
         public async Task<IActionResult> Enable(Guid id) {
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _patientService.EnableAsync(id, operatorId, operatorName);
-            return result ? Ok(ApiResponse<object>.Success(null, "患者已启用")) : NotFound(ApiResponse<object>.Fail("患者不存在"));
+            return result ? Ok(ApiResponse<object>.Success(new { }, "患者档案已启用")) : NotFound(ApiResponse<object>.Fail("患者档案不存在"));
         }
 
         /// <summary>
-        /// 禁用患者（软删除）
+        /// 禁用患者档案（软删除）
         /// </summary>
         [HttpPatch("{id}/disable")]
         public async Task<IActionResult> Disable(Guid id) {
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _patientService.DisableAsync(id, operatorId, operatorName);
-            return result ? Ok(ApiResponse<object>.Success(null, "患者已禁用")) : NotFound(ApiResponse<object>.Fail("患者不存在"));
+            return result ? Ok(ApiResponse<object>.Success(new { }, "患者档案已禁用")) : NotFound(ApiResponse<object>.Fail("患者档案不存在"));
         }
 
         /// <summary>
         /// 获取病人详情
-        /// 权限控制：禁用的患者仅管理员可查询
+        /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<PatientDetailDto>>> GetById(Guid id) {
@@ -112,12 +112,12 @@ namespace LYBT.WebAPI.Controllers {
             }
             return data != null
                 ? Ok(ApiResponse<PatientDetailDto>.Success(data))
-                : NotFound(ApiResponse<object>.Fail("患者不存在或无权限访问"));
+                : NotFound(ApiResponse<object>.Fail("患者档案不存在或无权限访问"));
         }
 
         /// <summary>
         /// 获取全部病人（小数据量场景，分页请用 /paged）
-        /// 权限控制：禁用的患者仅管理员可查询
+        /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetAll() {
@@ -127,12 +127,12 @@ namespace LYBT.WebAPI.Controllers {
                 data = await _patientService.GetAllAsync(operatorRole);
                 _cache.Set($"patients:all:{operatorRole}", data, TimeSpan.FromMinutes(5));
             }
-            return Ok(ApiResponse<List<PatientDetailDto>>.Success(data));
+            return Ok(ApiResponse<List<PatientDetailDto>>.Success(data ?? new List<PatientDetailDto>()));
         }
 
         /// <summary>
         /// 分页条件查询
-        /// 权限控制：禁用的患者仅管理员可查询
+        /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpPost("paged")]
         public async Task<ActionResult<ApiResponse<PagedResultDto<PatientDetailDto>>>> GetPaged([FromBody] PatientPagedQueryDto query) {
@@ -142,28 +142,28 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 批量禁用患者
+        /// 批量禁用患者档案
         /// </summary>
         [HttpPatch("batch-disable")]
         public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
-            return Ok(ApiResponse<object>.Success(new { DisabledCount = count, Message = $"成功禁用 {count} 名患者" }));
+            return Ok(ApiResponse<object>.Success(new { DisabledCount = count, Message = $"成功禁用 {count} 名患者档案" }));
         }
 
         /// <summary>
-        /// 批量启用患者
+        /// 批量启用患者档案
         /// </summary>
         [HttpPatch("batch-enable")]
         public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
-            return Ok(ApiResponse<object>.Success(new { EnabledCount = count, Message = $"成功启用 {count} 名患者" }));
+            return Ok(ApiResponse<object>.Success(new { EnabledCount = count, Message = $"成功启用 {count} 名患者档案" }));
         }
 
         /// <summary>
-        /// 搜索患者
-        /// 权限控制：禁用的患者仅管理员可查询
+        /// 搜索患者档案
+        /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("search")]
         public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Search([FromQuery] string keyword) {
@@ -173,18 +173,18 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 导入患者数据
+        /// 导入患者档案数据
         /// </summary>
         [HttpPost("import")]
         public async Task<IActionResult> Import([FromBody] List<PatientDetailDto> dtos) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.ImportAsync(dtos, operatorId, operatorName);
-            return Ok(ApiResponse<object>.Success(new { Imported = count, Message = $"成功导入 {count} 名患者" }));
+            return Ok(ApiResponse<object>.Success(new { Imported = count, Message = $"成功导入 {count} 名患者档案" }));
         }
 
         /// <summary>
-        /// 导出患者数据
-        /// 权限控制：禁用的患者仅管理员可查询
+        /// 导出患者档案数据
+        /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("export")]
         public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Export() {
@@ -194,7 +194,7 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取患者历史病历
+        /// 获取患者档案历史病历
         /// </summary>
         [HttpGet("{id}/records")]
         public async Task<ActionResult<ApiResponse<List<RecordDto>>>> GetHistory(Guid id) {
@@ -203,7 +203,7 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取启用的患者列表
+        /// 获取启用的患者档案列表
         /// </summary>
         [HttpGet("active")]
         public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetActivePatients() {
@@ -212,20 +212,21 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 快速创建患者（用于快速看诊场景）
+        /// 查询或创建患者档案（用于挂号/看诊场景）
+        /// 根据姓名和身份证号查询患者档案，如果不存在则创建新档案
         /// </summary>
-        [HttpPost("quick-create")]
-        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> QuickCreate([FromBody] QuickPatientCreateDto dto) {
+        [HttpPost("find-or-create")]
+        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> FindOrCreate([FromBody] PatientDetailDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             try {
-                var patient = await _patientService.QuickCreateAsync(dto, operatorId, operatorName);
-                return Ok(ApiResponse<PatientDetailDto>.Success(patient, "患者快速创建成功"));
+                var patient = await _patientService.FindOrCreateAsync(dto, operatorId, operatorName);
+                return Ok(ApiResponse<PatientDetailDto>.Success(patient, patient.Id == Guid.Empty ? "患者档案创建成功" : "患者档案查询成功"));
             } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail($"患者快速创建失败：{ex.Message}"));
+                return BadRequest(ApiResponse<object>.Fail($"患者档案查询或创建失败：{ex.Message}"));
             }
         }
 
-        // 注意：不提供删除接口，患者只能禁用，不能删除
+        // 注意：不提供删除接口，患者档案只能禁用，不能删除
         // 原有的删除相关接口已移除，改为禁用/启用操作
     }
 }

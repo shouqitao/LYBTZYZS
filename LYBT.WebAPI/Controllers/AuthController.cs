@@ -71,7 +71,7 @@ namespace LYBT.WebAPI.Controllers {
 
                 LogOperation("用户登出", dto);
 
-                return Ok(ApiResponse<object>.Success(null));
+                return Ok(ApiResponse<object>.Success(new { }, "登出成功"));
             } catch (Exception ex) {
                 return HandleException<object>(ex, "用户登出", dto);
             }
@@ -94,7 +94,7 @@ namespace LYBT.WebAPI.Controllers {
 
                 LogOperation("管理员密码修改", "密码修改请求");
 
-                return Ok(ApiResponse<object>.Success(null, "密码修改成功"));
+                return Ok(ApiResponse<object>.Success(new { }, "密码修改成功"));
             } catch (Exception ex) {
                 return HandleException<object>(ex, "修改管理员密码", "密码修改请求");
             }

@@ -23,13 +23,17 @@ namespace LYBT.Models.Herbs {
         [DisplayName("拼音码")]
         public string? Pinyin { get; set; }
 
+        /// <summary>五笔码</summary>
+        [DisplayName("五笔码")]
+        public string? WuBi { get; set; }
+
         /// <summary>产地</summary>
         [DisplayName("产地")]
         public string? Origin { get; set; }
 
-        /// <summary>规格</summary>
+        /// <summary>基础规格数值（如：1，用于计算实际用量）</summary>
         [DisplayName("规格")]
-        public string? Spec { get; set; }
+        public decimal Spec { get; set; } = 1;
 
         /// <summary>单位</summary>
         [DisplayName("单位")]

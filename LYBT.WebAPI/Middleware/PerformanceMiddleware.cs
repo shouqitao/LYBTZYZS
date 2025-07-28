@@ -37,7 +37,7 @@ namespace LYBT.WebAPI.Middleware {
                 requestMethod, requestPath, context.Response.StatusCode, elapsed);
 
             // 添加响应头包含执行时间
-            context.Response.Headers.Add("X-Response-Time", $"{elapsed}ms");
+            context.Response.Headers["X-Response-Time"] = $"{elapsed}ms";
         }
     }
 

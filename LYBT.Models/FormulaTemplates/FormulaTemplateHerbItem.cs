@@ -1,14 +1,16 @@
+using LYBT.Models.Common;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Models.FormulaTemplates {
 
     /// <summary>
-    /// 经验方模板药材明细实体
+    /// 验方药材项 - 验方模板中的药材组成，包含药材名称和剂量倍数
     /// </summary>
-    public class FormulaTemplateHerbItem {
+    public class FormulaTemplateHerbItem : IHerbItem {
 
         /// <summary>
-        /// 药材ID（关联药材主数据）
+        /// 药材ID（关联药材库）
         /// </summary>
         [DisplayName("药材ID")]
         public Guid HerbId { get; set; }
@@ -16,53 +18,35 @@ namespace LYBT.Models.FormulaTemplates {
         /// <summary>
         /// 药材名称
         /// </summary>
+        [Required, StringLength(100)]
         [DisplayName("药材名称")]
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 药材别名
-        /// </summary>
-        [DisplayName("药材别名")]
         public string HerbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 剂量
+        /// 剂量倍数（药材规格的倍数，如：5倍）
+        /// 实际用量 = 药材规格 × 剂量倍数
         /// </summary>
-        [DisplayName("剂量")]
-        public decimal Amount { get; set; }
+        [DisplayName("剂量倍数")]
+        public decimal Quantity { get; set; } = 1;
 
         /// <summary>
-        /// 数量
+        /// 单位（从药材库继承，如：克、钱、两等）
         /// </summary>
-        [DisplayName("数量")]
-        public decimal Quantity { get; set; }
-
-        /// <summary>
-        /// 单位
-        /// </summary>
+        [StringLength(16)]
         [DisplayName("单位")]
         public string Unit { get; set; } = "g";
 
         /// <summary>
-        /// 单价
+        /// 用法说明（该药材的特殊用法）
         /// </summary>
-        [DisplayName("单价")]
-        public decimal UnitPrice { get; set; }
-
-        /// <summary>
-        /// 小计（单价 × 剂量）
-        /// </summary>
-        public decimal TotalPrice => UnitPrice * Amount;
-
-        /// <summary>
-        /// 用法
-        /// </summary>
+        [StringLength(200)]
         [DisplayName("用法")]
         public string? Usage { get; set; }
 
         /// <summary>
-        /// 备注
+        /// 备注信息
         /// </summary>
+        [StringLength(200)]
         [DisplayName("备注")]
         public string? Remark { get; set; }
     }

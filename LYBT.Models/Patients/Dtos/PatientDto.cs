@@ -64,10 +64,8 @@ namespace LYBT.Models.Patients {
         [DisplayName("拼音码")]
         public string PinyinCode { get; set; } = string.Empty;
 
-        /// <summary>
-        /// 是否特殊患者（仅有权限的医生可见/可创建）
-        /// </summary>
-        [DisplayName("是否特殊患者（仅有权限的医生可见/可创建）")]
-        public bool IsSpecial { get; set; }
+        /// <summary>五笔码</summary>
+        [DisplayName("五笔码")]
+        public string WuBiCode { get; set; } = string.Empty;
     }
 }

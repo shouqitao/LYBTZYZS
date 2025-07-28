@@ -13,8 +13,9 @@ namespace LYBT.Models.Herbs {
         [DisplayName("Origin")]
         public string? Origin { get; set; }
 
+        /// <summary>基础规格数值（如：1，用于计算实际用量）</summary>
         [DisplayName("Spec")]
-        public string? Spec { get; set; }
+        public decimal Spec { get; set; } = 1;
 
         [DisplayName("Unit")]
         public string? Unit { get; set; }

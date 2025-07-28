@@ -13,7 +13,7 @@ namespace LYBT.Infrastructure.Configuration {
     /// 统一配置服务实现
     /// </summary>
     public class UnifiedConfigService : IUnifiedConfigService {
-        private readonly InfrastructureDbContext _context;
+        private readonly AppDbContext _context;
         private readonly ICacheService _cacheService;
         private readonly ILogger<UnifiedConfigService> _logger;
 
@@ -25,7 +25,7 @@ namespace LYBT.Infrastructure.Configuration {
         private const string TREATMENT_CACHE_PREFIX = "config:treatment:";
         private const string ENUM_CACHE_PREFIX = "config:enum:";
 
-        public UnifiedConfigService(InfrastructureDbContext context, ICacheService cacheService, ILogger<UnifiedConfigService> logger) {
+        public UnifiedConfigService(AppDbContext context, ICacheService cacheService, ILogger<UnifiedConfigService> logger) {
             _context = context;
             _cacheService = cacheService;
             _logger = logger;

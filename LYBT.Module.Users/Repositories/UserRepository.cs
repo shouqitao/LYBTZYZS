@@ -1,18 +1,18 @@
-﻿using LYBT.Models.Users;
-using LYBT.Module.Users.Data;
+﻿using LYBT.Infrastructure.Data;
+using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Users.Repositories {
 
     /// <summary>
-    /// 用户仓储实现类（基于EF Core）
+    /// 用户仓储实现类（基于EF Core统一数据库上下文）
     /// 实现软删除策略：用户只能禁用/启用，不能物理删除
     /// </summary>
     public class UserRepository : IUserRepository {
-        private readonly UserDbContext _dbContext;
+        private readonly AppDbContext _dbContext;
 
-        public UserRepository(UserDbContext dbContext) {
+        public UserRepository(AppDbContext dbContext) {
             _dbContext = dbContext;
         }
 

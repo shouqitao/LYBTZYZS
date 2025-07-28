@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Models.Patients {
 
     /// <summary>
-    /// 批量操作患者ID列表 DTO
+    /// 批量操作患者档案ID列表 DTO
     /// </summary>
     public class BatchIdsDto {
 

@@ -6,30 +6,40 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Models.Patients {
 
     /// <summary>
-    /// 患者信息实体
+    /// 患者档案信息实体 - 诊所患者档案基础信息管理，支持软删除策略
     /// </summary>
     public class PatientModel {
 
+        /// <summary>
+        /// 患者档案唯一标识（主键）
+        /// </summary>
         [Key]
-        [DisplayName("Id")]
+        [DisplayName("患者档案ID")]
         public Guid Id { get; set; }
 
         /// <summary>
-        /// 患者姓名
+        /// 患者档案姓名
         /// </summary>
         [Required, StringLength(64)]
-        [DisplayName("患者姓名")]
+        [DisplayName("患者档案姓名")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// 五笔码
+        /// 姓名拼音简码（用于快速搜索）
         /// </summary>
-        [StringLength(20)]
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
+        [StringLength(32)]
+        [DisplayName("拼音码")]
+        public string PinyinCode { get; set; } = string.Empty;
 
         /// <summary>
-        /// 性别
+        /// 姓名五笔码（用于快速搜索）
+        /// </summary>
+        [StringLength(32)]
+        [DisplayName("五笔码")]
+        public string WuBiCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 患者档案性别
         /// </summary>
         [Required]
         [DisplayName("性别")]
@@ -41,55 +51,66 @@ namespace LYBT.Models.Patients {
         [DisplayName("出生日期")]
         public DateTime? DateOfBirth { get; set; }
 
-        [DisplayName("Age")]
+        /// <summary>
+        /// 患者档案年龄（可自动计算或手工录入）
+        /// </summary>
+        [DisplayName("年龄")]
         public int? Age { get; set; }
 
+        /// <summary>
+        /// 联系电话
+        /// </summary>
         [Required, StringLength(20)]
-        [DisplayName("PhoneNumber")]
+        [DisplayName("联系电话")]
         public string PhoneNumber { get; set; } = string.Empty;
 
+        /// <summary>
+        /// 身份证号码
+        /// </summary>
         [Required, StringLength(32)]
-        [DisplayName("IDNumber")]
+        [DisplayName("身份证号")]
         public string IDNumber { get; set; } = string.Empty;
 
+        /// <summary>
+        /// 患者档案地址
+        /// </summary>
         [StringLength(256)]
-        [DisplayName("Address")]
+        [DisplayName("患者档案地址")]
         public string Address { get; set; } = string.Empty;
 
+        /// <summary>
+        /// 患者档案状态（启用/禁用，支持软删除策略）
+        /// </summary>
         [Required]
-        [DisplayName("Status")]
+        [DisplayName("患者档案状态")]
         public PatientStatus Status { get; set; } = PatientStatus.Active;
 
+        /// <summary>
+        /// 禁用原因（软删除时记录原因）
+        /// </summary>
         [StringLength(128)]
-        [DisplayName("DisableReason")]
+        [DisplayName("禁用原因")]
         public string DisableReason { get; set; } = string.Empty;
 
         /// <summary>
-        /// 是否为特殊病人（前台不可见，仅特定医生可见）
+        /// 备注信息
         /// </summary>
-        [DisplayName("是否为特殊病人（前台不可见，仅特定医生可见）")]
-        public bool IsSpecial { get; set; } = false;
-
         [StringLength(256)]
-        [DisplayName("Remark")]
+        [DisplayName("备注信息")]
         public string Remark { get; set; } = string.Empty;
 
+        /// <summary>
+        /// 创建时间
+        /// </summary>
         [Required]
-        [DisplayName("CreatedAt")]
+        [DisplayName("创建时间")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        [Required]
-        [DisplayName("UpdatedAt")]
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
-
-        [StringLength(32)]
-        [DisplayName("PinyinCode")]
-        public string PinyinCode { get; set; } = string.Empty;
-
         /// <summary>
-        /// 允许查看该特殊病人的医生列表（仅IsSpecial为true时有效）
+        /// 更新时间
         /// </summary>
-        [DisplayName("允许查看该特殊病人的医生列表（仅IsSpecial为true时有效）")]
-        public virtual ICollection<SpecialPatientDoctor> SpecialPatientDoctors { get; set; } = new List<SpecialPatientDoctor>();
+        [Required]
+        [DisplayName("更新时间")]
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }
 }

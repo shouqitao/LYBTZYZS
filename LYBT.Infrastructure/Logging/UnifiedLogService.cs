@@ -13,10 +13,10 @@ namespace LYBT.Infrastructure.Logging {
     /// 统一日志服务实现
     /// </summary>
     public class UnifiedLogService : IUnifiedLogService {
-        private readonly InfrastructureDbContext _context;
+        private readonly AppDbContext _context;
         private readonly ILogger<UnifiedLogService> _logger;
 
-        public UnifiedLogService(InfrastructureDbContext context, ILogger<UnifiedLogService> logger) {
+        public UnifiedLogService(AppDbContext context, ILogger<UnifiedLogService> logger) {
             _context = context;
             _logger = logger;
         }
