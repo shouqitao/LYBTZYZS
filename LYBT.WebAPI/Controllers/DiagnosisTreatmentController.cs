@@ -1,5 +1,6 @@
-﻿using LYBT.Module.DiagnosisTreatment.Interfaces;
-using LYBT.Module.DiagnosisTreatment.Models.Dtos;
+﻿using Asp.Versioning;
+using LYBT.Models.DiagnosisTreatment;
+using LYBT.Module.DiagnosisTreatment.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,8 +1,7 @@
-﻿using LYBT.Common.Enums.Diagnostics;
-using LYBT.Common.Enums.System;
+﻿using LYBT.Common.Enums.System;
+using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Data;
 using LYBT.Module.Pharmacy.Interfaces;
-using LYBT.Module.Pharmacy.Models;
 
 namespace LYBT.Module.Pharmacy.Repositories {
 
@@ -63,7 +62,7 @@ namespace LYBT.Module.Pharmacy.Repositories {
         /// <summary>
         /// 根据状态获取药房记录列表
         /// </summary>
-        public async Task<List<PharmacyModel>> GetByStatusAsync(TreatmentTaskStatus status) {
+        public async Task<List<PharmacyModel>> GetByStatusAsync(PharmacyStatus status) {
             return await Task.FromResult(_context.Pharmacies
                 .Where(p => p.Status == status)
                 .ToList());

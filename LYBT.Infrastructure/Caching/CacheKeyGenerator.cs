@@ -67,7 +67,7 @@ namespace LYBT.Infrastructure.Caching {
         /// <returns>缓存键</returns>
         public static string GeneratePagedQueryKey(string module, int pageIndex, int pageSize, params object[] additionalParams) {
             var keyBuilder = new StringBuilder($"paged:{module}:{pageIndex}:{pageSize}");
-            
+
             if (additionalParams?.Length > 0) {
                 foreach (var param in additionalParams) {
                     keyBuilder.Append($":{param}");
@@ -86,7 +86,7 @@ namespace LYBT.Infrastructure.Caching {
         /// <returns>缓存键</returns>
         public static string GenerateListKey(string module, string listType, params object[] additionalParams) {
             var keyBuilder = new StringBuilder($"list:{module}:{listType}");
-            
+
             if (additionalParams?.Length > 0) {
                 foreach (var param in additionalParams) {
                     keyBuilder.Append($":{param}");
@@ -175,7 +175,7 @@ namespace LYBT.Infrastructure.Caching {
             var timestamp = timespan.TotalDays >= 1 ? now.ToString("yyyyMMdd") :
                            timespan.TotalHours >= 1 ? now.ToString("yyyyMMddHH") :
                            now.ToString("yyyyMMddHHmm");
-            
+
             return $"{baseKey}:{timestamp}";
         }
     }

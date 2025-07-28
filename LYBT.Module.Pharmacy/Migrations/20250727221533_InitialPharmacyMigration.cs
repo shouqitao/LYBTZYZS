@@ -1,20 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Pharmacy.Migrations
-{
+namespace LYBT.Module.Pharmacy.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialPharmacyMigration : Migration
-    {
+    public partial class InitialPharmacyMigration : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "Pharmacies",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PrescriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -27,15 +24,13 @@ namespace LYBT.Module.Pharmacy.Migrations
                     DispenseTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Pharmacies", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "HerbModel",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     PinyinCode = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
@@ -55,8 +50,7 @@ namespace LYBT.Module.Pharmacy.Migrations
                     LastOperatorName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     PharmacyModelId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_HerbModel", x => x.Id);
                     table.ForeignKey(
                         name: "FK_HerbModel_Pharmacies_PharmacyModelId",
@@ -92,8 +86,7 @@ namespace LYBT.Module.Pharmacy.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "HerbModel");
 

@@ -1,6 +1,6 @@
-﻿using LYBT.Module.TreatmentRoom.Data;
+﻿using LYBT.Models.TreatmentRoom;
+using LYBT.Module.TreatmentRoom.Data;
 using LYBT.Module.TreatmentRoom.Interfaces;
-using LYBT.Module.TreatmentRoom.Models;
 
 namespace LYBT.Module.TreatmentRoom.Repositories {
 

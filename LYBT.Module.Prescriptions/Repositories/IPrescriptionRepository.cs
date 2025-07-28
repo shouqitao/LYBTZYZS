@@ -1,4 +1,4 @@
-using LYBT.Module.Prescriptions.Models;
+using LYBT.Models.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Repositories {
 

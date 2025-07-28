@@ -79,6 +79,7 @@ namespace LYBT.Infrastructure.Storage {
     /// 文件元数据
     /// </summary>
     public class FileMetadata {
+
         /// <summary>
         /// 文件路径
         /// </summary>

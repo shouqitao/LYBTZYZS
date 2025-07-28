@@ -1,6 +1,6 @@
+using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Users.Data;
-using LYBT.Module.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Auth.Repositories {

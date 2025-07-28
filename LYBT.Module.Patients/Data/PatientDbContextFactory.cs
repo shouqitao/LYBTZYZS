@@ -10,7 +10,7 @@ namespace LYBT.Module.Patients.Data {
 
         public PatientsDbContext CreateDbContext(string[] args) {
             var optionsBuilder = new DbContextOptionsBuilder<PatientsDbContext>();
-            
+
             // 使用默认连接字符串进行设计时迁移
             optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=LYBTDB;Trusted_Connection=true;");
 

@@ -1,11 +1,10 @@
-﻿using LYBT.Module.Herbs.Data;
+﻿using LYBT.Models.Herbs;
+using LYBT.Module.Herbs.Data;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Herbs.Repositories {
-
     /// <summary>
     /// 药材仓储实现类，实现数据库操作
     /// </summary>

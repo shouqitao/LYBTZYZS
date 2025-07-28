@@ -45,6 +45,7 @@ namespace LYBT.Infrastructure.Options {
     /// 本地存储配置
     /// </summary>
     public class LocalStorageConfig {
+
         /// <summary>
         /// 根路径
         /// </summary>
@@ -65,6 +66,7 @@ namespace LYBT.Infrastructure.Options {
     /// Azure存储配置
     /// </summary>
     public class AzureStorageConfig {
+
         /// <summary>
         /// 连接字符串
         /// </summary>
@@ -90,6 +92,7 @@ namespace LYBT.Infrastructure.Options {
     /// AWS S3存储配置
     /// </summary>
     public class AwsStorageConfig {
+
         /// <summary>
         /// 访问密钥ID
         /// </summary>
@@ -120,6 +123,7 @@ namespace LYBT.Infrastructure.Options {
     /// MinIO存储配置
     /// </summary>
     public class MinIOStorageConfig {
+
         /// <summary>
         /// 服务端点
         /// </summary>
@@ -150,6 +154,7 @@ namespace LYBT.Infrastructure.Options {
     /// 文件上传限制
     /// </summary>
     public class UploadLimits {
+
         /// <summary>
         /// 最大文件大小（MB）
         /// </summary>
@@ -187,6 +192,7 @@ namespace LYBT.Infrastructure.Options {
     /// 存储安全配置
     /// </summary>
     public class StorageSecurityConfig {
+
         /// <summary>
         /// 是否启用病毒扫描
         /// </summary>

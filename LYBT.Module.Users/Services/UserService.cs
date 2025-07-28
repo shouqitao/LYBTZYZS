@@ -2,9 +2,8 @@
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Logging;
+using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Models;
-using LYBT.Module.Users.Models.Dtos;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -357,11 +356,11 @@ namespace LYBT.Module.Users.Services {
                 return;
 
             await _logService.LogUserActionAsync(
-                operatorId, 
-                operatorName, 
+                operatorId,
+                operatorName,
                 (LogActionType)actionType,
                 "Users",
-                "UserManagement", 
+                "UserManagement",
                 content,
                 parameters: newValue != null ? JsonSerializer.Serialize(newValue) : null
             );

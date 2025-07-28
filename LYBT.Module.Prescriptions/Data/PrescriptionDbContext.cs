@@ -1,12 +1,15 @@
+using LYBT.Models.Prescriptions;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.Prescriptions.Models;
 
 namespace LYBT.Module.Prescriptions.Data {
+
     /// <summary>
     /// 处方模块数据库上下文
     /// </summary>
     public class PrescriptionDbContext : DbContext {
-        public PrescriptionDbContext(DbContextOptions<PrescriptionDbContext> options) : base(options) { }
+
+        public PrescriptionDbContext(DbContextOptions<PrescriptionDbContext> options) : base(options) {
+        }
 
         public DbSet<PrescriptionModel> Prescriptions { get; set; }
         public DbSet<PrescriptionItemModel> PrescriptionItems { get; set; }

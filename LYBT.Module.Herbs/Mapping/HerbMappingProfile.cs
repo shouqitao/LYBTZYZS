@@ -1,15 +1,12 @@
 ﻿using AutoMapper;
 using LYBT.Common.Extensions;
-using LYBT.Module.Herbs.Models;
-using LYBT.Module.Herbs.Models.Dtos;
+using LYBT.Models.Herbs;
 
 namespace LYBT.Module.Herbs.Mapping {
-
     /// <summary>
     /// 药材实体与DTO的AutoMapper映射配置
     /// </summary>
     public class HerbMappingProfile : Profile {
-
         public HerbMappingProfile() {
             // 基础映射
             CreateMap<HerbModel, HerbDto>()

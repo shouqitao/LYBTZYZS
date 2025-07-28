@@ -1,12 +1,15 @@
+using LYBT.Models.Billing;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.Billing.Models;
 
 namespace LYBT.Module.Billing.Data {
+
     /// <summary>
     /// 计费模块数据库上下文
     /// </summary>
     public class BillingDbContext : DbContext {
-        public BillingDbContext(DbContextOptions<BillingDbContext> options) : base(options) { }
+
+        public BillingDbContext(DbContextOptions<BillingDbContext> options) : base(options) {
+        }
 
         public DbSet<BillingModel> Billings { get; set; }
 
@@ -23,7 +26,7 @@ namespace LYBT.Module.Billing.Data {
             entity.HasIndex(b => b.BillingTime).HasDatabaseName("IX_Billings_BillingTime");
             entity.HasIndex(b => b.Status).HasDatabaseName("IX_Billings_Status");
             entity.HasIndex(b => b.TotalAmount).HasDatabaseName("IX_Billings_TotalAmount");
-            
+
             // Configure owned entity for Items collection
             entity.OwnsMany(b => b.Items, items => {
                 items.WithOwner().HasForeignKey("BillingId");

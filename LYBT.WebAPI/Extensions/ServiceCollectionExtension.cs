@@ -1,6 +1,9 @@
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
+using LYBT.Module.Billing.Interfaces;
+using LYBT.Module.Billing.Repositories;
+using LYBT.Module.Billing.Services;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
 using LYBT.Module.DiagnosisTreatment.Repositories;
 using LYBT.Module.DiagnosisTreatment.Services;
@@ -16,6 +19,9 @@ using LYBT.Module.Herbs.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
+using LYBT.Module.Pharmacy.Interfaces;
+using LYBT.Module.Pharmacy.Repositories;
+using LYBT.Module.Pharmacy.Services;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
@@ -31,18 +37,12 @@ using LYBT.Module.Registration.Services;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Module.Sync.Repositories;
 using LYBT.Module.Sync.Services;
-using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Repositories;
-using LYBT.Module.Users.Services;
-using LYBT.Module.Billing.Interfaces;
-using LYBT.Module.Billing.Repositories;
-using LYBT.Module.Billing.Services;
-using LYBT.Module.Pharmacy.Interfaces;
-using LYBT.Module.Pharmacy.Repositories;
-using LYBT.Module.Pharmacy.Services;
 using LYBT.Module.TreatmentRoom.Interfaces;
 using LYBT.Module.TreatmentRoom.Repositories;
 using LYBT.Module.TreatmentRoom.Services;
+using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Repositories;
+using LYBT.Module.Users.Services;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -134,7 +134,7 @@ public static class ServiceCollectionExtension {
             .ToArray();
 
         services.AddAutoMapper(assemblies);
-        
+
         return services;
     }
 }

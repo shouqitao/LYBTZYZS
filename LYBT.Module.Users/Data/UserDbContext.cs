@@ -1,13 +1,16 @@
 using LYBT.Common.Enums.Users;
-using LYBT.Module.Users.Models;
+using LYBT.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Users.Data {
+
     /// <summary>
     /// DbContext for Users module containing Users and AdminSecrets tables
     /// </summary>
     public class UserDbContext : DbContext {
-        public UserDbContext(DbContextOptions<UserDbContext> options) : base(options) { }
+
+        public UserDbContext(DbContextOptions<UserDbContext> options) : base(options) {
+        }
 
         public DbSet<UserModel> Users { get; set; }
         public DbSet<AdminSecretModel> AdminSecrets { get; set; }

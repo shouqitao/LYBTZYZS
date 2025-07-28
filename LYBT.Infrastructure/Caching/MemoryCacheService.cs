@@ -131,7 +131,7 @@ namespace LYBT.Infrastructure.Caching {
                     var valueType = value?.GetType() ?? typeof(object);
                     var method = typeof(MemoryCacheService).GetMethod(nameof(SetAsync))!
                         .MakeGenericMethod(valueType);
-                    await (Task<bool>)method.Invoke(this, new object[] { key, value, expiry })!;
+                    await (Task<bool>)method.Invoke(this, new object[] { key, value!, expiry })!;
                     return true;
                 }
                 return false;

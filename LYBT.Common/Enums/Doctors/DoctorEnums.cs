@@ -4,6 +4,7 @@ namespace LYBT.Common.Enums.Doctors {
     /// 医生状态
     /// </summary>
     public enum DoctorStatus {
+
         /// <summary>
         /// 激活
         /// </summary>
@@ -24,6 +25,7 @@ namespace LYBT.Common.Enums.Doctors {
     /// 医生职称
     /// </summary>
     public enum DoctorTitle {
+
         /// <summary>
         /// 主任医师
         /// </summary>
@@ -52,13 +54,19 @@ namespace LYBT.Common.Enums.Doctors {
         /// <summary>
         /// 实习医师
         /// </summary>
-        InternPhysician = 6
+        InternPhysician = 6,
+
+        /// <summary>
+        /// 初级职称
+        /// </summary>
+        Junior = 7
     }
 
     /// <summary>
     /// 医生工作状态
     /// </summary>
     public enum DoctorWorkStatus {
+
         /// <summary>
         /// 在岗
         /// </summary>
@@ -77,6 +85,11 @@ namespace LYBT.Common.Enums.Doctors {
         /// <summary>
         /// 外出
         /// </summary>
-        Away = 3
+        Away = 3,
+
+        /// <summary>
+        /// 门诊
+        /// </summary>
+        Clinic = 4
     }
 }

@@ -1,4 +1,4 @@
-using LYBT.Module.TreatmentRoom.Models;
+using LYBT.Models.TreatmentRoom;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.TreatmentRoom.Data {

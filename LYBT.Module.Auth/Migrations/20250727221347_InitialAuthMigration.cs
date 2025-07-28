@@ -2,21 +2,17 @@
 
 #nullable disable
 
-namespace LYBT.Module.Auth.Migrations
-{
-    /// <inheritdoc />
-    public partial class InitialAuthMigration : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+namespace LYBT.Module.Auth.Migrations {
 
+    /// <inheritdoc />
+    public partial class InitialAuthMigration : Migration {
+
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder) {
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-
+        protected override void Down(MigrationBuilder migrationBuilder) {
         }
     }
 }

@@ -1,4 +1,4 @@
-using LYBT.Module.Sync.Models;
+using LYBT.Models.Sync;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Sync.Data {

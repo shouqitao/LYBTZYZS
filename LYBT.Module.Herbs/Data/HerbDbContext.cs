@@ -1,20 +1,23 @@
+using LYBT.Models.Herbs;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.Herbs.Models;
 
 namespace LYBT.Module.Herbs.Data {
+
     /// <summary>
     /// 中药模块数据库上下文
     /// 只包含中药相关实体
     /// </summary>
     public class HerbDbContext : DbContext {
-        public HerbDbContext(DbContextOptions<HerbDbContext> options) : base(options) { }
+
+        public HerbDbContext(DbContextOptions<HerbDbContext> options) : base(options) {
+        }
 
         // 中药相关
         public DbSet<HerbModel> Herbs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
-            
+
             ConfigureHerbs(modelBuilder);
         }
 

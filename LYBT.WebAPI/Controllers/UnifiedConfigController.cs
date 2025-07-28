@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using LYBT.Common.Models;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Configuration.Dtos;
-using LYBT.Common.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers {
 
@@ -13,7 +13,6 @@ namespace LYBT.WebAPI.Controllers {
     [Route("api/[controller]")]
     [Authorize]
     public class UnifiedConfigController : ControllerBase {
-
         private readonly IUnifiedConfigService _configService;
         private readonly ILogger<UnifiedConfigController> _logger;
 
@@ -98,10 +97,10 @@ namespace LYBT.WebAPI.Controllers {
                 var currentUserId = Guid.NewGuid(); // 临时使用
 
                 var result = await _configService.SetSettingAsync(
-                    request.Key, 
-                    request.Value, 
-                    request.Description, 
-                    request.Group, 
+                    request.Key,
+                    request.Value,
+                    request.Description,
+                    request.Group,
                     currentUserId);
 
                 if (result) {

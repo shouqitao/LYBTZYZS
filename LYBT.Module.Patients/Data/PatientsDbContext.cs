@@ -1,12 +1,15 @@
-using LYBT.Module.Patients.Models;
+using LYBT.Models.Patients;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Patients.Data {
+
     /// <summary>
     /// DbContext for patients module.
     /// </summary>
     public class PatientsDbContext : DbContext {
-        public PatientsDbContext(DbContextOptions<PatientsDbContext> options) : base(options) { }
+
+        public PatientsDbContext(DbContextOptions<PatientsDbContext> options) : base(options) {
+        }
 
         public DbSet<PatientModel> Patients { get; set; }
 

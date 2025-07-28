@@ -1,6 +1,7 @@
-﻿using LYBT.Common.Models;
+﻿using Asp.Versioning;
+using LYBT.Common.Models;
+using LYBT.Models.FormulaTemplates;
 using LYBT.Module.FormulaTemplates.Interfaces;
-using LYBT.Module.FormulaTemplates.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

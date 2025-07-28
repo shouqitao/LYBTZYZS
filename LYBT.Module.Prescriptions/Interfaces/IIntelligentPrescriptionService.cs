@@ -1,10 +1,12 @@
-using LYBT.Module.Prescriptions.Models;
+using LYBT.Models.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Interfaces {
+
     /// <summary>
     /// 智能处方服务接口
     /// </summary>
     public interface IIntelligentPrescriptionService {
+
         /// <summary>
         /// 智能组合多个验方模板生成处方
         /// </summary>

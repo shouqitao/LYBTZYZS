@@ -1,7 +1,6 @@
 using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Models;
-using LYBT.Module.Herbs.Dtos;
-using LYBT.Module.Herbs.Models.Dtos;
+using LYBT.Models.Herbs;
 
 namespace LYBT.Module.Herbs.Interfaces {
 

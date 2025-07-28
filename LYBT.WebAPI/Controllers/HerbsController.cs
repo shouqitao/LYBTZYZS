@@ -1,8 +1,7 @@
 ﻿using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Models;
-using LYBT.Module.Herbs.Dtos;
+using LYBT.Models.Herbs;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;

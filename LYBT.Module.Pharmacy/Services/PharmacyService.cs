@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums;
-using LYBT.Common.Enums.Diagnostics;
-using LYBT.Module.Pharmacy.Dtos;
+using LYBT.Common.Enums.System;
+using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Interfaces;
-using LYBT.Module.Pharmacy.Models;
-using LYBT.Module.Pharmacy.Models.Dtos;
 
 namespace LYBT.Module.Pharmacy.Services {
 
@@ -74,7 +71,7 @@ namespace LYBT.Module.Pharmacy.Services {
         /// 获取待抓药处方列表
         /// </summary>
         public async Task<List<PharmacyDto>> GetWaitingListAsync() {
-            var list = await _pharmacyRepository.GetByStatusAsync(TreatmentTaskStatus.Pending);
+            var list = await _pharmacyRepository.GetByStatusAsync(PharmacyStatus.Pending);
             return _mapper.Map<List<PharmacyDto>>(list);
         }
 
@@ -85,7 +82,7 @@ namespace LYBT.Module.Pharmacy.Services {
             var model = await _pharmacyRepository.GetByIdAsync(id);
             if (model == null)
                 return false;
-            model.Status = TreatmentTaskStatus.Completed;
+            model.Status = PharmacyStatus.Completed;
             return await _pharmacyRepository.UpdateAsync(model);
         }
     }

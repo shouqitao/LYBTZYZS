@@ -1,18 +1,21 @@
+using LYBT.Models.Registration;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.Registration.Models;
 
 namespace LYBT.Module.Registration.Data {
+
     /// <summary>
     /// 挂号模块数据库上下文
     /// </summary>
     public class RegistrationDbContext : DbContext {
-        public RegistrationDbContext(DbContextOptions<RegistrationDbContext> options) : base(options) { }
+
+        public RegistrationDbContext(DbContextOptions<RegistrationDbContext> options) : base(options) {
+        }
 
         public DbSet<RegistrationModel> Registrations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
-            
+
             ConfigureRegistration(modelBuilder);
         }
 

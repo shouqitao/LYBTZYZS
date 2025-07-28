@@ -1,19 +1,21 @@
+using LYBT.Models.Records;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.Records.Models;
-using LYBT.Module.DiagnosisTreatment.Models;
 
 namespace LYBT.Module.Records.Data {
+
     /// <summary>
     /// 病历模块数据库上下文
     /// </summary>
     public class RecordDbContext : DbContext {
-        public RecordDbContext(DbContextOptions<RecordDbContext> options) : base(options) { }
+
+        public RecordDbContext(DbContextOptions<RecordDbContext> options) : base(options) {
+        }
 
         public DbSet<RecordModel> Records { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
-            
+
             ConfigureRecords(modelBuilder);
         }
 
@@ -24,7 +26,7 @@ namespace LYBT.Module.Records.Data {
             entity.HasIndex(r => r.PatientId).HasDatabaseName("IX_Records_PatientId");
             entity.HasIndex(r => r.DoctorId).HasDatabaseName("IX_Records_DoctorId");
             entity.HasIndex(r => r.RecordTime).HasDatabaseName("IX_Records_RecordTime");
-            
+
             // 配置HerbItemModel为拥有实体
             entity.OwnsMany(r => r.HerbalFormula, herb => {
                 herb.WithOwner().HasForeignKey("RecordId");
@@ -36,7 +38,7 @@ namespace LYBT.Module.Records.Data {
                 herb.Property(h => h.Amount).HasColumnType("decimal(10,3)");
                 herb.Property(h => h.UnitPrice).HasColumnType("decimal(18,2)");
             });
-            
+
             // 配置TreatmentItemModel为拥有实体
             entity.OwnsMany(r => r.TreatmentPlans, treatment => {
                 treatment.WithOwner().HasForeignKey("RecordId");

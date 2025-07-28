@@ -1,8 +1,7 @@
+using LYBT.Models.FormulaTemplates;
+using LYBT.Models.Herbs;
 using LYBT.Module.FormulaTemplates.Data;
 using LYBT.Module.FormulaTemplates.Interfaces;
-using LYBT.Module.FormulaTemplates.Models;
-using LYBT.Module.FormulaTemplates.Models.Dtos;
-using LYBT.Module.Herbs.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.FormulaTemplates.Repositories {
@@ -135,11 +134,12 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
         /// <returns>是否成功</returns>
         public async Task<bool> SetSharingStatusAsync(Guid templateId, bool isShared, Guid operatorId) {
             var template = await _context.FormulaTemplates.FindAsync(templateId);
-            if (template == null) return false;
+            if (template == null)
+                return false;
 
             template.IsShared = isShared;
             template.UpdatedAt = DateTime.Now;
-            
+
             if (isShared) {
                 template.SharedAt = DateTime.Now;
                 template.SharedById = operatorId;

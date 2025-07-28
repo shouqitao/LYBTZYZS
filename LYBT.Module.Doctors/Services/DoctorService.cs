@@ -3,9 +3,8 @@ using LYBT.Common.Enums.Users;
 using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using LYBT.Common.Responses;
+using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Interfaces;
-using LYBT.Module.Doctors.Models;
-using LYBT.Module.Doctors.Models.Dtos;
 using LYBT.Module.Users.Interfaces;
 
 namespace LYBT.Module.Doctors.Services {

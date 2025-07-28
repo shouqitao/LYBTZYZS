@@ -1,5 +1,4 @@
-﻿using LYBT.Module.Doctors.Models;
-using LYBT.Module.Doctors.Models.Dtos;
+﻿using LYBT.Models.Doctors;
 
 namespace LYBT.Module.Doctors.Interfaces {
 

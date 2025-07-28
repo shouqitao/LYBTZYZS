@@ -1,4 +1,4 @@
-using LYBT.Module.Users.Models;
+using LYBT.Models.Users;
 
 namespace LYBT.Module.Auth.Interfaces {
 

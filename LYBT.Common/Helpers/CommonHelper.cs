@@ -20,11 +20,12 @@ namespace LYBT.Common.Helpers {
 
         // 身份证校验权重和校验码（避免重复计算）
         private static readonly int[] IdWeights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
+
         private static readonly char[] IdCodes = "10X98765432".ToCharArray();
 
         // 拼音码缓存
         private static readonly ConcurrentDictionary<string, string> _pinyinCache = new();
-        
+
         // 五笔码缓存
         private static readonly ConcurrentDictionary<string, string> _wubiCache = new();
 
@@ -142,7 +143,7 @@ namespace LYBT.Common.Helpers {
                 {'程', "TKGG"}, {'曹', "GMAJ"}, {'袁', "FKEU"}, {'邓', "CBH"}, {'许', "TLFU"},
                 {'傅', "WGEY"}, {'沈', "IPMH"}, {'曾', "ULJ"}, {'彭', "FGEE"}, {'吕', "KBH"},
                 {'苏', "ALGH"}, {'卢', "HVIL"}, {'蒋', "ATGM"}, {'蔡', "AWFI"}, {'贾', "MU"},
-                
+
                 // 常用中药材名称
                 {'黄', "AMWU"}, {'芪', "AQAB"}, {'当', "IVF"}, {'归', "VVG"}, {'川', "KT"},
                 {'芎', "AIG"}, {'白', "RRR"}, {'芍', "AHD"}, {'茯', "AUK"}, {'苓', "AWP"},

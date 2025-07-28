@@ -1,7 +1,5 @@
 using AutoMapper;
-using LYBT.Common.Enums.Users;
-using LYBT.Module.Users.Models;
-using LYBT.Module.Users.Models.Dtos;
+using LYBT.Models.Users;
 
 namespace LYBT.Module.Users.Mapping {
 

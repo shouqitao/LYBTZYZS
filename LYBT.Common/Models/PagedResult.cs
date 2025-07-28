@@ -13,9 +13,9 @@
         /// <summary>
         /// 总记录数（别名，为了兼容性）
         /// </summary>
-        public int TotalCount { 
-            get => Total; 
-            set => Total = value; 
+        public int TotalCount {
+            get => Total;
+            set => Total = value;
         }
 
         /// <summary>

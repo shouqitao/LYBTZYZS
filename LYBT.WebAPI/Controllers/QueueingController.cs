@@ -1,5 +1,6 @@
-﻿using LYBT.Module.Queueing.Interfaces;
-using LYBT.Module.Queueing.Models.Dtos;
+﻿using Asp.Versioning;
+using LYBT.Models.Queueing;
+using LYBT.Module.Queueing.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

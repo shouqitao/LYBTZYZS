@@ -1,6 +1,7 @@
-﻿using LYBT.Common.Enums.Users;
+﻿using Asp.Versioning;
+using LYBT.Common.Enums.Users;
+using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

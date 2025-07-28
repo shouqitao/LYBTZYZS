@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Doctors.Migrations
-{
+namespace LYBT.Module.Doctors.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
-    {
+    public partial class InitialCreate : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "SpecialPatientDoctor");
 
@@ -19,12 +17,10 @@ namespace LYBT.Module.Doctors.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "PatientModel",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Age = table.Column<int>(type: "int", nullable: true),
@@ -48,23 +44,20 @@ namespace LYBT.Module.Doctors.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     WuBiCode = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_PatientModel", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SpecialPatientDoctor",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DoctorModelId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_SpecialPatientDoctor", x => x.Id);
                     table.ForeignKey(
                         name: "FK_SpecialPatientDoctor_Doctors_DoctorModelId",

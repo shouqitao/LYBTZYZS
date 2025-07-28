@@ -1,8 +1,7 @@
 ﻿using LYBT.Common.Enums.Doctors;
+using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Data;
 using LYBT.Module.Doctors.Interfaces;
-using LYBT.Module.Doctors.Models;
-using LYBT.Module.Doctors.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Doctors.Repositories {

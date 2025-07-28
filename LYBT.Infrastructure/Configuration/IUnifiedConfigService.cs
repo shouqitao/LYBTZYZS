@@ -1,5 +1,5 @@
-using LYBT.Infrastructure.Configuration.Dtos;
 using LYBT.Common.Models;
+using LYBT.Infrastructure.Configuration.Dtos;
 
 namespace LYBT.Infrastructure.Configuration {
 
@@ -7,7 +7,6 @@ namespace LYBT.Infrastructure.Configuration {
     /// 统一配置服务接口
     /// </summary>
     public interface IUnifiedConfigService {
-
         // ==================== 全局设置管理 ====================
 
         /// <summary>

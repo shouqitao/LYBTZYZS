@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 
 namespace LYBT.WebAPI.Middleware {
+
     /// <summary>
     /// 全局异常处理中间件
     /// </summary>
@@ -65,6 +66,7 @@ namespace LYBT.WebAPI.Middleware {
     /// 全局异常处理中间件扩展方法
     /// </summary>
     public static class GlobalExceptionMiddlewareExtensions {
+
         public static IApplicationBuilder UseGlobalExceptionHandling(this IApplicationBuilder builder) {
             return builder.UseMiddleware<GlobalExceptionMiddleware>();
         }

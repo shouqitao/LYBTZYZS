@@ -1,11 +1,11 @@
-using LYBT.Infrastructure.Configuration.Dtos;
-using LYBT.Infrastructure.Caching;
-using LYBT.Infrastructure.Data;
 using LYBT.Common.Models;
+using LYBT.Infrastructure.Caching;
+using LYBT.Infrastructure.Configuration.Dtos;
+using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
 
 namespace LYBT.Infrastructure.Configuration {
 
@@ -13,13 +13,13 @@ namespace LYBT.Infrastructure.Configuration {
     /// 统一配置服务实现
     /// </summary>
     public class UnifiedConfigService : IUnifiedConfigService {
-
         private readonly InfrastructureDbContext _context;
         private readonly ICacheService _cacheService;
         private readonly ILogger<UnifiedConfigService> _logger;
 
         // 缓存键前缀
         private const string GLOBAL_SETTINGS_CACHE_KEY = "config:global_settings";
+
         private const string SETTINGS_CACHE_PREFIX = "config:settings:";
         private const string DIAGNOSIS_CACHE_PREFIX = "config:diagnosis:";
         private const string TREATMENT_CACHE_PREFIX = "config:treatment:";
@@ -37,7 +37,8 @@ namespace LYBT.Infrastructure.Configuration {
             try {
                 // 先从缓存获取
                 var cached = await _cacheService.GetAsync<GlobalSettingsDto>(GLOBAL_SETTINGS_CACHE_KEY);
-                if (cached != null) return cached;
+                if (cached != null)
+                    return cached;
 
                 // 从数据库获取
                 var globalSettings = await _context.GlobalSettings.FirstOrDefaultAsync();
@@ -47,7 +48,8 @@ namespace LYBT.Infrastructure.Configuration {
                     globalSettings = await _context.GlobalSettings.FirstOrDefaultAsync();
                 }
 
-                if (globalSettings == null) return null;
+                if (globalSettings == null)
+                    return null;
 
                 var dto = new GlobalSettingsDto {
                     Id = globalSettings.Id,
@@ -117,7 +119,8 @@ namespace LYBT.Infrastructure.Configuration {
         public async Task<bool> InitializeDefaultGlobalSettingsAsync() {
             try {
                 var existingSettings = await _context.GlobalSettings.AnyAsync();
-                if (existingSettings) return true;
+                if (existingSettings)
+                    return true;
 
                 var defaultSettings = new GlobalSettingsModel {
                     Id = Guid.NewGuid(),
@@ -150,7 +153,7 @@ namespace LYBT.Infrastructure.Configuration {
             try {
                 var cacheKey = $"{SETTINGS_CACHE_PREFIX}{key}";
                 var cached = await _cacheService.GetAsync<string>(cacheKey);
-                
+
                 string? value;
                 if (cached != null) {
                     value = cached;
@@ -158,9 +161,10 @@ namespace LYBT.Infrastructure.Configuration {
                     var setting = await _context.Settings
                         .Where(s => s.Key == key && s.IsEnabled)
                         .FirstOrDefaultAsync();
-                    
-                    if (setting == null) return defaultValue;
-                    
+
+                    if (setting == null)
+                        return defaultValue;
+
                     value = setting.Value;
                     // 缓存1小时
                     await _cacheService.SetAsync(cacheKey, value, TimeSpan.FromHours(1));
@@ -244,7 +248,8 @@ namespace LYBT.Infrastructure.Configuration {
                     .Where(s => s.Key == key && !s.IsSystem)
                     .FirstOrDefaultAsync();
 
-                if (setting == null) return false;
+                if (setting == null)
+                    return false;
 
                 _context.Settings.Remove(setting);
                 await _context.SaveChangesAsync();
@@ -279,7 +284,7 @@ namespace LYBT.Infrastructure.Configuration {
                     query = query.Where(s => s.Group == group);
 
                 if (!string.IsNullOrWhiteSpace(keyword))
-                    query = query.Where(s => s.Key.Contains(keyword) || 
+                    query = query.Where(s => s.Key.Contains(keyword) ||
                                            (s.Description != null && s.Description.Contains(keyword)));
 
                 var totalCount = await query.CountAsync();
@@ -313,11 +318,11 @@ namespace LYBT.Infrastructure.Configuration {
                 };
             } catch (Exception ex) {
                 _logger.LogError(ex, "分页查询设置失败");
-                return new PagedResult<SettingsDto> { 
-                    Items = new List<SettingsDto>(), 
-                    TotalCount = 0, 
-                    PageIndex = pageIndex, 
-                    PageSize = pageSize 
+                return new PagedResult<SettingsDto> {
+                    Items = new List<SettingsDto>(),
+                    TotalCount = 0,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize
                 };
             }
         }
@@ -327,26 +332,27 @@ namespace LYBT.Infrastructure.Configuration {
 
         // 私有辅助方法
         private static T? ConvertValue<T>(string? value, T? defaultValue) {
-            if (string.IsNullOrEmpty(value)) return defaultValue;
+            if (string.IsNullOrEmpty(value))
+                return defaultValue;
 
             try {
                 var targetType = typeof(T);
-                
+
                 if (targetType == typeof(string))
                     return (T)(object)value;
-                
+
                 if (targetType == typeof(int) || targetType == typeof(int?))
                     return (T)(object)int.Parse(value);
-                
+
                 if (targetType == typeof(bool) || targetType == typeof(bool?))
                     return (T)(object)bool.Parse(value);
-                
+
                 if (targetType == typeof(decimal) || targetType == typeof(decimal?))
                     return (T)(object)decimal.Parse(value);
-                
+
                 if (targetType == typeof(double) || targetType == typeof(double?))
                     return (T)(object)double.Parse(value);
-                
+
                 if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
                     return (T)(object)DateTime.Parse(value);
 

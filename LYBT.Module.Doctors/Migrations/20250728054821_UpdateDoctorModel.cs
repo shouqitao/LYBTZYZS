@@ -2,14 +2,13 @@
 
 #nullable disable
 
-namespace LYBT.Module.Doctors.Migrations
-{
+namespace LYBT.Module.Doctors.Migrations {
+
     /// <inheritdoc />
-    public partial class UpdateDoctorModel : Migration
-    {
+    public partial class UpdateDoctorModel : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "Roles",
                 table: "UserModel");
@@ -39,8 +38,7 @@ namespace LYBT.Module.Doctors.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "Role",
                 table: "UserModel");

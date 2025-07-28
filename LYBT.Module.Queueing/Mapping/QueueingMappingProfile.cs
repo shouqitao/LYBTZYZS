@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-using LYBT.Module.Queueing.Models;
-using LYBT.Module.Queueing.Models.Dtos;
+using LYBT.Models.Queueing;
 
 namespace LYBT.Module.Queueing.Mapping {
 

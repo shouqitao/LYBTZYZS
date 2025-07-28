@@ -1,20 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Herbs.Migrations
-{
+namespace LYBT.Module.Herbs.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialHerbsMigration : Migration
-    {
+    public partial class InitialHerbsMigration : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "Herbs",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     PinyinCode = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
@@ -33,8 +30,7 @@ namespace LYBT.Module.Herbs.Migrations
                     LastOperatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     LastOperatorName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Herbs", x => x.Id);
                 });
 
@@ -60,8 +56,7 @@ namespace LYBT.Module.Herbs.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "Herbs");
         }

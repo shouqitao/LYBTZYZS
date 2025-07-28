@@ -1,15 +1,15 @@
+using LYBT.Infrastructure.Authentication;
+using LYBT.Infrastructure.Caching;
+using LYBT.Infrastructure.Configuration;
+using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.EntityFrameworkCore;
 using System.Text;
-using LYBT.Infrastructure.Authentication;
-using LYBT.Infrastructure.Options;
-using LYBT.Infrastructure.Caching;
-using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Configuration;
-using LYBT.Infrastructure.Data;
 
 namespace LYBT.Infrastructure.Extensions {
 
@@ -101,7 +101,7 @@ namespace LYBT.Infrastructure.Extensions {
                     } else {
                         builder.AllowAnyOrigin();
                     }
-                    
+
                     builder.AllowAnyMethod()
                            .AllowAnyHeader();
 
@@ -122,7 +122,7 @@ namespace LYBT.Infrastructure.Extensions {
         /// <returns>服务集合</returns>
         public static IServiceCollection AddCachingServices(this IServiceCollection services, IConfiguration configuration) {
             services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
-            
+
             var cacheOptions = configuration.GetSection("CacheOptions").Get<CacheOptions>() ?? new CacheOptions();
 
             switch (cacheOptions.CacheType.ToLower()) {
@@ -183,9 +183,9 @@ namespace LYBT.Infrastructure.Extensions {
         /// <param name="configuration">配置</param>
         /// <returns>服务集合</returns>
         public static IServiceCollection AddInfrastructureDbContext(this IServiceCollection services, IConfiguration configuration) {
-            var connectionString = configuration.GetConnectionString("InfrastructureConnection") 
+            var connectionString = configuration.GetConnectionString("InfrastructureConnection")
                                  ?? configuration.GetConnectionString("DefaultConnection");
-            
+
             if (string.IsNullOrEmpty(connectionString)) {
                 throw new InvalidOperationException("Infrastructure database connection string is not configured");
             }
@@ -234,25 +234,25 @@ namespace LYBT.Infrastructure.Extensions {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration) {
             // 添加数据库上下文
             services.AddInfrastructureDbContext(configuration);
-            
+
             // 添加缓存服务
             services.AddCachingServices(configuration);
-            
+
             // 添加JWT认证
             services.AddJwtAuthentication(configuration);
-            
+
             // 添加认证配置
             services.AddAuthConfiguration(configuration);
-            
+
             // 添加统一日志服务
             services.AddUnifiedLogging();
-            
+
             // 添加统一配置服务
             services.AddUnifiedConfiguration();
-            
+
             // 添加CORS策略
             services.AddCorsPolicies();
-            
+
             // 注意：API版本控制在Program.cs中单独配置
 
             return services;

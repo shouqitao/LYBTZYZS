@@ -1,4 +1,5 @@
-using LYBT.Module.Prescriptions.Models.Dtos;
+using Asp.Versioning;
+using LYBT.Models.Prescriptions;
 using LYBT.Module.Prescriptions.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

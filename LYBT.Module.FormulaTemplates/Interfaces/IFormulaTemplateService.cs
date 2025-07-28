@@ -1,4 +1,4 @@
-using LYBT.Module.FormulaTemplates.Models.Dtos;
+using LYBT.Models.FormulaTemplates;
 
 namespace LYBT.Module.FormulaTemplates.Interfaces {
 

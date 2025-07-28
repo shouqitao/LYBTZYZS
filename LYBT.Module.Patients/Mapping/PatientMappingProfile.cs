@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-using LYBT.Module.Patients.Dtos;
-using LYBT.Module.Patients.Models;
+using LYBT.Models.Patients;
 
 namespace LYBT.Module.Patients.Mapping {
 

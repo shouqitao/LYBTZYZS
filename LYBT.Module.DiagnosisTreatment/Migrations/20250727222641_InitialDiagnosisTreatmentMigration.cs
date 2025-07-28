@@ -1,20 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.DiagnosisTreatment.Migrations
-{
+namespace LYBT.Module.DiagnosisTreatment.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialDiagnosisTreatmentMigration : Migration
-    {
+    public partial class InitialDiagnosisTreatmentMigration : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "DiagnosisTreatments",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ChiefComplaint = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -24,15 +21,13 @@ namespace LYBT.Module.DiagnosisTreatment.Migrations
                     Formula_Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_DiagnosisTreatments", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "DiagnosisTreatmentFormulaHerbs",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     HerbId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -41,8 +36,7 @@ namespace LYBT.Module.DiagnosisTreatment.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DiagnosisTreatmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_DiagnosisTreatmentFormulaHerbs", x => x.Id);
                     table.ForeignKey(
                         name: "FK_DiagnosisTreatmentFormulaHerbs_DiagnosisTreatments_DiagnosisTreatmentId",
@@ -54,8 +48,7 @@ namespace LYBT.Module.DiagnosisTreatment.Migrations
 
             migrationBuilder.CreateTable(
                 name: "DiagnosisTreatmentItems",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
@@ -63,8 +56,7 @@ namespace LYBT.Module.DiagnosisTreatment.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DiagnosisTreatmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_DiagnosisTreatmentItems", x => x.Id);
                     table.ForeignKey(
                         name: "FK_DiagnosisTreatmentItems_DiagnosisTreatments_DiagnosisTreatmentId",
@@ -86,8 +78,7 @@ namespace LYBT.Module.DiagnosisTreatment.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "DiagnosisTreatmentFormulaHerbs");
 

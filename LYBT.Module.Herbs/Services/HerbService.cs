@@ -2,11 +2,9 @@
 using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Extensions;
 using LYBT.Common.Models;
+using LYBT.Models.Herbs;
 using LYBT.Module.Herbs.Data;
-using LYBT.Module.Herbs.Dtos;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Models;
-using LYBT.Module.Herbs.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Herbs.Services {
@@ -32,7 +30,8 @@ namespace LYBT.Module.Herbs.Services {
         /// 简单的拼音码生成方法
         /// </summary>
         private static string GetSimplePinyinCode(string name) {
-            if (string.IsNullOrWhiteSpace(name)) return string.Empty;
+            if (string.IsNullOrWhiteSpace(name))
+                return string.Empty;
             // 简化实现：只取第一个字符的大写
             return name.Substring(0, Math.Min(name.Length, 1)).ToUpperInvariant();
         }

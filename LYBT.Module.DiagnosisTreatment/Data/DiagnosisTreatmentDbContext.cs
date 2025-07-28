@@ -1,18 +1,21 @@
+using LYBT.Models.DiagnosisTreatment;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.DiagnosisTreatment.Models;
 
 namespace LYBT.Module.DiagnosisTreatment.Data {
+
     /// <summary>
     /// 诊疗模块数据库上下文
     /// </summary>
     public class DiagnosisTreatmentDbContext : DbContext {
-        public DiagnosisTreatmentDbContext(DbContextOptions<DiagnosisTreatmentDbContext> options) : base(options) { }
+
+        public DiagnosisTreatmentDbContext(DbContextOptions<DiagnosisTreatmentDbContext> options) : base(options) {
+        }
 
         public DbSet<DiagnosisTreatmentModel> DiagnosisTreatments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
-            
+
             ConfigureDiagnosisTreatment(modelBuilder);
         }
 
@@ -21,7 +24,7 @@ namespace LYBT.Module.DiagnosisTreatment.Data {
             var entity = modelBuilder.Entity<DiagnosisTreatmentModel>();
             entity.ToTable("DiagnosisTreatments");
             entity.HasKey(d => d.Id);
-            
+
             // Configure owned entity for Treatments collection
             entity.OwnsMany(d => d.Treatments, treatments => {
                 treatments.WithOwner().HasForeignKey("DiagnosisTreatmentId");
@@ -32,11 +35,11 @@ namespace LYBT.Module.DiagnosisTreatment.Data {
                 treatments.Property(t => t.Count);
                 treatments.Property(t => t.Price).HasColumnType("decimal(18,2)");
             });
-            
+
             // Configure owned entity for Formula
             entity.OwnsOne(d => d.Formula, formula => {
                 formula.Property(f => f.Name).HasMaxLength(200);
-                
+
                 // Configure owned entity for Herbs collection within Formula
                 formula.OwnsMany(f => f.Herbs, herbs => {
                     herbs.WithOwner().HasForeignKey("DiagnosisTreatmentId");

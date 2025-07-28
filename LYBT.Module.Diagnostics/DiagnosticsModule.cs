@@ -1,12 +1,14 @@
+using LYBT.Module.Diagnostics.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using LYBT.Module.Diagnostics.Data;
 
 namespace LYBT.Module.Diagnostics {
+
     /// <summary>
     /// 诊断治疗模块服务注册
     /// </summary>
     public static class DiagnosticsModule {
+
         /// <summary>
         /// 添加诊断治疗模块服务
         /// </summary>

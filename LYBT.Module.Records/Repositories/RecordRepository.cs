@@ -1,6 +1,6 @@
-﻿using LYBT.Module.Records.Data;
+﻿using LYBT.Models.Records;
+using LYBT.Module.Records.Data;
 using LYBT.Module.Records.Interfaces;
-using LYBT.Module.Records.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Records.Repositories {

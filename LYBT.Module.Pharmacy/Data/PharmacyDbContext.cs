@@ -1,12 +1,15 @@
+using LYBT.Models.Pharmacy;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.Pharmacy.Models;
 
 namespace LYBT.Module.Pharmacy.Data {
+
     /// <summary>
     /// 药房模块数据库上下文
     /// </summary>
     public class PharmacyDbContext : DbContext {
-        public PharmacyDbContext(DbContextOptions<PharmacyDbContext> options) : base(options) { }
+
+        public PharmacyDbContext(DbContextOptions<PharmacyDbContext> options) : base(options) {
+        }
 
         public DbSet<PharmacyModel> Pharmacies { get; set; }
 

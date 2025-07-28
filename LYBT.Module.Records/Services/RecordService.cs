@@ -2,10 +2,8 @@
 using LYBT.Common.Enums.Logs;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Module.Records.Dtos;
+using LYBT.Models.Records;
 using LYBT.Module.Records.Interfaces;
-using LYBT.Module.Records.Models;
-using LYBT.Module.Records.Models.Dtos;
 using System.Text.Json;
 
 namespace LYBT.Module.Records.Services {
@@ -62,7 +60,7 @@ namespace LYBT.Module.Records.Services {
                     ActionType = ActionType.Create,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                        Content = "新增病历",
+                    Content = "新增病历",
                     NewValue = JsonSerializer.Serialize(model)
                 });
             }
@@ -102,7 +100,7 @@ namespace LYBT.Module.Records.Services {
                     ActionType = ActionType.Edit,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                        Content = "编辑病历",
+                    Content = "编辑病历",
                     OldValue = oldJson,
                     NewValue = JsonSerializer.Serialize(recordEditDto)
                 });
@@ -126,7 +124,7 @@ namespace LYBT.Module.Records.Services {
                     ActionType = ActionType.Other,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                        Content = "删除病历",
+                    Content = "删除病历",
                     OldValue = JsonSerializer.Serialize(record)
                 });
             }

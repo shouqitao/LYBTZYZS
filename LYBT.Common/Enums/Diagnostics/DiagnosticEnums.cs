@@ -4,6 +4,7 @@ namespace LYBT.Common.Enums.Diagnostics {
     /// 配方类型
     /// </summary>
     public enum FormulaType {
+
         /// <summary>
         /// 汤剂
         /// </summary>
@@ -31,39 +32,10 @@ namespace LYBT.Common.Enums.Diagnostics {
     }
 
     /// <summary>
-    /// 处方状态
-    /// </summary>
-    public enum PrescriptionStatus {
-        /// <summary>
-        /// 草稿
-        /// </summary>
-        Draft = 0,
-
-        /// <summary>
-        /// 已开具
-        /// </summary>
-        Issued = 1,
-
-        /// <summary>
-        /// 已配药
-        /// </summary>
-        Dispensed = 2,
-
-        /// <summary>
-        /// 已完成
-        /// </summary>
-        Completed = 3,
-
-        /// <summary>
-        /// 已取消
-        /// </summary>
-        Cancelled = -1
-    }
-
-    /// <summary>
     /// 病历状态
     /// </summary>
     public enum RecordStatus {
+
         /// <summary>
         /// 草稿
         /// </summary>
@@ -91,39 +63,10 @@ namespace LYBT.Common.Enums.Diagnostics {
     }
 
     /// <summary>
-    /// 挂号状态
-    /// </summary>
-    public enum RegistrationStatus {
-        /// <summary>
-        /// 已挂号
-        /// </summary>
-        Registered = 1,
-
-        /// <summary>
-        /// 已就诊
-        /// </summary>
-        Visited = 2,
-
-        /// <summary>
-        /// 已完成
-        /// </summary>
-        Completed = 3,
-
-        /// <summary>
-        /// 已取消
-        /// </summary>
-        Cancelled = -1,
-
-        /// <summary>
-        /// 过期
-        /// </summary>
-        Expired = -2
-    }
-
-    /// <summary>
     /// 挂号类型
     /// </summary>
     public enum RegistrationType {
+
         /// <summary>
         /// 普通号
         /// </summary>
@@ -146,39 +89,10 @@ namespace LYBT.Common.Enums.Diagnostics {
     }
 
     /// <summary>
-    /// 排队状态
-    /// </summary>
-    public enum QueueStatus {
-        /// <summary>
-        /// 排队中
-        /// </summary>
-        Waiting = 1,
-
-        /// <summary>
-        /// 就诊中
-        /// </summary>
-        InProgress = 2,
-
-        /// <summary>
-        /// 已完成
-        /// </summary>
-        Completed = 3,
-
-        /// <summary>
-        /// 已跳过
-        /// </summary>
-        Skipped = 4,
-
-        /// <summary>
-        /// 已取消
-        /// </summary>
-        Cancelled = -1
-    }
-
-    /// <summary>
     /// 治疗室状态
     /// </summary>
     public enum TreatmentRoomStatus {
+
         /// <summary>
         /// 可用
         /// </summary>
@@ -204,6 +118,7 @@ namespace LYBT.Common.Enums.Diagnostics {
     /// 治疗任务状态
     /// </summary>
     public enum TreatmentTaskStatus {
+
         /// <summary>
         /// 待处理
         /// </summary>

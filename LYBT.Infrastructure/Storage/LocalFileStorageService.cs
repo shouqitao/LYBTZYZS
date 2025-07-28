@@ -1,6 +1,6 @@
+using LYBT.Infrastructure.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using LYBT.Infrastructure.Options;
 using System.Security.Cryptography;
 
 namespace LYBT.Infrastructure.Storage {
@@ -244,7 +244,7 @@ namespace LYBT.Infrastructure.Storage {
             var uniqueId = Guid.NewGuid().ToString("N")[..8];
             var extension = Path.GetExtension(fileName);
             var nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
-            
+
             return Path.Combine(timestamp, $"{nameWithoutExt}_{uniqueId}{extension}");
         }
 
@@ -275,6 +275,6 @@ namespace LYBT.Infrastructure.Storage {
             return Convert.ToHexString(hash);
         }
 
-        #endregion
+        #endregion 私有方法
     }
 }

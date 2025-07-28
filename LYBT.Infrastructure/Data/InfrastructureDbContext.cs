@@ -1,5 +1,6 @@
-using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Configuration;
+using LYBT.Infrastructure.Logging;
+using LYBT.Models.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Infrastructure.Data {
@@ -69,7 +70,7 @@ namespace LYBT.Infrastructure.Data {
         /// <summary>
         /// 治疗室
         /// </summary>
-        public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; }
+        public DbSet<TreatmentRoomInfoModel> TreatmentRooms { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -233,7 +234,7 @@ namespace LYBT.Infrastructure.Data {
                 entity.HasIndex(e => e.ParentId);
                 entity.HasIndex(e => e.IsEnabled);
                 entity.HasIndex(e => e.IsCommon);
-                
+
                 // 自引用关系
                 entity.HasOne<DiagnosisCatalogModel>()
                       .WithMany()
@@ -258,7 +259,7 @@ namespace LYBT.Infrastructure.Data {
                 entity.HasIndex(e => e.ParentId);
                 entity.HasIndex(e => e.IsEnabled);
                 entity.HasIndex(e => e.IsCommon);
-                
+
                 // 自引用关系
                 entity.HasOne<TreatmentCatalogModel>()
                       .WithMany()
@@ -267,7 +268,7 @@ namespace LYBT.Infrastructure.Data {
             });
 
             // 治疗室配置
-            modelBuilder.Entity<TreatmentRoomModel>(entity => {
+            modelBuilder.Entity<TreatmentRoomInfoModel>(entity => {
                 entity.ToTable("TreatmentRooms");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.RoomNumber).HasMaxLength(20).IsRequired();

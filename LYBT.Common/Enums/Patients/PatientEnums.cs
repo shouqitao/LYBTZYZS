@@ -4,6 +4,7 @@ namespace LYBT.Common.Enums.Patients {
     /// 患者状态
     /// </summary>
     public enum PatientStatus {
+
         /// <summary>
         /// 正常
         /// </summary>
@@ -22,6 +23,11 @@ namespace LYBT.Common.Enums.Patients {
         /// <summary>
         /// 黑名单
         /// </summary>
-        Blacklisted = -2
+        Blacklisted = -2,
+
+        /// <summary>
+        /// 活跃（别名）
+        /// </summary>
+        Active = 1
     }
 }

@@ -10,9 +10,9 @@ namespace LYBT.Infrastructure.Data {
 
         public InfrastructureDbContext CreateDbContext(string[] args) {
             var optionsBuilder = new DbContextOptionsBuilder<InfrastructureDbContext>();
-            
-            // 使用默认连接字符串进行设计时迁移
-            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=LYBTInfrastructure;Trusted_Connection=true;");
+
+            // 使用与运行时相同的连接字符串
+            optionsBuilder.UseSqlServer("Server=localhost;Database=LYBTDB;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;");
 
             return new InfrastructureDbContext(optionsBuilder.Options);
         }

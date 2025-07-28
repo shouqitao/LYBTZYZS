@@ -4,6 +4,7 @@ namespace LYBT.Common.Enums.System {
     /// 计费状态
     /// </summary>
     public enum BillingStatus {
+
         /// <summary>
         /// 待付款
         /// </summary>
@@ -31,29 +32,36 @@ namespace LYBT.Common.Enums.System {
     }
 
     /// <summary>
-    /// 药房状态
+    /// 药房处方状态
     /// </summary>
     public enum PharmacyStatus {
-        /// <summary>
-        /// 营业中
-        /// </summary>
-        Open = 1,
 
         /// <summary>
-        /// 已关闭
+        /// 待抓药
         /// </summary>
-        Closed = 0,
+        Pending = 0,
 
         /// <summary>
-        /// 维护中
+        /// 抓药中
         /// </summary>
-        Maintenance = 2
+        InProgress = 1,
+
+        /// <summary>
+        /// 已完成
+        /// </summary>
+        Completed = 2,
+
+        /// <summary>
+        /// 已取消
+        /// </summary>
+        Cancelled = -1
     }
 
     /// <summary>
     /// 性别
     /// </summary>
     public enum Gender {
+
         /// <summary>
         /// 未知
         /// </summary>
@@ -74,6 +82,7 @@ namespace LYBT.Common.Enums.System {
     /// 用户资料模式
     /// </summary>
     public enum ProfileMode {
+
         /// <summary>
         /// 公开
         /// </summary>
@@ -94,6 +103,7 @@ namespace LYBT.Common.Enums.System {
     /// 同步模式
     /// </summary>
     public enum SyncMode {
+
         /// <summary>
         /// 手动
         /// </summary>
@@ -114,6 +124,7 @@ namespace LYBT.Common.Enums.System {
     /// 同步状态
     /// </summary>
     public enum SyncStatus {
+
         /// <summary>
         /// 待同步
         /// </summary>

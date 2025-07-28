@@ -1,9 +1,9 @@
+using LYBT.Infrastructure.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using LYBT.Infrastructure.Options;
 
 namespace LYBT.Infrastructure.Authentication {
 
@@ -93,7 +93,7 @@ namespace LYBT.Infrastructure.Authentication {
         public TokenUserInfo? ExtractUserInfo(string token) {
             try {
                 var jsonToken = _tokenHandler.ReadJwtToken(token);
-                
+
                 var userId = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
                 var userName = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
                 var roles = jsonToken.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value);

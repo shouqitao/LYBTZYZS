@@ -1,6 +1,5 @@
-﻿using LYBT.Common.Enums;
-using LYBT.Common.Enums.System;
-using LYBT.Module.Billing.Models;
+﻿using LYBT.Common.Enums.System;
+using LYBT.Models.Billing;
 
 namespace LYBT.Module.Billing.Interfaces {
 

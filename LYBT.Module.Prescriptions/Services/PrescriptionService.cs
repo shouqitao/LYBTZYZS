@@ -2,8 +2,7 @@ using AutoMapper;
 using LYBT.Common.Enums.Logs;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Module.Prescriptions.Models;
-using LYBT.Module.Prescriptions.Models.Dtos;
+using LYBT.Models.Prescriptions;
 using LYBT.Module.Prescriptions.Repositories;
 using System.Text.Json;
 

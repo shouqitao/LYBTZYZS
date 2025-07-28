@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Sync.Models.Dtos;
+﻿using LYBT.Models.Sync;
 
 namespace LYBT.Module.Sync.Interfaces {
 

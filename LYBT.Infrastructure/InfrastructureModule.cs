@@ -1,6 +1,6 @@
+using LYBT.Infrastructure.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using LYBT.Infrastructure.Extensions;
 
 namespace LYBT.Infrastructure {
 

@@ -1,20 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.TreatmentRoom.Migrations
-{
+namespace LYBT.Module.TreatmentRoom.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialTreatmentRoomMigration : Migration
-    {
+    public partial class InitialTreatmentRoomMigration : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "TreatmentRooms",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExecutionId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     PlanId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
@@ -32,8 +29,7 @@ namespace LYBT.Module.TreatmentRoom.Migrations
                     Remark = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Count = table.Column<int>(type: "int", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_TreatmentRooms", x => x.Id);
                 });
 
@@ -59,8 +55,7 @@ namespace LYBT.Module.TreatmentRoom.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "TreatmentRooms");
         }

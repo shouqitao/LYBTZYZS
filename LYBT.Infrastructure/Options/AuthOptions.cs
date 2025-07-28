@@ -45,6 +45,7 @@ namespace LYBT.Infrastructure.Options {
     /// 密码策略配置
     /// </summary>
     public class PasswordPolicy {
+
         /// <summary>
         /// 最小长度
         /// </summary>
@@ -85,6 +86,7 @@ namespace LYBT.Infrastructure.Options {
     /// 会话选项配置
     /// </summary>
     public class SessionOptions {
+
         /// <summary>
         /// 会话超时时间（分钟）
         /// </summary>

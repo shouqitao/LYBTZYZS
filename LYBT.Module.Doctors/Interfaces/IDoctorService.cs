@@ -1,7 +1,7 @@
 ﻿using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
 using LYBT.Common.Responses;
-using LYBT.Module.Doctors.Models.Dtos;
+using LYBT.Models.Doctors;
 
 namespace LYBT.Module.Doctors.Interfaces {
 

@@ -1,5 +1,6 @@
-﻿using LYBT.Module.TreatmentRoom.Interfaces;
-using LYBT.Module.TreatmentRoom.Models.Dtos;
+﻿using Asp.Versioning;
+using LYBT.Models.TreatmentRoom;
+using LYBT.Module.TreatmentRoom.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

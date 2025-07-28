@@ -1,8 +1,7 @@
-﻿using LYBT.Common.Enums.System;
-using LYBT.Common.Enums.Users;
+﻿using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
-using LYBT.Module.Patients.Dtos;
-using LYBT.Module.Records.Models.Dtos;
+using LYBT.Models.Patients;
+using LYBT.Models.Records;
 
 namespace LYBT.Module.Patients.Interfaces {
 
@@ -102,30 +101,6 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 获取启用的患者列表
         /// </summary>
         Task<List<PatientDetailDto>> GetActivePatientsAsync();
-    }
-
-    /// <summary>
-    /// 快速患者创建 DTO
-    /// </summary>
-    public class QuickPatientCreateDto {
-
-        /// <summary>姓名</summary>
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>性别</summary>
-        public Gender Gender { get; set; }
-
-        /// <summary>手机号（可选）</summary>
-        public string? PhoneNumber { get; set; }
-
-        /// <summary>身份证号（可选）</summary>
-        public string? IDNumber { get; set; }
-
-        /// <summary>地址（可选）</summary>
-        public string? Address { get; set; }
-
-        /// <summary>年龄（如果没有身份证号）</summary>
-        public int? Age { get; set; }
     }
 
     /// <summary>

@@ -1,20 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Records.Migrations
-{
+namespace LYBT.Module.Records.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialRecordsMigration : Migration
-    {
+    public partial class InitialRecordsMigration : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "Records",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RecordId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -35,15 +32,13 @@ namespace LYBT.Module.Records.Migrations
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Records", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "RecordHerbalFormula",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     HerbId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -52,8 +47,7 @@ namespace LYBT.Module.Records.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     RecordId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_RecordHerbalFormula", x => x.Id);
                     table.ForeignKey(
                         name: "FK_RecordHerbalFormula_Records_RecordId",
@@ -65,8 +59,7 @@ namespace LYBT.Module.Records.Migrations
 
             migrationBuilder.CreateTable(
                 name: "RecordTreatmentPlans",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
@@ -74,8 +67,7 @@ namespace LYBT.Module.Records.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     RecordId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_RecordTreatmentPlans", x => x.Id);
                     table.ForeignKey(
                         name: "FK_RecordTreatmentPlans_Records_RecordId",
@@ -112,8 +104,7 @@ namespace LYBT.Module.Records.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "RecordHerbalFormula");
 

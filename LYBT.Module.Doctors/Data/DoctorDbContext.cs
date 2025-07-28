@@ -1,12 +1,15 @@
+using LYBT.Models.Doctors;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.Doctors.Models;
 
 namespace LYBT.Module.Doctors.Data {
+
     /// <summary>
     /// 医生模块数据库上下文
     /// </summary>
     public class DoctorDbContext : DbContext {
-        public DoctorDbContext(DbContextOptions<DoctorDbContext> options) : base(options) { }
+
+        public DoctorDbContext(DbContextOptions<DoctorDbContext> options) : base(options) {
+        }
 
         public DbSet<DoctorModel> Doctors { get; set; }
 

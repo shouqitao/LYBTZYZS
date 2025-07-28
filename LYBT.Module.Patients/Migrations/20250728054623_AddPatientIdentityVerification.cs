@@ -2,14 +2,13 @@
 
 #nullable disable
 
-namespace LYBT.Module.Patients.Migrations
-{
+namespace LYBT.Module.Patients.Migrations {
+
     /// <inheritdoc />
-    public partial class AddPatientIdentityVerification : Migration
-    {
+    public partial class AddPatientIdentityVerification : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AddColumn<string>(
                 name: "WuBiCode",
                 table: "Patients",
@@ -20,8 +19,7 @@ namespace LYBT.Module.Patients.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "WuBiCode",
                 table: "Patients");

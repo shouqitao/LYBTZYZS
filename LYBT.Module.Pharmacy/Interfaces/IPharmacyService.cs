@@ -1,5 +1,4 @@
-﻿using LYBT.Module.Pharmacy.Dtos;
-using LYBT.Module.Pharmacy.Models.Dtos;
+﻿using LYBT.Models.Pharmacy;
 
 namespace LYBT.Module.Pharmacy.Interfaces {
 

@@ -1,7 +1,7 @@
-﻿using LYBT.Common.Enums.Diagnostics;
+﻿using LYBT.Common.Enums.Queueing;
+using LYBT.Models.Queueing;
 using LYBT.Module.Queueing.Data;
 using LYBT.Module.Queueing.Interfaces;
-using LYBT.Module.Queueing.Models;
 
 namespace LYBT.Module.Queueing.Repositories {
 

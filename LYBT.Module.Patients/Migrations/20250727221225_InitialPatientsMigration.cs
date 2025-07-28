@@ -1,20 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Patients.Migrations
-{
+namespace LYBT.Module.Patients.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialPatientsMigration : Migration
-    {
+    public partial class InitialPatientsMigration : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "Patients",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
@@ -37,22 +34,19 @@ namespace LYBT.Module.Patients.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PinyinCode = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Patients", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SpecialPatientDoctors",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_SpecialPatientDoctors", x => x.Id);
                     table.ForeignKey(
                         name: "FK_SpecialPatientDoctors_Patients_PatientId",
@@ -106,8 +100,7 @@ namespace LYBT.Module.Patients.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "SpecialPatientDoctors");
 

@@ -1,8 +1,8 @@
-﻿using LYBT.Common.Enums;
+﻿using Asp.Versioning;
 using LYBT.Common.Enums.System;
-using LYBT.Module.Sync.Interfaces;
-using LYBT.Module.Sync.Models.Dtos;
 using LYBT.Infrastructure.Configuration;
+using LYBT.Models.Sync;
+using LYBT.Module.Sync.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

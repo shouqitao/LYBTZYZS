@@ -1,5 +1,6 @@
-﻿using LYBT.Module.Registration.Interfaces;
-using LYBT.Module.Registration.Models.Dtos;
+﻿using Asp.Versioning;
+using LYBT.Models.Registration;
+using LYBT.Module.Registration.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

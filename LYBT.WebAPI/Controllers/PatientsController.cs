@@ -1,10 +1,10 @@
-﻿using LYBT.Common.Enums.Users;
+﻿using Asp.Versioning;
+using LYBT.Common.Enums.Users;
 using LYBT.Common.Models;
 using LYBT.Common.Responses;
-using LYBT.Module.Patients.Dtos;
+using LYBT.Models.Patients;
+using LYBT.Models.Records;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Patients.Models.Dtos;
-using LYBT.Module.Records.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;

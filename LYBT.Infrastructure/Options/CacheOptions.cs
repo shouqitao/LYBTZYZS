@@ -50,6 +50,7 @@ namespace LYBT.Infrastructure.Options {
     /// 内存缓存配置
     /// </summary>
     public class MemoryCacheConfig {
+
         /// <summary>
         /// 最大内存大小（MB）
         /// </summary>
@@ -70,6 +71,7 @@ namespace LYBT.Infrastructure.Options {
     /// 分布式缓存配置
     /// </summary>
     public class DistributedCacheConfig {
+
         /// <summary>
         /// 实例名称
         /// </summary>
@@ -100,6 +102,7 @@ namespace LYBT.Infrastructure.Options {
     /// 压缩配置
     /// </summary>
     public class CompressionConfig {
+
         /// <summary>
         /// 是否启用压缩
         /// </summary>
@@ -120,6 +123,7 @@ namespace LYBT.Infrastructure.Options {
     /// 缓存统计配置
     /// </summary>
     public class CacheStatsConfig {
+
         /// <summary>
         /// 是否启用统计
         /// </summary>

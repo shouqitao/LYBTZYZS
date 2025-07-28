@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums.Diagnostics;
+using LYBT.Common.Enums.Queueing;
+using LYBT.Models.Queueing;
 using LYBT.Module.Queueing.Interfaces;
-using LYBT.Module.Queueing.Models;
-using LYBT.Module.Queueing.Models.Dtos;
 
 namespace LYBT.Module.Queueing.Services {
 

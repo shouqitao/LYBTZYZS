@@ -1,18 +1,21 @@
+using LYBT.Models.Queueing;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Module.Queueing.Models;
 
 namespace LYBT.Module.Queueing.Data {
+
     /// <summary>
     /// 排队模块数据库上下文
     /// </summary>
     public class QueueingDbContext : DbContext {
-        public QueueingDbContext(DbContextOptions<QueueingDbContext> options) : base(options) { }
+
+        public QueueingDbContext(DbContextOptions<QueueingDbContext> options) : base(options) {
+        }
 
         public DbSet<QueueingModel> Queueings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
-            
+
             ConfigureQueueing(modelBuilder);
         }
 

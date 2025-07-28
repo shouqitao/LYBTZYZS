@@ -1,6 +1,5 @@
 using AutoMapper;
-using LYBT.Module.Prescriptions.Models;
-using LYBT.Module.Prescriptions.Models.Dtos;
+using LYBT.Models.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Mapping {
 

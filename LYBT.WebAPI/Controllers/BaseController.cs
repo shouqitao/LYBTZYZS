@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace LYBT.WebAPI.Controllers {
+
     /// <summary>
     /// 基础控制器，提供通用功能
     /// </summary>

@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Herbs.Models;
+﻿using LYBT.Models.Herbs;
 
 namespace LYBT.Module.Herbs.Interfaces {
 

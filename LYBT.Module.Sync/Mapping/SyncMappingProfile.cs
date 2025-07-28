@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-using LYBT.Module.Sync.Models;
-using LYBT.Module.Sync.Models.Dtos;
+using LYBT.Models.Sync;
 
 namespace LYBT.Module.Sync.Mapping {
 

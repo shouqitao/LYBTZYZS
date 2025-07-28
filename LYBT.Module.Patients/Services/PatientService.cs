@@ -5,11 +5,10 @@ using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Module.Patients.Dtos;
+using LYBT.Models.Patients;
+using LYBT.Models.Records;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Patients.Models;
 using LYBT.Module.Records.Interfaces;
-using LYBT.Module.Records.Models.Dtos;
 using System.Text.Json;
 
 namespace LYBT.Module.Patients.Services {
@@ -68,7 +67,7 @@ namespace LYBT.Module.Patients.Services {
             var result = await _patientRepository.AddAsync(model);
 
             if (result) {
-                await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create, 
+                await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
                     $"新增患者：{model.Name}", JsonSerializer.Serialize(model));
             }
 
@@ -300,7 +299,7 @@ namespace LYBT.Module.Patients.Services {
             await _patientRepository.AddAsync(model);
 
             // 记录日志
-            await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create, 
+            await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
                 $"快速创建患者：{model.Name}", JsonSerializer.Serialize(model));
 
             return _mapper.Map<PatientDetailDto>(model);
@@ -421,7 +420,7 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 统一的患者操作日志记录
         /// </summary>
-        private async Task LogPatientOperationAsync(Guid operatorId, string operatorName, 
+        private async Task LogPatientOperationAsync(Guid operatorId, string operatorName,
             LogActionType actionType, string content, string? parameters = null) {
             await _logService.LogUserActionAsync(
                 operatorId,
@@ -439,6 +438,7 @@ namespace LYBT.Module.Patients.Services {
     /// 患者重复检查结果
     /// </summary>
     public class PatientDuplicateCheckResult {
+
         /// <summary>
         /// 是否有重复
         /// </summary>
@@ -475,6 +475,7 @@ namespace LYBT.Module.Patients.Services {
     /// </summary>
     [Flags]
     public enum PatientMatchType {
+
         /// <summary>
         /// 无匹配
         /// </summary>

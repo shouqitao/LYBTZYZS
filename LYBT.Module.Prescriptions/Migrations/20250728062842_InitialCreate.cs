@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Prescriptions.Migrations
-{
+namespace LYBT.Module.Prescriptions.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
-    {
+    public partial class InitialCreate : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AddColumn<int>(
                 name: "DosageCount",
                 table: "Prescriptions",
@@ -76,8 +74,7 @@ namespace LYBT.Module.Prescriptions.Migrations
 
             migrationBuilder.CreateTable(
                 name: "PrescriptionModificationHistory",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PrescriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ModificationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -89,8 +86,7 @@ namespace LYBT.Module.Prescriptions.Migrations
                     AfterSnapshot = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
                     PrescriptionModelId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_PrescriptionModificationHistory", x => x.Id);
                     table.ForeignKey(
                         name: "FK_PrescriptionModificationHistory_Prescriptions_PrescriptionModelId",
@@ -106,8 +102,7 @@ namespace LYBT.Module.Prescriptions.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "PrescriptionModificationHistory");
 

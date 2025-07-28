@@ -1,7 +1,6 @@
-﻿using LYBT.Module.Users.Data;
+﻿using LYBT.Models.Users;
+using LYBT.Module.Users.Data;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Models;
-using LYBT.Module.Users.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Users.Repositories {

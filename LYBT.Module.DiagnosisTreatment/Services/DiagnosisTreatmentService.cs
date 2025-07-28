@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
+using LYBT.Models.DiagnosisTreatment;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
-using LYBT.Module.DiagnosisTreatment.Models;
-using LYBT.Module.DiagnosisTreatment.Models.Dtos;
 
 namespace LYBT.Module.DiagnosisTreatment.Services {
 

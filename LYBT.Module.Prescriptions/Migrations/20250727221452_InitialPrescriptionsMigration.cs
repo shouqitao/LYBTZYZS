@@ -1,20 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Prescriptions.Migrations
-{
+namespace LYBT.Module.Prescriptions.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialPrescriptionsMigration : Migration
-    {
+    public partial class InitialPrescriptionsMigration : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "Prescriptions",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -23,15 +20,13 @@ namespace LYBT.Module.Prescriptions.Migrations
                     Remark = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Prescriptions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "PrescriptionItems",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PrescriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     HerbId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -41,8 +36,7 @@ namespace LYBT.Module.Prescriptions.Migrations
                     Usage = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                     PrescriptionModelId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_PrescriptionItems", x => x.Id);
                     table.ForeignKey(
                         name: "FK_PrescriptionItems_Prescriptions_PrescriptionId",
@@ -94,8 +88,7 @@ namespace LYBT.Module.Prescriptions.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "PrescriptionItems");
 

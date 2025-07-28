@@ -1,7 +1,7 @@
-using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Infrastructure.Data;
-using LYBT.Common.Models;
 using LYBT.Common.Enums.Logs;
+using LYBT.Common.Models;
+using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Logging.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text;
@@ -13,7 +13,6 @@ namespace LYBT.Infrastructure.Logging {
     /// 统一日志服务实现
     /// </summary>
     public class UnifiedLogService : IUnifiedLogService {
-
         private readonly InfrastructureDbContext _context;
         private readonly ILogger<UnifiedLogService> _logger;
 
@@ -114,7 +113,7 @@ namespace LYBT.Infrastructure.Logging {
                 // 排序
                 if (!string.IsNullOrWhiteSpace(queryDto.OrderBy)) {
                     var isDescending = queryDto.OrderDirection?.ToLower() == "desc";
-                    
+
                     query = queryDto.OrderBy.ToLower() switch {
                         "logtime" => isDescending ? query.OrderByDescending(l => l.LogTime) : query.OrderBy(l => l.LogTime),
                         "logtype" => isDescending ? query.OrderByDescending(l => l.LogType) : query.OrderBy(l => l.LogType),
@@ -161,7 +160,8 @@ namespace LYBT.Infrastructure.Logging {
         public async Task<LogDto?> GetLogByIdAsync(Guid id) {
             try {
                 var log = await _context.Logs.FindAsync(id);
-                if (log == null) return null;
+                if (log == null)
+                    return null;
 
                 return new LogDto {
                     Id = log.Id,
@@ -192,7 +192,7 @@ namespace LYBT.Infrastructure.Logging {
 
                 _context.Logs.RemoveRange(expiredLogs);
                 await _context.SaveChangesAsync();
-                
+
                 return expiredLogs.Count;
             } catch (Exception ex) {
                 _logger.LogError(ex, "删除过期日志失败");
@@ -225,7 +225,7 @@ namespace LYBT.Infrastructure.Logging {
                     Level = level,
                     Source = source,
                     Message = message,
-                    Exception = exception != null ? JsonSerializer.Serialize(new { 
+                    Exception = exception != null ? JsonSerializer.Serialize(new {
                         Message = exception.Message,
                         StackTrace = exception.StackTrace,
                         InnerException = exception.InnerException?.Message
@@ -245,13 +245,12 @@ namespace LYBT.Infrastructure.Logging {
 
         // ==================== 用户操作日志 ====================
 
-        public async Task LogUserActionAsync(Guid userId, string userName, LogActionType actionType, 
-            string module, string function, string description, 
-            string? requestPath = null, string? httpMethod = null, 
-            string? parameters = null, bool isSuccess = true, 
-            string? errorMessage = null, string? clientIP = null, 
+        public async Task LogUserActionAsync(Guid userId, string userName, LogActionType actionType,
+            string module, string function, string description,
+            string? requestPath = null, string? httpMethod = null,
+            string? parameters = null, bool isSuccess = true,
+            string? errorMessage = null, string? clientIP = null,
             string? userAgent = null, long duration = 0) {
-            
             try {
                 var userActionLog = new UserActionLogModel {
                     Id = Guid.NewGuid(),
@@ -280,19 +279,19 @@ namespace LYBT.Infrastructure.Logging {
         }
 
         public async Task LogUserLoginAsync(Guid userId, string userName, string clientIP, string userAgent, bool isSuccess, string? errorMessage = null) {
-            await LogUserActionAsync(userId, userName, LogActionType.Login, "Authentication", "Login", 
+            await LogUserActionAsync(userId, userName, LogActionType.Login, "Authentication", "Login",
                 isSuccess ? "用户登录成功" : "用户登录失败", null, "POST", null, isSuccess, errorMessage, clientIP, userAgent);
         }
 
         public async Task LogUserLogoutAsync(Guid userId, string userName, string clientIP) {
-            await LogUserActionAsync(userId, userName, LogActionType.Logout, "Authentication", "Logout", 
+            await LogUserActionAsync(userId, userName, LogActionType.Logout, "Authentication", "Logout",
                 "用户登出", null, "POST", null, true, null, clientIP);
         }
 
         // 其他方法的实现...
         // 由于篇幅限制，这里仅实现核心方法，其他方法可以按照相同模式实现
 
-        public async Task LogErrorAsync(Exception exception, string? requestPath = null, string? httpMethod = null, 
+        public async Task LogErrorAsync(Exception exception, string? requestPath = null, string? httpMethod = null,
             Guid? userId = null, string? clientIP = null, string? userAgent = null) {
             // 实现错误日志记录逻辑
             await Task.CompletedTask;
@@ -303,18 +302,18 @@ namespace LYBT.Infrastructure.Logging {
             return await Task.FromResult(true);
         }
 
-        public async Task LogAuditAsync(string eventType, string resourceType, string resourceId, 
-            Guid? userId, string? userName, string description, 
-            object? oldValues = null, object? newValues = null, 
-            string? clientIP = null, string? sessionId = null, 
+        public async Task LogAuditAsync(string eventType, string resourceType, string resourceId,
+            Guid? userId, string? userName, string description,
+            object? oldValues = null, object? newValues = null,
+            string? clientIP = null, string? sessionId = null,
             string? requestId = null, string? riskLevel = null) {
             // 实现审计日志记录逻辑
             await Task.CompletedTask;
         }
 
-        public async Task LogPerformanceAsync(string operationName, string moduleName, string methodName, 
+        public async Task LogPerformanceAsync(string operationName, string moduleName, string methodName,
             DateTime startTime, DateTime endTime, long duration,
-            double? cpuUsage = null, long? memoryUsage = null, 
+            double? cpuUsage = null, long? memoryUsage = null,
             int? databaseQueries = null, int? cacheHits = null, int? cacheMisses = null,
             int? httpStatusCode = null, long? requestSize = null, long? responseSize = null,
             Guid? userId = null, string? clientIP = null, string? requestPath = null,

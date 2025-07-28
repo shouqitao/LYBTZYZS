@@ -1,6 +1,6 @@
-using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Common.Models;
 using LYBT.Common.Enums.Logs;
+using LYBT.Common.Models;
+using LYBT.Infrastructure.Logging.Dtos;
 
 namespace LYBT.Infrastructure.Logging {
 
@@ -8,7 +8,6 @@ namespace LYBT.Infrastructure.Logging {
     /// 统一日志服务接口
     /// </summary>
     public interface IUnifiedLogService {
-
         // ==================== 基础日志操作 ====================
 
         /// <summary>
@@ -63,11 +62,11 @@ namespace LYBT.Infrastructure.Logging {
         /// <summary>
         /// 记录用户操作日志
         /// </summary>
-        Task LogUserActionAsync(Guid userId, string userName, LogActionType actionType, 
-            string module, string function, string description, 
-            string? requestPath = null, string? httpMethod = null, 
-            string? parameters = null, bool isSuccess = true, 
-            string? errorMessage = null, string? clientIP = null, 
+        Task LogUserActionAsync(Guid userId, string userName, LogActionType actionType,
+            string module, string function, string description,
+            string? requestPath = null, string? httpMethod = null,
+            string? parameters = null, bool isSuccess = true,
+            string? errorMessage = null, string? clientIP = null,
             string? userAgent = null, long duration = 0);
 
         /// <summary>
@@ -85,7 +84,7 @@ namespace LYBT.Infrastructure.Logging {
         /// <summary>
         /// 记录错误日志
         /// </summary>
-        Task LogErrorAsync(Exception exception, string? requestPath = null, string? httpMethod = null, 
+        Task LogErrorAsync(Exception exception, string? requestPath = null, string? httpMethod = null,
             Guid? userId = null, string? clientIP = null, string? userAgent = null);
 
         /// <summary>
@@ -98,10 +97,10 @@ namespace LYBT.Infrastructure.Logging {
         /// <summary>
         /// 记录审计日志
         /// </summary>
-        Task LogAuditAsync(string eventType, string resourceType, string resourceId, 
-            Guid? userId, string? userName, string description, 
-            object? oldValues = null, object? newValues = null, 
-            string? clientIP = null, string? sessionId = null, 
+        Task LogAuditAsync(string eventType, string resourceType, string resourceId,
+            Guid? userId, string? userName, string description,
+            object? oldValues = null, object? newValues = null,
+            string? clientIP = null, string? sessionId = null,
             string? requestId = null, string? riskLevel = null);
 
         // ==================== 性能日志 ====================
@@ -109,9 +108,9 @@ namespace LYBT.Infrastructure.Logging {
         /// <summary>
         /// 记录性能日志
         /// </summary>
-        Task LogPerformanceAsync(string operationName, string moduleName, string methodName, 
+        Task LogPerformanceAsync(string operationName, string moduleName, string methodName,
             DateTime startTime, DateTime endTime, long duration,
-            double? cpuUsage = null, long? memoryUsage = null, 
+            double? cpuUsage = null, long? memoryUsage = null,
             int? databaseQueries = null, int? cacheHits = null, int? cacheMisses = null,
             int? httpStatusCode = null, long? requestSize = null, long? responseSize = null,
             Guid? userId = null, string? clientIP = null, string? requestPath = null,

@@ -1,20 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Billing.Migrations
-{
+namespace LYBT.Module.Billing.Migrations {
+
     /// <inheritdoc />
-    public partial class InitialBillingMigration : Migration
-    {
+    public partial class InitialBillingMigration : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "Billings",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BillingId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -33,15 +30,13 @@ namespace LYBT.Module.Billing.Migrations
                     BillingTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Billings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "BillingItems",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -50,8 +45,7 @@ namespace LYBT.Module.Billing.Migrations
                     Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     BillingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_BillingItems", x => x.Id);
                     table.ForeignKey(
                         name: "FK_BillingItems_Billings_BillingId",
@@ -88,8 +82,7 @@ namespace LYBT.Module.Billing.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "BillingItems");
 

@@ -1,6 +1,6 @@
-﻿using LYBT.Module.Records.Dtos;
+﻿using Asp.Versioning;
+using LYBT.Models.Records;
 using LYBT.Module.Records.Interfaces;
-using LYBT.Module.Records.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

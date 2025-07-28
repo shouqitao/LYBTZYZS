@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Module.Patients.Migrations
-{
+namespace LYBT.Module.Patients.Migrations {
+
     /// <inheritdoc />
-    public partial class RemoveSpecialPatientLogic : Migration
-    {
+    public partial class RemoveSpecialPatientLogic : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "SpecialPatientDoctors");
 
@@ -20,8 +18,7 @@ namespace LYBT.Module.Patients.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.AddColumn<bool>(
                 name: "IsSpecial",
                 table: "Patients",
@@ -31,15 +28,13 @@ namespace LYBT.Module.Patients.Migrations
 
             migrationBuilder.CreateTable(
                 name: "SpecialPatientDoctors",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_SpecialPatientDoctors", x => x.Id);
                     table.ForeignKey(
                         name: "FK_SpecialPatientDoctors_Patients_PatientId",

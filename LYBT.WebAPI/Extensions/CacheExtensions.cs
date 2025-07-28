@@ -1,20 +1,20 @@
 using Microsoft.Extensions.Caching.Memory;
-using System.Collections;
 
 namespace LYBT.WebAPI.Extensions {
+
     /// <summary>
     /// 缓存服务扩展，提供统一的缓存管理
     /// </summary>
     public static class CacheExtensions {
+
         /// <summary>
         /// 获取或设置缓存
         /// </summary>
         public static async Task<T?> GetOrSetAsync<T>(
-            this IMemoryCache cache, 
-            string key, 
-            Func<Task<T>> factory, 
+            this IMemoryCache cache,
+            string key,
+            Func<Task<T>> factory,
             TimeSpan? expiration = null) {
-            
             if (cache.TryGetValue(key, out T? cachedValue)) {
                 return cachedValue;
             }
@@ -27,7 +27,7 @@ namespace LYBT.WebAPI.Extensions {
                 } else {
                     options.SetSlidingExpiration(TimeSpan.FromMinutes(10)); // 默认10分钟
                 }
-                
+
                 cache.Set(key, result, options);
             }
 
@@ -41,9 +41,9 @@ namespace LYBT.WebAPI.Extensions {
             // 注意：IMemoryCache没有直接的按模式删除功能
             // 在生产环境中，建议使用Redis或其他支持模式匹配的缓存
             // 这里提供一个基础实现，可以根据需要扩展
-            
+
             if (cache is MemoryCache memoryCache) {
-                var field = typeof(MemoryCache).GetField("_coherentState", 
+                var field = typeof(MemoryCache).GetField("_coherentState",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 if (field?.GetValue(memoryCache) is object coherentState) {
                     var entriesCollection = coherentState.GetType()
@@ -55,7 +55,7 @@ namespace LYBT.WebAPI.Extensions {
                                 keysToRemove.Add(entry.Key);
                             }
                         }
-                        
+
                         foreach (var key in keysToRemove) {
                             cache.Remove(key);
                         }

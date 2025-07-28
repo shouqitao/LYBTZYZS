@@ -1,6 +1,6 @@
-﻿using LYBT.Module.Pharmacy.Dtos;
+﻿using Asp.Versioning;
+using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Interfaces;
-using LYBT.Module.Pharmacy.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using LYBT.Common.Models;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Common.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers {
 
@@ -13,7 +13,6 @@ namespace LYBT.WebAPI.Controllers {
     [Route("api/[controller]")]
     [Authorize]
     public class UnifiedLogsController : ControllerBase {
-
         private readonly IUnifiedLogService _logService;
         private readonly ILogger<UnifiedLogsController> _logger;
 
@@ -120,7 +119,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <returns>统计信息</returns>
         [HttpGet("statistics")]
         public async Task<ActionResult<Dictionary<string, object>>> GetLogStatistics(
-            [FromQuery] DateTime startDate, 
+            [FromQuery] DateTime startDate,
             [FromQuery] DateTime endDate) {
             try {
                 var statistics = await _logService.GetLogStatisticsAsync(startDate, endDate);
@@ -141,7 +140,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("user-statistics/{userId}")]
         public async Task<ActionResult<Dictionary<string, object>>> GetUserActionStatistics(
             Guid userId,
-            [FromQuery] DateTime startDate, 
+            [FromQuery] DateTime startDate,
             [FromQuery] DateTime endDate) {
             try {
                 var statistics = await _logService.GetUserActionStatisticsAsync(userId, startDate, endDate);
@@ -177,7 +176,7 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<ActionResult> ExportLogsToExcel([FromBody] LogQueryDto queryDto) {
             try {
                 var excelData = await _logService.ExportLogsToExcelAsync(queryDto);
-                return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+                return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     $"logs_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
             } catch (Exception ex) {
                 _logger.LogError(ex, "导出日志到Excel失败");
@@ -194,13 +193,13 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<ActionResult> LogUserLogin([FromBody] UserLoginLogRequest request) {
             try {
                 await _logService.LogUserLoginAsync(
-                    request.UserId, 
-                    request.UserName, 
-                    request.ClientIP, 
-                    request.UserAgent, 
-                    request.IsSuccess, 
+                    request.UserId,
+                    request.UserName,
+                    request.ClientIP,
+                    request.UserAgent,
+                    request.IsSuccess,
                     request.ErrorMessage);
-                
+
                 return Ok(new { Message = "登录日志记录成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "记录用户登录日志失败");
