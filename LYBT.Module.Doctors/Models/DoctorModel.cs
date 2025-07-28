@@ -80,11 +80,5 @@ namespace LYBT.Module.Doctors.Models {
                 return age;
             }
         }
-
-        /// <summary>
-        /// 特殊患者关系集合
-        /// </summary>
-        [DisplayName("特殊患者关系")]
-        public virtual ICollection<SpecialPatientDoctor> SpecialPatients { get; set; } = new List<SpecialPatientDoctor>();
     }
 }

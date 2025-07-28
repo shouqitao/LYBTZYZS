@@ -89,22 +89,6 @@ namespace LYBT.Module.Patients.Interfaces {
         Task<List<PatientModel>> ExactSearchAsync(string keyword, bool includeDisabled = false);
 
         /// <summary>
-        /// 获取指定医生可访问的患者列表
-        /// 权限控制：禁用的患者仅管理员可查询
-        /// </summary>
-        Task<List<PatientModel>> GetForDoctorAsync(Guid doctorId, bool includeDisabled = false);
-
-        /// <summary>
-        /// 为患者授权医生
-        /// </summary>
-        Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId);
-
-        /// <summary>
-        /// 检查医生是否已被授权访问患者
-        /// </summary>
-        Task<bool> IsDoctorAssignedAsync(Guid patientId, Guid doctorId);
-
-        /// <summary>
         /// 获取启用的患者列表
         /// </summary>
         Task<List<PatientModel>> GetActivePatientsAsync();

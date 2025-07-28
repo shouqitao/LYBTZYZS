@@ -173,27 +173,6 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取指定医生可访问的患者
-        /// 权限控制：禁用的患者仅管理员可查询
-        /// </summary>
-        [HttpGet("doctor/{doctorId}")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetForDoctor(Guid doctorId) {
-            var (_, _, operatorRole) = GetOperator();
-            var list = await _patientService.GetForDoctorAsync(doctorId, operatorRole);
-            return Ok(ApiResponse<List<PatientDetailDto>>.Success(list));
-        }
-
-        /// <summary>
-        /// 为患者授权医生
-        /// </summary>
-        [HttpPatch("{id}/assign-doctor")]
-        public async Task<IActionResult> AssignDoctor(Guid id, [FromBody] AssignDoctorDto dto) {
-            var (operatorId, operatorName, _) = GetOperator();
-            var result = await _patientService.AssignDoctorAsync(id, dto.DoctorId, operatorId, operatorName);
-            return result ? Ok(ApiResponse<object>.Success(null, "医生授权成功")) : BadRequest(ApiResponse<object>.Fail("医生授权失败"));
-        }
-
-        /// <summary>
         /// 导入患者数据
         /// </summary>
         [HttpPost("import")]

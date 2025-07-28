@@ -246,28 +246,6 @@ namespace LYBT.Module.Patients.Services {
             return results.Take(20).Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
-        public async Task<List<PatientDetailDto>> GetForDoctorAsync(Guid doctorId, UserRole currentUserRole) {
-            bool includeDisabled = currentUserRole == UserRole.Admin;
-            var list = await _patientRepository.GetForDoctorAsync(doctorId, includeDisabled);
-            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
-        }
-
-        public async Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
-            var result = await _patientRepository.AssignDoctorAsync(patientId, doctorId);
-            if (result) {
-                await _logService.CreateLogAsync(new LogCreateDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = patientId,
-                    ActionType = ActionType.Other,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    Content = $"授权患者{patientId}给医生{doctorId}"
-                });
-            }
-            return result;
-        }
-
         public async Task<int> ImportAsync(List<PatientDetailDto> dtos, Guid operatorId, string operatorName) {
             int count = 0;
             foreach (var dto in dtos) {

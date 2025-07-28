@@ -4,6 +4,7 @@ using LYBT.Module.Patients.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LYBT.Module.Patients.Migrations
 {
     [DbContext(typeof(PatientsDbContext))]
-    partial class PatientsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250728054623_AddPatientIdentityVerification")]
+    partial class AddPatientIdentityVerification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,6 +77,9 @@ namespace LYBT.Module.Patients.Migrations
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("nvarchar(16)");
+
+                    b.Property<bool>("IsSpecial")
+                        .HasColumnType("bit");
 
                     b.Property<string>("MaritalStatus")
                         .IsRequired()
@@ -138,6 +144,49 @@ namespace LYBT.Module.Patients.Migrations
                         .HasDatabaseName("IX_Patients_Name_Status");
 
                     b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("LYBT.Module.Patients.Models.SpecialPatientDoctor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId")
+                        .HasDatabaseName("IX_SpecialPatientDoctors_DoctorId");
+
+                    b.HasIndex("PatientId", "DoctorId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_SpecialPatientDoctors_PatientId_DoctorId");
+
+                    b.ToTable("SpecialPatientDoctors");
+                });
+
+            modelBuilder.Entity("LYBT.Module.Patients.Models.SpecialPatientDoctor", b =>
+                {
+                    b.HasOne("LYBT.Module.Patients.Models.PatientModel", "Patient")
+                        .WithMany("SpecialPatientDoctors")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("LYBT.Module.Patients.Models.PatientModel", b =>
+                {
+                    b.Navigation("SpecialPatientDoctors");
                 });
 #pragma warning restore 612, 618
         }

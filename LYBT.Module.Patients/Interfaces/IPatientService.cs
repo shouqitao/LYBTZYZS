@@ -73,17 +73,6 @@ namespace LYBT.Module.Patients.Interfaces {
         Task<List<PatientDetailDto>> SmartSearchAsync(string keyword, UserRole currentUserRole);
 
         /// <summary>
-        /// 获取指定医生可访问患者
-        /// 根据当前操作者角色决定是否包含禁用患者
-        /// </summary>
-        Task<List<PatientDetailDto>> GetForDoctorAsync(Guid doctorId, UserRole currentUserRole);
-
-        /// <summary>
-        /// 将患者授权给指定医生
-        /// </summary>
-        Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName);
-
-        /// <summary>
         /// 导入患者数据
         /// </summary>
         Task<int> ImportAsync(List<PatientDetailDto> dtos, Guid operatorId, string operatorName);

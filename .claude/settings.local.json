@@ -14,7 +14,13 @@
       "Bash(dotnet tool list:*)",
       "Bash(dotnet restore:*)",
       "Bash(ls:*)",
-      "Bash(dotnet clean LYBTZYZS.sln)"
+      "Bash(dotnet clean LYBTZYZS.sln)",
+      "Bash(dotnet ef --version)",
+      "Bash(dotnet ef database update --project LYBT.Module.Users --startup-project LYBT.WebAPI)",
+      "Bash(dotnet ef database update --project LYBT.Module.Patients --startup-project LYBT.WebAPI)",
+      "Bash(dotnet ef database update --project LYBT.Module.Auth --startup-project LYBT.WebAPI)",
+      "Bash(dotnet ef database update --project LYBT.Module.Doctors --startup-project LYBT.WebAPI)",
+      "Bash(dotnet ef database update --project LYBT.Module.Herbs --startup-project LYBT.WebAPI)"
     ],
     "deny": []
   }

@@ -9,7 +9,6 @@ namespace LYBT.Module.Patients.Data {
         public PatientsDbContext(DbContextOptions<PatientsDbContext> options) : base(options) { }
 
         public DbSet<PatientModel> Patients { get; set; }
-        public DbSet<SpecialPatientDoctor> SpecialPatientDoctors { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -24,16 +23,6 @@ namespace LYBT.Module.Patients.Data {
             patientEntity.HasIndex(p => new { p.Name, p.Status }).HasDatabaseName("IX_Patients_Name_Status");
             patientEntity.HasIndex(p => p.CreatedAt).HasDatabaseName("IX_Patients_CreatedAt");
             patientEntity.HasIndex(p => p.Status).HasDatabaseName("IX_Patients_Status");
-
-            ConfigureSpecialPatientDoctorRelation(modelBuilder);
-        }
-
-        private static void ConfigureSpecialPatientDoctorRelation(ModelBuilder modelBuilder) {
-            var specialEntity = modelBuilder.Entity<SpecialPatientDoctor>();
-            specialEntity.HasIndex(s => new { s.PatientId, s.DoctorId })
-                .IsUnique()
-                .HasDatabaseName("IX_SpecialPatientDoctors_PatientId_DoctorId");
-            specialEntity.HasIndex(s => s.DoctorId).HasDatabaseName("IX_SpecialPatientDoctors_DoctorId");
         }
     }
 }

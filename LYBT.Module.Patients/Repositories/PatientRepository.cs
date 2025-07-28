@@ -190,55 +190,6 @@ namespace LYBT.Module.Patients.Repositories {
             return results;
         }
 
-        public async Task<List<PatientModel>> GetForDoctorAsync(Guid doctorId, bool includeDisabled = false) {
-            // 获取普通患者（非特殊患者）
-            var normalQuery = _dbContext.Patients.Where(p => !p.IsSpecial);
-
-            // 获取授权给该医生的特殊患者ID
-            var specialIds = await _dbContext.SpecialPatientDoctors
-                .Where(s => s.DoctorId == doctorId)
-                .Select(s => s.PatientId)
-                .ToListAsync();
-
-            // 获取特殊患者
-            var specialQuery = _dbContext.Patients.Where(p => specialIds.Contains(p.Id));
-
-            // 合并查询
-            var query = normalQuery.Union(specialQuery);
-
-            // 权限控制：是否包含禁用患者
-            if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Normal);
-            }
-
-            return await query.ToListAsync();
-        }
-
-        public async Task<bool> AssignDoctorAsync(Guid patientId, Guid doctorId) {
-            // 检查是否已经授权
-            var exists = await _dbContext.SpecialPatientDoctors
-                .AnyAsync(s => s.PatientId == patientId && s.DoctorId == doctorId);
-
-            if (exists) {
-                return true; // 已经授权，直接返回成功
-            }
-
-            var relation = new SpecialPatientDoctor {
-                Id = Guid.NewGuid(),
-                PatientId = patientId,
-                DoctorId = doctorId,
-                CreatedAt = DateTime.Now
-            };
-
-            await _dbContext.SpecialPatientDoctors.AddAsync(relation);
-            return await _dbContext.SaveChangesAsync() > 0;
-        }
-
-        public async Task<bool> IsDoctorAssignedAsync(Guid patientId, Guid doctorId) {
-            return await _dbContext.SpecialPatientDoctors
-                .AnyAsync(s => s.PatientId == patientId && s.DoctorId == doctorId);
-        }
-
         public async Task<List<PatientModel>> GetActivePatientsAsync() {
             return await _dbContext.Patients
                 .Where(p => p.Status == PatientStatus.Normal)
