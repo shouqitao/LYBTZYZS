@@ -209,6 +209,12 @@ Console.CancelKeyPress += (sender, e) => {
     e.Cancel = true; // 取消默认的强制终止
     cancellationTokenSource.Cancel(); // 触发取消令牌
 };
+AppDomain.CurrentDomain.ProcessExit += (_, __) => {
+    Console.WriteLine("\n⚠️  正在关闭程序...");
+    cancellationTokenSource.Cancel();
+    // 等待应用优雅关闭并确保资源释放
+    app.StopAsync().GetAwaiter().GetResult();
+};
 
 try {
     await app.RunAsync(cancellationTokenSource.Token);
