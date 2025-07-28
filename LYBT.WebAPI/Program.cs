@@ -4,54 +4,10 @@
 using LYBT.Infrastructure;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Configuration;
-using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Auth.Repositories;
-using LYBT.Module.Auth.Services;
-using LYBT.Module.DiagnosisTreatment.Interfaces;
-using LYBT.Module.DiagnosisTreatment.Mapping;
-using LYBT.Module.DiagnosisTreatment.Repositories;
-using LYBT.Module.DiagnosisTreatment.Services;
-using LYBT.Module.Doctors.Interfaces;
-using LYBT.Module.Doctors.Mapping;
-using LYBT.Module.Doctors.Repositories;
-using LYBT.Module.Doctors.Services;
-using LYBT.Module.FormulaTemplates.Interfaces;
-using LYBT.Module.FormulaTemplates.Mapping;
-using LYBT.Module.FormulaTemplates.Repositories;
-using LYBT.Module.FormulaTemplates.Services;
-using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Mapping;
-using LYBT.Module.Herbs.Repositories;
-using LYBT.Module.Herbs.Services;
-using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Patients.Mapping;
-using LYBT.Module.Patients.Repositories;
-using LYBT.Module.Patients.Services;
-using LYBT.Module.Prescriptions.Mapping;
-using LYBT.Module.Prescriptions.Repositories;
-using LYBT.Module.Prescriptions.Services;
-using LYBT.Module.Queueing.Interfaces;
-using LYBT.Module.Queueing.Mapping;
-using LYBT.Module.Queueing.Repositories;
-using LYBT.Module.Queueing.Services;
-using LYBT.Module.Records.Interfaces;
-using LYBT.Module.Records.Repositories;
-using LYBT.Module.Records.Services;
-using LYBT.Module.Registration.Interfaces;
-using LYBT.Module.Registration.Mapping;
-using LYBT.Module.Registration.Repositories;
-using LYBT.Module.Registration.Services;
-using LYBT.Module.Sync.Interfaces;
-using LYBT.Module.Sync.Mapping;
-using LYBT.Module.Sync.Repositories;
-using LYBT.Module.Sync.Services;
+using LYBT.WebAPI.Extensions;
+using LYBT.WebAPI.Middleware;
 using LYBT.Module.Users;
 using LYBT.Module.Patients;
-using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Mapping;
-using LYBT.Module.Users.Repositories;
-using LYBT.Module.Users.Services;
-using LYBT.WebAPI.Extensions;
 using LYBT.Module.Users.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
@@ -69,69 +25,11 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // =========== 2. 配置用户默认设置 ===========
 builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDefaults"));
 
-// =========== 3. 注册业务模块服务和仓储 ===========
+// =========== 3. 注册业务模块服务和仓储（使用扩展方法） ===========
+builder.Services.AddLybtModules();
 
-// 认证模块
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-// 医生模块
-builder.Services.AddScoped<IDoctorService, DoctorService>();
-builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
-
-// 挂号模块
-builder.Services.AddScoped<IRegistrationService, RegistrationService>();
-builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
-
-// 排队模块
-builder.Services.AddScoped<IQueueingService, QueueingService>();
-builder.Services.AddScoped<IQueueingRepository, QueueingRepository>();
-
-// 诊疗模块
-builder.Services.AddScoped<IDiagnosisTreatmentService, DiagnosisTreatmentService>();
-builder.Services.AddScoped<IDiagnosisTreatmentRepository, DiagnosisTreatmentRepository>();
-
-// 药材模块
-builder.Services.AddScoped<IHerbService, HerbService>();
-builder.Services.AddScoped<IHerbRepository, HerbRepository>();
-
-// 经验方模板模块
-builder.Services.AddScoped<IFormulaTemplateService, FormulaTemplateService>();
-builder.Services.AddScoped<IFormulaTemplateRepository, FormulaTemplateRepository>();
-
-// 病历模块
-builder.Services.AddScoped<IRecordService, RecordService>();
-builder.Services.AddScoped<IRecordRepository, RecordRepository>();
-
-// 处方模块
-builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
-builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
-
-// 同步模块
-builder.Services.AddScoped<ISyncService, SyncService>();
-builder.Services.AddScoped<ISyncRepository, SyncRepository>();
-
-// 用户模块
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-// 患者模块
-builder.Services.AddScoped<IPatientService, PatientService>();
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-
-// =========== 4. 注册AutoMapper配置 ===========
-builder.Services.AddAutoMapper(
-    typeof(UserMappingProfile),
-    typeof(PatientMappingProfile),
-    typeof(DoctorMappingProfile),
-    typeof(RegistrationMappingProfile),
-    typeof(QueueingMappingProfile),
-    typeof(DiagnosisTreatmentMappingProfile),
-    typeof(HerbMappingProfile),
-    typeof(FormulaTemplateMappingProfile),
-    typeof(SyncMappingProfile),
-    typeof(PrescriptionMappingProfile)
-);
+// =========== 4. 注册AutoMapper配置（使用扩展方法） ===========
+builder.Services.AddLybtAutoMapperProfiles();
 
 // =========== 5. 添加控制器和JSON配置 ===========
 builder.Services.AddControllers().AddJsonOptions(o => {
@@ -207,6 +105,13 @@ using (var scope = app.Services.CreateScope()) {
 }
 
 // =========== 10. 配置中间件管道 ===========
+
+// 性能监控中间件（放在最前面以监控整个请求生命周期）
+app.UsePerformanceMonitoring();
+
+// 全局异常处理中间件
+app.UseGlobalExceptionHandling();
+
 if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI(c => {
