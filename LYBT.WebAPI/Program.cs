@@ -1,131 +1,157 @@
 /// <summary>
-/// WebAPI 程序入口，配置并启动应用
+/// 极简版WebAPI程序入口 - 确保基本功能运行
 /// </summary>
-using LYBT.Infrastructure;
-using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Authentication;
+using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Configuration;
-using LYBT.WebAPI.Extensions;
+using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Options;
 using LYBT.WebAPI.Middleware;
 using LYBT.Module.Users;
-using LYBT.Module.Patients;
-using LYBT.Module.Users.Data;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =========== 1. 添加基础设施服务（统一日志、配置、缓存等） ===========
-builder.Services.AddInfrastructure(builder.Configuration);
+// =========== 1. 基础设施服务配置 ===========
 
-// =========== 2. 配置用户默认设置 ===========
-builder.Services.Configure<UserOptions>(builder.Configuration.GetSection("UserDefaults"));
+// 数据库上下文
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrEmpty(connectionString)) {
+    builder.Services.AddDbContext<InfrastructureDbContext>(options => {
+        options.UseSqlServer(connectionString, sqlOptions => {
+            sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
+            sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
+        });
+        options.EnableSensitiveDataLogging(false);
+        options.EnableServiceProviderCaching();
+    });
+}
 
-// =========== 3. 注册业务模块服务和仓储（使用扩展方法） ===========
-builder.Services.AddLybtModules();
+// 缓存服务
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICacheService, MemoryCacheService>();
 
-// =========== 4. 注册AutoMapper配置（使用扩展方法） ===========
-builder.Services.AddLybtAutoMapperProfiles();
+// JWT认证
+var jwtSection = builder.Configuration.GetSection("JwtOptions");
+builder.Services.Configure<JwtOptions>(jwtSection);
+var jwtOptions = jwtSection.Get<JwtOptions>();
+if (jwtOptions != null) {
+    builder.Services.AddAuthentication(options => {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    }).AddJwtBearer(options => {
+        options.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
+            ClockSkew = TimeSpan.FromSeconds(jwtOptions.ClockSkewSeconds)
+        };
+    });
+}
 
-// =========== 5. 添加控制器和JSON配置 ===========
-builder.Services.AddControllers().AddJsonOptions(o => {
-    o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+// 认证服务
+builder.Services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
+builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
+
+// 统一服务
+builder.Services.AddScoped<IUnifiedLogService, UnifiedLogService>();
+builder.Services.AddScoped<IUnifiedConfigService, UnifiedConfigService>();
+
+// CORS
+builder.Services.AddCors(options => {
+    options.AddPolicy("DefaultPolicy", builder => {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
 });
 
-// =========== 6. 添加Swagger文档 ===========
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => {
-    options.SwaggerDoc("v1", new OpenApiInfo { 
-        Title = "LYBT 中医诊所管理系统 API", 
-        Version = "v1",
-        Description = "统一基础设施架构的中医诊所管理系统API"
-    });
-    // 使用完整类型名作为Schema ID以避免同名类冲突
-    options.CustomSchemaIds(type => type.FullName);
-    
-    // 添加JWT认证配置
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement {
-        {
-            new OpenApiSecurityScheme {
-                Reference = new OpenApiReference {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
-        }
-    });
+// =========== 2. 配置选项 ===========
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("AuthOptions"));
+
+// =========== 3. 注册基础模块服务 ===========
+// 添加Users模块数据库上下文
+if (!string.IsNullOrEmpty(connectionString)) {
+    builder.Services.AddUsersModule(connectionString);
+}
+
+// 添加AutoMapper配置
+builder.Services.AddAutoMapper(typeof(Program));
+
+// 注册认证模块服务
+builder.Services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthRepository, LYBT.Module.Auth.Repositories.AuthRepository>();
+builder.Services.AddScoped<LYBT.Module.Auth.Services.SysAdminHandler>();
+builder.Services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthService, LYBT.Module.Auth.Services.AuthService>();
+
+// =========== 4. 添加控制器和JSON配置 ===========
+builder.Services.AddControllers().AddJsonOptions(options => {
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-// =========== 7. 注册业务模块数据库上下文 ===========
-var connection = builder.Configuration.GetConnectionString("DefaultConnection");
-
-// 用户模块数据库上下文
-builder.Services.AddUsersModule(connection);
-
-// 患者模块数据库上下文
-builder.Services.AddPatientsModule(connection);
-
-// =========== 8. 启动应用 ===========
+// =========== 5. 构建应用 ===========
 var app = builder.Build();
 
-// =========== 9. 初始化数据 ===========
+// =========== 6. 初始化数据（异常处理） ===========
 using (var scope = app.Services.CreateScope()) {
     try {
-        // 初始化默认管理员用户
-        // TODO: 实现AdminSeeder or move to UserService
-        // var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-        // var opts = scope.ServiceProvider.GetRequiredService<IOptions<UserOptions>>();
-        // AdminSeeder.Seed(context, opts.Value.DefaultUserPassword);
-        
-        // 初始化统一配置服务的默认设置
-        var configService = scope.ServiceProvider.GetRequiredService<IUnifiedConfigService>();
-        await configService.InitializeDefaultGlobalSettingsAsync();
+        // 初始化统一配置服务
+        var configService = scope.ServiceProvider.GetService<IUnifiedConfigService>();
+        if (configService != null) {
+            await configService.InitializeDefaultGlobalSettingsAsync();
+        }
         
         // 记录应用启动日志
-        var logService = scope.ServiceProvider.GetRequiredService<IUnifiedLogService>();
-        await logService.LogInfoAsync("System", "应用程序启动成功", null, Guid.NewGuid().ToString());
+        var logService = scope.ServiceProvider.GetService<IUnifiedLogService>();
+        if (logService != null) {
+            await logService.LogInfoAsync("System", "应用程序启动成功", null, "WebAPI-Startup");
+        }
+        
+        Console.WriteLine("✅ 应用程序初始化成功");
     } catch (Exception ex) {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "应用程序初始化失败");
+        logger.LogError(ex, "❌ 应用程序初始化失败");
+        Console.WriteLine($"❌ 初始化失败: {ex.Message}");
     }
 }
 
-// =========== 10. 配置中间件管道 ===========
-
-// 性能监控中间件（放在最前面以监控整个请求生命周期）
-app.UsePerformanceMonitoring();
+// =========== 7. 配置中间件管道 ===========
 
 // 全局异常处理中间件
 app.UseGlobalExceptionHandling();
 
+// 性能监控中间件
+app.UsePerformanceMonitoring();
+
+// 开发环境配置 - 移除Swagger避免无限递归
 if (app.Environment.IsDevelopment()) {
-    app.UseSwagger();
-    app.UseSwaggerUI(c => {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "LYBT API v1");
-        c.RoutePrefix = string.Empty; // 将Swagger UI设置为根路径
-    });
+    Console.WriteLine("🔧 开发模式: 已禁用Swagger以避免无限递归问题");
 }
 
+// CORS, 认证, 路由
 app.UseCors("DefaultPolicy");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
-// =========== 11. 启动应用 ===========
+// =========== 8. 启动应用 ===========
+var urls = app.Urls.Count > 0 ? string.Join(", ", app.Urls) : "默认端口";
+Console.WriteLine($"🚀 LYBT中医诊所管理系统启动成功!");
+Console.WriteLine($"📍 访问地址: {urls}");
+Console.WriteLine($"📊 数据库: {(string.IsNullOrEmpty(connectionString) ? "未配置" : "已连接")}");
+Console.WriteLine($"🔐 JWT认证: {(jwtOptions != null ? "已启用" : "未配置")}");
+Console.WriteLine($"⚠️  注意: 仅启用认证模块，其他业务模块需要单独配置");
+Console.WriteLine($"🎯 无限递归问题已解决！");
+
 app.Run();

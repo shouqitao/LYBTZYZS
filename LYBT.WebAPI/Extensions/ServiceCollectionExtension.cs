@@ -16,6 +16,7 @@ using LYBT.Module.Herbs.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Queueing.Interfaces;
@@ -58,6 +59,7 @@ public static class ServiceCollectionExtension {
     public static IServiceCollection AddLybtModules(this IServiceCollection services) {
         // 认证模块
         services.AddScoped<IAuthRepository, AuthRepository>();
+        services.AddScoped<SysAdminHandler>();
         services.AddScoped<IAuthService, AuthService>();
 
         // 用户模块
@@ -99,6 +101,7 @@ public static class ServiceCollectionExtension {
         // 处方模块
         services.AddScoped<IPrescriptionService, PrescriptionService>();
         services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+        services.AddScoped<IIntelligentPrescriptionService, IntelligentPrescriptionService>();
 
         // 收费模块
         services.AddScoped<IBillingService, BillingService>();

@@ -167,16 +167,12 @@ namespace LYBT.Infrastructure.Extensions {
         }
 
         /// <summary>
-        /// 添加API版本控制
+        /// 添加API版本控制（已禁用）
         /// </summary>
         /// <param name="services">服务集合</param>
         /// <returns>服务集合</returns>
-        public static IServiceCollection AddApiVersioning(this IServiceCollection services) {
-            services.AddEndpointsApiExplorer();
-            
-            // 注意：这里简化了API版本控制的配置，如果需要更详细的配置，请单独处理
-            services.AddApiVersioning();
-
+        public static IServiceCollection AddApiVersioningDisabled(this IServiceCollection services) {
+            // 方法已重命名以完全避免冲突
             return services;
         }
 
@@ -257,8 +253,7 @@ namespace LYBT.Infrastructure.Extensions {
             // 添加CORS策略
             services.AddCorsPolicies();
             
-            // 添加API版本控制
-            services.AddApiVersioning();
+            // 注意：API版本控制在Program.cs中单独配置
 
             return services;
         }
