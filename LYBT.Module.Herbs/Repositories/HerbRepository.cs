@@ -1,5 +1,5 @@
 ﻿using LYBT.Models.Herbs;
-using LYBT.Module.Herbs.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,13 +9,13 @@ namespace LYBT.Module.Herbs.Repositories {
     /// 药材仓储实现类，实现数据库操作
     /// </summary>
     public class HerbRepository : IHerbRepository {
-        private readonly HerbDbContext _herbDbContext;
+        private readonly AppDbContext _herbDbContext;
         private readonly ILogger<HerbRepository> _logger;
 
         /// <summary>
         /// 构造方法，注入数据库上下文
         /// </summary>
-        public HerbRepository(HerbDbContext herbDbContext, ILogger<HerbRepository> logger) {
+        public HerbRepository(AppDbContext herbDbContext, ILogger<HerbRepository> logger) {
             _herbDbContext = herbDbContext;
             _logger = logger;
         }
