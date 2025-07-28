@@ -60,7 +60,7 @@ namespace LYBT.Module.Auth.Services {
                 UserName = SYSADMIN_USERNAME,
                 RealName = "系统管理员",
                 PinyinCode = "XTGLY",
-                Roles = new List<UserRole> { UserRole.Admin },
+                Role = UserRole.Admin,
                 IsActive = true,
                 CreatedTime = DateTime.Now,
                 PasswordHash = string.Empty // 密码从AdminSecrets表获取
@@ -71,9 +71,7 @@ namespace LYBT.Module.Auth.Services {
         /// 确保用户具有管理员角色
         /// </summary>
         private void EnsureAdminRole(UserModel user) {
-            if (user.Roles == null || !user.Roles.Contains(UserRole.Admin)) {
-                user.Roles = new List<UserRole> { UserRole.Admin };
-            }
+            user.Role = UserRole.Admin;
         }
     }
 }

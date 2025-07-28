@@ -264,7 +264,7 @@ namespace LYBT.Module.Users.Services {
                 Id = model.Id,
                 UserName = model.UserName,
                 RealName = model.RealName,
-                Roles = model.Roles,
+                Role = model.Role,
                 IsActive = model.IsActive,
                 CreatedTime = model.CreatedTime,
                 LastLoginTime = model.LastLoginTime,
@@ -282,7 +282,7 @@ namespace LYBT.Module.Users.Services {
                 UserName = dto.UserName,
                 RealName = dto.RealName,
                 PinyinCode = CommonHelper.GetPinyinCode(dto.RealName),
-                Roles = dto.Roles ?? new List<UserRole>(),
+                Role = dto.Role,
                 IsActive = dto.IsActive,
                 Email = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
@@ -297,7 +297,7 @@ namespace LYBT.Module.Users.Services {
         private void UpdateUserFromDto(UserModel user, UserDetailDto dto) {
             user.RealName = dto.RealName;
             user.PinyinCode = CommonHelper.GetPinyinCode(dto.RealName);
-            user.Roles = dto.Roles ?? new List<UserRole>();
+            user.Role = dto.Role;
             user.IsActive = dto.IsActive;
             user.Email = dto.Email;
             user.PhoneNumber = dto.PhoneNumber;
@@ -311,9 +311,7 @@ namespace LYBT.Module.Users.Services {
                 throw new InvalidOperationException("用户名已存在");
             }
 
-            if (dto.Roles == null || dto.Roles.Count == 0) {
-                throw new ArgumentException("用户至少需要分配一个角色");
-            }
+            // 单一角色架构下，角色验证已通过Required特性和默认值处理
         }
 
         /// <summary>

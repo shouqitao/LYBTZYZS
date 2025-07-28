@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections;
 
 namespace LYBT.WebAPI.Extensions {
     /// <summary>
@@ -47,9 +48,9 @@ namespace LYBT.WebAPI.Extensions {
                 if (field?.GetValue(memoryCache) is object coherentState) {
                     var entriesCollection = coherentState.GetType()
                         .GetProperty("EntriesCollection", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (entriesCollection?.GetValue(coherentState) is IDictionary entries) {
+                    if (entriesCollection?.GetValue(coherentState) is IDictionary<object, object> entries) {
                         var keysToRemove = new List<object>();
-                        foreach (DictionaryEntry entry in entries) {
+                        foreach (var entry in entries) {
                             if (entry.Key.ToString()?.Contains(pattern) == true) {
                                 keysToRemove.Add(entry.Key);
                             }

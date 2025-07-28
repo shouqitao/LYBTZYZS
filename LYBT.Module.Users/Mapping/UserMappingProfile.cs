@@ -12,9 +12,7 @@ namespace LYBT.Module.Users.Mapping {
 
         public UserMappingProfile() {
             // 用户实体转DTO
-            CreateMap<UserModel, UserDto>()
-                .ForMember(dest => dest.Roles,
-                    opt => opt.MapFrom(src => src.Roles ?? new List<UserRole>()));
+            CreateMap<UserModel, UserDto>();
 
             // 新增DTO转实体
             CreateMap<UserCreateDto, UserModel>()

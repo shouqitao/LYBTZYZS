@@ -36,14 +36,14 @@ namespace LYBT.Module.Doctors.Interfaces {
         Task<ApiResponse<PagedResultDto<DoctorDto>>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole);
 
         /// <summary>
-        /// 新增医生
+        /// 新增医生档案（仅管理员可操作，且用户必须具有医生角色）
         /// </summary>
-        Task<ApiResponse<bool>> AddAsync(DoctorDetailDto dto);
+        Task<ApiResponse<bool>> AddAsync(DoctorDetailDto dto, UserRole operatorRole);
 
         /// <summary>
-        /// 更新医生信息
+        /// 更新医生信息（管理员可操作，医生可修改自己的档案）
         /// </summary>
-        Task<ApiResponse<bool>> UpdateAsync(DoctorDetailDto dto);
+        Task<ApiResponse<bool>> UpdateAsync(DoctorDetailDto dto, UserRole operatorRole, Guid operatorUserId);
 
         /// <summary>
         /// 禁用医生（软删除）

@@ -103,5 +103,11 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// </summary>
         /// <returns>状态统计字典</returns>
         Task<Dictionary<HerbStatus, int>> GetStatusStatisticsAsync();
+
+        /// <summary>
+        /// 获取全部活动状态药材（用于处方检查）
+        /// </summary>
+        /// <returns>活动状态药材列表</returns>
+        Task<List<HerbDto>> GetAllActiveHerbsAsync();
     }
 }

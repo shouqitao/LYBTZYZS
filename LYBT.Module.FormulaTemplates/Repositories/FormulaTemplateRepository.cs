@@ -103,5 +103,52 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
                 Remark = m.Remark
             }).ToList();
         }
+
+        /// <summary>
+        /// 获取所有活动状态的验方模板
+        /// </summary>
+        public async Task<List<FormulaTemplateModel>> GetAllActiveAsync() {
+            return await _context.FormulaTemplates
+                .Where(f => f.IsActive)
+                .OrderBy(f => f.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 获取指定医生可见的验方模板（包括共享验方和自己创建的验方）
+        /// </summary>
+        /// <param name="doctorId">医生ID</param>
+        /// <returns>可见的验方模板列表</returns>
+        public async Task<List<FormulaTemplateModel>> GetVisibleForDoctorAsync(Guid doctorId) {
+            return await _context.FormulaTemplates
+                .Where(f => f.IsActive && (f.IsShared || f.CreatedById == doctorId))
+                .OrderBy(f => f.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 设置验方模板共享状态
+        /// </summary>
+        /// <param name="templateId">模板ID</param>
+        /// <param name="isShared">是否共享</param>
+        /// <param name="operatorId">操作人ID</param>
+        /// <returns>是否成功</returns>
+        public async Task<bool> SetSharingStatusAsync(Guid templateId, bool isShared, Guid operatorId) {
+            var template = await _context.FormulaTemplates.FindAsync(templateId);
+            if (template == null) return false;
+
+            template.IsShared = isShared;
+            template.UpdatedAt = DateTime.Now;
+            
+            if (isShared) {
+                template.SharedAt = DateTime.Now;
+                template.SharedById = operatorId;
+            } else {
+                template.SharedAt = null;
+                template.SharedById = null;
+            }
+
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }

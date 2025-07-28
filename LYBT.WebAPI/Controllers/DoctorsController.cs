@@ -175,8 +175,8 @@ namespace LYBT.WebAPI.Controllers {
                     return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{string.Join("; ", errors)}"));
                 }
 
-                var (operatorId, operatorName, _) = GetOperator();
-                var result = await _doctorService.AddAsync(dto);
+                var (operatorId, operatorName, operatorRole) = GetOperator();
+                var result = await _doctorService.AddAsync(dto, operatorRole);
 
                 if (result.IsSuccess) {
                     // 清除相关缓存
@@ -202,8 +202,8 @@ namespace LYBT.WebAPI.Controllers {
                     return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{string.Join("; ", errors)}"));
                 }
 
-                var (operatorId, operatorName, _) = GetOperator();
-                var result = await _doctorService.UpdateAsync(dto);
+                var (operatorId, operatorName, operatorRole) = GetOperator();
+                var result = await _doctorService.UpdateAsync(dto, operatorRole, operatorId);
 
                 if (result.IsSuccess) {
                     // 清除相关缓存

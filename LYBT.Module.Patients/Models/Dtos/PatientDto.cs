@@ -65,6 +65,10 @@ namespace LYBT.Module.Patients.Dtos {
         [DisplayName("拼音码")]
         public string PinyinCode { get; set; } = string.Empty;
 
+        /// <summary>五笔码</summary>
+        [DisplayName("五笔码")]
+        public string WuBiCode { get; set; } = string.Empty;
+
         /// <summary>
         /// 是否特殊患者（仅有权限的医生可见/可创建）
         /// </summary>

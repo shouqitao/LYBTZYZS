@@ -108,5 +108,20 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 获取启用的患者列表
         /// </summary>
         Task<List<PatientModel>> GetActivePatientsAsync();
+
+        /// <summary>
+        /// 根据身份证号获取患者列表（用于重复检查）
+        /// </summary>
+        Task<List<PatientModel>> GetPatientsByIdNumberAsync(string idNumber);
+
+        /// <summary>
+        /// 根据姓名和手机号获取患者列表（用于重复检查）
+        /// </summary>
+        Task<List<PatientModel>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber);
+
+        /// <summary>
+        /// 根据相似姓名获取患者列表（用于重复检查）
+        /// </summary>
+        Task<List<PatientModel>> GetPatientsBySimilarNameAsync(string name);
     }
 }

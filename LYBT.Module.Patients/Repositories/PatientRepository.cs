@@ -1,4 +1,5 @@
 ﻿using LYBT.Common.Enums.Patients;
+using LYBT.Common.Helpers;
 using LYBT.Module.Patients.Data;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Models;
@@ -242,6 +243,47 @@ namespace LYBT.Module.Patients.Repositories {
             return await _dbContext.Patients
                 .Where(p => p.Status == PatientStatus.Normal)
                 .OrderBy(p => p.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 根据身份证号获取患者列表（用于重复检查）
+        /// </summary>
+        public async Task<List<PatientModel>> GetPatientsByIdNumberAsync(string idNumber) {
+            if (string.IsNullOrEmpty(idNumber)) return new List<PatientModel>();
+            
+            return await _dbContext.Patients
+                .Where(p => p.IDNumber == idNumber)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 根据姓名和手机号获取患者列表（用于重复检查）
+        /// </summary>
+        public async Task<List<PatientModel>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber) {
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phoneNumber)) 
+                return new List<PatientModel>();
+                
+            return await _dbContext.Patients
+                .Where(p => p.Name == name && p.PhoneNumber == phoneNumber)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 根据相似姓名获取患者列表（用于重复检查）
+        /// </summary>
+        public async Task<List<PatientModel>> GetPatientsBySimilarNameAsync(string name) {
+            if (string.IsNullOrEmpty(name)) return new List<PatientModel>();
+            
+            // 简单的相似性检查：拼音码匹配或包含关系
+            var pinyinCode = CommonHelper.GetPinyinCode(name);
+            
+            return await _dbContext.Patients
+                .Where(p => p.PinyinCode == pinyinCode || 
+                           p.Name.Contains(name) || 
+                           name.Contains(p.Name))
+                .Where(p => p.Name != name) // 排除完全相同的姓名
+                .Take(10) // 限制返回数量
                 .ToListAsync();
         }
     }

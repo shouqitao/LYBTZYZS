@@ -334,5 +334,24 @@ namespace LYBT.Module.Herbs.Services {
 
             return statistics;
         }
+
+        /// <summary>
+        /// 获取全部活动状态药材（用于处方检查）
+        /// </summary>
+        /// <returns>活动状态药材列表</returns>
+        public async Task<List<HerbDto>> GetAllActiveHerbsAsync() {
+            var models = await _context.Herbs
+                .Where(h => h.Status == HerbStatus.Active)
+                .OrderBy(h => h.Name)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<HerbDto>>(models);
+            foreach (var dto in dtos) {
+                var model = models.First(x => x.Id == dto.Id);
+                dto.StatusDescription = model.Status.GetDescription();
+            }
+
+            return dtos;
+        }
     }
 }

@@ -37,11 +37,18 @@ namespace LYBT.Module.Users.Models {
         public string PinyinCode { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用户拥有的所有角色
+        /// 真实姓名五笔码
+        /// </summary>
+        [StringLength(32)]
+        [DisplayName("五笔码")]
+        public string WuBiCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 用户角色（一个用户只能有一个角色）
         /// </summary>
         [Required]
-        [DisplayName("角色列表")]
-        public List<UserRole> Roles { get; set; } = new();
+        [DisplayName("用户角色")]
+        public UserRole Role { get; set; } = UserRole.Staff;
 
         /// <summary>
         /// 启用状态（true=启用，false=禁用）

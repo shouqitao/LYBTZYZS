@@ -106,8 +106,13 @@ namespace LYBT.Module.Doctors.Services {
             }
         }
 
-        public async Task<ApiResponse<bool>> AddAsync(DoctorDetailDto dto) {
+        public async Task<ApiResponse<bool>> AddAsync(DoctorDetailDto dto, UserRole operatorRole) {
             try {
+                // 权限验证：只有管理员可以创建医生档案
+                if (operatorRole != UserRole.Admin) {
+                    return ApiResponse<bool>.Fail("只有管理员可以创建医生档案");
+                }
+
                 // 参数验证
                 if (dto.UserId == Guid.Empty) {
                     return ApiResponse<bool>.Fail("关联用户ID不能为空");
@@ -117,10 +122,15 @@ namespace LYBT.Module.Doctors.Services {
                     return ApiResponse<bool>.Fail("专科不能为空");
                 }
 
-                // 检查用户是否存在
-                var user = await _userRepository.GetByIdAsync(dto.UserId);
+                // 检查用户是否存在并且是医生角色
+                var user = await _userRepository.GetByIdAsync(dto.UserId, true);
                 if (user == null) {
                     return ApiResponse<bool>.Fail("关联的用户不存在，请先创建用户");
+                }
+
+                // 验证用户是否具有医生角色
+                if (user.Role != UserRole.DiagnosingDoctor) {
+                    return ApiResponse<bool>.Fail("只能为具有医生角色的用户创建医生档案");
                 }
 
                 // 检查用户是否已关联医生档案
@@ -149,7 +159,7 @@ namespace LYBT.Module.Doctors.Services {
             }
         }
 
-        public async Task<ApiResponse<bool>> UpdateAsync(DoctorDetailDto dto) {
+        public async Task<ApiResponse<bool>> UpdateAsync(DoctorDetailDto dto, UserRole operatorRole, Guid operatorUserId) {
             try {
                 // 参数验证
                 if (dto.Id == Guid.Empty) {
@@ -164,6 +174,15 @@ namespace LYBT.Module.Doctors.Services {
                 var model = await _doctorRepository.GetByIdAsync(dto.Id, true);
                 if (model == null) {
                     return ApiResponse<bool>.Fail("医生不存在");
+                }
+
+                // 权限验证：管理员可以修改任何医生档案，医生只能修改自己的档案
+                if (operatorRole != UserRole.Admin && operatorRole != UserRole.DiagnosingDoctor) {
+                    return ApiResponse<bool>.Fail("权限不足，无法修改医生档案");
+                }
+
+                if (operatorRole == UserRole.DiagnosingDoctor && model.UserId != operatorUserId) {
+                    return ApiResponse<bool>.Fail("医生只能修改自己的档案");
                 }
 
                 // 更新医生字段（不更新UserId、User等关键字段）

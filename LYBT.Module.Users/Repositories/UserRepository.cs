@@ -84,8 +84,8 @@ namespace LYBT.Module.Users.Repositories {
             }
 
             // 角色筛选
-            if (query.Roles != null && query.Roles.Count > 0) {
-                dbSet = dbSet.Where(u => query.Roles.Any(r => u.Roles.Contains(r)));
+            if (query.Role.HasValue) {
+                dbSet = dbSet.Where(u => u.Role == query.Role.Value);
             }
 
             // 启用状态筛选

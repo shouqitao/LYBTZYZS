@@ -41,5 +41,26 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         /// 导出全部模板数据
         /// </summary>
         Task<List<FormulaTemplateDetailDto>> ExportAsync();
+
+        /// <summary>
+        /// 获取全部活动状态的验方模板
+        /// </summary>
+        Task<List<FormulaTemplateDetailDto>> GetAllActiveFormulasAsync();
+
+        /// <summary>
+        /// 获取指定医生可见的验方模板（包括共享验方和自己创建的验方）
+        /// </summary>
+        /// <param name="doctorId">医生ID</param>
+        /// <returns>可见的验方模板列表</returns>
+        Task<List<FormulaTemplateDetailDto>> GetVisibleFormulasForDoctorAsync(Guid doctorId);
+
+        /// <summary>
+        /// 设置验方模板共享状态
+        /// </summary>
+        /// <param name="templateId">模板ID</param>
+        /// <param name="isShared">是否共享</param>
+        /// <param name="operatorId">操作人ID</param>
+        /// <returns>是否成功</returns>
+        Task<bool> SetSharingStatusAsync(Guid templateId, bool isShared, Guid operatorId);
     }
 }

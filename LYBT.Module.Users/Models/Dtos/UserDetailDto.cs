@@ -20,11 +20,10 @@ namespace LYBT.Module.Users.Models.Dtos {
         [DisplayName("真实姓名")]
         public string RealName { get; set; } = string.Empty;
 
-        /// <summary>多个用户角色（至少一个）</summary>
+        /// <summary>用户角色（单一角色）</summary>
         [Required(ErrorMessage = "角色不能为空")]
-        [MinLength(1, ErrorMessage = "角色不能为空")]
-        [DisplayName("多个用户角色（至少一个）")]
-        public List<UserRole> Roles { get; set; } = new();
+        [DisplayName("用户角色")]
+        public UserRole Role { get; set; }
 
         /// <summary>账号启用状态（true=启用，false=禁用，必填）</summary>
         [Required(ErrorMessage = "账号启用状态不能为空")]

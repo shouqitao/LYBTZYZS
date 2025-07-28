@@ -116,6 +116,10 @@ namespace LYBT.Module.Patients.Models {
         [DisplayName("PinyinCode")]
         public string PinyinCode { get; set; } = string.Empty;
 
+        [StringLength(32)]
+        [DisplayName("WuBiCode")]
+        public string WuBiCode { get; set; } = string.Empty;
+
         /// <summary>
         /// 允许查看该特殊病人的医生列表（仅IsSpecial为true时有效）
         /// </summary>

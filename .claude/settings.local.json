@@ -12,7 +12,9 @@
       "Bash(grep:*)",
       "Bash(mv:*)",
       "Bash(dotnet tool list:*)",
-      "Bash(dotnet restore:*)"
+      "Bash(dotnet restore:*)",
+      "Bash(ls:*)",
+      "Bash(dotnet clean LYBTZYZS.sln)"
     ],
     "deny": []
   }

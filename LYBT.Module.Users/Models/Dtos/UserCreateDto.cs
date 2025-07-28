@@ -26,12 +26,11 @@ namespace LYBT.Module.Users.Models.Dtos {
         public string RealName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用户角色集合（至少选择一个）
+        /// 用户角色（单一角色）
         /// </summary>
         [Required(ErrorMessage = "角色不能为空")]
-        [MinLength(1, ErrorMessage = "角色不能为空")]
-        [DisplayName("用户角色集合（至少选择一个）")]
-        public List<UserRole> Roles { get; set; } = new();
+        [DisplayName("用户角色")]
+        public UserRole Role { get; set; } = UserRole.Staff;
 
         /// <summary>
         /// 账号启用状态（true=启用，false=禁用）

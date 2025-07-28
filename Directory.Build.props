@@ -1,5 +1,51 @@
 <Project>
   <PropertyGroup>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
+    <DocumentationOutputPath>$(SolutionDir)Documentation</DocumentationOutputPath>
+    
+    <!-- 统一输出路径配置 -->
+    <OutputPath>$(SolutionDir)BIN\$(Configuration)\$(TargetFramework)\</OutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
+
+  <!-- 构建时复制文档文件到解决方案文件夹 -->
+  <Target Name="CopyDocumentationFiles" AfterTargets="Build">
+    <ItemGroup>
+      <!-- 查找所有模块的FUNCTIONALITY.md文件 -->
+      <FunctionalityDocs Include="$(MSBuildProjectDirectory)\FUNCTIONALITY.md" Condition="Exists('$(MSBuildProjectDirectory)\FUNCTIONALITY.md')" />
+      <!-- 查找所有模块的README.md文件 -->
+      <ReadmeDocs Include="$(MSBuildProjectDirectory)\README.md" Condition="Exists('$(MSBuildProjectDirectory)\README.md')" />
+    </ItemGroup>
+    
+    <!-- 创建文档输出目录 -->
+    <MakeDir Directories="$(DocumentationOutputPath)" Condition="!Exists('$(DocumentationOutputPath)')" />
+    
+    <!-- 复制FUNCTIONALITY.md文件，使用项目名称作为前缀 -->
+    <Copy 
+      SourceFiles="@(FunctionalityDocs)" 
+      DestinationFiles="$(DocumentationOutputPath)\$(MSBuildProjectName)_FUNCTIONALITY.md"
+      Condition="@(FunctionalityDocs) != ''"
+      SkipUnchangedFiles="true" />
+    
+    <!-- 复制README.md文件，使用项目名称作为前缀 -->
+    <Copy 
+      SourceFiles="@(ReadmeDocs)" 
+      DestinationFiles="$(DocumentationOutputPath)\$(MSBuildProjectName)_README.md"
+      Condition="@(ReadmeDocs) != ''"
+      SkipUnchangedFiles="true" />
+      
+    <!-- 输出构建信息 -->
+    <Message Text="文档文件已复制到: $(DocumentationOutputPath)" Importance="high" Condition="@(FunctionalityDocs) != '' OR @(ReadmeDocs) != ''" />
+  </Target>
+
+  <!-- 清理时删除文档文件 -->
+  <Target Name="CleanDocumentationFiles" AfterTargets="Clean">
+    <ItemGroup>
+      <DocumentationFiles Include="$(DocumentationOutputPath)\$(MSBuildProjectName)_*.md" />
+    </ItemGroup>
+    
+    <Delete Files="@(DocumentationFiles)" />
+    <Message Text="已清理文档文件: @(DocumentationFiles)" Importance="high" Condition="@(DocumentationFiles) != ''" />
+  </Target>
 </Project>

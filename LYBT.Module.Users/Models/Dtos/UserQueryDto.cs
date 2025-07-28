@@ -15,10 +15,10 @@ namespace LYBT.Module.Users.Models.Dtos {
         public string? Keyword { get; set; }
 
         /// <summary>
-        /// 用户角色列表（可选，多选）
+        /// 用户角色（可选查询条件）
         /// </summary>
-        [DisplayName("用户角色列表（可选，多选）")]
-        public List<UserRole>? Roles { get; set; }
+        [DisplayName("用户角色（可选查询条件）")]
+        public UserRole? Role { get; set; }
 
         /// <summary>
         /// 启用状态（可选条件）

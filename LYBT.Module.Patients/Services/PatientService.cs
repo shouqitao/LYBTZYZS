@@ -38,6 +38,12 @@ namespace LYBT.Module.Patients.Services {
         /// 新增患者档案，并记录操作日志
         /// </summary>
         public async Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
+            // 三要素匹配验证，防止重复患者
+            var duplicateCheck = await CheckPatientDuplicateAsync(dto.Name, dto.PhoneNumber, dto.IDNumber);
+            if (duplicateCheck.HasDuplicate) {
+                throw new ArgumentException($"发现疑似重复患者：{duplicateCheck.Message}。如确需创建新患者，请联系管理员。");
+            }
+
             // 数据验证
             var validation = await ValidatePatientAsync(dto, false);
             if (!validation.IsValid) {
@@ -47,6 +53,7 @@ namespace LYBT.Module.Patients.Services {
             var model = _mapper.Map<PatientModel>(dto);
             model.Id = Guid.NewGuid();
             model.PinyinCode = CommonHelper.GetPinyinCode(model.Name);
+            model.WuBiCode = CommonHelper.GetWuBiCode(model.Name);
             model.CreatedAt = DateTime.Now;
             model.UpdatedAt = DateTime.Now;
 
@@ -392,6 +399,48 @@ namespace LYBT.Module.Patients.Services {
         }
 
         /// <summary>
+        /// 三要素匹配检查，防止重复患者
+        /// </summary>
+        private async Task<PatientDuplicateCheckResult> CheckPatientDuplicateAsync(string name, string phoneNumber, string idNumber) {
+            var result = new PatientDuplicateCheckResult { HasDuplicate = false };
+            var duplicateMessages = new List<string>();
+
+            // 1. 身份证号完全匹配检查
+            if (!string.IsNullOrEmpty(idNumber)) {
+                var idMatches = await _patientRepository.GetPatientsByIdNumberAsync(idNumber);
+                if (idMatches.Any()) {
+                    duplicateMessages.Add($"身份证号 {idNumber} 已存在");
+                    result.HasDuplicate = true;
+                    result.MatchType |= PatientMatchType.IdNumber;
+                    result.ExistingPatients.AddRange(idMatches);
+                }
+            }
+
+            // 2. 姓名+手机号匹配检查
+            if (!string.IsNullOrEmpty(phoneNumber)) {
+                var namePhoneMatches = await _patientRepository.GetPatientsByNameAndPhoneAsync(name, phoneNumber);
+                if (namePhoneMatches.Any()) {
+                    duplicateMessages.Add($"姓名 {name} + 手机号 {phoneNumber} 组合已存在");
+                    result.HasDuplicate = true;
+                    result.MatchType |= PatientMatchType.NameAndPhone;
+                    result.ExistingPatients.AddRange(namePhoneMatches.Where(p => !result.ExistingPatients.Any(ep => ep.Id == p.Id)));
+                }
+            }
+
+            // 3. 高相似度姓名检查（考虑同音字、形近字等情况）
+            var similarNameMatches = await _patientRepository.GetPatientsBySimilarNameAsync(name);
+            if (similarNameMatches.Any()) {
+                duplicateMessages.Add($"发现相似姓名患者：{string.Join(", ", similarNameMatches.Select(p => p.Name))}");
+                result.HasSimilar = true;
+                result.MatchType |= PatientMatchType.SimilarName;
+                result.SimilarPatients.AddRange(similarNameMatches.Where(p => !result.ExistingPatients.Any(ep => ep.Id == p.Id)));
+            }
+
+            result.Message = string.Join("；", duplicateMessages);
+            return result;
+        }
+
+        /// <summary>
         /// 统一的患者操作日志记录
         /// </summary>
         private async Task LogPatientOperationAsync(Guid operatorId, string operatorName, 
@@ -406,5 +455,66 @@ namespace LYBT.Module.Patients.Services {
                 parameters: parameters
             );
         }
+    }
+
+    /// <summary>
+    /// 患者重复检查结果
+    /// </summary>
+    public class PatientDuplicateCheckResult {
+        /// <summary>
+        /// 是否有重复
+        /// </summary>
+        public bool HasDuplicate { get; set; }
+
+        /// <summary>
+        /// 是否有相似
+        /// </summary>
+        public bool HasSimilar { get; set; }
+
+        /// <summary>
+        /// 匹配类型
+        /// </summary>
+        public PatientMatchType MatchType { get; set; }
+
+        /// <summary>
+        /// 提示消息
+        /// </summary>
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 已存在的患者（强匹配）
+        /// </summary>
+        public List<PatientModel> ExistingPatients { get; set; } = new();
+
+        /// <summary>
+        /// 相似的患者（弱匹配）
+        /// </summary>
+        public List<PatientModel> SimilarPatients { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 患者匹配类型
+    /// </summary>
+    [Flags]
+    public enum PatientMatchType {
+        /// <summary>
+        /// 无匹配
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// 身份证号匹配
+        /// </summary>
+        IdNumber = 1,
+
+        /// <summary>
+        /// 姓名+手机号匹配
+        /// </summary>
+        NameAndPhone = 2,
+
+        /// <summary>
+        /// 相似姓名匹配
+        /// </summary>
+        SimilarName = 4
     }
 }

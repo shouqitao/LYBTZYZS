@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Module.FormulaTemplates.Models {
 
@@ -10,12 +11,15 @@ namespace LYBT.Module.FormulaTemplates.Models {
         /// <summary>
         /// 模板ID（主键）
         /// </summary>
+        [Key]
         [DisplayName("模板ID")]
         public Guid Id { get; set; }
 
         /// <summary>
         /// 模板名称
         /// </summary>
+        [Required]
+        [StringLength(200)]
         [DisplayName("模板名称")]
         public string Name { get; set; } = string.Empty;
 
@@ -28,8 +32,62 @@ namespace LYBT.Module.FormulaTemplates.Models {
         /// <summary>
         /// 备注
         /// </summary>
+        [StringLength(1000)]
         [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>
+        /// 创建者ID
+        /// </summary>
+        [Required]
+        [DisplayName("创建者ID")]
+        public Guid CreatedById { get; set; }
+
+        /// <summary>
+        /// 创建者姓名
+        /// </summary>
+        [Required]
+        [StringLength(100)]
+        [DisplayName("创建者姓名")]
+        public string CreatedByName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 是否共享（共享后所有医生可见，未共享仅创建者可见）
+        /// </summary>
+        [DisplayName("是否共享")]
+        public bool IsShared { get; set; } = false;
+
+        /// <summary>
+        /// 共享时间
+        /// </summary>
+        [DisplayName("共享时间")]
+        public DateTime? SharedAt { get; set; }
+
+        /// <summary>
+        /// 共享操作人ID
+        /// </summary>
+        [DisplayName("共享操作人ID")]
+        public Guid? SharedById { get; set; }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        [Required]
+        [DisplayName("创建时间")]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// 更新时间
+        /// </summary>
+        [Required]
+        [DisplayName("更新时间")]
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// 是否启用
+        /// </summary>
+        [DisplayName("是否启用")]
+        public bool IsActive { get; set; } = true;
     }
 
     /// <summary>

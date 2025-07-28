@@ -81,5 +81,34 @@ namespace LYBT.Module.FormulaTemplates.Services {
         public async Task<List<FormulaTemplateDetailDto>> ExportAsync() {
             return await _repository.ExportAsync();
         }
+
+        /// <summary>
+        /// 获取全部活动状态的验方模板
+        /// </summary>
+        public async Task<List<FormulaTemplateDetailDto>> GetAllActiveFormulasAsync() {
+            var models = await _repository.GetAllActiveAsync();
+            return _mapper.Map<List<FormulaTemplateDetailDto>>(models);
+        }
+
+        /// <summary>
+        /// 获取指定医生可见的验方模板（包括共享验方和自己创建的验方）
+        /// </summary>
+        /// <param name="doctorId">医生ID</param>
+        /// <returns>可见的验方模板列表</returns>
+        public async Task<List<FormulaTemplateDetailDto>> GetVisibleFormulasForDoctorAsync(Guid doctorId) {
+            var models = await _repository.GetVisibleForDoctorAsync(doctorId);
+            return _mapper.Map<List<FormulaTemplateDetailDto>>(models);
+        }
+
+        /// <summary>
+        /// 设置验方模板共享状态
+        /// </summary>
+        /// <param name="templateId">模板ID</param>
+        /// <param name="isShared">是否共享</param>
+        /// <param name="operatorId">操作人ID</param>
+        /// <returns>是否成功</returns>
+        public async Task<bool> SetSharingStatusAsync(Guid templateId, bool isShared, Guid operatorId) {
+            return await _repository.SetSharingStatusAsync(templateId, isShared, operatorId);
+        }
     }
 }
