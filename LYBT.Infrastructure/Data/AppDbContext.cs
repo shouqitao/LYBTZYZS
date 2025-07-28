@@ -212,6 +212,12 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(h => h.Id);
             entity.Property(h => h.Name).HasMaxLength(100);
             entity.Property(h => h.PinyinCode).HasMaxLength(20);
+            entity.Property(h => h.WuBiCode).HasMaxLength(20);
+            entity.Property(h => h.BatchNo).HasMaxLength(32);
+            entity.HasIndex(h => h.Name);
+            entity.HasIndex(h => h.PinyinCode);
+            entity.HasIndex(h => h.WuBiCode);
+            entity.HasIndex(h => h.ExpireDate);
         }
 
         private static void ConfigureFormulaTemplates(ModelBuilder modelBuilder) {

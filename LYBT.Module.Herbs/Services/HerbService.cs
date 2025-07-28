@@ -3,7 +3,7 @@ using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Extensions;
 using LYBT.Common.Models;
 using LYBT.Models.Herbs;
-using LYBT.Module.Herbs.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +15,12 @@ namespace LYBT.Module.Herbs.Services {
     public class HerbService : IHerbService {
         private readonly IHerbRepository _repository;
         private readonly IMapper _mapper;
-        private readonly HerbDbContext _context;
+        private readonly AppDbContext _context;
 
         /// <summary>
         /// 构造方法，注入仓储与对象映射
         /// </summary>
-        public HerbService(IHerbRepository repository, IMapper mapper, HerbDbContext context) {
+        public HerbService(IHerbRepository repository, IMapper mapper, AppDbContext context) {
             _repository = repository;
             _mapper = mapper;
             _context = context;

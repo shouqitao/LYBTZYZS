@@ -115,13 +115,13 @@ namespace LYBT.Models.Herbs {
         /// 创建时间
         /// </summary>
         [DisplayName("创建时间")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 更新时间
         /// </summary>
         [DisplayName("更新时间")]
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 最后操作者ID
