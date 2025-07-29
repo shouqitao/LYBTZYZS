@@ -142,6 +142,12 @@ namespace LYBT.Models.Billing {
         public Guid ItemId { get; set; } = Guid.NewGuid();
 
         /// <summary>
+        /// 所属账单ID
+        /// </summary>
+        [DisplayName("所属账单ID")]
+        public Guid BillingId { get; set; }
+
+        /// <summary>
         /// 项目名称
         /// </summary>
         [Required, StringLength(64)]
