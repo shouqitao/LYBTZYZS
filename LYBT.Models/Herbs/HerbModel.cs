@@ -28,6 +28,7 @@ namespace LYBT.Models.Herbs {
         /// 药材基础规格数值（如：1，用于计算实际用量）
         /// </summary>
         [DisplayName("规格")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Specification { get; set; } = 1;
 
         /// <summary>

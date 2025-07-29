@@ -18,6 +18,8 @@ using LYBT.Models.Users;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Linq;
 
 namespace LYBT.Infrastructure.Data {
 
@@ -283,15 +285,21 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(r => r.Id);
             var stringListConverter = new ValueConverter<List<string>, string>(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v) ?? new List<string>());
+                v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
+            var stringListComparer = new ValueComparer<List<string>>(
+                (c1, c2) => c1.SequenceEqual(c2),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v == null ? 0 : v.GetHashCode())),
+                c => c.ToList());
 
-            entity.Property(r => r.DiagnosisResults)
-                  .HasConversion(stringListConverter)
-                  .HasColumnType("nvarchar(max)");
+            var diagProp = entity.Property(r => r.DiagnosisResults)
+                                  .HasConversion(stringListConverter)
+                                  .HasColumnType("nvarchar(max)");
+            diagProp.Metadata.SetValueComparer(stringListComparer);
 
-            entity.Property(r => r.SharedToDoctorIds)
-                  .HasConversion(stringListConverter)
-                  .HasColumnType("nvarchar(max)");
+            var sharedProp = entity.Property(r => r.SharedToDoctorIds)
+                                    .HasConversion(stringListConverter)
+                                    .HasColumnType("nvarchar(max)");
+            sharedProp.Metadata.SetValueComparer(stringListComparer);
 
             entity.OwnsMany(r => r.HerbalFormula, b => {
                 b.ToTable("RecordHerbalFormulas");

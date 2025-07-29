@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Models.DiagnosisTreatment {
@@ -31,12 +32,14 @@ namespace LYBT.Models.DiagnosisTreatment {
         /// 剂量
         /// </summary>
         [DisplayName("剂量")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
 
         /// <summary>
         /// 单价
         /// </summary>
         [DisplayName("单价")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal UnitPrice { get; set; }
 
         /// <summary>
