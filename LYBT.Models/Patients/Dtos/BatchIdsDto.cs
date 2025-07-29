@@ -6,7 +6,7 @@ namespace LYBT.Models.Patients {
     /// <summary>
     /// 批量操作患者档案ID列表 DTO
     /// </summary>
-    public class BatchIdsDto {
+    public class PatientBatchIdsDto {
 
         [Required]
         [DisplayName("Ids")]

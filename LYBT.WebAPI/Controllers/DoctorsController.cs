@@ -281,7 +281,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量禁用医生
         /// </summary>
         [HttpPatch("batch-disable")]
-        public async Task<ActionResult<ApiResponse<int>>> BatchDisable([FromBody] BatchIdsDto dto) {
+        public async Task<ActionResult<ApiResponse<int>>> BatchDisable([FromBody] DoctorBatchIdsDto dto) {
             try {
                 if (dto?.Ids == null || dto.Ids.Count == 0) {
                     return BadRequest(ApiResponse<object>.Fail("请选择要禁用的医生"));
@@ -308,7 +308,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量启用医生
         /// </summary>
         [HttpPatch("batch-enable")]
-        public async Task<ActionResult<ApiResponse<int>>> BatchEnable([FromBody] BatchIdsDto dto) {
+        public async Task<ActionResult<ApiResponse<int>>> BatchEnable([FromBody] DoctorBatchIdsDto dto) {
             try {
                 if (dto?.Ids == null || dto.Ids.Count == 0) {
                     return BadRequest(ApiResponse<object>.Fail("请选择要启用的医生"));

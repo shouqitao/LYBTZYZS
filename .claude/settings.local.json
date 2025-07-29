@@ -69,7 +69,9 @@
       "Bash(dotnet ef database drop:*)",
       "Bash(Remove-Item:*)",
       "Bash(bash:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(dotnet ef dbcontext:*)",
+      "Bash(dotnet clean:*)"
     ],
     "deny": []
   }

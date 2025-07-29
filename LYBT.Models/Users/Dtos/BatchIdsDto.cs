@@ -6,7 +6,7 @@ namespace LYBT.Models.Users {
     /// <summary>
     /// 批量操作用户时提交的ID列表 DTO
     /// </summary>
-    public class BatchIdsDto {
+    public class UserBatchIdsDto {
 
         [Required]
         [DisplayName("Ids")]

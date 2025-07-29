@@ -145,7 +145,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量禁用患者档案
         /// </summary>
         [HttpPatch("batch-disable")]
-        public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
+        public async Task<IActionResult> BatchDisable([FromBody] PatientBatchIdsDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
             return Ok(ApiResponse<object>.Success(new { DisabledCount = count, Message = $"成功禁用 {count} 名患者档案" }));
@@ -155,7 +155,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量启用患者档案
         /// </summary>
         [HttpPatch("batch-enable")]
-        public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
+        public async Task<IActionResult> BatchEnable([FromBody] PatientBatchIdsDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
             return Ok(ApiResponse<object>.Success(new { EnabledCount = count, Message = $"成功启用 {count} 名患者档案" }));

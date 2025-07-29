@@ -27,15 +27,63 @@ dotnet test
 
 ### Database Migrations
 
+**Note: This system uses a unified database architecture with AppDbContext in LYBT.Infrastructure.**
+
+#### Standard Migration Operations
+
 ```bash
 # Add a new migration (replace MigrationName)
-dotnet ef migrations add MigrationName --project LYBT.Module.Users --startup-project LYBT.WebAPI
+dotnet ef migrations add MigrationName --project LYBT.Infrastructure --startup-project LYBT.WebAPI
 
 # Update database
-dotnet ef database update --project LYBT.Module.Users --startup-project LYBT.WebAPI
+dotnet ef database update --project LYBT.Infrastructure --startup-project LYBT.WebAPI
+
+# Remove last migration (if not applied)
+dotnet ef migrations remove --project LYBT.Infrastructure --startup-project LYBT.WebAPI
 ```
 
-Note: Each module has its own DbContext and migrations. Replace `LYBT.Module.Users` with the appropriate module name.
+#### Complete Database Rebuild
+
+**⚠️ Warning: This will permanently delete ALL data. Use only in development environment.**
+
+When entity models undergo major changes and you need to completely rebuild the database:
+
+```bash
+# 1. Drop the entire database (will lose all data)
+dotnet ef database drop --project LYBT.Infrastructure --startup-project LYBT.WebAPI --force
+
+# 2. Delete all migration files
+rmdir /s /q "LYBT.Infrastructure\Migrations"
+# On Linux/Mac: rm -rf "LYBT.Infrastructure/Migrations"
+
+# 3. Create fresh initial migration
+dotnet ef migrations add InitialCreate --project LYBT.Infrastructure --startup-project LYBT.WebAPI
+
+# 4. Create new database with updated schema
+dotnet ef database update --project LYBT.Infrastructure --startup-project LYBT.WebAPI
+```
+
+#### One-Command Database Rebuild
+
+```bash
+# Quick rebuild sequence (development only)
+dotnet ef database drop --project LYBT.Infrastructure --startup-project LYBT.WebAPI --force && rmdir /s /q "LYBT.Infrastructure\Migrations" && dotnet ef migrations add InitialCreate --project LYBT.Infrastructure --startup-project LYBT.WebAPI && dotnet ef database update --project LYBT.Infrastructure --startup-project LYBT.WebAPI
+```
+
+#### When to Use Complete Rebuild
+
+- Major entity model restructuring
+- Changing primary key types or relationships
+- Database schema architectural changes
+- Development phase rapid iteration
+- Cleaning up test/development data
+
+#### Production Migration Best Practices
+
+- Always use incremental migrations in production
+- Test migrations on development database first
+- Backup production database before applying migrations
+- Use `dotnet ef migrations script` to generate SQL scripts for review
 
 ## Architecture Overview
 
@@ -43,10 +91,10 @@ This is a **modular Traditional Chinese Medicine (TCM) clinic management system*
 
 ### Core Architecture Principles
 
-- **Modular Design**: Each business domain is implemented as a separate module with its own DbContext, services, repositories, and models
+- **Modular Design**: Each business domain is implemented as a separate module with its own services, repositories, and models
 - **Unified Infrastructure**: Shared infrastructure services for logging, caching, configuration, and authentication
+- **Unified Database**: Single AppDbContext in LYBT.Infrastructure manages all business entities
 - **Agent-Based Services**: Each module exposes standardized service interfaces for cross-module communication
-- **Multi-Database Support**: Each module can have its own database context with separate migrations
 
 ### Module Structure
 
@@ -54,15 +102,15 @@ Each business module follows this structure:
 
 ```
 LYBT.Module.[Name]/
-├── Data/                    # DbContext and factory
 ├── Models/                  # Domain models and DTOs
 ├── Services/                # Business logic services
 ├── Repositories/            # Data access layer
 ├── Interfaces/              # Service contracts
 ├── Mapping/                 # AutoMapper profiles
-├── Migrations/              # EF Core migrations
 └── [Name]Module.cs         # Module registration
 ```
+
+**Note: Database context and migrations are centralized in LYBT.Infrastructure.**
 
 ### Key Modules
 
@@ -106,12 +154,16 @@ public static void AddLybtModules(this IServiceCollection services)
 
 ### Database Configuration
 
-Each module configures its DbContext in `Program.cs`:
+The system uses a unified database architecture with a single AppDbContext in LYBT.Infrastructure:
 
 ```csharp
-var connection = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddUsersModule(connection);
-builder.Services.AddPatientsModule(connection);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options => {
+    options.UseSqlServer(connectionString, sqlOptions => {
+        sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
+        sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
+    });
+});
 ```
 
 ### API Controller Pattern
@@ -130,7 +182,8 @@ The infrastructure provides these unified services accessible across all modules
 
 ### Development Guidelines
 
-- Each module maintains its own database schema through EF Core migrations
+- The system uses a unified AppDbContext for all modules in LYBT.Infrastructure
+- All database migrations are centralized in LYBT.Infrastructure/Migrations
 - Use AutoMapper for DTO conversions with profiles defined in each module
 - Follow the Repository pattern for data access
 - Implement comprehensive logging for all business operations

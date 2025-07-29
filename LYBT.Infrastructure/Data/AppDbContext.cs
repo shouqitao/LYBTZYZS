@@ -287,9 +287,9 @@ namespace LYBT.Infrastructure.Data {
                 v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions()) ?? new List<string>());
 
             var stringListComparer = new ValueComparer<List<string>>(
-                (c1, c2) => c1.SequenceEqual(c2),
-                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v != null ? v.GetHashCode() : 0)),
-                c => c.ToList());
+                (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+                c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v != null ? v.GetHashCode() : 0)),
+                c => c == null ? new List<string>() : c.ToList());
             var diagnosisProperty = entity.Property(r => r.DiagnosisResults)
                   .HasConversion(stringListConverter)
                   .HasColumnType("nvarchar(max)");

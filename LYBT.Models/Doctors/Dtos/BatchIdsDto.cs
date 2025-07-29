@@ -6,7 +6,7 @@ namespace LYBT.Models.Doctors {
     /// <summary>
     /// 批量操作时提交的ID列表
     /// </summary>
-    public class BatchIdsDto {
+    public class DoctorBatchIdsDto {
 
         [Required]
         [DisplayName("Ids")]

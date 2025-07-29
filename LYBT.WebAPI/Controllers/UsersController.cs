@@ -107,7 +107,7 @@ public class UsersController : ControllerBase {
     /// 批量禁用用户
     /// </summary>
     [HttpPost("batchDisable")]
-    public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
+    public async Task<IActionResult> BatchDisable([FromBody] UserBatchIdsDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
         return Ok(new { success = true, count, message = $"成功禁用 {count} 个用户" });
@@ -117,7 +117,7 @@ public class UsersController : ControllerBase {
     /// 批量启用用户
     /// </summary>
     [HttpPost("batchEnable")]
-    public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
+    public async Task<IActionResult> BatchEnable([FromBody] UserBatchIdsDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
         return Ok(new { success = true, count, message = $"成功启用 {count} 个用户" });
