@@ -1,0 +1,146 @@
+﻿<UserControl x:Class="LYBT.UI.PrismWpf.Views.System.SystemSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             Background="{DynamicResource MaterialDesignPaper}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 页面标题 -->
+        <TextBlock Grid.Row="0" 
+                   Text="系统设置" 
+                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                   Margin="0,0,0,16"/>
+
+        <!-- 设置内容 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+                
+                <!-- 基本设置 -->
+                <GroupBox Header="基本设置" Style="{StaticResource MaterialDesignCardGroupBox}">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 系统名称 -->
+                        <TextBox Grid.Row="0" Grid.Column="0"
+                                 materialDesign:HintAssist.Hint="系统名称"
+                                 Text="{Binding SystemName, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 系统版本 -->
+                        <TextBox Grid.Row="0" Grid.Column="2"
+                                 materialDesign:HintAssist.Hint="系统版本"
+                                 Text="{Binding SystemVersion, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 诊所名称 -->
+                        <TextBox Grid.Row="1" Grid.Column="0"
+                                 materialDesign:HintAssist.Hint="诊所名称"
+                                 Text="{Binding ClinicName, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 联系电话 -->
+                        <TextBox Grid.Row="1" Grid.Column="2"
+                                 materialDesign:HintAssist.Hint="联系电话"
+                                 Text="{Binding ContactPhone, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 诊所地址 -->
+                        <TextBox Grid.Row="2" Grid.ColumnSpan="3"
+                                 materialDesign:HintAssist.Hint="诊所地址"
+                                 Text="{Binding ClinicAddress, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+                    </Grid>
+                </GroupBox>
+
+                <!-- 业务设置 -->
+                <GroupBox Header="业务设置" Style="{StaticResource MaterialDesignCardGroupBox}">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 挂号费 -->
+                        <TextBox Grid.Row="0" Grid.Column="0"
+                                 materialDesign:HintAssist.Hint="标准挂号费"
+                                 Text="{Binding RegistrationFee, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 急诊挂号费 -->
+                        <TextBox Grid.Row="0" Grid.Column="2"
+                                 materialDesign:HintAssist.Hint="急诊挂号费"
+                                 Text="{Binding EmergencyFee, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 默认处方天数 -->
+                        <TextBox Grid.Row="1" Grid.Column="0"
+                                 materialDesign:HintAssist.Hint="默认处方天数"
+                                 Text="{Binding DefaultPrescriptionDays, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 病历保存天数 -->
+                        <TextBox Grid.Row="1" Grid.Column="2"
+                                 materialDesign:HintAssist.Hint="病历保存天数"
+                                 Text="{Binding RecordRetentionDays, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+                    </Grid>
+                </GroupBox>
+
+                <!-- 权限设置 -->
+                <GroupBox Header="权限设置" Style="{StaticResource MaterialDesignCardGroupBox}">
+                    <StackPanel Margin="16">
+                        <CheckBox Content="允许跨医生查看病历" 
+                                  IsChecked="{Binding AllowCrossViewRecords}"
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="允许批量操作" 
+                                  IsChecked="{Binding AllowBatchOperations}"
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="启用审计日志" 
+                                  IsChecked="{Binding EnableAuditLog}"
+                                  Margin="0,0,0,8"/>
+                        <CheckBox Content="启用数据备份" 
+                                  IsChecked="{Binding EnableDataBackup}"/>
+                    </StackPanel>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 按钮区域 -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
+            <Button Content="重置" 
+                    Command="{Binding ResetCommand}"
+                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Margin="0,0,8,0"/>
+            <Button Content="保存设置" 
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource MaterialDesignRaisedButton}"/>
+        </StackPanel>
+    </Grid>
+
+</UserControl>

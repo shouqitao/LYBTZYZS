@@ -1,0 +1,136 @@
+﻿<Window x:Class="LYBT.UI.PrismWpf.Views.Patient.PatientEditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding Title}"
+        Height="600" Width="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MaterialDesignPaper}">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <TextBlock Grid.Row="0" 
+                   Text="{Binding Title}" 
+                   Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                   Margin="0,0,0,24"/>
+
+        <!-- 表单内容 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+                
+                <!-- 基本信息 -->
+                <GroupBox Header="基本信息" Style="{StaticResource MaterialDesignCardGroupBox}">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 姓名 -->
+                        <TextBox Grid.Row="0" Grid.Column="0"
+                                 materialDesign:HintAssist.Hint="姓名"
+                                 Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 性别 -->
+                        <ComboBox Grid.Row="0" Grid.Column="2"
+                                  materialDesign:HintAssist.Hint="性别"
+                                  ItemsSource="{Binding AvailableGenders}"
+                                  SelectedItem="{Binding SelectedGender}"
+                                  Margin="0,0,0,16"/>
+
+                        <!-- 出生日期 -->
+                        <DatePicker Grid.Row="0" Grid.Column="4"
+                                    materialDesign:HintAssist.Hint="出生日期"
+                                    SelectedDate="{Binding BirthDate}"
+                                    Margin="0,0,0,16"/>
+
+                        <!-- 身份证号 -->
+                        <TextBox Grid.Row="1" Grid.Column="0"
+                                 materialDesign:HintAssist.Hint="身份证号"
+                                 Text="{Binding IdCard, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 电话号码 -->
+                        <TextBox Grid.Row="1" Grid.Column="2"
+                                 materialDesign:HintAssist.Hint="电话号码"
+                                 Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 紧急联系人 -->
+                        <TextBox Grid.Row="1" Grid.Column="4"
+                                 materialDesign:HintAssist.Hint="紧急联系人"
+                                 Text="{Binding EmergencyContact, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 住址 -->
+                        <TextBox Grid.Row="2" Grid.ColumnSpan="5"
+                                 materialDesign:HintAssist.Hint="住址"
+                                 Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
+                                 TextWrapping="Wrap"
+                                 Margin="0,0,0,16"/>
+                    </Grid>
+                </GroupBox>
+
+                <!-- 医疗信息 -->
+                <GroupBox Header="医疗信息" Style="{StaticResource MaterialDesignCardGroupBox}">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 过敏史 -->
+                        <TextBox Grid.Row="0"
+                                 materialDesign:HintAssist.Hint="过敏史"
+                                 Text="{Binding AllergyHistory, UpdateSourceTrigger=PropertyChanged}"
+                                 TextWrapping="Wrap"
+                                 MinHeight="60"
+                                 AcceptsReturn="True"
+                                 Margin="0,0,0,16"/>
+
+                        <!-- 既往病史 -->
+                        <TextBox Grid.Row="1"
+                                 materialDesign:HintAssist.Hint="既往病史"
+                                 Text="{Binding MedicalHistory, UpdateSourceTrigger=PropertyChanged}"
+                                 TextWrapping="Wrap"
+                                 MinHeight="60"
+                                 AcceptsReturn="True"/>
+                    </Grid>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 按钮区域 -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,24,0,0">
+            <Button Content="取消" 
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Margin="0,0,8,0"/>
+            <Button Content="{Binding SaveButtonText}" 
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource MaterialDesignRaisedButton}"/>
+        </StackPanel>
+    </Grid>
+
+</Window>

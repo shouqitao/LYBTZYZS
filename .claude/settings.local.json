@@ -71,7 +71,11 @@
       "Bash(bash:*)",
       "Bash(dir:*)",
       "Bash(dotnet ef dbcontext:*)",
-      "Bash(dotnet clean:*)"
+      "Bash(dotnet clean:*)",
+      "Bash(create_project_structure.bat)",
+      "Bash(touch \"D:\\source\\repos\\LYBTZYZS\\LYBT.WPF.Client\\LYBT.WPF.Client.Shell\\ViewModels\\MainWindowViewModel.cs\")",
+      "Bash(touch \"D:\\source\\repos\\LYBTZYZS\\LYBT.WPF.Client\\LYBT.WPF.Client.Modules\\Authentication\\Views\\LoginWindow.xaml.cs\")",
+      "Bash(touch \"D:\\source\\repos\\LYBTZYZS\\LYBT.WPF.Client\\LYBT.WPF.Client.Modules\\Authentication\\Views\\LoginWindow.xaml\")"
     ],
     "deny": []
   }

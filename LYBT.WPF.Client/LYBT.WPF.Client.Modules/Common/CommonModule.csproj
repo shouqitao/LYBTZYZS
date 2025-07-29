@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyTitle>凌隐宝堂中医诊所管理系统 - 通用模块</AssemblyTitle>
+    <AssemblyDescription>通用模块，包含公共对话框、控件、工具等功能</AssemblyDescription>
+    <AssemblyProduct>凌隐宝堂中医诊所管理系统</AssemblyProduct>
+    <AssemblyCompany>凌隐宝堂</AssemblyCompany>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prism.Unity" Version="8.1.97" />
+    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="FluentValidation" Version="11.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\LYBT.WPF.Client.Core\LYBT.WPF.Client.Core.csproj" />
+    <ProjectReference Include="..\..\LYBT.WPF.Client.Services\LYBT.WPF.Client.Services.csproj" />
+    <ProjectReference Include="..\..\LYBT.WPF.Client.Infrastructure\LYBT.WPF.Client.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

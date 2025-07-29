@@ -1,0 +1,113 @@
+﻿<UserControl x:Class="LYBT.UI.PrismWpf.Views.Formula.FormulaTemplateListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             Background="{DynamicResource MaterialDesignPaper}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 页面标题 -->
+        <TextBlock Grid.Row="0" 
+                   Text="经验方模板管理" 
+                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                   Margin="0,0,0,16"/>
+
+        <!-- 工具栏 -->
+        <materialDesign:Card Grid.Row="1" Padding="16" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="新增模板" 
+                        Command="{Binding AddTemplateCommand}"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Margin="0,0,8,0"/>
+                <Button Content="导入模板" 
+                        Command="{Binding ImportTemplateCommand}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Margin="0,0,16,0"/>
+                
+                <!-- 搜索框 -->
+                <TextBox materialDesign:HintAssist.Hint="搜索方剂名称或功效"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Width="200"
+                         Margin="0,0,8,0"/>
+                <Button Content="搜索"
+                        Command="{Binding SearchCommand}"
+                        Style="{StaticResource MaterialDesignFlatButton}"/>
+            </StackPanel>
+        </materialDesign:Card>
+
+        <!-- 模板列表 -->
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Templates}"
+                  SelectedItem="{Binding SelectedTemplate}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  materialDesign:DataGridAssist.CellPadding="8"
+                  materialDesign:DataGridAssist.ColumnHeaderPadding="8">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="方剂名称" Binding="{Binding Name}" Width="150"/>
+                <DataGridTextColumn Header="功效" Binding="{Binding Effect}" Width="200"/>
+                <DataGridTextColumn Header="主治" Binding="{Binding Indications}" Width="200"/>
+                <DataGridTextColumn Header="创建人" Binding="{Binding CreatedBy}" Width="100"/>
+                <DataGridTextColumn Header="创建时间" Binding="{Binding CreatedTime, StringFormat=yyyy-MM-dd}" Width="100"/>
+                <DataGridCheckBoxColumn Header="状态" Binding="{Binding IsActive}" Width="60"/>
+                <DataGridTemplateColumn Header="操作" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="查看" 
+                                        Command="{Binding DataContext.ViewTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                        Margin="2"/>
+                                <Button Content="编辑" 
+                                        Command="{Binding DataContext.EditTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                        Margin="2"/>
+                                <Button Content="删除" 
+                                        Command="{Binding DataContext.DeleteTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                        Margin="2"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 分页控件 -->
+        <StackPanel Grid.Row="3" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
+            <TextBlock Text="{Binding TotalCount, StringFormat='共 {0} 条记录'}" 
+                       VerticalAlignment="Center"
+                       Margin="0,0,16,0"/>
+            <Button Content="上一页" 
+                    Command="{Binding PreviousPageCommand}"
+                    Style="{StaticResource MaterialDesignFlatButton}"/>
+            <TextBlock Text="{Binding CurrentPage}" 
+                       VerticalAlignment="Center"
+                       Margin="8,0"/>
+            <TextBlock Text="/" 
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding TotalPages}" 
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+            <Button Content="下一页" 
+                    Command="{Binding NextPageCommand}"
+                    Style="{StaticResource MaterialDesignFlatButton}"/>
+        </StackPanel>
+    </Grid>
+
+</UserControl>
