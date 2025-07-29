@@ -1,6 +1,6 @@
 using LYBT.Common.Enums.Prescriptions;
 using LYBT.Models.Prescriptions;
-using LYBT.Module.Prescriptions.Data;
+using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Prescriptions.Repositories {
@@ -9,9 +9,9 @@ namespace LYBT.Module.Prescriptions.Repositories {
     /// 表示PrescriptionRepository。
     /// </summary>
     public class PrescriptionRepository : IPrescriptionRepository {
-        private readonly PrescriptionDbContext _context;
+        private readonly AppDbContext _context;
 
-        public PrescriptionRepository(PrescriptionDbContext context) {
+        public PrescriptionRepository(AppDbContext context) {
             _context = context;
         }
 

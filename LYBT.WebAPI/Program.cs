@@ -31,16 +31,6 @@ if (!string.IsNullOrEmpty(connectionString)) {
         options.EnableSensitiveDataLogging(false);
         options.EnableServiceProviderCaching();
     });
-
-    // 为了兼容性，同时注册原有的InfrastructureDbContext
-    builder.Services.AddDbContext<InfrastructureDbContext>(options => {
-        options.UseSqlServer(connectionString, sqlOptions => {
-            sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
-            sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
-        });
-        options.EnableSensitiveDataLogging(false);
-        options.EnableServiceProviderCaching();
-    });
 }
 
 // 缓存服务

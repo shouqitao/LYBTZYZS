@@ -1,6 +1,6 @@
 ﻿using LYBT.Common.Enums.Doctors;
 using LYBT.Models.Doctors;
-using LYBT.Module.Doctors.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Doctors.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,9 +10,9 @@ namespace LYBT.Module.Doctors.Repositories {
     /// 医生仓储实现类
     /// </summary>
     public class DoctorRepository : IDoctorRepository {
-        private readonly DoctorDbContext _context;
+        private readonly AppDbContext _context;
 
-        public DoctorRepository(DoctorDbContext context) {
+        public DoctorRepository(AppDbContext context) {
             _context = context;
         }
 

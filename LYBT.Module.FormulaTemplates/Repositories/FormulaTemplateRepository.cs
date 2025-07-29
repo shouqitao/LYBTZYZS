@@ -1,6 +1,6 @@
 using LYBT.Models.FormulaTemplates;
 using LYBT.Models.Herbs;
-using LYBT.Module.FormulaTemplates.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.FormulaTemplates.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,12 +10,12 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
     /// 经验方模板仓储实现类，数据库操作
     /// </summary>
     public class FormulaTemplateRepository : IFormulaTemplateRepository {
-        private readonly FormulaTemplateDbContext _context;
+        private readonly AppDbContext _context;
 
         /// <summary>
         /// 构造方法，注入数据库上下文
         /// </summary>
-        public FormulaTemplateRepository(FormulaTemplateDbContext context) {
+        public FormulaTemplateRepository(AppDbContext context) {
             _context = context;
         }
 

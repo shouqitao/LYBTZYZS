@@ -1,5 +1,5 @@
 ﻿using LYBT.Models.TreatmentRoom;
-using LYBT.Module.TreatmentRoom.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.TreatmentRoom.Interfaces;
 
 namespace LYBT.Module.TreatmentRoom.Repositories {
@@ -8,12 +8,12 @@ namespace LYBT.Module.TreatmentRoom.Repositories {
     /// 治疗室仓储实现类，封装数据库操作
     /// </summary>
     public class TreatmentRoomRepository : ITreatmentRoomRepository {
-        private readonly TreatmentRoomDbContext _context;
+        private readonly AppDbContext _context;
 
         /// <summary>
         /// 构造方法，注入数据库上下文
         /// </summary>
-        public TreatmentRoomRepository(TreatmentRoomDbContext context) {
+        public TreatmentRoomRepository(AppDbContext context) {
             _context = context;
         }
 

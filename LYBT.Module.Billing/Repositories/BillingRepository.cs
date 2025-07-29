@@ -1,6 +1,6 @@
 ﻿using LYBT.Common.Enums.System;
 using LYBT.Models.Billing;
-using LYBT.Module.Billing.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Billing.Interfaces;
 
 namespace LYBT.Module.Billing.Repositories {
@@ -9,12 +9,12 @@ namespace LYBT.Module.Billing.Repositories {
     /// 费用结算仓储实现类，封装与数据库的交互
     /// </summary>
     public class BillingRepository : IBillingRepository {
-        private readonly BillingDbContext _context;
+        private readonly AppDbContext _context;
 
         /// <summary>
         /// 构造函数，注入数据库上下文
         /// </summary>
-        public BillingRepository(BillingDbContext context) {
+        public BillingRepository(AppDbContext context) {
             _context = context;
         }
 

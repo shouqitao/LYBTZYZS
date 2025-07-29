@@ -1,6 +1,6 @@
 ﻿using LYBT.Common.Enums.System;
 using LYBT.Models.Pharmacy;
-using LYBT.Module.Pharmacy.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Pharmacy.Interfaces;
 
 namespace LYBT.Module.Pharmacy.Repositories {
@@ -9,12 +9,12 @@ namespace LYBT.Module.Pharmacy.Repositories {
     /// 药房仓储实现类，封装与数据库的交互
     /// </summary>
     public class PharmacyRepository : IPharmacyRepository {
-        private readonly PharmacyDbContext _context;
+        private readonly AppDbContext _context;
 
         /// <summary>
         /// 构造函数，注入数据库上下文
         /// </summary>
-        public PharmacyRepository(PharmacyDbContext context) {
+        public PharmacyRepository(AppDbContext context) {
             _context = context;
         }
 

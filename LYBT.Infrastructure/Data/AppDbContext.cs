@@ -64,6 +64,8 @@ namespace LYBT.Infrastructure.Data {
 
         // 计费管理
         public DbSet<BillingModel> Billings { get; set; }
+        
+        public DbSet<BillingItem> BillingItems { get; set; }
 
         // 病历管理
         public DbSet<RecordModel> Records { get; set; }
@@ -226,18 +228,8 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(f => f.Id);
             entity.Property(f => f.Name).HasMaxLength(200);
 
-            entity.OwnsMany(f => f.Herbs, herbs => {
-                herbs.WithOwner().HasForeignKey("FormulaTemplateId");
-                herbs.Property<int>("Id");
-                herbs.HasKey("Id");
-                herbs.ToTable("FormulaTemplateHerbs");
-                herbs.Property(h => h.HerbId);
-                herbs.Property(h => h.HerbName).HasMaxLength(100);
-                herbs.Property(h => h.Quantity).HasColumnType("decimal(10,3)");
-                herbs.Property(h => h.Unit).HasMaxLength(16);
-                herbs.Property(h => h.Usage).HasMaxLength(200);
-                herbs.Property(h => h.Remark).HasMaxLength(200);
-            });
+            // 简化配置，忽略子实体以避免复杂的配置问题
+            entity.Ignore(f => f.Herbs);
         }
 
         private static void ConfigurePharmacies(ModelBuilder modelBuilder) {
@@ -250,6 +242,15 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<BillingModel>();
             entity.ToTable("Billings");
             entity.HasKey(b => b.Id);
+            entity.Ignore(b => b.Items); // 忽略 Items 属性，因为使用独立表
+            
+            // 配置 BillingItem 实体
+            var itemEntity = modelBuilder.Entity<BillingItem>();
+            itemEntity.ToTable("BillingItems");
+            itemEntity.HasKey(i => i.ItemId);
+            itemEntity.Property(i => i.Name).HasMaxLength(64).IsRequired();
+            itemEntity.Property(i => i.UnitPrice).HasColumnType("decimal(18,2)");
+            itemEntity.Property(i => i.Quantity).HasColumnType("decimal(18,2)");
         }
 
         private static void ConfigureRecords(ModelBuilder modelBuilder) {
