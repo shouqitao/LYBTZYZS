@@ -199,6 +199,12 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<DiagnosisTreatmentModel>();
             entity.ToTable("DiagnosisTreatments");
             entity.HasKey(d => d.Id);
+
+            entity.OwnsOne(d => d.Formula, f => {
+                f.OwnsMany(x => x.Herbs);
+            });
+
+            entity.OwnsMany(d => d.Treatments);
         }
 
         private static void ConfigurePrescriptions(ModelBuilder modelBuilder) {
