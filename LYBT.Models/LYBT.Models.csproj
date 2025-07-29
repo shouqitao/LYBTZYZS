@@ -18,7 +18,8 @@
     </ItemGroup>
     <Copy SourceFiles="@(DocumentationFiles)" 
           DestinationFiles="@(DocumentationFiles->'$(MSBuildProjectDirectory)\..\Documentation\$(MSBuildProjectName)_%(Filename)%(Extension)')" 
-          SkipUnchangedFiles="true" />
+          SkipUnchangedFiles="true" 
+          ContinueOnError="true" />
   </Target>
 
 </Project>
