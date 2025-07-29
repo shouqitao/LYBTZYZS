@@ -63,6 +63,7 @@ namespace LYBT.Infrastructure.Data {
 
         // 药房管理
         public DbSet<PharmacyModel> Pharmacies { get; set; }
+        public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; }
 
         // 计费管理
         public DbSet<BillingModel> Billings { get; set; }
@@ -238,6 +239,21 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<PharmacyModel>();
             entity.ToTable("Pharmacies");
             entity.HasKey(p => p.Id);
+
+            // 配置药房与药材的多对多关系
+            entity.HasMany(p => p.Herbs)
+                  .WithMany()
+                  .UsingEntity<PharmacyHerbModel>(
+                        j => j.HasOne<HerbModel>()
+                              .WithMany()
+                              .HasForeignKey(ph => ph.HerbId),
+                        j => j.HasOne<PharmacyModel>()
+                              .WithMany()
+                              .HasForeignKey(ph => ph.PharmacyId),
+                        j => {
+                            j.ToTable("PharmacyHerbs");
+                            j.HasKey(ph => new { ph.PharmacyId, ph.HerbId });
+                        });
         }
 
         private static void ConfigureBillings(ModelBuilder modelBuilder) {
