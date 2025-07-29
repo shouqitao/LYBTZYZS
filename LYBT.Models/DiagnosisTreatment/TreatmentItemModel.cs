@@ -1,10 +1,12 @@
 using System.ComponentModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Models.DiagnosisTreatment {
 
     /// <summary>
     /// 治疗项目实体（如针灸等，一条诊疗可有多个项目）
     /// </summary>
+    [Owned]
     public class TreatmentItemModel {
 
         /// <summary>
