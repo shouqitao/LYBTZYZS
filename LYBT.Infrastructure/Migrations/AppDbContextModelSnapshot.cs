@@ -635,6 +635,9 @@ namespace LYBT.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("BillingId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -647,6 +650,8 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ItemId");
+
+                    b.HasIndex("BillingId");
 
                     b.ToTable("BillingItems", (string)null);
                 });
@@ -979,9 +984,6 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<Guid?>("PharmacyModelId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("PinyinCode")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -1022,8 +1024,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.HasIndex("ExpireDate");
 
                     b.HasIndex("Name");
-
-                    b.HasIndex("PharmacyModelId");
 
                     b.HasIndex("PinyinCode");
 
@@ -1099,6 +1099,21 @@ namespace LYBT.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Patients", (string)null);
+                });
+
+            modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyHerbModel", b =>
+                {
+                    b.Property<Guid>("PharmacyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HerbId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("PharmacyId", "HerbId");
+
+                    b.HasIndex("HerbId");
+
+                    b.ToTable("PharmacyHerbs", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyModel", b =>
@@ -1309,7 +1324,7 @@ namespace LYBT.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.PrimitiveCollection<string>("DiagnosisResults")
+                    b.Property<string>("DiagnosisResults")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -1342,7 +1357,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<DateTime>("RecordTime")
                         .HasColumnType("datetime2");
 
-                    b.PrimitiveCollection<string>("SharedToDoctorIds")
+                    b.Property<string>("SharedToDoctorIds")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -1615,6 +1630,15 @@ namespace LYBT.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("LYBT.Models.Billing.BillingItem", b =>
+                {
+                    b.HasOne("LYBT.Models.Billing.BillingModel", null)
+                        .WithMany("Items")
+                        .HasForeignKey("BillingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("LYBT.Models.Configuration.TreatmentCatalogModel", b =>
                 {
                     b.HasOne("LYBT.Models.Configuration.TreatmentCatalogModel", null)
@@ -1725,11 +1749,19 @@ namespace LYBT.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LYBT.Models.Herbs.HerbModel", b =>
+            modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyHerbModel", b =>
                 {
+                    b.HasOne("LYBT.Models.Herbs.HerbModel", null)
+                        .WithMany()
+                        .HasForeignKey("HerbId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("LYBT.Models.Pharmacy.PharmacyModel", null)
-                        .WithMany("Herbs")
-                        .HasForeignKey("PharmacyModelId");
+                        .WithMany()
+                        .HasForeignKey("PharmacyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
@@ -1743,14 +1775,9 @@ namespace LYBT.Infrastructure.Migrations
                 {
                     b.OwnsMany("LYBT.Models.DiagnosisTreatment.HerbItemModel", "HerbalFormula", b1 =>
                         {
-                            b1.Property<Guid>("RecordModelId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("Id")
+                            b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<decimal>("Amount")
                                 .HasColumnType("decimal(18,2)");
@@ -1766,27 +1793,27 @@ namespace LYBT.Infrastructure.Migrations
                                 .IsRequired()
                                 .HasColumnType("nvarchar(max)");
 
+                            b1.Property<Guid>("RecordId")
+                                .HasColumnType("uniqueidentifier");
+
                             b1.Property<decimal>("UnitPrice")
                                 .HasColumnType("decimal(18,2)");
 
-                            b1.HasKey("RecordModelId", "Id");
+                            b1.HasKey("Id");
 
-                            b1.ToTable("Records_HerbalFormula");
+                            b1.HasIndex("RecordId");
+
+                            b1.ToTable("RecordHerbalFormulas", (string)null);
 
                             b1.WithOwner()
-                                .HasForeignKey("RecordModelId");
+                                .HasForeignKey("RecordId");
                         });
 
                     b.OwnsMany("LYBT.Models.DiagnosisTreatment.TreatmentItemModel", "TreatmentPlans", b1 =>
                         {
-                            b1.Property<Guid>("RecordModelId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("Id")
+                            b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<int>("Count")
                                 .HasColumnType("int");
@@ -1798,12 +1825,17 @@ namespace LYBT.Infrastructure.Migrations
                             b1.Property<decimal>("Price")
                                 .HasColumnType("decimal(18,2)");
 
-                            b1.HasKey("RecordModelId", "Id");
+                            b1.Property<Guid>("RecordId")
+                                .HasColumnType("uniqueidentifier");
 
-                            b1.ToTable("Records_TreatmentPlans");
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("RecordId");
+
+                            b1.ToTable("RecordTreatmentPlans", (string)null);
 
                             b1.WithOwner()
-                                .HasForeignKey("RecordModelId");
+                                .HasForeignKey("RecordId");
                         });
 
                     b.Navigation("HerbalFormula");
@@ -1811,9 +1843,9 @@ namespace LYBT.Infrastructure.Migrations
                     b.Navigation("TreatmentPlans");
                 });
 
-            modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyModel", b =>
+            modelBuilder.Entity("LYBT.Models.Billing.BillingModel", b =>
                 {
-                    b.Navigation("Herbs");
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionModel", b =>
