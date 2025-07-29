@@ -130,6 +130,15 @@ using (var scope = app.Services.CreateScope()) {
         // 使用超时取消令牌防止初始化卡死
         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
+        // 自动应用数据库迁移，确保所有表都已创建
+        try {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Database.Migrate();
+            Console.WriteLine("✅ 数据库迁移完成");
+        } catch (Exception migrateEx) {
+            Console.WriteLine($"⚠️  数据库迁移失败: {migrateEx.Message}");
+        }
+
         // 初始化统一配置服务
         var configService = scope.ServiceProvider.GetService<IUnifiedConfigService>();
         if (configService != null) {
