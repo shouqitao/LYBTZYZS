@@ -242,7 +242,7 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<BillingModel>();
             entity.ToTable("Billings");
             entity.HasKey(b => b.Id);
-            entity.Ignore(b => b.Items); // 忽略 Items 属性，因为使用独立表
+            entity.HasMany(b => b.Items).WithOne().HasForeignKey(i => i.BillingId);
             
             // 配置 BillingItem 实体
             var itemEntity = modelBuilder.Entity<BillingItem>();
