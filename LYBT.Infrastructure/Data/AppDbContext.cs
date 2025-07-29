@@ -283,7 +283,7 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(r => r.Id);
             var stringListConverter = new ValueConverter<List<string>, string>(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v) ?? new List<string>());
+                v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions()) ?? new List<string>());
 
             entity.Property(r => r.DiagnosisResults)
                   .HasConversion(stringListConverter)
