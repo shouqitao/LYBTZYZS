@@ -15,7 +15,9 @@ using LYBT.Models.Registration;
 using LYBT.Models.Sync;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Models.Users;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LYBT.Infrastructure.Data {
 
@@ -61,6 +63,7 @@ namespace LYBT.Infrastructure.Data {
 
         // 药房管理
         public DbSet<PharmacyModel> Pharmacies { get; set; }
+        public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; }
 
         // 计费管理
         public DbSet<BillingModel> Billings { get; set; }
@@ -196,6 +199,12 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<DiagnosisTreatmentModel>();
             entity.ToTable("DiagnosisTreatments");
             entity.HasKey(d => d.Id);
+
+            entity.OwnsOne(d => d.Formula, f => {
+                f.OwnsMany(x => x.Herbs);
+            });
+
+            entity.OwnsMany(d => d.Treatments);
         }
 
         private static void ConfigurePrescriptions(ModelBuilder modelBuilder) {
@@ -236,13 +245,28 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<PharmacyModel>();
             entity.ToTable("Pharmacies");
             entity.HasKey(p => p.Id);
+
+            // 配置药房与药材的多对多关系
+            entity.HasMany(p => p.Herbs)
+                  .WithMany()
+                  .UsingEntity<PharmacyHerbModel>(
+                        j => j.HasOne<HerbModel>()
+                              .WithMany()
+                              .HasForeignKey(ph => ph.HerbId),
+                        j => j.HasOne<PharmacyModel>()
+                              .WithMany()
+                              .HasForeignKey(ph => ph.PharmacyId),
+                        j => {
+                            j.ToTable("PharmacyHerbs");
+                            j.HasKey(ph => new { ph.PharmacyId, ph.HerbId });
+                        });
         }
 
         private static void ConfigureBillings(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<BillingModel>();
             entity.ToTable("Billings");
             entity.HasKey(b => b.Id);
-            entity.Ignore(b => b.Items); // 忽略 Items 属性，因为使用独立表
+            entity.HasMany(b => b.Items).WithOne().HasForeignKey(i => i.BillingId);
             
             // 配置 BillingItem 实体
             var itemEntity = modelBuilder.Entity<BillingItem>();
@@ -257,6 +281,31 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<RecordModel>();
             entity.ToTable("Records");
             entity.HasKey(r => r.Id);
+            var stringListConverter = new ValueConverter<List<string>, string>(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v) ?? new List<string>());
+
+            entity.Property(r => r.DiagnosisResults)
+                  .HasConversion(stringListConverter)
+                  .HasColumnType("nvarchar(max)");
+
+            entity.Property(r => r.SharedToDoctorIds)
+                  .HasConversion(stringListConverter)
+                  .HasColumnType("nvarchar(max)");
+
+            entity.OwnsMany(r => r.HerbalFormula, b => {
+                b.ToTable("RecordHerbalFormulas");
+                b.WithOwner().HasForeignKey("RecordId");
+                b.Property<Guid>("Id");
+                b.HasKey("Id");
+            });
+
+            entity.OwnsMany(r => r.TreatmentPlans, b => {
+                b.ToTable("RecordTreatmentPlans");
+                b.WithOwner().HasForeignKey("RecordId");
+                b.Property<Guid>("Id");
+                b.HasKey("Id");
+            });
         }
 
         private static void ConfigureTreatmentRooms(ModelBuilder modelBuilder) {

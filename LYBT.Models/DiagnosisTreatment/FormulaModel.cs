@@ -1,10 +1,12 @@
 using System.ComponentModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Models.DiagnosisTreatment {
 
     /// <summary>
     /// 药方（治疗方）实体
     /// </summary>
+    [Owned]
     public class FormulaModel {
 
         /// <summary>

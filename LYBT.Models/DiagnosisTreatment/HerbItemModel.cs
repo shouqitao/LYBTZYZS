@@ -1,10 +1,12 @@
 using System.ComponentModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Models.DiagnosisTreatment {
 
     /// <summary>
     /// 药材明细实体（用于药方组成）
     /// </summary>
+    [Owned]
     public class HerbItemModel {
 
         /// <summary>
