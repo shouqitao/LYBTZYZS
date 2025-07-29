@@ -15,7 +15,9 @@ using LYBT.Models.Registration;
 using LYBT.Models.Sync;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Models.Users;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LYBT.Infrastructure.Data {
 
@@ -257,6 +259,31 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<RecordModel>();
             entity.ToTable("Records");
             entity.HasKey(r => r.Id);
+            var stringListConverter = new ValueConverter<List<string>, string>(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v) ?? new List<string>());
+
+            entity.Property(r => r.DiagnosisResults)
+                  .HasConversion(stringListConverter)
+                  .HasColumnType("nvarchar(max)");
+
+            entity.Property(r => r.SharedToDoctorIds)
+                  .HasConversion(stringListConverter)
+                  .HasColumnType("nvarchar(max)");
+
+            entity.OwnsMany(r => r.HerbalFormula, b => {
+                b.ToTable("RecordHerbalFormulas");
+                b.WithOwner().HasForeignKey("RecordId");
+                b.Property<Guid>("Id");
+                b.HasKey("Id");
+            });
+
+            entity.OwnsMany(r => r.TreatmentPlans, b => {
+                b.ToTable("RecordTreatmentPlans");
+                b.WithOwner().HasForeignKey("RecordId");
+                b.Property<Guid>("Id");
+                b.HasKey("Id");
+            });
         }
 
         private static void ConfigureTreatmentRooms(ModelBuilder modelBuilder) {
