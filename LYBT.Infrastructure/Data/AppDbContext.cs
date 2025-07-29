@@ -17,8 +17,9 @@ using LYBT.Models.TreatmentRoom;
 using LYBT.Models.Users;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 namespace LYBT.Infrastructure.Data {
 
     /// <summary>
@@ -285,13 +286,18 @@ namespace LYBT.Infrastructure.Data {
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions()) ?? new List<string>());
 
-            entity.Property(r => r.DiagnosisResults)
+            var stringListComparer = new ValueComparer<List<string>>(
+                (c1, c2) => c1.SequenceEqual(c2),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v != null ? v.GetHashCode() : 0)),
+                c => c.ToList());
+            var diagnosisProperty = entity.Property(r => r.DiagnosisResults)
                   .HasConversion(stringListConverter)
                   .HasColumnType("nvarchar(max)");
-
-            entity.Property(r => r.SharedToDoctorIds)
+            diagnosisProperty.Metadata.SetValueComparer(stringListComparer);
+            var sharedProperty = entity.Property(r => r.SharedToDoctorIds)
                   .HasConversion(stringListConverter)
                   .HasColumnType("nvarchar(max)");
+            sharedProperty.Metadata.SetValueComparer(stringListComparer);
 
             entity.OwnsMany(r => r.HerbalFormula, b => {
                 b.ToTable("RecordHerbalFormulas");
