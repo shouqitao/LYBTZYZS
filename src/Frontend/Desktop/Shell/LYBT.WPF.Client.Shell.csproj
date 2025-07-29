@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <AssemblyTitle>凌隐宝堂中医诊所管理系统</AssemblyTitle>
+    <AssemblyDescription>凌隐宝堂中医诊所管理系统WPF客户端</AssemblyDescription>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\LYBT.WPF.Client.Core.csproj" />
+    <ProjectReference Include="..\Services\LYBT.WPF.Client.Services.csproj" />
+    <ProjectReference Include="..\Infrastructure\LYBT.WPF.Client.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Authentication\LYBT.WPF.Client.Modules.Authentication.csproj" />
+    <ProjectReference Include="..\Modules\SystemManagement\LYBT.WPF.Client.Modules.SystemManagement.csproj" />
+    <ProjectReference Include="..\Modules\FrontDesk\LYBT.WPF.Client.Modules.FrontDesk.csproj" />
+    <ProjectReference Include="..\Modules\Doctor\LYBT.WPF.Client.Modules.Doctor.csproj" />
+    <ProjectReference Include="..\Modules\Cashier\LYBT.WPF.Client.Modules.Cashier.csproj" />
+    <ProjectReference Include="..\Modules\Pharmacist\LYBT.WPF.Client.Modules.Pharmacist.csproj" />
+    <ProjectReference Include="..\Modules\Common\LYBT.WPF.Client.Modules.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\Icons\" />
+    <Folder Include="Resources\Images\" />
+  </ItemGroup>
+
+</Project>

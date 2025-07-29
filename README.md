@@ -1,138 +1,139 @@
-# AGENTS.md — 项目总览（shouqitao/LYBTZYZS）
+# 凌隐宝堂中医诊所管理系统 (LYBT)
 
-本系统采用“模块化+Agent”设计，每个业务与支撑模块均提供自己的 Agent 能力。各模块协同构成完整的中医诊所信息化平台，实现从患者建档、挂号、诊疗、处方、配药、收费、病历、到系统配置、数据同步、日志审计等全业务闭环。
-This system follows a modular "Agent" architecture. Each business or supporting module exposes its own agent service to form a comprehensive TCM clinic platform, covering patient registration, queuing, diagnosis, prescriptions, pharmacy, billing, medical records, configuration, data sync and logging.
+[![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
----
+中医诊所现代化管理系统，采用模块化架构设计，支持患者管理、诊疗记录、药材管理、处方开具等完整的中医诊所业务流程。
 
-## 主要业务模块 AGENTS
+## 🏗️ 项目架构
 
-- **用户模块（Users）**：账号管理、角色分配、密码维护  
-**Users Module**: manage accounts, assign roles and maintain passwords.
-- **患者模块（Patients）**：患者信息建档、查询、编辑、模糊搜索、身份证读取  
-**Patients Module**: create and search patient records with ID card reading.
-- **医生模块（Doctors）**：医生档案管理、职称、状态、执业权限  
-**Doctors Module**: maintain doctor profiles, titles and practice permissions.
-- **挂号模块（Registration）**：挂号、急诊挂号、挂号-排队联动  
-**Registration Module**: handle normal and emergency registration with queue integration.
-- **排队模块（Queueing）**：门诊队列生成、就诊顺序控制  
-**Queueing Module**: manage visit queues and consultation order.
-- **诊疗模块（DiagnosisTreatment）**：诊断记录、治疗项目、结构化药方  
-**DiagnosisTreatment Module**: record diagnoses, treatments and structured prescriptions.
-- **处方模块（Prescriptions）**：药方开具、剂量与金额、导入经验方  
-**Prescriptions Module**: manage prescriptions, dosage and cost, import templates.
-- **药材模块（Herbs）**：中药材目录、单价、功效、批量导入  
-**Herbs Module**: maintain herbal catalog, prices and effects with bulk import.
-- **药方模板模块（FormulaTemplates）**：常用/经典药方模板，处方快速生成  
-**FormulaTemplates Module**: store common formula templates for quick prescriptions.
-- **费用模块（Billing）**：账单生成、挂号费/处方费/治疗费统计、支付/退费  
-**Billing Module**: generate bills, track fees and manage payments or refunds.
-- **药房模块（Pharmacy）**：处方配药、抓药、代煎、药房队列与状态  
-**Pharmacy Module**: dispense prescriptions, decoction and manage pharmacy queue.
-- **病历模块（Records）**：完整诊疗过程记录、共享、权限控制  
-**Records Module**: maintain medical histories with sharing and permissions.
-- **系统设置模块（Settings）**：全局参数、诊断目录、治疗目录、共享策略  
-**Settings Module**: global parameters, diagnosis and treatment catalogs and sharing policies.
-- **日志模块（Logs）**：全模块操作日志、分页查询、审计追溯  
-**Logs Module**: record operations across modules for audit and query.
-- **数据同步模块（Sync）**：同步任务、同步日志、自动/手动模式  
-**Sync Module**: data synchronization tasks and logs with auto/manual modes.
-- **诊疗室模块（TreatmentRoom）**：诊疗室管理、辅助治疗队列、任务分配  
-**TreatmentRoom Module**: manage treatment rooms and task queues.
+本项目采用标准的企业级多项目多Solution架构：
 
----
-
-## 支撑与通用模块 AGENTS
-
-- **通用模块（Common）**：基础枚举、响应对象、扩展方法、统一工具  
-**Common Module**: base enums, API responses and utilities.
-- **数据模型模块（Models）**：实体Model/Dto/分页/查询等核心结构  
-**Models Module**: core entities, DTOs and paging structures.
-- **基础设施模块（Infrastructure）**：EF数据库上下文、种子数据、自动仓储注入  
-**Infrastructure Module**: EF Core DbContext, seed data and repository injection.
-- **认证模块（Auth）**：用户身份验证、Token发放、登录日志、权限基础  
-**Auth Module**: user authentication, token issuance and login logs.
-
-## 其它项目 / Other Projects
-
-- **LYBT.WebAPI**：ASP.NET Core 后端，聚合各业务模块
-**LYBT.WebAPI**: ASP.NET Core API hosting all modules.
-
-> 本解决方案目前仅包含 Web API，原 WPF 客户端已移除。
----
-
-## 模块协作关系
-
-- **基础设施、数据模型与通用模块**作为所有业务与认证等模块的依赖基座，提供统一实体、数据结构与底层数据访问支持。
-- **用户/认证/医生/患者**等模块提供入口，关联挂号、排队、诊疗、费用等全链条。
-- **诊疗-处方-药材-药房-费用-病历**形成诊疗主流程，每一环节均有独立 Agent 能力，可被前端或后台任务单独调用。
-- **设置/日志/同步/诊疗室**等模块为全局性配置、审计、扩展、资源调度提供支撑。
-
----
-
-## Agent 能力统一说明
-
-1. **每个模块 Agent** 对外暴露自身业务能力的标准接口（如 Service/Repository 层）。
-2. **输入输出规范** 均为 Dto 结构或标准类型，支持分页与多条件筛选，所有数据模型均通过 Models/DTO 层统一维护。
-3. **模块间依赖** 通过依赖注入（如 AddUsersModule、AddPatientsModule...）自动注册。
-4. **所有关键操作** 都集成日志记录，数据变更、登录、同步、共享等均可全程追溯。
-5. **支撑批量操作、权限、共享、自动/手动模式切换等扩展场景**，满足中医诊所多种真实业务需求。
-
----
-
-## 示例协作流程（简版）
-
-- 患者登记 → 挂号 → 自动排队 → 诊疗 → 处方 → 配药 → 收费 → 病历生成
-- 任一环节出错、变更或共享，日志模块均可追溯；设置模块支持诊疗目录、全局共享与同步策略灵活配置
-
----
-
-## 模块接口统计
-
-| 模块 | 接口数量 | 已实现 WebAPI |
-| --- | --- | --- |
-| Auth | 3 | 3 |
-| Billing | 11 | 5 |
-| DiagnosisTreatment | 5 | 4 |
-| Doctors | 10 | 0 |
-| FormulaTemplates | 5 | 5 |
-| Herbs | 5 | 5 |
-| Logs | 2 | 0 |
-| Patients | 14 | 0 |
-| Pharmacy | 7 | 0 |
-| Prescriptions | 6 | 0 |
-| Queueing | 6 | 3 |
-| Records | 7 | 2 |
-| Registration | 6 | 4 |
-| Settings | 11 | 4 |
-| Sync | 11 | 0 |
-| TreatmentRoom | 5 | 3 |
-| Users | 12 | 0 |
-## 典型接口结构（以用户模块为例）
-
-- `Task<(IList<UserDto>, int)> SearchAsync(UserQueryDto dto)`
-- `Task<bool> AddAsync(UserCreateDto dto, Guid operatorId, string operatorName)`
-- `Task<bool> ChangePasswordAsync(Guid id, string oldPwd, string newPwd)`
-
----
-
-## 说明
-
-- 各模块 AGENTS.md 文件详细定义请见对应模块目录
-- 系统整体支持横向扩展、新业务模块与第三方平台集成
-- `docs/quick_add_herbs.md` 介绍了“快速添加药材”功能的设计与交互细节
-## Running Tests / 运行测试
-
-Execute all unit tests with:
-
-```bash
- dotnet test
+```
+LYBTZYZS/
+├── src/                         # 源代码
+│   ├── Backend/                 # 后端服务 (.NET 8 Web API)
+│   │   ├── Core/               # 核心库
+│   │   ├── Modules/            # 业务模块
+│   │   └── Services/           # 服务层
+│   └── Frontend/               # 前端应用
+│       └── Desktop/            # WPF桌面客户端
+├── docs/                       # 项目文档
+├── scripts/                    # 构建和部署脚本
+└── tests/                      # 测试项目
 ```
 
-使用以下命令运行所有单元测试：
+## 🚀 快速开始
 
+### 环境要求
+
+- .NET 8.0 SDK
+- SQL Server 2019+
+- Visual Studio 2022 或 VS Code
+
+### 后端服务
+
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/shouqitao/LYBTZYZS.git
+   cd LYBTZYZS
+   ```
+
+2. **构建后端**
+   ```bash
+   cd src/Backend
+   dotnet build LYBT.Backend.sln
+   ```
+
+3. **初始化数据库**
+   ```bash
+   cd Services/LYBT.WebAPI
+   dotnet ef database update --project ../../Core/LYBT.Infrastructure
+   ```
+
+4. **运行WebAPI**
+   ```bash
+   dotnet run
+   ```
+
+   API将在 `https://localhost:5001` 启动，Swagger文档可访问根路径。
+
+### 前端客户端
+
+1. **构建前端**
+   ```bash
+   cd src/Frontend
+   dotnet build LYBT.Client.sln
+   ```
+
+2. **运行桌面客户端**
+   ```bash
+   cd Desktop/Shell
+   dotnet run
+   ```
+
+   **默认登录凭据**: 用户名 `sysadmin`, 密码 `123456`
+
+## 📚 核心功能
+
+### 后端模块
+
+- **认证授权** - JWT身份验证和基于角色的访问控制
+- **患者管理** - 患者档案、病历记录管理
+- **医生管理** - 医生信息、排班管理
+- **挂号就诊** - 预约挂号、排队叫号
+- **诊疗治疗** - 诊断记录、治疗方案
+- **处方管理** - 中药处方开具和管理
+- **药材管理** - 中药材库存和信息管理
+- **验方模板** - 常用处方模板管理
+- **药房管理** - 药品调配和发放
+- **收费结算** - 费用计算和支付管理
+- **病历档案** - 电子病历存储和查询
+- **治疗室管理** - 治疗设备和房间管理
+- **数据同步** - 多端数据同步服务
+
+### 前端模块
+
+- **用户认证** - 登录界面和权限管理
+- **系统管理** - 用户、药材、模板管理
+- **前台接待** - 挂号、收费等前台业务
+- **医生工作** - 诊疗、开方等医生业务
+- **收银管理** - 费用结算和支付处理
+
+## 🔧 开发指南
+
+详细的开发文档请查看：
+
+- [架构说明](docs/architecture/)
+- [API文档](docs/api/)
+- [开发指南](docs/development/)
+- [用户手册](docs/user-guide/)
+
+## 📝 数据库
+
+系统使用统一的数据库架构，所有模块共享一个`AppDbContext`。
+
+主要命令：
 ```bash
- dotnet test
+# 添加迁移
+dotnet ef migrations add MigrationName --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
+
+# 更新数据库
+dotnet ef database update --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
 ```
 
-Unit tests now cover service ports of all modules and can be run with `dotnet test`.
+## 🤝 贡献
+
+欢迎贡献代码！请查看 [贡献指南](docs/development/CONTRIBUTING.md) 了解如何参与项目开发。
+
+## 📄 许可证
+
+本项目采用 MIT 许可证。详情请查看 [LICENSE](LICENSE) 文件。
+
+## 📞 联系方式
+
+如有问题或建议，请提交 [Issue](https://github.com/shouqitao/LYBTZYZS/issues)。
+
+---
+
+**凌隐宝堂中医诊所管理系统** - 让中医诊所管理更简单高效 ✨

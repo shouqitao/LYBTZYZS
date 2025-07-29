@@ -75,7 +75,10 @@
       "Bash(create_project_structure.bat)",
       "Bash(touch \"D:\\source\\repos\\LYBTZYZS\\LYBT.WPF.Client\\LYBT.WPF.Client.Shell\\ViewModels\\MainWindowViewModel.cs\")",
       "Bash(touch \"D:\\source\\repos\\LYBTZYZS\\LYBT.WPF.Client\\LYBT.WPF.Client.Modules\\Authentication\\Views\\LoginWindow.xaml.cs\")",
-      "Bash(touch \"D:\\source\\repos\\LYBTZYZS\\LYBT.WPF.Client\\LYBT.WPF.Client.Modules\\Authentication\\Views\\LoginWindow.xaml\")"
+      "Bash(touch \"D:\\source\\repos\\LYBTZYZS\\LYBT.WPF.Client\\LYBT.WPF.Client.Modules\\Authentication\\Views\\LoginWindow.xaml\")",
+      "Bash(cp -r LYBT.WPF.Client/* src/Frontend/Desktop/)",
+      "Bash(true)",
+      "Bash(touch .gitignore)"
     ],
     "deny": []
   }

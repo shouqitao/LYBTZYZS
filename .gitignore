@@ -1,45 +1,52 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/  
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+BIN/
+build/
+packages/
 
-/.vs/LYBTZYZS
-/BIN/Debug
-**/bin/
-/LYBT.Common/obj
-/LYBT.Infrastructure/obj
-/LYBT.Models/obj
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
 
-# Windows系统相关文件
-nul
-**/nul
+# Test results
+[Tt]est[Rr]esult*/
+TestResult.xml
+nunit-*.xml
+*.coverage
+*.coveragexml
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Database files
+*.mdf
+*.ldf
+*.ndf
+
+# Windows system files
 Thumbs.db
 Desktop.ini
+nul
 
-# 临时文件和缓存
+# Temporary files
 *.tmp
 *.temp
 .cache/
-/LYBT.Module.Billing/obj
-/LYBT.Module.DiagnosisTreatment/obj
-/LYBT.Module.Doctors/obj
-/LYBT.Module.FormulaTemplates/obj
-/LYBT.Module.Herbs/obj
-/LYBT.Module.Logs/obj
-/LYBT.Module.Patients/obj
-/LYBT.Module.Pharmacy/obj
-/LYBT.Module.Prescriptions/obj
-/LYBT.Module.Queueing/obj
-/LYBT.Module.Records/obj
-/LYBT.Module.Registration/obj
-/LYBT.Module.Settings/obj
-/LYBT.Module.Sync/obj
-/LYBT.Module.TreatmentRoom/obj
-/LYBT.Module.Users/obj
-/LYBT.WebAPI/obj
-
-# User-specific and build artifacts
-*.csproj.user
-.vs/
-bin/
-obj/
-*/publish/
