@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Refit;
 using LYBT.WPF.Client.Core.Models.Authentication;
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Common;
 
 namespace LYBT.WPF.Client.Services.Interfaces

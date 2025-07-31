@@ -1,10 +1,11 @@
 using System.ComponentModel;
 
-namespace LYBT.WPF.Client.Core.Enums
+namespace LYBT.Shared.Models.Enums
 {
     /// <summary>
-    /// 性别枚举
+    /// 性别枚举 - 前后端共享
     /// </summary>
+    [Description("性别")]
     public enum Gender
     {
         /// <summary>未知</summary>

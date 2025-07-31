@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Enums.System;
+﻿using LYBT.Shared.Models.Enums;
 using LYBT.Models.Billing;
 
 namespace LYBT.Module.Billing.Interfaces {

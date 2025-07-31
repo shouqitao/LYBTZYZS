@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Models.Authentication;
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 

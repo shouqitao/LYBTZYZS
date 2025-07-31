@@ -1,26 +1,28 @@
 using System;
 using System.Globalization;
 using System.Windows.Data;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Extensions;
 
 namespace LYBT.WPF.Client.Modules.FrontDesk.Converters
 {
     /// <summary>
-    /// 性别整数转文本转换器
+    /// 性别枚举转文本转换器（使用统一的共享枚举）
     /// </summary>
     public class GenderToTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int gender)
+            if (value is Gender gender)
             {
-                return gender switch
-                {
-                    1 => "男",
-                    2 => "女",
-                    _ => "未知"
-                };
+                return gender.GetDisplayName();
             }
-            return "未知";
+            else if (value is int genderInt)
+            {
+                var genderEnum = (Gender)genderInt;
+                return genderEnum.GetDisplayName();
+            }
+            return Gender.Unknown.GetDisplayName();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -29,12 +31,12 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.Converters
             {
                 return genderText switch
                 {
-                    "男" => 1,
-                    "女" => 2,
-                    _ => 0
+                    "男" => Gender.Male,
+                    "女" => Gender.Female,
+                    _ => Gender.Unknown
                 };
             }
-            return 0;
+            return Gender.Unknown;
         }
     }
 }

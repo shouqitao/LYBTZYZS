@@ -1,5 +1,5 @@
 ﻿using Asp.Versioning;
-using LYBT.Common.Enums.System;
+using LYBT.Shared.Models.Enums;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Models.Sync;
 using LYBT.Module.Sync.Interfaces;

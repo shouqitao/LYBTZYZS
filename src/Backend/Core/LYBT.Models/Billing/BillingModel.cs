@@ -1,4 +1,4 @@
-using LYBT.Common.Enums.System;
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

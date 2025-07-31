@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Enums.System;
+﻿using LYBT.Shared.Models.Enums;
 using LYBT.Models.Pharmacy;
 
 namespace LYBT.Module.Pharmacy.Interfaces {

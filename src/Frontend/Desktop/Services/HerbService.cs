@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.DTOs;
 using LYBT.WPF.Client.Core.Interfaces.Services;

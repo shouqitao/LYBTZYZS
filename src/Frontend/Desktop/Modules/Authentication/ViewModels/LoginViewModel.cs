@@ -5,11 +5,10 @@ using System.Windows.Controls;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Authentication;
 using LYBT.WPF.Client.Core.Events;
+using LYBT.WPF.Client.Core.ViewModels;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
-using Prism.Dialogs;
-using Prism.Mvvm;
 using Prism.Events;
 
 
@@ -18,16 +17,13 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
     /// <summary>
     /// 登录窗口视图模型
     /// </summary>
-    public class LoginViewModel : BindableBase
+    public class LoginViewModel : BaseViewModel
     {
         private readonly IAuthenticationService _authService;
-        private readonly IEventAggregator _eventAggregator;
 
         private string _username = "sysadmin";
         private string _password = "Admin@123456";
         private bool _rememberMe = true;
-        private bool _isLoading = false;
-        private string _loginStatusMessage = string.Empty;
 
         public DelegateCommand LoginCommand { get; }
         public DelegateCommand<PasswordBox>? PasswordChangedCommand { get; set; }
@@ -61,33 +57,21 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             set => SetProperty(ref _rememberMe, value);
         }
 
-        /// <summary>是否正在加载</summary>
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set 
-            { 
-                SetProperty(ref _isLoading, value);
-                LoginCommand.RaiseCanExecuteChanged();
-            }
-        }
-
-        /// <summary>登录状态消息</summary>
-        public string LoginStatusMessage
-        {
-            get => _loginStatusMessage;
-            set => SetProperty(ref _loginStatusMessage, value);
-        }
-
         public LoginViewModel(IEventAggregator eventAggregator, IAuthenticationService authService)
+            : base(eventAggregator)
         {
-            _eventAggregator = eventAggregator;
-            _authService = authService;
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
 
-            LoginCommand = new DelegateCommand(ExecuteLogin, CanExecuteLogin);
+            LoginCommand = new DelegateCommand(ExecuteLoginAsync, CanExecuteLogin);
             
             // 监听登出事件以清除登录状态消息
-            _eventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
+            EventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
+        }
+
+        protected override void OnLoadingStateChanged(bool isLoading)
+        {
+            base.OnLoadingStateChanged(isLoading);
+            LoginCommand.RaiseCanExecuteChanged();
         }
 
         private bool CanExecuteLogin()
@@ -95,25 +79,25 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             return !IsLoading && !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
         }
 
-        private async void ExecuteLogin()
+        private async void ExecuteLoginAsync()
         {
             if (string.IsNullOrWhiteSpace(Username))
             {
-                LoginStatusMessage = "请输入用户名";
+                ErrorMessage = "请输入用户名";
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Password))
             {
-                LoginStatusMessage = "请输入密码";
+                ErrorMessage = "请输入密码";
                 return;
             }
 
-            IsLoading = true;
-            LoginStatusMessage = string.Empty;
-
             try
             {
+                IsLoading = true;
+                ClearError();
+
                 var request = new LoginRequest
                 {
                     Username = Username.Trim(),
@@ -125,34 +109,34 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                 };
 
                 var response = await _authService.LoginAsync(request);
-                
+
                 if (response.IsSuccess && response.Data != null)
                 {
                     // 检查是否为超级管理员
                     if (response.Data.User.IsSuperAdmin)
                     {
-                        LoginStatusMessage = "超级管理员登录成功，正在跳转...";
+                        StatusMessage = "超级管理员登录成功，正在跳转...";
                     }
                     else
                     {
                         var roleDisplayName = response.Data.User.Role.GetDisplayName();
-                        LoginStatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
+                        StatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
                     }
                     
                     // 等待一下让用户看到成功消息
                     await Task.Delay(1000);
                     
                     // 通过事件总线通知登录成功
-                    _eventAggregator.GetEvent<LoginSuccessEvent>().Publish();
+                    EventAggregator.GetEvent<LoginSuccessEvent>().Publish();
                 }
                 else
                 {
-                    LoginStatusMessage = response.Message ?? "登录失败，请检查用户名和密码";
+                    ErrorMessage = response.Message ?? "登录失败，请检查用户名和密码";
                 }
             }
             catch (Exception ex)
             {
-                LoginStatusMessage = $"登录出错：{ex.Message}";
+                HandleError("登录", ex);
             }
             finally
             {
@@ -165,9 +149,9 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         /// </summary>
         private void OnLogout()
         {
-            LoginStatusMessage = string.Empty;
+            ClearError();
+            ClearStatus();
         }
-
 
         private string GetLocalIPAddress()
         {

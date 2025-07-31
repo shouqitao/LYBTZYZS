@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Models.Authentication;
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Enums;

@@ -1,4 +1,4 @@
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Services;
 using Prism.Commands;
 using Prism.Mvvm;
