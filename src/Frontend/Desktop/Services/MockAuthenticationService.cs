@@ -29,7 +29,7 @@ namespace LYBT.WPF.Client.Services
 
                 return new ApiResponse<LoginResponse>
                 {
-                    Success = true,
+                    IsSuccess = true,
                     Message = "登录成功",
                     Data = new LoginResponse
                     {
@@ -49,7 +49,7 @@ namespace LYBT.WPF.Client.Services
 
             return new ApiResponse<LoginResponse>
             {
-                Success = false,
+                IsSuccess = false,
                 Message = "用户名或密码错误"
             };
         }
@@ -63,7 +63,7 @@ namespace LYBT.WPF.Client.Services
             
             return new ApiResponse<object>
             {
-                Success = true,
+                IsSuccess = true,
                 Message = "注销成功"
             };
         }

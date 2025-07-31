@@ -13,8 +13,9 @@ namespace LYBT.Infrastructure.Authentication {
         /// <param name="userId">用户ID</param>
         /// <param name="userName">用户名</param>
         /// <param name="roles">用户角色</param>
+        /// <param name="rememberMe">是否记住我（影响令牌过期时间）</param>
         /// <returns>JWT令牌</returns>
-        string GenerateToken(string userId, string userName, IEnumerable<string> roles);
+        string GenerateToken(string userId, string userName, IEnumerable<string> roles, bool rememberMe = false);
 
         /// <summary>
         /// 验证JWT令牌

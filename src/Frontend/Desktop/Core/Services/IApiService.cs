@@ -1,3 +1,6 @@
+using System.Threading.Tasks;
+using LYBT.WPF.Client.Core.Models.Common;
+
 namespace LYBT.WPF.Client.Core.Services
 {
     /// <summary>
@@ -5,6 +8,29 @@ namespace LYBT.WPF.Client.Core.Services
     /// </summary>
     public interface IApiService
     {
-        // TODO: 定义API服务接口
+        /// <summary>
+        /// 发送GET请求
+        /// </summary>
+        Task<ApiResponse<T>> GetAsync<T>(string endpoint);
+
+        /// <summary>
+        /// 发送POST请求
+        /// </summary>
+        Task<ApiResponse<T>> PostAsync<T>(string endpoint, object data);
+
+        /// <summary>
+        /// 发送PUT请求
+        /// </summary>
+        Task<ApiResponse<T>> PutAsync<T>(string endpoint, object data);
+
+        /// <summary>
+        /// 发送DELETE请求
+        /// </summary>
+        Task<ApiResponse<T>> DeleteAsync<T>(string endpoint);
+
+        /// <summary>
+        /// 发送PATCH请求
+        /// </summary>
+        Task<ApiResponse<T>> PatchAsync<T>(string endpoint, object data);
     }
 }

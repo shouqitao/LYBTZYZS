@@ -1,15 +1,19 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.WPF.Client.Core.Enums;
 using LYBT.WPF.Client.Core.Events;
+using LYBT.WPF.Client.Core.Configuration;
 using LYBT.WPF.Client.Modules.Authentication.Views;
 using LYBT.WPF.Client.Modules.Authentication.ViewModels;
+using LYBT.WPF.Client.Services;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
 using Prism.Dialogs;
 using Prism.Events;
+using Prism.Commands;
 
 namespace LYBT.WPF.Client.Shell.ViewModels
 {
@@ -21,16 +25,31 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         private readonly IAuthenticationService _authService;
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IPermissionService _permissionService;
+        private readonly IUserService _userService;
         
         private string _title = "凌隐宝堂中医诊所管理系统";
         private UserInfo? _currentUser;
         private bool _isLoggedIn = false;
 
-        public MainWindowViewModel(IRegionManager regionManager, IEventAggregator eventAggregator, IAuthenticationService authService)
+        public DelegateCommand LogoutCommand { get; }
+        public DelegateCommand TestApiCommand { get; }
+
+        public MainWindowViewModel(
+            IRegionManager regionManager, 
+            IEventAggregator eventAggregator, 
+            IAuthenticationService authService,
+            IPermissionService permissionService,
+            IUserService userService)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _authService = authService;
+            _permissionService = permissionService;
+            _userService = userService;
+
+            LogoutCommand = new DelegateCommand(ExecuteLogout);
+            TestApiCommand = new DelegateCommand(ExecuteTestApi, () => _isLoggedIn);
 
             // 订阅登录成功事件
             _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
@@ -71,6 +90,39 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         public bool IsNotLoggedIn => !_isLoggedIn;
 
         /// <summary>
+        /// 退出登录命令执行
+        /// </summary>
+        private async void ExecuteLogout()
+        {
+            var result = MessageBox.Show("确定要退出登录吗？", "退出确认", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    await _authService.LogoutAsync();
+                    
+                    // 清除用户信息
+                    CurrentUser = null;
+                    IsLoggedIn = false;
+                    Title = "凌隐宝堂中医诊所管理系统";
+                    
+                    // 清除内容区域
+                    if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
+                    {
+                        _regionManager.Regions["ContentRegion"].RemoveAll();
+                    }
+                    
+                    // 显示登录界面
+                    ShowLoginDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"退出登录失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        /// <summary>
         /// 检查登录状态
         /// </summary>
         private async void CheckLoginStatus()
@@ -79,6 +131,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             {
                 CurrentUser = await _authService.GetCurrentUserAsync();
                 IsLoggedIn = true;
+                TestApiCommand.RaiseCanExecuteChanged();
                 LoadMainContent();
             }
             else
@@ -115,98 +168,52 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         {
             if (CurrentUser == null) return;
 
-            // 根据用户角色加载不同的主界面
-            switch (CurrentUser.Role)
-            {
-                case UserRole.SuperAdmin:
-                case UserRole.Admin:
-                    LoadManagementInterface();
-                    break;
-                case UserRole.FrontDesk:
-                    LoadFrontDeskInterface();
-                    break;
-                case UserRole.DiagnosingDoctor:
-                case UserRole.InternDoctor:
-                    LoadDoctorInterface();
-                    break;
-                case UserRole.Cashier:
-                    LoadCashierInterface();
-                    break;
-                default:
-                    MessageBox.Show("未知的用户角色，请联系管理员", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
-            }
-        }
+            // 使用配置类统一处理角色导航
+            var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(CurrentUser.Role);
+            Title = $"凌隐宝堂中医诊所管理系统 - {CurrentUser.RealName} ({roleDisplay})";
 
-        /// <summary>
-        /// 加载管理界面
-        /// </summary>
-        private void LoadManagementInterface()
-        {
-            // 导航到系统管理界面
-            Title = $"凌隐宝堂中医诊所管理系统 - {CurrentUser?.RealName} (管理员)";
+            // 获取对应的主界面视图名称
+            var mainViewName = RoleNavigationConfig.GetMainViewName(CurrentUser.Role);
             
-            // 加载系统管理模块的主界面
-            LoadSystemManagementModule();
-        }
-
-        /// <summary>
-        /// 加载前台界面
-        /// </summary>
-        private void LoadFrontDeskInterface()
-        {
-            Title = $"凌隐宝堂中医诊所管理系统 - {CurrentUser?.RealName} (前台)";
-            
-            // 导航到前台主界面
             if (_regionManager != null)
             {
-                _regionManager.RequestNavigate("ContentRegion", "FrontDeskMainView");
-            }
-        }
-
-        /// <summary>
-        /// 加载医生界面
-        /// </summary>
-        private void LoadDoctorInterface()
-        {
-            Title = $"凌隐宝堂中医诊所管理系统 - {CurrentUser?.RealName} (医生)";
-            
-            // 导航到医生主界面
-            if (_regionManager != null)
-            {
-                _regionManager.RequestNavigate("ContentRegion", "DoctorMainView");
-            }
-        }
-
-        /// <summary>
-        /// 加载收银界面
-        /// </summary>
-        private void LoadCashierInterface()
-        {
-            Title = $"凌隐宝堂中医诊所管理系统 - {CurrentUser?.RealName} (收银员)";
-            
-            // 导航到收银主界面
-            if (_regionManager != null)
-            {
-                _regionManager.RequestNavigate("ContentRegion", "CashierMainView");
-            }
-        }
-
-        /// <summary>
-        /// 加载系统管理模块
-        /// </summary>
-        private void LoadSystemManagementModule()
-        {
-            if (_regionManager != null)
-            {
-                // 导航到系统管理主界面
-                _regionManager.RequestNavigate("ContentRegion", "SystemManagementView");
+                try
+                {
+                    // 导航到主界面
+                    _regionManager.RequestNavigate("ContentRegion", mainViewName);
+                }
+                catch (Exception ex)
+                {
+                    // 如果视图不存在，显示欢迎消息
+                    var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Role, CurrentUser.RealName);
+                    MessageBox.Show($"{welcomeMessage}\n\n注意：{mainViewName} 模块尚未实现。\n错误详情：{ex.Message}", 
+                        "登录成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             else
             {
-                // 显示开发中提示
-                MessageBox.Show($"欢迎您，{CurrentUser?.RealName}！\n\n系统管理模块正在加载...", "登录成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                // 显示欢迎消息
+                var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Role, CurrentUser.RealName);
+                MessageBox.Show(welcomeMessage, "登录成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
+
+        /// <summary>
+        /// 执行API测试
+        /// </summary>
+        private async void ExecuteTestApi()
+        {
+            try
+            {
+                var testService = new ApiTestService(_authService, _userService);
+                var result = await testService.RunFullApiTestAsync();
+                ApiTestService.ShowTestResult(result);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"API测试失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
     }
 }

@@ -18,6 +18,9 @@ namespace LYBT.WPF.Client.Modules.Doctor
         {
             // 注册医生主界面视图
             containerRegistry.RegisterForNavigation<DoctorMainView>();
+            
+            // 注册看诊界面视图
+            containerRegistry.RegisterForNavigation<ConsultationView>();
         }
     }
 }

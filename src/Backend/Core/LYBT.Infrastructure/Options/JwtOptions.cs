@@ -26,6 +26,11 @@ namespace LYBT.Infrastructure.Options {
         public int ExpireMinutes { get; set; } = 60;
 
         /// <summary>
+        /// "记住我"过期时间（分钟）- 默认30天
+        /// </summary>
+        public int RememberMeExpireMinutes { get; set; } = 43200; // 30天 = 30 * 24 * 60
+
+        /// <summary>
         /// 是否启用刷新令牌
         /// </summary>
         public bool EnableRefreshToken { get; set; } = true;

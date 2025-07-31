@@ -1,6 +1,7 @@
 using LYBT.Common.Enums.Users;
 using LYBT.Common.Extensions;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace LYBT.Models.Users {
 
@@ -28,22 +29,16 @@ namespace LYBT.Models.Users {
         public string RealName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用户拥有的所有角色列表
+        /// 用户角色
         /// </summary>
-        [DisplayName("用户角色列表")]
-        public List<UserRole> Roles { get; set; } = new();
+        [DisplayName("用户角色")]
+        public UserRole Role { get; set; }
 
         /// <summary>
-        /// 主要角色（用于向后兼容）
+        /// 用户角色文本
         /// </summary>
-        public UserRole PrimaryRole => Roles.FirstOrDefault();
-
-        /// <summary>
-        /// 用户角色文本，显示所有角色名称
-        /// </summary>
-        public string RolesText => Roles.Count > 0
-            ? string.Join("、", Roles.Select(r => r.GetDescription()))
-            : string.Empty;
+        [JsonIgnore]
+        public string RoleText => Role.GetDescription();
 
         /// <summary>
         /// 账号启用状态（true=启用，false=禁用）
@@ -76,19 +71,15 @@ namespace LYBT.Models.Users {
         public string? PhoneNumber { get; set; }
 
         /// <summary>
-        /// 用户角色
-        /// </summary>
-        [DisplayName("用户角色")]
-        public UserRole Role { get; set; }
-
-        /// <summary>
         /// 是否有管理员权限
         /// </summary>
+        [JsonIgnore]
         public bool IsAdmin => Role == UserRole.Admin;
 
         /// <summary>
         /// 是否有医生权限
         /// </summary>
+        [JsonIgnore]
         public bool IsDoctor => Role == UserRole.DiagnosingDoctor;
     }
 }

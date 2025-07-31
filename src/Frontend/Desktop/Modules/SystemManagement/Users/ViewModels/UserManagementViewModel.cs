@@ -1,8 +1,11 @@
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Enums;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows;
 using Prism.Commands;
 using Prism.Mvvm;
 using System.ComponentModel;
@@ -15,6 +18,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
     /// </summary>
     public class UserManagementViewModel : BindableBase
     {
+        private readonly IUserService _userService;
+        
         private string _searchKeyword = string.Empty;
         private UserInfo _selectedUser;
         private int _currentPage = 1;
@@ -85,8 +90,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         /// <summary>总页数</summary>
         public int TotalPages => TotalCount > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 1;
 
-        public UserManagementViewModel()
+        public UserManagementViewModel(IUserService userService)
         {
+            _userService = userService;
+            
             Users = new ObservableCollection<UserInfo>();
             UsersView = CollectionViewSource.GetDefaultView(Users);
 
@@ -111,28 +118,22 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             IsLoading = true;
             try
             {
-                // TODO: 调用API获取用户列表
-                await Task.Delay(1000); // 模拟API调用
-
-                // 模拟数据
-                Users.Clear();
-                for (int i = 1; i <= 50; i++)
+                var request = new UserQueryRequest
                 {
-                    Users.Add(new UserInfo
-                    {
-                        Id = Guid.NewGuid(),
-                        UserName = $"user{i:D2}",
-                        RealName = $"用户{i}",
-                        Role = i % 5 == 0 ? LYBT.WPF.Client.Core.Enums.UserRole.SuperAdmin : LYBT.WPF.Client.Core.Enums.UserRole.FrontDesk,
-                        Email = $"user{i}@example.com",
-                        PhoneNumber = $"138000000{i:D2}",
-                        IsActive = i % 10 != 0,
-                        CreatedTime = DateTime.Now.AddDays(-i),
-                        LastLoginTime = i % 3 == 0 ? DateTime.Now.AddHours(-i) : null
-                    });
+                    Keyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword,
+                    Page = CurrentPage,
+                    PageSize = PageSize
+                };
+
+                var result = await _userService.SearchUsersAsync(request);
+
+                Users.Clear();
+                foreach (var user in result.Items)
+                {
+                    Users.Add(user);
                 }
 
-                TotalCount = Users.Count;
+                TotalCount = result.TotalCount;
                 RaisePropertyChanged(nameof(StatusText));
                 RaisePropertyChanged(nameof(TotalPages));
 
@@ -142,6 +143,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 NextPageCommand.RaiseCanExecuteChanged();
                 LastPageCommand.RaiseCanExecuteChanged();
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"加载用户列表失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
             finally
             {
                 IsLoading = false;
@@ -150,13 +155,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
         private void ExecuteSearch()
         {
-            // TODO: 实现搜索逻辑
+            CurrentPage = 1; // 搜索时重置到第一页
             LoadUsers();
         }
 
         private void ExecuteAddUser()
         {
-            // TODO: 打开新增用户对话框
+            MessageBox.Show("新增用户功能正在开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ExecuteRefresh()
@@ -167,19 +172,60 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         private void ExecuteEditUser(UserInfo user)
         {
             if (user == null) return;
-            // TODO: 打开编辑用户对话框
+            MessageBox.Show($"编辑用户功能正在开发中...\n用户: {user.RealName}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ExecuteDeleteUser(UserInfo user)
+        private async void ExecuteDeleteUser(UserInfo user)
         {
             if (user == null) return;
-            // TODO: 确认删除用户
+            
+            var result = MessageBox.Show($"确定要禁用用户 '{user.RealName}' 吗？", "确认禁用", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    var response = await _userService.DisableUserAsync(user.Id);
+                    if (response.IsSuccess)
+                    {
+                        MessageBox.Show("用户已禁用", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LoadUsers(); // 刷新列表
+                    }
+                    else
+                    {
+                        MessageBox.Show($"禁用用户失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"禁用用户失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
-        private void ExecuteResetPassword(UserInfo user)
+        private async void ExecuteResetPassword(UserInfo user)
         {
             if (user == null) return;
-            // TODO: 重置用户密码
+            
+            var result = MessageBox.Show($"确定要重置用户 '{user.RealName}' 的密码吗？", "确认重置", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    var response = await _userService.ResetPasswordAsync(user.Id);
+                    if (response.IsSuccess)
+                    {
+                        MessageBox.Show("密码重置成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"重置密码失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"重置密码失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void ExecuteFirstPage()

@@ -7,6 +7,7 @@ using LYBT.Models.Auth;
 using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Auth.Services {
 
@@ -19,18 +20,21 @@ namespace LYBT.Module.Auth.Services {
         private readonly IUnifiedLogService _logService;
         private readonly SysAdminHandler _sysAdminHandler;
         private readonly AuthOptions _authOptions;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IAuthRepository authRepository,
             IMapper mapper,
             IUnifiedLogService logService,
             SysAdminHandler sysAdminHandler,
-            IOptions<AuthOptions> authOptions) {
+            IOptions<AuthOptions> authOptions,
+            ILogger<AuthService> logger) {
             _authRepository = authRepository;
             _mapper = mapper;
             _logService = logService;
             _sysAdminHandler = sysAdminHandler;
             _authOptions = authOptions.Value;
+            _logger = logger;
         }
 
         /// <summary>
@@ -170,17 +174,28 @@ namespace LYBT.Module.Auth.Services {
         private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(UserModel user, string password) {
             string storedHash;
 
+            _logger.LogInformation("[DEBUG] 验证用户密码: {Username}", user.UserName);
+            _logger.LogInformation("[DEBUG] 是否为sysadmin: {IsSysAdmin}", _sysAdminHandler.IsSysAdmin(user.UserName));
+
             if (_sysAdminHandler.IsSysAdmin(user.UserName)) {
                 storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync() ?? string.Empty;
+                _logger.LogInformation("[DEBUG] 从AdminSecrets获取的哈希长度: {HashLength}", storedHash.Length);
+                _logger.LogInformation("[DEBUG] 哈希前缀: {HashPrefix}", storedHash.Length > 20 ? storedHash.Substring(0, 20) + "..." : storedHash);
             } else {
                 storedHash = user.PasswordHash;
+                _logger.LogInformation("[DEBUG] 从用户表获取的哈希长度: {HashLength}", storedHash.Length);
             }
 
             if (string.IsNullOrEmpty(storedHash)) {
+                _logger.LogWarning("[DEBUG] 密码哈希为空");
                 return (false, "用户密码未设置");
             }
 
-            if (!PasswordHelper.Verify(storedHash, password)) {
+            _logger.LogInformation("[DEBUG] 开始验证密码，输入密码长度: {PasswordLength}", password.Length);
+            var verifyResult = PasswordHelper.Verify(storedHash, password);
+            _logger.LogInformation("[DEBUG] 密码验证结果: {VerifyResult}", verifyResult);
+
+            if (!verifyResult) {
                 return (false, "密码错误");
             }
 
@@ -230,7 +245,18 @@ namespace LYBT.Module.Auth.Services {
             // 记录成功日志
             await LogSuccessfulLogin(user, dto);
 
-            return _mapper.Map<UserDto>(user);
+            // 手动创建UserDto以避免AutoMapper问题（特别是对于临时sysadmin用户）
+            return new UserDto {
+                Id = user.Id,
+                UserName = user.UserName,
+                RealName = user.RealName,
+                Role = user.Role,
+                IsActive = user.IsActive,
+                CreatedTime = user.CreatedTime,
+                LastLoginTime = user.LastLoginTime,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber
+            };
         }
 
         /// <summary>

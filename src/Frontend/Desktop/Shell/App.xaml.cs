@@ -1,6 +1,8 @@
 using Prism.Ioc;
 using Prism.DryIoc;
+using System;
 using System.Windows;
+using System.Net.Http;
 using LYBT.WPF.Client.Shell.Views;
 using LYBT.WPF.Client.Modules.Authentication;
 using LYBT.WPF.Client.Modules.SystemManagement;
@@ -23,8 +25,46 @@ namespace LYBT.WPF.Client.Shell
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册 MockAuthenticationService 为单例
+            // 注册HttpClient，配置超时时间
+            containerRegistry.RegisterSingleton<HttpClient>(() =>
+            {
+                var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(30); // 设置30秒超时
+                return client;
+            });
+            
+            // 注册Token管理器
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.ITokenManager, LYBT.WPF.Client.Services.TokenManager>();
+            
+            // 注册API服务
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();
+            
+            // 注册认证服务 - 临时使用Mock服务
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IAuthenticationService, LYBT.WPF.Client.Services.MockAuthenticationService>();
+            
+            // 注册用户服务
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IUserService, LYBT.WPF.Client.Services.UserService>();
+            
+            // 注册药材服务
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IHerbService, LYBT.WPF.Client.Services.HerbService>();
+            
+            // 注册病历服务
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IRecordService, LYBT.WPF.Client.Services.RecordService>();
+            
+            // 注册处方打印服务
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IPrescriptionPrintService, LYBT.WPF.Client.Services.PrescriptionPrintService>();
+            
+            // 注册患者服务
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IPatientService, LYBT.WPF.Client.Services.PatientService>();
+            
+            // 暂时注释处方服务以避免编译错误
+            // containerRegistry.RegisterSingleton<LYBT.Frontend.Desktop.Core.Interfaces.Services.IPrescriptionService, LYBT.Frontend.Desktop.Services.PrescriptionService>();
+            
+            // 注册权限服务
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IPermissionService, LYBT.WPF.Client.Services.PermissionService>();
+            
+            // 注册会话管理器
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IUserSessionManager, LYBT.WPF.Client.Services.UserSessionManager>();
         }
 
         protected override void ConfigureModuleCatalog(Prism.Modularity.IModuleCatalog moduleCatalog)

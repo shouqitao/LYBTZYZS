@@ -22,7 +22,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         private readonly IEventAggregator _eventAggregator;
 
         private string _username = "sysadmin";
-        private string _password = string.Empty;
+        private string _password = "Admin@123456";
         private bool _rememberMe = true;
         private bool _isLoading = false;
         private string _loginStatusMessage = string.Empty;
@@ -121,9 +121,17 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
 
                 var response = await _authService.LoginAsync(request);
                 
-                if (response.Success)
+                if (response.IsSuccess && response.Data != null)
                 {
-                    LoginStatusMessage = "登录成功，正在跳转...";
+                    // 检查是否为超级管理员
+                    if (response.Data.User.IsSuperAdmin)
+                    {
+                        LoginStatusMessage = "超级管理员登录成功，正在跳转...";
+                    }
+                    else
+                    {
+                        LoginStatusMessage = $"{response.Data.User.Role.ToString()}登录成功，正在跳转...";
+                    }
                     
                     // 等待一下让用户看到成功消息
                     await Task.Delay(1000);

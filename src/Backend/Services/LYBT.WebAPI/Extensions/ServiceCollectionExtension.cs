@@ -56,7 +56,7 @@ public static class ServiceCollectionExtension {
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <returns>服务集合</returns>
-    public static IServiceCollection AddLybtModules(this IServiceCollection services) {
+    public static IServiceCollection AddAllModules(this IServiceCollection services) {
         // 认证模块
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<SysAdminHandler>();

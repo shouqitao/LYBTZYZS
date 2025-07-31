@@ -30,5 +30,9 @@ namespace LYBT.Models.Auth {
         /// <summary>登录类型（Password, WeChat, OAuth等）</summary>
         [DisplayName("登录类型（Password, WeChat, OAuth等）")]
         public string? LoginType { get; set; } = "Password";
+
+        /// <summary>记住我</summary>
+        [DisplayName("记住我")]
+        public bool RememberMe { get; set; } = false;
     }
 }

@@ -35,6 +35,9 @@ namespace LYBT.WPF.Client.Core.Models.Users
         /// <summary>联系电话</summary>
         public string? PhoneNumber { get; set; }
 
+        /// <summary>是否有超级管理员权限</summary>
+        public bool IsSuperAdmin => Role == UserRole.SuperAdmin;
+
         /// <summary>是否有管理员权限</summary>
         public bool IsAdmin => Role == UserRole.Admin;
 

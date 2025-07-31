@@ -1,260 +1,380 @@
-using LYBT.WPF.Client.Core.Models.Consultation;
-using LYBT.WPF.Client.Core.Models.Patients;
-using LYBT.WPF.Client.Core.Models.Users;
-using LYBT.WPF.Client.Core.Models.Herbs;
-using LYBT.WPF.Client.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
+using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Mvvm;
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models.Consultation;
+using LYBT.WPF.Client.Core.Models.Herbs;
+using LYBT.WPF.Client.Core.Models.Patients;
+using LYBT.WPF.Client.Core.Models.DTOs;
+using LYBT.WPF.Client.Core.Enums;
 
 namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
 {
     /// <summary>
-    /// 诊疗视图模型
+    /// 看诊界面视图模型
     /// </summary>
-    public class ConsultationViewModel : BindableBase
+    public class ConsultationViewModel : BindableBase, INotifyPropertyChanged
     {
-        private ConsultationRecord _currentRecord;
-        private bool _isLoading = false;
+        private readonly IHerbService _herbService;
+        private readonly IRecordService _recordService;
+        private readonly IPrescriptionPrintService _prescriptionPrintService;
 
-        // Commands
-        public DelegateCommand SaveRecordCommand { get; }
-        public DelegateCommand PrintPrescriptionCommand { get; }
-        public DelegateCommand CompleteConsultationCommand { get; }
-        public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand LoadTemplateCommand { get; }
-        public DelegateCommand<PrescriptionItem> RemoveHerbCommand { get; }
+        public ConsultationViewModel(IHerbService herbService, IRecordService recordService, IPrescriptionPrintService prescriptionPrintService)
+        {
+            _herbService = herbService;
+            _recordService = recordService;
+            _prescriptionPrintService = prescriptionPrintService;
 
-        /// <summary>当前诊疗记录</summary>
+            InitializeCommands();
+            InitializeData();
+        }
+
+        #region Properties
+
+        private ConsultationRecord _currentRecord = new();
         public ConsultationRecord CurrentRecord
         {
             get => _currentRecord;
-            set => SetProperty(ref _currentRecord, value);
+            set
+            {
+                SetProperty(ref _currentRecord, value);
+                RaisePropertyChanged(nameof(PatientAge));
+                RaisePropertyChanged(nameof(PrescriptionSummary));
+                RaisePropertyChanged(nameof(TotalAmountText));
+            }
         }
 
-        /// <summary>是否正在加载</summary>
-        public bool IsLoading
+        private ObservableCollection<HerbInfo> _availableHerbs = new();
+        public ObservableCollection<HerbInfo> AvailableHerbs
         {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            get => _availableHerbs;
+            set => SetProperty(ref _availableHerbs, value);
         }
 
-        public ConsultationViewModel()
+        private HerbInfo? _selectedHerb;
+        public HerbInfo? SelectedHerb
         {
-            // 初始化命令
-            SaveRecordCommand = new DelegateCommand(ExecuteSaveRecord);
-            PrintPrescriptionCommand = new DelegateCommand(ExecutePrintPrescription);
-            CompleteConsultationCommand = new DelegateCommand(ExecuteCompleteConsultation);
-            AddHerbCommand = new DelegateCommand(ExecuteAddHerb);
-            LoadTemplateCommand = new DelegateCommand(ExecuteLoadTemplate);
-            RemoveHerbCommand = new DelegateCommand<PrescriptionItem>(ExecuteRemoveHerb);
-
-            // 初始化诊疗记录
-            InitializeConsultationRecord();
+            get => _selectedHerb;
+            set => SetProperty(ref _selectedHerb, value);
         }
 
-        private void InitializeConsultationRecord()
+        private string _prescriptionPreview = string.Empty;
+        public string PrescriptionPreview
         {
-            // 创建示例诊疗记录
+            get => _prescriptionPreview;
+            set => SetProperty(ref _prescriptionPreview, value);
+        }
+
+        public string PatientAge
+        {
+            get
+            {
+                if (CurrentRecord.Patient.BirthDate.HasValue)
+                {
+                    var age = DateTime.Now.Year - CurrentRecord.Patient.BirthDate.Value.Year;
+                    if (DateTime.Now.DayOfYear < CurrentRecord.Patient.BirthDate.Value.DayOfYear)
+                        age--;
+                    return age > 0 ? $"{age}岁" : "不满1岁";
+                }
+                return "未知";
+            }
+        }
+
+        public string PrescriptionSummary
+        {
+            get
+            {
+                var count = CurrentRecord.Prescription?.Count ?? 0;
+                return $"处方药材：{count} 种";
+            }
+        }
+
+        public string TotalAmountText
+        {
+            get
+            {
+                var total = CurrentRecord.TotalAmount;
+                return $"总计金额：￥{total:F2}";
+            }
+        }
+
+        #endregion
+
+        #region Commands
+
+        public DelegateCommand AddHerbCommand { get; private set; } = null!;
+        public DelegateCommand<PrescriptionItem> RemoveHerbCommand { get; private set; } = null!;
+        public DelegateCommand GeneratePreviewCommand { get; private set; } = null!;
+        public DelegateCommand SaveRecordCommand { get; private set; } = null!;
+        public DelegateCommand PrintPrescriptionCommand { get; private set; } = null!;
+        public DelegateCommand SavePdfCommand { get; private set; } = null!;
+        public DelegateCommand CompleteConsultationCommand { get; private set; } = null!;
+
+        #endregion
+
+        #region Initialization
+
+        private void InitializeCommands()
+        {
+            AddHerbCommand = new DelegateCommand(AddHerb, CanAddHerb);
+            RemoveHerbCommand = new DelegateCommand<PrescriptionItem>(RemoveHerb);
+            GeneratePreviewCommand = new DelegateCommand(async () => await GeneratePreview());
+            SaveRecordCommand = new DelegateCommand(async () => await SaveRecord());
+            PrintPrescriptionCommand = new DelegateCommand(async () => await PrintPrescription());
+            SavePdfCommand = new DelegateCommand(async () => await SavePdf());
+            CompleteConsultationCommand = new DelegateCommand(async () => await CompleteConsultation());
+        }
+
+        private async void InitializeData()
+        {
+            await LoadAvailableHerbs();
+            InitializeNewConsultation();
+        }
+
+        private void InitializeNewConsultation()
+        {
             CurrentRecord = new ConsultationRecord
             {
                 Id = Guid.NewGuid(),
                 ConsultationDate = DateTime.Now,
                 Status = ConsultationStatus.InProgress,
+                DoctorId = Guid.NewGuid(), // 当前登录医生ID
+                DoctorName = "当前医生", // 从登录信息获取
                 Patient = new PatientInfo
                 {
                     Id = Guid.NewGuid(),
-                    Name = "张三",
-                    Gender = Gender.Male,
-                    Age = 45,
-                    PhoneNumber = "13800138000",
-                    Address = "北京市朝阳区",
-                    CreatedTime = DateTime.Now
-                },
-                Doctor = new UserInfo
-                {
-                    Id = Guid.NewGuid(),
-                    UserName = "doctor01",
-                    RealName = "李医生",
-                    Role = UserRole.DiagnosingDoctor,
-                    CreatedTime = DateTime.Now
-                },
-                TCMDiagnosis = new TCMDiagnosis(),
-                Prescription = new List<PrescriptionItem>(),
-                CreatedTime = DateTime.Now
-            };
-
-            // 添加示例处方
-            AddSamplePrescription();
-        }
-
-        private void AddSamplePrescription()
-        {
-            var sampleHerbs = new[]
-            {
-                new { Name = "当归", Dosage = 10m, Price = 2.5m },
-                new { Name = "白芍", Dosage = 15m, Price = 1.8m },
-                new { Name = "川芎", Dosage = 8m, Price = 3.2m },
-                new { Name = "熟地黄", Dosage = 12m, Price = 2.8m }
-            };
-
-            foreach (var herb in sampleHerbs)
-            {
-                CurrentRecord.Prescription.Add(new PrescriptionItem
-                {
-                    Herb = new HerbInfo
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = herb.Name,
-                        Unit = "g",
-                        Price = herb.Price,
-                        Stock = 100
-                    },
-                    Dosage = herb.Dosage,
-                    Unit = "g",
-                    UnitPrice = herb.Price,
-                    Usage = "煎服"
-                });
-            }
-        }
-
-        private void ExecuteSaveRecord()
-        {
-            try
-            {
-                IsLoading = true;
-                
-                // TODO: 调用API保存诊疗记录
-                // await _consultationService.SaveRecordAsync(CurrentRecord);
-                
-                // 模拟保存操作
-                Task.Delay(1000).Wait();
-                
-                // 显示成功消息
-                System.Windows.MessageBox.Show("诊疗记录保存成功！", "提示", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"保存失败：{ex.Message}", "错误", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-
-        private void ExecutePrintPrescription()
-        {
-            try
-            {
-                // TODO: 实现处方打印功能
-                System.Windows.MessageBox.Show("处方打印功能开发中...", "提示", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"打印失败：{ex.Message}", "错误", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }
-        }
-
-        private void ExecuteCompleteConsultation()
-        {
-            try
-            {
-                var result = System.Windows.MessageBox.Show("确定要完成本次诊疗吗？", "确认", 
-                    System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
-                
-                if (result == System.Windows.MessageBoxResult.Yes)
-                {
-                    CurrentRecord.Status = ConsultationStatus.Completed;
-                    
-                    // TODO: 调用API更新诊疗状态
-                    ExecuteSaveRecord();
-                    
-                    System.Windows.MessageBox.Show("诊疗已完成！", "提示", 
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    Name = "新患者",
+                    Gender = Gender.Unknown,
+                    BirthDate = DateTime.Now.AddYears(-30)
                 }
-            }
-            catch (Exception ex)
+            };
+        }
+
+        #endregion
+
+        #region Command Implementations
+
+        private bool CanAddHerb()
+        {
+            return SelectedHerb != null;
+        }
+
+        private void AddHerb()
+        {
+            if (SelectedHerb == null) return;
+
+            // 检查是否已存在
+            var existingItem = CurrentRecord.Prescription.FirstOrDefault(p => p.Herb.Id == SelectedHerb.Id);
+            if (existingItem != null)
             {
-                System.Windows.MessageBox.Show($"完成诊疗失败：{ex.Message}", "错误", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                MessageBox.Show("该药材已在处方中，请修改剂量或删除后重新添加。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var prescriptionItem = new PrescriptionItem
+            {
+                Herb = SelectedHerb,
+                Dosage = 10, // 默认剂量
+                Unit = "g",
+                UnitPrice = SelectedHerb.Price,
+                Usage = "水煎服"
+            };
+
+            CurrentRecord.Prescription.Add(prescriptionItem);
+            
+            // 更新界面
+            RaisePropertyChanged(nameof(PrescriptionSummary));
+            RaisePropertyChanged(nameof(TotalAmountText));
+            
+            SelectedHerb = null;
+        }
+
+        private void RemoveHerb(PrescriptionItem item)
+        {
+            if (item != null)
+            {
+                CurrentRecord.Prescription.Remove(item);
+                RaisePropertyChanged(nameof(PrescriptionSummary));
+                RaisePropertyChanged(nameof(TotalAmountText));
             }
         }
 
-        private void ExecuteAddHerb()
+        private async Task GeneratePreview()
         {
             try
             {
-                // TODO: 打开药材选择对话框
-                // 这里添加示例药材
-                var newHerb = new PrescriptionItem
+                var medicalRecord = CurrentRecord.ToMedicalRecord();
+                var preview = await _prescriptionPrintService.PreviewPrescriptionAsync(medicalRecord);
+                PrescriptionPreview = preview.Content;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"生成预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task SaveRecord()
+        {
+            try
+            {
+                var medicalRecord = CurrentRecord.ToMedicalRecord();
+                var createDto = new RecordCreateDto
                 {
-                    Herb = new HerbInfo
+                    PatientId = medicalRecord.PatientId,
+                    PatientName = medicalRecord.PatientName,
+                    Diagnosis = medicalRecord.Diagnosis,
+                    ChiefComplaint = medicalRecord.ChiefComplaint,
+                    PresentIllness = medicalRecord.PresentIllness,
+                    TreatmentAdvice = medicalRecord.TreatmentAdvice,
+                    DiagnosisResults = medicalRecord.DiagnosisResults,
+                    HerbalFormula = medicalRecord.HerbalFormula.Select(h => new HerbItemModel
                     {
-                        Id = Guid.NewGuid(),
-                        Name = "甘草",
-                        Unit = "g",
-                        Price = 1.5m,
-                        Stock = 50
-                    },
-                    Dosage = 6m,
-                    Unit = "g",
-                    UnitPrice = 1.5m,
-                    Usage = "调和诸药"
+                        HerbId = h.HerbId,
+                        HerbName = h.HerbName,
+                        Dosage = h.Dosage,
+                        Unit = h.Unit,
+                        UnitPrice = h.UnitPrice,
+                        Usage = h.Usage,
+                        Remark = h.Remark
+                    }).ToList()
                 };
 
-                CurrentRecord.Prescription.Add(newHerb);
-                RaisePropertyChanged(nameof(CurrentRecord));
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"添加药材失败：{ex.Message}", "错误", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }
-        }
-
-        private void ExecuteLoadTemplate()
-        {
-            try
-            {
-                // TODO: 打开验方模板选择对话框
-                System.Windows.MessageBox.Show("验方模板加载功能开发中...", "提示", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"加载模板失败：{ex.Message}", "错误", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }
-        }
-
-        private void ExecuteRemoveHerb(PrescriptionItem item)
-        {
-            if (item == null) return;
-
-            try
-            {
-                var result = System.Windows.MessageBox.Show($"确定要删除药材\"{item.Herb.Name}\"吗？", "确认", 
-                    System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
-                
-                if (result == System.Windows.MessageBoxResult.Yes)
+                var result = await _recordService.AddAsync(createDto);
+                if (result.IsSuccess)
                 {
-                    CurrentRecord.Prescription.Remove(item);
-                    RaisePropertyChanged(nameof(CurrentRecord));
+                    MessageBox.Show("病历保存成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"病历保存失败：{result.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"删除药材失败：{ex.Message}", "错误", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                MessageBox.Show($"保存病历时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private async Task PrintPrescription()
+        {
+            try
+            {
+                if (!CurrentRecord.Prescription.Any())
+                {
+                    MessageBox.Show("处方为空，无法打印。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var medicalRecord = CurrentRecord.ToMedicalRecord();
+                var success = await _prescriptionPrintService.PrintPrescriptionAsync(medicalRecord);
+                
+                if (success)
+                {
+                    MessageBox.Show("处方已发送到打印机。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("打印失败，请检查打印机设置。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打印处方时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task SavePdf()
+        {
+            try
+            {
+                if (!CurrentRecord.Prescription.Any())
+                {
+                    MessageBox.Show("处方为空，无法保存。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*",
+                    DefaultExt = "txt",
+                    FileName = $"处方_{CurrentRecord.Patient.Name}_{DateTime.Now:yyyyMMdd_HHmmss}"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    var medicalRecord = CurrentRecord.ToMedicalRecord();
+                    var success = await _prescriptionPrintService.SaveAsPdfAsync(medicalRecord, saveDialog.FileName);
+                    
+                    if (success)
+                    {
+                        MessageBox.Show($"处方已保存到：{saveDialog.FileName}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("保存失败。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存PDF时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task CompleteConsultation()
+        {
+            try
+            {
+                // 保存病历
+                await SaveRecord();
+                
+                // 标记看诊完成
+                CurrentRecord.Status = ConsultationStatus.Completed;
+                CurrentRecord.UpdatedTime = DateTime.Now;
+                
+                MessageBox.Show("看诊已完成！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                // 重置为新的看诊
+                InitializeNewConsultation();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"完成看诊时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private async Task LoadAvailableHerbs()
+        {
+            try
+            {
+                var result = await _herbService.GetAvailableAsync();
+                if (result.IsSuccess && result.Data != null)
+                {
+                    AvailableHerbs.Clear();
+                    foreach (var herb in result.Data)
+                    {
+                        AvailableHerbs.Add(herb);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"加载药材列表失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
     }
 }

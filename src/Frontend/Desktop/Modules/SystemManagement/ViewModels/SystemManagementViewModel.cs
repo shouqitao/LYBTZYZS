@@ -19,6 +19,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         public DelegateCommand NavigateToSystemLogsCommand { get; }
         public DelegateCommand NavigateToHerbManagementCommand { get; }
         public DelegateCommand NavigateToPrescriptionTemplatesCommand { get; }
+        public DelegateCommand NavigateToPrescriptionManagementCommand { get; }
+        public DelegateCommand NavigateToPatientManagementCommand { get; }
+        public DelegateCommand NavigateToRecordManagementCommand { get; }
 
         public SystemManagementViewModel(IRegionManager regionManager)
         {
@@ -32,6 +35,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             NavigateToSystemLogsCommand = new DelegateCommand(ExecuteNavigateToSystemLogs);
             NavigateToHerbManagementCommand = new DelegateCommand(ExecuteNavigateToHerbManagement);
             NavigateToPrescriptionTemplatesCommand = new DelegateCommand(ExecuteNavigateToPrescriptionTemplates);
+            NavigateToPrescriptionManagementCommand = new DelegateCommand(ExecuteNavigateToPrescriptionManagement);
+            NavigateToPatientManagementCommand = new DelegateCommand(ExecuteNavigateToPatientManagement);
+            NavigateToRecordManagementCommand = new DelegateCommand(ExecuteNavigateToRecordManagement);
 
             // 默认导航到用户管理
             ExecuteNavigateToUserManagement();
@@ -70,6 +76,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         private void ExecuteNavigateToPrescriptionTemplates()
         {
             _regionManager.RequestNavigate("SystemManagementContentRegion", "PrescriptionTemplateManagementView");
+        }
+
+        private void ExecuteNavigateToPrescriptionManagement()
+        {
+            _regionManager.RequestNavigate("SystemManagementContentRegion", "PrescriptionManagementView");
+        }
+
+        private void ExecuteNavigateToPatientManagement()
+        {
+            _regionManager.RequestNavigate("SystemManagementContentRegion", "PatientManagementView");
+        }
+
+        private void ExecuteNavigateToRecordManagement()
+        {
+            _regionManager.RequestNavigate("SystemManagementContentRegion", "RecordManagementView");
         }
     }
 }

@@ -4,6 +4,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build and Development Commands
 
+### 快速启动脚本
+
+**主控制台** (推荐使用):
+```bash
+# 项目根目录下直接双击
+启动控制台.bat
+
+# 或者在scripts目录中
+scripts\main.bat
+```
+
+**开发环境快速启动**:
+```bash
+scripts\start-dev.bat
+```
+
+**一键部署到生产环境**:
+```bash
+scripts\deploy-all.bat
+```
+
+**数据库管理工具**:
+```bash
+scripts\database-manager.bat
+```
+
+### 传统命令行方式
+
 ### Building the Solution
 
 ```bash
@@ -18,6 +46,31 @@ dotnet run
 ```
 
 The API will be available at `https://localhost:5001` or `http://localhost:5000` with Swagger UI at the root path.
+
+**自动数据库初始化功能**:
+WebAPI启动时会自动执行以下数据库检查和初始化操作：
+- ✅ 检查数据库连接状态
+- ✅ 自动创建数据库（如果不存在）  
+- ✅ 自动应用待处理的迁移
+- ✅ 验证核心表结构
+- ✅ 显示详细的数据库状态信息
+
+启动日志示例：
+```
+🔄 正在初始化应用程序...
+📊 数据库信息:
+   ├─ 数据库名: LYBTDB
+   ├─ 连接状态: ✅ 已连接
+   ├─ 已应用迁移: 1 个
+   ├─ 待处理迁移: 0 个
+   └─ 最新迁移: 20250729041436_CreateAllTables
+✅ 应用程序初始化完成
+```
+
+**健康检查端点**:
+- `GET /api/health` - 基本健康检查
+- `GET /api/health/database` - 数据库状态检查
+- `GET /api/health/detailed` - 详细系统状态
 
 ### Running Tests
 

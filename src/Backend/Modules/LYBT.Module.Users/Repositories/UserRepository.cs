@@ -133,13 +133,17 @@ namespace LYBT.Module.Users.Repositories {
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
         public async Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false) {
-            var query = _dbContext.Users.Where(u => ids.Contains(u.Id));
-
-            if (!includeDisabled) {
-                query = query.Where(u => u.IsActive);
+            if (!ids.Any()) {
+                return new List<UserModel>();
             }
 
-            return await query.ToListAsync();
+            // 使用原生SQL避免EF Core的Contains转换问题
+            var idStrings = string.Join("','", ids.Select(id => id.ToString()));
+            var sql = includeDisabled 
+                ? $"SELECT * FROM Users WHERE Id IN ('{idStrings}')"
+                : $"SELECT * FROM Users WHERE Id IN ('{idStrings}') AND IsActive = 1";
+
+            return await _dbContext.Users.FromSqlRaw(sql).ToListAsync();
         }
 
         /// <summary>
@@ -166,11 +170,15 @@ namespace LYBT.Module.Users.Repositories {
         /// 批量更新启用状态
         /// </summary>
         public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive) {
-            var affectedRows = await _dbContext.Users
-                .Where(u => ids.Contains(u.Id))
-                .ExecuteUpdateAsync(u => u.SetProperty(p => p.IsActive, isActive));
+            if (!ids.Any()) {
+                return 0;
+            }
 
-            return affectedRows;
+            // 使用原生SQL避免EF Core的Contains转换问题
+            var idStrings = string.Join("','", ids.Select(id => id.ToString()));
+            var sql = $"UPDATE Users SET IsActive = {(isActive ? 1 : 0)} WHERE Id IN ('{idStrings}')";
+            
+            return await _dbContext.Database.ExecuteSqlRawAsync(sql);
         }
 
         /// <summary>

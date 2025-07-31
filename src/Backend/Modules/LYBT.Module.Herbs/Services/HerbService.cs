@@ -227,9 +227,15 @@ namespace LYBT.Module.Herbs.Services {
         /// 批量更新药材状态
         /// </summary>
         public async Task<int> BatchUpdateStatusAsync(HerbBatchStatusUpdateDto dto) {
-            var models = await _context.Herbs
-                .Where(h => dto.Ids.Contains(h.Id))
-                .ToListAsync();
+            if (!dto.Ids.Any()) {
+                return 0;
+            }
+
+            // 使用原生SQL避免EF Core的Contains转换问题
+            var idStrings = string.Join("','", dto.Ids.Select(id => id.ToString()));
+            var sql = $"SELECT * FROM Herbs WHERE Id IN ('{idStrings}')";
+            
+            var models = await _context.Herbs.FromSqlRaw(sql).ToListAsync();
 
             int count = 0;
             foreach (var model in models) {

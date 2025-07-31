@@ -7,18 +7,18 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </UserControl.Resources>
     <!-- 登录内容，移除外层边框，因为主窗口已经有了 -->
-    <Grid Margin="30">
+    <Grid Margin="25">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="15"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="15"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="15"/>
+            <RowDefinition Height="12"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -41,23 +41,38 @@
         <StackPanel Grid.Row="2">
             <TextBlock Text="用户名" FontSize="14" Foreground="#333" Margin="0,0,0,5"/>
             <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" 
-                     Height="36" 
+                     Height="40" 
                      FontSize="13" 
-                     Padding="8,6"
+                     Padding="12,6"
                      BorderBrush="#DDD"
-                     BorderThickness="1">
+                     BorderThickness="1"
+                     VerticalContentAlignment="Center"
+                     Background="White"
+                     Foreground="#333"
+                     AutomationProperties.Name="用户名">
                 <TextBox.Style>
                     <Style TargetType="TextBox">
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="TextBox">
-                                    <Border Background="White" 
+                                    <Border Background="{TemplateBinding Background}" 
                                             BorderBrush="{TemplateBinding BorderBrush}" 
                                             BorderThickness="{TemplateBinding BorderThickness}" 
                                             CornerRadius="4">
                                         <ScrollViewer x:Name="PART_ContentHost" 
-                                                      Margin="{TemplateBinding Padding}"/>
+                                                      Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="Center"
+                                                      Foreground="{TemplateBinding Foreground}"/>
                                     </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsFocused" Value="True">
+                                            <Setter Property="BorderBrush" Value="#2E86AB"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="BorderBrush" Value="#2E86AB"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -70,24 +85,38 @@
         <StackPanel Grid.Row="4">
             <TextBlock Text="密码" FontSize="14" Foreground="#333" Margin="0,0,0,5"/>
             <PasswordBox x:Name="PasswordBox" 
-                         Height="36" 
+                         Height="40" 
                          FontSize="13" 
-                         Padding="8,6"
+                         Padding="12,6"
                          BorderBrush="#DDD"
                          BorderThickness="1"
+                         Background="White"
+                         Foreground="#333"
+                         AutomationProperties.Name="密码"
                          PasswordChanged="PasswordBox_PasswordChanged">
                 <PasswordBox.Style>
                     <Style TargetType="PasswordBox">
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="PasswordBox">
-                                    <Border Background="White" 
+                                    <Border Background="{TemplateBinding Background}" 
                                             BorderBrush="{TemplateBinding BorderBrush}" 
                                             BorderThickness="{TemplateBinding BorderThickness}" 
                                             CornerRadius="4">
                                         <ScrollViewer x:Name="PART_ContentHost" 
-                                                      Margin="{TemplateBinding Padding}"/>
+                                                      Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="Center"
+                                                      Foreground="{TemplateBinding Foreground}"/>
                                     </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsFocused" Value="True">
+                                            <Setter Property="BorderBrush" Value="#2E86AB"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="BorderBrush" Value="#2E86AB"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>

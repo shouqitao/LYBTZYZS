@@ -141,6 +141,7 @@ namespace LYBT.Infrastructure.Data {
 
             // 配置各个实体的映射关系
             ConfigureUsers(modelBuilder);
+            ConfigureAdminSecrets(modelBuilder);
             ConfigurePatients(modelBuilder);
             ConfigureDoctors(modelBuilder);
             ConfigureRegistrations(modelBuilder);
@@ -166,6 +167,15 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(u => u.UserName).HasMaxLength(50);
             entity.Property(u => u.RealName).HasMaxLength(100);
             entity.Property(u => u.PasswordHash).HasMaxLength(255);
+        }
+
+        private static void ConfigureAdminSecrets(ModelBuilder modelBuilder) {
+            var entity = modelBuilder.Entity<AdminSecretModel>();
+            entity.ToTable("AdminSecrets");
+            entity.HasKey(a => a.Id);
+            entity.HasIndex(a => a.UserName).IsUnique();
+            entity.Property(a => a.UserName).HasMaxLength(50).IsRequired();
+            entity.Property(a => a.PasswordHash).HasMaxLength(500).IsRequired();
         }
 
         private static void ConfigurePatients(ModelBuilder modelBuilder) {

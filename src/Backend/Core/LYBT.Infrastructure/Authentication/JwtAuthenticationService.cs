@@ -22,7 +22,7 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 生成JWT令牌
         /// </summary>
-        public string GenerateToken(string userId, string userName, IEnumerable<string> roles) {
+        public string GenerateToken(string userId, string userName, IEnumerable<string> roles, bool rememberMe = false) {
             var claims = new List<Claim> {
                 new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.UniqueName, userName),
@@ -35,7 +35,10 @@ namespace LYBT.Infrastructure.Authentication {
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes);
+            
+            // 根据"记住我"选项设置不同的过期时间
+            var expireMinutes = rememberMe ? _jwtOptions.RememberMeExpireMinutes : _jwtOptions.ExpireMinutes;
+            var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
 
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Issuer,

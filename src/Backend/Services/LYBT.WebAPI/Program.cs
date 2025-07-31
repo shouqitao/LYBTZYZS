@@ -5,9 +5,11 @@ using LYBT.Infrastructure.Authentication;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Database;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Options;
 using LYBT.Module.Users;
+using LYBT.WebAPI.Extensions;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -68,6 +70,9 @@ builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IUnifiedLogService, UnifiedLogService>();
 builder.Services.AddScoped<IUnifiedConfigService, UnifiedConfigService>();
 
+// 数据库初始化服务
+builder.Services.AddScoped<LYBT.Infrastructure.Database.DatabaseInitializationService>();
+
 // CORS
 builder.Services.AddCors(options => {
     options.AddPolicy("DefaultPolicy", builder => {
@@ -84,8 +89,27 @@ builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("AuthOp
 // 注册Users模块服务（不再需要单独的数据库上下文）
 builder.Services.AddUsersModuleServices();
 
-// 添加AutoMapper配置
-builder.Services.AddAutoMapper(typeof(Program));
+// 注册所有LYBT业务模块服务
+builder.Services.AddAllModules();
+
+// 添加AutoMapper配置 - 扫描所有程序集中的Profile
+builder.Services.AddAutoMapper(
+    typeof(Program),
+    typeof(LYBT.Module.Users.Mapping.UserMappingProfile),
+    typeof(LYBT.Module.Patients.Mapping.PatientMappingProfile),
+    typeof(LYBT.Module.Doctors.Mapping.DoctorMappingProfile),
+    typeof(LYBT.Module.Billing.Mapping.BillingMappingProfile),
+    typeof(LYBT.Module.DiagnosisTreatment.Mapping.DiagnosisTreatmentMappingProfile),
+    typeof(LYBT.Module.FormulaTemplates.Mapping.FormulaTemplateMappingProfile),
+    typeof(LYBT.Module.Herbs.Mapping.HerbMappingProfile),
+    typeof(LYBT.Module.Pharmacy.Mapping.PharmacyMappingProfile),
+    typeof(LYBT.Module.Prescriptions.Mapping.PrescriptionMappingProfile),
+    typeof(LYBT.Module.Queueing.Mapping.QueueingMappingProfile),
+    typeof(LYBT.Module.Records.Mapping.RecordMappingProfile),
+    typeof(LYBT.Module.Registration.Mapping.RegistrationMappingProfile),
+    typeof(LYBT.Module.Sync.Mapping.SyncMappingProfile),
+    typeof(LYBT.Module.TreatmentRoom.Mapping.TreatmentRoomMappingProfile)
+);
 
 // 注册认证模块服务
 builder.Services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthRepository, LYBT.Module.Auth.Repositories.AuthRepository>();
@@ -119,24 +143,43 @@ builder.Services.AddSwaggerGen(c => {
 builder.Services.AddControllers().AddJsonOptions(options => {
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = false;
 });
 
 // =========== 7. 构建应用 ===========
 var app = builder.Build();
 
-// =========== 8. 初始化数据（异常处理） ===========
+// =========== 8. 数据库和应用初始化 ===========
 using (var scope = app.Services.CreateScope()) {
     try {
+        Console.WriteLine("🔄 正在初始化应用程序...");
+        
         // 使用超时取消令牌防止初始化卡死
-        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
-        // 自动应用数据库迁移，确保所有表都已创建
+        // 数据库初始化（优先执行）
         try {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            db.Database.Migrate();
-            Console.WriteLine("✅ 数据库迁移完成");
-        } catch (Exception migrateEx) {
-            Console.WriteLine($"⚠️  数据库迁移失败: {migrateEx.Message}");
+            var dbInitService = scope.ServiceProvider.GetRequiredService<LYBT.Infrastructure.Database.DatabaseInitializationService>();
+            await dbInitService.InitializeDatabaseAsync();
+            
+            // 显示数据库信息
+            var dbInfo = await dbInitService.GetDatabaseInfoAsync();
+            Console.WriteLine($"📊 数据库信息:");
+            Console.WriteLine($"   ├─ 数据库名: {dbInfo.DatabaseName}");
+            Console.WriteLine($"   ├─ 连接状态: {(dbInfo.IsConnected ? "✅ 已连接" : "❌ 连接失败")}");
+            Console.WriteLine($"   ├─ 已应用迁移: {dbInfo.AppliedMigrationsCount} 个");
+            Console.WriteLine($"   ├─ 待处理迁移: {dbInfo.PendingMigrationsCount} 个");
+            Console.WriteLine($"   └─ 最新迁移: {dbInfo.LastMigration ?? "无"}");
+        } catch (Exception dbEx) {
+            Console.WriteLine($"❌ 数据库初始化失败: {dbEx.Message}");
+            Console.WriteLine("⚠️  程序将尝试继续启动，但数据库相关功能可能不可用");
+            Console.WriteLine($"💡 建议检查数据库连接字符串和SQL Server服务状态");
+            
+            // 记录详细错误信息到日志
+            var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
+            logger?.LogError(dbEx, "数据库初始化详细错误信息");
         }
 
         // 初始化统一配置服务
@@ -144,6 +187,7 @@ using (var scope = app.Services.CreateScope()) {
         if (configService != null) {
             try {
                 await configService.InitializeDefaultGlobalSettingsAsync();
+                Console.WriteLine("✅ 配置服务初始化成功");
             } catch (Exception configEx) {
                 Console.WriteLine($"⚠️  配置服务初始化失败，将跳过: {configEx.Message}");
             }
@@ -154,17 +198,23 @@ using (var scope = app.Services.CreateScope()) {
         if (logService != null) {
             try {
                 await logService.LogInfoAsync("System", "应用程序启动成功", null, "WebAPI-Startup");
+                Console.WriteLine("✅ 日志服务初始化成功");
             } catch (Exception logEx) {
                 Console.WriteLine($"⚠️  日志服务初始化失败，将跳过: {logEx.Message}");
             }
         }
 
-        Console.WriteLine("✅ 应用程序初始化成功");
+        Console.WriteLine("✅ 应用程序初始化完成");
     } catch (Exception ex) {
         var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
         logger?.LogError(ex, "❌ 应用程序初始化失败");
         Console.WriteLine($"❌ 初始化失败: {ex.Message}");
         Console.WriteLine("⚠️  程序将继续启动，但某些功能可能不可用");
+        
+        // 在开发环境中显示更详细的错误信息
+        if (app.Environment.IsDevelopment()) {
+            Console.WriteLine($"详细错误: {ex}");
+        }
     }
 }
 
@@ -193,13 +243,30 @@ app.MapControllers();
 
 // =========== 10. 启动应用 ===========
 var urls = app.Urls.Count > 0 ? string.Join(", ", app.Urls) : "默认端口";
+Console.WriteLine($"");
 Console.WriteLine($"🚀 LYBT中医诊所管理系统启动成功!");
 Console.WriteLine($"📍 访问地址: {urls}");
-Console.WriteLine($"📊 数据库: {(string.IsNullOrEmpty(connectionString) ? "未配置" : "已连接")}");
-Console.WriteLine($"🔐 JWT认证: {(jwtOptions != null ? "已启用" : "未配置")}");
-Console.WriteLine($"⚠️  注意: 仅启用认证模块，其他业务模块需要单独配置");
-Console.WriteLine($"🎯 无限递归问题已解决！");
+Console.WriteLine($"📖 Swagger文档: {urls.Replace("http://", "").Replace("https://", "").Split(',')[0]}/swagger");
+
+// 获取数据库状态信息
+using (var scope = app.Services.CreateScope()) {
+    try {
+        var dbInitService = scope.ServiceProvider.GetService<LYBT.Infrastructure.Database.DatabaseInitializationService>();
+        if (dbInitService != null) {
+            var dbInfo = await dbInitService.GetDatabaseInfoAsync();
+            Console.WriteLine($"📊 数据库状态: {(dbInfo.IsConnected ? "✅ 已连接" : "❌ 未连接")} ({dbInfo.DatabaseName})");
+        } else {
+            Console.WriteLine($"📊 数据库状态: {(string.IsNullOrEmpty(connectionString) ? "❌ 未配置" : "⚠️ 状态未知")}");
+        }
+    } catch {
+        Console.WriteLine($"📊 数据库状态: ⚠️ 检查失败");
+    }
+}
+
+Console.WriteLine($"🔐 JWT认证: {(jwtOptions != null ? "✅ 已启用" : "❌ 未配置")}");
+Console.WriteLine($"⚡ 服务状态: 所有核心模块已加载");
 Console.WriteLine($"💡 按 Ctrl+C 停止程序");
+Console.WriteLine($"");
 
 // 添加优雅关闭支持
 var cancellationTokenSource = new CancellationTokenSource();
