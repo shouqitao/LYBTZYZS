@@ -1,6 +1,6 @@
-﻿using LYBT.Common.Enums.Users;
+﻿using LYBT.Shared.Models.Enums;
 using LYBT.Common.Models;
-using LYBT.Common.Responses;
+using LYBT.Shared.Models.Common;
 using LYBT.Models.Doctors;
 
 namespace LYBT.Module.Doctors.Interfaces {

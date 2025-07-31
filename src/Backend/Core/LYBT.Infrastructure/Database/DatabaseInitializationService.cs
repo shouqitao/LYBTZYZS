@@ -64,25 +64,162 @@ namespace LYBT.Infrastructure.Database
         }
 
         /// <summary>
-        /// 检查数据库连接
+        /// 检查数据库服务器连接和数据库可用性
         /// </summary>
         private async Task CheckDatabaseConnectionAsync()
         {
             try
             {
-                _logger.LogInformation("检查数据库连接...");
+                _logger.LogInformation("检查数据库服务器连接...");
                 
-                // 设置连接超时时间
-                using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                await _dbContext.Database.OpenConnectionAsync(cancellationTokenSource.Token);
-                await _dbContext.Database.CloseConnectionAsync();
+                // 首先检查SQL Server服务器是否可用（连接到master数据库）
+                await CheckSqlServerAvailabilityAsync();
                 
-                _logger.LogInformation("✅ 数据库连接正常");
+                // 然后检查目标数据库是否存在和可访问
+                await CheckTargetDatabaseAsync();
+                
+                _logger.LogInformation("✅ 数据库连接检查完成");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ 数据库连接失败");
-                throw new InvalidOperationException("无法连接到数据库服务器，请检查连接字符串和数据库服务器状态", ex);
+                _logger.LogError(ex, "❌ 数据库连接检查失败");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 检查SQL Server服务器是否可用
+        /// </summary>
+        private async Task CheckSqlServerAvailabilityAsync()
+        {
+            try
+            {
+                // 构建连接到master数据库的连接字符串来测试SQL Server可用性
+                var connectionString = _dbContext.Database.GetConnectionString();
+                var masterConnectionString = connectionString?.Replace("Database=LYBTDB", "Database=master");
+                
+                using var connection = new Microsoft.Data.SqlClient.SqlConnection(masterConnectionString);
+                
+                _logger.LogInformation("正在连接到SQL Server (master数据库)...");
+                
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                await connection.OpenAsync(timeout.Token);
+                
+                _logger.LogInformation("✅ SQL Server服务器连接成功");
+                
+                // 检查服务器版本信息
+                using var command = new Microsoft.Data.SqlClient.SqlCommand("SELECT @@VERSION", connection);
+                var version = await command.ExecuteScalarAsync() as string;
+                if (!string.IsNullOrEmpty(version))
+                {
+                    // 只显示版本信息的第一行
+                    var versionFirstLine = version.Split('\n')[0].Trim();
+                    _logger.LogInformation($"SQL Server版本: {versionFirstLine}");
+                }
+            }
+            catch (Microsoft.Data.SqlClient.SqlException sqlEx) when (sqlEx.Number == 2 || sqlEx.Number == 53)
+            {
+                // 连接超时或服务器不可达
+                _logger.LogError("❌ 无法连接到SQL Server服务器");
+                _logger.LogError("可能的原因:");
+                _logger.LogError("  1. SQL Server服务未启动");
+                _logger.LogError("  2. SQL Server未安装");
+                _logger.LogError("  3. 服务器名称不正确");
+                _logger.LogError("  4. 防火墙阻止连接");
+                _logger.LogError("");
+                _logger.LogError("解决建议:");
+                _logger.LogError("  1. 安装SQL Server Express: https://www.microsoft.com/sql-server/sql-server-downloads");
+                _logger.LogError("  2. 启动SQL Server服务: services.msc -> SQL Server");
+                _logger.LogError("  3. 检查连接字符串配置");
+                
+                throw new InvalidOperationException($"SQL Server服务器不可用: {sqlEx.Message}", sqlEx);
+            }
+            catch (Microsoft.Data.SqlClient.SqlException sqlEx) when (sqlEx.Number == 18456)
+            {
+                // 身份验证失败
+                _logger.LogError("❌ SQL Server身份验证失败");
+                _logger.LogError("当前连接使用Windows集成身份验证");
+                _logger.LogError($"当前用户: {Environment.UserName}");
+                _logger.LogError("");
+                _logger.LogError("解决建议:");
+                _logger.LogError("  1. 确保当前用户有SQL Server访问权限");
+                _logger.LogError("  2. 或修改连接字符串使用SQL Server身份验证");
+                
+                throw new InvalidOperationException($"数据库身份验证失败: {sqlEx.Message}", sqlEx);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ SQL Server连接测试失败");
+                throw new InvalidOperationException("无法连接到SQL Server服务器，请检查服务器状态", ex);
+            }
+        }
+
+        /// <summary>
+        /// 检查目标数据库是否存在，如果不存在则创建
+        /// </summary>
+        private async Task CheckTargetDatabaseAsync()
+        {
+            try
+            {
+                _logger.LogInformation("检查目标数据库 LYBTDB...");
+                
+                // 尝试连接到目标数据库
+                var canConnect = await _dbContext.Database.CanConnectAsync();
+                
+                if (canConnect)
+                {
+                    _logger.LogInformation("✅ 数据库 LYBTDB 存在且可访问");
+                }
+                else
+                {
+                    _logger.LogInformation("数据库 LYBTDB 不存在，正在创建...");
+                    await CreateDatabaseIfNotExistsAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "检查目标数据库时出现问题，尝试创建数据库...");
+                await CreateDatabaseIfNotExistsAsync();
+            }
+        }
+
+        /// <summary>
+        /// 如果数据库不存在则创建数据库
+        /// </summary>
+        private async Task CreateDatabaseIfNotExistsAsync()
+        {
+            try
+            {
+                _logger.LogInformation("正在创建数据库 LYBTDB...");
+                
+                // 使用EnsureCreated方法创建数据库和所有表
+                var created = await _dbContext.Database.EnsureCreatedAsync();
+                
+                if (created)
+                {
+                    _logger.LogInformation("✅ 数据库 LYBTDB 创建成功");
+                    _logger.LogInformation("✅ 数据库表结构创建成功");
+                }
+                else
+                {
+                    _logger.LogInformation("✅ 数据库 LYBTDB 已存在");
+                }
+                
+                // 验证数据库连接
+                var canConnect = await _dbContext.Database.CanConnectAsync();
+                if (canConnect)
+                {
+                    _logger.LogInformation("✅ 数据库连接验证成功");
+                }
+                else
+                {
+                    throw new InvalidOperationException("数据库创建后仍无法连接");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ 数据库创建失败");
+                throw new InvalidOperationException($"无法创建数据库: {ex.Message}", ex);
             }
         }
 
@@ -183,7 +320,7 @@ namespace LYBT.Infrastructure.Database
                 _logger.LogInformation("验证数据库表结构...");
 
                 // 检查关键表是否存在
-                var coreTableNames = new[] { "Users", "UserRoles", "SystemConfigs", "AuditLogs" };
+                var coreTableNames = new[] { "Users", "AdminSecrets", "AuditLogs", "Patients" };
                 
                 foreach (var tableName in coreTableNames)
                 {

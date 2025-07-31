@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
-using LYBT.Common.Enums.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.Common.Models;
-using LYBT.Common.Responses;
+using LYBT.Shared.Models.Common;
 using LYBT.Models.Patients;
 using LYBT.Models.Records;
 using LYBT.Module.Patients.Interfaces;

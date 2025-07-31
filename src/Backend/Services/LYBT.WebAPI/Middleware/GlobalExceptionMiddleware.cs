@@ -1,4 +1,4 @@
-using LYBT.Common.Responses;
+using LYBT.Shared.Models.Common;
 using System.Net;
 using System.Text.Json;
 

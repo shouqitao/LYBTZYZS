@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Authentication;
 using LYBT.WPF.Client.Core.Events;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
 using Prism.Dialogs;
 using Prism.Mvvm;
@@ -83,6 +85,9 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             _authService = authService;
 
             LoginCommand = new DelegateCommand(ExecuteLogin, CanExecuteLogin);
+            
+            // 监听登出事件以清除登录状态消息
+            _eventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
         }
 
         private bool CanExecuteLogin()
@@ -130,7 +135,8 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                     }
                     else
                     {
-                        LoginStatusMessage = $"{response.Data.User.Role.ToString()}登录成功，正在跳转...";
+                        var roleDisplayName = response.Data.User.Role.GetDisplayName();
+                        LoginStatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
                     }
                     
                     // 等待一下让用户看到成功消息
@@ -153,6 +159,15 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                 IsLoading = false;
             }
         }
+
+        /// <summary>
+        /// 登出事件处理
+        /// </summary>
+        private void OnLogout()
+        {
+            LoginStatusMessage = string.Empty;
+        }
+
 
         private string GetLocalIPAddress()
         {

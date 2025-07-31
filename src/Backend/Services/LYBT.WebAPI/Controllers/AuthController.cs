@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using LYBT.Common.Responses;
 using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Authentication;
 using LYBT.Models.Auth;
@@ -8,6 +7,7 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Auth;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -119,7 +119,7 @@ namespace LYBT.WebAPI.Controllers {
                     Id = Guid.NewGuid(),
                     UserName = "sysadmin",
                     RealName = "系统管理员", 
-                    Role = Common.Enums.Users.UserRole.Admin,
+                    Role = UserRole.Admin,
                     IsActive = true,
                     CreatedTime = DateTime.Now,
                     LastLoginTime = DateTime.Now
@@ -211,6 +211,47 @@ namespace LYBT.WebAPI.Controllers {
 
             } catch (Exception ex) {
                 return LYBT.Shared.Models.Common.ApiResponse<object>.Fail($"测试异帰: {ex.Message}", 500);
+            }
+        }
+
+        /// <summary>
+        /// 模拟登录 - 不依赖数据库，用于前端测试
+        /// </summary>
+        [HttpPost("mockLogin")]
+        [AllowAnonymous]
+        public LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> MockLogin([FromBody] LoginRequestDto dto) {
+            try {
+                // 简单的模拟验证
+                if (dto.Username == "sysadmin" && dto.Password == "Admin@123456") {
+                    var token = _jwtService.GenerateToken(
+                        Guid.NewGuid().ToString(),
+                        "sysadmin",
+                        new[] { "Admin" },
+                        dto.RememberMe
+                    );
+
+                    var response = new LYBT.Shared.Models.Auth.LoginResponse {
+                        Token = token,
+                        User = new LYBT.Shared.Models.Auth.UserInfo {
+                            Id = Guid.NewGuid(),
+                            UserName = "sysadmin",
+                            RealName = "系统管理员",
+                            Role = "Admin",
+                            Email = "admin@lybt.com",
+                            PhoneNumber = null,
+                            IsActive = true
+                        }
+                    };
+
+                    _logger.LogInformation("模拟登录成功: {Username}", dto.Username);
+                    return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Success(response);
+                }
+
+                return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail("用户名或密码错误", 401);
+
+            } catch (Exception ex) {
+                _logger.LogError(ex, "模拟登录失败: {Username}", dto.Username);
+                return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail($"登录失败: {ex.Message}", 500);
             }
         }
     }

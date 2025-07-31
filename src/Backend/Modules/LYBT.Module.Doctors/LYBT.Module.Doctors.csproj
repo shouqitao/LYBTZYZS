@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\Core\LYBT.Common\LYBT.Common.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Models\LYBT.Models.csproj" />
+    <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
     <ProjectReference Include="..\LYBT.Module.Users\LYBT.Module.Users.csproj" />
   </ItemGroup>

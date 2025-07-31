@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Enums.Users;
+﻿using LYBT.Shared.Models.Enums;
 using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
 

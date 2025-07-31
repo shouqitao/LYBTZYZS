@@ -21,6 +21,14 @@ namespace LYBT.WebAPI.Middleware {
             var requestPath = context.Request.Path;
             var requestMethod = context.Request.Method;
 
+            // 在响应开始之前添加响应头
+            context.Response.OnStarting(() => {
+                if (!context.Response.Headers.ContainsKey("X-Response-Time")) {
+                    context.Response.Headers["X-Response-Time"] = $"{stopwatch.ElapsedMilliseconds}ms";
+                }
+                return Task.CompletedTask;
+            });
+
             await _next(context);
 
             stopwatch.Stop();
@@ -35,9 +43,6 @@ namespace LYBT.WebAPI.Middleware {
             // 记录所有请求的性能信息（Debug级别）
             _logger.LogDebug("请求完成: {Method} {Path} 状态码: {StatusCode} 耗时: {ElapsedMs}ms",
                 requestMethod, requestPath, context.Response.StatusCode, elapsed);
-
-            // 添加响应头包含执行时间
-            context.Response.Headers["X-Response-Time"] = $"{elapsed}ms";
         }
     }
 

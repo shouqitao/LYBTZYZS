@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Enums.Users;
+﻿using LYBT.Shared.Models.Enums;
 using LYBT.Models.Users;
 
 namespace LYBT.Module.Users.Interfaces {
@@ -68,7 +68,7 @@ namespace LYBT.Module.Users.Interfaces {
         /// <summary>
         /// 获取系统所有角色
         /// </summary>
-        List<UserRole> GetRoles();
+        List<object> GetRoles();
 
         /// <summary>
         /// 获取启用的用户列表

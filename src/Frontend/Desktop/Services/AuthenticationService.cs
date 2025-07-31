@@ -38,6 +38,7 @@ namespace LYBT.WPF.Client.Services {
                     loginType = request.LoginType
                 };
 
+                // 使用真实登录端点
                 var response = await _authApiService.LoginAsync(loginDto);
 
                 if (response.IsSuccess && response.Data != null) {
@@ -60,7 +61,10 @@ namespace LYBT.WPF.Client.Services {
 
         public async Task<ApiResponse<object>> LogoutAsync() {
             try {
+                // 获取当前用户信息用于登出
+                var currentUser = await GetCurrentUserAsync();
                 var logoutDto = new {
+                    username = currentUser?.UserName ?? "unknown",
                     token = _tokenManager.GetToken()
                 };
 
@@ -147,9 +151,11 @@ namespace LYBT.WPF.Client.Services {
                 using var document = JsonDocument.Parse(json);
                 var root = document.RootElement;
 
+                var userName = root.TryGetProperty("userName", out var userNameProp) ? userNameProp.GetString() ?? "" : "";
+                
                 return new UserInfo {
                     Id = root.TryGetProperty("id", out var idProp) ? idProp.GetGuid() : Guid.Empty,
-                    UserName = root.TryGetProperty("userName", out var userNameProp) ? userNameProp.GetString() ?? "" : "",
+                    UserName = userName,
                     RealName = root.TryGetProperty("realName", out var realNameProp) ? realNameProp.GetString() ?? "" : "",
                     Role = root.TryGetProperty("role", out var roleProp) ? ParseUserRole(roleProp.GetString()) : UserRole.Staff,
                     IsActive = root.TryGetProperty("isActive", out var isActiveProp) && isActiveProp.GetBoolean(),
@@ -157,7 +163,9 @@ namespace LYBT.WPF.Client.Services {
                     LastLoginTime = root.TryGetProperty("lastLoginTime", out var lastLoginTimeProp) ? lastLoginTimeProp.GetDateTime() : null,
                     Email = root.TryGetProperty("email", out var emailProp) ? emailProp.GetString() : null,
                     PhoneNumber = root.TryGetProperty("phoneNumber", out var phoneProp) ? phoneProp.GetString() : null,
+                    // 检查isSuperAdmin字段，如果没有则根据用户名判断
                     IsSuperAdmin = root.TryGetProperty("isSuperAdmin", out var isSuperAdminProp) && isSuperAdminProp.GetBoolean()
+                                   || userName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
                 };
             } catch (Exception) {
                 return null;
@@ -171,7 +179,18 @@ namespace LYBT.WPF.Client.Services {
             if (string.IsNullOrEmpty(roleString))
                 return UserRole.Staff;
 
-            return roleString.ToLower() switch {
+            // 添加调试信息
+            System.Diagnostics.Debug.WriteLine($"ParseUserRole: 输入角色字符串 = '{roleString}'");
+
+            // 尝试直接解析枚举
+            if (Enum.TryParse<UserRole>(roleString, true, out var role))
+            {
+                System.Diagnostics.Debug.WriteLine($"ParseUserRole: 枚举解析成功 = {role}");
+                return role;
+            }
+
+            // 兼容性处理 - 处理可能的不同命名格式
+            var result = roleString.ToLower() switch {
                 "staff" => UserRole.Staff,
                 "diagnosingdoctor" => UserRole.DiagnosingDoctor,
                 "cashierstaff" => UserRole.CashierStaff,
@@ -180,6 +199,9 @@ namespace LYBT.WPF.Client.Services {
                 "admin" => UserRole.Admin,
                 _ => UserRole.Staff
             };
+            
+            System.Diagnostics.Debug.WriteLine($"ParseUserRole: 兼容性处理结果 = {result}");
+            return result;
         }
 
         /// <summary>

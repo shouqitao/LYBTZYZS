@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Common\LYBT.Common.csproj" />
+    <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
   <!-- 构建时复制文档文件到统一文档目录 -->

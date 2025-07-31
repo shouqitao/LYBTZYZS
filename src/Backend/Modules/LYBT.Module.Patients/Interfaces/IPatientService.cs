@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Enums.Users;
+﻿using LYBT.Shared.Models.Enums;
 using LYBT.Common.Models;
 using LYBT.Models.Patients;
 using LYBT.Models.Records;

@@ -1,4 +1,4 @@
-using LYBT.Common.Enums.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.Common.Extensions;
 using System.ComponentModel;
 using System.Text.Json.Serialization;

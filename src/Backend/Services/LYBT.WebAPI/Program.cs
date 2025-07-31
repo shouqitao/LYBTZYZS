@@ -137,6 +137,37 @@ builder.Services.AddSwaggerGen(c => {
         Version = "v1",
         Description = "传统中医诊所管理系统API文档"
     });
+    
+    // 解决Schema ID冲突问题 - 生成真正唯一的Schema ID
+    c.CustomSchemaIds(type => {
+        // 使用类型的完整签名生成唯一ID
+        if (type.IsGenericType) {
+            var genericDef = type.GetGenericTypeDefinition();
+            var genericTypeName = genericDef.FullName?.Split('`')[0]?.Replace(".", "") ?? genericDef.Name.Split('`')[0];
+            
+            // 递归处理泛型参数，包括嵌套泛型
+            var genericArgs = type.GetGenericArguments()
+                .Select(arg => GetTypeSignature(arg))
+                .ToArray();
+            
+            return $"{genericTypeName}Of{string.Join("And", genericArgs)}";
+        }
+        
+        return type.FullName?.Replace(".", "").Replace("+", "") ?? type.Name;
+    });
+    
+    // 辅助方法：生成类型签名
+    string GetTypeSignature(Type type) {
+        if (type.IsGenericType) {
+            var genericDef = type.GetGenericTypeDefinition();
+            var genericTypeName = genericDef.Name.Split('`')[0];
+            var genericArgs = type.GetGenericArguments()
+                .Select(arg => GetTypeSignature(arg))
+                .ToArray();
+            return $"{genericTypeName}Of{string.Join("And", genericArgs)}";
+        }
+        return type.Name.Replace("[]", "Array");
+    }
 });
 
 // =========== 6. 添加控制器和JSON配置 ===========

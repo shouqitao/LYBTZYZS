@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Common.Enums.Logs;
-using LYBT.Common.Enums.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.Common.Helpers;
 using LYBT.Common.Models;
 using LYBT.Infrastructure.Logging;

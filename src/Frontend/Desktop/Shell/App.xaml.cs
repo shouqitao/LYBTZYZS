@@ -40,7 +40,7 @@ namespace LYBT.WPF.Client.Shell
             {
                 var httpClient = new HttpClient()
                 {
-                    BaseAddress = new Uri("http://localhost:5297/"),
+                    BaseAddress = new Uri("http://localhost:5299/"),
                     Timeout = TimeSpan.FromSeconds(60)
                 };
                 return RestService.For<IAuthApiService>(httpClient);

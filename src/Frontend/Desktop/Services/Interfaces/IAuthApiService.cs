@@ -28,5 +28,11 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// </summary>
         [Get("/api/health")]
         Task<string> HealthCheckAsync();
+
+        /// <summary>
+        /// 模拟登录 - 不依赖数据库
+        /// </summary>
+        [Post("/api/v1/Auth/mockLogin")]
+        Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> MockLoginAsync([Body] object loginRequest);
     }
 }

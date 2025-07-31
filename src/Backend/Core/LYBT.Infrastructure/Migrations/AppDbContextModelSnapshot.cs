@@ -1548,15 +1548,20 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("AdminSecrets");
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
+                    b.ToTable("AdminSecrets", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Models.Users.UserModel", b =>

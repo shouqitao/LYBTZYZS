@@ -101,6 +101,9 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                 {
                     await _authService.LogoutAsync();
                     
+                    // 发布登出事件以清除登录状态消息
+                    _eventAggregator.GetEvent<LogoutEvent>().Publish();
+                    
                     // 清除用户信息
                     CurrentUser = null;
                     IsLoggedIn = false;

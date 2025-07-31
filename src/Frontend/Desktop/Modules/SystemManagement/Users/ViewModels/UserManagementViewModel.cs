@@ -36,6 +36,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand<UserInfo> EditUserCommand { get; }
         public DelegateCommand<UserInfo> DeleteUserCommand { get; }
+        public DelegateCommand<UserInfo> EnableUserCommand { get; }
         public DelegateCommand<UserInfo> ResetPasswordCommand { get; }
         public DelegateCommand FirstPageCommand { get; }
         public DelegateCommand PreviousPageCommand { get; }
@@ -103,6 +104,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             RefreshCommand = new DelegateCommand(ExecuteRefresh);
             EditUserCommand = new DelegateCommand<UserInfo>(ExecuteEditUser);
             DeleteUserCommand = new DelegateCommand<UserInfo>(ExecuteDeleteUser);
+            EnableUserCommand = new DelegateCommand<UserInfo>(ExecuteEnableUser);
             ResetPasswordCommand = new DelegateCommand<UserInfo>(ExecuteResetPassword);
             FirstPageCommand = new DelegateCommand(ExecuteFirstPage, CanExecuteFirstPage);
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage, CanExecutePreviousPage);
@@ -161,7 +163,24 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
         private void ExecuteAddUser()
         {
-            MessageBox.Show("新增用户功能正在开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var dialog = new Views.UserAddEditDialog();
+                var viewModel = new UserAddEditDialogViewModel(_userService);
+                dialog.DataContext = viewModel;
+                dialog.Owner = Application.Current.MainWindow;
+                
+                var result = dialog.ShowDialog();
+                if (result == true)
+                {
+                    LoadUsers(); // 刷新列表
+                    MessageBox.Show("用户创建成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开新增用户对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ExecuteRefresh()
@@ -172,7 +191,25 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         private void ExecuteEditUser(UserInfo user)
         {
             if (user == null) return;
-            MessageBox.Show($"编辑用户功能正在开发中...\n用户: {user.RealName}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            
+            try
+            {
+                var dialog = new Views.UserAddEditDialog();
+                var viewModel = new UserAddEditDialogViewModel(_userService, user);
+                dialog.DataContext = viewModel;
+                dialog.Owner = Application.Current.MainWindow;
+                
+                var result = dialog.ShowDialog();
+                if (result == true)
+                {
+                    LoadUsers(); // 刷新列表
+                    MessageBox.Show("用户信息更新成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开编辑用户对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void ExecuteDeleteUser(UserInfo user)
@@ -198,6 +235,33 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 catch (Exception ex)
                 {
                     MessageBox.Show($"禁用用户失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async void ExecuteEnableUser(UserInfo user)
+        {
+            if (user == null) return;
+            
+            var result = MessageBox.Show($"确定要启用用户 '{user.RealName}' 吗？", "确认启用", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    var response = await _userService.EnableUserAsync(user.Id);
+                    if (response.IsSuccess)
+                    {
+                        MessageBox.Show("用户已启用", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LoadUsers(); // 刷新列表
+                    }
+                    else
+                    {
+                        MessageBox.Show($"启用用户失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"启用用户失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

@@ -28,17 +28,17 @@ namespace LYBT.WPF.Client.Services
             try
             {
                 var queryString = BuildQueryString(request);
-                var response = await _apiService.PostAsync<PaginatedResult<UserInfo>>("api/v1/Users/paged", new {
-                    pageNumber = request.Page,
-                    pageSize = request.PageSize,
-                    keyword = request.Keyword,
-                    role = request.Role?.ToString(),
-                    isActive = request.IsActive
-                });
+                var response = await _apiService.GetAsync<SearchUsersResponse>($"api/v1/Users/search?{queryString}");
                 
                 if (response.IsSuccess && response.Data != null)
                 {
-                    return response.Data;
+                    return new PaginatedResult<UserInfo>
+                    {
+                        Items = response.Data.users ?? new List<UserInfo>(),
+                        TotalCount = response.Data.total,
+                        CurrentPage = request.Page,
+                        PageSize = request.PageSize
+                    };
                 }
 
                 return new PaginatedResult<UserInfo>
@@ -71,7 +71,7 @@ namespace LYBT.WPF.Client.Services
                     phoneNumber = request.PhoneNumber
                 };
 
-                return await _apiService.PostAsync<object>("api/v1/Users", createDto);
+                return await _apiService.PostAsync<object>("api/v1/Users/add", createDto);
             }
             catch (Exception ex)
             {
@@ -101,7 +101,7 @@ namespace LYBT.WPF.Client.Services
                     isActive = request.IsActive
                 };
 
-                return await _apiService.PutAsync<object>("api/v1/Users", updateDto);
+                return await _apiService.PutAsync<object>("api/v1/Users/update", updateDto);
             }
             catch (Exception ex)
             {
@@ -177,12 +177,131 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var response = await _apiService.GetAsync<List<RoleInfo>>("api/v1/Users/roles");
+                var response = await _apiService.GetAsync<List<RoleInfo>>("api/v1/Users/getRoles");
                 return response.IsSuccess && response.Data != null ? response.Data : new List<RoleInfo>();
             }
             catch (Exception)
             {
                 return new List<RoleInfo>();
+            }
+        }
+
+        /// <summary>
+        /// 根据ID获取用户详情
+        /// </summary>
+        public async Task<ApiResponse<UserInfo>> GetUserByIdAsync(Guid userId)
+        {
+            try
+            {
+                return await _apiService.GetAsync<UserInfo>($"api/v1/Users/getById/{userId}");
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<UserInfo>
+                {
+                    IsSuccess = false,
+                    Message = $"获取用户详情失败: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// 获取活跃用户列表
+        /// </summary>
+        public async Task<ApiResponse<List<UserInfo>>> GetActiveUsersAsync()
+        {
+            try
+            {
+                return await _apiService.GetAsync<List<UserInfo>>("api/v1/Users/active");
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<List<UserInfo>>
+                {
+                    IsSuccess = false,
+                    Message = $"获取活跃用户失败: {ex.Message}",
+                    Data = new List<UserInfo>()
+                };
+            }
+        }
+
+        /// <summary>
+        /// 批量禁用用户
+        /// </summary>
+        public async Task<ApiResponse<object>> BatchDisableUsersAsync(List<Guid> userIds)
+        {
+            try
+            {
+                var dto = new { ids = userIds };
+                return await _apiService.PostAsync<object>("api/v1/Users/batchDisable", dto);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = $"批量禁用用户失败: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// 批量启用用户
+        /// </summary>
+        public async Task<ApiResponse<object>> BatchEnableUsersAsync(List<Guid> userIds)
+        {
+            try
+            {
+                var dto = new { ids = userIds };
+                return await _apiService.PostAsync<object>("api/v1/Users/batchEnable", dto);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = $"批量启用用户失败: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// 修改用户密码
+        /// </summary>
+        public async Task<ApiResponse<object>> ChangePasswordAsync(string oldPassword, string newPassword)
+        {
+            try
+            {
+                var dto = new { oldPassword, newPassword };
+                return await _apiService.PostAsync<object>("api/v1/Users/changePassword", dto);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = $"修改密码失败: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// 修改个人信息
+        /// </summary>
+        public async Task<ApiResponse<object>> ChangeProfileAsync(string realName, string? email, string? phoneNumber)
+        {
+            try
+            {
+                var dto = new { realName, email, phoneNumber };
+                return await _apiService.PostAsync<object>("api/v1/Users/changeProfile", dto);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = $"修改个人信息失败: {ex.Message}"
+                };
             }
         }
 
@@ -214,7 +333,7 @@ namespace LYBT.WPF.Client.Services
     /// </summary>
     public class SearchUsersResponse
     {
-        public List<UserInfo>? Users { get; set; }
-        public int Total { get; set; }
+        public List<UserInfo>? users { get; set; }
+        public int total { get; set; }
     }
 }

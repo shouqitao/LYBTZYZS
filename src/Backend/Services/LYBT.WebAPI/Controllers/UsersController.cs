@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
-using LYBT.Common.Enums.Users;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Common;
 using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -55,9 +56,13 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         try {
             var result = await _userService.AddAsync(dto, operatorId, operatorName);
-            return result ? Ok(new { success = true, message = "用户创建成功" }) : BadRequest(new { success = false, message = "用户创建失败" });
+            if (result) {
+                return Ok(ApiResponse<object>.Success("用户创建成功"));
+            } else {
+                return BadRequest(ApiResponse<object>.Fail("用户创建失败", 400));
+            }
         } catch (Exception ex) {
-            return BadRequest(new { success = false, message = ex.Message });
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
         }
     }
 
@@ -69,9 +74,13 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         try {
             var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
-            return result ? Ok(new { success = true, message = "用户信息更新成功" }) : BadRequest(new { success = false, message = "用户信息更新失败" });
+            if (result) {
+                return Ok(ApiResponse<object>.Success("用户信息更新成功"));
+            } else {
+                return BadRequest(ApiResponse<object>.Fail("用户信息更新失败", 400));
+            }
         } catch (Exception ex) {
-            return BadRequest(new { success = false, message = ex.Message });
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
         }
     }
 
@@ -83,9 +92,9 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         try {
             var result = await _userService.DisableAsync(id, operatorId, operatorName);
-            return result ? Ok(new { success = true, message = "用户已禁用" }) : BadRequest(new { success = false, message = "禁用用户失败" });
+            return result ? Ok(ApiResponse<object>.Success("用户已禁用")) : BadRequest(ApiResponse<object>.Fail("禁用用户失败", 400));
         } catch (Exception ex) {
-            return BadRequest(new { success = false, message = ex.Message });
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
         }
     }
 
@@ -97,9 +106,9 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         try {
             var result = await _userService.EnableAsync(id, operatorId, operatorName);
-            return result ? Ok(new { success = true, message = "用户已启用" }) : BadRequest(new { success = false, message = "启用用户失败" });
+            return result ? Ok(ApiResponse<object>.Success("用户已启用")) : BadRequest(ApiResponse<object>.Fail("启用用户失败", 400));
         } catch (Exception ex) {
-            return BadRequest(new { success = false, message = ex.Message });
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
         }
     }
 
@@ -110,7 +119,7 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> BatchDisable([FromBody] UserBatchIdsDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
-        return Ok(new { success = true, count, message = $"成功禁用 {count} 个用户" });
+        return Ok(ApiResponse<object>.Success($"成功禁用 {count} 个用户"));
     }
 
     /// <summary>
@@ -120,7 +129,7 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> BatchEnable([FromBody] UserBatchIdsDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
-        return Ok(new { success = true, count, message = $"成功启用 {count} 个用户" });
+        return Ok(ApiResponse<object>.Success($"成功启用 {count} 个用户"));
     }
 
     /// <summary>
@@ -131,9 +140,9 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         try {
             var result = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
-            return result ? Ok(new { success = true, message = "密码重置成功" }) : BadRequest(new { success = false, message = "密码重置失败" });
+            return result ? Ok(ApiResponse<object>.Success("密码重置成功")) : BadRequest(ApiResponse<object>.Fail("密码重置失败", 400));
         } catch (Exception ex) {
-            return BadRequest(new { success = false, message = ex.Message });
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
         }
     }
 
@@ -148,9 +157,9 @@ public class UsersController : ControllerBase {
 
         try {
             var result = await _userService.ChangePasswordAsync(id, dto.OldPassword, dto.NewPassword);
-            return result ? Ok(new { success = true, message = "密码修改成功" }) : BadRequest(new { success = false, message = "密码修改失败" });
+            return result ? Ok(ApiResponse<object>.Success("密码修改成功")) : BadRequest(ApiResponse<object>.Fail("密码修改失败", 400));
         } catch (Exception ex) {
-            return BadRequest(new { success = false, message = ex.Message });
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
         }
     }
 
@@ -165,9 +174,9 @@ public class UsersController : ControllerBase {
 
         try {
             var result = await _userService.ChangeProfileAsync(id, dto.RealName, dto.Email, dto.PhoneNumber);
-            return result ? Ok(new { success = true, message = "个人信息修改成功" }) : BadRequest(new { success = false, message = "个人信息修改失败" });
+            return result ? Ok(ApiResponse<object>.Success("个人信息修改成功")) : BadRequest(ApiResponse<object>.Fail("个人信息修改失败", 400));
         } catch (Exception ex) {
-            return BadRequest(new { success = false, message = ex.Message });
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
         }
     }
 

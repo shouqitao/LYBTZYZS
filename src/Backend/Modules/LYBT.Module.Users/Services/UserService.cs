@@ -1,5 +1,6 @@
 ﻿using LYBT.Common.Enums.Logs;
-using LYBT.Common.Enums.Users;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Extensions;
 using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Logging;
 using LYBT.Models.Users;
@@ -241,8 +242,12 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 获取系统所有角色
         /// </summary>
-        public List<UserRole> GetRoles() {
-            return Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToList();
+        public List<object> GetRoles() {
+            var rolesWithDisplayNames = UserRoleExtensions.GetAllRolesWithDisplayNames();
+            return rolesWithDisplayNames
+                .Select(r => new { Value = r.Role, DisplayName = r.DisplayName })
+                .Cast<object>()
+                .ToList();
         }
 
         /// <summary>

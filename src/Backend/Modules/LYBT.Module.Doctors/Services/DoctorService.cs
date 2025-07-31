@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.Common.Helpers;
 using LYBT.Common.Models;
-using LYBT.Common.Responses;
+using LYBT.Shared.Models.Common;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Interfaces;
 using LYBT.Module.Users.Interfaces;
