@@ -9,7 +9,9 @@ using LYBT.WPF.Client.Modules.SystemManagement;
 using LYBT.WPF.Client.Modules.FrontDesk;
 using LYBT.WPF.Client.Modules.Doctor;
 using LYBT.WPF.Client.Modules.Cashier;
+using LYBT.WPF.Client.Services.Interfaces;
 using Prism.Modularity;
+using Refit;
 
 namespace LYBT.WPF.Client.Shell
 {
@@ -29,18 +31,26 @@ namespace LYBT.WPF.Client.Shell
             containerRegistry.RegisterSingleton<HttpClient>(() =>
             {
                 var client = new HttpClient();
-                client.Timeout = TimeSpan.FromSeconds(30); // 设置30秒超时
+                client.Timeout = TimeSpan.FromSeconds(60); // 增加到60秒超时
                 return client;
+            });
+            
+            // 注册Refit API服务
+            containerRegistry.RegisterSingleton<IAuthApiService>(() =>
+            {
+                var httpClient = new HttpClient()
+                {
+                    BaseAddress = new Uri("http://192.168.190.243:5000/"),
+                    Timeout = TimeSpan.FromSeconds(60)
+                };
+                return RestService.For<IAuthApiService>(httpClient);
             });
             
             // 注册Token管理器
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.ITokenManager, LYBT.WPF.Client.Services.TokenManager>();
             
-            // 注册API服务
-            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();
-            
-            // 注册认证服务 - 临时使用Mock服务
-            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IAuthenticationService, LYBT.WPF.Client.Services.MockAuthenticationService>();
+            // 注册认证服务 - 使用Refit实现
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IAuthenticationService, LYBT.WPF.Client.Services.AuthenticationService>();
             
             // 注册用户服务
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IUserService, LYBT.WPF.Client.Services.UserService>();

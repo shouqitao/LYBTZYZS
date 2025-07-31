@@ -4,6 +4,7 @@ using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Models.Authentication;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Services.Interfaces;
 using UserInfo = LYBT.WPF.Client.Core.Models.Users.UserInfo;
 
 namespace LYBT.WPF.Client.Services
@@ -13,14 +14,14 @@ namespace LYBT.WPF.Client.Services
     /// </summary>
     public class AuthenticationService : LYBT.WPF.Client.Core.Interfaces.Services.IAuthenticationService
     {
-        private readonly IApiService _apiService;
+        private readonly IAuthApiService _authApiService;
         private readonly ITokenManager _tokenManager;
         private bool _isLoggedIn = false;
         private UserInfo? _currentUser;
 
-        public AuthenticationService(IApiService apiService, ITokenManager tokenManager)
+        public AuthenticationService(IAuthApiService authApiService, ITokenManager tokenManager)
         {
-            _apiService = apiService;
+            _authApiService = authApiService;
             _tokenManager = tokenManager;
         }
 
@@ -41,7 +42,7 @@ namespace LYBT.WPF.Client.Services
                     loginType = request.LoginType
                 };
 
-                var response = await _apiService.PostAsync<LoginResponse>("api/v1/Auth/login", loginDto);
+                var response = await _authApiService.LoginAsync(loginDto);
                 
                 if (response.IsSuccess && response.Data != null)
                 {
@@ -71,7 +72,7 @@ namespace LYBT.WPF.Client.Services
                     token = _tokenManager.GetToken()
                 };
 
-                var response = await _apiService.PostAsync<object>("api/v1/Auth/logout", logoutDto);
+                var response = await _authApiService.LogoutAsync(logoutDto);
                 
                 // 无论API调用是否成功，都清除本地登录状态
                 ClearAuthInfo();

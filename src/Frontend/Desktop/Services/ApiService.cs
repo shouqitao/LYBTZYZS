@@ -24,8 +24,8 @@ namespace LYBT.WPF.Client.Services
             _httpClient = httpClient;
             _tokenManager = tokenManager;
             
-            // 设置基础URL - 使用IIS Express端口
-            _httpClient.BaseAddress = new Uri("http://localhost:2011/");
+            // 设置基础URL - 使用实际服务器地址
+            _httpClient.BaseAddress = new Uri("http://192.168.190.243:5000/");
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "LYBT.WPF.Client");
         }
 

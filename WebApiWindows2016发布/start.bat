@@ -6,7 +6,7 @@ echo ====================================
 echo.
 
 set ASPNETCORE_ENVIRONMENT=Production
-set ASPNETCORE_URLS=http://localhost:5297;https://localhost:7297
+set ASPNETCORE_URLS=http://localhost:5000;https://localhost:5001
 
 echo [INFO] Environment: %ASPNETCORE_ENVIRONMENT%
 echo [INFO] Listen URLs: %ASPNETCORE_URLS%

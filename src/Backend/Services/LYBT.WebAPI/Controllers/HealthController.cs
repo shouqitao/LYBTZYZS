@@ -26,15 +26,9 @@ namespace LYBT.WebAPI.Controllers
         /// 基本健康检查
         /// </summary>
         [HttpGet]
-        public IActionResult Get()
+        public string Get()
         {
-            return Ok(new
-            {
-                Status = "Healthy",
-                Timestamp = DateTime.UtcNow,
-                Version = "1.0.0",
-                Service = "LYBT中医诊所管理系统API"
-            });
+            return "Healthy - LYBT中医诊所管理系统API";
         }
 
         /// <summary>

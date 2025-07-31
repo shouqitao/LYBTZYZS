@@ -2,11 +2,11 @@
 chcp 65001 >nul
 echo ====================================
 echo   LYBT WebAPI 远程服务测试
-echo   Remote Server: 192.168.190.243:5297
+echo   Remote Server: 192.168.190.243:5000
 echo ====================================
 echo.
 
-set SERVER_URL=http://192.168.190.243:5297
+set SERVER_URL=http://192.168.190.243:5000
 
 echo [INFO] 测试 Health Check...
 curl -s %SERVER_URL%/health

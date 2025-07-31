@@ -11,7 +11,7 @@ echo.
 
 :: 配置变量
 set "SERVICE_NAME=LYBTWebAPI"
-set "API_URL=http://localhost:5297"
+set "API_URL=http://localhost:5000"
 set "HEALTH_URL=!API_URL!/health"
 set "DEPLOY_PATH=C:\LYBT\WebAPI"
 
@@ -57,12 +57,12 @@ if !errorlevel! equ 0 (
 )
 
 echo [检查 4] 检查端口监听...
-netstat -an | findstr ":5297" >nul 2>&1
+netstat -an | findstr ":5000" >nul 2>&1
 if !errorlevel! equ 0 (
-    echo ✅ 端口5297正在监听
-    netstat -an | findstr ":5297" | findstr "LISTENING"
+    echo ✅ 端口5000正在监听
+    netstat -an | findstr ":5000" | findstr "LISTENING"
 ) else (
-    echo ❌ 端口5297未监听
+    echo ❌ 端口5000未监听
     goto :error
 )
 

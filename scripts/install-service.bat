@@ -49,12 +49,12 @@ net start "!SERVICE_NAME!" >nul 2>&1
 
 echo [步骤 6] 配置防火墙规则...
 netsh advfirewall firewall delete rule name="LYBT WebAPI" >nul 2>&1
-netsh advfirewall firewall add rule name="LYBT WebAPI" dir=in action=allow protocol=TCP localport=5297 >nul 2>&1
+netsh advfirewall firewall add rule name="LYBT WebAPI" dir=in action=allow protocol=TCP localport=5000 >nul 2>&1
 
 echo.
 echo ✅ Windows 服务安装完成！
 echo 📋 服务名称: !SERVICE_NAME!
-echo 🌐 服务端口: 5297
+echo 🌐 服务端口: 5000
 echo 📁 服务路径: !EXE_PATH!
 echo.
 pause

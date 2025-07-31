@@ -13,7 +13,7 @@ echo 🧪 测试中文字符显示...
 echo ✅ 成功：部署完成
 echo ❌ 错误：连接失败  
 echo ⚠️  警告：服务未启动
-echo 🌐 网址：http://192.168.190.243:5297
+echo 🌐 网址：http://192.168.190.243:5000
 echo 📁 路径：C:\LYBT\WebAPI
 echo 🕒 时间：!date! !time!
 echo.

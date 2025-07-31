@@ -161,7 +161,13 @@
       "Bash(telnet:*)",
       "Bash(copy:*)",
       "Bash(cp:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(start dotnet run)",
+      "Bash(start \"\" \"凌隐宝堂中医诊所管理系统.exe\")",
+      "Bash(\"./凌隐宝堂中医诊所管理系统.exe\")",
+      "Bash(.main-en.bat)"
     ],
     "deny": []
   }

@@ -50,7 +50,7 @@ set "SERVER_USER=Administrator"      # 改为你的用户名
 看到以下信息表示部署成功：
 ```
 ✅ 部署完成！
-🌐 服务地址: http://192.168.190.243:5297
+🌐 服务地址: http://192.168.190.243:5000
 ```
 
 ## 🛠 快速故障排除
@@ -64,7 +64,7 @@ set "SERVER_USER=Administrator"      # 改为你的用户名
 
 ## 📱 验证部署
 
-访问：http://192.168.190.243:5297/health
+访问：http://192.168.190.243:5000/health
 
 返回：`{"status":"healthy","timestamp":"2024-xx-xx"}`
 

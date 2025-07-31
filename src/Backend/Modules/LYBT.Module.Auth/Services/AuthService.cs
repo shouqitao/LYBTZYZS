@@ -169,32 +169,22 @@ namespace LYBT.Module.Auth.Services {
         }
 
         /// <summary>
-        /// 验证密码
+        /// 验证密码 - 简化版本
         /// </summary>
         private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(UserModel user, string password) {
             string storedHash;
 
-            _logger.LogInformation("[DEBUG] 验证用户密码: {Username}", user.UserName);
-            _logger.LogInformation("[DEBUG] 是否为sysadmin: {IsSysAdmin}", _sysAdminHandler.IsSysAdmin(user.UserName));
-
             if (_sysAdminHandler.IsSysAdmin(user.UserName)) {
                 storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync() ?? string.Empty;
-                _logger.LogInformation("[DEBUG] 从AdminSecrets获取的哈希长度: {HashLength}", storedHash.Length);
-                _logger.LogInformation("[DEBUG] 哈希前缀: {HashPrefix}", storedHash.Length > 20 ? storedHash.Substring(0, 20) + "..." : storedHash);
             } else {
                 storedHash = user.PasswordHash;
-                _logger.LogInformation("[DEBUG] 从用户表获取的哈希长度: {HashLength}", storedHash.Length);
             }
 
             if (string.IsNullOrEmpty(storedHash)) {
-                _logger.LogWarning("[DEBUG] 密码哈希为空");
                 return (false, "用户密码未设置");
             }
 
-            _logger.LogInformation("[DEBUG] 开始验证密码，输入密码长度: {PasswordLength}", password.Length);
             var verifyResult = PasswordHelper.Verify(storedHash, password);
-            _logger.LogInformation("[DEBUG] 密码验证结果: {VerifyResult}", verifyResult);
-
             if (!verifyResult) {
                 return (false, "密码错误");
             }

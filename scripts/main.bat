@@ -155,7 +155,7 @@ echo   前端WPF: src\Frontend\Desktop\Shell
 echo   发布目录: publish
 echo.
 echo 🌐 默认端口:
-echo   开发环境: http://localhost:5297
+echo   开发环境: http://localhost:5000
 echo   生产环境: http://localhost:5000
 echo   Swagger文档: /swagger
 echo.

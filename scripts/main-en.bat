@@ -156,7 +156,7 @@ echo   Frontend WPF: src\Frontend\Desktop\Shell
 echo   Publish Directory: publish
 echo.
 echo [Default Ports]
-echo   Development: http://localhost:5297
+echo   Development: http://localhost:5000
 echo   Production: http://localhost:5000
 echo   Swagger Documentation: /swagger
 echo.

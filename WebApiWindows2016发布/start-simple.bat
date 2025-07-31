@@ -7,10 +7,10 @@ echo.
 
 echo [INFO] Setting Production Environment...
 set ASPNETCORE_ENVIRONMENT=Production
-set ASPNETCORE_URLS=http://localhost:5297;https://localhost:7297
+set ASPNETCORE_URLS=http://localhost:5000;https://localhost:5001
 
 echo [INFO] Starting WebAPI Service...
-echo [INFO] Listen Ports: 5297 (HTTP), 7297 (HTTPS)
+echo [INFO] Listen Ports: 5000 (HTTP), 5001 (HTTPS)
 echo [INFO] Press Ctrl+C to stop service
 echo.
 
