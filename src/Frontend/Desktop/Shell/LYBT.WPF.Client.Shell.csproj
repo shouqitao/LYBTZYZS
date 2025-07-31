@@ -12,6 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Resources\**" />
+    <EmbeddedResource Remove="Resources\**" />
+    <None Remove="Resources\**" />
+    <Page Remove="Resources\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
@@ -31,11 +38,7 @@
     <ProjectReference Include="..\Modules\Cashier\LYBT.WPF.Client.Modules.Cashier.csproj" />
     <ProjectReference Include="..\Modules\Pharmacist\LYBT.WPF.Client.Modules.Pharmacist.csproj" />
     <ProjectReference Include="..\Modules\Common\LYBT.WPF.Client.Modules.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Resources\Icons\" />
-    <Folder Include="Resources\Images\" />
+    <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
 </Project>

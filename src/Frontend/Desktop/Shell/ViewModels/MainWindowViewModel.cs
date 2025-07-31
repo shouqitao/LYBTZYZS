@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Users;
-using LYBT.WPF.Client.Core.Enums;
+using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Events;
 using LYBT.WPF.Client.Core.Configuration;
 using LYBT.WPF.Client.Modules.Authentication.Views;

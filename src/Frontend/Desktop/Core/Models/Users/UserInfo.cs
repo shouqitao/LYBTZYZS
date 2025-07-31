@@ -1,10 +1,10 @@
 using System;
-using LYBT.WPF.Client.Core.Enums;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Core.Models.Users
 {
     /// <summary>
-    /// 用户信息模型
+    /// 用户信息模型 - 前端专用
     /// </summary>
     public class UserInfo
     {
@@ -36,7 +36,7 @@ namespace LYBT.WPF.Client.Core.Models.Users
         public string? PhoneNumber { get; set; }
 
         /// <summary>是否有超级管理员权限</summary>
-        public bool IsSuperAdmin => Role == UserRole.SuperAdmin;
+        public bool IsSuperAdmin { get; set; }
 
         /// <summary>是否有管理员权限</summary>
         public bool IsAdmin => Role == UserRole.Admin;

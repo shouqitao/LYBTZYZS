@@ -40,7 +40,7 @@ namespace LYBT.WPF.Client.Shell
             {
                 var httpClient = new HttpClient()
                 {
-                    BaseAddress = new Uri("http://192.168.190.243:5000/"),
+                    BaseAddress = new Uri("http://localhost:5297/"),
                     Timeout = TimeSpan.FromSeconds(60)
                 };
                 return RestService.For<IAuthApiService>(httpClient);
@@ -48,6 +48,9 @@ namespace LYBT.WPF.Client.Shell
             
             // 注册Token管理器
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.ITokenManager, LYBT.WPF.Client.Services.TokenManager>();
+            
+            // 注册API服务
+            containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();
             
             // 注册认证服务 - 使用Refit实现
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Interfaces.Services.IAuthenticationService, LYBT.WPF.Client.Services.AuthenticationService>();

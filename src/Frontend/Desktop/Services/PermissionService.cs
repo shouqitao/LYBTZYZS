@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Enums;
+using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.WPF.Client.Core.Configuration;
 
@@ -28,11 +28,10 @@ namespace LYBT.WPF.Client.Services
             {
                 UserRole.Admin => HasAdminLevelPermission(permission),
                 UserRole.DiagnosingDoctor => HasDoctorLevelPermission(permission),
-                UserRole.FrontDesk => HasFrontDeskLevelPermission(permission),
-                UserRole.Cashier => HasCashierLevelPermission(permission),
-                UserRole.Pharmacist => HasPharmacistLevelPermission(permission),
-                UserRole.Nurse => HasNurseLevelPermission(permission),
-                UserRole.InternDoctor => HasInternDoctorLevelPermission(permission),
+                UserRole.Staff => HasFrontDeskLevelPermission(permission),
+                UserRole.CashierStaff => HasCashierLevelPermission(permission),
+                UserRole.PharmacyStaff => HasPharmacistLevelPermission(permission),
+                UserRole.PhysiotherapyStaff => HasPhysiotherapistLevelPermission(permission),
                 _ => false
             };
         }
@@ -62,14 +61,12 @@ namespace LYBT.WPF.Client.Services
 
             return user.Role switch
             {
-                UserRole.SuperAdmin => GetSuperAdminModules(),
                 UserRole.Admin => GetAdminModules(),
                 UserRole.DiagnosingDoctor => GetDoctorModules(),
-                UserRole.FrontDesk => GetFrontDeskModules(),
-                UserRole.Cashier => GetCashierModules(),
-                UserRole.Pharmacist => GetPharmacistModules(),
-                UserRole.Nurse => GetNurseModules(),
-                UserRole.InternDoctor => GetInternDoctorModules(),
+                UserRole.Staff => GetFrontDeskModules(),
+                UserRole.CashierStaff => GetCashierModules(),
+                UserRole.PharmacyStaff => GetPharmacistModules(),
+                UserRole.PhysiotherapyStaff => GetPhysiotherapistModules(),
                 _ => new List<string>()
             };
         }
@@ -79,20 +76,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public string GetRoleDisplayName(UserRole role)
         {
-            return role switch
-            {
-                UserRole.SuperAdmin => "超级管理员",
-                UserRole.Admin => "管理员",
-                UserRole.DiagnosingDoctor => "医生",
-                UserRole.FrontDesk => "前台",
-                UserRole.Cashier => "收银员",
-                UserRole.Pharmacist => "药剂师",
-                UserRole.Nurse => "护士",
-                UserRole.InternDoctor => "实习医师",
-                UserRole.Vendor => "供应商",
-                UserRole.Guest => "访客",
-                _ => "未知角色"
-            };
+            return RoleNavigationConfig.GetRoleDisplayName(role);
         }
 
         #region 私有方法 - 权限检查
@@ -157,14 +141,14 @@ namespace LYBT.WPF.Client.Services
             return nursePermissions.Contains(permission);
         }
 
-        private bool HasInternDoctorLevelPermission(string permission)
+        private bool HasPhysiotherapistLevelPermission(string permission)
         {
-            var internPermissions = new[]
+            var physiotherapistPermissions = new[]
             {
-                "PatientConsultation", "MedicalRecord", "PatientHistory"
-                // 注意：实习医师不能独立开处方
+                "PhysiotherapyTreatment", "PatientCare", "TreatmentPlan",
+                "PhysiotherapyRecords", "PatientEducation"
             };
-            return internPermissions.Contains(permission);
+            return physiotherapistPermissions.Contains(permission);
         }
 
         #endregion
@@ -236,12 +220,12 @@ namespace LYBT.WPF.Client.Services
             };
         }
 
-        private List<string> GetInternDoctorModules()
+        private List<string> GetPhysiotherapistModules()
         {
             return new List<string>
             {
-                "DoctorWorkspace", "PatientManagement", "ConsultationModule",
-                "MedicalRecords" // 限制权限，不包含处方模块
+                "PhysiotherapyModule", "PatientCare", "TreatmentModule",
+                "PhysiotherapyRecords", "PatientEducation"
             };
         }
 

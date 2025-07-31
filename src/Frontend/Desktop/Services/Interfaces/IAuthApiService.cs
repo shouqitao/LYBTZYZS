@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Refit;
 using LYBT.WPF.Client.Core.Models.Authentication;
 using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Shared.Models.Common;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {
@@ -14,13 +15,13 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 用户登录
         /// </summary>
         [Post("/api/v1/Auth/login")]
-        Task<Core.Models.Common.ApiResponse<LoginResponse>> LoginAsync([Body] object loginRequest);
+        Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync([Body] object loginRequest);
 
         /// <summary>
         /// 用户登出
         /// </summary>
         [Post("/api/v1/Auth/logout")]
-        Task<Core.Models.Common.ApiResponse<object>> LogoutAsync([Body] object logoutRequest);
+        Task<LYBT.Shared.Models.Common.ApiResponse<object>> LogoutAsync([Body] object logoutRequest);
 
         /// <summary>
         /// 健康检查

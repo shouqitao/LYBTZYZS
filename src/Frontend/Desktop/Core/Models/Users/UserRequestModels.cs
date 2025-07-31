@@ -1,13 +1,12 @@
 using System;
+using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Enums;
 
-namespace LYBT.WPF.Client.Core.Models.Users
-{
+namespace LYBT.WPF.Client.Core.Models.Users {
     /// <summary>
     /// 用户查询请求
     /// </summary>
-    public class UserQueryRequest
-    {
+    public class UserQueryRequest {
         /// <summary>关键词</summary>
         public string? Keyword { get; set; }
 
@@ -27,8 +26,7 @@ namespace LYBT.WPF.Client.Core.Models.Users
     /// <summary>
     /// 用户创建请求
     /// </summary>
-    public class UserCreateRequest
-    {
+    public class UserCreateRequest {
         /// <summary>用户名</summary>
         public string UserName { get; set; } = string.Empty;
 
@@ -48,8 +46,7 @@ namespace LYBT.WPF.Client.Core.Models.Users
     /// <summary>
     /// 用户更新请求
     /// </summary>
-    public class UserUpdateRequest
-    {
+    public class UserUpdateRequest {
         /// <summary>用户ID</summary>
         public Guid Id { get; set; }
 
@@ -75,8 +72,7 @@ namespace LYBT.WPF.Client.Core.Models.Users
     /// <summary>
     /// 角色信息
     /// </summary>
-    public class RoleInfo
-    {
+    public class RoleInfo {
         /// <summary>角色值</summary>
         public UserRole Value { get; set; }
 

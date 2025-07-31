@@ -37,6 +37,7 @@
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.TreatmentRoom\LYBT.Module.TreatmentRoom.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 	</ItemGroup>
 
 </Project>
