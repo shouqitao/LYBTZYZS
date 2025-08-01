@@ -282,7 +282,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 根据状态获取药材列表
         /// </summary>
         [HttpGet("status/{status}")]
-        public async Task<ActionResult<List<HerbDto>>> GetByStatus(HerbStatus status) {
+        public async Task<ActionResult<List<HerbDto>>> GetByStatus(LYBT.Common.Enums.Herbs.HerbStatus status) {
             try {
                 var list = await _herbService.GetByStatusAsync(status);
                 return Ok(list);
@@ -364,7 +364,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取药材状态统计
         /// </summary>
         [HttpGet("statistics")]
-        public async Task<ActionResult<Dictionary<HerbStatus, int>>> GetStatistics() {
+        public async Task<ActionResult<Dictionary<LYBT.Common.Enums.Herbs.HerbStatus, int>>> GetStatistics() {
             try {
                 var statistics = await _herbService.GetStatusStatisticsAsync();
                 return Ok(statistics);

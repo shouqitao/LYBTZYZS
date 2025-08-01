@@ -34,44 +34,50 @@ LYBTZYZS/
 ### 后端服务
 
 1. **克隆项目**
+   
    ```bash
    git clone https://github.com/shouqitao/LYBTZYZS.git
    cd LYBTZYZS
    ```
 
 2. **构建后端**
+   
    ```bash
    cd src/Backend
    dotnet build LYBT.Backend.sln
    ```
 
 3. **初始化数据库**
+   
    ```bash
    cd Services/LYBT.WebAPI
    dotnet ef database update --project ../../Core/LYBT.Infrastructure
    ```
 
 4. **运行WebAPI**
+   
    ```bash
    dotnet run
    ```
-
+   
    API将在 `https://localhost:5001` 启动，Swagger文档可访问根路径。
 
 ### 前端客户端
 
 1. **构建前端**
+   
    ```bash
    cd src/Frontend
    dotnet build LYBT.Client.sln
    ```
 
 2. **运行桌面客户端**
+   
    ```bash
    cd Desktop/Shell
    dotnet run
    ```
-
+   
    **默认登录凭据**: 用户名 `sysadmin`, 密码 `123456`
 
 ## 📚 核心功能
@@ -114,6 +120,7 @@ LYBTZYZS/
 系统使用统一的数据库架构，所有模块共享一个`AppDbContext`。
 
 主要命令：
+
 ```bash
 # 添加迁移
 dotnet ef migrations add MigrationName --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI

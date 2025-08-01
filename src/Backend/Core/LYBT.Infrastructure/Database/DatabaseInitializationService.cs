@@ -391,17 +391,13 @@ namespace LYBT.Infrastructure.Database
                 var existingAdmin = await _dbContext.AdminSecrets
                     .FirstOrDefaultAsync(x => x.UserName == "sysadmin");
 
-                _logger.LogInformation($"[DEBUG] 查询结果：existingAdmin = {(existingAdmin == null ? "null" : "存在")}");
+                // 默认密码
+                var defaultPassword = "Admin@123456";
+                var passwordHash = PasswordHelper.Hash(defaultPassword);
 
                 if (existingAdmin == null)
                 {
                     _logger.LogInformation("正在创建默认超级管理员密码...");
-
-                    // 对默认密码进行哈希
-                    var defaultPassword = "Admin@123456";
-                    var passwordHash = PasswordHelper.Hash(defaultPassword);
-
-                    _logger.LogInformation($"[DEBUG] 生成的密码哈希: {passwordHash}");
 
                     // 创建AdminSecret记录
                     var adminSecret = new AdminSecretModel
@@ -419,8 +415,19 @@ namespace LYBT.Infrastructure.Database
                 }
                 else
                 {
-                    _logger.LogInformation("✅ AdminSecrets表已存在超级管理员记录");
-                    _logger.LogInformation($"[DEBUG] 现有哈希: {existingAdmin.PasswordHash}");
+                    // 确保密码哈希是最新的（防止不一致）
+                    if (existingAdmin.PasswordHash != passwordHash)
+                    {
+                        _logger.LogInformation("正在更新sysadmin密码哈希确保一致性...");
+                        existingAdmin.PasswordHash = passwordHash;
+                        _dbContext.AdminSecrets.Update(existingAdmin);
+                        await _dbContext.SaveChangesAsync();
+                        _logger.LogInformation("✅ sysadmin密码哈希已更新");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("✅ AdminSecrets表已存在超级管理员记录");
+                    }
                 }
             }
             catch (Exception ex)

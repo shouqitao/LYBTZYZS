@@ -12,7 +12,18 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-BIN/
+
+# 新的统一输出目录结构 - 保留主要输出，忽略临时文件
+BIN/temp/
+BIN/LybtWebApi/Debug/
+BIN/LybtWebApi/Release/
+BIN/LybtDesktop/Debug/
+BIN/LybtDesktop/Release/
+# 但是保留一些必要的配置文件
+!BIN/LybtWebApi/Release/appsettings*.json
+!BIN/LybtWebApi/Release/*.bat
+!BIN/LybtDesktop/Release/*.config
+
 build/
 packages/
 

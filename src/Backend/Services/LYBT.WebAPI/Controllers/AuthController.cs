@@ -159,8 +159,18 @@ namespace LYBT.WebAPI.Controllers {
         /// 用户登出
         /// </summary>
         [HttpPost("logout")]
-        public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> Logout([FromBody] LogoutRequestDto dto) {
+        public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> Logout() {
             try {
+                // 从JWT token中获取用户名
+                var username = User?.Identity?.Name ?? string.Empty;
+                if (string.IsNullOrEmpty(username)) {
+                    return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("无效的用户身份", 401);
+                }
+
+                var dto = new LogoutRequestDto {
+                    Username = username
+                };
+                
                 await _authService.LogoutAsync(dto);
                 return LYBT.Shared.Models.Common.ApiResponse<object>.Success(new { }, "登出成功");
             } catch (Exception ex) {
@@ -187,72 +197,5 @@ namespace LYBT.WebAPI.Controllers {
             }
         }
 
-        /// <summary>
-        /// 健康检查登录 - 调试用
-        /// </summary>
-        [HttpPost("testLogin")]
-        [AllowAnonymous]
-        public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> TestLogin([FromBody] LoginRequestDto dto) {
-            try {
-                if (dto.Username != "sysadmin") {
-                    return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("仅支持sysadmin测试", 400);
-                }
-
-                var storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
-                var isValid = !string.IsNullOrEmpty(storedHash) && PasswordHelper.Verify(storedHash, dto.Password);
-
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Success(new {
-                    Username = dto.Username,
-                    HasStoredHash = !string.IsNullOrEmpty(storedHash),
-                    HashLength = storedHash?.Length ?? 0,
-                    PasswordValid = isValid,
-                    TestTime = DateTime.Now
-                });
-
-            } catch (Exception ex) {
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Fail($"测试异帰: {ex.Message}", 500);
-            }
-        }
-
-        /// <summary>
-        /// 模拟登录 - 不依赖数据库，用于前端测试
-        /// </summary>
-        [HttpPost("mockLogin")]
-        [AllowAnonymous]
-        public LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> MockLogin([FromBody] LoginRequestDto dto) {
-            try {
-                // 简单的模拟验证
-                if (dto.Username == "sysadmin" && dto.Password == "Admin@123456") {
-                    var token = _jwtService.GenerateToken(
-                        Guid.NewGuid().ToString(),
-                        "sysadmin",
-                        new[] { "Admin" },
-                        dto.RememberMe
-                    );
-
-                    var response = new LYBT.Shared.Models.Auth.LoginResponse {
-                        Token = token,
-                        User = new LYBT.Shared.Models.Auth.UserInfo {
-                            Id = Guid.NewGuid(),
-                            UserName = "sysadmin",
-                            RealName = "系统管理员",
-                            Role = "Admin",
-                            Email = "admin@lybt.com",
-                            PhoneNumber = null,
-                            IsActive = true
-                        }
-                    };
-
-                    _logger.LogInformation("模拟登录成功: {Username}", dto.Username);
-                    return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Success(response);
-                }
-
-                return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail("用户名或密码错误", 401);
-
-            } catch (Exception ex) {
-                _logger.LogError(ex, "模拟登录失败: {Username}", dto.Username);
-                return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail($"登录失败: {ex.Message}", 500);
-            }
-        }
     }
 }

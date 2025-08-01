@@ -1,0 +1,512 @@
+    {
+      "name": "3. 患者管理模块 (Patients)",
+      "description": "患者档案管理相关接口，包括患者增删改查、搜索、批量操作等功能",
+      "item": [
+        {
+          "name": "新增患者",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newPatientId', jsonData.data.id);",
+                  "        console.log('新患者ID已保存: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"张三\",\n  \"gender\": \"Male\",\n  \"age\": 35,\n  \"phoneNumber\": \"13800138000\",\n  \"address\": \"北京市朝阳区\",\n  \"idCard\": \"110101198801010001\",\n  \"allergies\": \"青霉素过敏\",\n  \"medicalHistory\": \"高血压病史3年\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients"]
+            },
+            "description": "创建新患者档案"
+          }
+        },
+        {
+          "name": "获取患者详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{newPatientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "{{newPatientId}}"]
+            },
+            "description": "根据ID获取患者详情"
+          }
+        },
+        {
+          "name": "更新患者信息",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{newPatientId}}\",\n  \"name\": \"张三(已更新)\",\n  \"gender\": \"Male\",\n  \"age\": 36,\n  \"phoneNumber\": \"13800138001\",\n  \"address\": \"北京市海淀区\",\n  \"idCard\": \"110101198801010001\",\n  \"allergies\": \"青霉素过敏、磺胺过敏\",\n  \"medicalHistory\": \"高血压病史3年，糖尿病病史1年\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{newPatientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "{{newPatientId}}"]
+            },
+            "description": "更新患者档案信息"
+          }
+        },
+        {
+          "name": "获取所有患者",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients"]
+            },
+            "description": "获取所有患者列表"
+          }
+        },
+        {
+          "name": "分页查询患者",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"张\",\n  \"gender\": \"Male\",\n  \"page\": 1,\n  \"pageSize\": 20\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/paged",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "paged"]
+            },
+            "description": "分页条件查询患者"
+          }
+        },
+        {
+          "name": "搜索患者",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/search?keyword=张三",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "张三",
+                  "description": "搜索关键词"
+                }
+              ]
+            },
+            "description": "根据关键词搜索患者"
+          }
+        },
+        {
+          "name": "获取启用患者列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "active"]
+            },
+            "description": "获取所有启用的患者列表"
+          }
+        },
+        {
+          "name": "快速创建患者",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"李四\",\n  \"gender\": \"Female\",\n  \"age\": 28,\n  \"phoneNumber\": \"13900139000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/quick-create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "quick-create"]  
+            },
+            "description": "快速创建患者档案(用于快速看诊场景)"
+          }
+        },
+        {
+          "name": "获取患者病历历史",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{newPatientId}}/records",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "{{newPatientId}}", "records"]
+            },
+            "description": "获取患者的历史病历记录"
+          }
+        },
+        {
+          "name": "禁用患者",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{newPatientId}}/disable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "{{newPatientId}}", "disable"]
+            },
+            "description": "禁用患者档案"
+          }
+        },
+        {
+          "name": "启用患者",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{newPatientId}}/enable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "patients", "{{newPatientId}}", "enable"]
+            },
+            "description": "启用患者档案"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 医生管理模块 (Doctors)",
+      "description": "医生档案管理相关接口，包括医生增删改查、搜索、状态管理等功能",
+      "item": [
+        {
+          "name": "新增医生",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newDoctorId', jsonData.data.id);",
+                  "        console.log('新医生ID已保存: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{newUserId}}\",\n  \"title\": \"主任医师\",\n  \"department\": \"中医内科\",\n  \"specialties\": \"心血管疾病、消化系统疾病\",\n  \"qualification\": \"执业医师证、中医师承证书\",\n  \"introduction\": \"从事中医临床工作20年，擅长治疗心血管疾病和消化系统疾病\",\n  \"consultationFee\": 200.00,\n  \"status\": \"Active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors"]
+            },
+            "description": "创建新医生档案"
+          }
+        },
+        {
+          "name": "获取医生详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/{{newDoctorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "{{newDoctorId}}"]
+            },
+            "description": "根据ID获取医生详情"
+          }
+        },
+        {
+          "name": "更新医生信息",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{newDoctorId}}\",\n  \"userId\": \"{{newUserId}}\",\n  \"title\": \"副主任医师\",\n  \"department\": \"中医内科\",\n  \"specialties\": \"心血管疾病、消化系统疾病、呼吸系统疾病\",\n  \"qualification\": \"执业医师证、中医师承证书、副主任医师职称证书\",\n  \"introduction\": \"从事中医临床工作25年，擅长治疗心血管疾病、消化系统疾病和呼吸系统疾病\",\n  \"consultationFee\": 250.00,\n  \"status\": \"Active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors"]
+            },
+            "description": "更新医生档案信息"
+          }
+        },
+        {
+          "name": "分页查询医生",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"内科\",\n  \"department\": \"中医内科\",\n  \"status\": \"Active\",\n  \"page\": 1,\n  \"pageSize\": 20\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/paged",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "paged"]
+            },
+            "description": "分页查询医生列表"
+          }
+        },
+        {
+          "name": "搜索医生",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/search?keyword=主任医师",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "主任医师",
+                  "description": "搜索关键词"
+                }
+              ]
+            },
+            "description": "根据关键词搜索医生"
+          }
+        },
+        {
+          "name": "获取在职医生列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "active"]
+            },
+            "description": "获取所有在职医生列表"
+          }
+        },
+        {
+          "name": "根据用户ID获取医生",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/by-user/{{newUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "by-user", "{{newUserId}}"]
+            },
+            "description": "根据用户ID获取医生详情"
+          }
+        },
+        {
+          "name": "检查用户关联",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/check-user-link/{{newUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "check-user-link", "{{newUserId}}"]
+            },
+            "description": "检查用户是否已关联医生档案"
+          }
+        },
+        {
+          "name": "获取角色列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "roles"]
+            },
+            "description": "获取用户角色枚举列表"
+          }
+        },
+        {
+          "name": "禁用医生",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/{{newDoctorId}}/disable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "{{newDoctorId}}", "disable"]
+            },
+            "description": "禁用医生档案"
+          }
+        },
+        {
+          "name": "启用医生",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/doctors/{{newDoctorId}}/enable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "doctors", "{{newDoctorId}}", "enable"]
+            },
+            "description": "启用医生档案"
+          }
+        }
+      ]
+    }

@@ -22,13 +22,7 @@ namespace LYBT.Common.Helpers {
         /// Verify a password against the stored hash.
         /// </summary>
         public static bool Verify(string hash, string password) {
-            // 添加调试信息
-            System.Console.WriteLine($"[PasswordHelper.Verify] Hash: {hash.Substring(0, Math.Min(30, hash.Length))}...");
-            System.Console.WriteLine($"[PasswordHelper.Verify] Password: {password}");
-            
             var result = _hasher.VerifyHashedPassword(null!, hash, password);
-            System.Console.WriteLine($"[PasswordHelper.Verify] Result: {result}");
-            
             return result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded;
         }
     }

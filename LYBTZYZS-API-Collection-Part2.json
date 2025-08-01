@@ -1,0 +1,280 @@
+    {
+      "name": "2. 用户管理模块 (Users)",
+      "description": "用户账号管理相关接口，包括用户增删改查、角色管理、密码管理等功能",
+      "item": [
+        {
+          "name": "分页查询用户",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/search?keyword=admin&role=Admin&status=Active&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "admin",
+                  "description": "搜索关键词"
+                },
+                {
+                  "key": "role",
+                  "value": "Admin",
+                  "description": "用户角色筛选"
+                },
+                {
+                  "key": "status",
+                  "value": "Active",
+                  "description": "用户状态筛选"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "页码"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20",
+                  "description": "页大小"
+                }
+              ]
+            },
+            "description": "分页查询用户列表，支持关键词、角色、状态筛选"
+          }
+        },
+        {
+          "name": "新增用户",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newUserId', jsonData.data.id);",
+                  "        console.log('新用户ID已保存: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"testuser\",\n  \"realName\": \"测试用户\",\n  \"email\": \"testuser@example.com\",\n  \"phoneNumber\": \"13800138000\",\n  \"role\": \"Staff\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "add"]
+            },
+            "description": "创建新用户，密码设为系统默认值"
+          }
+        },
+        {
+          "name": "更新用户信息",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{newUserId}}\",\n  \"userName\": \"testuser_updated\",\n  \"realName\": \"测试用户(已更新)\",\n  \"email\": \"testuser_updated@example.com\",\n  \"phoneNumber\": \"13800138001\",\n  \"role\": \"DiagnosingDoctor\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "update"]
+            },
+            "description": "更新用户信息"
+          }
+        },
+        {
+          "name": "获取用户详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/getById/{{newUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "getById", "{{newUserId}}"]
+            },
+            "description": "根据ID获取用户详情"
+          }
+        },
+        {
+          "name": "获取启用用户列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "active"]
+            },
+            "description": "获取所有启用的用户列表"
+          }
+        },
+        {
+          "name": "获取角色列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/getRoles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "getRoles"]
+            },
+            "description": "获取所有用户角色选项"
+          }
+        },
+        {
+          "name": "修改密码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"admin123\",\n  \"newPassword\": \"newPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/changePassword",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "changePassword"]
+            },
+            "description": "用户修改自己的密码"
+          }
+        },
+        {
+          "name": "修改个人信息",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"realName\": \"管理员(已更新)\",\n  \"email\": \"admin_updated@example.com\",\n  \"phoneNumber\": \"13900139000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/changeProfile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "changeProfile"]
+            },
+            "description": "用户修改个人信息"
+          }
+        },
+        {
+          "name": "重置用户密码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/resetPassword/{{newUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "resetPassword", "{{newUserId}}"]
+            },
+            "description": "管理员重置用户密码为默认值"
+          }
+        },
+        {
+          "name": "禁用用户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/disable/{{newUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "disable", "{{newUserId}}"]
+            },
+            "description": "禁用用户(软删除)"
+          }
+        },
+        {
+          "name": "启用用户",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/enable/{{newUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "enable", "{{newUserId}}"]
+            },
+            "description": "启用用户"
+          }
+        }
+      ]
+    }

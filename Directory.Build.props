@@ -4,9 +4,30 @@
     <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
     <DocumentationOutputPath>$(SolutionDir)Documentation</DocumentationOutputPath>
     
+    <!-- 解决Assembly属性重复问题 -->
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    
     <!-- 统一输出路径配置 -->
-    <OutputPath>$(SolutionDir)BIN\$(Configuration)\$(TargetFramework)\</OutputPath>
-    <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
+    <!-- WebAPI项目直接输出到 BIN/LYBT.WebAPI，不含TargetFramework子目录 -->
+    <OutputPath Condition="'$(MSBuildProjectName)' == 'LYBT.WebAPI'">$(SolutionDir)BIN\LYBT.WebAPI\</OutputPath>
+    <AppendTargetFrameworkToOutputPath Condition="'$(MSBuildProjectName)' == 'LYBT.WebAPI'">false</AppendTargetFrameworkToOutputPath>
+    <!-- WPF Shell项目直接输出到 BIN/LYBT.Desktop，不含TargetFramework子目录 -->
+    <OutputPath Condition="'$(MSBuildProjectName)' == 'LYBT.WPF.Client.Shell'">$(SolutionDir)BIN\LYBT.Desktop\</OutputPath>
+    <AppendTargetFrameworkToOutputPath Condition="'$(MSBuildProjectName)' == 'LYBT.WPF.Client.Shell'">false</AppendTargetFrameworkToOutputPath>
+    <!-- 其他项目输出到临时目录，避免污染主目录 -->
+    <OutputPath Condition="'$(OutputPath)' == ''">$(SolutionDir)BIN\temp\$(MSBuildProjectName)\$(Configuration)\$(TargetFramework)\</OutputPath>
+    
+    <!-- 统一中间输出路径，避免在项目目录生成obj -->
+    <BaseIntermediateOutputPath>$(SolutionDir)BIN\temp\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <!-- 构建时复制文档文件到解决方案文件夹 -->

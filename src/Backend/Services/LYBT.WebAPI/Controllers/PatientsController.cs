@@ -166,7 +166,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("search")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Search([FromQuery] string keyword) {
+        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Search([FromQuery] string keyword = "") {
             var (_, _, operatorRole) = GetOperator();
             var list = await _patientService.SearchAsync(keyword, operatorRole);
             return Ok(ApiResponse<List<PatientDetailDto>>.Success(list));

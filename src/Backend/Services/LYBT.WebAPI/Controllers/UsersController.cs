@@ -118,8 +118,12 @@ public class UsersController : ControllerBase {
     [HttpPost("batchDisable")]
     public async Task<IActionResult> BatchDisable([FromBody] UserBatchIdsDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
-        var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
-        return Ok(ApiResponse<object>.Success($"成功禁用 {count} 个用户"));
+        try {
+            var count = await _userService.BatchDisableAsync(dto.UserIds, operatorId, operatorName);
+            return Ok(ApiResponse<object>.Success($"成功禁用 {count} 个用户"));
+        } catch (Exception ex) {
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+        }
     }
 
     /// <summary>
@@ -128,8 +132,12 @@ public class UsersController : ControllerBase {
     [HttpPost("batchEnable")]
     public async Task<IActionResult> BatchEnable([FromBody] UserBatchIdsDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
-        var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
-        return Ok(ApiResponse<object>.Success($"成功启用 {count} 个用户"));
+        try {
+            var count = await _userService.BatchEnableAsync(dto.UserIds, operatorId, operatorName);
+            return Ok(ApiResponse<object>.Success($"成功启用 {count} 个用户"));
+        } catch (Exception ex) {
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+        }
     }
 
     /// <summary>

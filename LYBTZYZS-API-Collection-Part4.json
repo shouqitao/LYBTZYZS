@@ -1,0 +1,425 @@
+    {
+      "name": "5. 药材管理模块 (Herbs)",
+      "description": "中药材库存管理相关接口，包括药材增删改查、库存管理、统计分析等功能",
+      "item": [
+        {
+          "name": "新增药材",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newHerbId', jsonData.data.id);",
+                  "        console.log('新药材ID已保存: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"人参\",\n  \"alias\": \"高丽参、红参\",\n  \"category\": \"补虚药\",\n  \"properties\": \"甘、微苦，温\",\n  \"functions\": \"大补元气，复脉固脱，补脾益肺，生津安神\",\n  \"dosage\": \"3-9g，煎服；1-3g，研粉服\",\n  \"precautions\": \"不宜与萝卜同服，实热证忌用\",\n  \"price\": 50.00,\n  \"unit\": \"克\",\n  \"stock\": 1000,\n  \"expiryDate\": \"2025-12-31T00:00:00Z\",\n  \"supplier\": \"吉林长白山药材公司\",\n  \"status\": \"Available\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs"]
+            },
+            "description": "添加新药材到库存"
+          }
+        },
+        {
+          "name": "获取药材列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs"]
+            },
+            "description": "获取所有药材列表"
+          }
+        },
+        {
+          "name": "分页查询药材",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"人参\",\n  \"category\": \"补虚药\",\n  \"status\": \"Available\",\n  \"page\": 1,\n  \"pageSize\": 20\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/paged",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "paged"]
+            },
+            "description": "分页查询药材"
+          }
+        },
+        {
+          "name": "获取药材详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/{{newHerbId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "{{newHerbId}}"]
+            },
+            "description": "根据ID获取药材详情"
+          }
+        },
+        {
+          "name": "编辑药材",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{newHerbId}}\",\n  \"name\": \"人参(特级)\",\n  \"alias\": \"高丽参、红参、白参\",\n  \"category\": \"补虚药\",\n  \"properties\": \"甘、微苦，温\",\n  \"functions\": \"大补元气，复脉固脱，补脾益肺，生津安神\",\n  \"dosage\": \"3-9g，煎服；1-3g，研粉服\",\n  \"precautions\": \"不宜与萝卜同服，实热证忌用，孕妇慎用\",\n  \"price\": 60.00,\n  \"unit\": \"克\",\n  \"stock\": 800,\n  \"expiryDate\": \"2025-12-31T00:00:00Z\",\n  \"supplier\": \"吉林长白山药材公司\",\n  \"status\": \"Available\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs"]
+            },
+            "description": "更新药材信息"
+          }
+        },
+        {
+          "name": "获取可用药材",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/available",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "available"]
+            },
+            "description": "获取可用药材列表"
+          }
+        },
+        {
+          "name": "获取缺货药材",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/out-of-stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "out-of-stock"]
+            },
+            "description": "获取缺货药材列表"
+          }
+        },
+        {
+          "name": "获取即将过期药材",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/expiring?days=30",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "expiring"],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30",
+                  "description": "提前天数"
+                }
+              ]
+            },
+            "description": "获取即将过期的药材列表"
+          }
+        },
+        {
+          "name": "检查过期药材",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/check-expired",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "check-expired"]
+            },
+            "description": "检查并更新过期药材状态"
+          }
+        },
+        {
+          "name": "获取药材统计",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "statistics"]
+            },
+            "description": "获取药材状态统计信息"
+          }
+        },
+        {
+          "name": "更新药材状态",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{newHerbId}}\",\n  \"status\": \"OutOfStock\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "status"]
+            },
+            "description": "更新药材状态"
+          }
+        },
+        {
+          "name": "删除药材",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/herbs/{{newHerbId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "herbs", "{{newHerbId}}"]
+            },
+            "description": "删除药材"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. 处方管理模块 (Prescriptions)",
+      "description": "处方管理相关接口，包括处方开具、查询、作废等功能",
+      "item": [
+        {
+          "name": "新增处方",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newPrescriptionId', jsonData.data.id);",
+                  "        console.log('新处方ID已保存: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"{{newPatientId}}\",\n  \"doctorId\": \"{{newDoctorId}}\",\n  \"diagnosis\": \"感冒风寒证\",\n  \"prescriptionItems\": [\n    {\n      \"herbId\": \"{{newHerbId}}\",\n      \"herbName\": \"人参\",\n      \"dosage\": \"6g\",\n      \"unit\": \"克\",\n      \"usage\": \"煎服\"\n    }\n  ],\n  \"preparation\": \"水煎服，日一剂，分2次温服\",\n  \"usage\": \"饭后30分钟服用\",\n  \"precautions\": \"忌食生冷、辛辣食物\",\n  \"totalAmount\": 300.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/prescriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "prescriptions"]
+            },
+            "description": "创建新处方"
+          }
+        },
+        {
+          "name": "获取处方列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/prescriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "prescriptions"]
+            },
+            "description": "获取处方列表"
+          }
+        },
+        {
+          "name": "获取处方详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/prescriptions/{{newPrescriptionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "prescriptions", "{{newPrescriptionId}}"]
+            },
+            "description": "根据ID获取处方详情"
+          }
+        },
+        {
+          "name": "编辑处方",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{newPrescriptionId}}\",\n  \"patientId\": \"{{newPatientId}}\",\n  \"doctorId\": \"{{newDoctorId}}\",\n  \"diagnosis\": \"感冒风寒证(加重)\",\n  \"prescriptionItems\": [\n    {\n      \"herbId\": \"{{newHerbId}}\",\n      \"herbName\": \"人参\",\n      \"dosage\": \"9g\",\n      \"unit\": \"克\",\n      \"usage\": \"煎服\"\n    }\n  ],\n  \"preparation\": \"水煎服，日一剂，分3次温服\",\n  \"usage\": \"饭后30分钟服用\",\n  \"precautions\": \"忌食生冷、辛辣食物，注意保暖\",\n  \"totalAmount\": 450.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/prescriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "prescriptions"]
+            },
+            "description": "更新处方信息"
+          }
+        },
+        {
+          "name": "作废处方",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/prescriptions/void/{{newPrescriptionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "prescriptions", "void", "{{newPrescriptionId}}"]
+            },
+            "description": "作废处方"
+          }
+        },
+        {
+          "name": "删除处方",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/prescriptions/{{newPrescriptionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "prescriptions", "{{newPrescriptionId}}"]
+            },
+            "description": "删除处方"
+          }
+        }
+      ]
+    }
