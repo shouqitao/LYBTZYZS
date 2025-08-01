@@ -2,6 +2,10 @@
 using LYBT.Common.Models;
 using LYBT.Models.Patients;
 using LYBT.Models.Records;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Common;
+using SharedPatientDetailDto = LYBT.Shared.Models.Contracts.Patients.PatientDetailDto;
+using SharedPatientPagedQueryDto = LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto;
 
 namespace LYBT.Module.Patients.Interfaces {
 
@@ -14,30 +18,30 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 新增病人
         /// </summary>
-        Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName);
+        Task<bool> AddAsync(SharedPatientDetailDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 编辑病人
         /// </summary>
-        Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName);
+        Task<bool> UpdateAsync(SharedPatientDetailDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 根据Id获取病人信息
         /// 根据当前操作者角色决定是否包含禁用患者档案
         /// </summary>
-        Task<PatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
+        Task<SharedPatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
 
         /// <summary>
         /// 获取全部病人信息
         /// 根据当前操作者角色决定是否包含禁用患者档案
         /// </summary>
-        Task<List<PatientDetailDto>> GetAllAsync(UserRole currentUserRole);
+        Task<List<SharedPatientDetailDto>> GetAllAsync(UserRole currentUserRole);
 
         /// <summary>
         /// 分页条件查询
         /// 根据当前操作者角色决定是否包含禁用患者档案
         /// </summary>
-        Task<PagedResultDto<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query, UserRole currentUserRole);
+        Task<PaginatedResult<SharedPatientDetailDto>> GetPagedAsync(SharedPatientPagedQueryDto query, UserRole currentUserRole);
 
         /// <summary>
         /// 启用患者档案
@@ -63,24 +67,24 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 根据关键词搜索患者档案
         /// 根据当前操作者角色决定是否包含禁用患者档案
         /// </summary>
-        Task<List<PatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole);
+        Task<List<SharedPatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole);
 
         /// <summary>
         /// 智能搜索患者档案（支持精确匹配和模糊搜索）
         /// 根据当前操作者角色决定是否包含禁用患者档案
         /// </summary>
-        Task<List<PatientDetailDto>> SmartSearchAsync(string keyword, UserRole currentUserRole);
+        Task<List<SharedPatientDetailDto>> SmartSearchAsync(string keyword, UserRole currentUserRole);
 
         /// <summary>
         /// 导入患者档案数据
         /// </summary>
-        Task<int> ImportAsync(List<PatientDetailDto> dtos, Guid operatorId, string operatorName);
+        Task<int> ImportAsync(List<SharedPatientDetailDto> dtos, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 导出患者档案数据
         /// 根据当前操作者角色决定是否包含禁用患者档案
         /// </summary>
-        Task<List<PatientDetailDto>> ExportAsync(UserRole currentUserRole);
+        Task<List<SharedPatientDetailDto>> ExportAsync(UserRole currentUserRole);
 
         /// <summary>
         /// 获取患者档案历史病历
@@ -91,17 +95,17 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 查询或创建患者档案（用于挂号/看诊场景）
         /// 根据姓名和身份证号查询患者档案，如果不存在则创建新档案
         /// </summary>
-        Task<PatientDetailDto> FindOrCreateAsync(PatientDetailDto dto, Guid operatorId, string operatorName);
+        Task<SharedPatientDetailDto> FindOrCreateAsync(SharedPatientDetailDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 验证患者档案数据
         /// </summary>
-        Task<ValidationResult> ValidatePatientAsync(PatientDetailDto dto, bool isUpdate = false);
+        Task<ValidationResult> ValidatePatientAsync(SharedPatientDetailDto dto, bool isUpdate = false);
 
         /// <summary>
         /// 获取启用的患者档案列表
         /// </summary>
-        Task<List<PatientDetailDto>> GetActivePatientsAsync();
+        Task<List<SharedPatientDetailDto>> GetActivePatientsAsync();
     }
 
     /// <summary>

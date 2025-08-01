@@ -1,6 +1,7 @@
 using LYBT.Common.Models;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
+using LYBT.Shared.Models.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <param name="queryDto">查询条件</param>
         /// <returns>分页日志结果</returns>
         [HttpPost("query")]
-        public async Task<ActionResult<PagedResult<LogDto>>> GetLogs([FromBody] LogQueryDto queryDto) {
+        public async Task<ActionResult<PaginatedResult<LogDto>>> GetLogs([FromBody] LogQueryDto queryDto) {
             try {
                 var result = await _logService.GetLogsAsync(queryDto);
                 return Ok(result);

@@ -2,8 +2,11 @@
 using LYBT.Shared.Models.Enums;
 using LYBT.Common.Models;
 using LYBT.Shared.Models.Common;
-using LYBT.Models.Patients;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Models.Records;
+using PatientDetailDto = LYBT.Shared.Models.Contracts.Patients.PatientDetailDto;
+using PatientPagedQueryDto = LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto;
+using BatchOperationDto = LYBT.Shared.Models.Common.BatchOperationDto;
 using LYBT.Module.Patients.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -135,17 +138,17 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<ApiResponse<PagedResultDto<PatientDetailDto>>>> GetPaged([FromBody] PatientPagedQueryDto query) {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<PatientDetailDto>>>> GetPaged([FromBody] PatientPagedQueryDto query) {
             var (_, _, operatorRole) = GetOperator();
             var result = await _patientService.GetPagedAsync(query, operatorRole);
-            return Ok(ApiResponse<PagedResultDto<PatientDetailDto>>.Success(result));
+            return Ok(ApiResponse<PaginatedResult<PatientDetailDto>>.Success(result));
         }
 
         /// <summary>
         /// 批量禁用患者档案
         /// </summary>
         [HttpPatch("batch-disable")]
-        public async Task<IActionResult> BatchDisable([FromBody] PatientBatchIdsDto dto) {
+        public async Task<IActionResult> BatchDisable([FromBody] BatchOperationDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
             return Ok(ApiResponse<object>.Success(new { DisabledCount = count, Message = $"成功禁用 {count} 名患者档案" }));
@@ -155,7 +158,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量启用患者档案
         /// </summary>
         [HttpPatch("batch-enable")]
-        public async Task<IActionResult> BatchEnable([FromBody] PatientBatchIdsDto dto) {
+        public async Task<IActionResult> BatchEnable([FromBody] BatchOperationDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
             return Ok(ApiResponse<object>.Success(new { EnabledCount = count, Message = $"成功启用 {count} 名患者档案" }));

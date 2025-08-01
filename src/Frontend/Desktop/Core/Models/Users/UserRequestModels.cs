@@ -1,6 +1,5 @@
 using System;
 using LYBT.Shared.Models.Enums;
-using LYBT.WPF.Client.Core.Enums;
 
 namespace LYBT.WPF.Client.Core.Models.Users {
     /// <summary>

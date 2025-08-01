@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums.Herbs;
-using LYBT.Common.Extensions;
-using LYBT.Common.Models;
+using LYBT.Shared.Models.Extensions;
+using LYBT.Shared.Models.Common;
 using LYBT.Models.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using LYBT.Shared.Models.Enums;
+using HerbStatus = LYBT.Shared.Models.Enums.HerbStatus;
 
 namespace LYBT.Module.Herbs.Services {
 
@@ -39,13 +41,12 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 获取药材详情
         /// </summary>
-        public async Task<HerbDetailDto?> GetByIdAsync(Guid id) {
+        public async Task<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto?> GetByIdAsync(Guid id) {
             var model = await _repository.GetByIdAsync(id);
             if (model == null)
                 return null;
 
-            var dto = _mapper.Map<HerbDetailDto>(model);
-            dto.StatusDescription = model.Status.GetDescription();
+            var dto = _mapper.Map<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto>(model);
             return dto;
         }
 
@@ -59,7 +60,6 @@ namespace LYBT.Module.Herbs.Services {
             // 设置状态描述
             foreach (var dto in dtos) {
                 var model = list.First(x => x.Id == dto.Id);
-                dto.StatusDescription = model.Status.GetDescription();
             }
 
             return dtos;
@@ -68,16 +68,38 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        public async Task<PagedResultDto<HerbDto>> GetPagedAsync(HerbPagedQueryDto query) {
+        public async Task<PaginatedResult<HerbDto>> GetPagedAsync(LYBT.Shared.Models.Contracts.Herbs.HerbPagedQueryDto query) {
             // 构建查询条件
             var dbQuery = _context.Herbs.AsQueryable();
 
-            // 关键词搜索
-            if (!string.IsNullOrWhiteSpace(query.Keyword)) {
-                var keyword = query.Keyword.Trim();
-                var upper = keyword.ToUpperInvariant();
-                dbQuery = dbQuery.Where(h => h.Name.Contains(keyword) ||
-                                            (h.PinyinCode != null && h.PinyinCode.Contains(upper)));
+            // 药材名称搜索
+            if (!string.IsNullOrWhiteSpace(query.Name)) {
+                var keyword = query.Name.Trim();
+                dbQuery = dbQuery.Where(h => h.Name.Contains(keyword));
+            }
+
+            // 拼音码搜索
+            if (!string.IsNullOrWhiteSpace(query.Pinyin)) {
+                var pinyin = query.Pinyin.Trim().ToUpperInvariant();
+                dbQuery = dbQuery.Where(h => h.PinyinCode != null && h.PinyinCode.Contains(pinyin));
+            }
+
+            // 五笔码搜索
+            if (!string.IsNullOrWhiteSpace(query.WuBi)) {
+                var wubi = query.WuBi.Trim().ToUpperInvariant();
+                dbQuery = dbQuery.Where(h => h.WuBiCode != null && h.WuBiCode.Contains(wubi));
+            }
+
+            // 产地搜索
+            if (!string.IsNullOrWhiteSpace(query.Origin)) {
+                var origin = query.Origin.Trim();
+                dbQuery = dbQuery.Where(h => h.Origin != null && h.Origin.Contains(origin));
+            }
+
+            // 批号搜索
+            if (!string.IsNullOrWhiteSpace(query.BatchNo)) {
+                var batchNo = query.BatchNo.Trim();
+                dbQuery = dbQuery.Where(h => h.BatchNo != null && h.BatchNo.Contains(batchNo));
             }
 
             // 状态筛选
@@ -90,6 +112,30 @@ namespace LYBT.Module.Herbs.Services {
                 dbQuery = dbQuery.Where(h => h.Status != HerbStatus.Inactive);
             }
 
+            // 库存范围筛选
+            if (query.MinStock.HasValue) {
+                dbQuery = dbQuery.Where(h => h.Stock >= query.MinStock.Value);
+            }
+            if (query.MaxStock.HasValue) {
+                dbQuery = dbQuery.Where(h => h.Stock <= query.MaxStock.Value);
+            }
+
+            // 价格范围筛选
+            if (query.MinPrice.HasValue) {
+                dbQuery = dbQuery.Where(h => h.Price >= query.MinPrice.Value);
+            }
+            if (query.MaxPrice.HasValue) {
+                dbQuery = dbQuery.Where(h => h.Price <= query.MaxPrice.Value);
+            }
+
+            // 有效期范围筛选
+            if (query.ExpireStartDate.HasValue) {
+                dbQuery = dbQuery.Where(h => h.ExpireDate >= query.ExpireStartDate.Value);
+            }
+            if (query.ExpireEndDate.HasValue) {
+                dbQuery = dbQuery.Where(h => h.ExpireDate <= query.ExpireEndDate.Value);
+            }
+
             // 库存不足筛选
             if (query.OnlyLowStock) {
                 dbQuery = dbQuery.Where(h => h.Stock <= query.LowStockThreshold);
@@ -97,7 +143,7 @@ namespace LYBT.Module.Herbs.Services {
 
             // 即将过期筛选
             if (query.OnlyExpiring) {
-                var expiringDate = DateTime.UtcNow.AddDays(query.ExpiringDays);
+                var expiringDate = DateTime.UtcNow.AddDays(query.ExpiringDaysThreshold);
                 dbQuery = dbQuery.Where(h => h.ExpireDate.HasValue && h.ExpireDate <= expiringDate);
             }
 
@@ -106,8 +152,8 @@ namespace LYBT.Module.Herbs.Services {
 
             // 分页查询
             var models = await dbQuery
-                .OrderByDescending(h => h.CreatedAt)
-                .Skip((query.Page - 1) * query.PageSize)
+                .OrderByDescending(h => h.CreateTime)
+                .Skip((query.CurrentPage - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
 
@@ -116,10 +162,9 @@ namespace LYBT.Module.Herbs.Services {
             // 设置状态描述
             foreach (var dto in dtos) {
                 var model = models.First(x => x.Id == dto.Id);
-                dto.StatusDescription = model.Status.GetDescription();
             }
 
-            return new PagedResultDto<HerbDto> {
+            return new PaginatedResult<HerbDto> {
                 TotalCount = total,
                 Items = dtos
             };
@@ -128,20 +173,20 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 新增药材
         /// </summary>
-        public async Task<bool> AddAsync(HerbCreateDto dto) {
+        public async Task<bool> AddAsync(LYBT.Shared.Models.Contracts.Herbs.HerbCreateDto dto) {
             var model = _mapper.Map<HerbModel>(dto);
             model.Id = Guid.NewGuid();
             model.PinyinCode = string.IsNullOrWhiteSpace(dto.Pinyin)
                 ? GetSimplePinyinCode(model.Name)
                 : dto.Pinyin;
-            model.CreatedAt = DateTime.UtcNow;
+            model.CreateTime = DateTime.UtcNow;
             return await _repository.AddAsync(model);
         }
 
         /// <summary>
         /// 编辑药材
         /// </summary>
-        public async Task<bool> UpdateAsync(HerbEditDto dto) {
+        public async Task<bool> UpdateAsync(LYBT.Shared.Models.Contracts.Herbs.HerbUpdateDto dto) {
             var model = await _repository.GetByIdAsync(dto.Id);
             if (model == null)
                 return false;
@@ -151,7 +196,6 @@ namespace LYBT.Module.Herbs.Services {
                 ? GetSimplePinyinCode(dto.Name)
                 : dto.Pinyin;
             model.Origin = dto.Origin;
-            model.Specification = dto.Spec;
             model.Unit = dto.Unit;
             model.Price = dto.Price;
             model.Stock = dto.Stock;
@@ -160,7 +204,7 @@ namespace LYBT.Module.Herbs.Services {
             model.Effect = dto.Effect;
             model.Remark = dto.Remark;
             model.Status = dto.Status;
-            model.UpdatedAt = DateTime.UtcNow;
+            model.UpdateTime = DateTime.UtcNow;
 
             return await _repository.UpdateAsync(model);
         }
@@ -181,7 +225,7 @@ namespace LYBT.Module.Herbs.Services {
                 var model = _mapper.Map<HerbModel>(dto);
                 model.Id = Guid.NewGuid();
                 model.PinyinCode = GetSimplePinyinCode(model.Name);
-                model.CreatedAt = DateTime.UtcNow;
+                model.CreateTime = DateTime.UtcNow;
                 models.Add(model);
             }
 
@@ -192,14 +236,13 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 导出药材数据
         /// </summary>
-        public async Task<List<HerbDetailDto>> ExportAsync() {
+        public async Task<List<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto>> ExportAsync() {
             var list = await _repository.GetListAsync();
-            var dtos = _mapper.Map<List<HerbDetailDto>>(list);
+            var dtos = _mapper.Map<List<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto>>(list);
 
             // 设置状态描述
             foreach (var dto in dtos) {
                 var model = list.First(x => x.Id == dto.Id);
-                dto.StatusDescription = model.Status.GetDescription();
             }
 
             return dtos;
@@ -214,7 +257,7 @@ namespace LYBT.Module.Herbs.Services {
                 return false;
 
             model.Status = dto.Status;
-            model.UpdatedAt = DateTime.UtcNow;
+            model.UpdateTime = DateTime.UtcNow;
             // 如果有原因，可以记录到备注中
             if (!string.IsNullOrWhiteSpace(dto.Reason)) {
                 model.Remark = $"{model.Remark} [状态变更: {dto.Reason}]".Trim();
@@ -240,7 +283,7 @@ namespace LYBT.Module.Herbs.Services {
             int count = 0;
             foreach (var model in models) {
                 model.Status = dto.Status;
-                model.UpdatedAt = DateTime.UtcNow;
+                model.UpdateTime = DateTime.UtcNow;
                 if (!string.IsNullOrWhiteSpace(dto.Reason)) {
                     model.Remark = $"{model.Remark} [批量状态变更: {dto.Reason}]".Trim();
                 }
@@ -257,12 +300,11 @@ namespace LYBT.Module.Herbs.Services {
         public async Task<List<HerbDto>> GetByStatusAsync(HerbStatus status) {
             var models = await _context.Herbs
                 .Where(h => h.Status == status)
-                .OrderByDescending(h => h.CreatedAt)
+                .OrderByDescending(h => h.CreateTime)
                 .ToListAsync();
 
             var dtos = _mapper.Map<List<HerbDto>>(models);
             foreach (var dto in dtos) {
-                dto.StatusDescription = status.GetDescription();
             }
 
             return dtos;
@@ -295,7 +337,6 @@ namespace LYBT.Module.Herbs.Services {
             var dtos = _mapper.Map<List<HerbDto>>(models);
             foreach (var dto in dtos) {
                 var model = models.First(x => x.Id == dto.Id);
-                dto.StatusDescription = model.Status.GetDescription();
             }
 
             return dtos;
@@ -313,7 +354,7 @@ namespace LYBT.Module.Herbs.Services {
 
             foreach (var herb in expiredHerbs) {
                 herb.Status = HerbStatus.Expired;
-                herb.UpdatedAt = DateTime.UtcNow;
+                herb.UpdateTime = DateTime.UtcNow;
                 herb.Remark = $"{herb.Remark} [系统自动标记为过期]".Trim();
             }
 
@@ -353,7 +394,6 @@ namespace LYBT.Module.Herbs.Services {
             var dtos = _mapper.Map<List<HerbDto>>(models);
             foreach (var dto in dtos) {
                 var model = models.First(x => x.Id == dto.Id);
-                dto.StatusDescription = model.Status.GetDescription();
             }
 
             return dtos;

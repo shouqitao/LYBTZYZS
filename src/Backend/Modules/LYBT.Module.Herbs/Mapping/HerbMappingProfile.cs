@@ -1,57 +1,55 @@
 ﻿using AutoMapper;
-using LYBT.Common.Extensions;
+using LYBT.Shared.Models.Extensions;
 using LYBT.Models.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
+using SharedHerbDetailDto = LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto;
+using SharedHerbCreateDto = LYBT.Shared.Models.Contracts.Herbs.HerbCreateDto;
+using SharedHerbUpdateDto = LYBT.Shared.Models.Contracts.Herbs.HerbUpdateDto;
 
 namespace LYBT.Module.Herbs.Mapping {
     /// <summary>
     /// 药材实体与DTO的AutoMapper映射配置
+    /// 更新以支持共享契约模型和基础模型继承
     /// </summary>
     public class HerbMappingProfile : Profile {
         public HerbMappingProfile() {
-            // 基础映射
+            // ==================== 共享契约映射 ====================
+            
+            // 药材实体转共享HerbDetailDto（API响应）
+            CreateMap<HerbModel, SharedHerbDetailDto>()
+                .IncludeBase<LYBT.Shared.Models.Core.BaseHerbModel, SharedHerbDetailDto>();
+
+            // 共享HerbCreateDto转药材实体
+            CreateMap<SharedHerbCreateDto, HerbModel>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
+                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore())
+                .ForMember(dest => dest.Specification, opt => opt.MapFrom(src => 1))
+                .ForMember(dest => dest.Usage, opt => opt.Ignore());
+
+            // 共享HerbUpdateDto转药材实体
+            CreateMap<SharedHerbUpdateDto, HerbModel>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
+                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore());
+
+            // ==================== 本地模型映射 ====================
+
+            // 药材实体转本地HerbDto（内部使用）
             CreateMap<HerbModel, HerbDto>()
-                .ForMember(dest => dest.StatusDescription, opt => opt.MapFrom(src => src.Status.GetDescription()))
-                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => (int)(src.Price * src.Stock)));
+                .IncludeBase<LYBT.Shared.Models.Core.BaseHerbModel, HerbDto>();
 
-            CreateMap<HerbModel, HerbDetailDto>()
-                .ForMember(dest => dest.StatusDescription, opt => opt.MapFrom(src => src.Status.GetDescription()));
+            // ==================== 基础模型映射 ====================
 
-            // 创建映射
-            CreateMap<HerbCreateDto, HerbModel>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore());
+            // BaseHerbModel转共享HerbDetailDto
+            CreateMap<LYBT.Shared.Models.Core.BaseHerbModel, SharedHerbDetailDto>();
 
-            // 编辑映射
-            CreateMap<HerbEditDto, HerbModel>()
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore());
-
-            // 导入映射
-            CreateMap<HerbImportDto, HerbModel>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.PinyinCode, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore());
-
-            // 反向映射
-            CreateMap<HerbDto, HerbModel>()
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore());
-
-            CreateMap<HerbDetailDto, HerbModel>()
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore());
+            // BaseHerbModel转本地HerbDto
+            CreateMap<LYBT.Shared.Models.Core.BaseHerbModel, HerbDto>();
         }
     }
 }

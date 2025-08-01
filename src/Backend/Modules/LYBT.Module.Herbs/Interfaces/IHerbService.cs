@@ -1,6 +1,9 @@
-using LYBT.Common.Enums.Herbs;
 using LYBT.Common.Models;
 using LYBT.Models.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Common;
+using HerbStatus = LYBT.Shared.Models.Enums.HerbStatus;
 
 namespace LYBT.Module.Herbs.Interfaces {
 
@@ -12,7 +15,7 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// <summary>
         /// 获取药材详情
         /// </summary>
-        Task<HerbDetailDto?> GetByIdAsync(Guid id);
+        Task<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto?> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 获取药材列表
@@ -22,17 +25,17 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        Task<PagedResultDto<HerbDto>> GetPagedAsync(HerbPagedQueryDto query);
+        Task<PaginatedResult<HerbDto>> GetPagedAsync(LYBT.Shared.Models.Contracts.Herbs.HerbPagedQueryDto query);
 
         /// <summary>
         /// 新增药材
         /// </summary>
-        Task<bool> AddAsync(HerbCreateDto dto);
+        Task<bool> AddAsync(LYBT.Shared.Models.Contracts.Herbs.HerbCreateDto dto);
 
         /// <summary>
         /// 编辑药材
         /// </summary>
-        Task<bool> UpdateAsync(HerbEditDto dto);
+        Task<bool> UpdateAsync(LYBT.Shared.Models.Contracts.Herbs.HerbUpdateDto dto);
 
         /// <summary>
         /// 删除药材
@@ -47,7 +50,7 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// <summary>
         /// 导出药材数据
         /// </summary>
-        Task<List<HerbDetailDto>> ExportAsync();
+        Task<List<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto>> ExportAsync();
 
         // 需要在现有 IHerbService 接口中添加以下方法：
 

@@ -260,8 +260,8 @@ app.UseSwaggerUI(c => {
 });
 Console.WriteLine("📖 Swagger UI 已启用 - /swagger");
 
-// 暂时禁用全局异常处理以测试Swagger
-// app.UseGlobalExceptionHandling();
+// 全局异常处理中间件
+app.UseGlobalExceptionHandling();
 
 // 性能监控中间件
 app.UsePerformanceMonitoring();

@@ -53,7 +53,7 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 通过身份证号查找病人（包括禁用的患者档案）
         /// </summary>
-        Task<PatientModel?> GetByIDNumberAsync(string idNumber);
+        Task<PatientModel?> GetByIdNumberAsync(string idNumber);
 
         /// <summary>
         /// 通过手机号查找病人（包括禁用的患者档案）
@@ -63,7 +63,7 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 检查身份证号是否存在（排除指定ID，包括禁用患者档案）
         /// </summary>
-        Task<bool> IsIDNumberExistsAsync(string idNumber, Guid? excludeId = null);
+        Task<bool> IsIdNumberExistsAsync(string idNumber, Guid? excludeId = null);
 
         /// <summary>
         /// 检查手机号是否存在（排除指定ID，包括禁用患者档案）
@@ -108,10 +108,6 @@ namespace LYBT.Module.Patients.Interfaces {
         /// </summary>
         Task<List<PatientModel>> GetPatientsBySimilarNameAsync(string name);
 
-        /// <summary>
-        /// 根据身份证号获取患者档案（用于查询或创建场景）
-        /// </summary>
-        Task<PatientModel?> GetByIdNumberAsync(string idNumber);
 
         /// <summary>
         /// 根据姓名获取患者档案列表（用于查询或创建场景）

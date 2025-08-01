@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Shared.Models.Enums;
 using LYBT.Common.Helpers;
+using LYBT.Shared.Utilities.Helpers;
 using LYBT.Common.Models;
 using LYBT.Shared.Models.Common;
 using LYBT.Models.Doctors;
@@ -82,7 +83,7 @@ namespace LYBT.Module.Doctors.Services {
             }
         }
 
-        public async Task<ApiResponse<PagedResultDto<DoctorDto>>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole) {
+        public async Task<ApiResponse<PaginatedResult<DoctorDto>>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole) {
             try {
                 // 参数验证
                 if (query.Page < 1)
@@ -94,14 +95,14 @@ namespace LYBT.Module.Doctors.Services {
                 var (models, total) = await _doctorRepository.GetPagedAsync(query, includeDisabled);
                 var dtos = _mapper.Map<List<DoctorDto>>(models);
 
-                var result = new PagedResultDto<DoctorDto> {
+                var result = new PaginatedResult<DoctorDto> {
                     TotalCount = total,
                     Items = dtos
                 };
 
-                return ApiResponse<PagedResultDto<DoctorDto>>.Success(result);
+                return ApiResponse<PaginatedResult<DoctorDto>>.Success(result);
             } catch (Exception ex) {
-                return ApiResponse<PagedResultDto<DoctorDto>>.Fail($"获取医生列表失败：{ex.Message}");
+                return ApiResponse<PaginatedResult<DoctorDto>>.Fail($"获取医生列表失败：{ex.Message}");
             }
         }
 

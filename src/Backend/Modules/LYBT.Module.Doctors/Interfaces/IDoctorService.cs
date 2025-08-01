@@ -33,7 +33,7 @@ namespace LYBT.Module.Doctors.Interfaces {
         /// 分页获取医生列表
         /// 根据当前操作者角色决定是否包含禁用医生
         /// </summary>
-        Task<ApiResponse<PagedResultDto<DoctorDto>>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole);
+        Task<ApiResponse<PaginatedResult<DoctorDto>>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole);
 
         /// <summary>
         /// 新增医生档案（仅管理员可操作，且用户必须具有医生角色）

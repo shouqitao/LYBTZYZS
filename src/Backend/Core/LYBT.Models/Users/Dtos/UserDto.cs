@@ -1,5 +1,5 @@
 using LYBT.Shared.Models.Enums;
-using LYBT.Common.Extensions;
+using LYBT.Shared.Models.Extensions;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 

@@ -1,4 +1,9 @@
 ﻿using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Common;
+using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
+using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
+using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
+using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 using LYBT.Models.Users;
 
 namespace LYBT.Module.Users.Interfaces {
@@ -12,23 +17,23 @@ namespace LYBT.Module.Users.Interfaces {
         /// 分页/条件查找用户
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        Task<(IList<UserDto> users, int total)> SearchAsync(UserQueryDto query, UserRole currentUserRole);
+        Task<PaginatedResult<SharedUserDto>> GetPagedAsync(SharedUserPagedQueryDto query, UserRole currentUserRole);
 
         /// <summary>
         /// 根据ID获取用户详情
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        Task<UserDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
+        Task<SharedUserDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
 
         /// <summary>
         /// 新增用户
         /// </summary>
-        Task<bool> AddAsync(UserCreateDto dto, Guid operatorId, string operatorName);
+        Task<bool> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 编辑用户
         /// </summary>
-        Task<bool> UpdateAsync(UserDetailDto dto, Guid operatorId, string operatorName);
+        Task<bool> UpdateAsync(SharedUserUpdateDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 禁用用户（软删除）
@@ -73,6 +78,6 @@ namespace LYBT.Module.Users.Interfaces {
         /// <summary>
         /// 获取启用的用户列表
         /// </summary>
-        Task<List<UserDto>> GetActiveUsersAsync();
+        Task<List<SharedUserDto>> GetActiveUsersAsync();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using LYBT.Infrastructure.Data;
 using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
+using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Users.Repositories {
@@ -62,24 +63,39 @@ namespace LYBT.Module.Users.Repositories {
         /// 分页条件查找用户
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<(IList<UserModel> users, int total)> GetPagedAsync(UserQueryDto query, bool includeDisabled = false) {
+        public async Task<(IList<UserModel> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false) {
             var dbSet = _dbContext.Users.AsQueryable();
 
             // 隐藏内置的sysadmin用户
-            dbSet = dbSet.Where(u => u.UserName != "sysadmin");
+            dbSet = dbSet.Where(u => u.Username != "sysadmin");
 
             // 权限控制：非管理员只能看到启用的用户
             if (!includeDisabled) {
                 dbSet = dbSet.Where(u => u.IsActive);
             }
 
-            // 关键词（用户名、真实姓名、拼音码）模糊查找
-            if (!string.IsNullOrWhiteSpace(query.Keyword)) {
-                var keyword = query.Keyword.ToUpperInvariant();
-                dbSet = dbSet.Where(u =>
-                    u.UserName.Contains(query.Keyword) ||
-                    u.RealName.Contains(query.Keyword) ||
-                    u.PinyinCode.Contains(keyword));
+            // 关键词查找：支持用户名、真实姓名、邮箱、电话、部门、职位、拼音码等多维度搜索
+            if (!string.IsNullOrWhiteSpace(query.Username)) {
+                dbSet = dbSet.Where(u => u.Username.Contains(query.Username));
+            }
+            if (!string.IsNullOrWhiteSpace(query.RealName)) {
+                dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
+            }
+            if (!string.IsNullOrWhiteSpace(query.Email)) {
+                dbSet = dbSet.Where(u => u.Email.Contains(query.Email));
+            }
+            if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
+                dbSet = dbSet.Where(u => u.PhoneNumber.Contains(query.PhoneNumber));
+            }
+            if (!string.IsNullOrWhiteSpace(query.Department)) {
+                dbSet = dbSet.Where(u => u.Department.Contains(query.Department));
+            }
+            if (!string.IsNullOrWhiteSpace(query.Position)) {
+                dbSet = dbSet.Where(u => u.Position.Contains(query.Position));
+            }
+            if (!string.IsNullOrWhiteSpace(query.PinyinCode)) {
+                var keyword = query.PinyinCode.ToUpperInvariant();
+                dbSet = dbSet.Where(u => u.PinyinCode.Contains(keyword));
             }
 
             // 角色筛选
@@ -95,10 +111,24 @@ namespace LYBT.Module.Users.Repositories {
             // 获取总数
             int total = await dbSet.CountAsync();
 
+            // 日期范围筛选
+            if (query.CreateStartDate.HasValue) {
+                dbSet = dbSet.Where(u => u.CreateTime >= query.CreateStartDate.Value);
+            }
+            if (query.CreateEndDate.HasValue) {
+                dbSet = dbSet.Where(u => u.CreateTime <= query.CreateEndDate.Value);
+            }
+            if (query.LoginStartDate.HasValue) {
+                dbSet = dbSet.Where(u => u.LastLoginTime >= query.LoginStartDate.Value);
+            }
+            if (query.LoginEndDate.HasValue) {
+                dbSet = dbSet.Where(u => u.LastLoginTime <= query.LoginEndDate.Value);
+            }
+
             // 分页查询
-            int skip = (query.Page - 1) * query.PageSize;
+            int skip = (query.CurrentPage - 1) * query.PageSize;
             var users = await dbSet
-                .OrderByDescending(u => u.CreatedTime)
+                .OrderByDescending(u => u.CreateTime)
                 .Skip(skip)
                 .Take(query.PageSize)
                 .ToListAsync();
@@ -111,7 +141,7 @@ namespace LYBT.Module.Users.Repositories {
         /// </summary>
         public async Task<UserModel?> GetByUsernameAsync(string userName) {
             return await _dbContext.Users
-                .FirstOrDefaultAsync(u => u.UserName == userName);
+                .FirstOrDefaultAsync(u => u.Username == userName);
         }
 
         /// <summary>
@@ -150,7 +180,7 @@ namespace LYBT.Module.Users.Repositories {
         /// 校验用户名是否存在（包括禁用用户）
         /// </summary>
         public async Task<bool> ExistsByUsernameAsync(string userName) {
-            return await _dbContext.Users.AnyAsync(u => u.UserName == userName);
+            return await _dbContext.Users.AnyAsync(u => u.Username == userName);
         }
 
         /// <summary>
@@ -186,7 +216,7 @@ namespace LYBT.Module.Users.Repositories {
         /// </summary>
         public async Task<List<UserModel>> GetActiveUsersAsync() {
             return await _dbContext.Users
-                .Where(u => u.IsActive && u.UserName != "sysadmin")
+                .Where(u => u.IsActive && u.Username != "sysadmin")
                 .OrderBy(u => u.RealName)
                 .ToListAsync();
         }

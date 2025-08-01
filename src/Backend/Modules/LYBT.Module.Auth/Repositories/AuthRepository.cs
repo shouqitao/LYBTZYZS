@@ -25,7 +25,7 @@ namespace LYBT.Module.Auth.Repositories {
         /// <param name="userName">用户名</param>
         /// <returns>用户实体或 null</returns>
         public async Task<UserModel?> GetByUsernameAsync(string userName) {
-            return await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+            return await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == userName);
         }
 
         /// <summary>

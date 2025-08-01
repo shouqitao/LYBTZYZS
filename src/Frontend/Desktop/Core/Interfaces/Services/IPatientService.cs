@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.Patients;
-using LYBT.WPF.Client.Core.Models.Enums;
 using LYBT.WPF.Client.Core.Models.DTOs;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services

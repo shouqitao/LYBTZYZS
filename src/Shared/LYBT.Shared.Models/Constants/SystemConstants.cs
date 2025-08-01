@@ -273,4 +273,81 @@ namespace LYBT.Shared.Models.Constants
         /// </summary>
         public const string IPAddress = @"^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$";
     }
+
+    /// <summary>
+    /// 缓存键常量 - 后端专用（从Backend项目迁移）
+    /// </summary>
+    public static class CacheKeys {
+
+        /// <summary>
+        /// 用户信息缓存键前缀
+        /// </summary>
+        public const string UserPrefix = "user:";
+
+        /// <summary>
+        /// 患者信息缓存键前缀
+        /// </summary>
+        public const string PatientPrefix = "patient:";
+
+        /// <summary>
+        /// 医生信息缓存键前缀
+        /// </summary>
+        public const string DoctorPrefix = "doctor:";
+
+        /// <summary>
+        /// 药材信息缓存键前缀
+        /// </summary>
+        public const string HerbPrefix = "herb:";
+
+        /// <summary>
+        /// 处方信息缓存键前缀
+        /// </summary>
+        public const string PrescriptionPrefix = "prescription:";
+
+        /// <summary>
+        /// 系统配置缓存键前缀
+        /// </summary>
+        public const string ConfigPrefix = "config:";
+
+        /// <summary>
+        /// 枚举数据缓存键前缀
+        /// </summary>
+        public const string EnumPrefix = "enum:";
+
+        /// <summary>
+        /// 统计数据缓存键前缀
+        /// </summary>
+        public const string StatsPrefix = "stats:";
+    }
+
+    /// <summary>
+    /// 文件相关常量 - 后端专用（从Backend项目迁移）
+    /// </summary>
+    public static class FileConstants {
+
+        /// <summary>
+        /// 允许上传的图片格式
+        /// </summary>
+        public static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+
+        /// <summary>
+        /// 允许上传的文档格式
+        /// </summary>
+        public static readonly string[] AllowedDocExtensions = { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv" };
+
+        /// <summary>
+        /// 最大文件大小（MB）
+        /// </summary>
+        public const int MaxFileSizeMB = 10;
+
+        /// <summary>
+        /// 默认头像路径
+        /// </summary>
+        public const string DefaultAvatar = "/images/default-avatar.png";
+
+        /// <summary>
+        /// 文件上传目录
+        /// </summary>
+        public const string UploadDirectory = "uploads";
+    }
 }

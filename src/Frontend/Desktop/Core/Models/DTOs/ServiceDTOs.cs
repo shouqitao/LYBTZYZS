@@ -1,94 +1,24 @@
 using System;
 using System.Collections.Generic;
 
+// 重要说明：前端DTO重复定义已被共享契约取代
+// 请使用以下命名空间中的共享契约模型：
+// - LYBT.Shared.Models.Contracts.Herbs.HerbPagedQueryDto
+// - LYBT.Shared.Models.Contracts.Herbs.HerbCreateDto  
+// - LYBT.Shared.Models.Contracts.Herbs.HerbUpdateDto (替代HerbEditDto)
+// - LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto
+// - LYBT.Shared.Models.Common.PaginatedResult<T> (替代PagedResultDto)
+
 namespace LYBT.WPF.Client.Core.Models.DTOs
 {
-    /// <summary>
-    /// 药材分页查询DTO（对应后端HerbPagedQueryDto）
-    /// </summary>
-    public class HerbPagedQueryDto
-    {
-        public string? Keyword { get; set; }
-        public int? Status { get; set; }
-        public int Page { get; set; } = 1;
-        public int PageSize { get; set; } = 20;
-    }
-
-    /// <summary>
-    /// 药材创建DTO（对应后端HerbCreateDto）
-    /// </summary>
-    public class HerbCreateDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public string? Pinyin { get; set; }
-        public string? WuBi { get; set; }
-        public string? Origin { get; set; }
-        public string? Spec { get; set; }
-        public string? Unit { get; set; }
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string? BatchNo { get; set; }
-        public DateTime? ExpireDate { get; set; }
-        public string? Effect { get; set; }
-    }
-
-    /// <summary>
-    /// 药材编辑DTO（对应后端HerbEditDto）
-    /// </summary>
-    public class HerbEditDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Pinyin { get; set; }
-        public string? WuBi { get; set; }
-        public string? Origin { get; set; }
-        public string? Spec { get; set; }
-        public string? Unit { get; set; }
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string? BatchNo { get; set; }
-        public DateTime? ExpireDate { get; set; }
-        public string? Effect { get; set; }
-        public bool IsActive { get; set; } = true;
-    }
-
-    /// <summary>
-    /// 药材详情DTO（对应后端HerbDetailDto）
-    /// </summary>
-    public class HerbDetailDto : Herbs.HerbInfo
-    {
-        // 继承HerbInfo，可以添加额外的详情字段
-    }
-
-    /// <summary>
-    /// 药材导入DTO（对应后端HerbImportDto）
-    /// </summary>
-    public class HerbImportDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public string? Pinyin { get; set; }
-        public string? Origin { get; set; }
-        public string? Spec { get; set; }
-        public string? Unit { get; set; }
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string? BatchNo { get; set; }
-        public DateTime? ExpireDate { get; set; }
-        public string? Effect { get; set; }
-    }
-
-    /// <summary>
-    /// 药材状态更新DTO（对应后端HerbStatusUpdateDto）
-    /// </summary>
-    public class HerbStatusUpdateDto
-    {
-        public Guid Id { get; set; }
-        public int Status { get; set; }
-    }
+    // 注意：本文件中的重复DTO定义已迁移到共享契约
+    // 新的开发应使用 LYBT.Shared.Models.Contracts.* 命名空间中的共享模型
 
     /// <summary>
     /// 分页结果DTO（对应后端PagedResultDto）
+    /// 注意：建议使用 LYBT.Shared.Models.Common.PaginatedResult&lt;T&gt;
     /// </summary>
+    [Obsolete("请使用 LYBT.Shared.Models.Common.PaginatedResult<T> 替代")]
     public class PagedResultDto<T>
     {
         public List<T> Items { get; set; } = new();

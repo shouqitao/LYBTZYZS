@@ -1,6 +1,7 @@
 using LYBT.Common.Models;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Configuration.Dtos;
+using LYBT.Shared.Models.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -145,7 +146,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <param name="pageSize">页大小</param>
         /// <returns>分页设置结果</returns>
         [HttpGet("settings")]
-        public async Task<ActionResult<PagedResult<SettingsDto>>> GetSettings(
+        public async Task<ActionResult<PaginatedResult<SettingsDto>>> GetSettings(
             [FromQuery] string? group = null,
             [FromQuery] string? keyword = null,
             [FromQuery] int pageIndex = 1,
@@ -221,7 +222,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <param name="pageSize">页大小</param>
         /// <returns>分页诊断目录结果</returns>
         [HttpGet("diagnosis-catalogs/paged")]
-        public async Task<ActionResult<PagedResult<DiagnosisCatalogDto>>> GetDiagnosisCatalogsPaged(
+        public async Task<ActionResult<PaginatedResult<DiagnosisCatalogDto>>> GetDiagnosisCatalogsPaged(
             [FromQuery] string? keyword = null,
             [FromQuery] bool? isEnabled = null,
             [FromQuery] int pageIndex = 1,

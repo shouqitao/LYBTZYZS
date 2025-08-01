@@ -31,6 +31,14 @@ namespace LYBT.Models.Herbs {
         [DisplayName("规格")]
         public string? Spec { get; set; }
 
+        /// <summary>规格数量</summary>
+        [DisplayName("规格数量")]
+        public decimal Specification { get; set; } = 1;
+
+        /// <summary>用法用量</summary>
+        [DisplayName("用法用量")]
+        public string? Usage { get; set; }
+
         /// <summary>单位</summary>
         [DisplayName("单位")]
         public string? Unit { get; set; }
@@ -54,9 +62,5 @@ namespace LYBT.Models.Herbs {
         /// <summary>功效说明</summary>
         [DisplayName("功效说明")]
         public string? Effect { get; set; }
-
-        /// <summary>状态描述</summary>
-        [DisplayName("状态描述")]
-        public string? StatusDescription { get; set; }
     }
 }

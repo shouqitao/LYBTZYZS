@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Helpers;
+﻿using LYBT.Shared.Utilities.Helpers;
 using LYBT.Infrastructure.Data;
 using LYBT.Models.Patients;
 using LYBT.Module.Patients.Interfaces;
@@ -46,18 +46,18 @@ namespace LYBT.Module.Patients.Repositories {
                 query = query.Where(x => x.Name.Contains(keyword)
                     || x.PinyinCode.Contains(upper)
                     || x.PhoneNumber.Contains(keyword)
-                    || x.IDNumber.Contains(keyword));
+                    || x.IdNumber.Contains(keyword));
             }
 
             return await query
-                .OrderByDescending(x => x.CreatedAt)
+                .OrderByDescending(x => x.CreateTime)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(PatientModel patient) {
-            patient.UpdatedAt = DateTime.Now;
+            patient.UpdateTime = DateTime.Now;
             _dbContext.Patients.Update(patient);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -67,7 +67,7 @@ namespace LYBT.Module.Patients.Repositories {
             if (entity == null)
                 return false;
             entity.Status = PatientStatus.Normal;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdateTime = DateTime.Now;
             _dbContext.Patients.Update(entity);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -77,7 +77,7 @@ namespace LYBT.Module.Patients.Repositories {
             if (entity == null)
                 return false;
             entity.Status = PatientStatus.Inactive;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdateTime = DateTime.Now;
             _dbContext.Patients.Update(entity);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -86,7 +86,7 @@ namespace LYBT.Module.Patients.Repositories {
             var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
             foreach (var p in list) {
                 p.Status = PatientStatus.Inactive;
-                p.UpdatedAt = DateTime.Now;
+                p.UpdateTime = DateTime.Now;
             }
             _dbContext.Patients.UpdateRange(list);
             return await _dbContext.SaveChangesAsync();
@@ -96,22 +96,22 @@ namespace LYBT.Module.Patients.Repositories {
             var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
             foreach (var p in list) {
                 p.Status = PatientStatus.Normal;
-                p.UpdatedAt = DateTime.Now;
+                p.UpdateTime = DateTime.Now;
             }
             _dbContext.Patients.UpdateRange(list);
             return await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<PatientModel?> GetByIDNumberAsync(string idNumber) {
-            return await _dbContext.Patients.FirstOrDefaultAsync(x => x.IDNumber == idNumber);
+        public async Task<PatientModel?> GetByIdNumberAsync(string idNumber) {
+            return await _dbContext.Patients.FirstOrDefaultAsync(x => x.IdNumber == idNumber);
         }
 
         public async Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber) {
             return await _dbContext.Patients.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
         }
 
-        public async Task<bool> IsIDNumberExistsAsync(string idNumber, Guid? excludeId = null) {
-            var query = _dbContext.Patients.Where(p => p.IDNumber == idNumber);
+        public async Task<bool> IsIdNumberExistsAsync(string idNumber, Guid? excludeId = null) {
+            var query = _dbContext.Patients.Where(p => p.IdNumber == idNumber);
             if (excludeId.HasValue) {
                 query = query.Where(p => p.Id != excludeId.Value);
             }
@@ -139,7 +139,7 @@ namespace LYBT.Module.Patients.Repositories {
                 query = query.Where(x => x.Name.Contains(keyword)
                     || x.PinyinCode.Contains(upper)
                     || x.PhoneNumber.Contains(keyword)
-                    || x.IDNumber.Contains(keyword));
+                    || x.IdNumber.Contains(keyword));
             }
 
             return await query.CountAsync();
@@ -157,9 +157,9 @@ namespace LYBT.Module.Patients.Repositories {
             return await query
                 .Where(p => p.Name.Contains(keyword)
                     || p.PinyinCode.Contains(upper)
-                    || p.IDNumber.Contains(keyword)
+                    || p.IdNumber.Contains(keyword)
                     || p.PhoneNumber.Contains(keyword))
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.CreateTime)
                 .Take(20)
                 .ToListAsync();
         }
@@ -182,7 +182,7 @@ namespace LYBT.Module.Patients.Repositories {
 
             // 精确匹配身份证号
             var idMatch = await baseQuery
-                .FirstOrDefaultAsync(p => p.IDNumber == keyword);
+                .FirstOrDefaultAsync(p => p.IdNumber == keyword);
             if (idMatch != null && !results.Any(r => r.Id == idMatch.Id)) {
                 results.Add(idMatch);
             }
@@ -205,7 +205,7 @@ namespace LYBT.Module.Patients.Repositories {
                 return new List<PatientModel>();
 
             return await _dbContext.Patients
-                .Where(p => p.IDNumber == idNumber)
+                .Where(p => p.IdNumber == idNumber)
                 .ToListAsync();
         }
 
@@ -240,16 +240,6 @@ namespace LYBT.Module.Patients.Repositories {
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// 根据身份证号获取患者档案（用于查询或创建场景）
-        /// </summary>
-        public async Task<PatientModel?> GetByIdNumberAsync(string idNumber) {
-            if (string.IsNullOrEmpty(idNumber))
-                return null;
-
-            return await _dbContext.Patients
-                .FirstOrDefaultAsync(p => p.IDNumber == idNumber);
-        }
 
         /// <summary>
         /// 根据姓名获取患者档案列表（用于查询或创建场景）

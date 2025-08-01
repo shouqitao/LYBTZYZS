@@ -163,10 +163,18 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<UserModel>();
             entity.ToTable("Users");
             entity.HasKey(u => u.Id);
-            entity.HasIndex(u => u.UserName).IsUnique();
-            entity.Property(u => u.UserName).HasMaxLength(50);
+            // 明确配置字段映射以解决命名冲突
+            entity.HasIndex(u => u.Username).IsUnique();
+            entity.Property(u => u.Username).HasMaxLength(50).HasColumnName("UserName");
             entity.Property(u => u.RealName).HasMaxLength(100);
             entity.Property(u => u.PasswordHash).HasMaxLength(255);
+            entity.Property(u => u.CreateTime).HasColumnName("CreatedTime");
+            entity.Property(u => u.PinyinCode).HasMaxLength(20);
+            entity.Property(u => u.WuBiCode).HasMaxLength(20);
+            entity.Property(u => u.Email).HasMaxLength(100);
+            entity.Property(u => u.PhoneNumber).HasMaxLength(20);
+            entity.Property(u => u.Department).HasMaxLength(50);
+            entity.Property(u => u.Position).HasMaxLength(50);
         }
 
         private static void ConfigureAdminSecrets(ModelBuilder modelBuilder) {
@@ -184,6 +192,12 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(p => p.Id);
             entity.Property(p => p.Name).HasMaxLength(100);
             entity.Property(p => p.WuBiCode).HasMaxLength(20);
+            entity.Property(p => p.PinyinCode).HasMaxLength(20);
+            entity.Property(p => p.CreateTime).HasColumnName("CreatedAt");
+            entity.Property(p => p.PhoneNumber).HasMaxLength(20);
+            entity.Property(p => p.Address).HasMaxLength(256);
+            entity.Property(p => p.IdType).HasMaxLength(20);
+            entity.Property(p => p.IdNumber).HasMaxLength(50);
         }
 
         private static void ConfigureDoctors(ModelBuilder modelBuilder) {
@@ -236,6 +250,11 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(h => h.PinyinCode).HasMaxLength(20);
             entity.Property(h => h.WuBiCode).HasMaxLength(20);
             entity.Property(h => h.BatchNo).HasMaxLength(32);
+            entity.Property(h => h.CreateTime).HasColumnName("CreatedAt");
+            entity.Property(h => h.Origin).HasMaxLength(50);
+            entity.Property(h => h.Spec).HasMaxLength(50);
+            entity.Property(h => h.Unit).HasMaxLength(10);
+            entity.Property(h => h.Effect).HasMaxLength(256);
             entity.HasIndex(h => h.Name);
             entity.HasIndex(h => h.PinyinCode);
             entity.HasIndex(h => h.WuBiCode);

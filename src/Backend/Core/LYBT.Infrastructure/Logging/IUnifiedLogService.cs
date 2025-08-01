@@ -1,6 +1,7 @@
 using LYBT.Common.Enums.Logs;
 using LYBT.Common.Models;
 using LYBT.Infrastructure.Logging.Dtos;
+using LYBT.Shared.Models.Common;
 
 namespace LYBT.Infrastructure.Logging {
 
@@ -23,7 +24,7 @@ namespace LYBT.Infrastructure.Logging {
         /// <summary>
         /// 分页查询日志
         /// </summary>
-        Task<PagedResult<LogDto>> GetLogsAsync(LogQueryDto queryDto);
+        Task<PaginatedResult<LogDto>> GetLogsAsync(LogQueryDto queryDto);
 
         /// <summary>
         /// 根据ID获取日志详情

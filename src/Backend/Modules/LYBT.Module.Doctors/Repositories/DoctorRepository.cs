@@ -61,7 +61,7 @@ namespace LYBT.Module.Doctors.Repositories {
                 var upperKeyword = keyword.ToUpperInvariant();
                 query = query.Where(d =>
                     d.User.RealName.Contains(keyword) ||
-                    d.User.UserName.Contains(keyword) ||
+                    d.User.Username.Contains(keyword) ||
                     (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(keyword)) ||
                     d.PinyinCode.Contains(upperKeyword) ||
                     (d.LicenseNumber != null && d.LicenseNumber.Contains(keyword)) ||
@@ -88,7 +88,7 @@ namespace LYBT.Module.Doctors.Repositories {
                 var upperKeyword = query.Keyword.ToUpperInvariant();
                 dbQuery = dbQuery.Where(d =>
                     d.User.RealName.Contains(query.Keyword) ||
-                    d.User.UserName.Contains(query.Keyword) ||
+                    d.User.Username.Contains(query.Keyword) ||
                     (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(query.Keyword)) ||
                     d.PinyinCode.Contains(upperKeyword) ||
                     (d.LicenseNumber != null && d.LicenseNumber.Contains(query.Keyword)) ||

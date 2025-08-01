@@ -1,4 +1,4 @@
-using LYBT.Common.Models;
+using LYBT.Shared.Models.Common;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Configuration.Dtos;
 using LYBT.Infrastructure.Data;
@@ -276,7 +276,7 @@ namespace LYBT.Infrastructure.Configuration {
             }
         }
 
-        public async Task<PagedResult<SettingsDto>> GetSettingsAsync(string? group = null, string? keyword = null, int pageIndex = 1, int pageSize = 10) {
+        public async Task<PaginatedResult<SettingsDto>> GetSettingsAsync(string? group = null, string? keyword = null, int pageIndex = 1, int pageSize = 10) {
             try {
                 var query = _context.Settings.AsQueryable();
 
@@ -310,18 +310,18 @@ namespace LYBT.Infrastructure.Configuration {
                     })
                     .ToListAsync();
 
-                return new PagedResult<SettingsDto> {
+                return new PaginatedResult<SettingsDto> {
                     Items = settings,
                     TotalCount = totalCount,
-                    PageIndex = pageIndex,
+                    CurrentPage = pageIndex,
                     PageSize = pageSize
                 };
             } catch (Exception ex) {
                 _logger.LogError(ex, "分页查询设置失败");
-                return new PagedResult<SettingsDto> {
+                return new PaginatedResult<SettingsDto> {
                     Items = new List<SettingsDto>(),
                     TotalCount = 0,
-                    PageIndex = pageIndex,
+                    CurrentPage = pageIndex,
                     PageSize = pageSize
                 };
             }
@@ -401,8 +401,8 @@ namespace LYBT.Infrastructure.Configuration {
             return await Task.FromResult<DiagnosisCatalogDto?>(null);
         }
 
-        public async Task<PagedResult<DiagnosisCatalogDto>> GetDiagnosisCatalogsAsync(string? keyword = null, bool? isEnabled = null, int pageIndex = 1, int pageSize = 10) {
-            return await Task.FromResult(new PagedResult<DiagnosisCatalogDto>());
+        public async Task<PaginatedResult<DiagnosisCatalogDto>> GetDiagnosisCatalogsAsync(string? keyword = null, bool? isEnabled = null, int pageIndex = 1, int pageSize = 10) {
+            return await Task.FromResult(new PaginatedResult<DiagnosisCatalogDto>());
         }
 
         public async Task<bool> CreateDiagnosisCatalogAsync(DiagnosisCatalogDto diagnosisCatalogDto, Guid? createdBy = null) {
@@ -441,8 +441,8 @@ namespace LYBT.Infrastructure.Configuration {
             return await Task.FromResult<TreatmentCatalogDto?>(null);
         }
 
-        public async Task<PagedResult<TreatmentCatalogDto>> GetTreatmentCatalogsAsync(string? keyword = null, bool? isEnabled = null, int pageIndex = 1, int pageSize = 10) {
-            return await Task.FromResult(new PagedResult<TreatmentCatalogDto>());
+        public async Task<PaginatedResult<TreatmentCatalogDto>> GetTreatmentCatalogsAsync(string? keyword = null, bool? isEnabled = null, int pageIndex = 1, int pageSize = 10) {
+            return await Task.FromResult(new PaginatedResult<TreatmentCatalogDto>());
         }
 
         public async Task<bool> CreateTreatmentCatalogAsync(TreatmentCatalogDto treatmentCatalogDto, Guid? createdBy = null) {

@@ -2,6 +2,7 @@
 using LYBT.Common.Models;
 using LYBT.Models.FormulaTemplates;
 using LYBT.Module.FormulaTemplates.Interfaces;
+using LYBT.Shared.Models.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,37 +49,37 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增模板
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiSuccessResponse>> Add([FromBody] FormulaTemplateCreateDto dto) {
+        public async Task<ActionResult<ApiResponse<bool>>> Add([FromBody] FormulaTemplateCreateDto dto) {
             if (!ModelState.IsValid)
-                return BadRequest(new ApiSuccessResponse { Success = false, Message = "参数验证失败" });
+                return BadRequest(ApiResponse<bool>.Fail("参数验证失败", 400));
             var result = await _service.AddAsync(dto);
             if (result)
-                return Ok(new ApiSuccessResponse { Success = true, Message = "新增模板成功" });
-            return BadRequest(new ApiSuccessResponse { Success = false, Message = "新增模板失败" });
+                return Ok(ApiResponse<bool>.Success(result, "新增模板成功"));
+            return BadRequest(ApiResponse<bool>.Fail("新增模板失败", 400));
         }
 
         /// <summary>
         /// 编辑模板
         /// </summary>
         [HttpPut]
-        public async Task<ActionResult<ApiSuccessResponse>> Update([FromBody] FormulaTemplateEditDto dto) {
+        public async Task<ActionResult<ApiResponse<bool>>> Update([FromBody] FormulaTemplateEditDto dto) {
             if (!ModelState.IsValid)
-                return BadRequest(new ApiSuccessResponse { Success = false, Message = "参数验证失败" });
+                return BadRequest(ApiResponse<bool>.Fail("参数验证失败", 400));
             var result = await _service.UpdateAsync(dto);
             if (result)
-                return Ok(new ApiSuccessResponse { Success = true, Message = "编辑模板成功" });
-            return BadRequest(new ApiSuccessResponse { Success = false, Message = "编辑模板失败" });
+                return Ok(ApiResponse<bool>.Success(result, "编辑模板成功"));
+            return BadRequest(ApiResponse<bool>.Fail("编辑模板失败", 400));
         }
 
         /// <summary>
         /// 删除模板
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiSuccessResponse>> Delete(Guid id) {
+        public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id) {
             var result = await _service.DeleteAsync(id);
             if (!result)
-                return NotFound(new ApiSuccessResponse { Success = false, Message = "删除模板失败" });
-            return Ok(new ApiSuccessResponse { Success = true, Message = "删除模板成功" });
+                return NotFound(ApiResponse<bool>.Fail("删除模板失败", 404));
+            return Ok(ApiResponse<bool>.Success(result, "删除模板成功"));
         }
 
         [HttpPost("import")]

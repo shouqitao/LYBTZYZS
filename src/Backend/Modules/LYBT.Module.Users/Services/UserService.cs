@@ -1,12 +1,19 @@
 ﻿using LYBT.Common.Enums.Logs;
+using LYBT.Common.Helpers;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
-using LYBT.Common.Helpers;
+using LYBT.Shared.Utilities.Helpers;
 using LYBT.Infrastructure.Logging;
 using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Common;
+using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
+using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
+using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
+using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using AutoMapper;
 
 namespace LYBT.Module.Users.Services {
 
@@ -17,45 +24,51 @@ namespace LYBT.Module.Users.Services {
         private readonly IUserRepository _userRepository;
         private readonly IUnifiedLogService _logService;
         private readonly UserOptions _options;
+        private readonly IMapper _mapper;
 
         public UserService(
             IUserRepository userRepository,
             IUnifiedLogService logService,
-            IOptions<UserOptions> options) {
+            IOptions<UserOptions> options,
+            IMapper mapper) {
             _userRepository = userRepository;
             _logService = logService;
             _options = options.Value;
+            _mapper = mapper;
         }
 
         /// <summary>
         /// 分页/条件查找用户
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        public async Task<(IList<UserDto> users, int total)> SearchAsync(UserQueryDto query, UserRole currentUserRole) {
+        public async Task<PaginatedResult<SharedUserDto>> GetPagedAsync(SharedUserPagedQueryDto query, UserRole currentUserRole) {
             // 管理员可以查看所有用户（包括禁用的），普通用户只能查看启用的用户
             bool includeDisabled = currentUserRole == UserRole.Admin;
 
             var (models, total) = await _userRepository.GetPagedAsync(query, includeDisabled);
-            var users = models.Select(MapToUserDto).ToList();
-            return (users, total);
+            var users = _mapper.Map<List<SharedUserDto>>(models);
+            return new PaginatedResult<SharedUserDto> {
+                TotalCount = total,
+                Items = users
+            };
         }
 
         /// <summary>
         /// 根据ID获取用户详情
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        public async Task<UserDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
+        public async Task<SharedUserDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
             // 管理员可以查看所有用户（包括禁用的），普通用户只能查看启用的用户
             bool includeDisabled = currentUserRole == UserRole.Admin;
 
             var model = await _userRepository.GetByIdAsync(id, includeDisabled);
-            return model != null ? MapToUserDto(model) : null;
+            return model != null ? _mapper.Map<SharedUserDto>(model) : null;
         }
 
         /// <summary>
         /// 新增用户
         /// </summary>
-        public async Task<bool> AddAsync(UserCreateDto dto, Guid operatorId, string operatorName) {
+        public async Task<bool> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName) {
             await ValidateUserCreation(dto);
 
             var user = CreateUserFromDto(dto);
@@ -64,7 +77,7 @@ namespace LYBT.Module.Users.Services {
             if (result) {
                 await LogUserOperation(
                     user.Id, ActionType.Create, operatorId, operatorName,
-                    $"新增用户：{user.UserName}",
+                    $"新增用户：{user.Username}",
                     newValue: user
                 );
             }
@@ -75,7 +88,7 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 编辑用户
         /// </summary>
-        public async Task<bool> UpdateAsync(UserDetailDto dto, Guid operatorId, string operatorName) {
+        public async Task<bool> UpdateAsync(SharedUserUpdateDto dto, Guid operatorId, string operatorName) {
             var existingUser = await GetExistingUser(dto.Id);
             var oldSnapshot = JsonSerializer.Serialize(existingUser);
 
@@ -85,7 +98,7 @@ namespace LYBT.Module.Users.Services {
             if (result) {
                 await LogUserOperation(
                     existingUser.Id, ActionType.Edit, operatorId, operatorName,
-                    $"修改用户信息：{existingUser.UserName}",
+                    $"修改用户信息：{existingUser.Username}",
                     oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
                 );
             }
@@ -103,7 +116,7 @@ namespace LYBT.Module.Users.Services {
             if (result) {
                 await LogUserOperation(
                     id, ActionType.Disable, operatorId, operatorName,
-                    $"禁用用户：{user.UserName}",
+                    $"禁用用户：{user.Username}",
                     oldValue: JsonSerializer.Serialize(user)
                 );
             }
@@ -121,7 +134,7 @@ namespace LYBT.Module.Users.Services {
             if (result) {
                 await LogUserOperation(
                     id, ActionType.Enable, operatorId, operatorName,
-                    $"启用用户：{user.UserName}",
+                    $"启用用户：{user.Username}",
                     oldValue: JsonSerializer.Serialize(user)
                 );
             }
@@ -179,7 +192,7 @@ namespace LYBT.Module.Users.Services {
             if (result) {
                 await LogUserOperation(
                     id, ActionType.ResetPassword, operatorId, operatorName,
-                    $"重置用户密码：{user.UserName}"
+                    $"重置用户密码：{user.Username}"
                 );
 
                 // TODO: 根据配置决定是否发送密码重置通知
@@ -253,44 +266,34 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 获取启用的用户列表
         /// </summary>
-        public async Task<List<UserDto>> GetActiveUsersAsync() {
+        public async Task<List<SharedUserDto>> GetActiveUsersAsync() {
             var users = await _userRepository.GetActiveUsersAsync();
-            return users.Select(MapToUserDto).ToList();
+            return _mapper.Map<List<SharedUserDto>>(users);
         }
 
         #region 私有辅助方法
 
         /// <summary>
-        /// 映射用户模型到DTO
+        /// 映射用户模型到DTO (现已使用AutoMapper，此方法保留用于兼容性)
         /// </summary>
-        private UserDto MapToUserDto(UserModel model) {
-            return new UserDto {
-                Id = model.Id,
-                UserName = model.UserName,
-                RealName = model.RealName,
-                Role = model.Role,
-                IsActive = model.IsActive,
-                CreatedTime = model.CreatedTime,
-                LastLoginTime = model.LastLoginTime,
-                Email = model.Email,
-                PhoneNumber = model.PhoneNumber
-            };
+        private SharedUserDto MapToSharedUserDto(UserModel model) {
+            return _mapper.Map<SharedUserDto>(model);
         }
 
         /// <summary>
         /// 从DTO创建用户模型
         /// </summary>
-        private UserModel CreateUserFromDto(UserCreateDto dto) {
+        private UserModel CreateUserFromDto(SharedUserCreateDto dto) {
             return new UserModel {
                 Id = Guid.NewGuid(),
-                UserName = dto.UserName,
+                Username = dto.Username,
                 RealName = dto.RealName,
                 PinyinCode = CommonHelper.GetPinyinCode(dto.RealName),
                 Role = dto.Role,
                 IsActive = dto.IsActive,
                 Email = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
-                CreatedTime = DateTime.Now,
+                CreateTime = DateTime.Now,
                 PasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword)
             };
         }
@@ -298,7 +301,7 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 从DTO更新用户模型
         /// </summary>
-        private void UpdateUserFromDto(UserModel user, UserDetailDto dto) {
+        private void UpdateUserFromDto(UserModel user, SharedUserUpdateDto dto) {
             user.RealName = dto.RealName;
             user.PinyinCode = CommonHelper.GetPinyinCode(dto.RealName);
             user.Role = dto.Role;
@@ -310,8 +313,8 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 验证用户创建请求
         /// </summary>
-        private async Task ValidateUserCreation(UserCreateDto dto) {
-            if (await _userRepository.ExistsByUsernameAsync(dto.UserName)) {
+        private async Task ValidateUserCreation(SharedUserCreateDto dto) {
+            if (await _userRepository.ExistsByUsernameAsync(dto.Username)) {
                 throw new InvalidOperationException("用户名已存在");
             }
 
@@ -380,7 +383,7 @@ namespace LYBT.Module.Users.Services {
             if (!_options.EnableDetailedAuditLogging)
                 return;
 
-            var userNames = string.Join(", ", users.Select(u => u.UserName));
+            var userNames = string.Join(", ", users.Select(u => u.Username));
             var detailedContent = $"{content}: {userNames}";
 
             await _logService.LogUserActionAsync(
@@ -390,7 +393,7 @@ namespace LYBT.Module.Users.Services {
                 "Users",
                 "BatchUserManagement",
                 detailedContent,
-                parameters: JsonSerializer.Serialize(users.Select(u => new { u.Id, u.UserName }).ToList())
+                parameters: JsonSerializer.Serialize(users.Select(u => new { u.Id, u.Username }).ToList())
             );
         }
 

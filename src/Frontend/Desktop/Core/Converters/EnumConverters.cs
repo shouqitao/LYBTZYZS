@@ -18,13 +18,13 @@ namespace LYBT.WPF.Client.Core.Converters
 
             return value switch
             {
-                Gender gender => gender.GetDisplayName(),
-                UserRole userRole => userRole.GetDisplayName(),
-                PatientStatus patientStatus => patientStatus.GetDisplayName(),
-                HerbStatus herbStatus => herbStatus.GetDisplayName(),
-                BillingStatus billingStatus => billingStatus.GetDisplayName(),
-                PharmacyStatus pharmacyStatus => pharmacyStatus.GetDisplayName(),
-                Enum enumValue => enumValue.ToString(),
+                Gender gender => gender.GetDescription(),
+                UserRole userRole => userRole.GetDescription(),
+                PatientStatus patientStatus => patientStatus.GetDescription(),
+                HerbStatus herbStatus => herbStatus.GetDescription(),
+                BillingStatus billingStatus => billingStatus.GetDescription(),
+                PharmacyStatus pharmacyStatus => pharmacyStatus.GetDescription(),
+                Enum enumValue => enumValue.GetDescription(),
                 _ => value.ToString()
             };
         }
@@ -44,7 +44,7 @@ namespace LYBT.WPF.Client.Core.Converters
         {
             if (value is UserRole role)
             {
-                return role.GetDisplayName();
+                return role.GetDescription();
             }
             return "未知角色";
         }
@@ -64,7 +64,7 @@ namespace LYBT.WPF.Client.Core.Converters
         {
             if (value is PatientStatus status)
             {
-                return status.GetDisplayName();
+                return status.GetDescription();
             }
             return "未知状态";
         }
@@ -84,7 +84,7 @@ namespace LYBT.WPF.Client.Core.Converters
         {
             if (value is HerbStatus status)
             {
-                return status.GetDisplayName();
+                return status.GetDescription();
             }
             return "未知状态";
         }

@@ -53,7 +53,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<ApiResponse<PagedResultDto<DoctorDto>>>> GetPaged([FromBody] DoctorQueryDto query) {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<DoctorDto>>>> GetPaged([FromBody] DoctorQueryDto query) {
             try {
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _doctorService.GetPagedAsync(query, operatorRole);

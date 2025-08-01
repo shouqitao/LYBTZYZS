@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using LYBT.Shared.Models.Enums;
 using LYBT.Common.Models;
+using LYBT.Shared.Models.Common;
 using LYBT.Models.Prescriptions;
 using LYBT.Module.Prescriptions.Services;
 using Microsoft.AspNetCore.Authorization;

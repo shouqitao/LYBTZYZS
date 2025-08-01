@@ -11,7 +11,7 @@ namespace LYBT.Module.Doctors.Mapping {
         public DoctorMappingProfile() {
             // DoctorModel -> DoctorDto 映射 (用于列表)
             CreateMap<DoctorModel, DoctorDto>()
-                .ForMember(d => d.UserName, opt => opt.MapFrom(s => s.User.UserName))
+                .ForMember(d => d.UserName, opt => opt.MapFrom(s => s.User.Username))
                 .ForMember(d => d.RealName, opt => opt.MapFrom(s => s.User.RealName))
                 .ForMember(d => d.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
                 .ForMember(d => d.Email, opt => opt.MapFrom(s => s.User.Email))
@@ -19,7 +19,7 @@ namespace LYBT.Module.Doctors.Mapping {
 
             // DoctorModel -> DoctorDetailDto 映射 (用于详情)
             CreateMap<DoctorModel, DoctorDetailDto>()
-                .ForMember(d => d.UserName, opt => opt.MapFrom(s => s.User.UserName))
+                .ForMember(d => d.UserName, opt => opt.MapFrom(s => s.User.Username))
                 .ForMember(d => d.RealName, opt => opt.MapFrom(s => s.User.RealName))
                 .ForMember(d => d.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
                 .ForMember(d => d.Email, opt => opt.MapFrom(s => s.User.Email))

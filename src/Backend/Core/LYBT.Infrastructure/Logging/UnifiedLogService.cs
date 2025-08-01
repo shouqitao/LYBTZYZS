@@ -2,6 +2,7 @@ using LYBT.Common.Enums.Logs;
 using LYBT.Common.Models;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging.Dtos;
+using LYBT.Shared.Models.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text;
@@ -75,7 +76,7 @@ namespace LYBT.Infrastructure.Logging {
             }
         }
 
-        public async Task<PagedResult<LogDto>> GetLogsAsync(LogQueryDto queryDto) {
+        public async Task<PaginatedResult<LogDto>> GetLogsAsync(LogQueryDto queryDto) {
             try {
                 var query = _context.Logs.AsQueryable();
 
@@ -145,15 +146,15 @@ namespace LYBT.Infrastructure.Logging {
                     })
                     .ToListAsync();
 
-                return new PagedResult<LogDto> {
+                return new PaginatedResult<LogDto> {
                     Items = logs,
                     TotalCount = totalCount,
-                    PageIndex = queryDto.PageIndex,
+                    CurrentPage = queryDto.PageIndex,
                     PageSize = queryDto.PageSize
                 };
             } catch (Exception ex) {
                 _logger.LogError(ex, "查询日志失败");
-                return new PagedResult<LogDto> { Items = new List<LogDto>(), TotalCount = 0, PageIndex = queryDto.PageIndex, PageSize = queryDto.PageSize };
+                return new PaginatedResult<LogDto> { Items = new List<LogDto>(), TotalCount = 0, CurrentPage = queryDto.PageIndex, PageSize = queryDto.PageSize };
             }
         }
 

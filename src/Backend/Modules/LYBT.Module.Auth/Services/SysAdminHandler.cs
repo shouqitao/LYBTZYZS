@@ -57,12 +57,12 @@ namespace LYBT.Module.Auth.Services {
         private UserModel CreateTempSysAdminUser() {
             return new UserModel {
                 Id = Guid.NewGuid(),
-                UserName = SYSADMIN_USERNAME,
+                Username = SYSADMIN_USERNAME,
                 RealName = "系统管理员",
                 PinyinCode = "XTGLY",
                 Role = UserRole.Admin,
                 IsActive = true,
-                CreatedTime = DateTime.Now,
+                CreateTime = DateTime.Now,
                 PasswordHash = string.Empty // 密码从AdminSecrets表获取
             };
         }

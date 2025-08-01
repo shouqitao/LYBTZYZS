@@ -48,7 +48,7 @@ namespace LYBT.WebAPI.Middleware {
                 },
                 _ => new {
                     StatusCode = (int)HttpStatusCode.InternalServerError,
-                    Response = ApiResponse<object>.Fail("服务器内部错误", 500)
+                    Response = ApiResponse<object>.Fail($"服务器内部错误: {exception.Message}", 500)
                 }
             };
 

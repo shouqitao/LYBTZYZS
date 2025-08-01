@@ -174,7 +174,7 @@ namespace LYBT.Module.Auth.Services {
         private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(UserModel user, string password) {
             string storedHash;
 
-            if (_sysAdminHandler.IsSysAdmin(user.UserName)) {
+            if (_sysAdminHandler.IsSysAdmin(user.Username)) {
                 storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync() ?? string.Empty;
             } else {
                 storedHash = user.PasswordHash;
@@ -205,7 +205,7 @@ namespace LYBT.Module.Auth.Services {
             }
 
             // 更新用户锁定信息（仅对非sysadmin用户）
-            if (!_sysAdminHandler.IsSysAdmin(user.UserName)) {
+            if (!_sysAdminHandler.IsSysAdmin(user.Username)) {
                 await _authRepository.UpdateUserLoginProtectionAsync(user);
             }
 
@@ -227,7 +227,7 @@ namespace LYBT.Module.Auth.Services {
             user.LastLoginTime = DateTime.Now;
 
             // 更新数据库（仅对非sysadmin用户）
-            if (!_sysAdminHandler.IsSysAdmin(user.UserName)) {
+            if (!_sysAdminHandler.IsSysAdmin(user.Username)) {
                 await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
                 await _authRepository.UpdateUserLoginProtectionAsync(user);
             }
@@ -238,11 +238,11 @@ namespace LYBT.Module.Auth.Services {
             // 手动创建UserDto以避免AutoMapper问题（特别是对于临时sysadmin用户）
             return new UserDto {
                 Id = user.Id,
-                UserName = user.UserName,
+                UserName = user.Username,
                 RealName = user.RealName,
                 Role = user.Role,
                 IsActive = user.IsActive,
-                CreatedTime = user.CreatedTime,
+                CreatedTime = user.CreateTime,
                 LastLoginTime = user.LastLoginTime,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber

@@ -1,4 +1,5 @@
 ﻿using LYBT.Models.Users;
+using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 
 namespace LYBT.Module.Users.Interfaces {
 
@@ -31,7 +32,7 @@ namespace LYBT.Module.Users.Interfaces {
         /// 分页条件查找用户（支持关键词、角色、状态筛选）
         /// 管理员可以查询所有用户（包括禁用的），普通用户只能查询启用的用户
         /// </summary>
-        Task<(IList<UserModel> users, int total)> GetPagedAsync(UserQueryDto query, bool includeDisabled = false);
+        Task<(IList<UserModel> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false);
 
         /// <summary>
         /// 根据用户名查找用户（登录或唯一性校验）

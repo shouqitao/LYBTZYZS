@@ -41,7 +41,7 @@ namespace LYBT.Module.Herbs.Repositories {
             try {
                 return await _herbDbContext.Herbs
                     .AsNoTracking()
-                    .OrderByDescending(h => h.CreatedAt)
+                    .OrderByDescending(h => h.CreateTime)
                     .ToListAsync();
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取药材列表失败");
@@ -130,7 +130,7 @@ namespace LYBT.Module.Herbs.Repositories {
 
                 int total = await query.CountAsync();
                 var list = await query
-                    .OrderByDescending(h => h.CreatedAt)
+                    .OrderByDescending(h => h.CreateTime)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();

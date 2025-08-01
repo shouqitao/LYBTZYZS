@@ -38,14 +38,57 @@ public class UsersController : ControllerBase {
     }
 
     /// <summary>
+    /// 映射本地DTO到共享DTO
+    /// </summary>
+    private LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto MapToSharedQuery(UserQueryDto localDto) {
+        return new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto {
+            CurrentPage = localDto.Page,
+            PageSize = localDto.PageSize,
+            Username = localDto.Keyword,
+            RealName = localDto.Keyword,
+            Role = localDto.Role,
+            IsActive = localDto.IsActive
+        };
+    }
+
+    /// <summary>
+    /// 映射本地创建DTO到共享DTO
+    /// </summary>
+    private LYBT.Shared.Models.Contracts.Users.UserCreateDto MapToSharedCreateDto(UserCreateDto localDto) {
+        return new LYBT.Shared.Models.Contracts.Users.UserCreateDto {
+            Username = localDto.UserName,
+            RealName = localDto.RealName,
+            Role = localDto.Role,
+            Email = localDto.Email,
+            PhoneNumber = localDto.PhoneNumber,
+            IsActive = localDto.IsActive
+        };
+    }
+
+    /// <summary>
+    /// 映射本地更新DTO到共享DTO
+    /// </summary>
+    private LYBT.Shared.Models.Contracts.Users.UserUpdateDto MapToSharedUpdateDto(UserDetailDto localDto) {
+        return new LYBT.Shared.Models.Contracts.Users.UserUpdateDto {
+            Id = localDto.Id,
+            Username = "user_" + localDto.Id.ToString("N")[..8], // 生成默认用户名
+            RealName = localDto.RealName,
+            Role = localDto.Role,
+            Email = localDto.Email,
+            PhoneNumber = localDto.PhoneNumber,
+            IsActive = localDto.IsActive
+        };
+    }
+
+    /// <summary>
     /// 分页查找用户（关键词、角色、状态筛选）
     /// 权限控制：禁用的用户仅管理员可查询
     /// </summary>
-    [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] UserQueryDto query) {
+    [HttpPost("paged")]
+    public async Task<IActionResult> GetPaged([FromBody] LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto query) {
         var (_, _, operatorRole) = GetOperator();
-        var (users, total) = await _userService.SearchAsync(query, operatorRole);
-        return Ok(new { total, users });
+        var result = await _userService.GetPagedAsync(query, operatorRole);
+        return Ok(ApiResponse<PaginatedResult<LYBT.Shared.Models.Contracts.Users.UserDto>>.Success(result));
     }
 
     /// <summary>
@@ -55,7 +98,8 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> Add([FromBody] UserCreateDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         try {
-            var result = await _userService.AddAsync(dto, operatorId, operatorName);
+            var sharedDto = MapToSharedCreateDto(dto);
+            var result = await _userService.AddAsync(sharedDto, operatorId, operatorName);
             if (result) {
                 return Ok(ApiResponse<object>.Success("用户创建成功"));
             } else {
@@ -73,7 +117,8 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> Update([FromBody] UserDetailDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         try {
-            var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
+            var sharedDto = MapToSharedUpdateDto(dto);
+            var result = await _userService.UpdateAsync(sharedDto, operatorId, operatorName);
             if (result) {
                 return Ok(ApiResponse<object>.Success("用户信息更新成功"));
             } else {
@@ -217,6 +262,90 @@ public class UsersController : ControllerBase {
         return Ok(users);
     }
 
-    // 注意：不提供删除接口，用户只能禁用，不能删除
+    // ======================== RESTful 标准接口 ========================
+    
+    /// <summary>
+    /// 获取所有用户列表 (RESTful GET /Users)
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
+        var (_, _, operatorRole) = GetOperator();
+        var query = new UserQueryDto { 
+            Page = page, 
+            PageSize = pageSize 
+        };
+        var sharedQuery = MapToSharedQuery(query);
+        var result = await _userService.GetPagedAsync(sharedQuery, operatorRole);
+        return Ok(ApiResponse<PaginatedResult<LYBT.Shared.Models.Contracts.Users.UserDto>>.Success(result));
+    }
+
+    /// <summary>
+    /// 根据ID获取用户 (RESTful GET /Users/{id})
+    /// </summary>
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUser(Guid id) {
+        var (_, _, operatorRole) = GetOperator();
+        var user = await _userService.GetByIdAsync(id, operatorRole);
+        if (user == null) {
+            return NotFound(ApiResponse<object>.Fail("用户不存在", 404));
+        }
+        return Ok(ApiResponse<object>.Success(user));
+    }
+
+    /// <summary>
+    /// 创建新用户 (RESTful POST /Users)
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> CreateUser([FromBody] UserCreateDto dto) {
+        var (operatorId, operatorName, _) = GetOperator();
+        try {
+            var sharedDto = MapToSharedCreateDto(dto);
+            var result = await _userService.AddAsync(sharedDto, operatorId, operatorName);
+            if (result) {
+                return Ok(ApiResponse<object>.Success("用户创建成功"));
+            } else {
+                return BadRequest(ApiResponse<object>.Fail("用户创建失败", 400));
+            }
+        } catch (Exception ex) {
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+        }
+    }
+
+    /// <summary>
+    /// 更新用户信息 (RESTful PUT /Users/{id})
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserDetailDto dto) {
+        var (operatorId, operatorName, _) = GetOperator();
+        try {
+            // 确保DTO的ID与路由参数一致
+            dto.Id = id;
+            var sharedDto = MapToSharedUpdateDto(dto);
+            var result = await _userService.UpdateAsync(sharedDto, operatorId, operatorName);
+            if (result) {
+                return Ok(ApiResponse<object>.Success("用户信息更新成功"));
+            } else {
+                return BadRequest(ApiResponse<object>.Fail("用户信息更新失败", 400));
+            }
+        } catch (Exception ex) {
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+        }
+    }
+
+    /// <summary>
+    /// 删除用户 (RESTful DELETE /Users/{id}) - 实际执行禁用操作
+    /// </summary>
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(Guid id) {
+        var (operatorId, operatorName, _) = GetOperator();
+        try {
+            var result = await _userService.DisableAsync(id, operatorId, operatorName);
+            return result ? Ok(ApiResponse<object>.Success("用户已删除(禁用)")) : BadRequest(ApiResponse<object>.Fail("删除用户失败", 400));
+        } catch (Exception ex) {
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+        }
+    }
+
+    // 注意：不提供真正的删除接口，用户只能禁用，不能删除
     // 原有的删除相关接口已移除，改为禁用/启用操作
 }
