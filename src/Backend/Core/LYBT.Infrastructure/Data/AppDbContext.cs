@@ -198,6 +198,12 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(p => p.Address).HasMaxLength(256);
             entity.Property(p => p.IdType).HasMaxLength(20);
             entity.Property(p => p.IdNumber).HasMaxLength(50);
+            entity.Property(p => p.Occupation).HasMaxLength(50);
+            entity.Property(p => p.MaritalStatus).HasMaxLength(20);
+            entity.Property(p => p.Ethnicity).HasMaxLength(20);
+            entity.Property(p => p.Education).HasMaxLength(30);
+            entity.Property(p => p.AllergyHistory).HasMaxLength(500);
+            entity.Property(p => p.DisableReason).HasMaxLength(128);
         }
 
         private static void ConfigureDoctors(ModelBuilder modelBuilder) {

@@ -98,15 +98,18 @@ namespace LYBT.WebAPI.Controllers
                 var patientCount = await _context.Patients.CountAsync();
                 _logger.LogInformation($"患者表中有 {patientCount} 条记录");
                 
-                var patients = await _context.Patients
-                    .Take(5)
-                    .Select(p => new { 
-                        p.Id, 
-                        p.Name, 
-                        p.CreateTime,
-                        p.IsActive 
-                    })
-                    .ToListAsync();
+                // 使用原生SQL查询避免字段映射问题
+                object[] patients;
+                if (patientCount > 0)
+                {
+                    patients = await _context.Database.SqlQueryRaw<dynamic>(
+                        "SELECT TOP 5 Id, Name, Gender, CreatedAt FROM Patients"
+                    ).ToListAsync();
+                }
+                else
+                {
+                    patients = new object[0];
+                }
                 
                 return Ok(ApiResponse<object>.Success(new {
                     TotalCount = patientCount,
@@ -133,15 +136,18 @@ namespace LYBT.WebAPI.Controllers
                 var herbCount = await _context.Herbs.CountAsync();
                 _logger.LogInformation($"药材表中有 {herbCount} 条记录");
                 
-                var herbs = await _context.Herbs
-                    .Take(5)
-                    .Select(h => new { 
-                        h.Id, 
-                        h.Name, 
-                        h.CreateTime,
-                        h.IsActive 
-                    })
-                    .ToListAsync();
+                // 使用原生SQL查询避免字段映射问题
+                object[] herbs;
+                if (herbCount > 0)
+                {
+                    herbs = await _context.Database.SqlQueryRaw<dynamic>(
+                        "SELECT TOP 5 Id, Name, CreatedAt FROM Herbs"
+                    ).ToListAsync();
+                }
+                else
+                {
+                    herbs = new object[0];
+                }
                 
                 return Ok(ApiResponse<object>.Success(new {
                     TotalCount = herbCount,
@@ -152,6 +158,54 @@ namespace LYBT.WebAPI.Controllers
             {
                 _logger.LogError(ex, "药材表查询失败");
                 return StatusCode(500, ApiResponse<object>.Fail($"药材表查询失败: {ex.Message}", 500));
+            }
+        }
+
+        /// <summary>
+        /// 检查所有表
+        /// </summary>
+        [HttpGet("tables")]
+        public async Task<IActionResult> ListTables()
+        {
+            try
+            {
+                var sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+                var tables = await _context.Database.SqlQueryRaw<string>(sql).ToListAsync();
+                
+                return Ok(ApiResponse<object>.Success(new {
+                    TableCount = tables.Count,
+                    Tables = tables
+                }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取表列表失败");
+                return StatusCode(500, ApiResponse<object>.Fail($"获取表列表失败: {ex.Message}", 500));
+            }
+        }
+
+        /// <summary>
+        /// 检查表结构 - 查看实际存在的字段
+        /// </summary>
+        [HttpGet("table-structure/{tableName}")]
+        public async Task<IActionResult> CheckTableStructure(string tableName)
+        {
+            try
+            {
+                // 直接尝试查询列信息
+                var columnSql = "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "' ORDER BY ORDINAL_POSITION";
+                var columns = await _context.Database.SqlQueryRaw<dynamic>(columnSql).ToListAsync();
+                
+                return Ok(ApiResponse<object>.Success(new {
+                    TableName = tableName,
+                    ColumnCount = columns.Count,
+                    Columns = columns
+                }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"检查表结构失败: {tableName}");
+                return StatusCode(500, ApiResponse<object>.Fail($"检查表结构失败: {ex.Message}", 500));
             }
         }
     }
