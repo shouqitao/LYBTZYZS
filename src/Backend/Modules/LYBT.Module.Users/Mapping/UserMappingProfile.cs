@@ -46,7 +46,8 @@ namespace LYBT.Module.Users.Mapping {
             
             // 保留原有的本地DTO映射以确保向后兼容
             CreateMap<UserModel, LYBT.Models.Users.UserDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username)); // 字段名映射
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreateTime)); // 字段名映射
 
             // 本地UserCreateDto转实体（如果仍在使用）
             CreateMap<LYBT.Models.Users.UserCreateDto, UserModel>()

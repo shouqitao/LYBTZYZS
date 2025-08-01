@@ -238,11 +238,11 @@ namespace LYBT.Module.Auth.Services {
             // 手动创建UserDto以避免AutoMapper问题（特别是对于临时sysadmin用户）
             return new UserDto {
                 Id = user.Id,
-                UserName = user.Username,
+                Username = user.Username,
                 RealName = user.RealName,
                 Role = user.Role,
                 IsActive = user.IsActive,
-                CreatedTime = user.CreateTime,
+                CreateTime = user.CreateTime,
                 LastLoginTime = user.LastLoginTime,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber

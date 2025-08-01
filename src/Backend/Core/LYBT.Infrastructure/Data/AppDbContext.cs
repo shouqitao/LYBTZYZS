@@ -173,8 +173,11 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(u => u.WuBiCode).HasMaxLength(20);
             entity.Property(u => u.Email).HasMaxLength(100);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
-            entity.Property(u => u.Department).HasMaxLength(50);
-            entity.Property(u => u.Position).HasMaxLength(50);
+            // 忽略数据库中不存在的字段
+            entity.Ignore(u => u.Department);   // 来自BaseUserModel
+            entity.Ignore(u => u.Position);     // 来自BaseUserModel  
+            entity.Ignore(u => u.UpdateTime);   // 来自UserModel
+            entity.Ignore(u => u.Remark);       // 来自UserModel
         }
 
         private static void ConfigureAdminSecrets(ModelBuilder modelBuilder) {

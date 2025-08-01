@@ -83,7 +83,7 @@ namespace LYBT.WebAPI.Controllers {
 
                 var token = _jwtService.GenerateToken(
                     user.Id.ToString(), 
-                    user.UserName, 
+                    user.Username, 
                     new[] { user.Role.ToString() }, 
                     dto.RememberMe
                 );
@@ -92,7 +92,7 @@ namespace LYBT.WebAPI.Controllers {
                     Token = token, 
                     User = new LYBT.Shared.Models.Auth.UserInfo {
                         Id = user.Id,
-                        UserName = user.UserName,
+                        UserName = user.Username,
                         RealName = user.RealName,
                         Role = user.Role.ToString(),  
                         Email = user.Email,
@@ -131,18 +131,18 @@ namespace LYBT.WebAPI.Controllers {
                 // 创建用户信息
                 var adminUser = new UserDto {
                     Id = Guid.NewGuid(),
-                    UserName = "sysadmin",
+                    Username = "sysadmin",
                     RealName = "系统管理员", 
                     Role = UserRole.Admin,
                     IsActive = true,
-                    CreatedTime = DateTime.Now,
+                    CreateTime = DateTime.Now,
                     LastLoginTime = DateTime.Now
                 };
 
                 // 生成JWT令牌
                 var token = _jwtService.GenerateToken(
                     adminUser.Id.ToString(),
-                    adminUser.UserName,
+                    adminUser.Username,
                     new[] { adminUser.Role.ToString() },
                     dto.RememberMe
                 );
@@ -151,7 +151,7 @@ namespace LYBT.WebAPI.Controllers {
                     Token = token,
                     User = new LYBT.Shared.Models.Auth.UserInfo {
                         Id = adminUser.Id,
-                        UserName = adminUser.UserName,
+                        UserName = adminUser.Username,
                         RealName = adminUser.RealName,
                         Role = adminUser.Role.ToString(),
                         Email = adminUser.Email,

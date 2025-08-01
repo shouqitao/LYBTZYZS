@@ -20,7 +20,7 @@ namespace LYBT.Models.Users {
         /// 用户名（唯一）
         /// </summary>
         [DisplayName("用户名（唯一）")]
-        public string UserName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
 
         /// <summary>
         /// 真实姓名
@@ -50,7 +50,7 @@ namespace LYBT.Models.Users {
         /// 创建时间
         /// </summary>
         [DisplayName("创建时间")]
-        public DateTime CreatedTime { get; set; }
+        public DateTime CreateTime { get; set; }
 
         /// <summary>
         /// 最近登录时间
