@@ -1,4 +1,3 @@
-using LYBT.Common.Enums.Patients;
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

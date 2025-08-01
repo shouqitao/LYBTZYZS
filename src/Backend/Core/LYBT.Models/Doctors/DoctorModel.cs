@@ -1,4 +1,3 @@
-using LYBT.Common.Enums.Doctors;
 using LYBT.Shared.Models.Enums;
 using LYBT.Models.Users;
 using System.ComponentModel;

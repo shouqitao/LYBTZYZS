@@ -1,4 +1,4 @@
-﻿using LYBT.Common.Enums.Doctors;
+﻿using LYBT.Shared.Models.Enums;
 using LYBT.Models.Doctors;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Doctors.Interfaces;

@@ -1,8 +1,8 @@
-﻿using LYBT.Common.Enums.Patients;
-using LYBT.Common.Helpers;
+﻿using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Data;
 using LYBT.Models.Patients;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Patients.Repositories {
@@ -27,7 +27,7 @@ namespace LYBT.Module.Patients.Repositories {
             var query = _dbContext.Patients.AsQueryable();
 
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == Common.Enums.Patients.PatientStatus.Normal);
+                query = query.Where(p => p.Status == PatientStatus.Normal);
             }
 
             return await query.FirstOrDefaultAsync(p => p.Id == id);
