@@ -1,0 +1,10 @@
+{
+  "fixedParameters": {
+    "apiVersion": "1.0"
+  },
+  "history": {
+    "apiVersion": [
+      { "wrong": "V1.0", "correct": "1.0", "count": 2 }
+    ]
+  }
+}
