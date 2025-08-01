@@ -69,6 +69,7 @@ namespace LYBT.Shared.Models.Core
 
         /// <summary>是否启用</summary>
         [DisplayName("是否启用")]
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public bool IsActive { get; set; } = true;
 
         /// <summary>创建时间（统一命名）</summary>

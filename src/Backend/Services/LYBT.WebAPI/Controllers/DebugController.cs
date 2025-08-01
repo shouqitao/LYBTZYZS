@@ -98,13 +98,20 @@ namespace LYBT.WebAPI.Controllers
                 var patientCount = await _context.Patients.CountAsync();
                 _logger.LogInformation($"患者表中有 {patientCount} 条记录");
                 
-                // 使用原生SQL查询避免字段映射问题
-                object[] patients;
+                // 使用EF查询，现在应该不会有字段映射问题
+                object patients;
                 if (patientCount > 0)
                 {
-                    patients = await _context.Database.SqlQueryRaw<dynamic>(
-                        "SELECT TOP 5 Id, Name, Gender, CreatedAt FROM Patients"
-                    ).ToListAsync();
+                    patients = await _context.Patients
+                        .Take(5)
+                        .Select(p => new { 
+                            p.Id, 
+                            p.Name, 
+                            p.Gender,
+                            p.CreateTime,
+                            p.Status
+                        })
+                        .ToListAsync();
                 }
                 else
                 {
@@ -136,13 +143,21 @@ namespace LYBT.WebAPI.Controllers
                 var herbCount = await _context.Herbs.CountAsync();
                 _logger.LogInformation($"药材表中有 {herbCount} 条记录");
                 
-                // 使用原生SQL查询避免字段映射问题
-                object[] herbs;
+                // 使用EF查询，现在应该不会有字段映射问题
+                object herbs;
                 if (herbCount > 0)
                 {
-                    herbs = await _context.Database.SqlQueryRaw<dynamic>(
-                        "SELECT TOP 5 Id, Name, CreatedAt FROM Herbs"
-                    ).ToListAsync();
+                    herbs = await _context.Herbs
+                        .Take(5)
+                        .Select(h => new { 
+                            h.Id, 
+                            h.Name, 
+                            h.CreateTime,
+                            h.Status,
+                            h.Price,
+                            h.Stock
+                        })
+                        .ToListAsync();
                 }
                 else
                 {

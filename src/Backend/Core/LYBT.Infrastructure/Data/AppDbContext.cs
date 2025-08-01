@@ -204,6 +204,8 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(p => p.Education).HasMaxLength(30);
             entity.Property(p => p.AllergyHistory).HasMaxLength(500);
             entity.Property(p => p.DisableReason).HasMaxLength(128);
+            // 忽略IsActive字段，使用Status字段替代
+            entity.Ignore(p => p.IsActive);
         }
 
         private static void ConfigureDoctors(ModelBuilder modelBuilder) {
@@ -261,10 +263,14 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(h => h.Spec).HasMaxLength(50);
             entity.Property(h => h.Unit).HasMaxLength(10);
             entity.Property(h => h.Effect).HasMaxLength(256);
+            entity.Property(h => h.Price).HasColumnType("decimal(18,2)");
+            entity.Property(h => h.Specification).HasColumnType("decimal(18,2)");
             entity.HasIndex(h => h.Name);
             entity.HasIndex(h => h.PinyinCode);
             entity.HasIndex(h => h.WuBiCode);
             entity.HasIndex(h => h.ExpireDate);
+            // 忽略IsActive字段，使用Status字段替代
+            entity.Ignore(h => h.IsActive);
         }
 
         private static void ConfigureFormulaTemplates(ModelBuilder modelBuilder) {
