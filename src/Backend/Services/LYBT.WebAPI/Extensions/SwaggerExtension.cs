@@ -14,7 +14,7 @@ public static class SwaggerExtension {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c => {
             c.SwaggerDoc("v1", new OpenApiInfo {
-                Title = "LYBT API",
+                Title = "凌隐宝堂中医诊所诊疗系统 API",
                 Version = "v1"
             });
         });
@@ -26,7 +26,7 @@ public static class SwaggerExtension {
     /// </summary>
     public static IApplicationBuilder UseSwaggerUIWithDocs(this IApplicationBuilder app) {
         app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LYBT API V1"));
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "凌隐宝堂中医诊所诊疗系统 API V1"));
         return app;
     }
 }

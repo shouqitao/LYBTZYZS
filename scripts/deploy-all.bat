@@ -212,7 +212,7 @@ echo.
 echo echo 正在安装为Windows服务...
 echo.
 echo :: 使用sc命令创建服务
-echo sc create "LYBTWebAPI" binPath= "%%~dp0LYBT.WebAPI.exe" DisplayName= "凌隐宝堂中医诊所管理系统" start= auto
+echo sc create "LYBTWebAPI" binPath= "%%~dp0LYBT.WebAPI.exe" DisplayName= "凌隐宝堂中医诊所诊疗系统" start= auto
 echo.
 echo if %%ERRORLEVEL%% equ 0 ^(
 echo     echo ✅ 服务安装成功！

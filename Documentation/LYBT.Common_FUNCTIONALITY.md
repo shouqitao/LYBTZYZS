@@ -364,7 +364,7 @@ public static class SystemConstants {
     public const string ConfigCacheKeyPrefix = "config:";
     
     // 默认值
-    public const string DefaultClinicName = "中医诊所管理系统";
+    public const string DefaultClinicName = "凌隐宝堂中医诊所诊疗系统";
     public const int DefaultSessionTimeout = 30; // 分钟
 }
 ```

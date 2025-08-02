@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-凌隐宝堂中医诊所管理系统 (LYBT) - 基于 .NET 8 Web API 后端和 WPF 桌面前端的中医诊所管理系统。
+凌隐宝堂中医诊所诊疗系统 (LYBTZYZS) - 基于 .NET 8 Web API 后端和 WPF 桌面前端的中医诊所诊疗系统。
 
 ## 常用开发命令
 

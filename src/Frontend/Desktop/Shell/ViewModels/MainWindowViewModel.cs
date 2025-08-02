@@ -28,7 +28,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         private readonly IPermissionService _permissionService;
         private readonly IUserService _userService;
         
-        private string _title = "凌隐宝堂中医诊所管理系统";
+        private string _title = "凌隐宝堂中医诊所诊疗系统";
         private UserInfo? _currentUser;
         private bool _isLoggedIn = false;
 
@@ -107,7 +107,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                     // 清除用户信息
                     CurrentUser = null;
                     IsLoggedIn = false;
-                    Title = "凌隐宝堂中医诊所管理系统";
+                    Title = "凌隐宝堂中医诊所诊疗系统";
                     
                     // 清除内容区域
                     if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
@@ -173,7 +173,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
 
             // 使用配置类统一处理角色导航
             var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(CurrentUser.Role);
-            Title = $"凌隐宝堂中医诊所管理系统 - {CurrentUser.RealName} ({roleDisplay})";
+            Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
 
             // 获取对应的主界面视图名称
             var mainViewName = RoleNavigationConfig.GetMainViewName(CurrentUser.Role);

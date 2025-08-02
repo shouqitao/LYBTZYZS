@@ -116,9 +116,9 @@ builder.Services.AddApiVersioning(opt => {
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
-        Title = "LYBT 中医诊所管理系统 API",
+        Title = "凌隐宝堂中医诊所诊疗系统 API",
         Version = "v1",
-        Description = "传统中医诊所管理系统API文档"
+        Description = "凌隐宝堂中医诊所诊疗系统API文档"
     });
 
     // 解决Schema ID冲突问题 - 生成真正唯一的Schema ID

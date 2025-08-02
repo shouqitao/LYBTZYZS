@@ -124,7 +124,7 @@ namespace LYBT.Infrastructure.Configuration {
 
                 var defaultSettings = new GlobalSettingsModel {
                     Id = Guid.NewGuid(),
-                    SystemName = "LYBT中医诊所管理系统",
+                    SystemName = "凌隐宝堂中医诊所诊疗系统",
                     SystemVersion = "1.0.0",
                     DefaultRecordSharing = "Private",
                     SyncMode = "Auto",
