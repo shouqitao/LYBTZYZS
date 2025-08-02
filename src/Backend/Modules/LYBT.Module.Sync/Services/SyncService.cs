@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
-using LYBT.Shared.Models.Enums;
 using LYBT.Models.Sync;
 using LYBT.Module.Sync.Interfaces;
+using LYBT.Shared.Models.Contracts.Sync;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Sync.Services {
 

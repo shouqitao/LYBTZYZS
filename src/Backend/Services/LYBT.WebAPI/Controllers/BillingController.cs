@@ -1,9 +1,8 @@
 ﻿using Asp.Versioning;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Common;
-using LYBT.Common.Models;
-using LYBT.Models.Billing;
 using LYBT.Module.Billing.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Billing;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -66,6 +65,26 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
+        /// 分页获取费用结算列表
+        /// </summary>
+        [HttpGet("paged")]
+        public async Task<ActionResult<ApiResponse<PaginatedResult<BillingDto>>>> GetPagedList([FromQuery] LYBT.Shared.Models.Common.PaginationRequest query) {
+            try {
+                if (!ModelState.IsValid) {
+                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                    return BadRequest(ApiResponse<PaginatedResult<BillingDto>>.Fail($"参数验证失败：{errors}", 400));
+                }
+
+                var (_, _, operatorRole) = GetOperator();
+                var result = await _billingService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<BillingDto>>.Success(result));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "分页获取费用结算列表失败");
+                return StatusCode(500, ApiResponse<PaginatedResult<BillingDto>>.Fail("分页获取费用结算列表失败", 500));
+            }
+        }
+
+        /// <summary>
         /// 获取费用结算详情
         /// </summary>
         [HttpGet("{id}")]
@@ -121,7 +140,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 编辑费用结算
         /// </summary>
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<object>>> Update([FromBody] BillingEditDto billingEditDto) {
             try {
                 if (!ModelState.IsValid) {
@@ -171,7 +190,7 @@ namespace LYBT.WebAPI.Controllers {
             }
         }
 
-        [HttpPost("mark-paid/{id}")]
+        [HttpPatch("{id}/paid")]
         public async Task<ActionResult<ApiResponse<object>>> MarkAsPaid(Guid id) {
             try {
                 if (id == Guid.Empty) {
@@ -194,7 +213,7 @@ namespace LYBT.WebAPI.Controllers {
             }
         }
 
-        [HttpPost("complete/{id}")]
+        [HttpPatch("{id}/completed")]
         public async Task<ActionResult<ApiResponse<object>>> MarkAsCompleted(Guid id) {
             try {
                 if (id == Guid.Empty) {

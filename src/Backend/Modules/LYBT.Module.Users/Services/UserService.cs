@@ -1,19 +1,18 @@
-﻿using LYBT.Common.Enums.Logs;
-using LYBT.Common.Helpers;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Extensions;
-using LYBT.Shared.Utilities.Helpers;
+﻿using AutoMapper;
 using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Logging.Enums;
 using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
-using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
-using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
-using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
-using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Extensions;
+using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
-using AutoMapper;
+using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
+using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
+using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
+using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
 
 namespace LYBT.Module.Users.Services {
 

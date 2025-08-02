@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Models.FormulaTemplates;
-using LYBT.Models.Herbs;
+using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Module.FormulaTemplates.Mapping {
 
@@ -13,7 +14,7 @@ namespace LYBT.Module.FormulaTemplates.Mapping {
             CreateMap<FormulaTemplateModel, FormulaTemplateDto>().ReverseMap();
             CreateMap<FormulaTemplateModel, FormulaTemplateDetailDto>().ReverseMap();
             CreateMap<FormulaTemplateCreateDto, FormulaTemplateModel>();
-            CreateMap<HerbDto, FormulaTemplateHerbItem>().ReverseMap();
+            CreateMap<FormulaIngredientDto, FormulaTemplateHerbItem>().ReverseMap();
         }
     }
 }

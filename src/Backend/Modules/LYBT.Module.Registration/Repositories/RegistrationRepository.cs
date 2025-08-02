@@ -1,7 +1,9 @@
-﻿using LYBT.Common.Enums.Registration;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Models.Registration;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Registration.Repositories {
 
@@ -29,7 +31,32 @@ namespace LYBT.Module.Registration.Repositories {
         /// 获取所有挂号列表
         /// </summary>
         public async Task<List<RegistrationModel>> GetListAsync() {
-            return await Task.FromResult(_context.Registrations.ToList());
+            return await _context.Registrations.ToListAsync();
+        }
+
+        /// <summary>
+        /// 分页查询挂号列表
+        /// </summary>
+        public async Task<(List<RegistrationModel> list, int total)> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var queryable = _context.Registrations.AsQueryable();
+
+            // 根据操作者角色决定数据访问权限
+            if (operatorRole != UserRole.Admin) {
+                // 普通用户只能查看未取消的挂号
+                queryable = queryable.Where(r => r.Status != RegistrationStatus.Cancelled);
+            }
+
+            // 总数统计
+            var total = await queryable.CountAsync();
+
+            // 分页和排序
+            var list = await queryable
+                .OrderByDescending(r => r.RegistrationTime)
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+
+            return (list, total);
         }
 
         /// <summary>

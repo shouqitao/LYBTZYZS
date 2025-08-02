@@ -1,4 +1,6 @@
 ﻿using LYBT.Models.Registration;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Registration.Interfaces {
 
@@ -16,6 +18,11 @@ namespace LYBT.Module.Registration.Interfaces {
         /// 获取所有挂号列表
         /// </summary>
         Task<List<RegistrationModel>> GetListAsync();
+
+        /// <summary>
+        /// 分页查询挂号列表
+        /// </summary>
+        Task<(List<RegistrationModel> list, int total)> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
 
         /// <summary>
         /// 新增挂号

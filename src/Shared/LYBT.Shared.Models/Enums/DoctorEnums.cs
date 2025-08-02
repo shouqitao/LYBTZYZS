@@ -1,13 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 医生状态枚举 - 前后端共享
     /// </summary>
     [Description("医生状态")]
-    public enum DoctorStatus
-    {
+    public enum DoctorStatus {
+
         /// <summary>停用</summary>
         [Description("停用")]
         Inactive = 0,
@@ -25,8 +25,8 @@ namespace LYBT.Shared.Models.Enums
     /// 医生职称枚举 - 前后端共享
     /// </summary>
     [Description("医生职称")]
-    public enum DoctorTitle
-    {
+    public enum DoctorTitle {
+
         /// <summary>主任医师</summary>
         [Description("主任医师")]
         ChiefPhysician = 1,
@@ -60,8 +60,8 @@ namespace LYBT.Shared.Models.Enums
     /// 医生工作状态枚举 - 前后端共享
     /// </summary>
     [Description("医生工作状态")]
-    public enum DoctorWorkStatus
-    {
+    public enum DoctorWorkStatus {
+
         /// <summary>离岗</summary>
         [Description("离岗")]
         OffDuty = 0,

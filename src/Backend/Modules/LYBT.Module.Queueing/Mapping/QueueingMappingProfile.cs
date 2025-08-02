@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Models.Queueing;
+using LYBT.Shared.Models.Contracts.Queueing;
 
 namespace LYBT.Module.Queueing.Mapping {
 

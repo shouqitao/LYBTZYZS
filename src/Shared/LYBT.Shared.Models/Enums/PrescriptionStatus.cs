@@ -1,13 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 处方状态枚举 - 前后端共享
     /// </summary>
     [Description("处方状态")]
-    public enum PrescriptionStatus
-    {
+    public enum PrescriptionStatus {
+
         /// <summary>草稿 - 处方正在编辑中</summary>
         [Description("草稿")]
         Draft = 0,

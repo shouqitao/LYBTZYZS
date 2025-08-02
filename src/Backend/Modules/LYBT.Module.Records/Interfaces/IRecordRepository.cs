@@ -1,4 +1,6 @@
 ﻿using LYBT.Models.Records;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Records.Interfaces {
 
@@ -16,6 +18,11 @@ namespace LYBT.Module.Records.Interfaces {
         /// 获取所有病历记录列表
         /// </summary>
         Task<List<RecordModel>> GetListAsync();
+
+        /// <summary>
+        /// 分页查询病历列表
+        /// </summary>
+        Task<(List<RecordModel> list, int total)> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
 
         /// <summary>
         /// 新增病历记录

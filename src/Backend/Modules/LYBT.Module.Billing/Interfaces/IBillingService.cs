@@ -1,5 +1,6 @@
-﻿using LYBT.Shared.Models.Enums;
-using LYBT.Models.Billing;
+﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Billing;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Billing.Interfaces {
 
@@ -17,6 +18,11 @@ namespace LYBT.Module.Billing.Interfaces {
         /// 获取费用结算列表
         /// </summary>
         Task<List<BillingDto>> GetListAsync();
+
+        /// <summary>
+        /// 分页获取费用结算列表
+        /// </summary>
+        Task<PaginatedResult<BillingDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
 
         /// <summary>
         /// 新增费用结算记录

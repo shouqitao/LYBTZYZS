@@ -1,4 +1,6 @@
-using LYBT.Models.FormulaTemplates;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.FormulaTemplates.Interfaces {
 
@@ -18,24 +20,29 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         Task<List<FormulaTemplateDto>> GetListAsync();
 
         /// <summary>
+        /// 分页查询验方模板列表
+        /// </summary>
+        Task<PaginatedResult<FormulaTemplateDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
+
+        /// <summary>
         /// 新增模板
         /// </summary>
-        Task<bool> AddAsync(FormulaTemplateCreateDto dto);
+        Task<bool> AddAsync(FormulaTemplateCreateDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 更新模板
         /// </summary>
-        Task<bool> UpdateAsync(FormulaTemplateEditDto dto);
+        Task<bool> UpdateAsync(FormulaTemplateEditDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 删除模板
         /// </summary>
-        Task<bool> DeleteAsync(Guid id);
+        Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 批量导入模板
         /// </summary>
-        Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos);
+        Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 导出全部模板数据

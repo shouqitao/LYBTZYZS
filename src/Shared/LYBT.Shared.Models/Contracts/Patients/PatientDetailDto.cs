@@ -2,14 +2,14 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Patients
-{
+namespace LYBT.Shared.Models.Contracts.Patients {
+
     /// <summary>
     /// 患者详情DTO - 前后端共享API契约
     /// 用于患者档案详情的展示和传输，包含完整的患者信息
     /// </summary>
-    public class PatientDetailDto
-    {
+    public class PatientDetailDto {
+
         /// <summary>患者ID</summary>
         [DisplayName("患者ID")]
         public Guid Id { get; set; }

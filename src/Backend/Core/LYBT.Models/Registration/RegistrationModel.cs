@@ -1,4 +1,4 @@
-using LYBT.Common.Enums.Registration;
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
 namespace LYBT.Models.Registration {
@@ -42,7 +42,7 @@ namespace LYBT.Models.Registration {
         /// 挂号类型（如普通、复诊、急诊），使用 RegistrationType 枚举
         /// </summary>
         [DisplayName("挂号类型（如普通、复诊、急诊），使用 RegistrationType 枚举")]
-        public RegistrationType RegistrationType { get; set; } = RegistrationType.Normal;
+        public RegistrationType RegistrationType { get; set; } = RegistrationType.Regular;
 
         /// <summary>
         /// 是否为医生直接挂号（如医生自己操作挂号流程，true 表示医生直接挂号）

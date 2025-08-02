@@ -1,5 +1,5 @@
-using LYBT.Shared.Models.Enums;
 using LYBT.Models.Users;
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 

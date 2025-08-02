@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using LYBT.Models.DiagnosisTreatment;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.DiagnosisTreatment;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.DiagnosisTreatment.Services {
 
@@ -33,6 +36,34 @@ namespace LYBT.Module.DiagnosisTreatment.Services {
         public async Task<List<DiagnosisTreatmentDto>> GetListAsync() {
             var list = await _diagnosisTreatmentRepository.GetListAsync();
             return _mapper.Map<List<DiagnosisTreatmentDto>>(list);
+        }
+
+        /// <summary>
+        /// 分页获取诊疗列表
+        /// </summary>
+        public async Task<PaginatedResult<DiagnosisTreatmentDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var allList = await _diagnosisTreatmentRepository.GetListAsync();
+            var dtoList = _mapper.Map<List<DiagnosisTreatmentDto>>(allList);
+
+            // 在内存中进行搜索和分页
+            var filteredList = dtoList.AsQueryable();
+
+            // 如果有搜索关键字，进行搜索过滤
+            if (!string.IsNullOrEmpty(query.SearchKeyword)) {
+                filteredList = filteredList.Where(x =>
+                    x.Id.ToString().Contains(query.SearchKeyword) ||
+                    (x.PatientName != null && x.PatientName.Contains(query.SearchKeyword)) ||
+                    (x.Diagnosis != null && x.Diagnosis.Contains(query.SearchKeyword))
+                );
+            }
+
+            var total = filteredList.Count();
+            var pagedList = filteredList
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToList();
+
+            return new PaginatedResult<DiagnosisTreatmentDto>(pagedList, total, query.CurrentPage, query.PageSize);
         }
 
         /// <summary>

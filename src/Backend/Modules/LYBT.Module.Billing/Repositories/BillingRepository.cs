@@ -1,7 +1,7 @@
-﻿using LYBT.Shared.Models.Enums;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Models.Billing;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Billing.Interfaces;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Billing.Repositories {
 

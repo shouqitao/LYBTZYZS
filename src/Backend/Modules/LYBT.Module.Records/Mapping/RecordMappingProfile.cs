@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Models.Records;
+using LYBT.Shared.Models.Contracts.Records;
 
 namespace LYBT.Module.Records.Mapping {
 

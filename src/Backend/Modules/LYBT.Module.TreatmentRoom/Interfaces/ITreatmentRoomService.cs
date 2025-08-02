@@ -1,4 +1,6 @@
-﻿using LYBT.Models.TreatmentRoom;
+﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.TreatmentRoom;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.TreatmentRoom.Interfaces {
 
@@ -16,6 +18,11 @@ namespace LYBT.Module.TreatmentRoom.Interfaces {
         /// 获取治疗室列表
         /// </summary>
         Task<List<TreatmentRoomDto>> GetListAsync();
+
+        /// <summary>
+        /// 分页获取治疗室列表
+        /// </summary>
+        Task<PaginatedResult<TreatmentRoomDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
 
         /// <summary>
         /// 新增治疗室单

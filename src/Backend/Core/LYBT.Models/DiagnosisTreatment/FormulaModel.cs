@@ -1,5 +1,5 @@
-using System.ComponentModel;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 
 namespace LYBT.Models.DiagnosisTreatment {
 

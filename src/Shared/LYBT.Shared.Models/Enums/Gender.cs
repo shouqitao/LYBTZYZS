@@ -1,13 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 性别枚举 - 前后端共享
     /// </summary>
     [Description("性别")]
-    public enum Gender
-    {
+    public enum Gender {
+
         /// <summary>未知</summary>
         [Description("未知")]
         Unknown = 0,

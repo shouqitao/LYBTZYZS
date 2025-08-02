@@ -1,17 +1,8 @@
 ﻿using Asp.Versioning;
-using LYBT.Shared.Models.Enums;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
-// Temporary: Keep using local DTOs until service layer mapping is updated
-using LYBT.Models.Herbs;
-using SharedHerbDetailDto = LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto;
-using SharedHerbPagedQueryDto = LYBT.Shared.Models.Contracts.Herbs.HerbPagedQueryDto;
-using SharedHerbCreateDto = LYBT.Shared.Models.Contracts.Herbs.HerbCreateDto;
-using SharedHerbUpdateDto = LYBT.Shared.Models.Contracts.Herbs.HerbUpdateDto;
-using LocalHerbDetailDto = LYBT.Models.Herbs.HerbDetailDto;
-using LocalHerbPagedQueryDto = LYBT.Models.Herbs.HerbPagedQueryDto;
-using LocalHerbCreateDto = LYBT.Models.Herbs.HerbCreateDto;
-using LYBT.Module.Herbs.Interfaces;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -56,120 +47,10 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 映射本地DTO到共享DTO
-        /// </summary>
-        private SharedHerbDetailDto MapToSharedDto(HerbDto localDto) {
-            return new SharedHerbDetailDto {
-                Id = localDto.Id,
-                Name = localDto.Name,
-                Pinyin = localDto.Pinyin,
-                WuBi = localDto.WuBi,
-                Origin = localDto.Origin,
-                Spec = localDto.Spec,
-                Unit = localDto.Unit,
-                Price = localDto.Price,
-                Stock = localDto.Stock,
-                BatchNo = localDto.BatchNo,
-                ExpireDate = localDto.ExpireDate,
-                Effect = localDto.Effect,
-                Remark = "", // HerbDto中没有此字段，设为空
-                Status = LYBT.Shared.Models.Enums.HerbStatus.Active, // 默认状态
-                CreateTime = DateTime.Now, // 本地DTO没有此字段，设为当前时间
-                UpdateTime = DateTime.Now, // 本地DTO没有此字段，设为当前时间
-                IsActive = true // 默认为活跃状态
-            };
-        }
-
-        /// <summary>
-        /// 映射本地详情DTO到共享DTO
-        /// </summary>
-        private SharedHerbDetailDto MapToSharedDto(LocalHerbDetailDto localDto) {
-            return new SharedHerbDetailDto {
-                Id = localDto.Id,
-                Name = localDto.Name,
-                Pinyin = localDto.Pinyin,
-                WuBi = "", // 本地DTO没有此字段，设为空
-                Origin = localDto.Origin,
-                Spec = localDto.Spec,
-                Unit = localDto.Unit,
-                Price = localDto.Price,
-                Stock = localDto.Stock,
-                BatchNo = localDto.BatchNo,
-                ExpireDate = localDto.ExpireDate,
-                Effect = localDto.Effect,
-                Remark = localDto.Remark,
-                Status = LYBT.Shared.Models.Enums.HerbStatus.Active, // 默认状态
-                CreateTime = DateTime.Now, // 本地DTO没有此字段，设为当前时间
-                UpdateTime = DateTime.Now, // 本地DTO没有此字段，设为当前时间
-                IsActive = true // 默认为活跃状态
-            };
-        }
-
-        /// <summary>
-        /// 映射共享分页查询DTO到本地DTO
-        /// </summary>
-        private LocalHerbPagedQueryDto MapToLocalPagedQuery(SharedHerbPagedQueryDto sharedDto) {
-            return new LocalHerbPagedQueryDto {
-                Page = sharedDto.CurrentPage,
-                PageSize = sharedDto.PageSize,
-                Keyword = $"{sharedDto.Name} {sharedDto.Pinyin}".Trim(),
-                Status = sharedDto.Status.HasValue ? 
-                    (LYBT.Common.Enums.Herbs.HerbStatus?)sharedDto.Status : null,
-                IncludeInactive = sharedDto.IncludeInactive,
-                OnlyLowStock = sharedDto.OnlyLowStock,
-                LowStockThreshold = sharedDto.LowStockThreshold,
-                OnlyExpiring = sharedDto.OnlyExpiring,
-                ExpiringDays = sharedDto.ExpiringDaysThreshold
-            };
-        }
-
-        /// <summary>
-        /// 映射共享创建DTO到本地DTO
-        /// </summary>
-        private LocalHerbCreateDto MapToLocalCreateDto(SharedHerbCreateDto sharedDto) {
-            return new LocalHerbCreateDto {
-                Name = sharedDto.Name,
-                Pinyin = sharedDto.Pinyin,
-                WuBi = sharedDto.WuBi,
-                Origin = sharedDto.Origin,
-                Spec = decimal.TryParse(sharedDto.Spec, out var spec) ? spec : 1,
-                Unit = sharedDto.Unit,
-                Price = sharedDto.Price,
-                Stock = sharedDto.Stock,
-                BatchNo = sharedDto.BatchNo,
-                ExpireDate = sharedDto.ExpireDate,
-                Effect = sharedDto.Effect,
-                Remark = sharedDto.Remark
-            };
-        }
-
-        /// <summary>
-        /// 映射共享更新DTO到本地DTO
-        /// </summary>
-        private HerbEditDto MapToLocalEditDto(SharedHerbUpdateDto sharedDto) {
-            return new HerbEditDto {
-                Id = sharedDto.Id,
-                Name = sharedDto.Name,
-                Pinyin = sharedDto.Pinyin,
-                WuBi = sharedDto.WuBi,
-                Origin = sharedDto.Origin,
-                Spec = decimal.TryParse(sharedDto.Spec, out var spec) ? spec : 1,
-                Unit = sharedDto.Unit,
-                Price = sharedDto.Price,
-                Stock = sharedDto.Stock,
-                BatchNo = sharedDto.BatchNo,
-                ExpireDate = sharedDto.ExpireDate,
-                Effect = sharedDto.Effect,
-                Remark = sharedDto.Remark,
-                Status = (LYBT.Common.Enums.Herbs.HerbStatus)sharedDto.Status
-            };
-        }
-
-        /// <summary>
         /// 获取药材列表
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<SharedHerbDetailDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<List<HerbDto>>>> GetList() {
             try {
                 // 缓存药材列表
                 const string cacheKey = "herbs_list";
@@ -177,10 +58,10 @@ namespace LYBT.WebAPI.Controllers {
                     list = await _herbService.GetListAsync();
                     _cache.Set(cacheKey, list, TimeSpan.FromMinutes(10));
                 }
-                return Ok(ApiResponse<List<SharedHerbDetailDto>>.Success(list?.Select(MapToSharedDto).ToList() ?? new List<SharedHerbDetailDto>()));
+                return Ok(ApiResponse<List<HerbDto>>.Success(list ?? new List<HerbDto>()));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取药材列表失败");
-                return StatusCode(500, ApiResponse<List<SharedHerbDetailDto>>.Fail("获取药材列表失败", 500));
+                return StatusCode(500, ApiResponse<List<HerbDto>>.Fail("获取药材列表失败", 500));
             }
         }
 
@@ -188,7 +69,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 分页查询药材
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<SharedHerbDetailDto>>>> GetPaged([FromBody] SharedHerbPagedQueryDto query) {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<HerbDto>>>> GetPaged([FromBody] HerbPagedQueryDto query) {
             try {
                 if (query.CurrentPage <= 0)
                     query.CurrentPage = 1;
@@ -197,16 +78,10 @@ namespace LYBT.WebAPI.Controllers {
 
                 // 直接使用共享DTO调用服务
                 var result = await _herbService.GetPagedAsync(query);
-                var mappedResult = new PaginatedResult<SharedHerbDetailDto>(
-                    result.Items.Select(MapToSharedDto).ToList(),
-                    result.TotalCount,
-                    result.CurrentPage,
-                    result.PageSize
-                );
-                return Ok(ApiResponse<PaginatedResult<SharedHerbDetailDto>>.Success(mappedResult));
+                return Ok(ApiResponse<PaginatedResult<HerbDto>>.Success(result));
             } catch (Exception ex) {
                 _logger.LogError(ex, "分页查询药材失败");
-                return StatusCode(500, ApiResponse<PaginatedResult<SharedHerbDetailDto>>.Fail("分页查询药材失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<HerbDto>>.Fail("分页查询药材失败", 500));
             }
         }
 
@@ -214,27 +89,27 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取药材详情
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<SharedHerbDetailDto>>> GetById(Guid id) {
+        public async Task<ActionResult<ApiResponse<HerbDetailDto>>> GetById(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<SharedHerbDetailDto>.Fail("药材ID不能为空", 400));
+                    return BadRequest(ApiResponse<HerbDetailDto>.Fail("药材ID不能为空", 400));
                 }
 
                 var detail = await _herbService.GetByIdAsync(id);
                 if (detail == null)
-                    return NotFound(ApiResponse<SharedHerbDetailDto>.Fail("药材不存在", 404));
-                return Ok(ApiResponse<SharedHerbDetailDto>.Success(detail));
+                    return NotFound(ApiResponse<HerbDetailDto>.Fail("药材不存在", 404));
+                return Ok(ApiResponse<HerbDetailDto>.Success(detail));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取药材详情失败，ID: {HerbId}", id);
-                return StatusCode(500, ApiResponse<SharedHerbDetailDto>.Fail("获取药材详情失败", 500));
+                return StatusCode(500, ApiResponse<HerbDetailDto>.Fail("获取药材详情失败", 500));
             }
         }
 
         /// <summary>
         /// 新增药材
         /// </summary>
-        [HttpPost]
-        public async Task<ActionResult<ApiResponse<object>>> Add([FromBody] SharedHerbCreateDto dto) {
+        [HttpPost("add")]
+        public async Task<ActionResult<ApiResponse<object>>> Add([FromBody] HerbCreateDto dto) {
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
@@ -260,8 +135,9 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 编辑药材
         /// </summary>
-        [HttpPut]
-        public async Task<ActionResult<ApiResponse<object>>> Update([FromBody] SharedHerbUpdateDto dto) {
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ApiResponse<object>>> Update(Guid id, [FromBody] HerbUpdateDto dto) {
+            dto.Id = id; // 确保ID一致
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
@@ -286,17 +162,18 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 删除药材
+        /// 启用药材
         /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id) {
+        [HttpPatch("{id}/enable")]
+        public async Task<ActionResult<ApiResponse<object>>> Enable(Guid id) {
             try {
                 if (id == Guid.Empty) {
                     return BadRequest(ApiResponse<object>.Fail("药材ID不能为空", 400));
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
-                var result = await _herbService.DeleteAsync(id);
+                var dto = new HerbStatusUpdateDto { Id = id, Status = LYBT.Shared.Models.Enums.HerbStatus.Active, IsEnabled = true };
+                var result = await _herbService.UpdateStatusAsync(dto);
                 if (!result)
                     return NotFound(ApiResponse<object>.Fail("药材不存在", 404));
 
@@ -305,10 +182,38 @@ namespace LYBT.WebAPI.Controllers {
                 _cache.Remove("active_herbs");
                 _cache.Remove($"herb_detail_{id}");
 
-                return Ok(ApiResponse<object>.Success("删除药材成功"));
+                return Ok(ApiResponse<object>.Success("启用药材成功"));
             } catch (Exception ex) {
-                _logger.LogError(ex, "删除药材失败，ID: {HerbId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("删除药材失败", 500));
+                _logger.LogError(ex, "启用药材失败，ID: {HerbId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("启用药材失败", 500));
+            }
+        }
+
+        /// <summary>
+        /// 禁用药材（软删除）
+        /// </summary>
+        [HttpPatch("{id}/disable")]
+        public async Task<ActionResult<ApiResponse<object>>> Disable(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("药材ID不能为空", 400));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var dto = new HerbStatusUpdateDto { Id = id, Status = LYBT.Shared.Models.Enums.HerbStatus.Inactive, IsEnabled = false };
+                var result = await _herbService.UpdateStatusAsync(dto);
+                if (!result)
+                    return NotFound(ApiResponse<object>.Fail("药材不存在", 404));
+
+                // 清除缓存
+                _cache.Remove("herbs_list");
+                _cache.Remove("active_herbs");
+                _cache.Remove($"herb_detail_{id}");
+
+                return Ok(ApiResponse<object>.Success("禁用药材成功"));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "禁用药材失败，ID: {HerbId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("禁用药材失败", 500));
             }
         }
 
@@ -338,8 +243,8 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 导出药材数据
         /// </summary>
-        [HttpPost("export")]
-        public async Task<ActionResult<List<SharedHerbDetailDto>>> Export() {
+        [HttpGet("export")]
+        public async Task<ActionResult<List<HerbDetailDto>>> Export() {
             try {
                 var data = await _herbService.ExportAsync();
                 return Ok(data);
@@ -378,7 +283,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量更新药材状态
         /// </summary>
         [HttpPatch("batch-status")]
-        public async Task<ActionResult> BatchUpdateStatus([FromBody] HerbBatchStatusUpdateDto dto) {
+        public async Task<ActionResult> BatchUpdateStatus([FromBody] BatchIdsDto dto) {
             try {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
@@ -387,7 +292,7 @@ namespace LYBT.WebAPI.Controllers {
                     return BadRequest("请选择要更新的药材");
                 }
 
-                var count = await _herbService.BatchUpdateStatusAsync(dto);
+                var count = await _herbService.BatchUpdateStatusAsync(dto.Ids, dto.Reason ?? "");
 
                 // 清除缓存
                 _cache.Remove("herbs_list");

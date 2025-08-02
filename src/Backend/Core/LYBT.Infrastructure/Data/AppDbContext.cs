@@ -15,11 +15,11 @@ using LYBT.Models.Registration;
 using LYBT.Models.Sync;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Models.Users;
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.Text.Json;
+
 namespace LYBT.Infrastructure.Data {
 
     /// <summary>
@@ -32,7 +32,7 @@ namespace LYBT.Infrastructure.Data {
 
         // 用户管理
         public DbSet<UserModel> Users { get; set; }
-        
+
         // 管理员密钥
         public DbSet<AdminSecretModel> AdminSecrets { get; set; }
 
@@ -64,11 +64,12 @@ namespace LYBT.Infrastructure.Data {
 
         // 药房管理
         public DbSet<PharmacyModel> Pharmacies { get; set; }
+
         public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; }
 
         // 计费管理
         public DbSet<BillingModel> Billings { get; set; }
-        
+
         public DbSet<BillingItem> BillingItems { get; set; }
 
         // 病历管理
@@ -173,11 +174,10 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(u => u.WuBiCode).HasMaxLength(20);
             entity.Property(u => u.Email).HasMaxLength(100);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
-            // 忽略数据库中不存在的字段
-            entity.Ignore(u => u.Department);   // 来自BaseUserModel
-            entity.Ignore(u => u.Position);     // 来自BaseUserModel  
-            entity.Ignore(u => u.UpdateTime);   // 来自UserModel
-            entity.Ignore(u => u.Remark);       // 来自UserModel
+            // 配置业务字段
+            entity.Property(u => u.Department).HasMaxLength(100);
+            entity.Property(u => u.Position).HasMaxLength(100);
+            entity.Property(u => u.Remark).HasMaxLength(500);
         }
 
         private static void ConfigureAdminSecrets(ModelBuilder modelBuilder) {
@@ -312,7 +312,7 @@ namespace LYBT.Infrastructure.Data {
             entity.ToTable("Billings");
             entity.HasKey(b => b.Id);
             entity.HasMany(b => b.Items).WithOne().HasForeignKey(i => i.BillingId);
-            
+
             // 配置 BillingItem 实体
             var itemEntity = modelBuilder.Entity<BillingItem>();
             itemEntity.ToTable("BillingItems");

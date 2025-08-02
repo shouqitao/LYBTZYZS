@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums.Queueing;
 using LYBT.Models.Queueing;
 using LYBT.Module.Queueing.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Queueing;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Queueing.Services {
 
@@ -34,6 +36,33 @@ namespace LYBT.Module.Queueing.Services {
         public async Task<List<QueueingDto>> GetListAsync() {
             var list = await _repository.GetListAsync();
             return _mapper.Map<List<QueueingDto>>(list);
+        }
+
+        /// <summary>
+        /// 分页获取排队列表
+        /// </summary>
+        public async Task<PaginatedResult<QueueingDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var allList = await _repository.GetListAsync();
+            var dtoList = _mapper.Map<List<QueueingDto>>(allList);
+
+            var filteredList = dtoList.AsQueryable();
+
+            if (!string.IsNullOrEmpty(query.SearchKeyword)) {
+                filteredList = filteredList.Where(x =>
+                    x.Id.ToString().Contains(query.SearchKeyword) ||
+                    (x.PatientName != null && x.PatientName.Contains(query.SearchKeyword)) ||
+                    (x.DoctorName != null && x.DoctorName.Contains(query.SearchKeyword)) ||
+                    (x.QueueType != null && x.QueueType.Contains(query.SearchKeyword))
+                );
+            }
+
+            var total = filteredList.Count();
+            var pagedList = filteredList
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToList();
+
+            return new PaginatedResult<QueueingDto>(pagedList, total, query.CurrentPage, query.PageSize);
         }
 
         /// <summary>

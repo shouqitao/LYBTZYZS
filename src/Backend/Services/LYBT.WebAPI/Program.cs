@@ -5,7 +5,6 @@ using LYBT.Infrastructure.Authentication;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Database;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Options;
 using LYBT.Module.Users;
@@ -13,7 +12,6 @@ using LYBT.WebAPI.Extensions;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
@@ -122,25 +120,25 @@ builder.Services.AddSwaggerGen(c => {
         Version = "v1",
         Description = "传统中医诊所管理系统API文档"
     });
-    
+
     // 解决Schema ID冲突问题 - 生成真正唯一的Schema ID
     c.CustomSchemaIds(type => {
         // 使用类型的完整签名生成唯一ID
         if (type.IsGenericType) {
             var genericDef = type.GetGenericTypeDefinition();
             var genericTypeName = genericDef.FullName?.Split('`')[0]?.Replace(".", "") ?? genericDef.Name.Split('`')[0];
-            
+
             // 递归处理泛型参数，包括嵌套泛型
             var genericArgs = type.GetGenericArguments()
                 .Select(arg => GetTypeSignature(arg))
                 .ToArray();
-            
+
             return $"{genericTypeName}Of{string.Join("And", genericArgs)}";
         }
-        
+
         return type.FullName?.Replace(".", "").Replace("+", "") ?? type.Name;
     });
-    
+
     // 辅助方法：生成类型签名
     string GetTypeSignature(Type type) {
         if (type.IsGenericType) {
@@ -156,12 +154,17 @@ builder.Services.AddSwaggerGen(c => {
 });
 
 // =========== 6. 添加控制器和JSON配置 ===========
+// 确保UTF-8编码支持
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
 builder.Services.AddControllers().AddJsonOptions(options => {
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.WriteIndented = false;
+    // 明确设置UTF-8编码支持
+    options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
 });
 
 // =========== 7. 构建应用 ===========
@@ -171,7 +174,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope()) {
     try {
         Console.WriteLine("🔄 正在初始化应用程序...");
-        
+
         // 使用超时取消令牌防止初始化卡死
         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
@@ -179,7 +182,7 @@ using (var scope = app.Services.CreateScope()) {
         try {
             var dbInitService = scope.ServiceProvider.GetRequiredService<LYBT.Infrastructure.Database.DatabaseInitializationService>();
             await dbInitService.InitializeDatabaseAsync();
-            
+
             // 显示数据库信息
             var dbInfo = await dbInitService.GetDatabaseInfoAsync();
             Console.WriteLine($"📊 数据库信息:");
@@ -192,7 +195,7 @@ using (var scope = app.Services.CreateScope()) {
             Console.WriteLine($"❌ 数据库初始化失败: {dbEx.Message}");
             Console.WriteLine("⚠️  程序将尝试继续启动，但数据库相关功能可能不可用");
             Console.WriteLine($"💡 建议检查数据库连接字符串和SQL Server服务状态");
-            
+
             // 记录详细错误信息到日志
             var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
             logger?.LogError(dbEx, "数据库初始化详细错误信息");
@@ -226,7 +229,7 @@ using (var scope = app.Services.CreateScope()) {
         logger?.LogError(ex, "❌ 应用程序初始化失败");
         Console.WriteLine($"❌ 初始化失败: {ex.Message}");
         Console.WriteLine("⚠️  程序将继续启动，但某些功能可能不可用");
-        
+
         // 在开发环境中显示更详细的错误信息
         if (app.Environment.IsDevelopment()) {
             Console.WriteLine($"详细错误: {ex}");

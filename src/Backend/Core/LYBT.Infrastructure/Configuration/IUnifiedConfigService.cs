@@ -1,5 +1,5 @@
-using LYBT.Shared.Models.Common;
 using LYBT.Infrastructure.Configuration.Dtos;
+using LYBT.Shared.Models.Common;
 
 namespace LYBT.Infrastructure.Configuration {
 

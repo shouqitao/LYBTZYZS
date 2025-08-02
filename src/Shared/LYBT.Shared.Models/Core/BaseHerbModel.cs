@@ -1,16 +1,15 @@
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Core
-{
+namespace LYBT.Shared.Models.Core {
+
     /// <summary>
     /// 中药材基础模型 - 前后端共享核心字段
     /// 包含所有通用的中药材信息字段，各层可基于此模型扩展
     /// </summary>
-    public class BaseHerbModel
-    {
+    public class BaseHerbModel {
+
         /// <summary>药材唯一标识</summary>
         [DisplayName("药材ID")]
         public Guid Id { get; set; }

@@ -1,15 +1,13 @@
 ﻿using Asp.Versioning;
-using LYBT.Shared.Models.Enums;
-using LYBT.Common.Models;
-using LYBT.Shared.Models.Common;
-using LYBT.Models.Registration;
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Registration;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace LYBT.WebAPI.Controllers {
-
     /// <summary>
     /// 挂号管理 API 控制器
     /// </summary>
@@ -174,6 +172,21 @@ namespace LYBT.WebAPI.Controllers {
             } catch (Exception ex) {
                 _logger.LogError(ex, "取消挂号失败，挂号ID: {RegistrationId}", id);
                 return StatusCode(500, ApiResponse<object>.Fail("取消挂号失败", 500));
+            }
+        }
+
+        /// <summary>
+        /// 分页查询挂号列表
+        /// </summary>
+        [HttpPost("paged")]
+        public async Task<ActionResult<ApiResponse<PaginatedResult<RegistrationDto>>>> GetPaged([FromBody] LYBT.Shared.Models.Common.PaginationRequest query) {
+            try {
+                var (_, _, operatorRole) = GetOperator();
+                var result = await _registrationService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<RegistrationDto>>.Success(result));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "分页查询挂号失败");
+                return StatusCode(500, ApiResponse<PaginatedResult<RegistrationDto>>.Fail("分页查询挂号失败", 500));
             }
         }
     }

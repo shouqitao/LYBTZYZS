@@ -1,13 +1,14 @@
 using AutoMapper;
-using LYBT.Common.Enums.Logs;
-using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Logging.Enums;
 using LYBT.Infrastructure.Options;
-using LYBT.Models.Auth;
 using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
-using Microsoft.Extensions.Options;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Auth.Services {
 

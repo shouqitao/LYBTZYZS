@@ -1,10 +1,9 @@
-﻿using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Common;
-using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
+﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Enums;
 using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
-using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
+using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
-using LYBT.Models.Users;
+using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
 
 namespace LYBT.Module.Users.Interfaces {
 

@@ -1,9 +1,11 @@
 using AutoMapper;
-using LYBT.Common.Enums.Logs;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Models.Prescriptions;
+using LYBT.Infrastructure.Logging.Enums;
 using LYBT.Module.Prescriptions.Repositories;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using System.Text.Json;
 
 namespace LYBT.Module.Prescriptions.Services {
@@ -32,6 +34,37 @@ namespace LYBT.Module.Prescriptions.Services {
         }
 
         /// <summary>
+        /// 分页获取处方列表
+        /// </summary>
+        /// <param name="query">分页查询参数</param>
+        /// <param name="operatorRole">操作者角色</param>
+        /// <returns>分页结果</returns>
+        public async Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var allList = await _repository.GetListAsync();
+            var dtoList = _mapper.Map<List<PrescriptionDto>>(allList);
+
+            // 在内存中进行搜索和分页
+            var filteredList = dtoList.AsQueryable();
+
+            // 如果有搜索关键字，进行搜索过滤
+            if (!string.IsNullOrEmpty(query.SearchKeyword)) {
+                filteredList = filteredList.Where(x =>
+                    x.Id.ToString().Contains(query.SearchKeyword) ||
+                    x.PatientId.ToString().Contains(query.SearchKeyword) ||
+                    x.DoctorId.ToString().Contains(query.SearchKeyword)
+                );
+            }
+
+            var total = filteredList.Count();
+            var pagedList = filteredList
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToList();
+
+            return new PaginatedResult<PrescriptionDto>(pagedList, total, query.CurrentPage, query.PageSize);
+        }
+
+        /// <summary>
         /// 执行GetByIdAsync操作。
         /// </summary>
         /// <param name="id">参数id</param>
@@ -51,7 +84,7 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <param name="operatorName">参数operatorName</param>
         /// <returns>返回值</returns>
         public async Task<bool> CreateAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName) {
-            var model = _mapper.Map<PrescriptionModel>(dto);
+            var model = _mapper.Map<LYBT.Models.Prescriptions.PrescriptionModel>(dto);
             model.Id = Guid.NewGuid();
             var success = await _repository.AddAsync(model);
             await _logService.CreateLogAsync(new LogCreateDto {

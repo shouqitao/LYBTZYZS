@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
-using LYBT.Shared.Models.Enums;
 using LYBT.Models.Billing;
 using LYBT.Module.Billing.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Billing;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Billing.Services {
 
@@ -34,6 +36,32 @@ namespace LYBT.Module.Billing.Services {
         public async Task<List<BillingDto>> GetListAsync() {
             var list = await _billingRepository.GetListAsync();
             return _mapper.Map<List<BillingDto>>(list);
+        }
+
+        /// <summary>
+        /// 分页获取费用结算列表
+        /// </summary>
+        public async Task<PaginatedResult<BillingDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var allList = await _billingRepository.GetListAsync();
+            var dtoList = _mapper.Map<List<BillingDto>>(allList);
+
+            var filteredList = dtoList.AsQueryable();
+
+            if (!string.IsNullOrEmpty(query.SearchKeyword)) {
+                filteredList = filteredList.Where(x =>
+                    x.Id.ToString().Contains(query.SearchKeyword) ||
+                    (x.PatientName != null && x.PatientName.Contains(query.SearchKeyword)) ||
+                    x.TotalAmount.ToString().Contains(query.SearchKeyword)
+                );
+            }
+
+            var total = filteredList.Count();
+            var pagedList = filteredList
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToList();
+
+            return new PaginatedResult<BillingDto>(pagedList, total, query.CurrentPage, query.PageSize);
         }
 
         /// <summary>

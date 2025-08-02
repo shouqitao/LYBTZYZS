@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
-using LYBT.Shared.Models.Enums;
 using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Pharmacy;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Pharmacy.Services {
 
@@ -34,6 +36,31 @@ namespace LYBT.Module.Pharmacy.Services {
         public async Task<List<PharmacyDto>> GetListAsync() {
             var list = await _pharmacyRepository.GetListAsync();
             return _mapper.Map<List<PharmacyDto>>(list);
+        }
+
+        /// <summary>
+        /// 分页获取药房单列表
+        /// </summary>
+        public async Task<PaginatedResult<PharmacyDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var allList = await _pharmacyRepository.GetListAsync();
+            var dtoList = _mapper.Map<List<PharmacyDto>>(allList);
+
+            var filteredList = dtoList.AsQueryable();
+
+            if (!string.IsNullOrEmpty(query.SearchKeyword)) {
+                filteredList = filteredList.Where(x =>
+                    x.Id.ToString().Contains(query.SearchKeyword) ||
+                    (x.PatientName != null && x.PatientName.Contains(query.SearchKeyword))
+                );
+            }
+
+            var total = filteredList.Count();
+            var pagedList = filteredList
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToList();
+
+            return new PaginatedResult<PharmacyDto>(pagedList, total, query.CurrentPage, query.PageSize);
         }
 
         /// <summary>

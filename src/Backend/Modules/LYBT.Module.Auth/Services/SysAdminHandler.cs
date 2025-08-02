@@ -1,6 +1,6 @@
-﻿using LYBT.Shared.Models.Enums;
-using LYBT.Models.Users;
+﻿using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Auth.Services {
 

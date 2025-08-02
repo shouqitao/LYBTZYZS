@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using LYBT.Models.FormulaTemplates;
 using LYBT.Module.FormulaTemplates.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.FormulaTemplates.Services {
 
@@ -36,41 +39,60 @@ namespace LYBT.Module.FormulaTemplates.Services {
         }
 
         /// <summary>
+        /// 分页查询验方模板列表
+        /// </summary>
+        public async Task<PaginatedResult<FormulaTemplateDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var (list, total) = await _repository.GetPagedAsync(query, operatorRole);
+            var dtoList = _mapper.Map<List<FormulaTemplateDto>>(list);
+            return new PaginatedResult<FormulaTemplateDto>(dtoList, total, query.CurrentPage, query.PageSize);
+        }
+
+        /// <summary>
         /// 新增模板
         /// </summary>
-        public async Task<bool> AddAsync(FormulaTemplateCreateDto dto) {
+        public async Task<bool> AddAsync(FormulaTemplateCreateDto dto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<FormulaTemplateModel>(dto);
             model.Id = Guid.NewGuid();
+            model.CreatedById = operatorId;
+            model.CreatedAt = DateTime.Now;
             return await _repository.AddAsync(model);
         }
 
         /// <summary>
         /// 更新模板
         /// </summary>
-        public async Task<bool> UpdateAsync(FormulaTemplateEditDto dto) {
+        public async Task<bool> UpdateAsync(FormulaTemplateEditDto dto, Guid operatorId, string operatorName) {
             var model = await _repository.GetByIdAsync(dto.Id);
             if (model == null)
                 return false;
             model.Name = dto.Name;
             model.Herbs = _mapper.Map<List<FormulaTemplateHerbItem>>(dto.Herbs);
             model.Remark = dto.Remark;
+            model.UpdatedAt = DateTime.Now;
             return await _repository.UpdateAsync(model);
         }
 
         /// <summary>
-        /// 删除模板
+        /// 删除模板 (软删除)
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id) {
-            return await _repository.DeleteAsync(id);
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
+            var model = await _repository.GetByIdAsync(id);
+            if (model == null)
+                return false;
+            model.IsActive = false;
+            model.UpdatedAt = DateTime.Now;
+            return await _repository.UpdateAsync(model);
         }
 
         /// <summary>
-        /// 执行ImportAsync操作。
+        /// 批量导入模板
         /// </summary>
-        /// <param name="dtos">参数dtos</param>
-        /// <returns>返回值</returns>
-        public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos) {
-            return await _repository.ImportAsync(dtos);
+        /// <param name="dtos">导入数据</param>
+        /// <param name="operatorId">操作者ID</param>
+        /// <param name="operatorName">操作者姓名</param>
+        /// <returns>导入数量</returns>
+        public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos, Guid operatorId, string operatorName) {
+            return await _repository.ImportAsync(dtos, operatorId, operatorName);
         }
 
         /// <summary>

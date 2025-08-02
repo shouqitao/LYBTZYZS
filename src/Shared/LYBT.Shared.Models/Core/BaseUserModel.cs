@@ -3,14 +3,14 @@ using LYBT.Shared.Models.Extensions;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Core
-{
+namespace LYBT.Shared.Models.Core {
+
     /// <summary>
     /// 用户基础模型 - 前后端共享核心字段
     /// 包含所有通用的用户信息字段，各层可基于此模型扩展
     /// </summary>
-    public class BaseUserModel
-    {
+    public class BaseUserModel {
+
         /// <summary>用户唯一标识</summary>
         [DisplayName("用户ID")]
         public Guid Id { get; set; }
@@ -59,10 +59,12 @@ namespace LYBT.Shared.Models.Core
 
         /// <summary>部门/科室</summary>
         [DisplayName("部门")]
+        [StringLength(100)]
         public string? Department { get; set; }
 
         /// <summary>职位</summary>
         [DisplayName("职位")]
+        [StringLength(100)]
         public string? Position { get; set; }
 
         /// <summary>

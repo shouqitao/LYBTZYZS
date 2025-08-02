@@ -35,7 +35,7 @@ namespace LYBT.Infrastructure.Authentication {
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            
+
             // 根据"记住我"选项设置不同的过期时间
             var expireMinutes = rememberMe ? _jwtOptions.RememberMeExpireMinutes : _jwtOptions.ExpireMinutes;
             var expires = DateTime.UtcNow.AddMinutes(expireMinutes);

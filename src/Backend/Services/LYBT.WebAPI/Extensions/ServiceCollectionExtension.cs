@@ -43,7 +43,6 @@ using LYBT.Module.TreatmentRoom.Services;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -51,7 +50,6 @@ namespace LYBT.WebAPI.Extensions;
 /// 所有模块服务注入扩展
 /// </summary>
 public static class ServiceCollectionExtension {
-
     /// <summary>
     /// 注册所有LYBT业务模块服务
     /// </summary>

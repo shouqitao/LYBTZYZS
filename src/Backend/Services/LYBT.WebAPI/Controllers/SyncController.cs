@@ -1,8 +1,8 @@
 ﻿using Asp.Versioning;
-using LYBT.Shared.Models.Enums;
 using LYBT.Infrastructure.Configuration;
-using LYBT.Models.Sync;
 using LYBT.Module.Sync.Interfaces;
+using LYBT.Shared.Models.Contracts.Sync;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

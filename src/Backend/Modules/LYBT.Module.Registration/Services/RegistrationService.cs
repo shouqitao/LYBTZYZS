@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums.Queueing;
-using LYBT.Common.Enums.Registration;
 using LYBT.Models.Queueing;
 using LYBT.Models.Registration;
 using LYBT.Module.Queueing.Interfaces;
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Registration;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Registration.Services {
 
@@ -39,6 +40,18 @@ namespace LYBT.Module.Registration.Services {
         public async Task<List<RegistrationDto>> GetListAsync() {
             var list = await _registrationRepository.GetListAsync();
             return _mapper.Map<List<RegistrationDto>>(list);
+        }
+
+        /// <summary>
+        /// 分页查询挂号列表
+        /// </summary>
+        public async Task<PaginatedResult<RegistrationDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var (list, total) = await _registrationRepository.GetPagedAsync(query, operatorRole);
+            var dtos = _mapper.Map<List<RegistrationDto>>(list);
+            return new PaginatedResult<RegistrationDto> {
+                Items = dtos,
+                TotalCount = total
+            };
         }
 
         /// <summary>

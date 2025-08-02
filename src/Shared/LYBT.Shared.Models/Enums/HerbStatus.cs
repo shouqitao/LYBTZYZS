@@ -1,13 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 药材状态枚举 - 前后端共享
     /// </summary>
     [Description("药材状态")]
-    public enum HerbStatus
-    {
+    public enum HerbStatus {
+
         /// <summary>停用 - 不能开具处方，但保留历史记录</summary>
         [Description("停用")]
         Inactive = 0,

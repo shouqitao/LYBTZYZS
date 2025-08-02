@@ -108,7 +108,6 @@ namespace LYBT.Module.Patients.Interfaces {
         /// </summary>
         Task<List<PatientModel>> GetPatientsBySimilarNameAsync(string name);
 
-
         /// <summary>
         /// 根据姓名获取患者档案列表（用于查询或创建场景）
         /// </summary>

@@ -1,4 +1,6 @@
-﻿using LYBT.Models.Prescriptions;
+﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Prescriptions.Services {
 
@@ -8,6 +10,8 @@ namespace LYBT.Module.Prescriptions.Services {
     public interface IPrescriptionService {
 
         Task<List<PrescriptionDto>> GetAllAsync();
+
+        Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
 
         Task<PrescriptionDetailDto?> GetByIdAsync(string id);
 

@@ -1,13 +1,11 @@
 using Asp.Versioning;
-using LYBT.Common.Helpers;
 using LYBT.Infrastructure.Authentication;
-using LYBT.Models.Auth;
-using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Auth;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -82,19 +80,19 @@ namespace LYBT.WebAPI.Controllers {
                 }
 
                 var token = _jwtService.GenerateToken(
-                    user.Id.ToString(), 
-                    user.Username, 
-                    new[] { user.Role.ToString() }, 
+                    user.Id.ToString(),
+                    user.Username,
+                    new[] { user.Role.ToString() },
                     dto.RememberMe
                 );
 
-                var response = new LYBT.Shared.Models.Auth.LoginResponse { 
-                    Token = token, 
+                var response = new LYBT.Shared.Models.Auth.LoginResponse {
+                    Token = token,
                     User = new LYBT.Shared.Models.Auth.UserInfo {
                         Id = user.Id,
                         UserName = user.Username,
                         RealName = user.RealName,
-                        Role = user.Role.ToString(),  
+                        Role = user.Role.ToString(),
                         Email = user.Email,
                         PhoneNumber = user.PhoneNumber,
                         IsActive = user.IsActive
@@ -103,7 +101,6 @@ namespace LYBT.WebAPI.Controllers {
 
                 _logger.LogInformation("用户 {Username} 登录成功", dto.Username);
                 return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Success(response);
-
             } catch (Exception ex) {
                 _logger.LogError(ex, "用户 {Username} 登录过程发生异常", dto.Username);
                 return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail($"登录失败: {ex.Message}", 500);
@@ -132,7 +129,7 @@ namespace LYBT.WebAPI.Controllers {
                 var adminUser = new UserDto {
                     Id = Guid.NewGuid(),
                     Username = "sysadmin",
-                    RealName = "系统管理员", 
+                    RealName = "系统管理员",
                     Role = UserRole.Admin,
                     IsActive = true,
                     CreateTime = DateTime.Now,
@@ -162,7 +159,6 @@ namespace LYBT.WebAPI.Controllers {
 
                 _logger.LogInformation("sysadmin登录成功");
                 return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Success(response);
-
             } catch (Exception ex) {
                 _logger.LogError(ex, "sysadmin登录处理异常");
                 return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail("登录处理异常", 500);
@@ -184,7 +180,7 @@ namespace LYBT.WebAPI.Controllers {
                 var dto = new LogoutRequestDto {
                     Username = username
                 };
-                
+
                 await _authService.LogoutAsync(dto);
                 return LYBT.Shared.Models.Common.ApiResponse<object>.Success(new { }, "登出成功");
             } catch (Exception ex) {
@@ -228,7 +224,7 @@ namespace LYBT.WebAPI.Controllers {
                 // 生成新的JWT令牌
                 var roles = role != null ? new[] { role } : new string[0];
                 var newToken = _jwtService.GenerateToken(userId, username, roles, false);
-                
+
                 var response = new {
                     Token = newToken,
                     RefreshedAt = DateTime.UtcNow
@@ -244,7 +240,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 修改密码 (通用接口)
         /// </summary>
-        [HttpPost("ChangePassword")]
+        [HttpPatch("password")]
         public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> ChangePassword([FromBody] ChangePasswordRequestDto dto) {
             try {
                 var username = User?.Identity?.Name;
@@ -272,6 +268,5 @@ namespace LYBT.WebAPI.Controllers {
                 return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("密码修改失败", 500);
             }
         }
-
     }
 }

@@ -1,4 +1,4 @@
-using LYBT.Common.Enums.Queueing;
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
 namespace LYBT.Models.Queueing {

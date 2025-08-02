@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
-using LYBT.Models.TreatmentRoom;
 using LYBT.Module.TreatmentRoom.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.TreatmentRoom;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,6 +31,24 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<ActionResult<List<TreatmentRoomDto>>> GetList() {
             var list = await _treatmentRoomService.GetListAsync();
             return Ok(list);
+        }
+
+        /// <summary>
+        /// 分页获取治疗室列表
+        /// </summary>
+        [HttpGet("paged")]
+        public async Task<ActionResult<PaginatedResult<TreatmentRoomDto>>> GetPagedList([FromQuery] LYBT.Shared.Models.Common.PaginationRequest query) {
+            try {
+                if (!ModelState.IsValid) {
+                    return BadRequest(ModelState);
+                }
+
+                // 由于TreatmentRoomController没有GetOperator方法，我们使用默认角色
+                var result = await _treatmentRoomService.GetPagedAsync(query, LYBT.Shared.Models.Enums.UserRole.Staff);
+                return Ok(result);
+            } catch (Exception ex) {
+                return StatusCode(500, $"分页获取治疗室列表失败: {ex.Message}");
+            }
         }
 
         /// <summary>

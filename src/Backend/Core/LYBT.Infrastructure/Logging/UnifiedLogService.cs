@@ -1,7 +1,6 @@
-using LYBT.Common.Enums.Logs;
-using LYBT.Common.Models;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging.Dtos;
+using LYBT.Infrastructure.Logging.Enums;
 using LYBT.Shared.Models.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -204,22 +203,22 @@ namespace LYBT.Infrastructure.Logging {
         // ==================== 系统日志 ====================
 
         public async Task LogInfoAsync(string source, string message, Guid? userId = null, string? requestId = null) {
-            await CreateSystemLogAsync(LYBT.Common.Enums.Logs.LogLevel.Information, source, message, null, userId, requestId);
+            await CreateSystemLogAsync(LYBT.Infrastructure.Logging.Enums.LogLevel.Information, source, message, null, userId, requestId);
         }
 
         public async Task LogWarningAsync(string source, string message, Guid? userId = null, string? requestId = null) {
-            await CreateSystemLogAsync(LYBT.Common.Enums.Logs.LogLevel.Warning, source, message, null, userId, requestId);
+            await CreateSystemLogAsync(LYBT.Infrastructure.Logging.Enums.LogLevel.Warning, source, message, null, userId, requestId);
         }
 
         public async Task LogErrorAsync(string source, string message, Exception? exception = null, Guid? userId = null, string? requestId = null) {
-            await CreateSystemLogAsync(LYBT.Common.Enums.Logs.LogLevel.Error, source, message, exception, userId, requestId);
+            await CreateSystemLogAsync(LYBT.Infrastructure.Logging.Enums.LogLevel.Error, source, message, exception, userId, requestId);
         }
 
         public async Task LogFatalAsync(string source, string message, Exception? exception = null, Guid? userId = null, string? requestId = null) {
-            await CreateSystemLogAsync(LYBT.Common.Enums.Logs.LogLevel.Critical, source, message, exception, userId, requestId);
+            await CreateSystemLogAsync(LYBT.Infrastructure.Logging.Enums.LogLevel.Critical, source, message, exception, userId, requestId);
         }
 
-        private async Task CreateSystemLogAsync(LYBT.Common.Enums.Logs.LogLevel level, string source, string message, Exception? exception, Guid? userId, string? requestId) {
+        private async Task CreateSystemLogAsync(LYBT.Infrastructure.Logging.Enums.LogLevel level, string source, string message, Exception? exception, Guid? userId, string? requestId) {
             try {
                 var systemLog = new SystemLogModel {
                     Id = Guid.NewGuid(),

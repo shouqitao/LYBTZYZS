@@ -2,14 +2,14 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Users
-{
+namespace LYBT.Shared.Models.Contracts.Users {
+
     /// <summary>
     /// 用户更新DTO - 前后端共享API契约
     /// 用于更新用户信息的请求模型
     /// </summary>
-    public class UserUpdateDto
-    {
+    public class UserUpdateDto {
+
         /// <summary>用户ID</summary>
         [Required(ErrorMessage = "用户ID不能为空")]
         [DisplayName("用户ID")]

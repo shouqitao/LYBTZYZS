@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
-using LYBT.Shared.Models.Extensions;
-using LYBT.Shared.Models.Common;
-using LYBT.Models.Herbs;
-using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Infrastructure.Data;
+using LYBT.Models.Herbs;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Shared.Models.Enums;
 using HerbStatus = LYBT.Shared.Models.Enums.HerbStatus;
 
 namespace LYBT.Module.Herbs.Services {
@@ -41,12 +39,12 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 获取药材详情
         /// </summary>
-        public async Task<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto?> GetByIdAsync(Guid id) {
+        public async Task<HerbDetailDto?> GetByIdAsync(Guid id) {
             var model = await _repository.GetByIdAsync(id);
             if (model == null)
                 return null;
 
-            var dto = _mapper.Map<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto>(model);
+            var dto = _mapper.Map<HerbDetailDto>(model);
             return dto;
         }
 
@@ -56,19 +54,13 @@ namespace LYBT.Module.Herbs.Services {
         public async Task<List<HerbDto>> GetListAsync() {
             var list = await _repository.GetListAsync();
             var dtos = _mapper.Map<List<HerbDto>>(list);
-
-            // 设置状态描述
-            foreach (var dto in dtos) {
-                var model = list.First(x => x.Id == dto.Id);
-            }
-
             return dtos;
         }
 
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        public async Task<PaginatedResult<HerbDto>> GetPagedAsync(LYBT.Shared.Models.Contracts.Herbs.HerbPagedQueryDto query) {
+        public async Task<PaginatedResult<HerbDto>> GetPagedAsync(HerbPagedQueryDto query) {
             // 构建查询条件
             var dbQuery = _context.Herbs.AsQueryable();
 
@@ -173,7 +165,7 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 新增药材
         /// </summary>
-        public async Task<bool> AddAsync(LYBT.Shared.Models.Contracts.Herbs.HerbCreateDto dto) {
+        public async Task<bool> AddAsync(HerbCreateDto dto) {
             var model = _mapper.Map<HerbModel>(dto);
             model.Id = Guid.NewGuid();
             model.PinyinCode = string.IsNullOrWhiteSpace(dto.Pinyin)
@@ -186,7 +178,7 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 编辑药材
         /// </summary>
-        public async Task<bool> UpdateAsync(LYBT.Shared.Models.Contracts.Herbs.HerbUpdateDto dto) {
+        public async Task<bool> UpdateAsync(HerbUpdateDto dto) {
             var model = await _repository.GetByIdAsync(dto.Id);
             if (model == null)
                 return false;
@@ -236,14 +228,9 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 导出药材数据
         /// </summary>
-        public async Task<List<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto>> ExportAsync() {
+        public async Task<List<HerbDetailDto>> ExportAsync() {
             var list = await _repository.GetListAsync();
-            var dtos = _mapper.Map<List<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto>>(list);
-
-            // 设置状态描述
-            foreach (var dto in dtos) {
-                var model = list.First(x => x.Id == dto.Id);
-            }
+            var dtos = _mapper.Map<List<HerbDetailDto>>(list);
 
             return dtos;
         }
@@ -269,23 +256,23 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 批量更新药材状态
         /// </summary>
-        public async Task<int> BatchUpdateStatusAsync(HerbBatchStatusUpdateDto dto) {
-            if (!dto.Ids.Any()) {
+        public async Task<int> BatchUpdateStatusAsync(List<Guid> ids, string reason) {
+            if (!ids.Any()) {
                 return 0;
             }
 
             // 使用原生SQL避免EF Core的Contains转换问题
-            var idStrings = string.Join("','", dto.Ids.Select(id => id.ToString()));
+            var idStrings = string.Join("','", ids.Select(id => id.ToString()));
             var sql = $"SELECT * FROM Herbs WHERE Id IN ('{idStrings}')";
-            
+
             var models = await _context.Herbs.FromSqlRaw(sql).ToListAsync();
 
             int count = 0;
             foreach (var model in models) {
-                model.Status = dto.Status;
+                model.Status = HerbStatus.Inactive; // Default status for batch operations
                 model.UpdateTime = DateTime.UtcNow;
-                if (!string.IsNullOrWhiteSpace(dto.Reason)) {
-                    model.Remark = $"{model.Remark} [批量状态变更: {dto.Reason}]".Trim();
+                if (!string.IsNullOrWhiteSpace(reason)) {
+                    model.Remark = $"{model.Remark} [批量状态变更: {reason}]".Trim();
                 }
                 count++;
             }

@@ -1,9 +1,8 @@
 ﻿using Asp.Versioning;
-using LYBT.Shared.Models.Enums;
-using LYBT.Common.Models;
-using LYBT.Shared.Models.Common;
-using LYBT.Models.Pharmacy;
 using LYBT.Module.Pharmacy.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Pharmacy;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -73,6 +72,26 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
+        /// 分页获取药房单列表
+        /// </summary>
+        [HttpGet("paged")]
+        public async Task<ActionResult<ApiResponse<PaginatedResult<PharmacyDto>>>> GetPagedList([FromQuery] LYBT.Shared.Models.Common.PaginationRequest query) {
+            try {
+                if (!ModelState.IsValid) {
+                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                    return BadRequest(ApiResponse<PaginatedResult<PharmacyDto>>.Fail($"参数验证失败：{errors}", 400));
+                }
+
+                var (_, _, operatorRole) = GetOperator();
+                var result = await _pharmacyService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<PharmacyDto>>.Success(result));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "分页获取药房单列表失败");
+                return StatusCode(500, ApiResponse<PaginatedResult<PharmacyDto>>.Fail("分页获取药房单列表失败", 500));
+            }
+        }
+
+        /// <summary>
         /// 获取药房单详情
         /// </summary>
         [HttpGet("{id}")]
@@ -121,7 +140,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 编辑药房单
         /// </summary>
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<object>>> Update([FromBody] PharmacyEditDto pharmacyEditDto) {
             try {
                 if (!ModelState.IsValid) {

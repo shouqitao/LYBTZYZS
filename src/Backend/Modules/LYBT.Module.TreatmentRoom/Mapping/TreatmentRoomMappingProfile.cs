@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Models.TreatmentRoom;
+using LYBT.Shared.Models.Contracts.TreatmentRoom;
 
 namespace LYBT.Module.TreatmentRoom.Mapping {
 

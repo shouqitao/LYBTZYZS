@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Models.Patients;
 using LYBT.Shared.Models.Contracts.Patients;
-using SharedPatientDetailDto = LYBT.Shared.Models.Contracts.Patients.PatientDetailDto;
 
 namespace LYBT.Module.Patients.Mapping {
 
@@ -13,9 +12,9 @@ namespace LYBT.Module.Patients.Mapping {
 
         public PatientMappingProfile() {
             // ==================== 共享契约映射 ====================
-            
+
             // 患者实体转共享PatientDetailDto（API响应）
-            CreateMap<PatientModel, SharedPatientDetailDto>()
+            CreateMap<PatientModel, PatientDetailDto>()
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreateTime))
                 .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdateTime))
                 .ForMember(dest => dest.IDType, opt => opt.MapFrom(src => src.IdType ?? "身份证"))
@@ -44,6 +43,21 @@ namespace LYBT.Module.Patients.Mapping {
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
 
+            // 共享PatientDetailDto转患者实体（用于新增/更新）
+            CreateMap<PatientDetailDto, PatientModel>()
+                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
+                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.IdType, opt => opt.MapFrom(src => src.IDType ?? "身份证"))
+                .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IDNumber));
+
+            // 患者实体转共享PatientDto（列表显示）
+            CreateMap<PatientModel, PatientDto>();
         }
     }
 }

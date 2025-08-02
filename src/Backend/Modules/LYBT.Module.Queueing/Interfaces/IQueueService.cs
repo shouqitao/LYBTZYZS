@@ -1,4 +1,6 @@
-﻿using LYBT.Models.Queueing;
+﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Queueing;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Queueing.Interfaces {
 
@@ -16,6 +18,11 @@ namespace LYBT.Module.Queueing.Interfaces {
         /// 获取排队列表
         /// </summary>
         Task<List<QueueingDto>> GetListAsync();
+
+        /// <summary>
+        /// 分页获取排队列表
+        /// </summary>
+        Task<PaginatedResult<QueueingDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
 
         /// <summary>
         /// 新增排队

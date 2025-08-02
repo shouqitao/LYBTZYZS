@@ -1,13 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 计费状态枚举 - 前后端共享
     /// </summary>
     [Description("计费状态")]
-    public enum BillingStatus
-    {
+    public enum BillingStatus {
+
         /// <summary>待付款</summary>
         [Description("待付款")]
         Pending = 0,
@@ -33,8 +33,8 @@ namespace LYBT.Shared.Models.Enums
     /// 药房处方状态枚举 - 前后端共享
     /// </summary>
     [Description("药房处方状态")]
-    public enum PharmacyStatus
-    {
+    public enum PharmacyStatus {
+
         /// <summary>待抓药</summary>
         [Description("待抓药")]
         Pending = 0,
@@ -56,8 +56,8 @@ namespace LYBT.Shared.Models.Enums
     /// 用户资料模式枚举 - 前后端共享
     /// </summary>
     [Description("用户资料模式")]
-    public enum ProfileMode
-    {
+    public enum ProfileMode {
+
         /// <summary>公开</summary>
         [Description("公开")]
         Public = 1,
@@ -75,8 +75,8 @@ namespace LYBT.Shared.Models.Enums
     /// 同步模式枚举 - 前后端共享
     /// </summary>
     [Description("同步模式")]
-    public enum SyncMode
-    {
+    public enum SyncMode {
+
         /// <summary>手动</summary>
         [Description("手动")]
         Manual = 0,
@@ -94,8 +94,8 @@ namespace LYBT.Shared.Models.Enums
     /// 同步状态枚举 - 前后端共享
     /// </summary>
     [Description("同步状态")]
-    public enum SyncStatus
-    {
+    public enum SyncStatus {
+
         /// <summary>待同步</summary>
         [Description("待同步")]
         Pending = 0,

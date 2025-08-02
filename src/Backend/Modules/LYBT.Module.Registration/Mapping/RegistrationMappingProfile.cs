@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Models.Registration;
+using LYBT.Shared.Models.Contracts.Registration;
 
 namespace LYBT.Module.Registration.Mapping {
 

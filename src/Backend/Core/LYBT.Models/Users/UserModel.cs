@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Core;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

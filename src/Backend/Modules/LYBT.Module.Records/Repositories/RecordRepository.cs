@@ -1,6 +1,8 @@
-﻿using LYBT.Models.Records;
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
+using LYBT.Models.Records;
 using LYBT.Module.Records.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Records.Repositories {
@@ -29,7 +31,31 @@ namespace LYBT.Module.Records.Repositories {
         /// 获取所有病历记录
         /// </summary>
         public async Task<List<RecordModel>> GetListAsync() {
-            return await Task.FromResult(_context.Records.ToList());
+            return await _context.Records
+                .OrderByDescending(r => r.RecordTime)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 分页查询病历列表
+        /// </summary>
+        public async Task<(List<RecordModel> list, int total)> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var queryable = _context.Records.AsQueryable();
+
+            // 根据操作者角色决定数据访问权限
+            // 普通用户可能只能查看自己的病历，这里先不做限制
+
+            // 总数统计
+            var total = await queryable.CountAsync();
+
+            // 分页和排序
+            var list = await queryable
+                .OrderByDescending(r => r.RecordTime)
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+
+            return (list, total);
         }
 
         /// <summary>

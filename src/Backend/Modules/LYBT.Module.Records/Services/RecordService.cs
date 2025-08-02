@@ -1,9 +1,13 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums.Logs;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
+using LYBT.Infrastructure.Logging.Enums;
+using LYBT.Models.DiagnosisTreatment;
 using LYBT.Models.Records;
 using LYBT.Module.Records.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Records;
+using LYBT.Shared.Models.Enums;
 using System.Text.Json;
 
 namespace LYBT.Module.Records.Services {
@@ -39,6 +43,15 @@ namespace LYBT.Module.Records.Services {
         public async Task<List<RecordDto>> GetListAsync() {
             var list = await _recordRepository.GetListAsync();
             return _mapper.Map<List<RecordDto>>(list);
+        }
+
+        /// <summary>
+        /// 分页查询病历列表
+        /// </summary>
+        public async Task<PaginatedResult<RecordDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var (list, total) = await _recordRepository.GetPagedAsync(query, operatorRole);
+            var dtoList = _mapper.Map<List<RecordDto>>(list);
+            return new PaginatedResult<RecordDto>(dtoList, total, query.CurrentPage, query.PageSize);
         }
 
         /// <summary>
@@ -84,8 +97,8 @@ namespace LYBT.Module.Records.Services {
             model.TreatmentAdvice = recordEditDto.TreatmentAdvice ?? model.TreatmentAdvice;
             model.PrescriptionId = recordEditDto.PrescriptionId;
             model.DiagnosisResults = recordEditDto.DiagnosisResults;
-            model.HerbalFormula = recordEditDto.HerbalFormula;
-            model.TreatmentPlans = recordEditDto.TreatmentPlans;
+            model.HerbalFormula = _mapper.Map<List<HerbItemModel>>(recordEditDto.HerbalFormula);
+            model.TreatmentPlans = _mapper.Map<List<TreatmentItemModel>>(recordEditDto.TreatmentPlans);
             model.IsShared = recordEditDto.IsShared;
             model.SharedToDoctorIds = recordEditDto.SharedToDoctorIds;
             model.RecordTime = recordEditDto.RecordTime;

@@ -1,9 +1,6 @@
 using LYBT.Shared.Models.Core;
-using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using HerbStatus = LYBT.Shared.Models.Enums.HerbStatus;
 
 namespace LYBT.Models.Herbs {
 

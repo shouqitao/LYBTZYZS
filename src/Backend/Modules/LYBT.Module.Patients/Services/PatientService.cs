@@ -1,19 +1,16 @@
 ﻿using AutoMapper;
-using LYBT.Common.Enums.Logs;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Helpers;
-using LYBT.Common.Models;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
+using LYBT.Infrastructure.Logging.Enums;
 using LYBT.Models.Patients;
-using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Models.Records;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Records.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Records;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Helpers;
 using System.Text.Json;
-using SharedPatientDetailDto = LYBT.Shared.Models.Contracts.Patients.PatientDetailDto;
-using SharedPatientPagedQueryDto = LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto;
 
 namespace LYBT.Module.Patients.Services {
 
@@ -40,7 +37,7 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 新增患者档案档案，并记录操作日志
         /// </summary>
-        public async Task<bool> AddAsync(SharedPatientDetailDto dto, Guid operatorId, string operatorName) {
+        public async Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             // 三要素匹配验证，防止重复患者档案
             var duplicateCheck = await CheckPatientDuplicateAsync(dto.Name, dto.PhoneNumber, dto.IDNumber);
             if (duplicateCheck.HasDuplicate) {
@@ -78,7 +75,7 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
-        public async Task<bool> UpdateAsync(SharedPatientDetailDto dto, Guid operatorId, string operatorName) {
+        public async Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             var model = await _patientRepository.GetByIdAsync(dto.Id, true); // 管理员更新时包含禁用患者档案
             if (model == null)
                 throw new ArgumentException("病人不存在");
@@ -124,33 +121,33 @@ namespace LYBT.Module.Patients.Services {
         /// 根据患者档案Id获取患者档案详情
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
-        public async Task<SharedPatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
+        public async Task<PatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
             var model = await _patientRepository.GetByIdAsync(id, includeDisabled);
-            return model == null ? null : _mapper.Map<SharedPatientDetailDto>(model);
+            return model == null ? null : _mapper.Map<PatientDetailDto>(model);
         }
 
         /// <summary>
         /// 获取所有患者档案列表
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
-        public async Task<List<SharedPatientDetailDto>> GetAllAsync(UserRole currentUserRole) {
+        public async Task<List<PatientDetailDto>> GetAllAsync(UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
-            var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue, includeDisabled);
-            return list.Select(_mapper.Map<SharedPatientDetailDto>).ToList();
+            var list = await _patientRepository.GetListAsync(null, 1, 1000, includeDisabled);
+            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         /// <summary>
         /// 按条件分页查询患者档案信息
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
-        public async Task<PaginatedResult<SharedPatientDetailDto>> GetPagedAsync(SharedPatientPagedQueryDto query, UserRole currentUserRole) {
+        public async Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query, UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
             var list = await _patientRepository.GetListAsync(query.Name, query.CurrentPage, query.PageSize, includeDisabled);
             var total = await _patientRepository.GetCountAsync(query.Name, includeDisabled);
-            return new PaginatedResult<SharedPatientDetailDto> {
+            return new PaginatedResult<PatientDetailDto> {
                 TotalCount = total,
-                Items = list.Select(_mapper.Map<SharedPatientDetailDto>).ToList()
+                Items = list.Select(_mapper.Map<PatientDetailDto>).ToList()
             };
         }
 
@@ -218,17 +215,17 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
-        public async Task<List<SharedPatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole) {
+        public async Task<List<PatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
             var list = await _patientRepository.SearchAsync(keyword, includeDisabled);
-            return list.Select(_mapper.Map<SharedPatientDetailDto>).ToList();
+            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         /// <summary>
         /// 智能搜索患者档案（精确匹配优先，然后模糊搜索）
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
-        public async Task<List<SharedPatientDetailDto>> SmartSearchAsync(string keyword, UserRole currentUserRole) {
+        public async Task<List<PatientDetailDto>> SmartSearchAsync(string keyword, UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
             var results = new List<PatientModel>();
 
@@ -246,10 +243,10 @@ namespace LYBT.Module.Patients.Services {
                 results.AddRange(fuzzyResults.Where(f => !results.Any(r => r.Id == f.Id)).Take(10));
             }
 
-            return results.Take(20).Select(_mapper.Map<SharedPatientDetailDto>).ToList();
+            return results.Take(20).Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
-        public async Task<int> ImportAsync(List<SharedPatientDetailDto> dtos, Guid operatorId, string operatorName) {
+        public async Task<int> ImportAsync(List<PatientDetailDto> dtos, Guid operatorId, string operatorName) {
             int count = 0;
             foreach (var dto in dtos) {
                 try {
@@ -263,10 +260,10 @@ namespace LYBT.Module.Patients.Services {
             return count;
         }
 
-        public async Task<List<SharedPatientDetailDto>> ExportAsync(UserRole currentUserRole) {
+        public async Task<List<PatientDetailDto>> ExportAsync(UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
-            var list = await _patientRepository.GetListAsync(null, 1, int.MaxValue, includeDisabled);
-            return list.Select(_mapper.Map<SharedPatientDetailDto>).ToList();
+            var list = await _patientRepository.GetListAsync(null, 1, 5000, includeDisabled);
+            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         public async Task<List<RecordDto>> GetHistoryRecordsAsync(Guid patientId) {
@@ -278,26 +275,26 @@ namespace LYBT.Module.Patients.Services {
         /// 查询或创建患者档案（用于挂号/看诊场景）
         /// 根据姓名和身份证号查询患者档案，如果不存在则创建新档案
         /// </summary>
-        public async Task<SharedPatientDetailDto> FindOrCreateAsync(SharedPatientDetailDto dto, Guid operatorId, string operatorName) {
+        public async Task<PatientDetailDto> FindOrCreateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             // 先尝试查询现有患者档案
             PatientModel? existingPatient = null;
-            
+
             // 如果有身份证号，优先按身份证号查询
             if (!string.IsNullOrEmpty(dto.IDNumber)) {
                 existingPatient = await _patientRepository.GetByIdNumberAsync(dto.IDNumber);
             }
-            
+
             // 如果没找到，再按姓名+电话查询
             if (existingPatient == null && !string.IsNullOrEmpty(dto.PhoneNumber)) {
                 var patientsByName = await _patientRepository.GetByNameAsync(dto.Name);
                 existingPatient = patientsByName.FirstOrDefault(p => p.PhoneNumber == dto.PhoneNumber);
             }
-            
+
             if (existingPatient != null) {
                 // 找到现有患者档案，返回现有档案
-                return _mapper.Map<SharedPatientDetailDto>(existingPatient);
+                return _mapper.Map<PatientDetailDto>(existingPatient);
             }
-            
+
             // 没有找到现有档案，创建新档案
             var model = new PatientModel {
                 Id = Guid.NewGuid(),
@@ -328,13 +325,13 @@ namespace LYBT.Module.Patients.Services {
             await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
                 $"查询或创建患者档案：{model.Name}", JsonSerializer.Serialize(model));
 
-            return _mapper.Map<SharedPatientDetailDto>(model);
+            return _mapper.Map<PatientDetailDto>(model);
         }
 
         /// <summary>
         /// 验证患者档案数据
         /// </summary>
-        public async Task<ValidationResult> ValidatePatientAsync(SharedPatientDetailDto dto, bool isUpdate = false) {
+        public async Task<ValidationResult> ValidatePatientAsync(PatientDetailDto dto, bool isUpdate = false) {
             var result = new ValidationResult();
 
             // 基础验证
@@ -366,9 +363,9 @@ namespace LYBT.Module.Patients.Services {
             return result;
         }
 
-        public async Task<List<SharedPatientDetailDto>> GetActivePatientsAsync() {
+        public async Task<List<PatientDetailDto>> GetActivePatientsAsync() {
             var patients = await _patientRepository.GetActivePatientsAsync();
-            return patients.Select(_mapper.Map<SharedPatientDetailDto>).ToList();
+            return patients.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
-using LYBT.Models.Auth;
-using LYBT.Models.Users;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Module.Auth.Interfaces {
 

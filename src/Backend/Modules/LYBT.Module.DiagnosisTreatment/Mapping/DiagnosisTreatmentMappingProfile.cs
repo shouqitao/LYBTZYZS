@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Models.DiagnosisTreatment;
-using LYBT.Models.Herbs;
+using LYBT.Shared.Models.Contracts.DiagnosisTreatment;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Module.DiagnosisTreatment.Mapping {
 
@@ -18,7 +19,7 @@ namespace LYBT.Module.DiagnosisTreatment.Mapping {
             CreateMap<TreatmentItemModel, TreatmentItemDto>().ReverseMap();
             // 药方与药材
             CreateMap<FormulaModel, FormulaDto>().ReverseMap();
-            CreateMap<HerbItemModel, HerbDto>().ReverseMap();
+            CreateMap<HerbItemModel, FormulaIngredientDto>().ReverseMap();
         }
     }
 }

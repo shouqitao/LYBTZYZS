@@ -2,14 +2,14 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Contracts.Herbs
-{
+namespace LYBT.Shared.Models.Contracts.Herbs {
+
     /// <summary>
     /// 中药材分页查询DTO - 前后端共享API契约
     /// 用于中药材档案的分页查询和筛选
     /// </summary>
-    public class HerbPagedQueryDto : PaginationRequest
-    {
+    public class HerbPagedQueryDto : PaginationRequest {
+
         /// <summary>药材名称关键词</summary>
         [DisplayName("药材名称")]
         public string? Name { get; set; }

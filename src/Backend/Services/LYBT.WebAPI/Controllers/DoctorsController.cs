@@ -1,9 +1,8 @@
 using Asp.Versioning;
-using LYBT.Shared.Models.Enums;
-using LYBT.Common.Models;
-using LYBT.Shared.Models.Common;
-using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Doctors;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -168,7 +167,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 新增医生
         /// </summary>
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<ActionResult<ApiResponse<bool>>> Add([FromBody] DoctorDetailDto dto) {
             try {
                 if (!ModelState.IsValid) {
@@ -195,8 +194,9 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 更新医生信息
         /// </summary>
-        [HttpPut]
-        public async Task<ActionResult<ApiResponse<bool>>> Update([FromBody] DoctorDetailDto dto) {
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ApiResponse<bool>>> Update(Guid id, [FromBody] DoctorDetailDto dto) {
+            dto.Id = id; // 确保ID一致
             try {
                 if (!ModelState.IsValid) {
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
@@ -281,7 +281,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量禁用医生
         /// </summary>
         [HttpPatch("batch-disable")]
-        public async Task<ActionResult<ApiResponse<int>>> BatchDisable([FromBody] DoctorBatchIdsDto dto) {
+        public async Task<ActionResult<ApiResponse<int>>> BatchDisable([FromBody] BatchIdsDto dto) {
             try {
                 if (dto?.Ids == null || dto.Ids.Count == 0) {
                     return BadRequest(ApiResponse<object>.Fail("请选择要禁用的医生"));
@@ -308,7 +308,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量启用医生
         /// </summary>
         [HttpPatch("batch-enable")]
-        public async Task<ActionResult<ApiResponse<int>>> BatchEnable([FromBody] DoctorBatchIdsDto dto) {
+        public async Task<ActionResult<ApiResponse<int>>> BatchEnable([FromBody] BatchIdsDto dto) {
             try {
                 if (dto?.Ids == null || dto.Ids.Count == 0) {
                     return BadRequest(ApiResponse<object>.Fail("请选择要启用的医生"));

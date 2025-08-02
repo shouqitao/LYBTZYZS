@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Models.Doctors;
+using LYBT.Shared.Models.Contracts.Doctors;
 
 namespace LYBT.Module.Doctors.Mapping {
 

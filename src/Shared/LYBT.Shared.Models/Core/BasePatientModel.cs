@@ -1,16 +1,15 @@
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Core
-{
+namespace LYBT.Shared.Models.Core {
+
     /// <summary>
     /// 患者基础模型 - 前后端共享核心字段
     /// 包含所有通用的患者信息字段，各层可基于此模型扩展
     /// </summary>
-    public class BasePatientModel
-    {
+    public class BasePatientModel {
+
         /// <summary>患者唯一标识</summary>
         [DisplayName("患者ID")]
         public Guid Id { get; set; }

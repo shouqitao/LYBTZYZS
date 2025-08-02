@@ -1,9 +1,6 @@
-using LYBT.Common.Models;
-using LYBT.Models.Herbs;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Common;
-using HerbStatus = LYBT.Shared.Models.Enums.HerbStatus;
 
 namespace LYBT.Module.Herbs.Interfaces {
 
@@ -15,7 +12,7 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// <summary>
         /// 获取药材详情
         /// </summary>
-        Task<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto?> GetByIdAsync(Guid id);
+        Task<HerbDetailDto?> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 获取药材列表
@@ -25,17 +22,17 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        Task<PaginatedResult<HerbDto>> GetPagedAsync(LYBT.Shared.Models.Contracts.Herbs.HerbPagedQueryDto query);
+        Task<PaginatedResult<HerbDto>> GetPagedAsync(HerbPagedQueryDto query);
 
         /// <summary>
         /// 新增药材
         /// </summary>
-        Task<bool> AddAsync(LYBT.Shared.Models.Contracts.Herbs.HerbCreateDto dto);
+        Task<bool> AddAsync(HerbCreateDto dto);
 
         /// <summary>
         /// 编辑药材
         /// </summary>
-        Task<bool> UpdateAsync(LYBT.Shared.Models.Contracts.Herbs.HerbUpdateDto dto);
+        Task<bool> UpdateAsync(HerbUpdateDto dto);
 
         /// <summary>
         /// 删除药材
@@ -50,7 +47,7 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// <summary>
         /// 导出药材数据
         /// </summary>
-        Task<List<LYBT.Shared.Models.Contracts.Herbs.HerbDetailDto>> ExportAsync();
+        Task<List<HerbDetailDto>> ExportAsync();
 
         // 需要在现有 IHerbService 接口中添加以下方法：
 
@@ -64,9 +61,10 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// <summary>
         /// 批量更新药材状态
         /// </summary>
-        /// <param name="dto">批量状态更新DTO</param>
+        /// <param name="ids">药材ID列表</param>
+        /// <param name="reason">更新原因</param>
         /// <returns>成功更新的数量</returns>
-        Task<int> BatchUpdateStatusAsync(HerbBatchStatusUpdateDto dto);
+        Task<int> BatchUpdateStatusAsync(List<Guid> ids, string reason);
 
         /// <summary>
         /// 根据状态获取药材列表

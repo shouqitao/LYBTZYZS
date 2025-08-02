@@ -1,4 +1,6 @@
-﻿using LYBT.Models.Pharmacy;
+﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Pharmacy;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Pharmacy.Interfaces {
 
@@ -16,6 +18,11 @@ namespace LYBT.Module.Pharmacy.Interfaces {
         /// 获取药房单列表
         /// </summary>
         Task<List<PharmacyDto>> GetListAsync();
+
+        /// <summary>
+        /// 分页获取药房单列表
+        /// </summary>
+        Task<PaginatedResult<PharmacyDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
 
         /// <summary>
         /// 新增药房单

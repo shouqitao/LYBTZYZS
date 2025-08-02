@@ -1,9 +1,8 @@
 ﻿using Asp.Versioning;
-using LYBT.Shared.Models.Enums;
-using LYBT.Common.Models;
-using LYBT.Shared.Models.Common;
-using LYBT.Models.DiagnosisTreatment;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.DiagnosisTreatment;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -55,6 +54,26 @@ namespace LYBT.WebAPI.Controllers {
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取诊疗列表失败");
                 return StatusCode(500, ApiResponse<List<DiagnosisTreatmentDto>>.Fail("获取诊疗列表失败", 500));
+            }
+        }
+
+        /// <summary>
+        /// 分页获取诊疗列表
+        /// </summary>
+        [HttpGet("paged")]
+        public async Task<ActionResult<ApiResponse<PaginatedResult<DiagnosisTreatmentDto>>>> GetPagedList([FromQuery] PaginationRequest query) {
+            try {
+                if (!ModelState.IsValid) {
+                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                    return BadRequest(ApiResponse<PaginatedResult<DiagnosisTreatmentDto>>.Fail($"参数验证失败：{errors}", 400));
+                }
+
+                var (_, _, operatorRole) = GetOperator();
+                var result = await _diagnosisTreatmentService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<DiagnosisTreatmentDto>>.Success(result));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "分页获取诊疗列表失败");
+                return StatusCode(500, ApiResponse<PaginatedResult<DiagnosisTreatmentDto>>.Fail("分页获取诊疗列表失败", 500));
             }
         }
 

@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
-using LYBT.Shared.Models.Enums;
-using LYBT.Common.Helpers;
-using LYBT.Shared.Utilities.Helpers;
-using LYBT.Common.Models;
-using LYBT.Shared.Models.Common;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Interfaces;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Doctors;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Helpers;
 
 namespace LYBT.Module.Doctors.Services {
 

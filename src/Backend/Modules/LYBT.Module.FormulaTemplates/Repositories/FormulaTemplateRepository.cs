@@ -1,7 +1,10 @@
-using LYBT.Models.FormulaTemplates;
-using LYBT.Models.Herbs;
 using LYBT.Infrastructure.Data;
+using LYBT.Models.FormulaTemplates;
 using LYBT.Module.FormulaTemplates.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.FormulaTemplates.Repositories {
@@ -30,7 +33,35 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
         /// 获取全部模板列表
         /// </summary>
         public async Task<List<FormulaTemplateModel>> GetListAsync() {
-            return await Task.FromResult(_context.FormulaTemplates.ToList());
+            return await _context.FormulaTemplates
+                .Where(f => f.IsActive)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 分页查询验方模板列表
+        /// </summary>
+        public async Task<(List<FormulaTemplateModel> list, int total)> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+            var queryable = _context.FormulaTemplates.AsQueryable();
+
+            // 根据操作者角色决定数据访问权限
+            if (operatorRole != UserRole.Admin) {
+                // 非管理员只能查看活跃状态的模板
+                queryable = queryable.Where(f => f.IsActive);
+            }
+
+            // 总数统计
+            var total = await queryable.CountAsync();
+
+            // 分页和排序
+            var list = await queryable
+                .OrderByDescending(f => f.CreatedAt)
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+
+            return (list, total);
         }
 
         /// <summary>
@@ -61,28 +92,36 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
         }
 
         /// <summary>
-        /// 执行ImportAsync操作。
+        /// 批量导入模板
         /// </summary>
-        /// <param name="dtos">参数dtos</param>
-        /// <returns>返回值</returns>
-        public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos) {
-            int count = 0;
+        /// <param name="dtos">导入数据</param>
+        /// <param name="operatorId">操作者ID</param>
+        /// <param name="operatorName">操作者姓名</param>
+        /// <returns>导入数量</returns>
+        public async Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos, Guid operatorId, string operatorName) {
+            var models = new List<FormulaTemplateModel>();
+
             foreach (var dto in dtos) {
                 var model = new FormulaTemplateModel {
                     Id = Guid.NewGuid(),
                     Name = dto.Name,
                     Herbs = dto.Herbs.Select(h => new FormulaTemplateHerbItem {
-                        HerbId = h.Id,
+                        HerbId = h.HerbId,
                         HerbName = h.Name,
-                        Quantity = h.Price, // Using Price as default quantity for now
-                        Unit = "g" // Default unit
+                        Quantity = h.Dosage,
+                        Unit = h.Unit ?? "g"
                     }).ToList(),
-                    Remark = dto.Remark
+                    Remark = dto.Remark,
+                    CreatedById = operatorId,
+                    CreatedAt = DateTime.Now,
+                    IsActive = true
                 };
-                _context.FormulaTemplates.Add(model);
-                count += await _context.SaveChangesAsync() > 0 ? 1 : 0;
+                models.Add(model);
             }
-            return count;
+
+            _context.FormulaTemplates.AddRange(models);
+            var saved = await _context.SaveChangesAsync();
+            return saved > 0 ? models.Count : 0;
         }
 
         /// <summary>
@@ -94,9 +133,11 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
             return list.Select(m => new FormulaTemplateDetailDto {
                 Id = m.Id,
                 Name = m.Name,
-                Herbs = m.Herbs.Select(h => new HerbDto {
-                    Id = h.HerbId,
+                Herbs = m.Herbs.Select(h => new FormulaIngredientDto {
+                    HerbId = h.HerbId,
                     Name = h.HerbName,
+                    Dosage = h.Quantity,
+                    Unit = h.Unit,
                     Price = 0 // FormulaTemplateHerbItem doesn't have UnitPrice, using 0 as default
                 }).ToList(),
                 Remark = m.Remark

@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.Utilities.Helpers;
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Models.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Patients.Repositories {
@@ -239,7 +239,6 @@ namespace LYBT.Module.Patients.Repositories {
                 .Take(10) // 限制返回数量
                 .ToListAsync();
         }
-
 
         /// <summary>
         /// 根据姓名获取患者档案列表（用于查询或创建场景）

@@ -1,8 +1,8 @@
 ﻿using LYBT.Infrastructure.Data;
 using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
-using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 using Microsoft.EntityFrameworkCore;
+using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 
 namespace LYBT.Module.Users.Repositories {
 
@@ -170,7 +170,7 @@ namespace LYBT.Module.Users.Repositories {
 
             // 使用原生SQL避免EF Core的Contains转换问题
             var idStrings = string.Join("','", ids.Select(id => id.ToString()));
-            var sql = includeDisabled 
+            var sql = includeDisabled
                 ? $"SELECT * FROM Users WHERE Id IN ('{idStrings}')"
                 : $"SELECT * FROM Users WHERE Id IN ('{idStrings}') AND IsActive = 1";
 
@@ -208,7 +208,7 @@ namespace LYBT.Module.Users.Repositories {
             // 使用原生SQL避免EF Core的Contains转换问题
             var idStrings = string.Join("','", ids.Select(id => id.ToString()));
             var sql = $"UPDATE Users SET IsActive = {(isActive ? 1 : 0)} WHERE Id IN ('{idStrings}')";
-            
+
             return await _dbContext.Database.ExecuteSqlRawAsync(sql);
         }
 

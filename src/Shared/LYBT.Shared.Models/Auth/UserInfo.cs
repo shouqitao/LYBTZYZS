@@ -1,13 +1,12 @@
-using System;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Auth
-{
+namespace LYBT.Shared.Models.Auth {
+
     /// <summary>
     /// 用户信息 - API契约
     /// </summary>
-    public class UserInfo
-    {
+    public class UserInfo {
+
         /// <summary>用户ID</summary>
         [DisplayName("用户ID")]
         public Guid Id { get; set; }

@@ -1,13 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 系统用户角色枚举 - 前后端共享
     /// </summary>
     [Description("用户角色")]
-    public enum UserRole
-    {
+    public enum UserRole {
+
         /// <summary>挂号人员</summary>
         [Description("挂号人员")]
         Staff = 0,

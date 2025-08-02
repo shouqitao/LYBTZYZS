@@ -1,11 +1,12 @@
-using LYBT.Models.FormulaTemplates;
-using LYBT.Models.Herbs;
+using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Models.Prescriptions;
 using LYBT.Module.FormulaTemplates.Interfaces;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
 
 namespace LYBT.Module.Prescriptions.Services {
+
     /// <summary>
     /// 智能处方服务 - 处理验方组合、重复药材检测、缺药提醒等功能
     /// </summary>
@@ -70,7 +71,7 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <summary>
         /// 处理验方模板中的单个药材项
         /// </summary>
-        private void ProcessFormulaItem(HerbDto herb, Dictionary<string, PrescriptionItemModel> allHerbs,
+        private void ProcessFormulaItem(FormulaIngredientDto herb, Dictionary<string, PrescriptionItemModel> allHerbs,
             List<string> duplicateWarnings, string templateName) {
             var herbName = herb.Name?.Trim().ToUpper();
             if (string.IsNullOrEmpty(herbName))
@@ -84,7 +85,7 @@ namespace LYBT.Module.Prescriptions.Services {
                 // 创建新的处方项目
                 var prescriptionItem = new PrescriptionItemModel {
                     Id = Guid.NewGuid(),
-                    HerbId = herb.Id,
+                    HerbId = herb.HerbId,
                     HerbName = herb.Name!,
                     Quantity = 10, // 默认剂量，实际应从验方模板中获取
                     Unit = herb.Unit ?? "g",

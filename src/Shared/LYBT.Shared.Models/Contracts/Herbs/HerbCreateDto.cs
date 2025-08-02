@@ -2,14 +2,14 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Herbs
-{
+namespace LYBT.Shared.Models.Contracts.Herbs {
+
     /// <summary>
     /// 中药材创建DTO - 前后端共享API契约
     /// 用于创建新中药材档案的请求模型
     /// </summary>
-    public class HerbCreateDto
-    {
+    public class HerbCreateDto {
+
         /// <summary>药材名称</summary>
         [Required(ErrorMessage = "药材名称不能为空")]
         [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
@@ -70,7 +70,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
 
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
-        [DisplayName("备注")]  
+        [DisplayName("备注")]
         public string? Remark { get; set; }
 
         /// <summary>药材状态</summary>

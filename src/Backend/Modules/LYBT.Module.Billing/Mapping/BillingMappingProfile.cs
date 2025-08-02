@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Models.Billing;
+using LYBT.Shared.Models.Contracts.Billing;
 
 namespace LYBT.Module.Billing.Mapping {
 

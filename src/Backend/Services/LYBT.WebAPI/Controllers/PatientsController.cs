@@ -1,17 +1,15 @@
 ﻿using Asp.Versioning;
-using LYBT.Shared.Models.Enums;
-using LYBT.Common.Models;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Models.Records;
-using PatientDetailDto = LYBT.Shared.Models.Contracts.Patients.PatientDetailDto;
-using PatientPagedQueryDto = LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto;
-using BatchOperationDto = LYBT.Shared.Models.Common.BatchOperationDto;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Records;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
+using BatchOperationDto = LYBT.Shared.Models.Common.BatchOperationDto;
+using PatientDetailDto = LYBT.Shared.Models.Contracts.Patients.PatientDetailDto;
+using PatientPagedQueryDto = LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto;
 
 namespace LYBT.WebAPI.Controllers {
 
@@ -50,7 +48,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 新增病人
         /// </summary>
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] PatientDetailDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             try {

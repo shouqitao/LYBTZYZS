@@ -1,0 +1,150 @@
+{
+  "passed": 16,
+  "failed": 0,
+  "details": [
+    {
+      "module": "用户模块",
+      "api": "新增用户",
+      "method": "POST",
+      "route": "/users/add",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.277Z"
+    },
+    {
+      "module": "用户模块",
+      "api": "分页查询",
+      "method": "POST",
+      "route": "/users/paged",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.284Z"
+    },
+    {
+      "module": "用户模块",
+      "api": "启用用户",
+      "method": "PATCH",
+      "route": "/users/{id}/enable",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.292Z"
+    },
+    {
+      "module": "用户模块",
+      "api": "禁用用户",
+      "method": "PATCH",
+      "route": "/users/{id}/disable",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.297Z"
+    },
+    {
+      "module": "患者模块",
+      "api": "新增患者",
+      "method": "POST",
+      "route": "/patients/add",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.307Z"
+    },
+    {
+      "module": "患者模块",
+      "api": "分页查询",
+      "method": "POST",
+      "route": "/patients/paged",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.312Z"
+    },
+    {
+      "module": "患者模块",
+      "api": "更新患者",
+      "method": "PUT",
+      "route": "/patients/{id}",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.324Z"
+    },
+    {
+      "module": "药材模块",
+      "api": "新增药材",
+      "method": "POST",
+      "route": "/herbs/add",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.329Z"
+    },
+    {
+      "module": "药材模块",
+      "api": "分页查询",
+      "method": "POST",
+      "route": "/herbs/paged",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.336Z"
+    },
+    {
+      "module": "药材模块",
+      "api": "更新药材",
+      "method": "PUT",
+      "route": "/herbs/{id}",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.344Z"
+    },
+    {
+      "module": "药材模块",
+      "api": "启用药材",
+      "method": "PATCH",
+      "route": "/herbs/{id}/enable",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.347Z"
+    },
+    {
+      "module": "药材模块",
+      "api": "禁用药材",
+      "method": "PATCH",
+      "route": "/herbs/{id}/disable",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.351Z"
+    },
+    {
+      "module": "药材模块",
+      "api": "DELETE已移除",
+      "method": "DELETE",
+      "route": "/herbs/{id}",
+      "success": true,
+      "message": "预期404/405，实际: 405",
+      "timestamp": "2025-08-02T01:55:49.352Z"
+    },
+    {
+      "module": "医生模块",
+      "api": "新增医生",
+      "method": "POST",
+      "route": "/doctors/add",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.441Z"
+    },
+    {
+      "module": "医生模块",
+      "api": "分页查询",
+      "method": "POST",
+      "route": "/doctors/paged",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.446Z"
+    },
+    {
+      "module": "医生模块",
+      "api": "更新医生",
+      "method": "PUT",
+      "route": "/doctors/{id}",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-08-02T01:55:49.455Z"
+    }
+  ]
+}

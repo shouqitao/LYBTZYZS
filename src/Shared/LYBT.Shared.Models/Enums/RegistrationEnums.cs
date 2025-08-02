@@ -1,13 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 挂号类型枚举 - 前后端共享
     /// </summary>
     [Description("挂号类型")]
-    public enum RegistrationType
-    {
+    public enum RegistrationType {
+
         /// <summary>普通号 - 普通门诊</summary>
         [Description("普通号")]
         Regular = 1,
@@ -29,8 +29,8 @@ namespace LYBT.Shared.Models.Enums
     /// 挂号状态枚举 - 前后端共享
     /// </summary>
     [Description("挂号状态")]
-    public enum RegistrationStatus
-    {
+    public enum RegistrationStatus {
+
         /// <summary>已预约 - 患者已预约但未到达</summary>
         [Description("已预约")]
         Scheduled = 0,

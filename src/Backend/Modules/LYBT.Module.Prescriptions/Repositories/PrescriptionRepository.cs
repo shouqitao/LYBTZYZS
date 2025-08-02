@@ -1,6 +1,6 @@
-using LYBT.Common.Enums.Prescriptions;
-using LYBT.Models.Prescriptions;
 using LYBT.Infrastructure.Data;
+using LYBT.Models.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Prescriptions.Repositories {

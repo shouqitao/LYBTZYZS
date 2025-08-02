@@ -13,7 +13,6 @@ namespace LYBT.Module.Diagnostics {
         /// <param name="services">服务集合</param>
         /// <returns>服务集合</returns>
         public static IServiceCollection AddDiagnosticsModule(this IServiceCollection services) {
-            
             // TODO: 注册仓储和服务
             // services.AddScoped<IRegistrationRepository, RegistrationRepository>();
             // services.AddScoped<IRegistrationService, RegistrationService>();

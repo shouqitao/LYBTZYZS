@@ -1,4 +1,3 @@
-using LYBT.Common.Models;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Shared.Models.Common;
