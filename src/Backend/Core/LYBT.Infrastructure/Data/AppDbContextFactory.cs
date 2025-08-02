@@ -19,7 +19,7 @@ namespace LYBT.Infrastructure.Data {
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             var connectionString = configuration.GetConnectionString("DefaultConnection")
-                                  ?? "Server=localhost;Database=LYBTDB;Integrated Security=true;TrustServerCertificate=true;";
+                                  ?? "Server=192.168.190.243;Database=LYBTDB;User Id=sa;Password=Shou@850528;TrustServerCertificate=true;";
 
             optionsBuilder.UseSqlServer(connectionString, options => {
                 options.MigrationsAssembly("LYBT.Infrastructure");

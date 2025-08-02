@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Users;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -14,10 +17,12 @@ namespace LYBT.WPF.Client.Services
     public class UserService : IUserService
     {
         private readonly IApiService _apiService;
+        private readonly IUserApiService _userApiService;
 
-        public UserService(IApiService apiService)
+        public UserService(IApiService apiService, IUserApiService userApiService)
         {
             _apiService = apiService;
+            _userApiService = userApiService;
         }
 
         /// <summary>
@@ -27,15 +32,32 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var queryString = BuildQueryString(request);
-                var response = await _apiService.GetAsync<SearchUsersResponse>($"api/v1/Users/search?{queryString}");
+                // 使用Refit调用API
+                var response = await _userApiService.GetUsersAsync(request.Keyword);
                 
                 if (response.IsSuccess && response.Data != null)
                 {
+                    var users = response.Data.Select(ConvertToUserInfo).ToList();
+                    
+                    // 应用客户端过滤
+                    if (request.Role.HasValue)
+                    {
+                        users = users.Where(u => u.Role == request.Role.Value).ToList();
+                    }
+                    if (request.IsActive.HasValue)
+                    {
+                        users = users.Where(u => u.IsActive == request.IsActive.Value).ToList();
+                    }
+                    
+                    // 分页
+                    var totalCount = users.Count;
+                    var skip = (request.Page - 1) * request.PageSize;
+                    users = users.Skip(skip).Take(request.PageSize).ToList();
+                    
                     return new PaginatedResult<UserInfo>
                     {
-                        Items = response.Data.users ?? new List<UserInfo>(),
-                        TotalCount = response.Data.total,
+                        Items = users,
+                        TotalCount = totalCount,
                         CurrentPage = request.Page,
                         PageSize = request.PageSize
                     };
@@ -62,16 +84,23 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var createDto = new
+                var createDto = new CreateUserDto
                 {
-                    userName = request.UserName,
-                    realName = request.RealName,
-                    role = request.Role.ToString(),
-                    email = request.Email,
-                    phoneNumber = request.PhoneNumber
+                    UserName = request.UserName,
+                    RealName = request.RealName,
+                    Role = request.Role.ToString(),
+                    Email = request.Email,
+                    PhoneNumber = request.PhoneNumber
+                    // 不需要密码，后端会使用默认密码
                 };
 
-                return await _apiService.PostAsync<object>("api/v1/Users/add", createDto);
+                var response = await _userApiService.CreateUserAsync(createDto);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -90,18 +119,23 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var updateDto = new
+                var updateDto = new UpdateUserDto
                 {
-                    id = request.Id,
-                    userName = request.UserName,
-                    realName = request.RealName,
-                    role = request.Role.ToString(),
-                    email = request.Email,
-                    phoneNumber = request.PhoneNumber,
-                    isActive = request.IsActive
+                    UserName = request.UserName,
+                    RealName = request.RealName,
+                    Role = request.Role.ToString(),
+                    Email = request.Email,
+                    PhoneNumber = request.PhoneNumber,
+                    IsActive = request.IsActive
                 };
 
-                return await _apiService.PutAsync<object>("api/v1/Users/update", updateDto);
+                var response = await _userApiService.UpdateUserAsync(request.Id, updateDto);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -120,7 +154,13 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.PostAsync<object>($"api/v1/Users/disable/{userId}", new { });
+                var response = await _userApiService.ToggleUserStatusAsync(userId);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -139,7 +179,13 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.PostAsync<object>($"api/v1/Users/enable/{userId}", new { });
+                var response = await _userApiService.ToggleUserStatusAsync(userId);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -158,7 +204,13 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.PostAsync<object>($"api/v1/Users/resetPassword/{userId}", new { });
+                var response = await _userApiService.ResetPasswordAsync(userId);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -193,7 +245,21 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.GetAsync<UserInfo>($"api/v1/Users/getById/{userId}");
+                var response = await _userApiService.GetUserByIdAsync(userId);
+                if (response.IsSuccess && response.Data != null)
+                {
+                    return new ApiResponse<UserInfo>
+                    {
+                        IsSuccess = true,
+                        Data = ConvertToUserInfo(response.Data),
+                        Message = response.Message
+                    };
+                }
+                return new ApiResponse<UserInfo>
+                {
+                    IsSuccess = false,
+                    Message = response.Message
+                };
             }
             catch (Exception ex)
             {
@@ -325,6 +391,27 @@ namespace LYBT.WPF.Client.Services
             parameters.Add($"pageSize={request.PageSize}");
 
             return string.Join("&", parameters);
+        }
+    }
+
+        /// <summary>
+        /// 转换UserDto到UserInfo
+        /// </summary>
+        private UserInfo ConvertToUserInfo(UserDto dto)
+        {
+            return new UserInfo
+            {
+                Id = dto.Id,
+                Username = dto.UserName,
+                RealName = dto.RealName,
+                Role = Enum.Parse<LYBT.Shared.Models.Enums.UserRole>(dto.Role),
+                IsActive = dto.IsActive,
+                CreateTime = dto.CreatedTime,
+                LastLoginTime = dto.LastLoginTime,
+                Email = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                IsSuperAdmin = dto.UserName?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
+            };
         }
     }
 

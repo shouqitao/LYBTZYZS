@@ -9,6 +9,7 @@
     <AssemblyDescription>凌隐宝堂中医诊所管理系统WPF客户端</AssemblyDescription>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,6 +40,12 @@
     <ProjectReference Include="..\Modules\Pharmacist\LYBT.WPF.Client.Modules.Pharmacist.csproj" />
     <ProjectReference Include="..\Modules\Common\LYBT.WPF.Client.Modules.Common.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

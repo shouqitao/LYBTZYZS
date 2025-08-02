@@ -23,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         {
             _patientService = patientService;
             InitializeCommands();
-            LoadPatientsAsync();
+            _ = LoadPatientsAsync();
         }
 
         #region Properties
@@ -35,8 +35,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             set => SetProperty(ref _patients, value);
         }
 
-        private PatientDetailDto? _selectedPatient;
-        public PatientDetailDto? SelectedPatient
+        private PatientDetailDto _selectedPatient;
+        public PatientDetailDto SelectedPatient
         {
             get => _selectedPatient;
             set => SetProperty(ref _selectedPatient, value);
@@ -145,7 +145,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 
                     TotalCount = result.Data.TotalCount;
                     TotalPages = result.Data.TotalPages;
-                    CurrentPage = result.Data.Page;
+                    CurrentPage = result.Data.CurrentPage;
                 }
                 else
                 {
@@ -294,6 +294,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 {
                     // TODO: 实现CSV导入
                     MessageBox.Show("导入功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await Task.CompletedTask;
                 }
                 catch (Exception ex)
                 {

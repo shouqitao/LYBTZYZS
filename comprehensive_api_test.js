@@ -1,9 +1,9 @@
 const https = require('https');
 const http = require('http');
 
-// 测试配置 - 使用本地开发环境
-const API_BASE_URL = 'https://localhost:7001';
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // 忽略SSL证书验证
+// 测试配置 - 使用新生产服务器环境
+const API_BASE_URL = 'http://60.190.215.86:5000';
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // HTTP不需要SSL验证
 const TEST_RESULTS = [];
 let authToken = '';
 

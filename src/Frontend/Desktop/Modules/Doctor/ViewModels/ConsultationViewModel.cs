@@ -14,7 +14,7 @@ using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Patients;
 using LYBT.WPF.Client.Core.Models.DTOs;
-using LYBT.WPF.Client.Core.Enums;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
 {
@@ -59,8 +59,8 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             set => SetProperty(ref _availableHerbs, value);
         }
 
-        private HerbInfo? _selectedHerb;
-        public HerbInfo? SelectedHerb
+        private HerbInfo _selectedHerb;
+        public HerbInfo SelectedHerb
         {
             get => _selectedHerb;
             set => SetProperty(ref _selectedHerb, value);
@@ -365,7 +365,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                     AvailableHerbs.Clear();
                     foreach (var herb in result.Data)
                     {
-                        AvailableHerbs.Add(herb);
+                        AvailableHerbs.Add(ConvertHerbDtoToHerbInfo(herb));
                     }
                 }
             }
@@ -373,6 +373,33 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             {
                 MessageBox.Show($"加载药材列表失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        /// <summary>
+        /// 将 HerbDto 转换为 HerbInfo
+        /// </summary>
+        private HerbInfo ConvertHerbDtoToHerbInfo(LYBT.Shared.Models.Contracts.Herbs.HerbDto herbDto)
+        {
+            return new HerbInfo
+            {
+                Id = herbDto.Id,
+                Name = herbDto.Name,
+                PinyinCode = herbDto.PinyinCode,
+                WuBiCode = herbDto.WuBiCode,
+                Origin = herbDto.Origin,
+                Spec = herbDto.Spec,
+                Unit = herbDto.Unit,
+                Price = herbDto.Price,
+                Stock = herbDto.Stock,
+                BatchNo = herbDto.BatchNo,
+                ExpireDate = herbDto.ExpireDate,
+                Effect = herbDto.Effect,
+                Remark = herbDto.Remark,
+                Status = herbDto.Status,
+                IsActive = herbDto.IsActive,
+                CreateTime = herbDto.CreateTime,
+                UpdateTime = herbDto.UpdateTime
+            };
         }
 
         #endregion

@@ -120,7 +120,7 @@ namespace LYBT.WPF.Client.Services {
 
             return new UserInfo {
                 Id = sharedUser.Id,
-                Username = sharedUser.Username,
+                Username = sharedUser.UserName,
                 RealName = sharedUser.RealName,
                 Role = ParseUserRole(sharedUser.Role),
                 IsActive = sharedUser.IsActive,
@@ -128,7 +128,7 @@ namespace LYBT.WPF.Client.Services {
                 LastLoginTime = null, // 共享模型没有这个字段
                 Email = sharedUser.Email,
                 PhoneNumber = sharedUser.PhoneNumber,
-                IsSuperAdmin = sharedUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
+                IsSuperAdmin = sharedUser.UserName?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
             };
         }
 

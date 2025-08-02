@@ -15,14 +15,14 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.Converters
         {
             if (value is Gender gender)
             {
-                return gender.GetDisplayName();
+                return gender.GetDescription();
             }
             else if (value is int genderInt)
             {
                 var genderEnum = (Gender)genderInt;
-                return genderEnum.GetDisplayName();
+                return genderEnum.GetDescription();
             }
-            return Gender.Unknown.GetDisplayName();
+            return Gender.Unknown.GetDescription();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -149,7 +149,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     {
                         Id = Guid.NewGuid(),
                         Name = herbNames[i],
-                        Pinyin = GetPinyin(herbNames[i]),
+                        PinyinCode = GetPinyin(herbNames[i]),
                         Origin = origins[random.Next(origins.Length)],
                         Spec = specs[random.Next(specs.Length)],
                         Unit = units[random.Next(units.Length)],
@@ -159,8 +159,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                         ExpireDate = DateTime.Now.AddMonths(random.Next(6, 36)),
                         Effect = GetHerbEffect(herbNames[i]),
                         IsActive = true,
-                        CreatedTime = DateTime.Now.AddDays(-random.Next(1, 365)),
-                        UpdatedTime = DateTime.Now.AddDays(-random.Next(1, 30))
+                        CreateTime = DateTime.Now.AddDays(-random.Next(1, 365)),
+                        UpdateTime = DateTime.Now.AddDays(-random.Next(1, 30))
                     });
                 }
 

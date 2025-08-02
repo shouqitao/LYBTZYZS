@@ -15,4 +15,5 @@
     <ProjectReference Include="..\Core\LYBT.WPF.Client.Core.csproj" />
   </ItemGroup>
 
+
 </Project>

@@ -19,14 +19,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
     public class UserAddEditDialogViewModel : BindableBase
     {
         private readonly IUserService _userService;
-        private readonly UserInfo? _originalUser;
+        private readonly UserInfo _originalUser;
         
         private string _userName = string.Empty;
         private string _realName = string.Empty;
-        private string? _email;
-        private string? _phoneNumber;
+        private string _email;
+        private string _phoneNumber;
         private bool _isActive = true;
-        private RoleItem? _selectedRole;
+        private RoleItem _selectedRole;
         private string _validationMessage = string.Empty;
         private bool _isNewUser;
         
@@ -49,14 +49,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         }
 
         /// <summary>邮箱</summary>
-        public string? Email
+        public string Email
         {
             get => _email;
             set => SetProperty(ref _email, value);
         }
 
         /// <summary>电话号码</summary>
-        public string? PhoneNumber
+        public string PhoneNumber
         {
             get => _phoneNumber;
             set => SetProperty(ref _phoneNumber, value);
@@ -70,7 +70,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         }
 
         /// <summary>选中的角色</summary>
-        public RoleItem? SelectedRole
+        public RoleItem SelectedRole
         {
             get => _selectedRole;
             set => SetProperty(ref _selectedRole, value);
@@ -96,7 +96,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         /// <summary>对话框结果</summary>
         public bool? DialogResult { get; private set; }
 
-        public UserAddEditDialogViewModel(IUserService userService, UserInfo? user = null)
+        public UserAddEditDialogViewModel(IUserService userService, UserInfo user = null)
         {
             _userService = userService;
             _originalUser = user;
@@ -134,7 +134,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
         private void LoadUserData(UserInfo user)
         {
-            UserName = user.UserName;
+            UserName = user.Username;
             RealName = user.RealName;
             Email = user.Email;
             PhoneNumber = user.PhoneNumber;

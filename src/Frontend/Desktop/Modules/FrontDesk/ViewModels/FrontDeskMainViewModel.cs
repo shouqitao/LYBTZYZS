@@ -24,7 +24,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
             _patientService = patientService;
             _recordService = recordService;
             InitializeCommands();
-            LoadTodayRegistrations();
+            _ = LoadTodayRegistrations();
         }
 
         #region Properties
@@ -277,6 +277,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
             RaisePropertyChanged(nameof(WaitingQueueCount));
             MessageBox.Show($"患者 {patient.Name} 已加入等待队列", "成功", 
                 MessageBoxButton.OK, MessageBoxImage.Information);
+            await Task.CompletedTask;
         }
 
         private async Task RemoveFromQueue(PatientDetailDto patient)
@@ -291,6 +292,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 MessageBox.Show($"患者 {patient.Name} 已从等待队列中移除", "成功", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
+            await Task.CompletedTask;
         }
 
         private void ViewPatientInfo(PatientDetailDto patient)

@@ -5,6 +5,7 @@ using Refit;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
+using LYBT.WPF.Client.Core.Configuration;
 
 namespace LYBT.WPF.Client.Shell.Extensions
 {
@@ -47,10 +48,54 @@ namespace LYBT.WPF.Client.Shell.Extensions
             {
                 var httpClient = new HttpClient()
                 {
-                    BaseAddress = new Uri("http://localhost:5299/"),
+                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
                     Timeout = TimeSpan.FromSeconds(60)
                 };
                 return RestService.For<IAuthApiService>(httpClient);
+            });
+
+            // 注册用户API服务
+            containerRegistry.RegisterSingleton<IUserApiService>(() =>
+            {
+                var httpClient = new HttpClient()
+                {
+                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
+                    Timeout = TimeSpan.FromSeconds(60)
+                };
+                return RestService.For<IUserApiService>(httpClient);
+            });
+
+            // 注册药材API服务
+            containerRegistry.RegisterSingleton<IHerbApiService>(() =>
+            {
+                var httpClient = new HttpClient()
+                {
+                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
+                    Timeout = TimeSpan.FromSeconds(60)
+                };
+                return RestService.For<IHerbApiService>(httpClient);
+            });
+
+            // 注册病例API服务
+            containerRegistry.RegisterSingleton<IRecordApiService>(() =>
+            {
+                var httpClient = new HttpClient()
+                {
+                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
+                    Timeout = TimeSpan.FromSeconds(60)
+                };
+                return RestService.For<IRecordApiService>(httpClient);
+            });
+
+            // 注册验方模板API服务
+            containerRegistry.RegisterSingleton<IFormulaTemplateApiService>(() =>
+            {
+                var httpClient = new HttpClient()
+                {
+                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
+                    Timeout = TimeSpan.FromSeconds(60)
+                };
+                return RestService.For<IFormulaTemplateApiService>(httpClient);
             });
 
             // 注册通用API服务

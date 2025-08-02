@@ -1,7 +1,7 @@
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Enums;
+using LYBT.Shared.Models.Enums;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;

@@ -74,7 +74,7 @@ namespace LYBT.WPF.Client.Services
                     Username = "sysadmin",
                     Password = "Admin@123456",
                     RememberMe = true,
-                    ClientIp = "127.0.0.1",
+                    ClientIp = "192.168.190.243",
                     UserAgent = "LYBT.WPF.Client.Test",
                     LoginType = "Desktop"
                 };
