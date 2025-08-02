@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Herbs;
-using LYBT.WPF.Client.Core.Models.DTOs;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models.DTOs;
+// 使用别名避免冲突
+using HerbDto = LYBT.Shared.Models.Herbs.HerbDto;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -81,7 +82,7 @@ namespace LYBT.WPF.Client.Services
                         Message = response.Message
                     };
                 }
-                return new ApiResponse<HerbDetailDto>
+                return new ApiResponse<LYBT.Shared.Models.Herbs.HerbDetailDto>
                 {
                     IsSuccess = false,
                     Message = response.Message
@@ -89,7 +90,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<HerbDetailDto>
+                return new ApiResponse<LYBT.Shared.Models.Herbs.HerbDetailDto>
                 {
                     IsSuccess = false,
                     Message = $"获取药材详情失败: {ex.Message}"

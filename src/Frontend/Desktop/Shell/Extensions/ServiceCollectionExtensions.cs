@@ -6,6 +6,7 @@ using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
 using LYBT.WPF.Client.Core.Configuration;
+using LYBT.WPF.Client.Infrastructure;
 
 namespace LYBT.WPF.Client.Shell.Extensions
 {
@@ -51,7 +52,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
                     BaseAddress = new Uri(ApiConfiguration.BaseUrl),
                     Timeout = TimeSpan.FromSeconds(60)
                 };
-                return RestService.For<IAuthApiService>(httpClient);
+                return RestService.For<IAuthApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册用户API服务
@@ -62,7 +63,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
                     BaseAddress = new Uri(ApiConfiguration.BaseUrl),
                     Timeout = TimeSpan.FromSeconds(60)
                 };
-                return RestService.For<IUserApiService>(httpClient);
+                return RestService.For<IUserApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册药材API服务
@@ -73,7 +74,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
                     BaseAddress = new Uri(ApiConfiguration.BaseUrl),
                     Timeout = TimeSpan.FromSeconds(60)
                 };
-                return RestService.For<IHerbApiService>(httpClient);
+                return RestService.For<IHerbApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册病例API服务
@@ -84,7 +85,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
                     BaseAddress = new Uri(ApiConfiguration.BaseUrl),
                     Timeout = TimeSpan.FromSeconds(60)
                 };
-                return RestService.For<IRecordApiService>(httpClient);
+                return RestService.For<IRecordApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册验方模板API服务
@@ -95,7 +96,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
                     BaseAddress = new Uri(ApiConfiguration.BaseUrl),
                     Timeout = TimeSpan.FromSeconds(60)
                 };
-                return RestService.For<IFormulaTemplateApiService>(httpClient);
+                return RestService.For<IFormulaTemplateApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册通用API服务
