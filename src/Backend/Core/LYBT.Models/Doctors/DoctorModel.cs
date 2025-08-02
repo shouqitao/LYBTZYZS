@@ -86,6 +86,13 @@ namespace LYBT.Models.Doctors {
         public string? LicenseNumber { get; set; }
 
         /// <summary>
+        /// 身份证号码
+        /// </summary>
+        [StringLength(18)]
+        [DisplayName("身份证号码")]
+        public string? IdNumber { get; set; }
+
+        /// <summary>
         /// 医生姓名拼音简码（用于快速搜索，从关联用户获取）
         /// </summary>
         [StringLength(32)]

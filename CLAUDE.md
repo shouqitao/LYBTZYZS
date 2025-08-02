@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 构建命令
 
 ```bash
-# 构建后端解决方案
+# 构建后端解决方案 
 cd src/Backend
 dotnet build LYBT.Backend.sln
 
@@ -22,6 +22,10 @@ dotnet build LYBT.Client.sln
 # 构建并发布WebAPI
 cd src/Backend/Services/LYBT.WebAPI
 dotnet publish -c Release
+
+# 快速构建和运行（从根目录）
+dotnet build src/Backend/LYBT.Backend.sln
+dotnet run --project src/Backend/Services/LYBT.WebAPI
 ```
 
 ### 开发服务器
@@ -29,6 +33,12 @@ dotnet publish -c Release
 ```bash
 # 快速启动开发服务器 (Windows)
 scripts\start-dev.bat
+
+# 开发管理器 - 交互式开发工具菜单
+scripts\dev-manager.bat
+
+# 主菜单 - 快速访问所有功能
+scripts\main.bat
 
 # 手动启动 WebAPI
 cd src/Backend/Services/LYBT.WebAPI
@@ -45,7 +55,7 @@ dotnet run
 # 交互式数据库管理器 (Windows)
 scripts\database-manager.bat
 
-# 添加新迁移
+# 添加新迁移 - IMPORTANT: 始终使用Infrastructure项目
 dotnet ef migrations add 迁移名称 --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
 
 # 更新数据库
@@ -53,6 +63,9 @@ dotnet ef database update --project src/Backend/Core/LYBT.Infrastructure --start
 
 # 删除并重建数据库 (开发环境)
 dotnet ef database drop --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI --force
+
+# 查看数据库上下文信息
+dotnet ef dbcontext info --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
 ```
 
 ### 测试
@@ -79,6 +92,15 @@ scripts\clean-build-outputs.bat
 
 # 健康检查
 scripts\health-check.bat
+
+# 服务器部署
+scripts\server-deploy.bat
+
+# 完整部署测试
+scripts\test-full-deployment.bat
+
+# 文件监控（开发期间）
+scripts\file-monitor.bat
 ```
 
 ## 高层架构
@@ -191,3 +213,33 @@ scripts\health-check.bat
 ### 显示语言约定
 
 - 中文显示
+
+### 重要开发约定
+
+1. **构建输出路径**: 
+   - WebAPI 输出到 `BIN/LYBT.WebAPI/`
+   - WPF 客户端输出到 `BIN/LYBT.Desktop/`
+   - 临时文件存放在 `BIN/temp/`
+
+2. **项目结构关键点**:
+   - 所有迁移必须在 `LYBT.Infrastructure` 项目中进行
+   - 新增业务模块时应遵循现有的模块模式
+   - 共享模型定义在 `LYBT.Shared.Models` 中
+   - 控制器应位于 `LYBT.WebAPI` 项目中并继承 `BaseController`
+
+3. **开发工作流**:
+   - 优先使用 `scripts/` 目录中的批处理文件进行常见操作
+   - 数据库在首次运行时自动初始化
+   - 使用 JWT Bearer 令牌进行 API 认证
+   - 所有 API 响应都包装在 `ApiResponse<T>` 中
+
+4. **解决方案文件位置**:
+   - 后端: `src/Backend/LYBT.Backend.sln`
+   - 前端: `src/Frontend/LYBT.Client.sln`
+
+### 常见问题解决
+
+- **编译错误**: 检查 `Directory.Build.props` 配置
+- **数据库连接问题**: 确认 `appsettings.json` 中的连接字符串
+- **权限问题**: 确保使用正确的管理员凭据（sysadmin/Admin@123456）
+- **端口冲突**: WebAPI 默认运行在 https://localhost:7001

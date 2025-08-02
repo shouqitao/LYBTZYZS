@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.DTOs;
 using LYBT.WPF.Client.Core.Interfaces.Services;
@@ -25,15 +26,15 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取药材列表
         /// </summary>
-        public async Task<ApiResponse<List<HerbInfo>>> GetHerbsAsync()
+        public async Task<ApiResponse<List<HerbDto>>> GetHerbsAsync()
         {
             try
             {
-                return await _apiService.GetAsync<List<HerbInfo>>("herbs");
+                return await _apiService.GetAsync<List<HerbDto>>("herbs");
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<HerbInfo>>
+                return new ApiResponse<List<HerbDto>>
                 {
                     IsSuccess = false,
                     Message = $"获取药材列表失败: {ex.Message}"
@@ -44,15 +45,15 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        public async Task<ApiResponse<PagedResultDto<HerbInfo>>> GetPagedAsync(HerbPagedQueryDto query)
+        public async Task<ApiResponse<PaginatedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
         {
             try
             {
-                return await _apiService.PostAsync<PagedResultDto<HerbInfo>>("herbs/paged", query);
+                return await _apiService.PostAsync<PaginatedResult<HerbDto>>("herbs/paged", query);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<PagedResultDto<HerbInfo>>
+                return new ApiResponse<PaginatedResult<HerbDto>>
                 {
                     IsSuccess = false,
                     Message = $"分页查询药材失败: {ex.Message}"
@@ -101,7 +102,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 编辑药材
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateAsync(HerbEditDto dto)
+        public async Task<ApiResponse<object>> UpdateAsync(HerbUpdateDto dto)
         {
             try
             {
@@ -139,15 +140,15 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取缺货药材列表
         /// </summary>
-        public async Task<ApiResponse<List<HerbInfo>>> GetOutOfStockAsync()
+        public async Task<ApiResponse<List<HerbDto>>> GetOutOfStockAsync()
         {
             try
             {
-                return await _apiService.GetAsync<List<HerbInfo>>("herbs/out-of-stock");
+                return await _apiService.GetAsync<List<HerbDto>>("herbs/out-of-stock");
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<HerbInfo>>
+                return new ApiResponse<List<HerbDto>>
                 {
                     IsSuccess = false,
                     Message = $"获取缺货药材失败: {ex.Message}"
@@ -158,15 +159,15 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取即将过期的药材
         /// </summary>
-        public async Task<ApiResponse<List<HerbInfo>>> GetExpiringAsync(int days = 30)
+        public async Task<ApiResponse<List<HerbDto>>> GetExpiringAsync(int days = 30)
         {
             try
             {
-                return await _apiService.GetAsync<List<HerbInfo>>($"herbs/expiring?days={days}");
+                return await _apiService.GetAsync<List<HerbDto>>($"herbs/expiring?days={days}");
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<HerbInfo>>
+                return new ApiResponse<List<HerbDto>>
                 {
                     IsSuccess = false,
                     Message = $"获取即将过期药材失败: {ex.Message}"
@@ -177,15 +178,15 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取可用药材列表
         /// </summary>
-        public async Task<ApiResponse<List<HerbInfo>>> GetAvailableAsync()
+        public async Task<ApiResponse<List<HerbDto>>> GetAvailableAsync()
         {
             try
             {
-                return await _apiService.GetAsync<List<HerbInfo>>("herbs/available");
+                return await _apiService.GetAsync<List<HerbDto>>("herbs/available");
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<HerbInfo>>
+                return new ApiResponse<List<HerbDto>>
                 {
                     IsSuccess = false,
                     Message = $"获取可用药材失败: {ex.Message}"

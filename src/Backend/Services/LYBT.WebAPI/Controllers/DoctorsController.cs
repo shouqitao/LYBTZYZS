@@ -69,6 +69,44 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
+        /// RESTful 获取医生列表 (GET /doctors) - 支持多字段模糊查询
+        /// 权限控制：禁用的医生仅管理员可查询
+        /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<ApiResponse<PaginatedResult<DoctorDto>>>> GetDoctors(
+            [FromQuery] int page = 1, 
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? realName = null,
+            [FromQuery] string? specialty = null,
+            [FromQuery] string? licenseNumber = null,
+            [FromQuery] string? phoneNumber = null,
+            [FromQuery] DoctorTitle? title = null,
+            [FromQuery] DoctorStatus? status = null,
+            [FromQuery] DoctorWorkStatus? workStatus = null,
+            [FromQuery] bool? isActive = null) {
+            try {
+                var (_, _, operatorRole) = GetOperator();
+                var query = new DoctorQueryDto {
+                    Page = page,
+                    PageSize = pageSize,
+                    Keyword = keyword,
+                    IsActive = isActive
+                };
+                var result = await _doctorService.GetPagedAsync(query, operatorRole);
+
+                if (result.IsSuccess) {
+                    return Ok(result);
+                } else {
+                    return BadRequest(ApiResponse<object>.Fail(result.Message));
+                }
+            } catch (Exception ex) {
+                _logger.LogError(ex, "RESTful获取医生列表失败");
+                return StatusCode(500, ApiResponse<object>.Fail("RESTful获取医生列表失败"));
+            }
+        }
+
+        /// <summary>
         /// 搜索医生
         /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
@@ -375,6 +413,53 @@ namespace LYBT.WebAPI.Controllers {
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取角色列表失败");
                 return StatusCode(500, ApiResponse<object>.Fail("获取角色列表失败"));
+            }
+        }
+
+        // ======================== RESTful 标准接口 ========================
+
+        // 注意：已有 GetActiveList() 作为获取医生列表的GET端点
+
+        /// <summary>
+        /// 创建新医生 (RESTful POST /Doctors)
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult<ApiResponse<object>>> CreateDoctor([FromBody] DoctorDetailDto dto) {
+            var (operatorId, operatorName, operatorRole) = GetOperator();
+            try {
+                var result = await _doctorService.AddAsync(dto, operatorRole);
+                if (result.IsSuccess) {
+                    ClearAllDoctorCache();
+                    return StatusCode(201, ApiResponse<object>.Success("医生创建成功"));
+                } else {
+                    return BadRequest(ApiResponse<object>.Fail(result.Message, 400));
+                }
+            } catch (Exception ex) {
+                _logger.LogError(ex, "创建医生失败");
+                return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+            }
+        }
+
+        // 注意：已有 Update(Guid id, DoctorDetailDto dto) 作为 PUT 端点
+
+        /// <summary>
+        /// 删除医生 (RESTful DELETE /Doctors/{id}) - 实际执行软删除
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ApiResponse<object>>> DeleteDoctor(Guid id) {
+            var (operatorId, operatorName, _) = GetOperator();
+            try {
+                var result = await _doctorService.DisableAsync(id);
+                if (result.IsSuccess) {
+                    ClearDoctorCache(id);
+                    ClearAllDoctorCache();
+                    return Ok(ApiResponse<object>.Success("医生已禁用"));
+                } else {
+                    return BadRequest(ApiResponse<object>.Fail("禁用医生失败", 400));
+                }
+            } catch (Exception ex) {
+                _logger.LogError(ex, "禁用医生失败");
+                return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
             }
         }
 

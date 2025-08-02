@@ -44,16 +44,49 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取病历列表
+        /// 获取病历列表 (RESTful GET /Records) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<RecordDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<RecordDto>>>> GetList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? patientName = null,
+            [FromQuery] string? doctorName = null,
+            [FromQuery] string? diagnosis = null,
+            [FromQuery] string? chiefComplaint = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] bool? isShared = null) {
             try {
-                var list = await _recordService.GetListAsync();
-                return Ok(ApiResponse<List<RecordDto>>.Success(list));
+                // 如果没有任何查询条件且请求第一页，返回简单列表
+                if (page == 1 && pageSize >= 20 && string.IsNullOrEmpty(keyword) && string.IsNullOrEmpty(patientName) && 
+                    string.IsNullOrEmpty(doctorName) && string.IsNullOrEmpty(diagnosis) && string.IsNullOrEmpty(chiefComplaint) &&
+                    !startDate.HasValue && !endDate.HasValue && !isShared.HasValue) {
+                    
+                    var list = await _recordService.GetListAsync();
+                    var totalCount = list?.Count ?? 0;
+                    var pagedList = list?.Take(pageSize).ToList() ?? new List<RecordDto>();
+                    var result = new PaginatedResult<RecordDto> {
+                        TotalCount = totalCount,
+                        Items = pagedList
+                    };
+                    return Ok(ApiResponse<PaginatedResult<RecordDto>>.Success(result));
+                }
+
+                // 使用分页查询服务 (简化版本，只保留基本搜索功能)
+                var query = new PaginationRequest {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword
+                };
+                
+                var (_, _, operatorRole) = GetOperator();
+                var pagedResult = await _recordService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<RecordDto>>.Success(pagedResult));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取病历列表失败");
-                return StatusCode(500, ApiResponse<List<RecordDto>>.Fail("获取病历列表失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<RecordDto>>.Fail("获取病历列表失败", 500));
             }
         }
 

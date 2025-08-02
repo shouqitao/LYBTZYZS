@@ -853,6 +853,10 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
+                    b.Property<string>("IdNumber")
+                        .HasMaxLength(18)
+                        .HasColumnType("nvarchar(18)");
+
                     b.Property<string>("LicenseNumber")
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");

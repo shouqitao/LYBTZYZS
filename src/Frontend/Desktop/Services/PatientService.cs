@@ -137,15 +137,15 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        public async Task<ApiResponse<PagedResultDto<PatientDetailDto>>> GetPagedAsync(PatientPagedQueryDto query)
+        public async Task<ApiResponse<PaginatedResult<PatientDetailDto>>> GetPagedAsync(PatientPagedQueryDto query)
         {
             try
             {
-                return await _apiService.PostAsync<PagedResultDto<PatientDetailDto>>("patients/paged", query);
+                return await _apiService.PostAsync<PaginatedResult<PatientDetailDto>>("patients/paged", query);
             }
             catch (Exception ex)
             {
-                return new ApiResponse<PagedResultDto<PatientDetailDto>>
+                return new ApiResponse<PaginatedResult<PatientDetailDto>>
                 {
                     IsSuccess = false,
                     Message = $"分页查询患者失败: {ex.Message}"

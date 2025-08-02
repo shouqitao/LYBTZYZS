@@ -43,16 +43,49 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取挂号列表
+        /// 获取挂号列表 (RESTful GET /Registration) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<RegistrationDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<RegistrationDto>>>> GetList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? patientName = null,
+            [FromQuery] string? doctorName = null,
+            [FromQuery] RegistrationType? registrationType = null,
+            [FromQuery] RegistrationStatus? status = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] bool? isFromDoctor = null) {
             try {
-                var list = await _registrationService.GetListAsync();
-                return Ok(ApiResponse<List<RegistrationDto>>.Success(list));
+                // 如果没有任何查询条件且请求第一页，返回简单列表
+                if (page == 1 && pageSize >= 20 && string.IsNullOrEmpty(keyword) && string.IsNullOrEmpty(patientName) && 
+                    string.IsNullOrEmpty(doctorName) && !registrationType.HasValue && !status.HasValue &&
+                    !startDate.HasValue && !endDate.HasValue && !isFromDoctor.HasValue) {
+                    
+                    var list = await _registrationService.GetListAsync();
+                    var totalCount = list?.Count ?? 0;
+                    var pagedList = list?.Take(pageSize).ToList() ?? new List<RegistrationDto>();
+                    var result = new PaginatedResult<RegistrationDto> {
+                        TotalCount = totalCount,
+                        Items = pagedList
+                    };
+                    return Ok(ApiResponse<PaginatedResult<RegistrationDto>>.Success(result));
+                }
+
+                // 使用分页查询服务 (简化版本，只保留基本搜索功能)
+                var query = new LYBT.Shared.Models.Common.PaginationRequest {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword
+                };
+                
+                var (_, _, operatorRole) = GetOperator();
+                var pagedResult = await _registrationService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<RegistrationDto>>.Success(pagedResult));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取挂号列表失败");
-                return StatusCode(500, ApiResponse<List<RegistrationDto>>.Fail("获取挂号列表失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<RegistrationDto>>.Fail("获取挂号列表失败", 500));
             }
         }
 

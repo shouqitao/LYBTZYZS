@@ -45,16 +45,48 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取所有模板列表
+        /// 获取所有模板列表 (RESTful GET /FormulaTemplates) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<FormulaTemplateDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<FormulaTemplateDto>>>> GetList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? name = null,
+            [FromQuery] string? effect = null,
+            [FromQuery] string? usage = null,
+            [FromQuery] string? property = null,
+            [FromQuery] bool? isActive = null,
+            [FromQuery] bool? isShared = null) {
             try {
-                var list = await _service.GetListAsync();
-                return Ok(ApiResponse<List<FormulaTemplateDto>>.Success(list));
+                // 如果没有任何查询条件且请求第一页，返回简单列表
+                if (page == 1 && pageSize >= 20 && string.IsNullOrEmpty(keyword) && string.IsNullOrEmpty(name) && 
+                    string.IsNullOrEmpty(effect) && string.IsNullOrEmpty(usage) && string.IsNullOrEmpty(property) &&
+                    !isActive.HasValue && !isShared.HasValue) {
+                    
+                    var list = await _service.GetListAsync();
+                    var totalCount = list?.Count ?? 0;
+                    var pagedList = list?.Take(pageSize).ToList() ?? new List<FormulaTemplateDto>();
+                    var result = new PaginatedResult<FormulaTemplateDto> {
+                        TotalCount = totalCount,
+                        Items = pagedList
+                    };
+                    return Ok(ApiResponse<PaginatedResult<FormulaTemplateDto>>.Success(result));
+                }
+
+                // 使用分页查询服务
+                var query = new LYBT.Shared.Models.Common.PaginationRequest {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword ?? name
+                };
+                
+                var (_, _, operatorRole) = GetOperator();
+                var pagedResult = await _service.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<FormulaTemplateDto>>.Success(pagedResult));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取验方模板列表失败");
-                return StatusCode(500, ApiResponse<List<FormulaTemplateDto>>.Fail("获取验方模板列表失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<FormulaTemplateDto>>.Fail("获取验方模板列表失败", 500));
             }
         }
 
@@ -112,7 +144,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
 
                 _logger.LogInformation("新增验方模板成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "新增验方模板成功"));
+                return StatusCode(201, ApiResponse<object>.Success(new { }, "新增验方模板成功"));
             } catch (Exception ex) {
                 _logger.LogError(ex, "新增验方模板失败");
                 return StatusCode(500, ApiResponse<object>.Fail("新增验方模板失败", 500));
@@ -123,7 +155,8 @@ namespace LYBT.WebAPI.Controllers {
         /// 编辑模板
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update([FromBody] FormulaTemplateEditDto dto) {
+        public async Task<ActionResult<ApiResponse<object>>> Update(Guid id, [FromBody] FormulaTemplateEditDto dto) {
+            dto.Id = id; // 确保ID一致
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));

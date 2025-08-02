@@ -47,20 +47,57 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取费用结算列表
+        /// 获取费用结算列表 (RESTful GET /Billing) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<BillingDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<BillingDto>>>> GetList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? billingId = null,
+            [FromQuery] string? patientName = null,
+            [FromQuery] string? doctorName = null,
+            [FromQuery] BillingStatus? status = null,
+            [FromQuery] string? paymentMethod = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] decimal? minAmount = null,
+            [FromQuery] decimal? maxAmount = null) {
             try {
-                const string cacheKey = "billing_list";
-                if (!_cache.TryGetValue(cacheKey, out List<BillingDto>? list)) {
-                    list = await _billingService.GetListAsync();
-                    _cache.Set(cacheKey, list, TimeSpan.FromMinutes(10));
+                // 如果没有任何查询条件且请求第一页，使用缓存的完整列表
+                if (page == 1 && pageSize >= 20 && string.IsNullOrEmpty(keyword) && string.IsNullOrEmpty(billingId) && 
+                    string.IsNullOrEmpty(patientName) && string.IsNullOrEmpty(doctorName) && !status.HasValue &&
+                    string.IsNullOrEmpty(paymentMethod) && !startDate.HasValue && !endDate.HasValue &&
+                    !minAmount.HasValue && !maxAmount.HasValue) {
+                    
+                    const string cacheKey = "billing_list";
+                    if (!_cache.TryGetValue(cacheKey, out List<BillingDto>? list)) {
+                        list = await _billingService.GetListAsync();
+                        _cache.Set(cacheKey, list, TimeSpan.FromMinutes(10));
+                    }
+                    
+                    var totalCount = list?.Count ?? 0;
+                    var pagedList = list?.Take(pageSize).ToList() ?? new List<BillingDto>();
+                    var result = new PaginatedResult<BillingDto> {
+                        TotalCount = totalCount,
+                        Items = pagedList
+                    };
+                    return Ok(ApiResponse<PaginatedResult<BillingDto>>.Success(result));
                 }
-                return Ok(ApiResponse<List<BillingDto>>.Success(list ?? new List<BillingDto>()));
+
+                // 使用分页查询服务 (简化版本，只保留基本搜索功能)
+                var query = new LYBT.Shared.Models.Common.PaginationRequest {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword
+                };
+                
+                var (_, _, operatorRole) = GetOperator();
+                var pagedResult = await _billingService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<BillingDto>>.Success(pagedResult));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取费用结算列表失败");
-                return StatusCode(500, ApiResponse<List<BillingDto>>.Fail("获取费用结算列表失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<BillingDto>>.Fail("获取费用结算列表失败", 500));
             }
         }
 

@@ -220,14 +220,30 @@ public class UsersController : ControllerBase {
     // ======================== RESTful 标准接口 ========================
 
     /// <summary>
-    /// 获取所有用户列表 (RESTful GET /Users)
+    /// 获取所有用户列表 (RESTful GET /Users) - 支持模糊查询
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20) {
+    public async Task<IActionResult> GetUsers(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null,
+        [FromQuery] string? username = null,
+        [FromQuery] string? realName = null,
+        [FromQuery] string? email = null,
+        [FromQuery] string? phoneNumber = null,
+        [FromQuery] UserRole? role = null,
+        [FromQuery] bool? isActive = null) {
         var (_, _, operatorRole) = GetOperator();
         var query = new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto {
             CurrentPage = page,
-            PageSize = pageSize
+            PageSize = pageSize,
+            SearchKeyword = keyword,
+            Username = username,
+            RealName = realName,
+            Email = email,
+            PhoneNumber = phoneNumber,
+            Role = role,
+            IsActive = isActive
         };
         var result = await _userService.GetPagedAsync(query, operatorRole);
         return Ok(ApiResponse<PaginatedResult<LYBT.Shared.Models.Contracts.Users.UserDto>>.Success(result));
@@ -284,6 +300,7 @@ public class UsersController : ControllerBase {
         }
     }
 
-    // 注意：不提供真正的删除接口，用户只能禁用，不能删除
-    // 原有的删除相关接口已移除，改为禁用/启用操作
+    // 注意：本系统采用软删除策略，不提供DELETE接口
+    // 请使用 PATCH /Users/{id}/disable 来禁用用户
+    // 请使用 PATCH /Users/{id}/enable 来启用用户
 }

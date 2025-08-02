@@ -44,16 +44,48 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取排队列表
+        /// 获取排队列表 (RESTful GET /Queueing) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<QueueingDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<QueueingDto>>>> GetList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? patientName = null,
+            [FromQuery] string? doctorName = null,
+            [FromQuery] string? queueType = null,
+            [FromQuery] QueueStatus? status = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null) {
             try {
-                var list = await _queueingService.GetListAsync();
-                return Ok(ApiResponse<List<QueueingDto>>.Success(list));
+                // 如果没有任何查询条件且请求第一页，返回简单列表
+                if (page == 1 && pageSize >= 20 && string.IsNullOrEmpty(keyword) && string.IsNullOrEmpty(patientName) && 
+                    string.IsNullOrEmpty(doctorName) && string.IsNullOrEmpty(queueType) && !status.HasValue &&
+                    !startDate.HasValue && !endDate.HasValue) {
+                    
+                    var list = await _queueingService.GetListAsync();
+                    var totalCount = list?.Count ?? 0;
+                    var pagedList = list?.Take(pageSize).ToList() ?? new List<QueueingDto>();
+                    var result = new PaginatedResult<QueueingDto> {
+                        TotalCount = totalCount,
+                        Items = pagedList
+                    };
+                    return Ok(ApiResponse<PaginatedResult<QueueingDto>>.Success(result));
+                }
+
+                // 使用分页查询服务 (简化版本，只保留基本搜索功能)
+                var query = new LYBT.Shared.Models.Common.PaginationRequest {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword
+                };
+                
+                var (_, _, operatorRole) = GetOperator();
+                var pagedResult = await _queueingService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<QueueingDto>>.Success(pagedResult));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取排队列表失败");
-                return StatusCode(500, ApiResponse<List<QueueingDto>>.Fail("获取排队列表失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<QueueingDto>>.Fail("获取排队列表失败", 500));
             }
         }
 

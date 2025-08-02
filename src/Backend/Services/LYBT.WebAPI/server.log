@@ -1,4 +1,5 @@
 从 D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\Properties\launchSettings.json 使用启动设置...
+正在生成...
 🔄 正在初始化应用程序...
 info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
       开始数据库初始化检查...
@@ -13,24 +14,24 @@ info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
 info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
       检查目标数据库 LYBTDB...
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT 1
 info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
       ✅ 数据库 LYBTDB 存在且可访问
 info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
       ✅ 数据库连接检查完成
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT 1
 info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
       数据库存在状态: 存在
 info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
       检查数据库迁移状态...
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
@@ -55,7 +56,7 @@ info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
 info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
       验证数据库表结构...
 fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
-      Failed executing DbCommand (10ms) [Parameters=[@p0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      Failed executing DbCommand (11ms) [Parameters=[@p0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
       SELECT TOP 0 * FROM [@p0]
 warn: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
       ⚠️ 表 Users 验证失败: Invalid object name '@p0'.
@@ -99,7 +100,7 @@ info: LYBT.Infrastructure.Database.DatabaseInitializationService[0]
 📍 访问地址: 默认端口
 📖 Swagger文档: 默认端口/swagger
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
@@ -110,7 +111,7 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       FROM [__EFMigrationsHistory]
       ORDER BY [MigrationId];
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
@@ -129,10 +130,263 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
 💡 按 Ctrl+C 停止程序
 
 info: Microsoft.Hosting.Lifetime[14]
-      Now listening on: http://localhost:5297
+      Now listening on: http://localhost:5001
 info: Microsoft.Hosting.Lifetime[0]
       Application started. Press Ctrl+C to shut down.
 info: Microsoft.Hosting.Lifetime[0]
       Hosting environment: Development
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI
+warn: LuckyPennySoftware.AutoMapper.License[0]
+      You do not have a valid license key for the Lucky Penny software AutoMapper. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+info: LYBT.WebAPI.Controllers.AuthController[0]
+      用户 sysadmin 尝试登录
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userName_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [a].[Id], [a].[PasswordHash], [a].[UserName]
+      FROM [AdminSecrets] AS [a]
+      WHERE [a].[UserName] = @__userName_0
+info: LYBT.WebAPI.Controllers.AuthController[0]
+      sysadmin登录成功
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userName_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [a].[Id], [a].[PasswordHash], [a].[UserName]
+      FROM [AdminSecrets] AS [a]
+      WHERE [a].[UserName] = @__userName_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userName_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [a].[Id], [a].[PasswordHash], [a].[UserName]
+      FROM [AdminSecrets] AS [a]
+      WHERE [a].[UserName] = @__userName_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p2='?' (DbType = Guid), @p0='?' (Size = 500), @p1='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      UPDATE [AdminSecrets] SET [PasswordHash] = @p0, [UserName] = @p1
+      OUTPUT 1
+      WHERE [Id] = @p2;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime2), @p2='?' (Size = 450), @p3='?' (Size = 45), @p4='?' (Size = 500), @p5='?' (DbType = Int64), @p6='?' (Size = 2000), @p7='?' (Size = 100), @p8='?' (Size = 10), @p9='?' (DbType = Boolean), @p10='?' (Size = 50), @p11='?' (Size = 4000), @p12='?' (Size = 500), @p13='?' (Size = 500), @p14='?' (DbType = Guid), @p15='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [UserActionLogs] ([Id], [ActionTime], [ActionType], [ClientIP], [Description], [Duration], [ErrorMessage], [Function], [HttpMethod], [IsSuccess], [Module], [Parameters], [RequestPath], [UserAgent], [UserId], [UserName])
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: LYBT.WebAPI.Controllers.AuthController[0]
+      用户 sysadmin 尝试登录
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userName_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [a].[Id], [a].[PasswordHash], [a].[UserName]
+      FROM [AdminSecrets] AS [a]
+      WHERE [a].[UserName] = @__userName_0
+info: LYBT.WebAPI.Controllers.AuthController[0]
+      sysadmin登录成功
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userName_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [a].[Id], [a].[PasswordHash], [a].[UserName]
+      FROM [AdminSecrets] AS [a]
+      WHERE [a].[UserName] = @__userName_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userName_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [a].[Id], [a].[PasswordHash], [a].[UserName]
+      FROM [AdminSecrets] AS [a]
+      WHERE [a].[UserName] = @__userName_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p2='?' (DbType = Guid), @p0='?' (Size = 500), @p1='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      UPDATE [AdminSecrets] SET [PasswordHash] = @p0, [UserName] = @p1
+      OUTPUT 1
+      WHERE [Id] = @p2;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime2), @p2='?' (Size = 450), @p3='?' (Size = 45), @p4='?' (Size = 500), @p5='?' (DbType = Int64), @p6='?' (Size = 2000), @p7='?' (Size = 100), @p8='?' (Size = 10), @p9='?' (DbType = Boolean), @p10='?' (Size = 50), @p11='?' (Size = 4000), @p12='?' (Size = 500), @p13='?' (Size = 500), @p14='?' (DbType = Guid), @p15='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [UserActionLogs] ([Id], [ActionTime], [ActionType], [ClientIP], [Description], [Duration], [ErrorMessage], [Function], [HttpMethod], [IsSuccess], [Module], [Parameters], [RequestPath], [UserAgent], [UserId], [UserName])
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: LYBT.WebAPI.Controllers.AuthController[0]
+      用户 sysadmin 尝试登录
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userName_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [a].[Id], [a].[PasswordHash], [a].[UserName]
+      FROM [AdminSecrets] AS [a]
+      WHERE [a].[UserName] = @__userName_0
+info: LYBT.WebAPI.Controllers.AuthController[0]
+      sysadmin登录成功
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__query_IsActive_Value_0='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Users] AS [u]
+      WHERE [u].[UserName] <> N'sysadmin' AND [u].[IsActive] = @__query_IsActive_Value_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__query_IsActive_Value_0='?' (DbType = Boolean), @__p_1='?' (DbType = Int32), @__p_2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [u].[Id], [u].[CreatedTime], [u].[Department], [u].[Email], [u].[FailedLoginCount], [u].[IsActive], [u].[LastLoginTime], [u].[LockoutEnd], [u].[PasswordHash], [u].[PhoneNumber], [u].[PinyinCode], [u].[Position], [u].[RealName], [u].[Remark], [u].[Role], [u].[UpdateTime], [u].[UserName], [u].[WuBiCode]
+      FROM [Users] AS [u]
+      WHERE [u].[UserName] <> N'sysadmin' AND [u].[IsActive] = @__query_IsActive_Value_0
+      ORDER BY [u].[CreatedTime] DESC
+      OFFSET @__p_1 ROWS FETCH NEXT @__p_2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Users] AS [u]
+      WHERE [u].[UserName] <> N'sysadmin'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [u].[Id], [u].[CreatedTime], [u].[Department], [u].[Email], [u].[FailedLoginCount], [u].[IsActive], [u].[LastLoginTime], [u].[LockoutEnd], [u].[PasswordHash], [u].[PhoneNumber], [u].[PinyinCode], [u].[Position], [u].[RealName], [u].[Remark], [u].[Role], [u].[UpdateTime], [u].[UserName], [u].[WuBiCode]
+      FROM [Users] AS [u]
+      WHERE [u].[UserName] <> N'sysadmin'
+      ORDER BY [u].[CreatedTime] DESC
+      OFFSET @__p_0 ROWS FETCH NEXT @__p_1 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userName_0='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Users] AS [u]
+              WHERE [u].[UserName] = @__userName_0) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime2), @p2='?' (Size = 100), @p3='?' (Size = 100), @p4='?' (DbType = Int32), @p5='?' (DbType = Boolean), @p6='?' (DbType = DateTime2), @p7='?' (DbType = DateTime2), @p8='?' (Size = 255), @p9='?' (Size = 20), @p10='?' (Size = 20), @p11='?' (Size = 100), @p12='?' (Size = 100), @p13='?' (Size = 500), @p14='?' (DbType = Int32), @p15='?' (DbType = DateTime2), @p16='?' (Size = 50), @p17='?' (Size = 20)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [Users] ([Id], [CreatedTime], [Department], [Email], [FailedLoginCount], [IsActive], [LastLoginTime], [LockoutEnd], [PasswordHash], [PhoneNumber], [PinyinCode], [Position], [RealName], [Remark], [Role], [UpdateTime], [UserName], [WuBiCode])
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime2), @p2='?' (Size = 450), @p3='?' (Size = 45), @p4='?' (Size = 500), @p5='?' (DbType = Int64), @p6='?' (Size = 2000), @p7='?' (Size = 100), @p8='?' (Size = 10), @p9='?' (DbType = Boolean), @p10='?' (Size = 50), @p11='?' (Size = 4000), @p12='?' (Size = 500), @p13='?' (Size = 500), @p14='?' (DbType = Guid), @p15='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [UserActionLogs] ([Id], [ActionTime], [ActionType], [ClientIP], [Description], [Duration], [ErrorMessage], [Function], [HttpMethod], [IsSuccess], [Module], [Parameters], [RequestPath], [UserAgent], [UserId], [UserName])
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [u].[Id], [u].[CreatedTime], [u].[Department], [u].[Email], [u].[FailedLoginCount], [u].[IsActive], [u].[LastLoginTime], [u].[LockoutEnd], [u].[PasswordHash], [u].[PhoneNumber], [u].[PinyinCode], [u].[Position], [u].[RealName], [u].[Remark], [u].[Role], [u].[UpdateTime], [u].[UserName], [u].[WuBiCode]
+      FROM [Users] AS [u]
+      WHERE [u].[IsActive] = CAST(1 AS bit) AND [u].[UserName] <> N'sysadmin'
+      ORDER BY [u].[RealName]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [p].[Id], [p].[Address], [p].[Age], [p].[AllergyHistory], [p].[BirthDate], [p].[CreatedAt], [p].[CreatedBy], [p].[DisableReason], [p].[Education], [p].[Ethnicity], [p].[Gender], [p].[IdNumber], [p].[IdType], [p].[LastVisitTime], [p].[MaritalStatus], [p].[Name], [p].[Occupation], [p].[PhoneNumber], [p].[PinyinCode], [p].[Status], [p].[UpdateTime], [p].[UpdatedBy], [p].[VisitCount], [p].[WuBiCode]
+      FROM [Patients] AS [p]
+      ORDER BY [p].[CreatedAt] DESC
+      OFFSET @__p_0 ROWS FETCH NEXT @__p_1 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Patients] AS [p]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__name_0='?' (Size = 100), @__phoneNumber_1='?' (Size = 20)], CommandType='Text', CommandTimeout='30']
+      SELECT [p].[Id], [p].[Address], [p].[Age], [p].[AllergyHistory], [p].[BirthDate], [p].[CreatedAt], [p].[CreatedBy], [p].[DisableReason], [p].[Education], [p].[Ethnicity], [p].[Gender], [p].[IdNumber], [p].[IdType], [p].[LastVisitTime], [p].[MaritalStatus], [p].[Name], [p].[Occupation], [p].[PhoneNumber], [p].[PinyinCode], [p].[Status], [p].[UpdateTime], [p].[UpdatedBy], [p].[VisitCount], [p].[WuBiCode]
+      FROM [Patients] AS [p]
+      WHERE [p].[Name] = @__name_0 AND [p].[PhoneNumber] = @__phoneNumber_1
+warn: Microsoft.EntityFrameworkCore.Query[10102]
+      The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator. This may lead to unpredictable results. If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__p_2='?' (DbType = Int32), @__pinyinCode_0='?' (Size = 20), @__name_1_contains='?' (Size = 100), @__name_1='?' (Size = 100)], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(@__p_2) [p].[Id], [p].[Address], [p].[Age], [p].[AllergyHistory], [p].[BirthDate], [p].[CreatedAt], [p].[CreatedBy], [p].[DisableReason], [p].[Education], [p].[Ethnicity], [p].[Gender], [p].[IdNumber], [p].[IdType], [p].[LastVisitTime], [p].[MaritalStatus], [p].[Name], [p].[Occupation], [p].[PhoneNumber], [p].[PinyinCode], [p].[Status], [p].[UpdateTime], [p].[UpdatedBy], [p].[VisitCount], [p].[WuBiCode]
+      FROM [Patients] AS [p]
+      WHERE ([p].[PinyinCode] = @__pinyinCode_0 OR [p].[Name] LIKE @__name_1_contains ESCAPE N'\' OR CHARINDEX([p].[Name], @__name_1) > 0 OR [p].[Name] LIKE N'') AND [p].[Name] <> @__name_1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__phoneNumber_0='?' (Size = 20)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Patients] AS [p]
+              WHERE [p].[PhoneNumber] = @__phoneNumber_0) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (Size = 256), @p2='?' (DbType = Int32), @p3='?' (Size = 500), @p4='?' (DbType = DateTime2), @p5='?' (DbType = DateTime2), @p6='?' (DbType = Guid), @p7='?' (Size = 128), @p8='?' (Size = 30), @p9='?' (Size = 20), @p10='?' (DbType = Int32), @p11='?' (Size = 50), @p12='?' (Size = 20), @p13='?' (DbType = DateTime2), @p14='?' (Size = 20), @p15='?' (Size = 100), @p16='?' (Size = 50), @p17='?' (Size = 20), @p18='?' (Size = 20), @p19='?' (DbType = Int32), @p20='?' (DbType = DateTime2), @p21='?' (DbType = Guid), @p22='?' (DbType = Int32), @p23='?' (Size = 20)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [Patients] ([Id], [Address], [Age], [AllergyHistory], [BirthDate], [CreatedAt], [CreatedBy], [DisableReason], [Education], [Ethnicity], [Gender], [IdNumber], [IdType], [LastVisitTime], [MaritalStatus], [Name], [Occupation], [PhoneNumber], [PinyinCode], [Status], [UpdateTime], [UpdatedBy], [VisitCount], [WuBiCode])
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime2), @p2='?' (Size = 450), @p3='?' (Size = 45), @p4='?' (Size = 500), @p5='?' (DbType = Int64), @p6='?' (Size = 2000), @p7='?' (Size = 100), @p8='?' (Size = 10), @p9='?' (DbType = Boolean), @p10='?' (Size = 50), @p11='?' (Size = 4000), @p12='?' (Size = 500), @p13='?' (Size = 500), @p14='?' (DbType = Guid), @p15='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [UserActionLogs] ([Id], [ActionTime], [ActionType], [ClientIP], [Description], [Duration], [ErrorMessage], [Function], [HttpMethod], [IsSuccess], [Module], [Parameters], [RequestPath], [UserAgent], [UserId], [UserName])
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [p].[Id], [p].[Address], [p].[Age], [p].[AllergyHistory], [p].[BirthDate], [p].[CreatedAt], [p].[CreatedBy], [p].[DisableReason], [p].[Education], [p].[Ethnicity], [p].[Gender], [p].[IdNumber], [p].[IdType], [p].[LastVisitTime], [p].[MaritalStatus], [p].[Name], [p].[Occupation], [p].[PhoneNumber], [p].[PinyinCode], [p].[Status], [p].[UpdateTime], [p].[UpdatedBy], [p].[VisitCount], [p].[WuBiCode]
+      FROM [Patients] AS [p]
+      ORDER BY [p].[CreatedAt] DESC
+      OFFSET @__p_0 ROWS FETCH NEXT @__p_1 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__status_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Doctors] AS [d]
+      WHERE [d].[Status] = @__status_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__status_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32), @__p_2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Age], [t].[Birthday], [t].[ContactNumber], [t].[CreatedTime], [t].[Gender], [t].[LicenseNumber], [t].[PinyinCode], [t].[Remark], [t].[Specialty], [t].[Status], [t].[Title], [t].[UserId], [t].[WorkStatus], [t].[WuBiCode], [u].[Id], [u].[CreatedTime], [u].[Department], [u].[Email], [u].[FailedLoginCount], [u].[IsActive], [u].[LastLoginTime], [u].[LockoutEnd], [u].[PasswordHash], [u].[PhoneNumber], [u].[PinyinCode], [u].[Position], [u].[RealName], [u].[Remark], [u].[Role], [u].[UpdateTime], [u].[UserName], [u].[WuBiCode]
+      FROM (
+          SELECT [d].[Id], [d].[Age], [d].[Birthday], [d].[ContactNumber], [d].[CreatedTime], [d].[Gender], [d].[LicenseNumber], [d].[PinyinCode], [d].[Remark], [d].[Specialty], [d].[Status], [d].[Title], [d].[UserId], [d].[WorkStatus], [d].[WuBiCode]
+          FROM [Doctors] AS [d]
+          WHERE [d].[Status] = @__status_0
+          ORDER BY [d].[CreatedTime] DESC
+          OFFSET @__p_1 ROWS FETCH NEXT @__p_2 ROWS ONLY
+      ) AS [t]
+      INNER JOIN [Users] AS [u] ON [t].[UserId] = [u].[Id]
+      ORDER BY [t].[CreatedTime] DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Doctors] AS [d]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__p_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Age], [t].[Birthday], [t].[ContactNumber], [t].[CreatedTime], [t].[Gender], [t].[LicenseNumber], [t].[PinyinCode], [t].[Remark], [t].[Specialty], [t].[Status], [t].[Title], [t].[UserId], [t].[WorkStatus], [t].[WuBiCode], [u].[Id], [u].[CreatedTime], [u].[Department], [u].[Email], [u].[FailedLoginCount], [u].[IsActive], [u].[LastLoginTime], [u].[LockoutEnd], [u].[PasswordHash], [u].[PhoneNumber], [u].[PinyinCode], [u].[Position], [u].[RealName], [u].[Remark], [u].[Role], [u].[UpdateTime], [u].[UserName], [u].[WuBiCode]
+      FROM (
+          SELECT [d].[Id], [d].[Age], [d].[Birthday], [d].[ContactNumber], [d].[CreatedTime], [d].[Gender], [d].[LicenseNumber], [d].[PinyinCode], [d].[Remark], [d].[Specialty], [d].[Status], [d].[Title], [d].[UserId], [d].[WorkStatus], [d].[WuBiCode]
+          FROM [Doctors] AS [d]
+          ORDER BY [d].[CreatedTime] DESC
+          OFFSET @__p_0 ROWS FETCH NEXT @__p_1 ROWS ONLY
+      ) AS [t]
+      INNER JOIN [Users] AS [u] ON [t].[UserId] = [u].[Id]
+      ORDER BY [t].[CreatedTime] DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [d].[Id], [d].[Age], [d].[Birthday], [d].[ContactNumber], [d].[CreatedTime], [d].[Gender], [d].[LicenseNumber], [d].[PinyinCode], [d].[Remark], [d].[Specialty], [d].[Status], [d].[Title], [d].[UserId], [d].[WorkStatus], [d].[WuBiCode], [u].[Id], [u].[CreatedTime], [u].[Department], [u].[Email], [u].[FailedLoginCount], [u].[IsActive], [u].[LastLoginTime], [u].[LockoutEnd], [u].[PasswordHash], [u].[PhoneNumber], [u].[PinyinCode], [u].[Position], [u].[RealName], [u].[Remark], [u].[Role], [u].[UpdateTime], [u].[UserName], [u].[WuBiCode]
+      FROM [Doctors] AS [d]
+      INNER JOIN [Users] AS [u] ON [d].[UserId] = [u].[Id]
+      WHERE [d].[Status] = 1
+      ORDER BY [u].[RealName]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [Herbs] AS [h]
+      WHERE [h].[Status] <> 0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [h].[Id], [h].[BatchNo], [h].[CreatedAt], [h].[Effect], [h].[ExpireDate], [h].[LastOperatorId], [h].[LastOperatorName], [h].[Name], [h].[Origin], [h].[PinyinCode], [h].[Price], [h].[Remark], [h].[Spec], [h].[Specification], [h].[Status], [h].[Stock], [h].[Unit], [h].[UpdateTime], [h].[Usage], [h].[WuBiCode]
+      FROM [Herbs] AS [h]
+      WHERE [h].[Status] <> 0
+      ORDER BY [h].[CreatedAt] DESC
+      OFFSET @__p_0 ROWS FETCH NEXT @__p_1 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [h].[Id], [h].[BatchNo], [h].[CreatedAt], [h].[Effect], [h].[ExpireDate], [h].[LastOperatorId], [h].[LastOperatorName], [h].[Name], [h].[Origin], [h].[PinyinCode], [h].[Price], [h].[Remark], [h].[Spec], [h].[Specification], [h].[Status], [h].[Stock], [h].[Unit], [h].[UpdateTime], [h].[Usage], [h].[WuBiCode]
+      FROM [Herbs] AS [h]
+      ORDER BY [h].[CreatedAt] DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__status_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [h].[Id], [h].[BatchNo], [h].[CreatedAt], [h].[Effect], [h].[ExpireDate], [h].[LastOperatorId], [h].[LastOperatorName], [h].[Name], [h].[Origin], [h].[PinyinCode], [h].[Price], [h].[Remark], [h].[Spec], [h].[Specification], [h].[Status], [h].[Stock], [h].[Unit], [h].[UpdateTime], [h].[Usage], [h].[WuBiCode]
+      FROM [Herbs] AS [h]
+      WHERE [h].[Status] = @__status_0
+      ORDER BY [h].[CreatedAt] DESC
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [FormulaTemplates] AS [f]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__p_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [f].[Id], [f].[CreatedAt], [f].[CreatedById], [f].[Effect], [f].[IsActive], [f].[IsShared], [f].[Name], [f].[Property], [f].[Remark], [f].[SharedAt], [f].[SharedById], [f].[UpdatedAt], [f].[Usage]
+      FROM [FormulaTemplates] AS [f]
+      ORDER BY [f].[CreatedAt] DESC
+      OFFSET @__p_0 ROWS FETCH NEXT @__p_1 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [f].[Id], [f].[CreatedAt], [f].[CreatedById], [f].[Effect], [f].[IsActive], [f].[IsShared], [f].[Name], [f].[Property], [f].[Remark], [f].[SharedAt], [f].[SharedById], [f].[UpdatedAt], [f].[Usage]
+      FROM [FormulaTemplates] AS [f]
+      WHERE [f].[IsActive] = CAST(1 AS bit)
+      ORDER BY [f].[CreatedAt] DESC

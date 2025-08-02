@@ -41,16 +41,50 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取处方列表
+        /// 获取处方列表 (RESTful GET /Prescriptions) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<PrescriptionDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<PrescriptionDto>>>> GetList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? patientName = null,
+            [FromQuery] string? doctorName = null,
+            [FromQuery] string? diagnosis = null,
+            [FromQuery] PrescriptionStatus? status = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] int? minDosageCount = null,
+            [FromQuery] int? maxDosageCount = null) {
             try {
-                var list = await _service.GetAllAsync();
-                return Ok(ApiResponse<List<PrescriptionDto>>.Success(list));
+                // 如果没有任何查询条件且请求第一页，返回简单列表
+                if (page == 1 && pageSize >= 20 && string.IsNullOrEmpty(keyword) && string.IsNullOrEmpty(patientName) && 
+                    string.IsNullOrEmpty(doctorName) && string.IsNullOrEmpty(diagnosis) && !status.HasValue &&
+                    !startDate.HasValue && !endDate.HasValue && !minDosageCount.HasValue && !maxDosageCount.HasValue) {
+                    
+                    var list = await _service.GetAllAsync();
+                    var totalCount = list?.Count ?? 0;
+                    var pagedList = list?.Take(pageSize).ToList() ?? new List<PrescriptionDto>();
+                    var result = new PaginatedResult<PrescriptionDto> {
+                        TotalCount = totalCount,
+                        Items = pagedList
+                    };
+                    return Ok(ApiResponse<PaginatedResult<PrescriptionDto>>.Success(result));
+                }
+
+                // 使用分页查询服务 (简化版本，只保留基本搜索功能)
+                var query = new LYBT.Shared.Models.Common.PaginationRequest {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword
+                };
+                
+                var (_, _, operatorRole) = GetOperator();
+                var pagedResult = await _service.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<PrescriptionDto>>.Success(pagedResult));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取处方列表失败");
-                return StatusCode(500, ApiResponse<List<PrescriptionDto>>.Fail("获取处方列表失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<PrescriptionDto>>.Fail("获取处方列表失败", 500));
             }
         }
 

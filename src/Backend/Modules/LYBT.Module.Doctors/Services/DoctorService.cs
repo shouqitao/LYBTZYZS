@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Doctors;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
+using System.Text.RegularExpressions;
 
 namespace LYBT.Module.Doctors.Services {
 
@@ -121,21 +122,34 @@ namespace LYBT.Module.Doctors.Services {
                     return ApiResponse<bool>.Fail("专科不能为空");
                 }
 
-                // 检查用户是否存在并且是医生角色
+                // 1. 检查用户是否存在
                 var user = await _userRepository.GetByIdAsync(dto.UserId, true);
                 if (user == null) {
-                    return ApiResponse<bool>.Fail("关联的用户不存在，请先创建用户");
+                    return ApiResponse<bool>.Fail("选择的用户不存在，请重新选择");
                 }
 
-                // 验证用户是否具有医生角色
+                // 2. 判断用户角色是否是医生
                 if (user.Role != UserRole.DiagnosingDoctor) {
-                    return ApiResponse<bool>.Fail("只能为具有医生角色的用户创建医生档案");
+                    return ApiResponse<bool>.Fail($"该用户不是医生账户，当前角色：{user.Role.ToString()}，无法创建医生档案");
                 }
 
-                // 检查用户是否已关联医生档案
+                // 3. 检查该医生用户是否已创建过医生档案
                 var existingDoctor = await _doctorRepository.GetByUserIdAsync(dto.UserId, true);
                 if (existingDoctor != null) {
-                    return ApiResponse<bool>.Fail("该用户已关联医生档案，请勿重复创建");
+                    return ApiResponse<bool>.Fail($"该医生用户（{user.RealName}）已存在医生档案，请勿重复创建");
+                }
+
+                // 4. 检查身份证号码是否已存在
+                if (!string.IsNullOrWhiteSpace(dto.IdNumber)) {
+                    // 验证身份证格式
+                    if (!IsValidIdNumber(dto.IdNumber)) {
+                        return ApiResponse<bool>.Fail("身份证号码格式不正确");
+                    }
+
+                    // 检查身份证号码重复
+                    if (await _doctorRepository.IsIdNumberExistsAsync(dto.IdNumber)) {
+                        return ApiResponse<bool>.Fail($"身份证号码 {dto.IdNumber} 已存在，无法创建重复的医生档案");
+                    }
                 }
 
                 // 创建医生实体
@@ -184,11 +198,25 @@ namespace LYBT.Module.Doctors.Services {
                     return ApiResponse<bool>.Fail("医生只能修改自己的档案");
                 }
 
+                // 检查身份证号码（如果要更新）
+                if (!string.IsNullOrWhiteSpace(dto.IdNumber) && dto.IdNumber != model.IdNumber) {
+                    // 验证身份证格式
+                    if (!IsValidIdNumber(dto.IdNumber)) {
+                        return ApiResponse<bool>.Fail("身份证号码格式不正确");
+                    }
+
+                    // 检查身份证号码重复（排除当前医生）
+                    if (await _doctorRepository.IsIdNumberExistsAsync(dto.IdNumber, dto.Id)) {
+                        return ApiResponse<bool>.Fail($"身份证号码 {dto.IdNumber} 已存在，无法更新");
+                    }
+                }
+
                 // 更新医生字段（不更新UserId、User等关键字段）
                 model.Gender = dto.Gender;
                 model.Birthday = dto.Birthday;
                 model.Title = dto.Title;
                 model.LicenseNumber = dto.LicenseNumber;
+                model.IdNumber = dto.IdNumber;
                 model.Specialty = dto.Specialty;
                 model.Status = dto.Status;
                 model.WorkStatus = dto.WorkStatus;
@@ -290,6 +318,35 @@ namespace LYBT.Module.Doctors.Services {
             } catch (Exception ex) {
                 return ApiResponse<bool>.Fail($"检查用户关联状态失败：{ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 验证身份证号码格式
+        /// </summary>
+        /// <param name="idNumber">身份证号码</param>
+        /// <returns>是否有效</returns>
+        private static bool IsValidIdNumber(string idNumber) {
+            if (string.IsNullOrWhiteSpace(idNumber)) {
+                return false;
+            }
+
+            // 18位身份证号码正则表达式
+            var regex = new Regex(@"^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$");
+            if (!regex.IsMatch(idNumber)) {
+                return false;
+            }
+
+            // 验证校验位
+            var weightFactors = new int[] { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
+            var checkCodes = new char[] { '1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2' };
+
+            var sum = 0;
+            for (int i = 0; i < 17; i++) {
+                sum += int.Parse(idNumber[i].ToString()) * weightFactors[i];
+            }
+
+            var checkCode = checkCodes[sum % 11];
+            return char.ToUpper(idNumber[17]) == checkCode;
         }
     }
 }

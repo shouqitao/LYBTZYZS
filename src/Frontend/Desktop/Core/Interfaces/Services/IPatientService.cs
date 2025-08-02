@@ -45,7 +45,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        Task<ApiResponse<PagedResultDto<PatientDetailDto>>> GetPagedAsync(PatientPagedQueryDto query);
+        Task<ApiResponse<PaginatedResult<PatientDetailDto>>> GetPagedAsync(PatientPagedQueryDto query);
 
         /// <summary>
         /// 批量禁用患者

@@ -23,6 +23,12 @@ namespace LYBT.Shared.Models.Contracts.Doctors {
         [DisplayName("LicenseNumber")]
         public string? LicenseNumber { get; set; }
 
+        /// <summary>
+        /// 身份证号码
+        /// </summary>
+        [DisplayName("身份证号码")]
+        public string? IdNumber { get; set; }
+
         [DisplayName("Specialty")]
         public string Specialty { get; set; } = string.Empty;
 

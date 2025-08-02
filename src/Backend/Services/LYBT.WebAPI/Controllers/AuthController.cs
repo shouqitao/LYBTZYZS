@@ -208,9 +208,38 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
+        /// 获取当前用户信息
+        /// </summary>
+        [HttpGet("current-user")]
+        public Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>> GetCurrentUser() {
+            try {
+                var username = User?.Identity?.Name;
+                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId)) {
+                    return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>.Fail("无效的用户身份", 401));
+                }
+
+                var userInfo = new LYBT.Shared.Models.Auth.UserInfo {
+                    Id = Guid.Parse(userId),
+                    UserName = username,
+                    RealName = username == "sysadmin" ? "系统管理员" : username,
+                    Role = role ?? "User",
+                    IsActive = true
+                };
+
+                return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>.Success(userInfo));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "获取当前用户信息异常");
+                return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>.Fail("获取用户信息失败", 500));
+            }
+        }
+
+        /// <summary>
         /// 刷新JWT令牌
         /// </summary>
-        [HttpPost("RefreshToken")]
+        [HttpPost("refresh-token")]
         public Task<LYBT.Shared.Models.Common.ApiResponse<object>> RefreshToken() {
             try {
                 var username = User?.Identity?.Name;
@@ -240,7 +269,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 修改密码 (通用接口)
         /// </summary>
-        [HttpPatch("password")]
+        [HttpPost("change-password")]
         public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> ChangePassword([FromBody] ChangePasswordRequestDto dto) {
             try {
                 var username = User?.Identity?.Name;

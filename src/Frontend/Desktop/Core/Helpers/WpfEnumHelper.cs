@@ -76,7 +76,7 @@ namespace LYBT.Client.Core.Helpers
         /// <typeparam name="T">枚举类型</typeparam>
         /// <param name="selectedItem">选中项</param>
         /// <returns>枚举值，如果未选中则返回默认值</returns>
-        public static T? GetSelectedEnumValue<T>(EnumItem<T>? selectedItem) where T : Enum
+        public static T? GetSelectedEnumValue<T>(EnumItem<T>? selectedItem) where T : struct, Enum
         {
             return selectedItem?.Value;
         }

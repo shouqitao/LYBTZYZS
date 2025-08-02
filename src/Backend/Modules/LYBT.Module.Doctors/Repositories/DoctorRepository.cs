@@ -215,5 +215,19 @@ namespace LYBT.Module.Doctors.Repositories {
                 .Take(20)
                 .ToListAsync();
         }
+
+        public async Task<bool> IsIdNumberExistsAsync(string idNumber, Guid? excludeId = null) {
+            if (string.IsNullOrWhiteSpace(idNumber)) {
+                return false;
+            }
+
+            var query = _context.Doctors.Where(d => d.IdNumber == idNumber);
+
+            if (excludeId.HasValue) {
+                query = query.Where(d => d.Id != excludeId.Value);
+            }
+
+            return await query.AnyAsync();
+        }
     }
 }

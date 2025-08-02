@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.DTOs;
 
@@ -15,12 +16,12 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 获取药材列表
         /// </summary>
-        Task<ApiResponse<List<HerbInfo>>> GetHerbsAsync();
+        Task<ApiResponse<List<HerbDto>>> GetHerbsAsync();
 
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        Task<ApiResponse<PagedResultDto<HerbInfo>>> GetPagedAsync(HerbPagedQueryDto query);
+        Task<ApiResponse<PaginatedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query);
 
         /// <summary>
         /// 获取药材详情
@@ -35,7 +36,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 编辑药材
         /// </summary>
-        Task<ApiResponse<object>> UpdateAsync(HerbEditDto dto);
+        Task<ApiResponse<object>> UpdateAsync(HerbUpdateDto dto);
 
         /// <summary>
         /// 删除药材
@@ -45,17 +46,17 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 获取缺货药材列表
         /// </summary>
-        Task<ApiResponse<List<HerbInfo>>> GetOutOfStockAsync();
+        Task<ApiResponse<List<HerbDto>>> GetOutOfStockAsync();
 
         /// <summary>
         /// 获取即将过期的药材
         /// </summary>
-        Task<ApiResponse<List<HerbInfo>>> GetExpiringAsync(int days = 30);
+        Task<ApiResponse<List<HerbDto>>> GetExpiringAsync(int days = 30);
 
         /// <summary>
         /// 获取可用药材列表
         /// </summary>
-        Task<ApiResponse<List<HerbInfo>>> GetAvailableAsync();
+        Task<ApiResponse<List<HerbDto>>> GetAvailableAsync();
 
         /// <summary>
         /// 批量导入药材

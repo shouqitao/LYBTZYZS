@@ -58,16 +58,48 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取药房单列表
+        /// 获取药房单列表 (RESTful GET /Pharmacy) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<PharmacyDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<PharmacyDto>>>> GetList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? patientName = null,
+            [FromQuery] string? doctorName = null,
+            [FromQuery] PharmacyStatus? status = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] bool? needDecoction = null) {
             try {
-                var list = await _pharmacyService.GetListAsync();
-                return Ok(ApiResponse<List<PharmacyDto>>.Success(list));
+                // 如果没有任何查询条件且请求第一页，返回简单列表
+                if (page == 1 && pageSize >= 20 && string.IsNullOrEmpty(keyword) && string.IsNullOrEmpty(patientName) && 
+                    string.IsNullOrEmpty(doctorName) && !status.HasValue && !startDate.HasValue && 
+                    !endDate.HasValue && !needDecoction.HasValue) {
+                    
+                    var list = await _pharmacyService.GetListAsync();
+                    var totalCount = list?.Count ?? 0;
+                    var pagedList = list?.Take(pageSize).ToList() ?? new List<PharmacyDto>();
+                    var result = new PaginatedResult<PharmacyDto> {
+                        TotalCount = totalCount,
+                        Items = pagedList
+                    };
+                    return Ok(ApiResponse<PaginatedResult<PharmacyDto>>.Success(result));
+                }
+
+                // 使用分页查询服务 (简化版本，只保留基本搜索功能)
+                var query = new LYBT.Shared.Models.Common.PaginationRequest {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword
+                };
+                
+                var (_, _, operatorRole) = GetOperator();
+                var pagedResult = await _pharmacyService.GetPagedAsync(query, operatorRole);
+                return Ok(ApiResponse<PaginatedResult<PharmacyDto>>.Success(pagedResult));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取药房单列表失败");
-                return StatusCode(500, ApiResponse<List<PharmacyDto>>.Fail("获取药房单列表失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<PharmacyDto>>.Fail("获取药房单列表失败", 500));
             }
         }
 

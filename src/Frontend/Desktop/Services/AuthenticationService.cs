@@ -64,7 +64,7 @@ namespace LYBT.WPF.Client.Services {
                 // 获取当前用户信息用于登出
                 var currentUser = await GetCurrentUserAsync();
                 var logoutDto = new {
-                    username = currentUser?.UserName ?? "unknown",
+                    username = currentUser?.Username ?? "unknown",
                     token = _tokenManager.GetToken()
                 };
 
@@ -120,15 +120,15 @@ namespace LYBT.WPF.Client.Services {
 
             return new UserInfo {
                 Id = sharedUser.Id,
-                UserName = sharedUser.UserName,
+                Username = sharedUser.Username,
                 RealName = sharedUser.RealName,
                 Role = ParseUserRole(sharedUser.Role),
                 IsActive = sharedUser.IsActive,
-                CreatedTime = DateTime.Now, // 共享模型没有这个字段，使用当前时间
+                CreateTime = DateTime.Now, // 使用当前时间
                 LastLoginTime = null, // 共享模型没有这个字段
                 Email = sharedUser.Email,
                 PhoneNumber = sharedUser.PhoneNumber,
-                IsSuperAdmin = sharedUser.UserName?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
+                IsSuperAdmin = sharedUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
             };
         }
 
@@ -155,11 +155,11 @@ namespace LYBT.WPF.Client.Services {
                 
                 return new UserInfo {
                     Id = root.TryGetProperty("id", out var idProp) ? idProp.GetGuid() : Guid.Empty,
-                    UserName = userName,
+                    Username = userName,
                     RealName = root.TryGetProperty("realName", out var realNameProp) ? realNameProp.GetString() ?? "" : "",
                     Role = root.TryGetProperty("role", out var roleProp) ? ParseUserRole(roleProp.GetString()) : UserRole.Staff,
                     IsActive = root.TryGetProperty("isActive", out var isActiveProp) && isActiveProp.GetBoolean(),
-                    CreatedTime = root.TryGetProperty("createdTime", out var createdTimeProp) ? createdTimeProp.GetDateTime() : DateTime.Now,
+                    CreateTime = root.TryGetProperty("createdTime", out var createdTimeProp) ? createdTimeProp.GetDateTime() : DateTime.Now,
                     LastLoginTime = root.TryGetProperty("lastLoginTime", out var lastLoginTimeProp) ? lastLoginTimeProp.GetDateTime() : null,
                     Email = root.TryGetProperty("email", out var emailProp) ? emailProp.GetString() : null,
                     PhoneNumber = root.TryGetProperty("phoneNumber", out var phoneProp) ? phoneProp.GetString() : null,

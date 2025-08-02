@@ -78,5 +78,13 @@ namespace LYBT.Module.Doctors.Interfaces {
         /// 权限控制：禁用的医生仅管理员可查询
         /// </summary>
         Task<List<DoctorModel>> SearchByPinyinAsync(string pinyin, bool includeDisabled = false);
+
+        /// <summary>
+        /// 检查身份证号码是否已存在
+        /// </summary>
+        /// <param name="idNumber">身份证号码</param>
+        /// <param name="excludeId">要排除的医生ID（用于更新时检查）</param>
+        /// <returns>是否已存在</returns>
+        Task<bool> IsIdNumberExistsAsync(string idNumber, Guid? excludeId = null);
     }
 }

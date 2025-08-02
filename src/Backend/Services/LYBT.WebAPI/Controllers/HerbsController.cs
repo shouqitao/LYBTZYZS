@@ -47,21 +47,59 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 获取药材列表
+        /// 获取药材列表 (RESTful GET /Herbs) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<HerbDto>>>> GetList() {
+        public async Task<ActionResult<ApiResponse<PaginatedResult<HerbDto>>>> GetList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? name = null,
+            [FromQuery] string? origin = null,
+            [FromQuery] string? effect = null,
+            [FromQuery] string? usage = null,
+            [FromQuery] HerbStatus? status = null,
+            [FromQuery] decimal? minPrice = null,
+            [FromQuery] decimal? maxPrice = null,
+            [FromQuery] bool? hasStock = null) {
             try {
-                // 缓存药材列表
-                const string cacheKey = "herbs_list";
-                if (!_cache.TryGetValue(cacheKey, out List<HerbDto>? list)) {
-                    list = await _herbService.GetListAsync();
-                    _cache.Set(cacheKey, list, TimeSpan.FromMinutes(10));
+                // 如果没有任何查询条件且请求第一页，使用缓存的完整列表
+                if (page == 1 && pageSize >= 20 && string.IsNullOrEmpty(keyword) && string.IsNullOrEmpty(name) && 
+                    string.IsNullOrEmpty(origin) && string.IsNullOrEmpty(effect) && string.IsNullOrEmpty(usage) &&
+                    !status.HasValue && !minPrice.HasValue && !maxPrice.HasValue && !hasStock.HasValue) {
+                    
+                    const string cacheKey = "herbs_list";
+                    if (!_cache.TryGetValue(cacheKey, out List<HerbDto>? list)) {
+                        list = await _herbService.GetListAsync();
+                        _cache.Set(cacheKey, list, TimeSpan.FromMinutes(10));
+                    }
+                    
+                    var totalCount = list?.Count ?? 0;
+                    var pagedList = list?.Take(pageSize).ToList() ?? new List<HerbDto>();
+                    var result = new PaginatedResult<HerbDto> {
+                        TotalCount = totalCount,
+                        Items = pagedList
+                    };
+                    return Ok(ApiResponse<PaginatedResult<HerbDto>>.Success(result));
                 }
-                return Ok(ApiResponse<List<HerbDto>>.Success(list ?? new List<HerbDto>()));
+
+                // 使用分页查询服务
+                var query = new HerbPagedQueryDto {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword,
+                    Name = name,
+                    Origin = origin,
+                    Status = status,
+                    MinPrice = minPrice,
+                    MaxPrice = maxPrice
+                };
+                
+                var pagedResult = await _herbService.GetPagedAsync(query);
+                return Ok(ApiResponse<PaginatedResult<HerbDto>>.Success(pagedResult));
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取药材列表失败");
-                return StatusCode(500, ApiResponse<List<HerbDto>>.Fail("获取药材列表失败", 500));
+                return StatusCode(500, ApiResponse<PaginatedResult<HerbDto>>.Fail("获取药材列表失败", 500));
             }
         }
 
@@ -82,6 +120,25 @@ namespace LYBT.WebAPI.Controllers {
             } catch (Exception ex) {
                 _logger.LogError(ex, "分页查询药材失败");
                 return StatusCode(500, ApiResponse<PaginatedResult<HerbDto>>.Fail("分页查询药材失败", 500));
+            }
+        }
+
+        /// <summary>
+        /// 获取活跃药材列表（RESTful接口）
+        /// </summary>
+        [HttpGet("active")]
+        public async Task<ActionResult<ApiResponse<List<HerbDto>>>> GetActive() {
+            try {
+                // 缓存活跃药材列表
+                const string cacheKey = "active_herbs";
+                if (!_cache.TryGetValue(cacheKey, out List<HerbDto>? list)) {
+                    list = await _herbService.GetAvailableHerbsAsync();
+                    _cache.Set(cacheKey, list, TimeSpan.FromMinutes(15));
+                }
+                return Ok(ApiResponse<List<HerbDto>>.Success(list ?? new List<HerbDto>()));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "获取活跃药材列表失败");
+                return StatusCode(500, ApiResponse<List<HerbDto>>.Fail("获取活跃药材列表失败", 500));
             }
         }
 
@@ -403,5 +460,39 @@ namespace LYBT.WebAPI.Controllers {
                 return StatusCode(500, "获取药材状态统计失败");
             }
         }
+
+        // ======================== RESTful 标准接口 ========================
+
+        /// <summary>
+        /// 创建新药材 (RESTful POST /Herbs)
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult<ApiResponse<object>>> CreateHerb([FromBody] HerbCreateDto dto) {
+            try {
+                if (!ModelState.IsValid) {
+                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{errors}", 400));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _herbService.AddAsync(dto);
+                if (result) {
+                    // 清除缓存
+                    _cache.Remove("herbs_list");
+                    _cache.Remove("active_herbs");
+
+                    return StatusCode(201, ApiResponse<object>.Success("药材创建成功"));
+                } else {
+                    return BadRequest(ApiResponse<object>.Fail("药材创建失败", 400));
+                }
+            } catch (Exception ex) {
+                _logger.LogError(ex, "创建药材失败");
+                return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+            }
+        }
+
+        // 注意：本系统采用软删除策略，不提供DELETE接口
+        // 请使用 PATCH /Herbs/{id}/disable 来禁用药材
+        // 请使用 PATCH /Herbs/{id}/enable 来启用药材
     }
 }
