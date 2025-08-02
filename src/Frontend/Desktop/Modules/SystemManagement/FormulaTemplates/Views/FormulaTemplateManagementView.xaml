@@ -1,0 +1,112 @@
+<UserControl x:Class="LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views.FormulaTemplateManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1200">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="#8E24AA" Padding="15,10">
+            <TextBlock Text="验方模板管理" FontSize="18" FontWeight="Bold" Foreground="White"/>
+        </Border>
+
+        <!-- 搜索和操作栏 -->
+        <Border Grid.Row="1" Background="#F5F5F5" Padding="15,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="搜索：" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" 
+                             Width="200" Height="25" Margin="0,0,10,0" ToolTip="输入模板名称搜索"/>
+                    
+                    <TextBlock Text="分类：" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
+                             Width="120" Height="25" Margin="0,0,10,0"/>
+                    
+                    <Button Content="搜索" Command="{Binding SearchCommand}" 
+                           Width="60" Height="25" Background="#8E24AA" Foreground="White" Margin="0,0,5,0"/>
+                    <Button Content="重置" Command="{Binding ResetSearchCommand}" 
+                           Width="60" Height="25" Background="#757575" Foreground="White"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="新增模板" Command="{Binding AddTemplateCommand}" 
+                           Width="80" Height="30" Background="#4CAF50" Foreground="White" Margin="0,0,5,0"/>
+                    <Button Content="导入模板" Command="{Binding ImportTemplatesCommand}" 
+                           Width="80" Height="30" Background="#2196F3" Foreground="White" Margin="0,0,5,0"/>
+                    <Button Content="导出模板" Command="{Binding ExportTemplatesCommand}" 
+                           Width="80" Height="30" Background="#FF9800" Foreground="White" Margin="0,0,5,0"/>
+                    <Button Content="刷新" Command="{Binding RefreshCommand}" 
+                           Width="60" Height="30" Background="#607D8B" Foreground="White"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 模板列表 -->
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}"
+                 AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                 GridLinesVisibility="Horizontal" AlternatingRowBackground="#F9F9F9"
+                 SelectionMode="Single" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="模板名称" Binding="{Binding Name}" Width="150"/>
+                <DataGridTextColumn Header="分类" Binding="{Binding Category}" Width="100"/>
+                <DataGridTextColumn Header="适应症" Binding="{Binding Indications}" Width="200">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            <Setter Property="ToolTip" Value="{Binding Indications}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="药材数量" Binding="{Binding HerbCount}" Width="80"/>
+                <DataGridTextColumn Header="参考价格" Binding="{Binding TotalPrice, StringFormat='¥{0:F2}'}" Width="100"/>
+                <DataGridTextColumn Header="创建人" Binding="{Binding CreatedBy}" Width="100"/>
+                <DataGridTextColumn Header="创建时间" Binding="{Binding CreatedTime, StringFormat=yyyy-MM-dd}" Width="100"/>
+                <DataGridCheckBoxColumn Header="启用" Binding="{Binding IsActive}" Width="50" IsReadOnly="True"/>
+                <DataGridTemplateColumn Header="操作" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="查看" CommandParameter="{Binding}" 
+                                       Command="{Binding DataContext.ViewTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       Width="40" Height="20" Background="#2196F3" Foreground="White" Margin="2"/>
+                                <Button Content="编辑" CommandParameter="{Binding}" 
+                                       Command="{Binding DataContext.EditTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       Width="40" Height="20" Background="#FF9800" Foreground="White" Margin="2"/>
+                                <Button Content="复制" CommandParameter="{Binding}" 
+                                       Command="{Binding DataContext.CopyTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       Width="40" Height="20" Background="#4CAF50" Foreground="White" Margin="2"/>
+                                <Button Content="删除" CommandParameter="{Binding}" 
+                                       Command="{Binding DataContext.DeleteTemplateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       Width="40" Height="20" Background="#F44336" Foreground="White" Margin="2"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 状态栏 -->
+        <Border Grid.Row="3" Background="#E9ECEF" Padding="15,10">
+            <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"/>
+        </Border>
+    </Grid>
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+</UserControl>

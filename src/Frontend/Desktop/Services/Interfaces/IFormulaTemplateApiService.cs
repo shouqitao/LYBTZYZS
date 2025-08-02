@@ -8,56 +8,64 @@ using ApiResponse = LYBT.Shared.Models.Common.ApiResponse;
 namespace LYBT.WPF.Client.Services.Interfaces
 {
     /// <summary>
-    /// 验方模板API服务接口
+    /// 验方模板API服务接口 - Refit定义
     /// </summary>
     public interface IFormulaTemplateApiService
     {
         /// <summary>
         /// 获取验方模板列表
         /// </summary>
-        [Get("/api/v1/formulatemplate")]
-        Task<ApiResponse<List<FormulaTemplateDto>>> GetTemplatesAsync([Query] string? search = null);
+        [Get("/api/v1/FormulaTemplate")]
+        Task<ApiResponse<List<FormulaTemplateDto>>> GetFormulaTemplatesAsync(
+            [Query] string? keyword = null, 
+            [Query] string? category = null);
 
         /// <summary>
-        /// 获取验方模板详情
+        /// 根据ID获取验方模板详情
         /// </summary>
-        [Get("/api/v1/formulatemplate/{id}")]
-        Task<ApiResponse<FormulaTemplateDto>> GetTemplateByIdAsync(Guid id);
+        [Get("/api/v1/FormulaTemplate/{id}")]
+        Task<ApiResponse<FormulaTemplateDetailDto>> GetFormulaTemplateByIdAsync(Guid id);
 
         /// <summary>
         /// 创建验方模板
         /// </summary>
-        [Post("/api/v1/formulatemplate")]
-        Task<ApiResponse<FormulaTemplateDto>> CreateTemplateAsync([Body] CreateFormulaTemplateDto dto);
+        [Post("/api/v1/FormulaTemplate")]
+        Task<ApiResponse<FormulaTemplateDto>> CreateFormulaTemplateAsync([Body] FormulaTemplateCreateDto createDto);
 
         /// <summary>
         /// 更新验方模板
         /// </summary>
-        [Put("/api/v1/formulatemplate/{id}")]
-        Task<ApiResponse<FormulaTemplateDto>> UpdateTemplateAsync(Guid id, [Body] UpdateFormulaTemplateDto dto);
+        [Put("/api/v1/FormulaTemplate/{id}")]
+        Task<ApiResponse<FormulaTemplateDto>> UpdateFormulaTemplateAsync(Guid id, [Body] FormulaTemplateUpdateDto updateDto);
 
         /// <summary>
         /// 删除验方模板
         /// </summary>
-        [Delete("/api/v1/formulatemplate/{id}")]
-        Task<ApiResponse<bool>> DeleteTemplateAsync(Guid id);
+        [Delete("/api/v1/FormulaTemplate/{id}")]
+        Task<ApiResponse<bool>> DeleteFormulaTemplateAsync(Guid id);
+
+        /// <summary>
+        /// 批量删除验方模板
+        /// </summary>
+        [Post("/api/v1/FormulaTemplate/batch-delete")]
+        Task<ApiResponse<int>> BatchDeleteFormulaTemplatesAsync([Body] List<Guid> ids);
 
         /// <summary>
         /// 复制验方模板
         /// </summary>
-        [Post("/api/v1/formulatemplate/{id}/copy")]
-        Task<ApiResponse<FormulaTemplateDto>> CopyTemplateAsync(Guid id, [Query] string newName);
+        [Post("/api/v1/FormulaTemplate/{id}/copy")]
+        Task<ApiResponse<FormulaTemplateDto>> CopyFormulaTemplateAsync(Guid id, [Query] string newName);
 
         /// <summary>
-        /// 按分类获取模板
+        /// 启用/禁用验方模板
         /// </summary>
-        [Get("/api/v1/formulatemplate/by-category/{category}")]
-        Task<ApiResponse<List<FormulaTemplateDto>>> GetTemplatesByCategoryAsync(string category);
+        [Patch("/api/v1/FormulaTemplate/{id}/toggle-status")]
+        Task<ApiResponse<bool>> ToggleFormulaTemplateStatusAsync(Guid id);
 
         /// <summary>
         /// 获取所有分类
         /// </summary>
-        [Get("/api/v1/formulatemplate/categories")]
+        [Get("/api/v1/FormulaTemplate/categories")]
         Task<ApiResponse<List<string>>> GetCategoriesAsync();
     }
 }

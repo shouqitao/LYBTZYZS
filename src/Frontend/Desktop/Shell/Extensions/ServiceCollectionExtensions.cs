@@ -118,6 +118,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IPatientService, PatientService>();
             containerRegistry.RegisterSingleton<IHerbService, HerbService>();
             containerRegistry.RegisterSingleton<IRecordService, RecordService>();
+            containerRegistry.RegisterSingleton<IFormulaTemplateService, FormulaTemplateService>();
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, PrescriptionPrintService>();
         }
     }

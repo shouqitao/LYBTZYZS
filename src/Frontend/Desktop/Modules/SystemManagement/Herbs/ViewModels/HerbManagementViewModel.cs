@@ -311,6 +311,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 Code = dto.Code,
                 Name = dto.Name,
                 PinyinCode = dto.PinyinCode,
+                WuBiCode = dto.WuBiCode,
                 Alias = dto.Alias,
                 Category = dto.Category,
                 Origin = dto.Origin,

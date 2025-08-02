@@ -16,11 +16,32 @@ namespace LYBT.WPF.Client.Core.Models.FormulaTemplates
         /// <summary>模板名称</summary>
         public string Name { get; set; } = string.Empty;
 
+        /// <summary>分类</summary>
+        public string Category { get; set; } = string.Empty;
+
+        /// <summary>适应症</summary>
+        public string? Indications { get; set; }
+
+        /// <summary>用法</summary>
+        public string? Usage { get; set; }
+
+        /// <summary>剂量</summary>
+        public string? Dosage { get; set; }
+
+        /// <summary>禁忌</summary>
+        public string? Contraindications { get; set; }
+
+        /// <summary>来源</summary>
+        public string? Source { get; set; }
+
         /// <summary>药材组成</summary>
-        public List<HerbInfo> Herbs { get; set; } = new();
+        public List<FormulaHerbItem> Herbs { get; set; } = new();
 
         /// <summary>备注</summary>
         public string? Remark { get; set; }
+
+        /// <summary>创建人</summary>
+        public string? CreatedBy { get; set; }
 
         /// <summary>创建时间</summary>
         public DateTime CreatedTime { get; set; }
@@ -34,7 +55,25 @@ namespace LYBT.WPF.Client.Core.Models.FormulaTemplates
         /// <summary>药材数量</summary>
         public int HerbCount => Herbs?.Count ?? 0;
 
+        /// <summary>总价格</summary>
+        public decimal TotalPrice => Herbs?.Sum(h => h.SubTotal) ?? 0;
+
         /// <summary>药材名称列表（用于显示）</summary>
-        public string HerbNames => Herbs?.Count > 0 ? string.Join("、", Herbs.Take(3).Select(h => h.Name)) + (Herbs.Count > 3 ? "..." : "") : "无";
+        public string HerbNames => Herbs?.Count > 0 ? string.Join("、", Herbs.Take(3).Select(h => h.HerbName)) + (Herbs.Count > 3 ? "..." : "") : "无";
+    }
+
+    /// <summary>
+    /// 验方中的药材项
+    /// </summary>
+    public class FormulaHerbItem
+    {
+        public Guid HerbId { get; set; }
+        public string HerbName { get; set; } = string.Empty;
+        public decimal Dosage { get; set; }
+        public string Unit { get; set; } = "g";
+        public decimal UnitPrice { get; set; }
+        public string? ProcessingMethod { get; set; }
+        public string? SpecialInstructions { get; set; }
+        public decimal SubTotal => Dosage * UnitPrice;
     }
 }

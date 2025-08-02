@@ -1,0 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.WPF.Client.Core.Models.FormulaTemplates;
+
+namespace LYBT.WPF.Client.Core.Interfaces.Services
+{
+    /// <summary>
+    /// 验方模板服务接口
+    /// </summary>
+    public interface IFormulaTemplateService
+    {
+        /// <summary>
+        /// 获取验方模板列表
+        /// </summary>
+        Task<ServiceResult<List<FormulaTemplateInfo>>> GetListAsync(string? keyword = null, string? category = null);
+
+        /// <summary>
+        /// 根据ID获取验方模板详情
+        /// </summary>
+        Task<ServiceResult<FormulaTemplateInfo>> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// 创建验方模板
+        /// </summary>
+        Task<ServiceResult<FormulaTemplateInfo>> CreateAsync(FormulaTemplateInfo template);
+
+        /// <summary>
+        /// 更新验方模板
+        /// </summary>
+        Task<ServiceResult<FormulaTemplateInfo>> UpdateAsync(FormulaTemplateInfo template);
+
+        /// <summary>
+        /// 删除验方模板
+        /// </summary>
+        Task<ServiceResult<bool>> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 批量删除验方模板
+        /// </summary>
+        Task<ServiceResult<int>> BatchDeleteAsync(List<Guid> ids);
+
+        /// <summary>
+        /// 复制验方模板
+        /// </summary>
+        Task<ServiceResult<FormulaTemplateInfo>> CopyAsync(Guid id, string newName);
+
+        /// <summary>
+        /// 启用/禁用验方模板
+        /// </summary>
+        Task<ServiceResult<bool>> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 获取所有分类
+        /// </summary>
+        Task<ServiceResult<List<string>>> GetCategoriesAsync();
+    }
+}

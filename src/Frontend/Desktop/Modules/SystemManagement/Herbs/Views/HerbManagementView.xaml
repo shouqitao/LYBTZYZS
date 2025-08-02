@@ -182,21 +182,21 @@
                   RowBackground="White">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="药材名称" Binding="{Binding Name}" Width="150" IsReadOnly="True"/>
-                <DataGridTextColumn Header="拼音码" Binding="{Binding Pinyin}" Width="100" IsReadOnly="True"/>
+                <DataGridTextColumn Header="拼音码" Binding="{Binding PinyinCode}" Width="100" IsReadOnly="True"/>
                 <DataGridTextColumn Header="产地" Binding="{Binding Origin}" Width="120" IsReadOnly="True"/>
                 <DataGridTextColumn Header="规格" Binding="{Binding Spec}" Width="80" IsReadOnly="True"/>
                 <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="60" IsReadOnly="True"/>
                 <DataGridTextColumn Header="单价" Binding="{Binding Price, StringFormat=F2}" Width="80" IsReadOnly="True"/>
                 <DataGridTextColumn Header="库存" Binding="{Binding Stock}" Width="60" IsReadOnly="True"/>
-                <DataGridTextColumn Header="库存状态" Binding="{Binding StockStatus}" Width="80" IsReadOnly="True">
+                <DataGridTextColumn Header="库存状态" Binding="{Binding StockStatusDescription}" Width="80" IsReadOnly="True">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding StockStatus}" Value="缺货">
+                                <DataTrigger Binding="{Binding StockStatusDescription}" Value="缺货">
                                     <Setter Property="Foreground" Value="Red"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding StockStatus}" Value="库存不足">
+                                <DataTrigger Binding="{Binding StockStatusDescription}" Value="库存不足">
                                     <Setter Property="Foreground" Value="Orange"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
                                 </DataTrigger>

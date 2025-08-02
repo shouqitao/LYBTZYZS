@@ -34,12 +34,15 @@ namespace LYBT.WPF.Client.Core.Models.DTOs
     public class RecordDto
     {
         public Guid Id { get; set; }
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
         public string PatientName { get; set; } = string.Empty;
         public Guid RegistrationId { get; set; }
         public string Diagnosis { get; set; } = string.Empty;
         public string? ChiefComplaint { get; set; }
         public string? PresentIllness { get; set; }
+        public string? TCMDiagnosis { get; set; }
+        public string? WesternDiagnosis { get; set; }
+        public string? Treatment { get; set; }
         public string? TreatmentAdvice { get; set; }
         public Guid? PrescriptionId { get; set; }
         public List<string> DiagnosisResults { get; set; } = new();
@@ -48,6 +51,8 @@ namespace LYBT.WPF.Client.Core.Models.DTOs
         public string? CreatedBy { get; set; }
         public DateTime CreatedTime { get; set; }
         public DateTime RecordTime { get; set; }
+        public DateTime VisitTime { get; set; }
+        public bool IsSelected { get; set; }
     }
 
     /// <summary>
@@ -64,12 +69,15 @@ namespace LYBT.WPF.Client.Core.Models.DTOs
     /// </summary>
     public class RecordCreateDto
     {
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
         public string PatientName { get; set; } = string.Empty;
         public Guid RegistrationId { get; set; }
         public string Diagnosis { get; set; } = string.Empty;
         public string? ChiefComplaint { get; set; }
         public string? PresentIllness { get; set; }
+        public string? TCMDiagnosis { get; set; }
+        public string? WesternDiagnosis { get; set; }
+        public string? Treatment { get; set; }
         public string? TreatmentAdvice { get; set; }
         public Guid? PrescriptionId { get; set; }
         public List<string> DiagnosisResults { get; set; } = new();
