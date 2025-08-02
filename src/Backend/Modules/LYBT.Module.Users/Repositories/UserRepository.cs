@@ -82,20 +82,21 @@ namespace LYBT.Module.Users.Repositories {
                 dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
             }
             if (!string.IsNullOrWhiteSpace(query.Email)) {
-                dbSet = dbSet.Where(u => u.Email.Contains(query.Email));
+                dbSet = dbSet.Where(u => u.Email != null && u.Email.Contains(query.Email));
             }
             if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
-                dbSet = dbSet.Where(u => u.PhoneNumber.Contains(query.PhoneNumber));
+                dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
             }
-            if (!string.IsNullOrWhiteSpace(query.Department)) {
-                dbSet = dbSet.Where(u => u.Department.Contains(query.Department));
-            }
-            if (!string.IsNullOrWhiteSpace(query.Position)) {
-                dbSet = dbSet.Where(u => u.Position.Contains(query.Position));
-            }
+            // 注释掉Department和Position查询，因为这些字段在数据库中不存在
+            // if (!string.IsNullOrWhiteSpace(query.Department)) {
+            //     dbSet = dbSet.Where(u => u.Department.Contains(query.Department));
+            // }
+            // if (!string.IsNullOrWhiteSpace(query.Position)) {
+            //     dbSet = dbSet.Where(u => u.Position.Contains(query.Position));
+            // }
             if (!string.IsNullOrWhiteSpace(query.PinyinCode)) {
                 var keyword = query.PinyinCode.ToUpperInvariant();
-                dbSet = dbSet.Where(u => u.PinyinCode.Contains(keyword));
+                dbSet = dbSet.Where(u => u.PinyinCode != null && u.PinyinCode.Contains(keyword));
             }
 
             // 角色筛选

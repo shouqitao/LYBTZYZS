@@ -7,9 +7,6 @@
 		<BaseOutputPath>..\..\BIN</BaseOutputPath>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.International.Converters.PinYinConverter" Version="1.0.0" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />

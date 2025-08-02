@@ -13,6 +13,7 @@ using LYBT.WebAPI.Extensions;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
@@ -92,24 +93,8 @@ builder.Services.AddUsersModuleServices();
 // 注册所有LYBT业务模块服务
 builder.Services.AddAllModules();
 
-// 添加AutoMapper配置 - 扫描所有程序集中的Profile
-builder.Services.AddAutoMapper(
-    typeof(Program),
-    typeof(LYBT.Module.Users.Mapping.UserMappingProfile),
-    typeof(LYBT.Module.Patients.Mapping.PatientMappingProfile),
-    typeof(LYBT.Module.Doctors.Mapping.DoctorMappingProfile),
-    typeof(LYBT.Module.Billing.Mapping.BillingMappingProfile),
-    typeof(LYBT.Module.DiagnosisTreatment.Mapping.DiagnosisTreatmentMappingProfile),
-    typeof(LYBT.Module.FormulaTemplates.Mapping.FormulaTemplateMappingProfile),
-    typeof(LYBT.Module.Herbs.Mapping.HerbMappingProfile),
-    typeof(LYBT.Module.Pharmacy.Mapping.PharmacyMappingProfile),
-    typeof(LYBT.Module.Prescriptions.Mapping.PrescriptionMappingProfile),
-    typeof(LYBT.Module.Queueing.Mapping.QueueingMappingProfile),
-    typeof(LYBT.Module.Records.Mapping.RecordMappingProfile),
-    typeof(LYBT.Module.Registration.Mapping.RegistrationMappingProfile),
-    typeof(LYBT.Module.Sync.Mapping.SyncMappingProfile),
-    typeof(LYBT.Module.TreatmentRoom.Mapping.TreatmentRoomMappingProfile)
-);
+// 添加AutoMapper配置 - 使用扩展方法
+builder.Services.AddLybtAutoMapperProfiles();
 
 // 注册认证模块服务
 builder.Services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthRepository, LYBT.Module.Auth.Repositories.AuthRepository>();

@@ -44,9 +44,9 @@ namespace LYBT.Module.Patients.Repositories {
             if (!string.IsNullOrWhiteSpace(keyword)) {
                 var upper = keyword.ToUpperInvariant();
                 query = query.Where(x => x.Name.Contains(keyword)
-                    || x.PinyinCode.Contains(upper)
-                    || x.PhoneNumber.Contains(keyword)
-                    || x.IdNumber.Contains(keyword));
+                    || (x.PinyinCode != null && x.PinyinCode.Contains(upper))
+                    || (x.PhoneNumber != null && x.PhoneNumber.Contains(keyword))
+                    || (x.IdNumber != null && x.IdNumber.Contains(keyword)));
             }
 
             return await query
@@ -137,9 +137,9 @@ namespace LYBT.Module.Patients.Repositories {
             if (!string.IsNullOrWhiteSpace(keyword)) {
                 var upper = keyword.ToUpperInvariant();
                 query = query.Where(x => x.Name.Contains(keyword)
-                    || x.PinyinCode.Contains(upper)
-                    || x.PhoneNumber.Contains(keyword)
-                    || x.IdNumber.Contains(keyword));
+                    || (x.PinyinCode != null && x.PinyinCode.Contains(upper))
+                    || (x.PhoneNumber != null && x.PhoneNumber.Contains(keyword))
+                    || (x.IdNumber != null && x.IdNumber.Contains(keyword)));
             }
 
             return await query.CountAsync();
@@ -156,9 +156,9 @@ namespace LYBT.Module.Patients.Repositories {
             var upper = keyword.ToUpperInvariant();
             return await query
                 .Where(p => p.Name.Contains(keyword)
-                    || p.PinyinCode.Contains(upper)
-                    || p.IdNumber.Contains(keyword)
-                    || p.PhoneNumber.Contains(keyword))
+                    || (p.PinyinCode != null && p.PinyinCode.Contains(upper))
+                    || (p.IdNumber != null && p.IdNumber.Contains(keyword))
+                    || (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)))
                 .OrderByDescending(p => p.CreateTime)
                 .Take(20)
                 .ToListAsync();

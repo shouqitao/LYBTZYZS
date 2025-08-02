@@ -328,7 +328,7 @@ namespace LYBT.Infrastructure.Database
                     {
                         // 尝试查询表以验证其存在
                         var sql = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'";
-                        var result = await _dbContext.Database.ExecuteSqlRawAsync($"SELECT TOP 0 * FROM [{tableName}]");
+                        var result = await _dbContext.Database.ExecuteSqlRawAsync("SELECT TOP 0 * FROM [{0}]", tableName);
                         _logger.LogDebug($"✅ 表 {tableName} 验证成功");
                     }
                     catch (Exception ex)

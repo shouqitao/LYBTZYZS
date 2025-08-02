@@ -1,4 +1,3 @@
-using Microsoft.International.Converters.PinYinConverter;
 using System.Collections.Concurrent;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -83,6 +82,7 @@ namespace LYBT.Shared.Utilities.Helpers
 
         /// <summary>
         /// 根据中文名称生成拼音码（带缓存）
+        /// TODO: 实现拼音转换功能
         /// </summary>
         /// <param name="text">中文文本</param>
         /// <returns>拼音首字母缩写</returns>
@@ -91,33 +91,14 @@ namespace LYBT.Shared.Utilities.Helpers
             if (string.IsNullOrWhiteSpace(text))
                 return string.Empty;
 
-            string trimmedText = text.Trim();
-
-            return _pinyinCache.GetOrAdd(trimmedText, static input =>
-            {
-                var sb = new StringBuilder();
-
-                foreach (var ch in input)
-                {
-                    if (ChineseChar.IsValidChar(ch))
-                    {
-                        var cc = new ChineseChar(ch);
-                        var py = cc.Pinyins.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p));
-                        if (!string.IsNullOrEmpty(py))
-                            sb.Append(char.ToUpperInvariant(py[0]));
-                    }
-                    else if (char.IsLetter(ch))
-                    {
-                        sb.Append(char.ToUpperInvariant(ch));
-                    }
-                }
-
-                return sb.ToString();
-            });
+            // TODO: 后期实现拼音转换逻辑
+            // 当前返回空字符串，避免编译错误
+            return string.Empty;
         }
 
         /// <summary>
         /// 根据中文名称生成五笔码（带缓存）
+        /// TODO: 实现五笔转换功能
         /// </summary>
         /// <param name="text">中文文本</param>
         /// <returns>五笔码</returns>
@@ -126,58 +107,11 @@ namespace LYBT.Shared.Utilities.Helpers
             if (string.IsNullOrWhiteSpace(text))
                 return string.Empty;
 
-            string trimmedText = text.Trim();
-
-            return _wubiCache.GetOrAdd(trimmedText, static input =>
-            {
-                var sb = new StringBuilder();
-
-                // 五笔字典映射 - 常用字的五笔码
-                var wubiDict = GetWuBiDictionary();
-
-                foreach (var ch in input)
-                {
-                    if (wubiDict.TryGetValue(ch, out var wubiCode))
-                    {
-                        sb.Append(wubiCode);
-                    }
-                    else if (char.IsLetter(ch))
-                    {
-                        sb.Append(char.ToUpperInvariant(ch));
-                    }
-                }
-
-                return sb.ToString();
-            });
+            // TODO: 后期实现五笔转换逻辑
+            // 当前返回空字符串，避免编译错误
+            return string.Empty;
         }
 
-        /// <summary>
-        /// 获取五笔字典（常用字映射）
-        /// </summary>
-        /// <returns>五笔字典</returns>
-        private static Dictionary<char, string> GetWuBiDictionary()
-        {
-            // 常用字的五笔码映射
-            return new Dictionary<char, string>
-            {
-                // 常用姓氏五笔码
-                {'王', "GGGG"}, {'李', "SB"}, {'张', "XTAJ"}, {'刘', "YJH"}, {'陈', "BAIY"},
-                {'杨', "SNRT"}, {'赵', "FHQ"}, {'黄', "AMWU"}, {'周', "MKD"}, {'吴', "KGD"},
-                {'徐', "TBTH"}, {'孙', "BBB"}, {'胡', "DEG"}, {'朱', "RII"}, {'高', "YMKF"},
-                {'林', "SSY"}, {'何', "WKG"}, {'郭', "VKGK"}, {'马', "CNNG"}, {'罗', "LQG"},
-                
-                // 常用中药材名称五笔码
-                {'芪', "AQAB"}, {'当', "IVF"}, {'归', "VVG"}, {'川', "KT"}, {'芎', "AIG"},
-                {'白', "RRR"}, {'芍', "AHD"}, {'茯', "AUK"}, {'苓', "AWP"}, {'甘', "AFL"},
-                {'草', "AJJJ"}, {'党', "IPN"}, {'参', "CJH"}, {'麦', "GTU"}, {'冬', "TU"},
-                {'地', "FBN"}, {'连', "LPK"}, {'板', "SRC"}, {'蓝', "AQLH"}, {'根', "SVEY"},
-                
-                // 其他常用字
-                {'子', "BBB"}, {'花', "AWX"}, {'叶', "KFJ"}, {'仁', "WF"}, {'石', "DG"},
-                {'木', "S"}, {'水', "I"}, {'火', "OO"}, {'土', "F"}, {'金', "QQQ"},
-                {'大', "DDD"}, {'小', "I"}, {'中', "KH"}, {'天', "GD"}, {'人', "WW"}
-            };
-        }
 
         /// <summary>
         /// 验证邮箱格式

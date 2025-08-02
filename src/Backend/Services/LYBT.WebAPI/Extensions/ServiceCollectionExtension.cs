@@ -43,6 +43,7 @@ using LYBT.Module.TreatmentRoom.Services;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -133,7 +134,7 @@ public static class ServiceCollectionExtension {
             .Where(a => a.GetName().Name?.StartsWith("LYBT.Module.") == true)
             .ToArray();
 
-        services.AddAutoMapper(assemblies);
+        services.AddAutoMapper(config => { }, assemblies);
 
         return services;
     }

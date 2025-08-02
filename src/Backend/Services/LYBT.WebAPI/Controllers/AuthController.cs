@@ -215,28 +215,29 @@ namespace LYBT.WebAPI.Controllers {
         /// 刷新JWT令牌
         /// </summary>
         [HttpPost("RefreshToken")]
-        public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> RefreshToken() {
+        public Task<LYBT.Shared.Models.Common.ApiResponse<object>> RefreshToken() {
             try {
                 var username = User?.Identity?.Name;
                 var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 
                 if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId)) {
-                    return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("无效的用户身份", 401);
+                    return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<object>.Fail("无效的用户身份", 401));
                 }
 
                 // 生成新的JWT令牌
-                var newToken = _jwtService.GenerateToken(userId, username, new[] { role }, false);
+                var roles = role != null ? new[] { role } : new string[0];
+                var newToken = _jwtService.GenerateToken(userId, username, roles, false);
                 
                 var response = new {
                     Token = newToken,
                     RefreshedAt = DateTime.UtcNow
                 };
 
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Success(response, "令牌刷新成功");
+                return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<object>.Success(response, "令牌刷新成功"));
             } catch (Exception ex) {
                 _logger.LogError(ex, "刷新令牌异常");
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("刷新令牌失败", 500);
+                return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<object>.Fail("刷新令牌失败", 500));
             }
         }
 
