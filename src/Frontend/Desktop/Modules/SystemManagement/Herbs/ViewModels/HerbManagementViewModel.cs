@@ -1,10 +1,13 @@
 using LYBT.WPF.Client.Core.Models.Herbs;
+using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Herbs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Windows;
 using Prism.Commands;
 using Prism.Mvvm;
 using System.ComponentModel;
@@ -17,6 +20,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// </summary>
     public class HerbManagementViewModel : BindableBase
     {
+        private readonly IHerbService _herbService;
         private string _searchKeyword = string.Empty;
         private HerbInfo _selectedHerb;
         private int _currentPage = 1;
@@ -96,8 +100,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         /// <summary>总页数</summary>
         public int TotalPages => TotalCount > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 1;
 
-        public HerbManagementViewModel()
+        public HerbManagementViewModel(IHerbService herbService)
         {
+            _herbService = herbService;
             Herbs = new ObservableCollection<HerbInfo>();
             HerbsView = CollectionViewSource.GetDefaultView(Herbs);
 
@@ -293,6 +298,40 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         private bool CanExecuteLastPage()
         {
             return CurrentPage < TotalPages;
+        }
+
+        /// <summary>
+        /// 转换HerbDto到HerbInfo
+        /// </summary>
+        private HerbInfo ConvertToHerbInfo(HerbDto dto)
+        {
+            return new HerbInfo
+            {
+                Id = dto.Id,
+                Code = dto.Code,
+                Name = dto.Name,
+                PinyinCode = dto.PinyinCode,
+                Alias = dto.Alias,
+                Category = dto.Category,
+                Origin = dto.Origin,
+                Spec = dto.Specification,
+                Unit = dto.Unit,
+                Price = dto.SalePrice,
+                Stock = dto.Stock,
+                MinStock = dto.MinStock,
+                MaxStock = dto.MaxStock,
+                BatchNo = "",  // 批次号需要从库存记录获取
+                ExpireDate = DateTime.Now.AddYears(2),  // 过期日期需要从库存记录获取
+                Effect = dto.Effects,
+                Properties = dto.Properties,
+                Usage = dto.Usage,
+                Contraindications = dto.Contraindications,
+                Status = dto.Status,
+                IsActive = dto.IsEnabled,
+                CreateTime = dto.CreatedTime,
+                UpdateTime = dto.UpdatedTime,
+                Remark = dto.Remark
+            };
         }
     }
 }

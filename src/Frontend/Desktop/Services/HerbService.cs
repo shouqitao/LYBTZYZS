@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
+using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.DTOs;
 using LYBT.WPF.Client.Core.Interfaces.Services;
@@ -17,10 +19,12 @@ namespace LYBT.WPF.Client.Services
     public class HerbService : IHerbService
     {
         private readonly IApiService _apiService;
+        private readonly IHerbApiService _herbApiService;
 
-        public HerbService(IApiService apiService)
+        public HerbService(IApiService apiService, IHerbApiService herbApiService)
         {
             _apiService = apiService;
+            _herbApiService = herbApiService;
         }
 
         /// <summary>
@@ -30,7 +34,7 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.GetAsync<List<HerbDto>>("herbs");
+                return await _herbApiService.GetHerbsAsync();
             }
             catch (Exception ex)
             {
@@ -68,7 +72,21 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.GetAsync<HerbDetailDto>($"herbs/{id}");
+                var response = await _herbApiService.GetHerbByIdAsync(id);
+                if (response.IsSuccess && response.Data != null)
+                {
+                    return new ApiResponse<HerbDetailDto>
+                    {
+                        IsSuccess = true,
+                        Data = ConvertToHerbDetailDto(response.Data),
+                        Message = response.Message
+                    };
+                }
+                return new ApiResponse<HerbDetailDto>
+                {
+                    IsSuccess = false,
+                    Message = response.Message
+                };
             }
             catch (Exception ex)
             {
@@ -87,7 +105,35 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.PostAsync<object>("herbs", dto);
+                var createDto = new CreateHerbDto
+                {
+                    Code = dto.Code,
+                    Name = dto.Name,
+                    PinyinCode = dto.PinyinCode,
+                    Alias = dto.Alias,
+                    Category = dto.Category,
+                    Properties = dto.Properties,
+                    Effects = dto.Effects,
+                    Usage = dto.Usage,
+                    Contraindications = dto.Contraindications,
+                    Origin = dto.Origin,
+                    Specification = dto.Specification,
+                    Unit = dto.Unit,
+                    CostPrice = dto.CostPrice,
+                    SalePrice = dto.SalePrice,
+                    Stock = dto.Stock,
+                    MinStock = dto.MinStock,
+                    MaxStock = dto.MaxStock,
+                    Remark = dto.Remark
+                };
+                
+                var response = await _herbApiService.CreateHerbAsync(createDto);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -106,7 +152,37 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.PutAsync<object>("herbs", dto);
+                var updateDto = new UpdateHerbDto
+                {
+                    Code = dto.Code,
+                    Name = dto.Name,
+                    PinyinCode = dto.PinyinCode,
+                    Alias = dto.Alias,
+                    Category = dto.Category,
+                    Properties = dto.Properties,
+                    Effects = dto.Effects,
+                    Usage = dto.Usage,
+                    Contraindications = dto.Contraindications,
+                    Origin = dto.Origin,
+                    Specification = dto.Specification,
+                    Unit = dto.Unit,
+                    CostPrice = dto.CostPrice,
+                    SalePrice = dto.SalePrice,
+                    Stock = dto.Stock,
+                    MinStock = dto.MinStock,
+                    MaxStock = dto.MaxStock,
+                    Status = dto.Status,
+                    IsEnabled = dto.IsEnabled,
+                    Remark = dto.Remark
+                };
+                
+                var response = await _herbApiService.UpdateHerbAsync(dto.Id, updateDto);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -125,7 +201,13 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.DeleteAsync<object>($"herbs/{id}");
+                var response = await _herbApiService.DeleteHerbAsync(id);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -144,7 +226,7 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.GetAsync<List<HerbDto>>("herbs/out-of-stock");
+                return await _herbApiService.GetLowStockHerbsAsync(0);
             }
             catch (Exception ex)
             {
@@ -220,7 +302,21 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                return await _apiService.PatchAsync<object>("herbs/status", dto);
+                var batchDto = new BatchStatusUpdateDto
+                {
+                    Ids = new List<Guid> { dto.Id },
+                    Status = dto.Status,
+                    IsEnabled = dto.IsEnabled,
+                    Reason = dto.Reason
+                };
+                
+                var response = await _herbApiService.BatchUpdateStatusAsync(batchDto);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccess,
+                    Message = response.Message,
+                    Data = response.Data
+                };
             }
             catch (Exception ex)
             {
@@ -249,6 +345,38 @@ namespace LYBT.WPF.Client.Services
                     Message = $"获取药材统计失败: {ex.Message}"
                 };
             }
+        }
+        /// <summary>
+        /// 转换HerbDto到HerbDetailDto
+        /// </summary>
+        private HerbDetailDto ConvertToHerbDetailDto(HerbDto dto)
+        {
+            return new HerbDetailDto
+            {
+                Id = dto.Id,
+                Code = dto.Code,
+                Name = dto.Name,
+                PinyinCode = dto.PinyinCode,
+                Alias = dto.Alias,
+                Category = dto.Category,
+                Properties = dto.Properties,
+                Effects = dto.Effects,
+                Usage = dto.Usage,
+                Contraindications = dto.Contraindications,
+                Origin = dto.Origin,
+                Specification = dto.Specification,
+                Unit = dto.Unit,
+                CostPrice = dto.CostPrice,
+                SalePrice = dto.SalePrice,
+                Stock = dto.Stock,
+                MinStock = dto.MinStock,
+                MaxStock = dto.MaxStock,
+                Status = dto.Status,
+                IsEnabled = dto.IsEnabled,
+                CreatedTime = dto.CreatedTime,
+                UpdatedTime = dto.UpdatedTime,
+                Remark = dto.Remark
+            };
         }
     }
 }
