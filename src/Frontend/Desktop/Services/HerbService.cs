@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.DTOs;

@@ -9,6 +9,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.DTOs;
+using LYBT.Shared.Models.Records;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 {
@@ -198,27 +199,29 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                         filteredRecords = filteredRecords.Where(r => 
                             r.PatientName?.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) == true ||
                             r.ChiefComplaint?.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) == true ||
-                            r.Diagnosis?.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) == true);
+                            r.TCMDiagnosis?.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) == true ||
+                            r.WesternDiagnosis?.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) == true ||
+                            r.Treatment?.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) == true);
                     }
 
                     // 按患者筛选
                     if (SelectedPatient != null && SelectedPatient.Id != Guid.Empty)
                     {
-                        filteredRecords = filteredRecords.Where(r => r.PatientId == SelectedPatient.Id.ToString());
+                        filteredRecords = filteredRecords.Where(r => r.PatientId == SelectedPatient.Id);
                     }
 
                     // 按日期范围筛选
                     if (SearchStartDate.HasValue)
                     {
-                        filteredRecords = filteredRecords.Where(r => r.CreatedTime >= SearchStartDate.Value);
+                        filteredRecords = filteredRecords.Where(r => r.VisitTime >= SearchStartDate.Value);
                     }
                     if (SearchEndDate.HasValue)
                     {
-                        filteredRecords = filteredRecords.Where(r => r.CreatedTime <= SearchEndDate.Value.AddDays(1));
+                        filteredRecords = filteredRecords.Where(r => r.VisitTime <= SearchEndDate.Value.AddDays(1));
                     }
 
                     Records.Clear();
-                    foreach (var record in filteredRecords.OrderByDescending(r => r.CreatedTime))
+                    foreach (var record in filteredRecords.OrderByDescending(r => r.VisitTime))
                     {
                         Records.Add(record);
                     }
@@ -352,7 +355,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 if (result.IsSuccess && result.Data != null)
                 {
                     Records.Clear();
-                    foreach (var record in result.Data.OrderByDescending(r => r.CreatedTime))
+                    foreach (var record in result.Data.OrderByDescending(r => r.VisitTime))
                     {
                         Records.Add(record);
                     }

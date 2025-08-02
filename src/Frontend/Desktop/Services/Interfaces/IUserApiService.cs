@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Users;
+using ApiResponse = LYBT.Shared.Models.Common.ApiResponse;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {

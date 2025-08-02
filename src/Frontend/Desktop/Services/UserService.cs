@@ -392,12 +392,11 @@ namespace LYBT.WPF.Client.Services
 
             return string.Join("&", parameters);
         }
-    }
 
         /// <summary>
         /// 转换UserDto到UserInfo
         /// </summary>
-        private UserInfo ConvertToUserInfo(UserDto dto)
+        private UserInfo ConvertToUserInfo(LYBT.Shared.Models.Contracts.Users.UserDto dto)
         {
             return new UserInfo
             {
