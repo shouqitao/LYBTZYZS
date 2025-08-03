@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Text.Json;
 using LYBT.WPF.Client.Core.Services;
-using LYBT.WPF.Client.Core.Models.Authentication;
+using LYBT.Shared.Models.Auth;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services.Interfaces;
@@ -26,7 +26,7 @@ namespace LYBT.WPF.Client.Services {
 
         public bool IsLoggedIn => _isLoggedIn;
 
-        public async Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest request) {
+        public async Task<ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync(LoginRequest request) {
             try {
                 // 创建后端API格式的登录请求
                 var loginDto = new {
@@ -52,7 +52,7 @@ namespace LYBT.WPF.Client.Services {
                 // 转换为前端类型
                 return ConvertApiResponse(response);
             } catch (Exception ex) {
-                return new ApiResponse<LoginResponse> {
+                return new ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> {
                     IsSuccess = false,
                     Message = $"登录过程中发生错误: {ex.Message}"
                 };
@@ -207,18 +207,15 @@ namespace LYBT.WPF.Client.Services {
         /// <summary>
         /// 转换API响应类型
         /// </summary>
-        private ApiResponse<LoginResponse> ConvertApiResponse(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> apiResponse)
+        private ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> ConvertApiResponse(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> apiResponse)
         {
-            return new ApiResponse<LoginResponse>
+            // 直接返回，因为现在使用共享的LoginResponse
+            return new ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>
             {
                 IsSuccess = apiResponse.IsSuccess,
                 Message = apiResponse.Message,
                 StatusCode = apiResponse.StatusCode,
-                Data = apiResponse.Data != null ? new LoginResponse
-                {
-                    Token = apiResponse.Data.Token,
-                    User = ConvertToUserInfo(apiResponse.Data.User) ?? new UserInfo()
-                } : null
+                Data = apiResponse.Data
             };
         }
 

@@ -13,8 +13,12 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Patients;
-using LYBT.WPF.Client.Core.Models.DTOs;
+using LYBT.Shared.Models.Records;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Records;
 using LYBT.Shared.Models.Enums;
+using HerbStatus = LYBT.Shared.Models.Enums.HerbStatus;
 
 namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
 {
@@ -229,22 +233,21 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 var createDto = new RecordCreateDto
                 {
                     PatientId = medicalRecord.PatientId,
-                    PatientName = medicalRecord.PatientName,
+                    RegistrationId = Guid.NewGuid(), // TODO: 需要从实际挂号记录获取
                     Diagnosis = medicalRecord.Diagnosis,
                     ChiefComplaint = medicalRecord.ChiefComplaint,
                     PresentIllness = medicalRecord.PresentIllness,
                     TreatmentAdvice = medicalRecord.TreatmentAdvice,
-                    DiagnosisResults = medicalRecord.DiagnosisResults,
-                    HerbalFormula = medicalRecord.HerbalFormula.Select(h => new HerbItemModel
+                    DiagnosisResults = new List<string>(), // TODO: 从诊断结果获取
+                    HerbalFormula = medicalRecord.HerbalFormula?.Select(h => new FormulaIngredientDto
                     {
                         HerbId = h.HerbId,
-                        HerbName = h.HerbName,
                         Dosage = h.Dosage,
-                        Unit = h.Unit,
-                        UnitPrice = h.UnitPrice,
-                        Usage = h.Usage,
-                        Remark = h.Remark
-                    }).ToList()
+                        Unit = h.Unit
+                    }).ToList(),
+                    IsShared = false,
+                    CreatedTime = DateTime.Now,
+                    RecordTime = DateTime.Now
                 };
 
                 var result = await _recordService.AddAsync(createDto);
@@ -385,17 +388,17 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 Id = herbDto.Id,
                 Name = herbDto.Name,
                 PinyinCode = herbDto.PinyinCode,
-                WuBiCode = herbDto.WuBiCode,
+                // WuBiCode = herbDto.WuBiCode, // HerbDto中没有WuBiCode属性
                 Origin = herbDto.Origin,
                 Spec = herbDto.Spec,
                 Unit = herbDto.Unit,
                 Price = herbDto.Price,
-                Stock = herbDto.Stock,
-                BatchNo = herbDto.BatchNo,
-                ExpireDate = herbDto.ExpireDate,
+                Stock = (int)herbDto.Stock, // 需要转换为int
+                // BatchNo = herbDto.BatchNo, // HerbDto中没有BatchNo属性
+                // ExpireDate = herbDto.ExpireDate, // HerbDto中没有ExpireDate属性
                 Effect = herbDto.Effect,
                 Remark = herbDto.Remark,
-                Status = herbDto.Status,
+                Status = (HerbStatus)herbDto.Status, // 需要转换为枚举
                 IsActive = herbDto.IsActive,
                 CreateTime = herbDto.CreateTime,
                 UpdateTime = herbDto.UpdateTime

@@ -6,8 +6,9 @@ using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Models.Users;
-using LYBT.Shared.Models.Users;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -28,12 +29,12 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 搜索用户
         /// </summary>
-        public async Task<PaginatedResult<UserInfo>> SearchUsersAsync(UserQueryRequest request)
+        public async Task<PaginatedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request)
         {
             try
             {
                 // 使用Refit调用API
-                var response = await _userApiService.GetUsersAsync(request.Keyword);
+                var response = await _userApiService.GetUsersAsync(request.SearchKeyword);
                 
                 if (response.IsSuccess && response.Data != null)
                 {
@@ -51,14 +52,14 @@ namespace LYBT.WPF.Client.Services
                     
                     // 分页
                     var totalCount = users.Count;
-                    var skip = (request.Page - 1) * request.PageSize;
+                    var skip = (request.CurrentPage - 1) * request.PageSize;
                     users = users.Skip(skip).Take(request.PageSize).ToList();
                     
                     return new PaginatedResult<UserInfo>
                     {
                         Items = users,
                         TotalCount = totalCount,
-                        CurrentPage = request.Page,
+                        CurrentPage = request.CurrentPage,
                         PageSize = request.PageSize
                     };
                 }
@@ -67,7 +68,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     Items = new List<UserInfo>(),
                     TotalCount = 0,
-                    CurrentPage = request.Page,
+                    CurrentPage = request.CurrentPage,
                     PageSize = request.PageSize
                 };
             }
@@ -80,21 +81,12 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 新增用户
         /// </summary>
-        public async Task<ApiResponse<object>> CreateUserAsync(UserCreateRequest request)
+        public async Task<ApiResponse<object>> CreateUserAsync(UserCreateDto request)
         {
             try
             {
-                var createDto = new CreateUserDto
-                {
-                    UserName = request.UserName,
-                    RealName = request.RealName,
-                    Role = request.Role.ToString(),
-                    Email = request.Email,
-                    PhoneNumber = request.PhoneNumber
-                    // 不需要密码，后端会使用默认密码
-                };
-
-                var response = await _userApiService.CreateUserAsync(createDto);
+                // 直接使用request，因为现在已经是UserCreateDto类型
+                var response = await _userApiService.CreateUserAsync(request);
                 return new ApiResponse<object>
                 {
                     IsSuccess = response.IsSuccess,
@@ -115,21 +107,12 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 更新用户
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateUserAsync(UserUpdateRequest request)
+        public async Task<ApiResponse<object>> UpdateUserAsync(UserUpdateDto request)
         {
             try
             {
-                var updateDto = new UpdateUserDto
-                {
-                    UserName = request.UserName,
-                    RealName = request.RealName,
-                    Role = request.Role.ToString(),
-                    Email = request.Email,
-                    PhoneNumber = request.PhoneNumber,
-                    IsActive = request.IsActive
-                };
-
-                var response = await _userApiService.UpdateUserAsync(request.Id, updateDto);
+                // UserUpdateDto现在包含Id属性
+                var response = await _userApiService.UpdateUserAsync(request.Id, request);
                 return new ApiResponse<object>
                 {
                     IsSuccess = response.IsSuccess,
@@ -225,16 +208,16 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取所有角色
         /// </summary>
-        public async Task<List<RoleInfo>> GetRolesAsync()
+        public async Task<List<UserRole>> GetRolesAsync()
         {
             try
             {
-                var response = await _apiService.GetAsync<List<RoleInfo>>("api/v1/Users/getRoles");
-                return response.IsSuccess && response.Data != null ? response.Data : new List<RoleInfo>();
+                // 直接返回枚举值列表
+                return Enum.GetValues<UserRole>().ToList();
             }
             catch (Exception)
             {
-                return new List<RoleInfo>();
+                return new List<UserRole>();
             }
         }
 
@@ -374,12 +357,12 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 构建查询字符串
         /// </summary>
-        private string BuildQueryString(UserQueryRequest request)
+        private string BuildQueryString(UserPagedQueryDto request)
         {
             var parameters = new List<string>();
 
-            if (!string.IsNullOrEmpty(request.Keyword))
-                parameters.Add($"keyword={Uri.EscapeDataString(request.Keyword)}");
+            if (!string.IsNullOrEmpty(request.SearchKeyword))
+                parameters.Add($"keyword={Uri.EscapeDataString(request.SearchKeyword)}");
 
             if (request.Role.HasValue)
                 parameters.Add($"role={request.Role}");
@@ -387,7 +370,7 @@ namespace LYBT.WPF.Client.Services
             if (request.IsActive.HasValue)
                 parameters.Add($"isActive={request.IsActive.Value}");
 
-            parameters.Add($"page={request.Page}");
+            parameters.Add($"page={request.CurrentPage}");
             parameters.Add($"pageSize={request.PageSize}");
 
             return string.Join("&", parameters);
@@ -401,15 +384,15 @@ namespace LYBT.WPF.Client.Services
             return new UserInfo
             {
                 Id = dto.Id,
-                Username = dto.UserName,
+                Username = dto.Username,
                 RealName = dto.RealName,
-                Role = Enum.Parse<LYBT.Shared.Models.Enums.UserRole>(dto.Role),
+                Role = dto.Role,
                 IsActive = dto.IsActive,
-                CreateTime = dto.CreatedTime,
+                CreateTime = dto.CreateTime,
                 LastLoginTime = dto.LastLoginTime,
                 Email = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
-                IsSuperAdmin = dto.UserName?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
+                IsSuperAdmin = dto.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
             };
         }
     }

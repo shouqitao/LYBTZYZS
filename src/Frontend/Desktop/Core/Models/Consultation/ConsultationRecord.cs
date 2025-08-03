@@ -4,6 +4,7 @@ using System.Linq;
 using LYBT.WPF.Client.Core.Models.Patients;
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.WPF.Client.Core.Models.Herbs;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Core.Models.Consultation
 {
@@ -170,20 +171,6 @@ namespace LYBT.WPF.Client.Core.Models.Consultation
         public string? Remark { get; set; }
     }
 
-    /// <summary>
-    /// 诊疗状态枚举
-    /// </summary>
-    public enum ConsultationStatus
-    {
-        /// <summary>诊疗中</summary>
-        InProgress = 1,
-
-        /// <summary>已完成</summary>
-        Completed = 2,
-
-        /// <summary>已取消</summary>
-        Cancelled = 3
-    }
 
     /// <summary>
     /// 病历记录模型（对应后端Record）
@@ -323,18 +310,4 @@ namespace LYBT.WPF.Client.Core.Models.Consultation
         public DateTime? ExecuteTime { get; set; }
     }
 
-    /// <summary>
-    /// 病历状态
-    /// </summary>
-    public enum RecordStatus
-    {
-        /// <summary>进行中</summary>
-        InProgress = 0,
-        /// <summary>已完成</summary>
-        Completed = 1,
-        /// <summary>已共享</summary>
-        Shared = 2,
-        /// <summary>已归档</summary>
-        Archived = 3
-    }
 }

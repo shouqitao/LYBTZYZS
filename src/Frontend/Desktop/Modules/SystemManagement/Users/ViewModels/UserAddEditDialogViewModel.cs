@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
@@ -161,13 +162,16 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 if (IsNewUser)
                 {
                     // 新增用户
-                    var createRequest = new UserCreateRequest
+                    var createRequest = new UserCreateDto
                     {
-                        UserName = UserName.Trim(),
+                        Username = UserName.Trim(),
+                        Password = "Admin@123456", // 默认密码，实际应该让用户输入
+                        ConfirmPassword = "Admin@123456",
                         RealName = RealName.Trim(),
                         Role = SelectedRole!.Value,
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
-                        PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim()
+                        PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
+                        IsActive = IsActive
                     };
 
                     var response = await _userService.CreateUserAsync(createRequest);
@@ -182,10 +186,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 else
                 {
                     // 更新用户
-                    var updateRequest = new UserUpdateRequest
+                    var updateRequest = new UserUpdateDto
                     {
-                        Id = _originalUser!.Id,
-                        UserName = UserName.Trim(),
+                        Id = _originalUser.Id,
+                        Username = UserName.Trim(),
                         RealName = RealName.Trim(),
                         Role = SelectedRole!.Value,
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),

@@ -1,7 +1,9 @@
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
+using HerbStatus = LYBT.Shared.Models.Enums.HerbStatus;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -308,29 +310,29 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             return new HerbInfo
             {
                 Id = dto.Id,
-                Code = dto.Code,
+                // Code = dto.Code, // BaseHerbModel中没有Code属性
                 Name = dto.Name,
                 PinyinCode = dto.PinyinCode,
-                WuBiCode = dto.WuBiCode,
-                Alias = dto.Alias,
-                Category = dto.Category,
+                // WuBiCode = dto.WuBiCode, // HerbDto中没有WuBiCode属性
+                // Alias = dto.Alias, // BaseHerbModel中没有Alias属性
+                // Category = dto.Category, // BaseHerbModel中没有Category属性
                 Origin = dto.Origin,
-                Spec = dto.Specification,
+                Spec = dto.Spec,
                 Unit = dto.Unit,
-                Price = dto.SalePrice,
-                Stock = dto.Stock,
-                MinStock = dto.MinStock,
-                MaxStock = dto.MaxStock,
+                Price = dto.Price,
+                Stock = (int)dto.Stock, // 需要转换为int
+                // MinStock = dto.MinStock, // BaseHerbModel中没有MinStock属性
+                // MaxStock = dto.MaxStock, // BaseHerbModel中没有MaxStock属性
                 BatchNo = "",  // 批次号需要从库存记录获取
                 ExpireDate = DateTime.Now.AddYears(2),  // 过期日期需要从库存记录获取
-                Effect = dto.Effects,
-                Properties = dto.Properties,
-                Usage = dto.Usage,
-                Contraindications = dto.Contraindications,
-                Status = dto.Status,
-                IsActive = dto.IsEnabled,
-                CreateTime = dto.CreatedTime,
-                UpdateTime = dto.UpdatedTime,
+                Effect = dto.Effect,
+                // Properties = dto.Properties, // BaseHerbModel中没有Properties属性
+                // Usage = dto.Usage, // BaseHerbModel中没有Usage属性
+                // Contraindications = dto.Contraindications, // BaseHerbModel中没有Contraindications属性
+                Status = (HerbStatus)dto.Status, // 需要转换为枚举
+                IsActive = dto.IsActive,
+                CreateTime = dto.CreateTime,
+                UpdateTime = dto.UpdateTime,
                 Remark = dto.Remark
             };
         }

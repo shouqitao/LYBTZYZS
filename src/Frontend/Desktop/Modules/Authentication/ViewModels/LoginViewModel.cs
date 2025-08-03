@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.Authentication;
+using LYBT.Shared.Models.Auth;
 using LYBT.WPF.Client.Core.Events;
 using LYBT.WPF.Client.Core.ViewModels;
 using LYBT.Shared.Models.Enums;
@@ -98,7 +98,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                 IsLoading = true;
                 ClearError();
 
-                var request = new LoginRequest
+                var request = new LYBT.Shared.Models.Auth.LoginRequest
                 {
                     Username = Username.Trim(),
                     Password = Password,
@@ -113,14 +113,22 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                 if (response.IsSuccess && response.Data != null)
                 {
                     // 检查是否为超级管理员
-                    if (response.Data.User.IsSuperAdmin)
+                    if (response.Data.User.UserName?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
                     {
                         StatusMessage = "超级管理员登录成功，正在跳转...";
                     }
                     else
                     {
-                        var roleDisplayName = response.Data.User.Role.GetDisplayName();
-                        StatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
+                        // Role是字符串，需要先转换为枚举才能使用GetDisplayName
+                        if (Enum.TryParse<UserRole>(response.Data.User.Role, out var userRole))
+                        {
+                            var roleDisplayName = userRole.GetDisplayName();
+                            StatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
+                        }
+                        else
+                        {
+                            StatusMessage = $"{response.Data.User.Role}登录成功，正在跳转...";
+                        }
                     }
                     
                     // 等待一下让用户看到成功消息

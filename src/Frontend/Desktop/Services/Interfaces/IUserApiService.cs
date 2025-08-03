@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Users;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {
@@ -28,13 +27,13 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建用户
         /// </summary>
         [Post("/api/v1/users")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<UserDto>> CreateUserAsync([Body] CreateUserDto dto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<UserDto>> CreateUserAsync([Body] UserCreateDto dto);
 
         /// <summary>
         /// 更新用户
         /// </summary>
         [Put("/api/v1/users/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Body] UpdateUserDto dto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Body] UserUpdateDto dto);
 
         /// <summary>
         /// 删除用户

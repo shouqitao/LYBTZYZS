@@ -7,10 +7,7 @@ using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.DTOs;
-using LYBT.Shared.Models.Herbs;
-// 使用别名避免冲突
-using HerbDto = LYBT.Shared.Models.Herbs.HerbDto;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -50,7 +47,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        public async Task<ApiResponse<PaginatedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
+        public async Task<ApiResponse<PaginatedResult<HerbDto>>> GetPagedAsync(dynamic query)
         {
             try
             {
@@ -69,21 +66,16 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取药材详情
         /// </summary>
-        public async Task<ApiResponse<HerbDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ApiResponse<HerbDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 var response = await _herbApiService.GetHerbByIdAsync(id);
                 if (response.IsSuccess && response.Data != null)
                 {
-                    return new ApiResponse<HerbDetailDto>
-                    {
-                        IsSuccess = true,
-                        Data = ConvertToHerbDetailDto(response.Data),
-                        Message = response.Message
-                    };
+                    return response;
                 }
-                return new ApiResponse<HerbDetailDto>
+                return new ApiResponse<HerbDto>
                 {
                     IsSuccess = false,
                     Message = response.Message
@@ -91,7 +83,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<HerbDetailDto>
+                return new ApiResponse<HerbDto>
                 {
                     IsSuccess = false,
                     Message = $"获取药材详情失败: {ex.Message}"
@@ -106,29 +98,8 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var createDto = new CreateHerbDto
-                {
-                    Code = dto.Code,
-                    Name = dto.Name,
-                    PinyinCode = dto.PinyinCode,
-                    Alias = dto.Alias,
-                    Category = dto.Category,
-                    Properties = dto.Properties,
-                    Effects = dto.Effects,
-                    Usage = dto.Usage,
-                    Contraindications = dto.Contraindications,
-                    Origin = dto.Origin,
-                    Specification = dto.Specification,
-                    Unit = dto.Unit,
-                    CostPrice = dto.CostPrice,
-                    SalePrice = dto.SalePrice,
-                    Stock = dto.Stock,
-                    MinStock = dto.MinStock,
-                    MaxStock = dto.MaxStock,
-                    Remark = dto.Remark
-                };
-                
-                var response = await _herbApiService.CreateHerbAsync(createDto);
+                // 直接使用传入的dto，它已经是HerbCreateDto类型
+                var response = await _herbApiService.CreateHerbAsync(dto);
                 return new ApiResponse<object>
                 {
                     IsSuccess = response.IsSuccess,
@@ -153,37 +124,8 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var updateDto = new UpdateHerbDto
-                {
-                    Code = dto.Code,
-                    Name = dto.Name,
-                    PinyinCode = dto.PinyinCode,
-                    Alias = dto.Alias,
-                    Category = dto.Category,
-                    Properties = dto.Properties,
-                    Effects = dto.Effects,
-                    Usage = dto.Usage,
-                    Contraindications = dto.Contraindications,
-                    Origin = dto.Origin,
-                    Specification = dto.Specification,
-                    Unit = dto.Unit,
-                    CostPrice = dto.CostPrice,
-                    SalePrice = dto.SalePrice,
-                    Stock = dto.Stock,
-                    MinStock = dto.MinStock,
-                    MaxStock = dto.MaxStock,
-                    Status = dto.Status,
-                    IsEnabled = dto.IsEnabled,
-                    Remark = dto.Remark
-                };
-                
-                var response = await _herbApiService.UpdateHerbAsync(dto.Id, updateDto);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
-                };
+                // TODO: 需要传入ID参数，建议后端添加Id属性到UpdateHerbDto
+                throw new NotImplementedException("UpdateAsync需要ID参数，但UpdateHerbDto中没有Id属性");
             }
             catch (Exception ex)
             {
@@ -280,7 +222,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 批量导入药材
         /// </summary>
-        public async Task<ApiResponse<object>> ImportAsync(List<HerbImportDto> herbs)
+        public async Task<ApiResponse<object>> ImportAsync(List<HerbCreateDto> herbs)
         {
             try
             {
@@ -299,19 +241,12 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 更新药材状态
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateStatusAsync(HerbStatusUpdateDto dto)
+        public async Task<ApiResponse<object>> UpdateStatusAsync(BatchIdsDto dto)
         {
             try
             {
-                var batchDto = new LYBT.Shared.Models.Herbs.BatchStatusUpdateDto
-                {
-                    Ids = new List<Guid> { dto.Id },
-                    Status = dto.Status,
-                    IsEnabled = dto.IsEnabled,
-                    Reason = dto.Reason
-                };
-                
-                var response = await _herbApiService.BatchUpdateStatusAsync(batchDto);
+                // dto已经是BatchStatusUpdateDto类型，直接使用
+                var response = await _herbApiService.BatchUpdateStatusAsync(dto);
                 return new ApiResponse<object>
                 {
                     IsSuccess = response.IsSuccess,
@@ -346,38 +281,6 @@ namespace LYBT.WPF.Client.Services
                     Message = $"获取药材统计失败: {ex.Message}"
                 };
             }
-        }
-        /// <summary>
-        /// 转换HerbDto到HerbDetailDto
-        /// </summary>
-        private HerbDetailDto ConvertToHerbDetailDto(HerbDto dto)
-        {
-            return new HerbDetailDto
-            {
-                Id = dto.Id,
-                Code = dto.Code,
-                Name = dto.Name,
-                PinyinCode = dto.PinyinCode,
-                Alias = dto.Alias,
-                Category = dto.Category,
-                Properties = dto.Properties,
-                Effects = dto.Effects,
-                Usage = dto.Usage,
-                Contraindications = dto.Contraindications,
-                Origin = dto.Origin,
-                Specification = dto.Specification,
-                Unit = dto.Unit,
-                CostPrice = dto.CostPrice,
-                SalePrice = dto.SalePrice,
-                Stock = dto.Stock,
-                MinStock = dto.MinStock,
-                MaxStock = dto.MaxStock,
-                Status = dto.Status,
-                IsEnabled = dto.IsEnabled,
-                CreatedTime = dto.CreatedTime,
-                UpdatedTime = dto.UpdatedTime,
-                Remark = dto.Remark
-            };
         }
     }
 }

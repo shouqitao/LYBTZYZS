@@ -8,7 +8,7 @@ namespace LYBT.WPF.Client.Core.Configuration
         /// <summary>
         /// API基础地址
         /// </summary>
-        public string BaseUrl { get; set; } = "http://localhost:5927/";
+        public string BaseUrl { get; set; } = "http://localhost:5297/";
 
         /// <summary>
         /// 请求超时时间（秒）

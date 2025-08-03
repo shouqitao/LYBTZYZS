@@ -56,21 +56,43 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// 加载配置设置
         /// </summary>
         private static void LoadSettings() {
+            const string defaultUrl = "http://localhost:5297/";
+            const int defaultTimeout = 60;
+            
             try {
                 var configuration = new ConfigurationBuilder()
                     .AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"), optional: true, reloadOnChange: true)
                     .Build();
 
                 var apiSection = configuration.GetSection("ApiSettings");
+                var configuredUrl = apiSection["BaseUrl"];
+                
+                // 如果配置文件中的地址为空或者就是默认地址，则使用默认地址
+                // 否则使用配置文件中的自定义地址
+                string baseUrl;
+                if (string.IsNullOrWhiteSpace(configuredUrl) || configuredUrl.Trim() == defaultUrl)
+                {
+                    baseUrl = defaultUrl;
+                }
+                else
+                {
+                    baseUrl = configuredUrl.Trim();
+                    // 确保URL以斜杠结尾
+                    if (!baseUrl.EndsWith("/"))
+                    {
+                        baseUrl += "/";
+                    }
+                }
+                
                 _settings = new ApiSettings {
-                    BaseUrl = apiSection["BaseUrl"] ?? "http://192.168.190.243:5000/",
-                    TimeoutSeconds = int.TryParse(apiSection["TimeoutSeconds"], out var timeout) ? timeout : 60
+                    BaseUrl = baseUrl,
+                    TimeoutSeconds = int.TryParse(apiSection["TimeoutSeconds"], out var timeout) ? timeout : defaultTimeout
                 };
             } catch (Exception) {
                 // 如果配置文件加载失败，使用默认设置
                 _settings = new ApiSettings {
-                    BaseUrl = "http://192.168.190.243:5000/",
-                    TimeoutSeconds = 60
+                    BaseUrl = defaultUrl,
+                    TimeoutSeconds = defaultTimeout
                 };
             }
         }

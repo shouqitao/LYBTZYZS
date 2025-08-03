@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
-using LYBT.Shared.Models.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.FormulaTemplates;
 using ApiResponse = LYBT.Shared.Models.Common.ApiResponse;
 
 namespace LYBT.WPF.Client.Services.Interfaces
@@ -30,13 +30,13 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建验方模板
         /// </summary>
         [Post("/api/v1/FormulaTemplate")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<FormulaTemplateDto>> CreateFormulaTemplateAsync([Body] CreateFormulaTemplateDto createDto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<FormulaTemplateDto>> CreateFormulaTemplateAsync([Body] FormulaTemplateCreateDto createDto);
 
         /// <summary>
         /// 更新验方模板
         /// </summary>
         [Put("/api/v1/FormulaTemplate/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<FormulaTemplateDto>> UpdateFormulaTemplateAsync(Guid id, [Body] UpdateFormulaTemplateDto updateDto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<FormulaTemplateDto>> UpdateFormulaTemplateAsync(Guid id, [Body] FormulaTemplateEditDto updateDto);
 
         /// <summary>
         /// 删除验方模板

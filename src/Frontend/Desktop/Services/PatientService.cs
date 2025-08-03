@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.Shared.Models.Common;
-using LYBT.WPF.Client.Core.Models.DTOs;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Records;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 
 namespace LYBT.WPF.Client.Services
@@ -160,7 +161,7 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var dto = new PatientBatchIdsDto { Ids = ids };
+                var dto = new { Ids = ids };
                 return await _apiService.PatchAsync<object>("patients/batch-disable", dto);
             }
             catch (Exception ex)
@@ -180,7 +181,7 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var dto = new PatientBatchIdsDto { Ids = ids };
+                var dto = new { Ids = ids };
                 return await _apiService.PatchAsync<object>("patients/batch-enable", dto);
             }
             catch (Exception ex)

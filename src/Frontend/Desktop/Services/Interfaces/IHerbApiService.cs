@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Herbs;
 using ApiResponse = LYBT.Shared.Models.Common.ApiResponse;
 
@@ -28,13 +30,13 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建药材
         /// </summary>
         [Post("/api/v1/herbs")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<HerbDto>> CreateHerbAsync([Body] CreateHerbDto dto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<HerbDto>> CreateHerbAsync([Body] HerbCreateDto dto);
 
         /// <summary>
         /// 更新药材
         /// </summary>
         [Put("/api/v1/herbs/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<HerbDto>> UpdateHerbAsync(Guid id, [Body] UpdateHerbDto dto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<HerbDto>> UpdateHerbAsync(Guid id, [Body] HerbUpdateDto dto);
 
         /// <summary>
         /// 删除药材
@@ -46,7 +48,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 批量更新药材状态
         /// </summary>
         [Patch("/api/v1/herbs/batch-status")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<int>> BatchUpdateStatusAsync([Body] LYBT.Shared.Models.Herbs.BatchStatusUpdateDto dto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<int>> BatchUpdateStatusAsync([Body] BatchIdsDto dto);
 
         /// <summary>
         /// 更新库存

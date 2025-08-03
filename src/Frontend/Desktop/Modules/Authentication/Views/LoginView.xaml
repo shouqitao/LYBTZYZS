@@ -176,11 +176,21 @@
 
         <!-- 状态消息 -->
         <TextBlock Grid.Row="10" 
-                   Text="{Binding LoginStatusMessage}" 
+                   Text="{Binding StatusMessage}" 
+                   Foreground="Green" 
+                   FontSize="12" 
+                   HorizontalAlignment="Center"
+                   TextWrapping="Wrap"
+                   Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+        
+        <!-- 错误消息 -->
+        <TextBlock Grid.Row="10" 
+                   Text="{Binding ErrorMessage}" 
                    Foreground="Red" 
                    FontSize="12" 
                    HorizontalAlignment="Center"
-                   TextWrapping="Wrap"/>
+                   TextWrapping="Wrap"
+                   Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
 
         <!-- 加载遮罩 -->
         <Grid Grid.RowSpan="12" 

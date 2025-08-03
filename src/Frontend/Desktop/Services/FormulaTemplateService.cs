@@ -6,7 +6,8 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.FormulaTemplates;
 using LYBT.WPF.Client.Services.Interfaces;
-using LYBT.Shared.Models.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -94,21 +95,17 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var createDto = new CreateFormulaTemplateDto
+                var createDto = new FormulaTemplateCreateDto
                 {
                     Name = template.Name,
-                    Category = template.Category,
-                    Description = template.Indications,
-                    Indications = template.Indications,
-                    Usage = template.Usage,
-                    Remark = template.Remark,
-                    Herbs = template.Herbs.Select(h => new CreateFormulaTemplateHerbDto
+                    Herbs = template.Herbs.Select(h => new FormulaIngredientDto
                     {
                         HerbId = h.HerbId,
                         Dosage = h.Dosage,
                         Unit = h.Unit,
-                        Usage = h.ProcessingMethod
-                    }).ToList()
+                        Remark = h.ProcessingMethod
+                    }).ToList(),
+                    Remark = template.Remark
                 };
 
                 var response = await _apiService.CreateFormulaTemplateAsync(createDto);
@@ -145,21 +142,20 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var updateDto = new UpdateFormulaTemplateDto
+                var updateDto = new FormulaTemplateEditDto
                 {
+                    Id = template.Id,
                     Name = template.Name,
-                    Category = template.Category,
-                    Description = template.Indications,
-                    Indications = template.Indications,
-                    Usage = template.Usage,
-                    Remark = template.Remark,
-                    Herbs = template.Herbs.Select(h => new CreateFormulaTemplateHerbDto
+                    Herbs = template.Herbs.Select(h => new FormulaIngredientDto
                     {
                         HerbId = h.HerbId,
+                        Name = h.HerbName,
                         Dosage = h.Dosage,
                         Unit = h.Unit,
-                        Usage = h.ProcessingMethod
-                    }).ToList()
+                        Price = h.UnitPrice,
+                        Remark = h.ProcessingMethod
+                    }).ToList(),
+                    Remark = template.Remark
                 };
 
                 var response = await _apiService.UpdateFormulaTemplateAsync(template.Id, updateDto);
@@ -217,8 +213,8 @@ namespace LYBT.WPF.Client.Services
             try
             {
                 var response = await _apiService.BatchDeleteFormulaTemplatesAsync(ids);
-                return response.IsSuccess && response.Data.HasValue
-                    ? new ApiResponse<int> { IsSuccess = true, StatusCode = 200, Message = "批量删除成功", Data = response.Data.Value }
+                return response.IsSuccess
+                    ? new ApiResponse<int> { IsSuccess = true, StatusCode = 200, Message = "批量删除成功", Data = response.Data }
                     : new ApiResponse<int> { IsSuccess = false, StatusCode = 400, Message = response.Message ?? "批量删除验方模板失败" };
             }
             catch (Exception ex)
@@ -310,28 +306,20 @@ namespace LYBT.WPF.Client.Services
 
         private FormulaTemplateInfo ConvertToFormulaTemplateInfo(FormulaTemplateDto dto)
         {
+            // FormulaTemplateDto只包含Id和Name，其他属性需要从详情接口获取
             return new FormulaTemplateInfo
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                Category = dto.Category ?? "其他",
-                Indications = dto.Indications,
-                Usage = dto.Usage,
-                Remark = dto.Remark,
-                IsActive = dto.IsFrequent,
-                CreatedBy = dto.CreatedBy,
-                CreatedTime = dto.CreatedTime,
-                UpdatedTime = dto.UpdatedTime,
-                Herbs = dto.Herbs?.Select(h => new FormulaHerbItem
-                {
-                    HerbId = h.HerbId,
-                    HerbName = h.HerbName,
-                    Dosage = h.Dosage,
-                    Unit = h.Unit,
-                    UnitPrice = 0,
-                    ProcessingMethod = h.Usage,
-                    SpecialInstructions = null
-                }).ToList() ?? new List<FormulaHerbItem>()
+                Category = "其他",
+                Indications = "",
+                Usage = "",
+                Remark = "",
+                IsActive = true,
+                CreatedBy = "",
+                CreatedTime = DateTime.Now,
+                UpdatedTime = null,
+                Herbs = new List<FormulaHerbItem>()
             };
         }
 

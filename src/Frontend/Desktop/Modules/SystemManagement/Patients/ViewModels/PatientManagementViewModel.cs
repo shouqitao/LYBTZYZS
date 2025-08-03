@@ -8,7 +8,7 @@ using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.DTOs;
+using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 {
@@ -129,8 +129,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             {
                 var query = new PatientPagedQueryDto
                 {
-                    Keyword = SearchKeyword,
-                    Page = CurrentPage,
+                    SearchKeyword = SearchKeyword,
+                    CurrentPage = CurrentPage,
                     PageSize = 20
                 };
 

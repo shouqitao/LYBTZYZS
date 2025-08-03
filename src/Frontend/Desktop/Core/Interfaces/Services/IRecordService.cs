@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
-using LYBT.WPF.Client.Core.Models.Consultation;
-using LYBT.WPF.Client.Core.Models.DTOs;
+using LYBT.Shared.Models.Contracts.Records;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
 {

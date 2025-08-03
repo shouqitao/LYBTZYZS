@@ -7,7 +7,8 @@ using System.Windows;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.DTOs;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Records;
 
 namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
 {
@@ -227,7 +228,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                     Id = Guid.NewGuid(),
                     Name = NewPatientName,
                     PhoneNumber = NewPatientPhone,
-                    Gender = NewPatientGender,
+                    Gender = (LYBT.Shared.Models.Enums.Gender)NewPatientGender,
                     Age = NewPatientAge,
                     Address = NewPatientAddress,
                     IDNumber = NewPatientIDNumber,
@@ -301,7 +302,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
 
             var info = $"患者信息：\n" +
                       $"姓名：{patient.Name}\n" +
-                      $"性别：{GetGenderText(patient.Gender)}\n" +
+                      $"性别：{GetGenderText((int)patient.Gender)}\n" +
                       $"年龄：{patient.Age}\n" +
                       $"电话：{patient.PhoneNumber}\n" +
                       $"地址：{patient.Address}\n" +
@@ -330,8 +331,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                     {
                         foreach (var record in result.Data.Take(5))
                         {
-                            history += $"就诊时间：{record.CreatedTime:yyyy-MM-dd HH:mm}\n";
-                            history += $"主诉：{record.ChiefComplaint}\n";
+                            history += $"就诊时间：{record.RecordTime:yyyy-MM-dd HH:mm}\n";
                             history += $"诊断：{record.Diagnosis}\n\n";
                         }
                     }

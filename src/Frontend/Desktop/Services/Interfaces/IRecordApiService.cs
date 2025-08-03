@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
+using LYBT.Shared.Models.Contracts.Records;
 using LYBT.Shared.Models.Records;
 
 namespace LYBT.WPF.Client.Services.Interfaces
@@ -34,13 +35,13 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建病例
         /// </summary>
         [Post("/api/v1/records")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<RecordDto>> CreateRecordAsync([Body] CreateRecordDto dto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<RecordDto>> CreateRecordAsync([Body] RecordCreateDto dto);
 
         /// <summary>
         /// 更新病例
         /// </summary>
         [Put("/api/v1/records/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<RecordDto>> UpdateRecordAsync(Guid id, [Body] UpdateRecordDto dto);
+        Task<LYBT.Shared.Models.Common.ApiResponse<RecordDto>> UpdateRecordAsync(Guid id, [Body] RecordEditDto dto);
 
         /// <summary>
         /// 删除病例

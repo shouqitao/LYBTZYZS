@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.WPF.Client.Core.Models.Herbs;
-using LYBT.WPF.Client.Core.Models.DTOs;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
 {
@@ -21,12 +20,12 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        Task<ApiResponse<PaginatedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query);
+        Task<ApiResponse<PaginatedResult<HerbDto>>> GetPagedAsync(dynamic query);
 
         /// <summary>
         /// 获取药材详情
         /// </summary>
-        Task<ApiResponse<HerbDetailDto>> GetByIdAsync(Guid id);
+        Task<ApiResponse<HerbDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 新增药材
@@ -61,12 +60,12 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 批量导入药材
         /// </summary>
-        Task<ApiResponse<object>> ImportAsync(List<HerbImportDto> herbs);
+        Task<ApiResponse<object>> ImportAsync(List<HerbCreateDto> herbs);
 
         /// <summary>
         /// 更新药材状态
         /// </summary>
-        Task<ApiResponse<object>> UpdateStatusAsync(HerbStatusUpdateDto dto);
+        Task<ApiResponse<object>> UpdateStatusAsync(BatchIdsDto dto);
 
         /// <summary>
         /// 获取药材状态统计

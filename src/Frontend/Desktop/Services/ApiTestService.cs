@@ -2,7 +2,8 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.Authentication;
+using LYBT.Shared.Models.Auth;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Services
@@ -87,10 +88,10 @@ namespace LYBT.WPF.Client.Services
                     var token = _authService.GetToken();
                     
                     return $"✅ 登录成功\n" +
-                           $"   用户: {user.RealName} ({user.Username})\n" +
+                           $"   用户: {user.RealName} ({user.UserName})\n" +
                            $"   角色: {user.Role}\n" +
                            $"   Token: {token?.Substring(0, 20)}...\n" +
-                           $"   登录时间: {user.LastLoginTime:yyyy-MM-dd HH:mm:ss}";
+                           $"   登录时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
                 }
                 else
                 {
@@ -113,11 +114,11 @@ namespace LYBT.WPF.Client.Services
                 var result = "";
 
                 // 测试分页查询用户
-                var queryRequest = new UserQueryRequest
+                var queryRequest = new UserPagedQueryDto
                 {
-                    Page = 1,
+                    CurrentPage = 1,
                     PageSize = 10,
-                    Keyword = null
+                    SearchKeyword = null
                 };
 
                 var users = await _userService.SearchUsersAsync(queryRequest);

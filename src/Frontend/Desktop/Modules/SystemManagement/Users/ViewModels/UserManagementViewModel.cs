@@ -1,5 +1,6 @@
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Enums;
 using System;
@@ -120,10 +121,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             IsLoading = true;
             try
             {
-                var request = new UserQueryRequest
+                var request = new UserPagedQueryDto
                 {
-                    Keyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword,
-                    Page = CurrentPage,
+                    SearchKeyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword,
+                    CurrentPage = CurrentPage,
                     PageSize = PageSize
                 };
 
