@@ -24,7 +24,7 @@ namespace LYBT.WPF.Client.Core.Helpers
             params string[] searchProperties)
         {
             if (source == null || string.IsNullOrWhiteSpace(keyword))
-                return source;
+                return source ?? Enumerable.Empty<T>();
 
             keyword = keyword.ToLower();
             var type = typeof(T);
@@ -36,7 +36,7 @@ namespace LYBT.WPF.Client.Core.Helpers
             {
                 foreach (var property in properties)
                 {
-                    var value = property.GetValue(item)?.ToString();
+                    var value = property?.GetValue(item)?.ToString();
                     if (!string.IsNullOrEmpty(value) && value.ToLower().Contains(keyword))
                         return true;
                 }
@@ -56,7 +56,7 @@ namespace LYBT.WPF.Client.Core.Helpers
             params Func<T, bool>[] filters)
         {
             if (source == null || filters == null || filters.Length == 0)
-                return source;
+                return source ?? Enumerable.Empty<T>();
 
             var result = source;
             foreach (var filter in filters.Where(f => f != null))

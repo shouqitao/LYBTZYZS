@@ -208,16 +208,16 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取所有角色
         /// </summary>
-        public async Task<List<UserRole>> GetRolesAsync()
+        public Task<List<UserRole>> GetRolesAsync()
         {
             try
             {
                 // 直接返回枚举值列表
-                return Enum.GetValues<UserRole>().ToList();
+                return Task.FromResult(Enum.GetValues<UserRole>().ToList());
             }
             catch (Exception)
             {
-                return new List<UserRole>();
+                return Task.FromResult(new List<UserRole>());
             }
         }
 

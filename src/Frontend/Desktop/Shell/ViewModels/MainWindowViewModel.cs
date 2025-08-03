@@ -137,6 +137,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                 CurrentUser = await _authService.GetCurrentUserAsync();
                 IsLoggedIn = true;
                 TestApiCommand.RaiseCanExecuteChanged();
+                ShowControlExamplesCommand.RaiseCanExecuteChanged();
                 LoadMainContent();
             }
             else
@@ -194,16 +195,14 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                         _regionManager.Regions["ContentRegion"].RemoveAll();
                     }
                     
-                    // 导航到主界面
-                    _regionManager.RequestNavigate("ContentRegion", mainViewName, navigationResult =>
+                    // 清除登录区域
+                    if (_regionManager.Regions.ContainsRegionWithName("LoginRegion"))
                     {
-                        if (!navigationResult.Result.HasValue || !navigationResult.Result.Value)
-                        {
-                            var error = navigationResult.Error != null ? navigationResult.Error.Message : "未知错误";
-                            MessageBox.Show($"导航到 {mainViewName} 失败\n错误：{error}", 
-                                "导航错误", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        }
-                    });
+                        _regionManager.Regions["LoginRegion"].RemoveAll();
+                    }
+                    
+                    // 导航到主界面
+                    _regionManager.RequestNavigate("ContentRegion", mainViewName);
                 }
                 catch (Exception ex)
                 {

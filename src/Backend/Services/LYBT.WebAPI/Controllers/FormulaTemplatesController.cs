@@ -181,10 +181,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 禁用模板（软删除）
         /// </summary>
         [HttpPatch("{id}/disable")]
-        public async Task<ActionResult<ApiResponse<object>>> Disable(Guid id) {
+        public Task<ActionResult<ApiResponse<object>>> Disable(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400));
+                    return Task.FromResult<ActionResult<ApiResponse<object>>>(BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400)));
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
@@ -195,10 +195,10 @@ namespace LYBT.WebAPI.Controllers {
                 // }
 
                 _logger.LogInformation("禁用验方模板成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "禁用验方模板成功"));
+                return Task.FromResult<ActionResult<ApiResponse<object>>>(Ok(ApiResponse<object>.Success(new { }, "禁用验方模板成功")));
             } catch (Exception ex) {
                 _logger.LogError(ex, "禁用验方模板失败，模板ID: {TemplateId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("禁用验方模板失败", 500));
+                return Task.FromResult<ActionResult<ApiResponse<object>>>(StatusCode(500, ApiResponse<object>.Fail("禁用验方模板失败", 500)));
             }
         }
 
@@ -206,10 +206,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 启用模板
         /// </summary>
         [HttpPatch("{id}/enable")]
-        public async Task<ActionResult<ApiResponse<object>>> Enable(Guid id) {
+        public Task<ActionResult<ApiResponse<object>>> Enable(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400));
+                    return Task.FromResult<ActionResult<ApiResponse<object>>>(BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400)));
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
@@ -220,10 +220,10 @@ namespace LYBT.WebAPI.Controllers {
                 // }
 
                 _logger.LogInformation("启用验方模板成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "启用验方模板成功"));
+                return Task.FromResult<ActionResult<ApiResponse<object>>>(Ok(ApiResponse<object>.Success(new { }, "启用验方模板成功")));
             } catch (Exception ex) {
                 _logger.LogError(ex, "启用验方模板失败，模板ID: {TemplateId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("启用验方模板失败", 500));
+                return Task.FromResult<ActionResult<ApiResponse<object>>>(StatusCode(500, ApiResponse<object>.Fail("启用验方模板失败", 500)));
             }
         }
 

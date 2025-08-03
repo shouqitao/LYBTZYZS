@@ -120,7 +120,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 编辑药材
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateAsync(HerbUpdateDto dto)
+        public Task<ApiResponse<object>> UpdateAsync(HerbUpdateDto dto)
         {
             try
             {
@@ -129,11 +129,11 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<object>
+                return Task.FromResult(new ApiResponse<object>
                 {
                     IsSuccess = false,
                     Message = $"更新药材失败: {ex.Message}"
-                };
+                });
             }
         }
 

@@ -22,7 +22,7 @@ namespace LYBT.WPF.Client.Core.Configuration {
                         }
                     }
                 }
-                return _settings;
+                return _settings!;
             }
         }
 

@@ -19,7 +19,7 @@ namespace LYBT.WPF.Client.Core.Converters
                 {
                     try
                     {
-                        return new BrushConverter().ConvertFromString(colorString) as Brush;
+                        return new BrushConverter().ConvertFromString(colorString) as Brush ?? Brushes.Transparent;
                     }
                     catch
                     {

@@ -25,7 +25,7 @@ namespace LYBT.WPF.Client.Core.Converters
                 BillingStatus billingStatus => billingStatus.GetDescription(),
                 PharmacyStatus pharmacyStatus => pharmacyStatus.GetDescription(),
                 Enum enumValue => enumValue.GetDescription(),
-                _ => value.ToString()
+                _ => value.ToString() ?? string.Empty
             };
         }
 

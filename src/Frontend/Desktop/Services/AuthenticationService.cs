@@ -87,9 +87,9 @@ namespace LYBT.WPF.Client.Services {
             }
         }
 
-        public async Task<UserInfo?> GetCurrentUserAsync() {
+        public Task<UserInfo?> GetCurrentUserAsync() {
             if (!_isLoggedIn || _currentUser == null)
-                return null;
+                return Task.FromResult<UserInfo?>(null);
 
             // 可以考虑从API刷新用户信息
             // var response = await _apiService.GetAsync<UserInfo>("users/current");
@@ -98,7 +98,7 @@ namespace LYBT.WPF.Client.Services {
             //     _currentUser = response.Data;
             // }
 
-            return _currentUser;
+            return Task.FromResult<UserInfo?>(_currentUser);
         }
 
         public string? GetToken() {

@@ -9,7 +9,7 @@ namespace LYBT.WPF.Client.Core.Models
     public class SelectableItem<T> : BindableBase
     {
         private bool _isSelected;
-        private T _data;
+        private T _data = default!;
 
         /// <summary>
         /// 是否选中
