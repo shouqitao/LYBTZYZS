@@ -171,7 +171,11 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         /// </summary>
         private void LoadMainContent()
         {
-            if (CurrentUser == null) return;
+            if (CurrentUser == null) 
+            {
+                MessageBox.Show("当前用户信息为空，无法加载主界面", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
             // 使用配置类统一处理角色导航
             var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(CurrentUser.Role);
@@ -184,8 +188,22 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             {
                 try
                 {
+                    // 清除内容区域的旧内容
+                    if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
+                    {
+                        _regionManager.Regions["ContentRegion"].RemoveAll();
+                    }
+                    
                     // 导航到主界面
-                    _regionManager.RequestNavigate("ContentRegion", mainViewName);
+                    _regionManager.RequestNavigate("ContentRegion", mainViewName, navigationResult =>
+                    {
+                        if (!navigationResult.Result.HasValue || !navigationResult.Result.Value)
+                        {
+                            var error = navigationResult.Error != null ? navigationResult.Error.Message : "未知错误";
+                            MessageBox.Show($"导航到 {mainViewName} 失败\n错误：{error}", 
+                                "导航错误", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -199,7 +217,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             {
                 // 显示欢迎消息
                 var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Role, CurrentUser.RealName);
-                MessageBox.Show(welcomeMessage, "登录成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"RegionManager为空\n{welcomeMessage}", "登录成功", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 

@@ -114,10 +114,10 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPatch("{id}/toggle-status")]
         public async Task<IActionResult> ToggleStatus(Guid id) {
-            var (operatorId, operatorName, _) = GetOperator();
+            var (operatorId, operatorName, operatorRole) = GetOperator();
             try {
                 // 先获取患者当前状态
-                var patient = await _patientService.GetByIdAsync(id);
+                var patient = await _patientService.GetByIdAsync(id, operatorRole);
                 if (patient == null) {
                     return NotFound(ApiResponse<object>.Fail("患者档案不存在", 404));
                 }

@@ -325,18 +325,18 @@ namespace LYBT.WebAPI.Controllers {
                     return BadRequest(ApiResponse<object>.Fail("医生ID不能为空", 400));
                 }
 
-                var (operatorId, operatorName, _) = GetOperator();
+                var (operatorId, operatorName, operatorRole) = GetOperator();
                 
                 // 先获取医生当前状态
-                var doctor = await _doctorService.GetByIdAsync(id);
-                if (doctor == null) {
+                var doctorResponse = await _doctorService.GetByIdAsync(id, operatorRole);
+                if (!doctorResponse.IsSuccess || doctorResponse.Data == null) {
                     return NotFound(ApiResponse<object>.Fail("医生不存在", 404));
                 }
 
                 // 根据当前状态切换
                 ApiResponse<bool> result;
                 string message;
-                if (doctor.IsActive) {
+                if (doctorResponse.Data.Status == DoctorStatus.Active) {
                     result = await _doctorService.DisableAsync(id);
                     message = "医生已禁用";
                 } else {

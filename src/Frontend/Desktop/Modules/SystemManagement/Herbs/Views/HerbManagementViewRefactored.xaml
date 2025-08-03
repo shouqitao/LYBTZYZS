@@ -1,0 +1,194 @@
+<UserControl x:Class="LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views.HerbManagementViewRefactored"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:base="clr-namespace:LYBT.WPF.Client.Core.Views.Base;assembly=LYBT.WPF.Client.Core"
+             xmlns:controls="clr-namespace:LYBT.WPF.Client.Controls.Herbs;assembly=LYBT.WPF.Client.Core"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    
+<base:BaseListView>
+    
+    <!-- 筛选内容 -->
+    <base:BaseListView.FilterContent>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- 状态筛选 -->
+            <TextBlock Grid.Column="0" 
+                       Text="状态："
+                       VerticalAlignment="Center"
+                       Margin="0,0,10,0"/>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding StatusOptions}"
+                      SelectedItem="{Binding SelectedStatus}"
+                      DisplayMemberPath="Display"
+                      SelectedValuePath="Value"
+                      Margin="0,0,20,0"/>
+            
+            <!-- 价格范围 -->
+            <TextBlock Grid.Column="2"
+                       Text="价格："
+                       VerticalAlignment="Center"
+                       Margin="0,0,10,0"/>
+            <Grid Grid.Column="3" Margin="0,0,20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                         Text="{Binding MinPrice}"
+                         VerticalContentAlignment="Center"/>
+                <TextBlock Grid.Column="1" 
+                           Text=" - "
+                           VerticalAlignment="Center"
+                           Margin="5,0"/>
+                <TextBox Grid.Column="2"
+                         Text="{Binding MaxPrice}"
+                         VerticalContentAlignment="Center"/>
+            </Grid>
+            
+            <!-- 库存状态 -->
+            <TextBlock Grid.Column="4"
+                       Text="库存："
+                       VerticalAlignment="Center"
+                       Margin="0,0,10,0"/>
+            <ComboBox Grid.Column="5"
+                      ItemsSource="{Binding StockStatusOptions}"
+                      SelectedItem="{Binding SelectedStockStatus}"/>
+            
+            <!-- 批量操作 -->
+            <StackPanel Grid.Column="7" 
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                <CheckBox Content="全选"
+                          VerticalAlignment="Center"
+                          Margin="0,0,10,0"
+                          IsChecked="{Binding IsAllSelected}"/>
+                <Button Content="批量启用"
+                        Padding="10,5"
+                        Margin="0,0,5,0"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Command="{Binding BatchEnableCommand}"
+                        Visibility="{Binding HasSelectedItems, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="3"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="批量禁用"
+                        Padding="10,5"
+                        Background="#F44336"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Command="{Binding BatchDisableCommand}"
+                        Visibility="{Binding HasSelectedItems, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="3"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </base:BaseListView.FilterContent>
+    
+    <!-- 列表内容 -->
+    <base:BaseListView.ListContent>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- 列表标题栏 -->
+            <Border Grid.Row="0" 
+                    Background="#F0F7FF" 
+                    BorderBrush="#E0E0E0" 
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="16,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <CheckBox Grid.Column="0" 
+                              IsChecked="{Binding IsAllSelected}"
+                              VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="" Width="52"/>
+                    <TextBlock Grid.Column="2" Text="药材名称" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="3" Text="规格" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="4" Text="价格" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="5" Text="库存" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="6" Text="单位" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="7" Text="" />
+                    <TextBlock Grid.Column="8" Text="操作" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" Width="150"/>
+                </Grid>
+            </Border>
+
+            <!-- 中药材列表 -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Herbs}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <CheckBox Grid.Column="0" 
+                                          VerticalAlignment="Center"
+                                          Margin="16,0,0,0"
+                                          IsChecked="{Binding IsSelected}"/>
+                                <controls:HerbListItemControl Grid.Column="1" 
+                                                              Data="{Binding}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </base:BaseListView.ListContent>
+</base:BaseListView>
+</UserControl>

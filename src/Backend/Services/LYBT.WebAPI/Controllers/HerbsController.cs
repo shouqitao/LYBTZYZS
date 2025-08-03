@@ -295,8 +295,8 @@ namespace LYBT.WebAPI.Controllers {
                 // 根据当前状态切换
                 var dto = new HerbStatusUpdateDto { 
                     Id = id, 
-                    Status = herb.IsEnabled ? LYBT.Shared.Models.Enums.HerbStatus.Inactive : LYBT.Shared.Models.Enums.HerbStatus.Active,
-                    IsEnabled = !herb.IsEnabled 
+                    Status = herb.IsActive ? LYBT.Shared.Models.Enums.HerbStatus.Inactive : LYBT.Shared.Models.Enums.HerbStatus.Active,
+                    IsEnabled = !herb.IsActive 
                 };
                 
                 var result = await _herbService.UpdateStatusAsync(dto);
@@ -309,7 +309,7 @@ namespace LYBT.WebAPI.Controllers {
                 _cache.Remove("active_herbs");
                 _cache.Remove($"herb_detail_{id}");
 
-                var message = herb.IsEnabled ? "药材已禁用" : "药材已启用";
+                var message = herb.IsActive ? "药材已禁用" : "药材已启用";
                 return Ok(ApiResponse<object>.Success(message));
             } catch (Exception ex) {
                 _logger.LogError(ex, "切换药材状态失败，ID: {HerbId}", id);

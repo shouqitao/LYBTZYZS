@@ -1,0 +1,338 @@
+<UserControl x:Class="LYBT.WPF.Client.Controls.Pharmacy.PharmacyListItemControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:behaviors="clr-namespace:LYBT.WPF.Client.Core.Behaviors"
+             mc:Ignorable="d" 
+             d:DesignHeight="80" d:DesignWidth="800"
+             behaviors:AnimationBehaviors.EnableFadeIn="True">
+    
+    <Border BorderBrush="#E0E0E0"
+            BorderThickness="0,0,0,1">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="Transparent"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#F5F5F5"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        
+        <Grid Margin="16,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 药房图标 -->
+            <Border Grid.Column="0"
+                    Width="40" Height="40"
+                    CornerRadius="20"
+                    VerticalAlignment="Center"
+                    Margin="0,0,12,0">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Status}" Value="0">
+                                <!-- 待配药 -->
+                                <Setter Property="Background" Value="#FF9800"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="1">
+                                <!-- 配药中 -->
+                                <Setter Property="Background" Value="#2196F3"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="2">
+                                <!-- 已完成 -->
+                                <Setter Property="Background" Value="#4CAF50"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="3">
+                                <!-- 已取药 -->
+                                <Setter Property="Background" Value="#9E9E9E"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Path Data="M18,17H10.5L12.5,15H18M6,17V14.5L13,7.5C13.05,7.45 13.1,7.42 13.15,7.4L12.72,6.94C12.36,6.58 11.71,6.58 11.35,6.94L7.75,10.54C7.39,10.9 7.39,11.55 7.75,11.91L9.24,13.4C9.23,13.42 9.23,13.45 9.22,13.47L6,16.69M18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87L20.71,7.03C21.1,6.65 21.1,6 20.71,5.62L18.37,3.29M8.5,12.5L16,5L19,8L11.5,15.5L8.5,12.5Z"
+                      Fill="White" 
+                      Width="20" 
+                      Height="20"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- 药房单信息 -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Id, StringFormat='药房单号: {0:N}'}"
+                           FontSize="12"
+                           Foreground="#666"
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding PatientName}"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <!-- 配药时间 -->
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <TextBlock Text="配药时间"
+                           FontSize="11"
+                           Foreground="#999"/>
+                <TextBlock Text="{Binding DispenseTime, StringFormat='yyyy-MM-dd HH:mm'}"
+                           FontSize="13"
+                           Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <!-- 状态 -->
+            <Border Grid.Column="3"
+                    CornerRadius="12" 
+                    Padding="12,4"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Status}" Value="0">
+                                <Setter Property="Background" Value="#FFF3E0"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="1">
+                                <Setter Property="Background" Value="#E3F2FD"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="2">
+                                <Setter Property="Background" Value="#E8F5E9"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="3">
+                                <Setter Property="Background" Value="#F5F5F5"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock FontSize="12">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="0">
+                                    <Setter Property="Text" Value="待配药"/>
+                                    <Setter Property="Foreground" Value="#F57C00"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="1">
+                                    <Setter Property="Text" Value="配药中"/>
+                                    <Setter Property="Foreground" Value="#1976D2"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="2">
+                                    <Setter Property="Text" Value="已完成"/>
+                                    <Setter Property="Foreground" Value="#388E3C"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="3">
+                                    <Setter Property="Text" Value="已取药"/>
+                                    <Setter Property="Foreground" Value="#616161"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Border>
+
+            <!-- 操作按钮 -->
+            <StackPanel Grid.Column="5"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                <!-- 开始配药 -->
+                <Button Width="32" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="开始配药"
+                        Command="{Binding DataContext.StartDispenseCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        CommandParameter="{Binding}"
+                        Cursor="Hand"
+                        Margin="4,0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="1">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="2">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="3">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="4"
+                                    Padding="6">
+                                <Path Data="M8,5.14V19.14L19,12.14L8,5.14Z"
+                                      Fill="#2196F3" 
+                                      Width="16" 
+                                      Height="16"
+                                      Stretch="Uniform"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- 完成配药 -->
+                <Button Width="32" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="完成配药"
+                        Command="{Binding DataContext.CompleteDispenseCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        CommandParameter="{Binding}"
+                        Cursor="Hand"
+                        Margin="4,0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="0">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="2">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="3">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="4"
+                                    Padding="6">
+                                <Path Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                                      Fill="#4CAF50" 
+                                      Width="16" 
+                                      Height="16"
+                                      Stretch="Uniform"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- 确认取药 -->
+                <Button Width="32" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="确认取药"
+                        Command="{Binding DataContext.ConfirmPickupCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        CommandParameter="{Binding}"
+                        Cursor="Hand"
+                        Margin="4,0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="0">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="1">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="3">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="4"
+                                    Padding="6">
+                                <Path Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
+                                      Fill="#FF9800" 
+                                      Width="16" 
+                                      Height="16"
+                                      Stretch="Uniform"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- 打印标签 -->
+                <Button Width="32" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="打印标签"
+                        Command="{Binding DataContext.PrintLabelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        CommandParameter="{Binding}"
+                        Cursor="Hand"
+                        Margin="4,0">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="4"
+                                    Padding="6">
+                                <Path Data="M18,3H6V7H18M19,12A1,1 0 0,1 18,11A1,1 0 0,1 19,10A1,1 0 0,1 20,11A1,1 0 0,1 19,12M16,19H8V14H16M19,8H5A3,3 0 0,0 2,11V17H6V21H18V17H22V11A3,3 0 0,0 19,8Z"
+                                      Fill="#9C27B0" 
+                                      Width="16" 
+                                      Height="16"
+                                      Stretch="Uniform"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- 查看详情 -->
+                <Button Width="32" Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="查看详情"
+                        Command="{Binding DataContext.ViewPharmacyDetailCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        CommandParameter="{Binding}"
+                        Cursor="Hand"
+                        Margin="4,0">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="4"
+                                    Padding="6">
+                                <Path Data="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"
+                                      Fill="#666" 
+                                      Width="16" 
+                                      Height="16"
+                                      Stretch="Uniform"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,84 +1,63 @@
-# 凌隐宝堂中医诊所管理系统 (LYBT)
+# 凌隐宝堂中医诊所诊疗系统 (LYBTZYZS)
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-中医诊所现代化管理系统，采用模块化架构设计，支持患者管理、诊疗记录、药材管理、处方开具等完整的中医诊所业务流程。
+中医诊所现代化诊疗系统，采用模块化架构设计，支持患者管理、诊疗记录、药材管理、处方开具等完整的中医诊所业务流程。
+
+## 📖 完整文档
+
+详细文档请访问 [文档中心](./docs/README.md)
 
 ## 🏗️ 项目架构
 
-本项目采用标准的企业级多项目多Solution架构：
+本项目采用标准的企业级架构，支持多平台扩展：
 
 ```
 LYBTZYZS/
-├── src/                         # 源代码
-│   ├── Backend/                 # 后端服务 (.NET 8 Web API)
+├── LYBT.All.sln                # 总解决方案（包含所有项目）
+├── src/                        # 源代码
+│   ├── Backend/                # 后端服务 (.NET 8 Web API)
+│   │   ├── LYBT.Backend.sln    # 后端独立解决方案
 │   │   ├── Core/               # 核心库
 │   │   ├── Modules/            # 业务模块
 │   │   └── Services/           # 服务层
-│   └── Frontend/               # 前端应用
-│       └── Desktop/            # WPF桌面客户端
-├── docs/                       # 项目文档
-├── scripts/                    # 构建和部署脚本
-└── tests/                      # 测试项目
+│   ├── Frontend/               # 前端应用
+│   │   ├── Desktop/            # WPF桌面客户端
+│   │   │   └── LYBT.Desktop.sln # 桌面端独立解决方案
+│   │   ├── Mobile/             # 移动端（预留）
+│   │   ├── Web/                # Web端（预留）
+│   │   └── CrossPlatform/      # 跨平台（预留）
+│   └── Shared/                 # 共享项目
+├── docs/                       # 完整文档库
+├── scripts/                    # 自动化脚本
+└── BIN/                        # 统一输出目录
 ```
 
 ## 🚀 快速开始
 
-### 环境要求
+请参考 [快速开始指南](./docs/development/getting-started.md)
 
+### 开发环境
+
+- Visual Studio 2022 (17.0+)
 - .NET 8.0 SDK
-- SQL Server 2019+
-- Visual Studio 2022 或 VS Code
+- SQL Server 2019+ 或 LocalDB
+- Git
 
-### 后端服务
+### 一键启动
 
-1. **克隆项目**
-   
-   ```bash
-   git clone https://github.com/shouqitao/LYBTZYZS.git
-   cd LYBTZYZS
-   ```
+```bash
+# 使用开发管理器
+scripts\dev-manager.bat
 
-2. **构建后端**
-   
-   ```bash
-   cd src/Backend
-   dotnet build LYBT.Backend.sln
-   ```
+# 或直接启动
+scripts\start-dev.bat
+```
 
-3. **初始化数据库**
-   
-   ```bash
-   cd Services/LYBT.WebAPI
-   dotnet ef database update --project ../../Core/LYBT.Infrastructure
-   ```
-
-4. **运行WebAPI**
-   
-   ```bash
-   dotnet run
-   ```
-   
-   API将在 `https://localhost:5001` 启动，Swagger文档可访问根路径。
-
-### 前端客户端
-
-1. **构建前端**
-   
-   ```bash
-   cd src/Frontend
-   dotnet build LYBT.Client.sln
-   ```
-
-2. **运行桌面客户端**
-   
-   ```bash
-   cd Desktop/Shell
-   dotnet run
-   ```
-   
-   **默认登录凭据**: 用户名 `sysadmin`, 密码 `123456`
+**默认登录凭据**: 
+- 用户名：`sysadmin`
+- 密码：`Admin@123456`
 
 ## 📚 核心功能
 
@@ -106,14 +85,13 @@ LYBTZYZS/
 - **医生工作** - 诊疗、开方等医生业务
 - **收银管理** - 费用结算和支付处理
 
-## 🔧 开发指南
+## 🔧 开发资源
 
-详细的开发文档请查看：
-
-- [架构说明](docs/architecture/)
-- [API文档](docs/api/)
-- [开发指南](docs/development/)
-- [用户手册](docs/user-guide/)
+- [架构文档](docs/architecture/) - 系统架构设计
+- [开发指南](docs/development/) - 开发环境配置和指南
+- [开发规范](docs/standards/) - 编码规范和最佳实践
+- [API文档](docs/api/) - 接口文档和测试
+- [用户手册](docs/user-guides/) - 各角色使用说明
 
 ## 📝 数据库
 
@@ -143,4 +121,4 @@ dotnet ef database update --project src/Backend/Core/LYBT.Infrastructure --start
 
 ---
 
-**凌隐宝堂中医诊所管理系统** - 让中医诊所管理更简单高效 ✨
+**凌隐宝堂中医诊所诊疗系统** - 让中医诊疗更智能高效 ✨
