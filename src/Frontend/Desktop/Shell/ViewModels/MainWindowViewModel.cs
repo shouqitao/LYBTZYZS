@@ -34,6 +34,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
 
         public DelegateCommand LogoutCommand { get; }
         public DelegateCommand TestApiCommand { get; }
+        public DelegateCommand ShowControlExamplesCommand { get; }
 
         public MainWindowViewModel(
             IRegionManager regionManager, 
@@ -50,6 +51,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
 
             LogoutCommand = new DelegateCommand(ExecuteLogout);
             TestApiCommand = new DelegateCommand(ExecuteTestApi, () => _isLoggedIn);
+            ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples, () => _isLoggedIn);
 
             // 订阅登录成功事件
             _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
@@ -215,6 +217,19 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"API测试失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ExecuteShowControlExamples()
+        {
+            try
+            {
+                // 导航到控件示例页面
+                _regionManager.RequestNavigate("ContentRegion", "ControlExamplesView");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开控件示例页面失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

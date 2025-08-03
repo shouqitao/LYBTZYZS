@@ -5,8 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="400">
-    
-    <Border Background="White" 
+    <Grid>
+        <Border Background="White" 
             CornerRadius="8" 
             Margin="20">
         <Border.Effect>
@@ -244,5 +244,6 @@
                           Margin="0,12,0,0"/>
             </StackPanel>
         </Border>
+    </Grid>
     </Grid>
 </UserControl>

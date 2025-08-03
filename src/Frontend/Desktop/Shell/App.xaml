@@ -12,6 +12,7 @@
         <converters:BooleanToBackgroundConverter x:Key="BooleanToBackgroundConverter"/>
         <converters:IDNumberMaskConverter x:Key="IDNumberMaskConverter"/>
         <converters:ItemIndexConverter x:Key="ItemIndexConverter"/>
+        <converters:StockStatusConverter x:Key="StockStatusConverter"/>
         
         <!-- 反向布尔转换器 -->
         <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>

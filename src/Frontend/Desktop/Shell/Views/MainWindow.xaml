@@ -56,6 +56,30 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="{Binding CurrentUser.RealName}" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Button Content="控件示例" Background="Transparent" Foreground="White" BorderThickness="1" BorderBrush="White" 
+                                Padding="8,5" FontSize="12" Cursor="Hand" Command="{Binding ShowControlExamplesCommand}" Margin="0,0,10,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                                        CornerRadius="3">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#40FFFFFF"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                         <Button Content="API测试" Background="Transparent" Foreground="White" BorderThickness="1" BorderBrush="White" 
                                 Padding="8,5" FontSize="12" Cursor="Hand" Command="{Binding TestApiCommand}" Margin="0,0,10,0">
                             <Button.Style>

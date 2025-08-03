@@ -40,6 +40,7 @@
     <ProjectReference Include="..\Modules\Cashier\LYBT.WPF.Client.Modules.Cashier.csproj" />
     <ProjectReference Include="..\Modules\Pharmacist\LYBT.WPF.Client.Modules.Pharmacist.csproj" />
     <ProjectReference Include="..\Modules\Common\LYBT.WPF.Client.Modules.Common.csproj" />
+    <ProjectReference Include="..\Modules\Examples\LYBT.WPF.Client.Modules.Examples.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 

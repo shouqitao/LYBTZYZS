@@ -10,6 +10,7 @@ using LYBT.WPF.Client.Modules.SystemManagement;
 using LYBT.WPF.Client.Modules.FrontDesk;
 using LYBT.WPF.Client.Modules.Doctor;
 using LYBT.WPF.Client.Modules.Cashier;
+using LYBT.WPF.Client.Modules.Examples;
 using Prism.Modularity;
 
 namespace LYBT.WPF.Client.Shell
@@ -65,6 +66,13 @@ namespace LYBT.WPF.Client.Shell
             {
                 ModuleName = nameof(CashierModule),
                 ModuleType = typeof(CashierModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+            
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(ExamplesModule),
+                ModuleType = typeof(ExamplesModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
             
