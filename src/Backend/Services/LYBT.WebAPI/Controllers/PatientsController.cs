@@ -109,6 +109,35 @@ namespace LYBT.WebAPI.Controllers {
             return result ? Ok(ApiResponse<object>.Success(new { }, "患者档案已禁用")) : NotFound(ApiResponse<object>.Fail("患者档案不存在"));
         }
 
+        /// <summary>
+        /// 切换患者档案状态（启用/禁用）
+        /// </summary>
+        [HttpPatch("{id}/toggle-status")]
+        public async Task<IActionResult> ToggleStatus(Guid id) {
+            var (operatorId, operatorName, _) = GetOperator();
+            try {
+                // 先获取患者当前状态
+                var patient = await _patientService.GetByIdAsync(id);
+                if (patient == null) {
+                    return NotFound(ApiResponse<object>.Fail("患者档案不存在", 404));
+                }
+
+                // 根据当前状态切换
+                bool result;
+                string message;
+                if (patient.IsActive) {
+                    result = await _patientService.DisableAsync(id, operatorId, operatorName);
+                    message = "患者档案已禁用";
+                } else {
+                    result = await _patientService.EnableAsync(id, operatorId, operatorName);
+                    message = "患者档案已启用";
+                }
+                
+                return result ? Ok(ApiResponse<object>.Success(message)) : BadRequest(ApiResponse<object>.Fail("状态切换失败", 400));
+            } catch (Exception ex) {
+                return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+            }
+        }
 
         /// <summary>
         /// 获取全部病人（小数据量场景，分页请用 /paged）

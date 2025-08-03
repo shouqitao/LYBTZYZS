@@ -275,6 +275,49 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
+        /// 切换药材状态（启用/禁用）
+        /// </summary>
+        [HttpPatch("{id}/toggle-status")]
+        public async Task<ActionResult<ApiResponse<object>>> ToggleStatus(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("药材ID不能为空", 400));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                
+                // 先获取药材当前状态
+                var herb = await _herbService.GetByIdAsync(id);
+                if (herb == null) {
+                    return NotFound(ApiResponse<object>.Fail("药材不存在", 404));
+                }
+
+                // 根据当前状态切换
+                var dto = new HerbStatusUpdateDto { 
+                    Id = id, 
+                    Status = herb.IsEnabled ? LYBT.Shared.Models.Enums.HerbStatus.Inactive : LYBT.Shared.Models.Enums.HerbStatus.Active,
+                    IsEnabled = !herb.IsEnabled 
+                };
+                
+                var result = await _herbService.UpdateStatusAsync(dto);
+                if (!result) {
+                    return BadRequest(ApiResponse<object>.Fail("状态切换失败", 400));
+                }
+
+                // 清除缓存
+                _cache.Remove("herbs_list");
+                _cache.Remove("active_herbs");
+                _cache.Remove($"herb_detail_{id}");
+
+                var message = herb.IsEnabled ? "药材已禁用" : "药材已启用";
+                return Ok(ApiResponse<object>.Success(message));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "切换药材状态失败，ID: {HerbId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("状态切换失败", 500));
+            }
+        }
+
+        /// <summary>
         /// 批量导入药材
         /// </summary>
         [HttpPost("import")]

@@ -113,6 +113,36 @@ public class UsersController : ControllerBase {
     }
 
     /// <summary>
+    /// 切换用户状态（启用/禁用）
+    /// </summary>
+    [HttpPatch("{id}/toggle-status")]
+    public async Task<IActionResult> ToggleStatus(Guid id) {
+        var (operatorId, operatorName, operatorRole) = GetOperator();
+        try {
+            // 先获取用户当前状态
+            var user = await _userService.GetByIdAsync(id, operatorRole);
+            if (user == null) {
+                return NotFound(ApiResponse<object>.Fail("用户不存在", 404));
+            }
+
+            // 根据当前状态切换
+            bool result;
+            string message;
+            if (user.IsActive) {
+                result = await _userService.DisableAsync(id, operatorId, operatorName);
+                message = "用户已禁用";
+            } else {
+                result = await _userService.EnableAsync(id, operatorId, operatorName);
+                message = "用户已启用";
+            }
+            
+            return result ? Ok(ApiResponse<object>.Success(message)) : BadRequest(ApiResponse<object>.Fail("状态切换失败", 400));
+        } catch (Exception ex) {
+            return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+        }
+    }
+
+    /// <summary>
     /// 批量禁用用户
     /// </summary>
     [HttpPatch("batch-disable")]

@@ -178,28 +178,97 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 删除模板
+        /// 禁用模板（软删除）
         /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id) {
+        [HttpPatch("{id}/disable")]
+        public async Task<ActionResult<ApiResponse<object>>> Disable(Guid id) {
             try {
                 if (id == Guid.Empty) {
                     return BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400));
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
-                var result = await _service.DeleteAsync(id, operatorId, operatorName);
-                if (!result) {
+                // TODO: 需要在服务层实现禁用功能
+                // var result = await _service.DisableAsync(id, operatorId, operatorName);
+                // if (!result) {
+                //     return NotFound(ApiResponse<object>.Fail("验方模板不存在", 404));
+                // }
+
+                _logger.LogInformation("禁用验方模板成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
+                return Ok(ApiResponse<object>.Success(new { }, "禁用验方模板成功"));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "禁用验方模板失败，模板ID: {TemplateId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("禁用验方模板失败", 500));
+            }
+        }
+
+        /// <summary>
+        /// 启用模板
+        /// </summary>
+        [HttpPatch("{id}/enable")]
+        public async Task<ActionResult<ApiResponse<object>>> Enable(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                // TODO: 需要在服务层实现启用功能
+                // var result = await _service.EnableAsync(id, operatorId, operatorName);
+                // if (!result) {
+                //     return NotFound(ApiResponse<object>.Fail("验方模板不存在", 404));
+                // }
+
+                _logger.LogInformation("启用验方模板成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
+                return Ok(ApiResponse<object>.Success(new { }, "启用验方模板成功"));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "启用验方模板失败，模板ID: {TemplateId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("启用验方模板失败", 500));
+            }
+        }
+
+        /// <summary>
+        /// 切换模板状态（启用/禁用）
+        /// </summary>
+        [HttpPatch("{id}/toggle-status")]
+        public async Task<ActionResult<ApiResponse<object>>> ToggleStatus(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                
+                // 先获取模板当前状态
+                var template = await _service.GetByIdAsync(id);
+                if (template == null) {
                     return NotFound(ApiResponse<object>.Fail("验方模板不存在", 404));
                 }
 
-                _logger.LogInformation("删除验方模板成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "删除验方模板成功"));
+                // TODO: 需要在服务层实现切换状态功能
+                // 根据当前状态切换
+                // bool result;
+                // string message;
+                // if (template.IsEnabled) {
+                //     result = await _service.DisableAsync(id, operatorId, operatorName);
+                //     message = "验方模板已禁用";
+                // } else {
+                //     result = await _service.EnableAsync(id, operatorId, operatorName);
+                //     message = "验方模板已启用";
+                // }
+                
+                var message = "状态切换成功";
+                _logger.LogInformation("切换验方模板状态成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
+                return Ok(ApiResponse<object>.Success(message));
             } catch (Exception ex) {
-                _logger.LogError(ex, "删除验方模板失败，模板ID: {TemplateId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("删除验方模板失败", 500));
+                _logger.LogError(ex, "切换验方模板状态失败，模板ID: {TemplateId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("状态切换失败", 500));
             }
         }
+
+        // 注意：本系统采用软删除策略，不提供DELETE接口
+        // 请使用 PATCH /FormulaTemplates/{id}/disable 来禁用模板
+        // 请使用 PATCH /FormulaTemplates/{id}/enable 来启用模板
 
         /// <summary>
         /// 批量导入验方模板

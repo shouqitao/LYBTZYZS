@@ -7,5 +7,27 @@
         <!-- 全局转换器 -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:FirstCharacterConverter x:Key="FirstCharacterConverter"/>
+        <converters:GenderToTextConverter x:Key="GenderToTextConverter"/>
+        <converters:BooleanToBackgroundConverter x:Key="BooleanToBackgroundConverter"/>
+        <converters:IDNumberMaskConverter x:Key="IDNumberMaskConverter"/>
+        <converters:ItemIndexConverter x:Key="ItemIndexConverter"/>
+        
+        <!-- 反向布尔转换器 -->
+        <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+        
+        <!-- 全局样式 -->
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+        </Style>
+        
+        <Style TargetType="TextBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+        </Style>
     </Application.Resources>
 </prism:PrismApplication>

@@ -1,7 +1,8 @@
-﻿<UserControl x:Class="LYBT.WPF.Client.Modules.SystemManagement.Users.Views.UserManagementView"
+<UserControl x:Class="LYBT.WPF.Client.Modules.SystemManagement.Users.Views.UserManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:controls="clr-namespace:LYBT.WPF.Client.Controls.Users;assembly=LYBT.WPF.Client.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <Grid>
         <Grid.RowDefinitions>
@@ -11,7 +12,7 @@
         </Grid.RowDefinitions>
 
         <!-- 工具栏 -->
-        <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,0,0,1" Padding="20,15">
+        <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="20,15">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -44,14 +45,18 @@
                                 </Setter>
                             </Style>
                         </TextBox.Style>
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                        </TextBox.InputBindings>
                     </TextBox>
                     <Button Content="搜索" 
                             Margin="10,0,0,0" 
-                            Padding="15,5"
-                            Background="#007BFF" 
+                            Padding="15,8"
+                            Background="#2E86AB" 
                             Foreground="White" 
                             BorderThickness="0"
-                            Command="{Binding SearchCommand}">
+                            Command="{Binding SearchCommand}"
+                            Cursor="Hand">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -65,7 +70,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#0056B3"/>
+                                                    <Setter Property="Background" Value="#1F5F99"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -78,13 +83,14 @@
 
                 <!-- 操作按钮区域 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Content="新增用户" 
-                            Padding="15,5" 
+                    <Button Content="+ 新增用户" 
+                            Padding="15,8" 
                             Margin="0,0,10,0"
-                            Background="#28A745" 
+                            Background="#4CAF50" 
                             Foreground="White" 
                             BorderThickness="0"
-                            Command="{Binding AddUserCommand}">
+                            Command="{Binding AddUserCommand}"
+                            Cursor="Hand">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -98,7 +104,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#1E7E34"/>
+                                                    <Setter Property="Background" Value="#388E3C"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -108,11 +114,12 @@
                         </Button.Style>
                     </Button>
                     <Button Content="刷新" 
-                            Padding="15,5"
-                            Background="#6C757D" 
+                            Padding="15,8"
+                            Background="#757575" 
                             Foreground="White" 
                             BorderThickness="0"
-                            Command="{Binding RefreshCommand}">
+                            Command="{Binding RefreshCommand}"
+                            Cursor="Hand">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -126,7 +133,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#545B62"/>
+                                                    <Setter Property="Background" Value="#616161"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -139,133 +146,52 @@
             </Grid>
         </Border>
 
-        <!-- 用户列表 -->
-        <DataGrid Grid.Row="1" 
-                  ItemsSource="{Binding Users}" 
-                  SelectedItem="{Binding SelectedUser}"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  GridLinesVisibility="Horizontal"
-                  HeadersVisibility="Column"
-                  SelectionMode="Single"
-                  AlternatingRowBackground="#F8F9FA"
-                  RowBackground="White">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="用户名" Binding="{Binding UserName}" Width="120" IsReadOnly="True"/>
-                <DataGridTextColumn Header="真实姓名" Binding="{Binding RealName}" Width="120" IsReadOnly="True"/>
-                <DataGridTextColumn Header="角色" Binding="{Binding Role}" Width="100" IsReadOnly="True"/>
-                <DataGridTextColumn Header="邮箱" Binding="{Binding Email}" Width="180" IsReadOnly="True"/>
-                <DataGridTextColumn Header="电话" Binding="{Binding PhoneNumber}" Width="120" IsReadOnly="True"/>
-                <DataGridCheckBoxColumn Header="状态" Binding="{Binding IsActive}" Width="60" IsReadOnly="True"/>
-                <DataGridTextColumn Header="创建时间" Binding="{Binding CreatedTime, StringFormat=yyyy-MM-dd HH:mm}" Width="140" IsReadOnly="True"/>
-                <DataGridTextColumn Header="最后登录" Binding="{Binding LastLoginTime, StringFormat=yyyy-MM-dd HH:mm}" Width="140" IsReadOnly="True"/>
-                <DataGridTemplateColumn Header="操作" Width="180">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="编辑" 
-                                        Padding="8,4" 
-                                        Margin="2"
-                                        Background="#FFC107" 
-                                        Foreground="White" 
-                                        BorderThickness="0"
-                                        FontSize="12"
-                                        Command="{Binding DataContext.EditUserCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                CornerRadius="3"
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" 
-                                                                              VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#E0A800"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                                <Button Content="删除" 
-                                        Padding="8,4" 
-                                        Margin="2"
-                                        Background="#DC3545" 
-                                        Foreground="White" 
-                                        BorderThickness="0"
-                                        FontSize="12"
-                                        Command="{Binding DataContext.DeleteUserCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                CornerRadius="3"
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" 
-                                                                              VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#C82333"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                                <Button Content="重置密码" 
-                                        Padding="8,4" 
-                                        Margin="2"
-                                        Background="#17A2B8" 
-                                        Foreground="White" 
-                                        BorderThickness="0"
-                                        FontSize="12"
-                                        Command="{Binding DataContext.ResetPasswordCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                CornerRadius="3"
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" 
-                                                                              VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#138496"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+        <!-- 用户列表头部 -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- 列表标题栏 -->
+            <Border Grid.Row="0" Background="#F0F7FF" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                <Grid Margin="16,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-        <!-- 分页控件 -->
-        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,0" Padding="20,10">
+                    <TextBlock Grid.Column="0" Text="" Width="48" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="用户名" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="2" Text="真实姓名" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="3" Text="角色" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="4" Text="状态" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="5" Text="邮箱" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Grid.Column="6" Text="" />
+                    <TextBlock Grid.Column="7" Text="操作" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" Width="170"/>
+                </Grid>
+            </Border>
+
+            <!-- 用户列表 -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Users}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:UserListItemControl Data="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- 分页控件和状态栏 -->
+        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="20,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -277,20 +203,22 @@
                            Text="{Binding StatusText}" 
                            VerticalAlignment="Center" 
                            FontSize="14" 
-                           Foreground="#6C757D"/>
+                           Foreground="#666"/>
 
                 <!-- 分页控件 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="首页" 
-                            Padding="8,4" 
+                            Padding="12,6" 
                             Margin="2"
                             Background="#6C757D" 
                             Foreground="White" 
                             BorderThickness="0"
                             FontSize="12"
-                            Command="{Binding FirstPageCommand}">
+                            Command="{Binding FirstPageCommand}"
+                            IsEnabled="{Binding CanGoFirstPage}">
                         <Button.Style>
                             <Style TargetType="Button">
+                                <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -304,6 +232,10 @@
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter Property="Background" Value="#545B62"/>
                                                 </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#CCCCCC"/>
+                                                    <Setter Property="Cursor" Value="Arrow"/>
+                                                </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -311,16 +243,19 @@
                             </Style>
                         </Button.Style>
                     </Button>
+                    
                     <Button Content="上一页" 
-                            Padding="8,4" 
+                            Padding="12,6" 
                             Margin="2"
                             Background="#6C757D" 
                             Foreground="White" 
                             BorderThickness="0"
                             FontSize="12"
-                            Command="{Binding PreviousPageCommand}">
+                            Command="{Binding PreviousPageCommand}"
+                            IsEnabled="{Binding CanGoPreviousPage}">
                         <Button.Style>
                             <Style TargetType="Button">
+                                <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -334,6 +269,10 @@
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter Property="Background" Value="#545B62"/>
                                                 </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#CCCCCC"/>
+                                                    <Setter Property="Cursor" Value="Arrow"/>
+                                                </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -341,20 +280,30 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                    <TextBlock Text="{Binding CurrentPage}" 
-                               VerticalAlignment="Center" 
-                               Margin="10,0" 
-                               FontWeight="SemiBold"/>
+                    
+                    <Border Background="#E0E0E0" CornerRadius="3" Padding="16,6" Margin="8,0">
+                        <TextBlock FontWeight="Bold" FontSize="13">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} / {1}">
+                                    <Binding Path="CurrentPage"/>
+                                    <Binding Path="TotalPages"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Border>
+                    
                     <Button Content="下一页" 
-                            Padding="8,4" 
+                            Padding="12,6" 
                             Margin="2"
                             Background="#6C757D" 
                             Foreground="White" 
                             BorderThickness="0"
                             FontSize="12"
-                            Command="{Binding NextPageCommand}">
+                            Command="{Binding NextPageCommand}"
+                            IsEnabled="{Binding CanGoNextPage}">
                         <Button.Style>
                             <Style TargetType="Button">
+                                <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -368,6 +317,10 @@
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter Property="Background" Value="#545B62"/>
                                                 </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#CCCCCC"/>
+                                                    <Setter Property="Cursor" Value="Arrow"/>
+                                                </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -375,16 +328,19 @@
                             </Style>
                         </Button.Style>
                     </Button>
+                    
                     <Button Content="末页" 
-                            Padding="8,4" 
+                            Padding="12,6" 
                             Margin="2"
                             Background="#6C757D" 
                             Foreground="White" 
                             BorderThickness="0"
                             FontSize="12"
-                            Command="{Binding LastPageCommand}">
+                            Command="{Binding LastPageCommand}"
+                            IsEnabled="{Binding CanGoLastPage}">
                         <Button.Style>
                             <Style TargetType="Button">
+                                <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -397,6 +353,10 @@
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter Property="Background" Value="#545B62"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#CCCCCC"/>
+                                                    <Setter Property="Cursor" Value="Arrow"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>

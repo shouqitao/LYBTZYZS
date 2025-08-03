@@ -316,6 +316,50 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
+        /// 切换医生状态（启用/禁用）
+        /// </summary>
+        [HttpPatch("{id}/toggle-status")]
+        public async Task<ActionResult<ApiResponse<object>>> ToggleStatus(Guid id) {
+            try {
+                if (id == Guid.Empty) {
+                    return BadRequest(ApiResponse<object>.Fail("医生ID不能为空", 400));
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                
+                // 先获取医生当前状态
+                var doctor = await _doctorService.GetByIdAsync(id);
+                if (doctor == null) {
+                    return NotFound(ApiResponse<object>.Fail("医生不存在", 404));
+                }
+
+                // 根据当前状态切换
+                ApiResponse<bool> result;
+                string message;
+                if (doctor.IsActive) {
+                    result = await _doctorService.DisableAsync(id);
+                    message = "医生已禁用";
+                } else {
+                    result = await _doctorService.EnableAsync(id);
+                    message = "医生已启用";
+                }
+
+                if (result.IsSuccess) {
+                    // 清除相关缓存
+                    ClearDoctorCache(id);
+                    _logger.LogInformation("切换医生状态成功，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
+                        id, operatorName, operatorId);
+                    return Ok(ApiResponse<object>.Success(message));
+                }
+                
+                return BadRequest(ApiResponse<object>.Fail("状态切换失败", 400));
+            } catch (Exception ex) {
+                _logger.LogError(ex, "切换医生状态失败，医生ID: {DoctorId}", id);
+                return StatusCode(500, ApiResponse<object>.Fail("状态切换失败", 500));
+            }
+        }
+
+        /// <summary>
         /// 批量禁用医生
         /// </summary>
         [HttpPatch("batch-disable")]

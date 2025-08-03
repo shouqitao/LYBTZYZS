@@ -36,8 +36,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         public DelegateCommand AddUserCommand { get; }
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand<UserInfo> EditUserCommand { get; }
-        public DelegateCommand<UserInfo> DeleteUserCommand { get; }
-        public DelegateCommand<UserInfo> EnableUserCommand { get; }
+        public DelegateCommand<UserInfo> ToggleUserStatusCommand { get; }
         public DelegateCommand<UserInfo> ResetPasswordCommand { get; }
         public DelegateCommand FirstPageCommand { get; }
         public DelegateCommand PreviousPageCommand { get; }
@@ -104,8 +103,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             AddUserCommand = new DelegateCommand(ExecuteAddUser);
             RefreshCommand = new DelegateCommand(ExecuteRefresh);
             EditUserCommand = new DelegateCommand<UserInfo>(ExecuteEditUser);
-            DeleteUserCommand = new DelegateCommand<UserInfo>(ExecuteDeleteUser);
-            EnableUserCommand = new DelegateCommand<UserInfo>(ExecuteEnableUser);
+            ToggleUserStatusCommand = new DelegateCommand<UserInfo>(ExecuteToggleUserStatus);
             ResetPasswordCommand = new DelegateCommand<UserInfo>(ExecuteResetPassword);
             FirstPageCommand = new DelegateCommand(ExecuteFirstPage, CanExecuteFirstPage);
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage, CanExecutePreviousPage);
@@ -213,56 +211,39 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             }
         }
 
-        private async void ExecuteDeleteUser(UserInfo user)
+        private async void ExecuteToggleUserStatus(UserInfo user)
         {
             if (user == null) return;
             
-            var result = MessageBox.Show($"确定要禁用用户 '{user.RealName}' 吗？", "确认禁用", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var action = user.IsActive ? "禁用" : "启用";
+            var result = MessageBox.Show($"确定要{action}用户 '{user.RealName}' 吗？", $"确认{action}", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 try
                 {
-                    var response = await _userService.DisableUserAsync(user.Id);
+                    ApiResponse<object> response;
+                    if (user.IsActive)
+                    {
+                        response = await _userService.DisableUserAsync(user.Id);
+                    }
+                    else
+                    {
+                        response = await _userService.EnableUserAsync(user.Id);
+                    }
+                    
                     if (response.IsSuccess)
                     {
-                        MessageBox.Show("用户已禁用", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"用户已{action}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                         LoadUsers(); // 刷新列表
                     }
                     else
                     {
-                        MessageBox.Show($"禁用用户失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"{action}用户失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"禁用用户失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private async void ExecuteEnableUser(UserInfo user)
-        {
-            if (user == null) return;
-            
-            var result = MessageBox.Show($"确定要启用用户 '{user.RealName}' 吗？", "确认启用", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    var response = await _userService.EnableUserAsync(user.Id);
-                    if (response.IsSuccess)
-                    {
-                        MessageBox.Show("用户已启用", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                        LoadUsers(); // 刷新列表
-                    }
-                    else
-                    {
-                        MessageBox.Show($"启用用户失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"启用用户失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"{action}用户失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
