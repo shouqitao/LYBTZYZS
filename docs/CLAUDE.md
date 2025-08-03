@@ -12,19 +12,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # 构建后端解决方案 
-cd src/Backend
 dotnet build LYBT.Backend.sln
 
 # 构建前端解决方案
-cd src/Frontend
-dotnet build LYBT.Client.sln
+dotnet build LYBT.Desktop.sln
 
 # 构建并发布WebAPI
 cd src/Backend/Services/LYBT.WebAPI
 dotnet publish -c Release
 
 # 快速构建和运行（从根目录）
-dotnet build src/Backend/LYBT.Backend.sln
+dotnet build LYBT.Backend.sln
 dotnet run --project src/Backend/Services/LYBT.WebAPI
 ```
 
@@ -234,8 +232,9 @@ scripts\file-monitor.bat
    - 所有 API 响应都包装在 `ApiResponse<T>` 中
 
 4. **解决方案文件位置**:
-   - 后端: `src/Backend/LYBT.Backend.sln`
-   - 前端: `src/Frontend/LYBT.Client.sln`
+   - 后端: `LYBT.Backend.sln`
+   - 前端: `LYBT.Desktop.sln`
+   - 完整解决方案: `LYBT.All.sln`
 
 ### 常见问题解决
 
