@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Auth {
 
@@ -13,15 +14,15 @@ namespace LYBT.Shared.Models.Auth {
 
         /// <summary>用户名</summary>
         [DisplayName("用户名")]
-        public string UserName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
 
         /// <summary>真实姓名</summary>
         [DisplayName("真实姓名")]
         public string RealName { get; set; } = string.Empty;
 
-        /// <summary>角色（字符串形式）</summary>
+        /// <summary>角色</summary>
         [DisplayName("角色")]
-        public string Role { get; set; } = string.Empty;
+        public UserRole Role { get; set; } = UserRole.RegistrationStaff;
 
         /// <summary>邮箱</summary>
         [DisplayName("邮箱")]

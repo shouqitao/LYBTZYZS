@@ -13,7 +13,7 @@ namespace LYBT.WPF.Client.Core.Constants
         // 保留为向后兼容，但建议使用UserRole枚举
         public const string Admin = "Admin";
         public const string Doctor = "DiagnosingDoctor";
-        public const string Receptionist = "Staff";
+        public const string Receptionist = "RegistrationStaff";
         public const string Cashier = "CashierStaff";
         public const string Pharmacist = "PharmacyStaff";
         

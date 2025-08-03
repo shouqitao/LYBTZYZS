@@ -4,10 +4,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:converters="clr-namespace:LYBT.WPF.Client.Modules.SystemManagement.Patients.Converters"
+             xmlns:converters="clr-namespace:LYBT.WPF.Client.Core.Converters;assembly=LYBT.WPF.Client.Core"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1200">
+    
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:GenderToTextConverter x:Key="GenderConverter"/>
+    </UserControl.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -117,11 +123,4 @@
             </Grid>
         </Border>
     </Grid>
-
-    <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        
-        <!-- 性别转换器 -->
-        <converters:GenderConverter x:Key="GenderConverter"/>
-    </UserControl.Resources>
 </UserControl>

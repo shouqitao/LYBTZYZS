@@ -74,29 +74,33 @@ namespace LYBT.Module.Users.Repositories {
                 dbSet = dbSet.Where(u => u.IsActive);
             }
 
-            // 关键词查找：支持用户名、真实姓名、邮箱、电话、部门、职位、拼音码等多维度搜索
-            if (!string.IsNullOrWhiteSpace(query.Username)) {
-                dbSet = dbSet.Where(u => u.Username.Contains(query.Username));
+            // 通用搜索关键词（模糊搜索：用户名、真实姓名、拼音码）
+            if (!string.IsNullOrWhiteSpace(query.SearchKeyword)) {
+                var keyword = query.SearchKeyword.Trim();
+                dbSet = dbSet.Where(u => 
+                    u.Username.Contains(keyword) ||
+                    u.RealName.Contains(keyword) ||
+                    (u.PinyinCode != null && u.PinyinCode.Contains(keyword.ToUpperInvariant()))
+                );
             }
-            if (!string.IsNullOrWhiteSpace(query.RealName)) {
-                dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
-            }
-            if (!string.IsNullOrWhiteSpace(query.Email)) {
-                dbSet = dbSet.Where(u => u.Email != null && u.Email.Contains(query.Email));
-            }
-            if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
-                dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
-            }
-            // 注释掉Department和Position查询，因为这些字段在数据库中不存在
-            // if (!string.IsNullOrWhiteSpace(query.Department)) {
-            //     dbSet = dbSet.Where(u => u.Department.Contains(query.Department));
-            // }
-            // if (!string.IsNullOrWhiteSpace(query.Position)) {
-            //     dbSet = dbSet.Where(u => u.Position.Contains(query.Position));
-            // }
-            if (!string.IsNullOrWhiteSpace(query.PinyinCode)) {
-                var keyword = query.PinyinCode.ToUpperInvariant();
-                dbSet = dbSet.Where(u => u.PinyinCode != null && u.PinyinCode.Contains(keyword));
+            // 特定字段搜索（精确搜索）
+            else {
+                if (!string.IsNullOrWhiteSpace(query.Username)) {
+                    dbSet = dbSet.Where(u => u.Username.Contains(query.Username));
+                }
+                if (!string.IsNullOrWhiteSpace(query.RealName)) {
+                    dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
+                }
+                if (!string.IsNullOrWhiteSpace(query.Email)) {
+                    dbSet = dbSet.Where(u => u.Email != null && u.Email.Contains(query.Email));
+                }
+                if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
+                    dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
+                }
+                if (!string.IsNullOrWhiteSpace(query.PinyinCode)) {
+                    var keyword = query.PinyinCode.ToUpperInvariant();
+                    dbSet = dbSet.Where(u => u.PinyinCode != null && u.PinyinCode.Contains(keyword));
+                }
             }
 
             // 角色筛选

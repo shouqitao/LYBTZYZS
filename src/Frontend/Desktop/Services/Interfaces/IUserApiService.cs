@@ -12,10 +12,10 @@ namespace LYBT.WPF.Client.Services.Interfaces
     public interface IUserApiService
     {
         /// <summary>
-        /// 获取所有用户
+        /// 分页查询用户
         /// </summary>
-        [Get("/api/v1/users")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<List<UserDto>>> GetUsersAsync([Query] string? search = null);
+        [Post("/api/v1/users/paged")]
+        Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Common.PaginatedResult<UserDto>>> GetPagedUsersAsync([Body] UserPagedQueryDto query);
 
         /// <summary>
         /// 获取用户详情
@@ -26,26 +26,26 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 创建用户
         /// </summary>
-        [Post("/api/v1/users")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<UserDto>> CreateUserAsync([Body] UserCreateDto dto);
+        [Post("/api/v1/users/add")]
+        Task<LYBT.Shared.Models.Common.ApiResponse<object>> CreateUserAsync([Body] UserCreateDto dto);
 
         /// <summary>
         /// 更新用户
         /// </summary>
-        [Put("/api/v1/users/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Body] UserUpdateDto dto);
+        [Put("/api/v1/users/update")]
+        Task<LYBT.Shared.Models.Common.ApiResponse<object>> UpdateUserAsync([Body] UserUpdateDto dto);
 
         /// <summary>
-        /// 删除用户
+        /// 禁用用户
         /// </summary>
-        [Delete("/api/v1/users/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<bool>> DeleteUserAsync(Guid id);
+        [Patch("/api/v1/users/{id}/disable")]
+        Task<LYBT.Shared.Models.Common.ApiResponse<object>> DisableUserAsync(Guid id);
 
         /// <summary>
-        /// 切换用户状态
+        /// 启用用户
         /// </summary>
-        [Patch("/api/v1/users/{id}/toggle-status")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<bool>> ToggleUserStatusAsync(Guid id);
+        [Patch("/api/v1/users/{id}/enable")]
+        Task<LYBT.Shared.Models.Common.ApiResponse<object>> EnableUserAsync(Guid id);
 
         /// <summary>
         /// 重置用户密码

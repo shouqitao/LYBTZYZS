@@ -48,7 +48,7 @@ namespace LYBT.Module.Auth.Repositories {
         /// <param name="userName">管理员用户名</param>
         /// <returns>密码哈希或 null</returns>
         public async Task<string?> GetAdminPasswordHashAsync(string userName) {
-            var secret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(s => s.UserName == userName);
+            var secret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
             return secret?.PasswordHash;
         }
 
@@ -58,7 +58,7 @@ namespace LYBT.Module.Auth.Repositories {
         /// <param name="userName">管理员用户名</param>
         /// <param name="passwordHash">新的密码哈希</param>
         public async Task UpdateAdminPasswordHashAsync(string userName, string passwordHash) {
-            var secret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(s => s.UserName == userName);
+            var secret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
             if (secret != null) {
                 secret.PasswordHash = passwordHash;
                 _dbContext.AdminSecrets.Update(secret);

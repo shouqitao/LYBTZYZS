@@ -56,7 +56,7 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// 加载配置设置
         /// </summary>
         private static void LoadSettings() {
-            const string defaultUrl = "http://localhost:5297/";
+            const string defaultUrl = "https://localhost:7001/";
             const int defaultTimeout = 60;
             
             try {

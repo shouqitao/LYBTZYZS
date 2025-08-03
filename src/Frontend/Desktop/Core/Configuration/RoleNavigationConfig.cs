@@ -12,12 +12,12 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// <returns>主界面视图名称</returns>
         public static string GetMainViewName(UserRole role) {
             return role switch {
-                UserRole.Admin => "SystemManagementView",
-                UserRole.DiagnosingDoctor => "ConsultationView",
-                UserRole.CashierStaff => "CashierMainView",
-                UserRole.PharmacyStaff => "PharmacyMainView",
-                UserRole.PhysiotherapyStaff => "PhysiotherapyMainView",
-                UserRole.Staff => "StaffMainView",
+                UserRole.Admin => "AdminMainView",
+                UserRole.DiagnosingDoctor => "DiagnosingDoctorMainView",
+                UserRole.CashierStaff => "CashierStaffMainView",
+                UserRole.PharmacyStaff => "PharmacyStaffMainView",
+                UserRole.PhysiotherapyStaff => "PhysiotherapyStaffMainView",
+                UserRole.RegistrationStaff => "FrontDeskMainView",
                 _ => "DefaultView"
             };
         }
@@ -36,7 +36,7 @@ namespace LYBT.WPF.Client.Core.Configuration {
                 UserRole.CashierStaff => $"欢迎您，{userName}！\n\n收银系统正在启动...",
                 UserRole.PharmacyStaff => $"欢迎您，{userName}！\n\n药房管理系统正在加载...",
                 UserRole.PhysiotherapyStaff => $"欢迎您，{userName}！\n\n理疗工作台正在准备...",
-                UserRole.Staff => $"欢迎您，{userName}！\n\n员工工作台正在加载...",
+                UserRole.RegistrationStaff => $"欢迎您，{userName}！\n\n挂号前台正在加载...",
                 _ => $"欢迎您，{userName}！\n\n{roleDisplay}工作台正在加载..."
             };
         }
@@ -53,7 +53,7 @@ namespace LYBT.WPF.Client.Core.Configuration {
                 UserRole.CashierStaff => "收银员",
                 UserRole.PharmacyStaff => "药房人员",
                 UserRole.PhysiotherapyStaff => "理疗师",
-                UserRole.Staff => "员工",
+                UserRole.RegistrationStaff => "挂号员",
                 _ => "未知角色"
             };
         }
@@ -84,7 +84,7 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// <param name="role">用户角色</param>
         /// <returns>是否有前台权限</returns>
         public static bool HasFrontDeskAccess(UserRole role) {
-            return role == UserRole.Staff || HasManagementAccess(role);
+            return role == UserRole.RegistrationStaff || HasManagementAccess(role);
         }
 
         /// <summary>

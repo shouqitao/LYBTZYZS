@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
-using LYBT.Shared.Models.Contracts.Users;
+using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Controls.Users
 {
@@ -13,13 +13,13 @@ namespace LYBT.WPF.Client.Controls.Users
         public static readonly DependencyProperty DataProperty =
             DependencyProperty.Register(
                 nameof(Data),
-                typeof(UserDto),
+                typeof(UserInfo),
                 typeof(UserListItemControl),
                 new PropertyMetadata(null));
 
-        public UserDto Data
+        public UserInfo Data
         {
-            get => (UserDto)GetValue(DataProperty);
+            get => (UserInfo)GetValue(DataProperty);
             set => SetValue(DataProperty, value);
         }
 

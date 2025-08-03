@@ -138,6 +138,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                 IsLoggedIn = true;
                 TestApiCommand.RaiseCanExecuteChanged();
                 ShowControlExamplesCommand.RaiseCanExecuteChanged();
+                
                 LoadMainContent();
             }
             else

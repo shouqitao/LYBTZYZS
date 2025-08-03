@@ -10,7 +10,7 @@ namespace LYBT.Shared.Models.Enums {
 
         /// <summary>挂号人员</summary>
         [Description("挂号人员")]
-        Staff = 0,
+        RegistrationStaff = 0,
 
         /// <summary>主治医生</summary>
         [Description("主治医生")]

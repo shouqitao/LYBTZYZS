@@ -1,0 +1,59 @@
+using System;
+using Prism.Commands;
+using Prism.Mvvm;
+using Prism.Navigation.Regions;
+
+namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
+{
+    /// <summary>
+    /// 系统管理主界面视图模型
+    /// </summary>
+    public class AdminMainViewModel : BindableBase
+    {
+        private readonly IRegionManager _regionManager;
+
+        public DelegateCommand NavigateToUserManagementCommand { get; }
+        public DelegateCommand NavigateToPatientManagementCommand { get; }
+        public DelegateCommand NavigateToRecordManagementCommand { get; }
+        public DelegateCommand NavigateToRoleManagementCommand { get; }
+        public DelegateCommand NavigateToSystemSettingsCommand { get; }
+        public DelegateCommand NavigateToBackupCommand { get; }
+        public DelegateCommand NavigateToSystemLogsCommand { get; }
+        public DelegateCommand NavigateToHerbManagementCommand { get; }
+        public DelegateCommand NavigateToPrescriptionTemplatesCommand { get; }
+        public DelegateCommand NavigateToPrescriptionManagementCommand { get; }
+
+        public AdminMainViewModel(IRegionManager regionManager)
+        {
+            _regionManager = regionManager;
+
+            // 初始化导航命令
+            NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserManagementView"));
+            NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
+            NavigateToRecordManagementCommand = new DelegateCommand(() => NavigateTo("RecordManagementView"));
+            NavigateToRoleManagementCommand = new DelegateCommand(() => NavigateTo("RoleManagementView"));
+            NavigateToSystemSettingsCommand = new DelegateCommand(() => NavigateTo("SystemSettingsView"));
+            NavigateToBackupCommand = new DelegateCommand(() => NavigateTo("BackupView"));
+            NavigateToSystemLogsCommand = new DelegateCommand(() => NavigateTo("SystemLogsView"));
+            NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
+            NavigateToPrescriptionTemplatesCommand = new DelegateCommand(() => NavigateTo("PrescriptionTemplatesView"));
+            NavigateToPrescriptionManagementCommand = new DelegateCommand(() => NavigateTo("PrescriptionManagementView"));
+
+            // 默认导航到用户管理
+            NavigateTo("UserManagementView");
+        }
+
+        private void NavigateTo(string viewName)
+        {
+            try
+            {
+                _regionManager.RequestNavigate("SystemManagementContentRegion", viewName);
+            }
+            catch (Exception ex)
+            {
+                // 如果视图不存在，显示占位界面
+                System.Diagnostics.Debug.WriteLine($"导航到 {viewName} 失败: {ex.Message}");
+            }
+        }
+    }
+}

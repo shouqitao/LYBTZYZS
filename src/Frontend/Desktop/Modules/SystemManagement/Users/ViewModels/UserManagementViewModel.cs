@@ -22,6 +22,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         private readonly IUserService _userService;
         
         private string _searchKeyword = string.Empty;
+        private string _searchType = "all"; // 默认全部搜索
         private UserInfo _selectedUser;
         private int _currentPage = 1;
         private int _pageSize = 20;
@@ -49,6 +50,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             get => _searchKeyword;
             set => SetProperty(ref _searchKeyword, value);
         }
+        
+        /// <summary>搜索类型</summary>
+        public string SearchType
+        {
+            get => _searchType;
+            set => SetProperty(ref _searchType, value);
+        }
 
         /// <summary>选中的用户</summary>
         public UserInfo SelectedUser
@@ -61,7 +69,23 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         public int CurrentPage
         {
             get => _currentPage;
-            set => SetProperty(ref _currentPage, value);
+            set
+            {
+                if (SetProperty(ref _currentPage, value))
+                {
+                    RaisePropertyChanged(nameof(StatusText));
+                    RaisePropertyChanged(nameof(CanGoFirstPage));
+                    RaisePropertyChanged(nameof(CanGoPreviousPage));
+                    RaisePropertyChanged(nameof(CanGoNextPage));
+                    RaisePropertyChanged(nameof(CanGoLastPage));
+                    
+                    // 更新命令状态
+                    FirstPageCommand?.RaiseCanExecuteChanged();
+                    PreviousPageCommand?.RaiseCanExecuteChanged();
+                    NextPageCommand?.RaiseCanExecuteChanged();
+                    LastPageCommand?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         /// <summary>页大小</summary>
@@ -75,7 +99,24 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         public int TotalCount
         {
             get => _totalCount;
-            set => SetProperty(ref _totalCount, value);
+            set
+            {
+                if (SetProperty(ref _totalCount, value))
+                {
+                    RaisePropertyChanged(nameof(StatusText));
+                    RaisePropertyChanged(nameof(TotalPages));
+                    RaisePropertyChanged(nameof(CanGoFirstPage));
+                    RaisePropertyChanged(nameof(CanGoPreviousPage));
+                    RaisePropertyChanged(nameof(CanGoNextPage));
+                    RaisePropertyChanged(nameof(CanGoLastPage));
+                    
+                    // 更新命令状态
+                    FirstPageCommand?.RaiseCanExecuteChanged();
+                    PreviousPageCommand?.RaiseCanExecuteChanged();
+                    NextPageCommand?.RaiseCanExecuteChanged();
+                    LastPageCommand?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         /// <summary>是否正在加载</summary>
@@ -90,6 +131,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
         /// <summary>总页数</summary>
         public int TotalPages => TotalCount > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 1;
+
+        /// <summary>是否可以跳转到第一页</summary>
+        public bool CanGoFirstPage => CurrentPage > 1;
+
+        /// <summary>是否可以跳转到上一页</summary>
+        public bool CanGoPreviousPage => CurrentPage > 1;
+
+        /// <summary>是否可以跳转到下一页</summary>
+        public bool CanGoNextPage => CurrentPage < TotalPages;
+
+        /// <summary>是否可以跳转到最后一页</summary>
+        public bool CanGoLastPage => CurrentPage < TotalPages;
 
         public UserManagementViewModel(IUserService userService)
         {
@@ -119,13 +172,39 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             IsLoading = true;
             try
             {
+                System.Diagnostics.Debug.WriteLine($"开始加载用户列表，搜索关键词: '{SearchKeyword}', 搜索类型: '{SearchType}', 页码: {CurrentPage}");
+                
                 var request = new UserPagedQueryDto
                 {
-                    SearchKeyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword,
                     CurrentPage = CurrentPage,
                     PageSize = PageSize
                 };
 
+                // 根据搜索类型设置查询参数
+                if (!string.IsNullOrWhiteSpace(SearchKeyword))
+                {
+                    switch (SearchType)
+                    {
+                        case "all":
+                            request.SearchKeyword = SearchKeyword;
+                            break;
+                        case "username":
+                            request.Username = SearchKeyword;
+                            break;
+                        case "realname":
+                            request.RealName = SearchKeyword;
+                            break;
+                        case "pinyin":
+                            request.PinyinCode = SearchKeyword;
+                            break;
+                        default:
+                            request.SearchKeyword = SearchKeyword;
+                            break;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"发送请求: SearchKeyword={request.SearchKeyword}, Username={request.Username}, RealName={request.RealName}, Page={request.CurrentPage}, PageSize={request.PageSize}");
+                
                 var result = await _userService.SearchUsersAsync(request);
 
                 Users.Clear();
@@ -156,6 +235,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
         private void ExecuteSearch()
         {
+            System.Diagnostics.Debug.WriteLine($"执行搜索，关键词: '{SearchKeyword}'");
             CurrentPage = 1; // 搜索时重置到第一页
             LoadUsers();
         }

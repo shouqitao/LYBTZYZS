@@ -184,15 +184,15 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<AdminSecretModel>();
             entity.ToTable("AdminSecrets");
             entity.HasKey(a => a.Id);
-            entity.HasIndex(a => a.UserName).IsUnique();
-            entity.Property(a => a.UserName).HasMaxLength(50).IsRequired();
+            entity.HasIndex(a => a.Username).IsUnique();
+            entity.Property(a => a.Username).HasMaxLength(50).IsRequired();
             entity.Property(a => a.PasswordHash).HasMaxLength(500).IsRequired();
 
             // 添加默认的 sysadmin 种子数据
             // 密码: Admin@123456
             entity.HasData(new AdminSecretModel {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                UserName = "sysadmin",
+                Username = "sysadmin",
                 PasswordHash = "AQAAAAIAAYagAAAAEBZtKH/jLrWSCIstrn4KyQtIopjqYQNrjJ8ZTIZxjKrpJ1l0obDU19hLQMSNwBjbeQ=="
             });
         }

@@ -1,5 +1,7 @@
 using System;
 using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Prism.Ioc;
 using Refit;
 using LYBT.WPF.Client.Services.Interfaces;
@@ -7,6 +9,7 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
 using LYBT.WPF.Client.Core.Configuration;
 using LYBT.WPF.Client.Infrastructure;
+using LYBT.WPF.Client.Services.Handlers;
 
 namespace LYBT.WPF.Client.Shell.Extensions
 {
@@ -33,10 +36,50 @@ namespace LYBT.WPF.Client.Shell.Extensions
             // 注册HttpClient，配置超时时间
             containerRegistry.RegisterSingleton<HttpClient>(() =>
             {
-                var client = new HttpClient();
+                var client = CreateHttpClient();
                 client.Timeout = TimeSpan.FromSeconds(60);
                 return client;
             });
+        }
+
+        /// <summary>
+        /// 创建配置好的HttpClient（开发环境忽略SSL证书验证）
+        /// </summary>
+        private static HttpClient CreateHttpClient()
+        {
+#if DEBUG
+            // 开发环境忽略SSL证书验证
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+            return new HttpClient(handler);
+#else
+            // 生产环境使用默认设置
+            return new HttpClient();
+#endif
+        }
+
+        /// <summary>
+        /// 创建带认证的HttpClient
+        /// </summary>
+        private static HttpClient CreateAuthenticatedHttpClient(IContainerProvider container)
+        {
+            var tokenManager = container.Resolve<ITokenManager>();
+            var authHandler = new AuthHeaderHandler(tokenManager);
+            
+#if DEBUG
+            // 开发环境忽略SSL证书验证
+            var innerHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+            authHandler.InnerHandler = innerHandler;
+#else
+            authHandler.InnerHandler = new HttpClientHandler();
+#endif
+
+            return new HttpClient(authHandler);
         }
 
         /// <summary>
@@ -47,55 +90,45 @@ namespace LYBT.WPF.Client.Shell.Extensions
             // 注册Refit API服务
             containerRegistry.RegisterSingleton<IAuthApiService>(() =>
             {
-                var httpClient = new HttpClient()
-                {
-                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
-                    Timeout = TimeSpan.FromSeconds(60)
-                };
+                var httpClient = CreateHttpClient();
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
                 return RestService.For<IAuthApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
-            // 注册用户API服务
-            containerRegistry.RegisterSingleton<IUserApiService>(() =>
+            // 注册用户API服务（使用Factory以获取容器）
+            containerRegistry.Register<IUserApiService>(container =>
             {
-                var httpClient = new HttpClient()
-                {
-                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
-                    Timeout = TimeSpan.FromSeconds(60)
-                };
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
                 return RestService.For<IUserApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册药材API服务
-            containerRegistry.RegisterSingleton<IHerbApiService>(() =>
+            containerRegistry.Register<IHerbApiService>(container =>
             {
-                var httpClient = new HttpClient()
-                {
-                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
-                    Timeout = TimeSpan.FromSeconds(60)
-                };
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
                 return RestService.For<IHerbApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册病例API服务
-            containerRegistry.RegisterSingleton<IRecordApiService>(() =>
+            containerRegistry.Register<IRecordApiService>(container =>
             {
-                var httpClient = new HttpClient()
-                {
-                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
-                    Timeout = TimeSpan.FromSeconds(60)
-                };
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
                 return RestService.For<IRecordApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册验方模板API服务
-            containerRegistry.RegisterSingleton<IFormulaTemplateApiService>(() =>
+            containerRegistry.Register<IFormulaTemplateApiService>(container =>
             {
-                var httpClient = new HttpClient()
-                {
-                    BaseAddress = new Uri(ApiConfiguration.BaseUrl),
-                    Timeout = TimeSpan.FromSeconds(60)
-                };
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
                 return RestService.For<IFormulaTemplateApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
@@ -121,6 +154,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IRecordService, RecordService>();
             containerRegistry.RegisterSingleton<IFormulaTemplateService, FormulaTemplateService>();
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, PrescriptionPrintService>();
+            containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
         }
     }
 }

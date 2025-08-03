@@ -52,9 +52,9 @@ namespace LYBT.WebAPI.Controllers {
             try {
                 // TODO: 从当前用户上下文获取用户信息
                 var currentUserId = Guid.NewGuid(); // 临时使用
-                var currentUserName = "Admin"; // 临时使用
+                var currentUsername = "Admin"; // 临时使用
 
-                var result = await _configService.UpdateGlobalSettingsAsync(globalSettingsDto, currentUserId, currentUserName);
+                var result = await _configService.UpdateGlobalSettingsAsync(globalSettingsDto, currentUserId, currentUsername);
                 if (result) {
                     return Ok(new { Message = "全局设置更新成功" });
                 }

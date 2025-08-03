@@ -90,9 +90,9 @@ namespace LYBT.WebAPI.Controllers {
                     Token = token,
                     User = new LYBT.Shared.Models.Auth.UserInfo {
                         Id = user.Id,
-                        UserName = user.Username,
+                        Username = user.Username,
                         RealName = user.RealName,
-                        Role = user.Role.ToString(),
+                        Role = user.Role,
                         Email = user.Email,
                         PhoneNumber = user.PhoneNumber,
                         IsActive = user.IsActive
@@ -148,9 +148,9 @@ namespace LYBT.WebAPI.Controllers {
                     Token = token,
                     User = new LYBT.Shared.Models.Auth.UserInfo {
                         Id = adminUser.Id,
-                        UserName = adminUser.Username,
+                        Username = adminUser.Username,
                         RealName = adminUser.RealName,
-                        Role = adminUser.Role.ToString(),
+                        Role = adminUser.Role,
                         Email = adminUser.Email,
                         PhoneNumber = adminUser.PhoneNumber,
                         IsActive = adminUser.IsActive
@@ -221,11 +221,16 @@ namespace LYBT.WebAPI.Controllers {
                     return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>.Fail("无效的用户身份", 401));
                 }
 
+                var userRole = UserRole.RegistrationStaff; // 默认角色
+                if (!string.IsNullOrEmpty(role) && Enum.TryParse<UserRole>(role, true, out var parsedRole)) {
+                    userRole = parsedRole;
+                }
+
                 var userInfo = new LYBT.Shared.Models.Auth.UserInfo {
                     Id = Guid.Parse(userId),
-                    UserName = username,
+                    Username = username,
                     RealName = username == "sysadmin" ? "系统管理员" : username,
-                    Role = role ?? "User",
+                    Role = userRole,
                     IsActive = true
                 };
 

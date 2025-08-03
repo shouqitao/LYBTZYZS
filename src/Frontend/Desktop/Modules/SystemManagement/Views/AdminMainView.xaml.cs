@@ -3,11 +3,11 @@ using System.Windows.Controls;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Views
 {
     /// <summary>
-    /// SystemManagementView.xaml 的交互逻辑
+    /// AdminMainView.xaml 的交互逻辑
     /// </summary>
-    public partial class SystemManagementView : UserControl
+    public partial class AdminMainView : UserControl
     {
-        public SystemManagementView()
+        public AdminMainView()
         {
             InitializeComponent();
         }

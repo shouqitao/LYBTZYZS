@@ -2,12 +2,14 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Auth;
 using LYBT.WPF.Client.Core.Events;
 using LYBT.WPF.Client.Core.ViewModels;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
+using LYBT.WPF.Client.Services;
 using Prism.Commands;
 using Prism.Events;
 
@@ -20,10 +22,12 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
     public class LoginViewModel : BaseViewModel
     {
         private readonly IAuthenticationService _authService;
+        private readonly ICredentialService _credentialService;
 
-        private string _username = "sysadmin";
-        private string _password = "Admin@123456";
-        private bool _rememberMe = true;
+        private string _username = "";
+        private string _password = "";
+        private bool _rememberMe = false;
+        private bool _hasSavedPassword = false;
 
         public DelegateCommand LoginCommand { get; }
         public DelegateCommand<PasswordBox>? PasswordChangedCommand { get; set; }
@@ -57,15 +61,26 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             set => SetProperty(ref _rememberMe, value);
         }
 
-        public LoginViewModel(IEventAggregator eventAggregator, IAuthenticationService authService)
+        /// <summary>是否有保存的密码</summary>
+        public bool HasSavedPassword
+        {
+            get => _hasSavedPassword;
+            set => SetProperty(ref _hasSavedPassword, value);
+        }
+
+        public LoginViewModel(IEventAggregator eventAggregator, IAuthenticationService authService, ICredentialService credentialService)
             : base(eventAggregator)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _credentialService = credentialService ?? throw new ArgumentNullException(nameof(credentialService));
 
             LoginCommand = new DelegateCommand(ExecuteLoginAsync, CanExecuteLogin);
             
             // 监听登出事件以清除登录状态消息
             EventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
+            
+            // 立即加载保存的凭据
+            LoadSavedCredentials();
         }
 
         protected override void OnLoadingStateChanged(bool isLoading)
@@ -112,23 +127,19 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
 
                 if (response.IsSuccess && response.Data != null)
                 {
+                    // 保存凭据（如果选择了记住我）
+                    _credentialService.SaveCredentials(Username, Password, RememberMe);
+                    
                     // 检查是否为超级管理员
-                    if (response.Data.User.UserName?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
+                    if (response.Data.User.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
                     {
                         StatusMessage = "超级管理员登录成功，正在跳转...";
                     }
                     else
                     {
-                        // Role是字符串，需要先转换为枚举才能使用GetDisplayName
-                        if (Enum.TryParse<UserRole>(response.Data.User.Role, out var userRole))
-                        {
-                            var roleDisplayName = userRole.GetDisplayName();
-                            StatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
-                        }
-                        else
-                        {
-                            StatusMessage = $"{response.Data.User.Role}登录成功，正在跳转...";
-                        }
+                        // Role已经是枚举类型，直接使用GetDisplayName
+                        var roleDisplayName = response.Data.User.Role.GetDisplayName();
+                        StatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
                     }
                     
                     // 等待一下让用户看到成功消息
@@ -159,6 +170,37 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         {
             ClearError();
             ClearStatus();
+            
+            // 登出时重新加载保存的凭据（如果有）
+            LoadSavedCredentials();
+        }
+        
+        /// <summary>
+        /// 加载保存的凭据
+        /// </summary>
+        private void LoadSavedCredentials()
+        {
+            try
+            {
+                var savedCredentials = _credentialService.LoadCredentials();
+                if (savedCredentials != null)
+                {
+                    Username = savedCredentials.Username;
+                    Password = savedCredentials.Password;
+                    RememberMe = savedCredentials.RememberMe;
+                    HasSavedPassword = !string.IsNullOrEmpty(savedCredentials.Password);
+                }
+                else
+                {
+                    HasSavedPassword = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                // 静默处理错误，避免影响用户体验
+                System.Diagnostics.Debug.WriteLine($"加载凭据时出错: {ex.Message}");
+                HasSavedPassword = false;
+            }
         }
 
         private string GetLocalIPAddress()

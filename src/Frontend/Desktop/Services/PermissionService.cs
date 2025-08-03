@@ -28,7 +28,7 @@ namespace LYBT.WPF.Client.Services
             {
                 UserRole.Admin => HasAdminLevelPermission(permission),
                 UserRole.DiagnosingDoctor => HasDoctorLevelPermission(permission),
-                UserRole.Staff => HasFrontDeskLevelPermission(permission),
+                UserRole.RegistrationStaff => HasFrontDeskLevelPermission(permission),
                 UserRole.CashierStaff => HasCashierLevelPermission(permission),
                 UserRole.PharmacyStaff => HasPharmacistLevelPermission(permission),
                 UserRole.PhysiotherapyStaff => HasPhysiotherapistLevelPermission(permission),
@@ -63,7 +63,7 @@ namespace LYBT.WPF.Client.Services
             {
                 UserRole.Admin => GetAdminModules(),
                 UserRole.DiagnosingDoctor => GetDoctorModules(),
-                UserRole.Staff => GetFrontDeskModules(),
+                UserRole.RegistrationStaff => GetFrontDeskModules(),
                 UserRole.CashierStaff => GetCashierModules(),
                 UserRole.PharmacyStaff => GetPharmacistModules(),
                 UserRole.PhysiotherapyStaff => GetPhysiotherapistModules(),

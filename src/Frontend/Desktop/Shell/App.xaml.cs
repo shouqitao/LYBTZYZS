@@ -11,6 +11,8 @@ using LYBT.WPF.Client.Modules.FrontDesk;
 using LYBT.WPF.Client.Modules.Doctor;
 using LYBT.WPF.Client.Modules.Cashier;
 using LYBT.WPF.Client.Modules.Examples;
+using LYBT.WPF.Client.Modules.Pharmacist;
+using LYBT.WPF.Client.Modules.Physiotherapy;
 using Prism.Modularity;
 
 namespace LYBT.WPF.Client.Shell
@@ -73,6 +75,20 @@ namespace LYBT.WPF.Client.Shell
             {
                 ModuleName = nameof(ExamplesModule),
                 ModuleType = typeof(ExamplesModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+            
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(PharmacistModule),
+                ModuleType = typeof(PharmacistModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+            
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(PhysiotherapyModule),
+                ModuleType = typeof(PhysiotherapyModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
             

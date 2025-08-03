@@ -3,11 +3,11 @@ using System.Windows.Controls;
 namespace LYBT.WPF.Client.Modules.Cashier.Views
 {
     /// <summary>
-    /// CashierMainView.xaml 的交互逻辑
+    /// CashierStaffMainView.xaml 的交互逻辑
     /// </summary>
-    public partial class CashierMainView : UserControl
+    public partial class CashierStaffMainView : UserControl
     {
-        public CashierMainView()
+        public CashierStaffMainView()
         {
             InitializeComponent();
         }

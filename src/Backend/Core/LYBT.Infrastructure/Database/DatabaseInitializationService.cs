@@ -264,9 +264,9 @@ namespace LYBT.Infrastructure.Database {
 
                 foreach (var tableName in coreTableNames) {
                     try {
-                        // 尝试查询表以验证其存在
-                        var sql = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'";
-                        var result = await _dbContext.Database.ExecuteSqlRawAsync("SELECT TOP 0 * FROM [{0}]", tableName);
+                        // 尝试查询表以验证其存在 - 使用 FromSqlRaw 而不是 ExecuteSqlRawAsync
+                        var sql = $"SELECT TOP 0 * FROM [{tableName}]";
+                        var result = await _dbContext.Database.ExecuteSqlRawAsync(sql);
                         _logger.LogDebug($"✅ 表 {tableName} 验证成功");
                     } catch (Exception ex) {
                         _logger.LogWarning($"⚠️ 表 {tableName} 验证失败: {ex.Message}");
@@ -313,21 +313,31 @@ namespace LYBT.Infrastructure.Database {
             try {
                 _logger.LogInformation("检查AdminSecrets表初始化状态...");
 
+                // 先检查表是否存在
+                try {
+                    var sql = "SELECT TOP 1 1 FROM AdminSecrets";
+                    await _dbContext.Database.ExecuteSqlRawAsync(sql);
+                } catch (Exception tableEx) {
+                    _logger.LogWarning($"AdminSecrets表可能不存在: {tableEx.Message}");
+                    // 如果表不存在，让EF Core的迁移处理它
+                    return;
+                }
+
                 // 检查是否已存在sysadmin记录
                 var existingAdmin = await _dbContext.AdminSecrets
-                    .FirstOrDefaultAsync(x => x.UserName == "sysadmin");
-
-                // 默认密码
-                var defaultPassword = "Admin@123456";
-                var passwordHash = PasswordHelper.Hash(defaultPassword);
+                    .FirstOrDefaultAsync(x => x.Username == "sysadmin");
 
                 if (existingAdmin == null) {
                     _logger.LogInformation("正在创建默认超级管理员密码...");
 
+                    // 默认密码
+                    var defaultPassword = "Admin@123456";
+                    var passwordHash = PasswordHelper.Hash(defaultPassword);
+
                     // 创建AdminSecret记录
                     var adminSecret = new AdminSecretModel {
                         Id = Guid.NewGuid(),
-                        UserName = "sysadmin",
+                        Username = "sysadmin",
                         PasswordHash = passwordHash
                     };
 
@@ -337,20 +347,16 @@ namespace LYBT.Infrastructure.Database {
                     _logger.LogInformation("✅ 默认超级管理员密码已创建");
                     _logger.LogInformation("默认登录信息: 用户名=sysadmin, 密码=Admin@123456");
                 } else {
-                    // 确保密码哈希是最新的（防止不一致）
-                    if (existingAdmin.PasswordHash != passwordHash) {
-                        _logger.LogInformation("正在更新sysadmin密码哈希确保一致性...");
-                        existingAdmin.PasswordHash = passwordHash;
-                        _dbContext.AdminSecrets.Update(existingAdmin);
-                        await _dbContext.SaveChangesAsync();
-                        _logger.LogInformation("✅ sysadmin密码哈希已更新");
-                    } else {
-                        _logger.LogInformation("✅ AdminSecrets表已存在超级管理员记录");
-                    }
+                    _logger.LogInformation("✅ AdminSecrets表已存在超级管理员记录");
+                    
+                    // 不再自动更新密码哈希，避免覆盖用户修改的密码
+                    // 如果需要重置密码，应该通过专门的管理功能进行
+                    _logger.LogDebug($"超级管理员 sysadmin 已存在，ID: {existingAdmin.Id}");
                 }
             } catch (Exception ex) {
-                _logger.LogError(ex, "❌ 初始化AdminSecrets表失败");
-                throw;
+                // 将此错误降级为警告，不影响系统启动
+                _logger.LogWarning(ex, "⚠️ 初始化AdminSecrets表时出现问题，但不影响系统启动");
+                // 不再抛出异常，让系统继续启动
             }
         }
     }

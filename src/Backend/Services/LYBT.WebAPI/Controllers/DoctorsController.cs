@@ -41,7 +41,7 @@ namespace LYBT.WebAPI.Controllers {
             var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
 
             if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.Staff;
+                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
                 return (opId, userName, role);
             }
             throw new UnauthorizedAccessException("未登录或用户信息无效");
@@ -447,7 +447,7 @@ namespace LYBT.WebAPI.Controllers {
                             UserRole.PharmacyStaff => "药剂师",
                             UserRole.PhysiotherapyStaff => "理疗师",
                             UserRole.CashierStaff => "收银员",
-                            UserRole.Staff => "前台",
+                            UserRole.RegistrationStaff => "前台",
                             _ => role.ToString()
                         }
                     })
@@ -511,7 +511,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 清除指定医生的缓存
         /// </summary>
         private void ClearDoctorCache(Guid doctorId) {
-            var roleKeys = new[] { "Admin", "DiagnosingDoctor", "Staff" };
+            var roleKeys = new[] { "Admin", "DiagnosingDoctor", "RegistrationStaff" };
             foreach (var role in roleKeys) {
                 _cache.Remove($"doctor_detail:{doctorId}:{role}");
             }

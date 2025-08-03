@@ -14,7 +14,7 @@ namespace LYBT.Models.Users {
 
         /// <summary>管理员用户名</summary>
         [DisplayName("Administrator username")]
-        public string UserName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
 
         /// <summary>密码哈希</summary>
         [DisplayName("Password hash")]

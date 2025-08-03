@@ -83,7 +83,20 @@
 
         <!-- 密码输入 -->
         <StackPanel Grid.Row="4">
-            <TextBlock Text="密码" FontSize="14" Foreground="#333" Margin="0,0,0,5"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="密码" FontSize="14" Foreground="#333" Margin="0,0,0,5"/>
+                <TextBlock Grid.Column="1" 
+                           Text="（已保存）" 
+                           FontSize="12" 
+                           Foreground="#2E86AB" 
+                           HorizontalAlignment="Right"
+                           Margin="0,0,0,5"
+                           Visibility="{Binding HasSavedPassword, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </Grid>
             <PasswordBox x:Name="PasswordBox" 
                          Height="40" 
                          FontSize="13" 

@@ -1,5 +1,6 @@
 using Prism.Ioc;
 using Prism.Modularity;
+using LYBT.WPF.Client.Modules.Pharmacist.Views;
 
 namespace LYBT.WPF.Client.Modules.Pharmacist
 {
@@ -15,7 +16,8 @@ namespace LYBT.WPF.Client.Modules.Pharmacist
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // TODO: 注册类型
+            // 注册药房人员主界面视图
+            containerRegistry.RegisterForNavigation<PharmacyStaffMainView>();
         }
     }
 }

@@ -44,7 +44,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
 
                 // 由于TreatmentRoomController没有GetOperator方法，我们使用默认角色
-                var result = await _treatmentRoomService.GetPagedAsync(query, LYBT.Shared.Models.Enums.UserRole.Staff);
+                var result = await _treatmentRoomService.GetPagedAsync(query, LYBT.Shared.Models.Enums.UserRole.RegistrationStaff);
                 return Ok(result);
             } catch (Exception ex) {
                 return StatusCode(500, $"分页获取治疗室列表失败: {ex.Message}");

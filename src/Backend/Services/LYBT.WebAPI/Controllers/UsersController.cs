@@ -31,7 +31,7 @@ public class UsersController : ControllerBase {
         var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
 
         if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-            var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.Staff;
+            var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
             return (opId, userName, role);
         }
         throw new UnauthorizedAccessException("未登录或用户信息无效");

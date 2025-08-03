@@ -33,34 +33,19 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 使用Refit调用API
-                var response = await _userApiService.GetUsersAsync(request.SearchKeyword);
+                // 使用Refit调用分页API
+                var response = await _userApiService.GetPagedUsersAsync(request);
                 
                 if (response.IsSuccess && response.Data != null)
                 {
-                    var users = response.Data.Select(ConvertToUserInfo).ToList();
-                    
-                    // 应用客户端过滤
-                    if (request.Role.HasValue)
-                    {
-                        users = users.Where(u => u.Role == request.Role.Value).ToList();
-                    }
-                    if (request.IsActive.HasValue)
-                    {
-                        users = users.Where(u => u.IsActive == request.IsActive.Value).ToList();
-                    }
-                    
-                    // 分页
-                    var totalCount = users.Count;
-                    var skip = (request.CurrentPage - 1) * request.PageSize;
-                    users = users.Skip(skip).Take(request.PageSize).ToList();
+                    var users = response.Data.Items.Select(ConvertToUserInfo).ToList();
                     
                     return new PaginatedResult<UserInfo>
                     {
                         Items = users,
-                        TotalCount = totalCount,
-                        CurrentPage = request.CurrentPage,
-                        PageSize = request.PageSize
+                        TotalCount = response.Data.TotalCount,
+                        CurrentPage = response.Data.CurrentPage,
+                        PageSize = response.Data.PageSize
                     };
                 }
 
@@ -111,8 +96,8 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // UserUpdateDto现在包含Id属性
-                var response = await _userApiService.UpdateUserAsync(request.Id, request);
+                // 直接传递完整的UpdateDto对象
+                var response = await _userApiService.UpdateUserAsync(request);
                 return new ApiResponse<object>
                 {
                     IsSuccess = response.IsSuccess,
@@ -137,7 +122,7 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var response = await _userApiService.ToggleUserStatusAsync(userId);
+                var response = await _userApiService.DisableUserAsync(userId);
                 return new ApiResponse<object>
                 {
                     IsSuccess = response.IsSuccess,
@@ -162,7 +147,7 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var response = await _userApiService.ToggleUserStatusAsync(userId);
+                var response = await _userApiService.EnableUserAsync(userId);
                 return new ApiResponse<object>
                 {
                     IsSuccess = response.IsSuccess,

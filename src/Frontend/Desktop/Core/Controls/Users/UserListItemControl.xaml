@@ -6,9 +6,18 @@
              mc:Ignorable="d" 
              d:DesignHeight="60" d:DesignWidth="800">
     
-    <Border Background="{Binding Data.IsSelected, Converter={StaticResource BooleanToBackgroundConverter}, ConverterParameter=#F5F5F5}" 
-            BorderBrush="#E0E0E0"
+    <Border BorderBrush="#E0E0E0"
             BorderThickness="0,0,0,1">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="White"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#F5F5F5"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid Margin="16,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -28,7 +37,7 @@
                     Background="#2E86AB"
                     VerticalAlignment="Center"
                     Margin="0,0,12,0">
-                <TextBlock Text="{Binding Username, Converter={StaticResource FirstCharacterConverter}}"
+                <TextBlock Text="{Binding Data.Username, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource FirstCharacterConverter}}"
                           FontSize="16"
                           FontWeight="Bold"
                           Foreground="White"
@@ -38,14 +47,14 @@
 
             <!-- 用户名 -->
             <TextBlock Grid.Column="1"
-                       Text="{Binding Username}"
+                       Text="{Binding Data.Username, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontSize="14"
                        FontWeight="Bold"
                        VerticalAlignment="Center"/>
 
             <!-- 真实姓名 -->
             <TextBlock Grid.Column="2"
-                       Text="{Binding RealName}"
+                       Text="{Binding Data.RealName, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontSize="14"
                        VerticalAlignment="Center"/>
 
@@ -56,7 +65,7 @@
                     Padding="12,4"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Left">
-                <TextBlock Text="{Binding Role}" 
+                <TextBlock Text="{Binding Data.Role, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                           FontSize="12"
                           Foreground="#1976D2"/>
             </Border>
@@ -70,10 +79,10 @@
                 <Border.Style>
                     <Style TargetType="Border">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                            <DataTrigger Binding="{Binding Data.IsActive, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
                                 <Setter Property="Background" Value="#E8F5E9"/>
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                            <DataTrigger Binding="{Binding Data.IsActive, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                                 <Setter Property="Background" Value="#FFEBEE"/>
                             </DataTrigger>
                         </Style.Triggers>
@@ -83,11 +92,11 @@
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                <DataTrigger Binding="{Binding Data.IsActive, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
                                     <Setter Property="Text" Value="启用"/>
                                     <Setter Property="Foreground" Value="#388E3C"/>
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                <DataTrigger Binding="{Binding Data.IsActive, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                                     <Setter Property="Text" Value="禁用"/>
                                     <Setter Property="Foreground" Value="#D32F2F"/>
                                 </DataTrigger>
@@ -99,7 +108,7 @@
 
             <!-- 联系方式 -->
             <TextBlock Grid.Column="5"
-                       Text="{Binding Email}"
+                       Text="{Binding Data.Email, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontSize="12"
                        Foreground="#666"
                        VerticalAlignment="Center"
@@ -114,7 +123,7 @@
                         BorderThickness="0"
                         ToolTip="编辑"
                         Command="{Binding DataContext.EditUserCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                        CommandParameter="{Binding}"
+                        CommandParameter="{Binding Data, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Cursor="Hand"
                         Margin="4,0">
                     <Button.Template>
@@ -141,16 +150,16 @@
                         Background="Transparent"
                         BorderThickness="0"
                         Command="{Binding DataContext.ToggleUserStatusCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                        CommandParameter="{Binding}"
+                        CommandParameter="{Binding Data, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Cursor="Hand"
                         Margin="4,0">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                <DataTrigger Binding="{Binding Data.IsActive, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
                                     <Setter Property="ToolTip" Value="禁用"/>
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                <DataTrigger Binding="{Binding Data.IsActive, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                                     <Setter Property="ToolTip" Value="启用"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -167,12 +176,12 @@
                                     <Path.Style>
                                         <Style TargetType="Path">
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                <DataTrigger Binding="{Binding Data.IsActive, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
                                                     <!-- 禁用图标 -->
                                                     <Setter Property="Data" Value="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M7,10L17,10L17,14L7,14Z"/>
                                                     <Setter Property="Fill" Value="#F44336"/>
                                                 </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                <DataTrigger Binding="{Binding Data.IsActive, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                                                     <!-- 启用图标 -->
                                                     <Setter Property="Data" Value="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M10,16.5L16,12L10,7.5"/>
                                                     <Setter Property="Fill" Value="#4CAF50"/>

@@ -13,13 +13,13 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 用户登录
         /// </summary>
-        [Post("/api/v1/Auth/login")]
+        [Post("/api/v1/auth/login")]
         Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync([Body] object loginRequest);
 
         /// <summary>
         /// 用户登出
         /// </summary>
-        [Post("/api/v1/Auth/logout")]
+        [Post("/api/v1/auth/logout")]
         Task<LYBT.Shared.Models.Common.ApiResponse<object>> LogoutAsync([Body] object logoutRequest);
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 模拟登录 - 不依赖数据库
         /// </summary>
-        [Post("/api/v1/Auth/mockLogin")]
+        [Post("/api/v1/auth/mockLogin")]
         Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> MockLoginAsync([Body] object loginRequest);
     }
 }

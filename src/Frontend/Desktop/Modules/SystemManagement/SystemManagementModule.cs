@@ -1,10 +1,14 @@
 using LYBT.WPF.Client.Modules.SystemManagement.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Users.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views;
-// using LYBT.WPF.Client.Modules.SystemManagement.PrescriptionTemplates.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.PrescriptionTemplates.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Patients.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Records.Views;
-// using LYBT.Frontend.Desktop.Modules.SystemManagement.Prescriptions.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Roles.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Settings.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Backup.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Logs.Views;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -23,25 +27,37 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // 注册系统管理主视图
-            containerRegistry.RegisterForNavigation<SystemManagementView>();
+            containerRegistry.RegisterForNavigation<AdminMainView>();
             
             // 注册用户管理视图
             containerRegistry.RegisterForNavigation<UserManagementView>();
-            
-            // 注册中药材管理视图
-            containerRegistry.RegisterForNavigation<HerbManagementView>();
-            
-            // 暂时注释处方模板管理视图 - 模块未实现
-            // containerRegistry.RegisterForNavigation<PrescriptionTemplateManagementView>();
-            
-            // 暂时注释处方管理视图 - 模块未实现  
-            // containerRegistry.RegisterForNavigation<PrescriptionManagementView>();
             
             // 注册患者管理视图
             containerRegistry.RegisterForNavigation<PatientManagementView>();
             
             // 注册病历管理视图
             containerRegistry.RegisterForNavigation<RecordManagementView>();
+            
+            // 注册角色权限管理视图
+            containerRegistry.RegisterForNavigation<RoleManagementView>();
+            
+            // 注册系统设置视图
+            containerRegistry.RegisterForNavigation<SystemSettingsView>();
+            
+            // 注册数据备份视图
+            containerRegistry.RegisterForNavigation<BackupView>();
+            
+            // 注册系统日志视图
+            containerRegistry.RegisterForNavigation<SystemLogsView>();
+            
+            // 注册中药材管理视图
+            containerRegistry.RegisterForNavigation<HerbManagementView>();
+            
+            // 注册处方模板管理视图
+            containerRegistry.RegisterForNavigation<PrescriptionTemplatesView>();
+            
+            // 注册处方管理视图
+            containerRegistry.RegisterForNavigation<PrescriptionManagementView>();
         }
     }
 }

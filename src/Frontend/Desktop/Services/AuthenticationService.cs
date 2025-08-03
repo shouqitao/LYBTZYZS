@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Text.Json;
 using LYBT.WPF.Client.Core.Services;
@@ -41,7 +42,7 @@ namespace LYBT.WPF.Client.Services {
                 // 使用真实登录端点
                 var response = await _authApiService.LoginAsync(loginDto);
 
-                if (response.IsSuccess && response.Data != null) {
+                if (response.IsSuccess && response.Data != null && !string.IsNullOrEmpty(response.Data.Token)) {
                     _isLoggedIn = true;
                     _tokenManager.SetToken(response.Data.Token);
 
@@ -120,15 +121,15 @@ namespace LYBT.WPF.Client.Services {
 
             return new UserInfo {
                 Id = sharedUser.Id,
-                Username = sharedUser.UserName,
+                Username = sharedUser.Username,
                 RealName = sharedUser.RealName,
-                Role = ParseUserRole(sharedUser.Role),
+                Role = sharedUser.Role,
                 IsActive = sharedUser.IsActive,
                 CreateTime = DateTime.Now, // 使用当前时间
                 LastLoginTime = null, // 共享模型没有这个字段
                 Email = sharedUser.Email,
                 PhoneNumber = sharedUser.PhoneNumber,
-                IsSuperAdmin = sharedUser.UserName?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
+                IsSuperAdmin = sharedUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
             };
         }
 
@@ -157,7 +158,7 @@ namespace LYBT.WPF.Client.Services {
                     Id = root.TryGetProperty("id", out var idProp) ? idProp.GetGuid() : Guid.Empty,
                     Username = userName,
                     RealName = root.TryGetProperty("realName", out var realNameProp) ? realNameProp.GetString() ?? "" : "",
-                    Role = root.TryGetProperty("role", out var roleProp) ? ParseUserRole(roleProp.GetString()) : UserRole.Staff,
+                    Role = root.TryGetProperty("role", out var roleProp) ? ParseUserRole(roleProp.GetString()) : UserRole.RegistrationStaff,
                     IsActive = root.TryGetProperty("isActive", out var isActiveProp) && isActiveProp.GetBoolean(),
                     CreateTime = root.TryGetProperty("createdTime", out var createdTimeProp) ? createdTimeProp.GetDateTime() : DateTime.Now,
                     LastLoginTime = root.TryGetProperty("lastLoginTime", out var lastLoginTimeProp) ? lastLoginTimeProp.GetDateTime() : null,
@@ -177,7 +178,7 @@ namespace LYBT.WPF.Client.Services {
         /// </summary>
         private UserRole ParseUserRole(string? roleString) {
             if (string.IsNullOrEmpty(roleString))
-                return UserRole.Staff;
+                return UserRole.RegistrationStaff;
 
             // 添加调试信息
             System.Diagnostics.Debug.WriteLine($"ParseUserRole: 输入角色字符串 = '{roleString}'");
@@ -191,13 +192,14 @@ namespace LYBT.WPF.Client.Services {
 
             // 兼容性处理 - 处理可能的不同命名格式
             var result = roleString.ToLower() switch {
-                "staff" => UserRole.Staff,
+                "staff" => UserRole.RegistrationStaff,
+                "registrationstaff" => UserRole.RegistrationStaff,
                 "diagnosingdoctor" => UserRole.DiagnosingDoctor,
                 "cashierstaff" => UserRole.CashierStaff,
                 "pharmacystaff" => UserRole.PharmacyStaff,
                 "physiotherapystaff" => UserRole.PhysiotherapyStaff,
                 "admin" => UserRole.Admin,
-                _ => UserRole.Staff
+                _ => UserRole.RegistrationStaff
             };
             
             System.Diagnostics.Debug.WriteLine($"ParseUserRole: 兼容性处理结果 = {result}");

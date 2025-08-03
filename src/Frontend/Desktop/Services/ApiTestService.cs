@@ -88,7 +88,7 @@ namespace LYBT.WPF.Client.Services
                     var token = _authService.GetToken();
                     
                     return $"✅ 登录成功\n" +
-                           $"   用户: {user.RealName} ({user.UserName})\n" +
+                           $"   用户: {user.RealName} ({user.Username})\n" +
                            $"   角色: {user.Role}\n" +
                            $"   Token: {token?.Substring(0, 20)}...\n" +
                            $"   登录时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";

@@ -23,7 +23,7 @@ namespace LYBT.Shared.Models.Contracts.Users {
         /// <summary>用户角色（单选）</summary>
         [Required(ErrorMessage = "用户角色不能为空")]
         [DisplayName("用户角色")]
-        public UserRole Role { get; set; } = UserRole.Staff;
+        public UserRole Role { get; set; } = UserRole.RegistrationStaff;
 
         /// <summary>账号启用状态（true=启用，false=禁用，必填）</summary>
         [Required(ErrorMessage = "账号启用状态不能为空")]

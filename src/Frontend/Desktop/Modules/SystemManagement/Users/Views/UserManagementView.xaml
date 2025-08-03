@@ -22,6 +22,19 @@
                 <!-- 搜索区域 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <TextBlock Text="搜索：" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"/>
+                    
+                    <!-- 搜索类型下拉框 -->
+                    <ComboBox Width="120" Height="32" 
+                              SelectedValuePath="Tag"
+                              SelectedValue="{Binding SearchType}"
+                              VerticalContentAlignment="Center"
+                              Margin="0,0,10,0">
+                        <ComboBoxItem Content="全部" Tag="all"/>
+                        <ComboBoxItem Content="用户名" Tag="username"/>
+                        <ComboBoxItem Content="真实姓名" Tag="realname"/>
+                        <ComboBoxItem Content="拼音码" Tag="pinyin"/>
+                    </ComboBox>
+                    
                     <TextBox Width="250" Height="32" 
                              Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center"

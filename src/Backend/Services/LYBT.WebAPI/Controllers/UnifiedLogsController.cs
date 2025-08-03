@@ -194,7 +194,7 @@ namespace LYBT.WebAPI.Controllers {
             try {
                 await _logService.LogUserLoginAsync(
                     request.UserId,
-                    request.UserName,
+                    request.Username,
                     request.ClientIP,
                     request.UserAgent,
                     request.IsSuccess,
@@ -215,7 +215,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("user-logout")]
         public async Task<ActionResult> LogUserLogout([FromBody] UserLogoutLogRequest request) {
             try {
-                await _logService.LogUserLogoutAsync(request.UserId, request.UserName, request.ClientIP);
+                await _logService.LogUserLogoutAsync(request.UserId, request.Username, request.ClientIP);
                 return Ok(new { Message = "登出日志记录成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "记录用户登出日志失败");
@@ -229,7 +229,7 @@ namespace LYBT.WebAPI.Controllers {
     /// </summary>
     public class UserLoginLogRequest {
         public Guid UserId { get; set; }
-        public string UserName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
         public string ClientIP { get; set; } = string.Empty;
         public string UserAgent { get; set; } = string.Empty;
         public bool IsSuccess { get; set; }
@@ -241,7 +241,7 @@ namespace LYBT.WebAPI.Controllers {
     /// </summary>
     public class UserLogoutLogRequest {
         public Guid UserId { get; set; }
-        public string UserName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
         public string ClientIP { get; set; } = string.Empty;
     }
 }

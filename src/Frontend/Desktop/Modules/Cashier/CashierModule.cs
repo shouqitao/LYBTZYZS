@@ -17,7 +17,7 @@ namespace LYBT.WPF.Client.Modules.Cashier
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // 注册收银员主界面视图
-            containerRegistry.RegisterForNavigation<CashierMainView>();
+            containerRegistry.RegisterForNavigation<CashierStaffMainView>();
         }
     }
 }

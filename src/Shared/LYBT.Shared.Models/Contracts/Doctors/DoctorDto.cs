@@ -48,8 +48,8 @@ namespace LYBT.Shared.Models.Contracts.Doctors {
         public string? ContactNumber { get; set; } // 医生对外联系方式
 
         // 用户信息（只读）
-        [DisplayName("UserName")]
-        public string? UserName { get; set; }
+        [DisplayName("Username")]
+        public string? Username { get; set; }
 
         [DisplayName("RealName")]
         public string? RealName { get; set; }
