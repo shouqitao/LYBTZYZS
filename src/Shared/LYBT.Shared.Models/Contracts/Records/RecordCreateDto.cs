@@ -49,6 +49,14 @@ namespace LYBT.Shared.Models.Contracts.Records {
         [DisplayName("辅助治疗方案")]
         public List<TreatmentItemDto>? TreatmentPlans { get; set; }
 
+        /// <summary>关联的验方模板ID</summary>
+        [DisplayName("验方模板ID")]
+        public Guid? FormulaTemplateId { get; set; }
+
+        /// <summary>关联的理疗项目ID列表</summary>
+        [DisplayName("理疗项目ID列表")]
+        public List<Guid>? TreatmentRoomIds { get; set; }
+
         /// <summary>是否共享</summary>
         [DisplayName("是否共享")]
         public bool IsShared { get; set; }
@@ -63,10 +71,10 @@ namespace LYBT.Shared.Models.Contracts.Records {
 
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
-        public DateTime CreatedTime { get; set; } = DateTime.Now;
+        public DateTime CreateTime { get; set; } = DateTime.Now;
 
-        /// <summary>开方信息（如药方ID）</summary>
-        [DisplayName("开方信息（如药方ID）")]
+        /// <summary>处方ID</summary>
+        [DisplayName("处方ID")]
         public Guid? PrescriptionId { get; set; }
 
         /// <summary>病历创建时间</summary>

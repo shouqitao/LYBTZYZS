@@ -164,7 +164,7 @@ scripts\file-monitor.bat
 - **Prescriptions**：处方管理和智能推荐
 - **Herbs**：中药材目录
 - **FormulaTemplates**：验方模板管理
-- **Pharmacy**：药房调配
+- **Pharmacy**：处方调配
 - **Billing**：费用结算
 - **Records**：病历档案
 - **Queueing**：排队叫号
@@ -236,9 +236,16 @@ scripts\file-monitor.bat
    - 前端: `LYBT.Desktop.sln`
    - 完整解决方案: `LYBT.All.sln`
 
+### 环境配置
+
+**数据库连接**: 默认使用 SQL Server (`Server=localhost;Database=LYBTDB`)
+**API 端口**: 默认 https://localhost:7001 (可在 launchSettings.json 中修改)
+**JWT配置**: 8小时过期时间，支持 Remember Me (30天)
+
 ### 常见问题解决
 
 - **编译错误**: 检查 `Directory.Build.props` 配置
 - **数据库连接问题**: 确认 `appsettings.json` 中的连接字符串
 - **权限问题**: 确保使用正确的管理员凭据（sysadmin/Admin@123456）
 - **端口冲突**: WebAPI 默认运行在 https://localhost:7001
+- **迁移问题**: 始终在 Infrastructure 项目中执行 EF 迁移命令
