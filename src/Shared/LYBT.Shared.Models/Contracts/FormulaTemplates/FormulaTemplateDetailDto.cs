@@ -1,27 +1,41 @@
-using LYBT.Shared.Models.Contracts.Herbs;
-using System.ComponentModel;
+using System;
+using System.Collections.Generic;
 
-namespace LYBT.Shared.Models.Contracts.FormulaTemplates {
-
+namespace LYBT.Shared.Models.Contracts.FormulaTemplates
+{
     /// <summary>
-    /// 经验方模板详情 DTO
+    /// 验方模板详情DTO
     /// </summary>
-    public class FormulaTemplateDetailDto {
-
+    public class FormulaTemplateDetailDto
+    {
         /// <summary>模板ID</summary>
-        [DisplayName("模板ID")]
         public Guid Id { get; set; }
 
         /// <summary>模板名称</summary>
-        [DisplayName("模板名称")]
         public string Name { get; set; } = string.Empty;
 
-        /// <summary>药材组成</summary>
-        [DisplayName("药材组成")]
-        public List<FormulaIngredientDto> Herbs { get; set; } = new();
+        /// <summary>分类</summary>
+        public string Category { get; set; } = string.Empty;
+
+        /// <summary>适应症</summary>
+        public string? Indications { get; set; }
+
+        /// <summary>功效</summary>
+        public string? Efficacy { get; set; }
+
+        /// <summary>用法用量</summary>
+        public string? Usage { get; set; }
 
         /// <summary>备注</summary>
-        [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>药材列表</summary>
+        public List<FormulaTemplateHerbDto> Herbs { get; set; } = new();
+
+        /// <summary>创建时间</summary>
+        public DateTime CreateTime { get; set; }
+
+        /// <summary>更新时间</summary>
+        public DateTime? UpdateTime { get; set; }
     }
 }

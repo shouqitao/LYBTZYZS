@@ -160,15 +160,12 @@ namespace LYBT.Infrastructure.Database {
             try {
                 _logger.LogInformation("正在创建数据库 LYBTDB...");
 
-                // 使用EnsureCreated方法创建数据库和所有表
-                var created = await _dbContext.Database.EnsureCreatedAsync();
+                // 使用Migrate方法创建数据库并应用所有迁移
+                // 注意：不要使用EnsureCreated，因为它会绕过迁移系统
+                await _dbContext.Database.MigrateAsync();
 
-                if (created) {
-                    _logger.LogInformation("✅ 数据库 LYBTDB 创建成功");
-                    _logger.LogInformation("✅ 数据库表结构创建成功");
-                } else {
-                    _logger.LogInformation("✅ 数据库 LYBTDB 已存在");
-                }
+                _logger.LogInformation("✅ 数据库 LYBTDB 创建成功");
+                _logger.LogInformation("✅ 数据库表结构创建成功");
 
                 // 验证数据库连接
                 var canConnect = await _dbContext.Database.CanConnectAsync();
@@ -203,7 +200,8 @@ namespace LYBT.Infrastructure.Database {
         private async Task CreateDatabaseAsync() {
             try {
                 _logger.LogInformation("正在创建数据库...");
-                await _dbContext.Database.EnsureCreatedAsync();
+                // 使用Migrate而不是EnsureCreated
+                await _dbContext.Database.MigrateAsync();
                 _logger.LogInformation("✅ 数据库创建成功");
             } catch (Exception ex) {
                 _logger.LogError(ex, "❌ 数据库创建失败");

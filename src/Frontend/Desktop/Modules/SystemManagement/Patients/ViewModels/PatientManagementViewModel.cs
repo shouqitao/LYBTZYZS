@@ -9,6 +9,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.WPF.Client.Core.Models.Patients;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 {
@@ -28,15 +29,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 
         #region Properties
 
-        private ObservableCollection<PatientDetailDto> _patients = new();
-        public ObservableCollection<PatientDetailDto> Patients
+        private ObservableCollection<PatientInfo> _patients = new();
+        public ObservableCollection<PatientInfo> Patients
         {
             get => _patients;
             set => SetProperty(ref _patients, value);
         }
 
-        private PatientDetailDto _selectedPatient;
-        public PatientDetailDto SelectedPatient
+        private PatientInfo? _selectedPatient;
+        public PatientInfo? SelectedPatient
         {
             get => _selectedPatient;
             set => SetProperty(ref _selectedPatient, value);
@@ -86,8 +87,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         public DelegateCommand ResetCommand { get; private set; } = null!;
         public DelegateCommand AddPatientCommand { get; private set; } = null!;
         public DelegateCommand EditPatientCommand { get; private set; } = null!;
-        public DelegateCommand<PatientDetailDto> ViewPatientCommand { get; private set; } = null!;
-        public DelegateCommand<PatientDetailDto> ViewRecordsCommand { get; private set; } = null!;
+        public DelegateCommand<PatientInfo> ViewPatientCommand { get; private set; } = null!;
+        public DelegateCommand<PatientInfo> ViewRecordsCommand { get; private set; } = null!;
         public DelegateCommand DisablePatientCommand { get; private set; } = null!;
         public DelegateCommand EnablePatientCommand { get; private set; } = null!;
         public DelegateCommand ExportCommand { get; private set; } = null!;
@@ -107,8 +108,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             ResetCommand = new DelegateCommand(async () => await ResetSearch());
             AddPatientCommand = new DelegateCommand(AddPatient);
             EditPatientCommand = new DelegateCommand(EditPatient);
-            ViewPatientCommand = new DelegateCommand<PatientDetailDto>(ViewPatient);
-            ViewRecordsCommand = new DelegateCommand<PatientDetailDto>(ViewRecords);
+            ViewPatientCommand = new DelegateCommand<PatientInfo>(ViewPatient);
+            ViewRecordsCommand = new DelegateCommand<PatientInfo>(ViewRecords);
             DisablePatientCommand = new DelegateCommand(async () => await DisablePatient());
             EnablePatientCommand = new DelegateCommand(async () => await EnablePatient());
             ExportCommand = new DelegateCommand(async () => await ExportPatients());
@@ -135,21 +136,20 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 };
 
                 var result = await _patientService.GetPagedAsync(query);
-                if (result.IsSuccess && result.Data != null)
+                
+                Patients.Clear();
+                foreach (var patient in result.Items)
                 {
-                    Patients.Clear();
-                    foreach (var patient in result.Data.Items)
-                    {
-                        Patients.Add(patient);
-                    }
-
-                    TotalCount = result.Data.TotalCount;
-                    TotalPages = result.Data.TotalPages;
-                    CurrentPage = result.Data.CurrentPage;
+                    Patients.Add(patient);
                 }
-                else
+
+                TotalCount = result.TotalCount;
+                TotalPages = result.TotalPages;
+                CurrentPage = result.CurrentPage;
+                
+                if (!string.IsNullOrEmpty(result.ErrorMessage))
                 {
-                    MessageBox.Show($"加载患者列表失败：{result.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"加载患者列表失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -189,7 +189,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             MessageBox.Show($"编辑患者：{SelectedPatient.Name}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ViewPatient(PatientDetailDto patient)
+        private void ViewPatient(PatientInfo patient)
         {
             if (patient == null) return;
 
@@ -197,7 +197,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             MessageBox.Show($"查看患者详情：{patient.Name}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ViewRecords(PatientDetailDto patient)
+        private void ViewRecords(PatientInfo patient)
         {
             if (patient == null) return;
 

@@ -24,7 +24,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     {
         private readonly IHerbService _herbService;
         private string _searchKeyword = string.Empty;
-        private HerbInfo _selectedHerb;
+        private HerbInfo? _selectedHerb;
         private int _currentPage = 1;
         private int _pageSize = 20;
         private int _totalCount = 0;
@@ -46,6 +46,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         public DelegateCommand PreviousPageCommand { get; }
         public DelegateCommand NextPageCommand { get; }
         public DelegateCommand LastPageCommand { get; }
+        public DelegateCommand ExportHerbsCommand { get; }
+        public DelegateCommand ExportTemplateCommand { get; }
 
         /// <summary>搜索关键词</summary>
         public string SearchKeyword
@@ -55,7 +57,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         }
 
         /// <summary>选中的药材</summary>
-        public HerbInfo SelectedHerb
+        public HerbInfo? SelectedHerb
         {
             get => _selectedHerb;
             set => SetProperty(ref _selectedHerb, value);
@@ -120,6 +122,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage, CanExecutePreviousPage);
             NextPageCommand = new DelegateCommand(ExecuteNextPage, CanExecuteNextPage);
             LastPageCommand = new DelegateCommand(ExecuteLastPage, CanExecuteLastPage);
+            ExportHerbsCommand = new DelegateCommand(ExecuteExportHerbs);
+            ExportTemplateCommand = new DelegateCommand(ExecuteExportTemplate);
 
             // 加载初始数据
             LoadHerbs();
@@ -130,48 +134,34 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             IsLoading = true;
             try
             {
-                // TODO: 调用API获取药材列表
-                await Task.Delay(1000); // 模拟API调用
-
-                // 模拟数据
-                Herbs.Clear();
-                var herbNames = new[]
+                System.Diagnostics.Debug.WriteLine($"开始加载药材列表，搜索关键词: '{SearchKeyword}', 页码: {CurrentPage}");
+                
+                var request = new HerbPagedQueryDto
                 {
-                    "人参", "当归", "黄芪", "川芎", "白术", "茯苓", "甘草", "熟地黄", "白芍", "枸杞子",
-                    "党参", "麦冬", "五味子", "山药", "薏苡仁", "陈皮", "半夏", "生姜", "大枣", "桂枝",
-                    "附子", "干姜", "肉桂", "细辛", "麻黄", "桔梗", "杏仁", "紫苏叶", "防风", "荆芥",
-                    "连翘", "金银花", "蒲公英", "板蓝根", "大青叶", "鱼腥草", "败酱草", "白头翁", "黄连", "黄芩",
-                    "栀子", "龙胆草", "苦参", "白鲜皮", "地骨皮", "牡丹皮", "赤芍", "紫草", "茜草", "三七"
+                    CurrentPage = CurrentPage,
+                    PageSize = PageSize
                 };
 
-                var origins = new[] { "吉林", "甘肃", "四川", "河南", "安徽", "山东", "湖北", "云南", "贵州", "陕西" };
-                var units = new[] { "克", "两", "斤", "袋", "盒" };
-                var specs = new[] { "统", "选", "特级", "一级", "二级" };
-
-                var random = new Random();
-                for (int i = 0; i < herbNames.Length; i++)
+                // 设置搜索条件
+                if (!string.IsNullOrWhiteSpace(SearchKeyword))
                 {
-                    var stock = random.Next(0, 200);
-                    Herbs.Add(new HerbInfo
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = herbNames[i],
-                        PinyinCode = GetPinyin(herbNames[i]),
-                        Origin = origins[random.Next(origins.Length)],
-                        Spec = specs[random.Next(specs.Length)],
-                        Unit = units[random.Next(units.Length)],
-                        Price = (decimal)(random.NextDouble() * 100 + 5),
-                        Stock = stock,
-                        BatchNo = $"20241{random.Next(10, 99):D2}",
-                        ExpireDate = DateTime.Now.AddMonths(random.Next(6, 36)),
-                        Effect = GetHerbEffect(herbNames[i]),
-                        IsActive = true,
-                        CreateTime = DateTime.Now.AddDays(-random.Next(1, 365)),
-                        UpdateTime = DateTime.Now.AddDays(-random.Next(1, 30))
-                    });
+                    request.Name = SearchKeyword;
                 }
 
-                TotalCount = Herbs.Count;
+                System.Diagnostics.Debug.WriteLine($"发送请求: Name={request.Name}, Page={request.CurrentPage}, PageSize={request.PageSize}");
+                
+                var result = await _herbService.SearchHerbsAsync(request);
+                
+                System.Diagnostics.Debug.WriteLine($"API返回结果: TotalCount={result.TotalCount}, Items.Count={result.Items.Count}");
+
+                Herbs.Clear();
+                foreach (var herb in result.Items)
+                {
+                    System.Diagnostics.Debug.WriteLine($"添加药材: {herb.Name} - {herb.Id}");
+                    Herbs.Add(herb);
+                }
+
+                TotalCount = result.TotalCount;
                 LowStockCount = Herbs.Count(h => h.Stock < 10);
 
                 RaisePropertyChanged(nameof(StatusText));
@@ -182,6 +172,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 PreviousPageCommand.RaiseCanExecuteChanged();
                 NextPageCommand.RaiseCanExecuteChanged();
                 LastPageCommand.RaiseCanExecuteChanged();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"加载药材列表失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -215,18 +209,160 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         private void ExecuteSearch()
         {
-            // TODO: 实现搜索逻辑
+            System.Diagnostics.Debug.WriteLine($"执行搜索，关键词: '{SearchKeyword}'");
+            CurrentPage = 1; // 搜索时重置到第一页
             LoadHerbs();
         }
 
         private void ExecuteAddHerb()
         {
-            // TODO: 打开新增药材对话框
+            try
+            {
+                var dialog = new Views.AddHerbDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    // 刷新列表
+                    LoadHerbs();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开新增药材对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void ExecuteImportHerbs()
+        private async void ExecuteImportHerbs()
         {
-            // TODO: 打开导入药材对话框
+            try
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = "Excel文件 (*.xlsx)|*.xlsx|所有文件 (*.*)|*.*",
+                    DefaultExt = "xlsx"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    IsLoading = true;
+                    
+                    // 读取Excel文件
+                    var dataTable = Core.Helpers.ExcelHelper.ImportFromExcel(dialog.FileName);
+                    
+                    if (dataTable.Rows.Count == 0)
+                    {
+                        MessageBox.Show("Excel文件中没有数据", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    
+                    // 验证列
+                    var requiredColumns = new[] { "药材名称*", "单位*", "单价（元）*", "初始库存*" };
+                    foreach (var column in requiredColumns)
+                    {
+                        if (!dataTable.Columns.Contains(column))
+                        {
+                            MessageBox.Show($"Excel文件缺少必需的列：{column}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                    }
+                    
+                    // 导入数据
+                    int successCount = 0;
+                    int failCount = 0;
+                    var errors = new List<string>();
+                    
+                    foreach (System.Data.DataRow row in dataTable.Rows)
+                    {
+                        try
+                        {
+                            var herbName = row["药材名称*"]?.ToString()?.Trim();
+                            if (string.IsNullOrWhiteSpace(herbName))
+                            {
+                                failCount++;
+                                errors.Add($"第{dataTable.Rows.IndexOf(row) + 2}行：药材名称不能为空");
+                                continue;
+                            }
+                            
+                            var dto = new HerbCreateDto
+                            {
+                                Name = herbName,
+                                PinYinCode = LYBT.Shared.Utilities.Helpers.CommonHelper.GetPinyinCode(herbName),
+                                WuBiCode = LYBT.Shared.Utilities.Helpers.CommonHelper.GetWuBiCode(herbName),
+                                Origin = row.Table.Columns.Contains("产地") ? row["产地"]?.ToString()?.Trim() : null,
+                                Spec = row.Table.Columns.Contains("规格") ? row["规格"]?.ToString()?.Trim() : null,
+                                Unit = row["单位*"]?.ToString()?.Trim() ?? "克",
+                                Price = decimal.TryParse(row["单价（元）*"]?.ToString(), out var price) ? price : 0,
+                                Stock = int.TryParse(row["初始库存*"]?.ToString(), out var stock) ? stock : 0,
+                                Effect = row.Table.Columns.Contains("功效说明") ? row["功效说明"]?.ToString()?.Trim() : null,
+                                Usage = row.Table.Columns.Contains("用法") ? row["用法"]?.ToString()?.Trim() : null,
+                                Remark = row.Table.Columns.Contains("备注") ? row["备注"]?.ToString()?.Trim() : null,
+                                Status = HerbStatus.Active
+                            };
+                            
+                            // 验证数据
+                            if (dto.Price <= 0)
+                            {
+                                failCount++;
+                                errors.Add($"第{dataTable.Rows.IndexOf(row) + 2}行：单价必须大于0");
+                                continue;
+                            }
+                            
+                            if (dto.Stock < 0)
+                            {
+                                failCount++;
+                                errors.Add($"第{dataTable.Rows.IndexOf(row) + 2}行：库存不能为负数");
+                                continue;
+                            }
+                            
+                            // 调用服务创建药材
+                            var response = await _herbService.CreateHerbAsync(dto);
+                            if (response.IsSuccess)
+                            {
+                                successCount++;
+                            }
+                            else
+                            {
+                                failCount++;
+                                errors.Add($"第{dataTable.Rows.IndexOf(row) + 2}行：{response.Message}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            failCount++;
+                            errors.Add($"第{dataTable.Rows.IndexOf(row) + 2}行：{ex.Message}");
+                        }
+                    }
+                    
+                    // 显示导入结果
+                    var message = $"导入完成！\n成功：{successCount} 条\n失败：{failCount} 条";
+                    if (errors.Count > 0)
+                    {
+                        message += $"\n\n错误详情（仅显示前10条）：\n{string.Join("\n", errors.Take(10))}";
+                        if (errors.Count > 10)
+                        {
+                            message += $"\n... 还有 {errors.Count - 10} 条错误";
+                        }
+                    }
+                    
+                    MessageBox.Show(message, "导入结果", MessageBoxButton.OK, 
+                        failCount == 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                    
+                    // 刷新列表
+                    if (successCount > 0)
+                    {
+                        LoadHerbs();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"导入药材失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private void ExecuteRefresh()
@@ -237,19 +373,68 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         private void ExecuteEditHerb(HerbInfo herb)
         {
             if (herb == null) return;
-            // TODO: 打开编辑药材对话框
+            
+            try
+            {
+                var dialog = new Views.EditHerbDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                
+                // 设置要编辑的药材信息
+                var viewModel = dialog.DataContext as ViewModels.EditHerbDialogViewModel;
+                viewModel?.SetHerb(herb);
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    // 刷新列表
+                    LoadHerbs();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开编辑药材对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void ExecuteDeleteHerb(HerbInfo herb)
+        private async void ExecuteDeleteHerb(HerbInfo herb)
         {
             if (herb == null) return;
-            // TODO: 确认删除药材
+            
+            var result = MessageBox.Show($"确定要删除药材 '{herb.Name}' 吗？", "确认删除", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    var response = await _herbService.DeleteHerbAsync(herb.Id);
+                    if (response.IsSuccess)
+                    {
+                        MessageBox.Show("药材删除成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LoadHerbs(); // 刷新列表
+                    }
+                    else
+                    {
+                        MessageBox.Show($"删除药材失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"删除药材失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void ExecuteManageStock(HerbInfo herb)
         {
             if (herb == null) return;
-            // TODO: 打开库存管理对话框
+            
+            try
+            {
+                // TODO: 实现库存管理对话框
+                MessageBox.Show($"管理药材 '{herb.Name}' 库存功能正在开发中", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开库存管理对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ExecuteFirstPage()
@@ -312,7 +497,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 Id = dto.Id,
                 // Code = dto.Code, // BaseHerbModel中没有Code属性
                 Name = dto.Name,
-                PinyinCode = dto.PinyinCode,
+                PinYinCode = dto.PinYinCode,
                 // WuBiCode = dto.WuBiCode, // HerbDto中没有WuBiCode属性
                 // Alias = dto.Alias, // BaseHerbModel中没有Alias属性
                 // Category = dto.Category, // BaseHerbModel中没有Category属性
@@ -335,6 +520,132 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 UpdateTime = dto.UpdateTime,
                 Remark = dto.Remark
             };
+        }
+
+        /// <summary>
+        /// 执行导出药材
+        /// </summary>
+        private async void ExecuteExportHerbs()
+        {
+            try
+            {
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Excel文件 (*.xlsx)|*.xlsx|所有文件 (*.*)|*.*",
+                    FileName = $"药材列表_{DateTime.Now:yyyyMMdd}.xlsx",
+                    DefaultExt = "xlsx"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    IsLoading = true;
+                    
+                    // 获取所有药材数据（不分页）
+                    var request = new HerbPagedQueryDto
+                    {
+                        CurrentPage = 1,
+                        PageSize = int.MaxValue
+                    };
+                    
+                    var result = await _herbService.SearchHerbsAsync(request);
+                    
+                    // 定义导出列（不包含拼音码和五笔码）
+                    var columns = new Dictionary<string, string>
+                    {
+                        { "Name", "药材名称" },
+                        { "Origin", "产地" },
+                        { "Spec", "规格" },
+                        { "Unit", "单位" },
+                        { "Price", "单价（元）" },
+                        { "Stock", "库存数量" },
+                        { "Effect", "功效说明" },
+                        { "Usage", "用法" },
+                        { "StatusDescription", "状态" },
+                        { "CreateTimeString", "创建时间" },
+                        { "Remark", "备注" }
+                    };
+                    
+                    // 准备导出数据
+                    var exportData = result.Items.Select(h => new
+                    {
+                        h.Name,
+                        h.Origin,
+                        h.Spec,
+                        h.Unit,
+                        h.Price,
+                        h.Stock,
+                        h.Effect,
+                        h.Usage,
+                        StatusDescription = h.Status == HerbStatus.Active ? "正常" : "停用",
+                        CreateTimeString = h.CreateTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                        h.Remark
+                    }).ToList();
+                    
+                    // 导出到Excel
+                    Core.Helpers.ExcelHelper.ExportToExcel(exportData, columns, dialog.FileName, "药材列表");
+                    
+                    MessageBox.Show($"成功导出 {result.TotalCount} 条药材记录", "导出成功", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"导出药材失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 执行导出模板
+        /// </summary>
+        private void ExecuteExportTemplate()
+        {
+            try
+            {
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Excel文件 (*.xlsx)|*.xlsx|所有文件 (*.*)|*.*",
+                    FileName = $"药材导入模板_{DateTime.Now:yyyyMMdd}.xlsx",
+                    DefaultExt = "xlsx"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    // 定义模板列（不包含拼音码和五笔码）
+                    var columns = new[]
+                    {
+                        "药材名称*",
+                        "产地",
+                        "规格",
+                        "单位*",
+                        "单价（元）*",
+                        "初始库存*",
+                        "功效说明",
+                        "用法",
+                        "备注"
+                    };
+                    
+                    // 添加示例数据
+                    var sampleData = new List<string[]>
+                    {
+                        new[] { "人参", "吉林", "优质", "克", "100.00", "500", "大补元气，复脉固脱", "煎服，3-9g", "示例数据，导入时请删除" },
+                        new[] { "当归", "甘肃", "特级", "克", "50.00", "1000", "补血活血，调经止痛", "煎服，6-12g", "示例数据，导入时请删除" }
+                    };
+                    
+                    // 创建模板
+                    Core.Helpers.ExcelHelper.CreateTemplate(columns, dialog.FileName, "药材导入模板", sampleData);
+                    
+                    MessageBox.Show("药材导入模板创建成功！\n\n说明：\n1. 带*号的列为必填项\n2. 拼音码和五笔码将在导入时自动生成\n3. 请删除示例数据后再导入实际数据", 
+                        "导出成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"导出模板失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

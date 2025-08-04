@@ -36,8 +36,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             set => SetProperty(ref _templates, value);
         }
 
-        private FormulaTemplateInfo _selectedTemplate;
-        public FormulaTemplateInfo SelectedTemplate
+        private FormulaTemplateInfo? _selectedTemplate;
+        public FormulaTemplateInfo? SelectedTemplate
         {
             get => _selectedTemplate;
             set => SetProperty(ref _selectedTemplate, value);
@@ -210,8 +210,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
         private void AddTemplate()
         {
-            // TODO: 打开新增验方模板对话框
-            MessageBox.Show("新增验方模板功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var dialog = new Views.AddFormulaTemplateDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    // 刷新列表
+                    _ = LoadTemplatesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开新增验方模板对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ImportTemplates()
@@ -258,16 +271,37 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
         {
             if (template == null) return;
 
-            // TODO: 打开验方模板详情对话框
-            MessageBox.Show($"查看验方模板：{template.Name}\n包含 {template.HerbCount} 味药材", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var dialog = new Views.ViewFormulaTemplateDialog(template.Id);
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开验方模板详情对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void EditTemplate(FormulaTemplateInfo template)
         {
             if (template == null) return;
 
-            // TODO: 打开编辑验方模板对话框
-            MessageBox.Show($"编辑验方模板：{template.Name}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var dialog = new Views.EditFormulaTemplateDialog(template.Id);
+                dialog.Owner = Application.Current.MainWindow;
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    // 刷新列表
+                    _ = LoadTemplatesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开编辑验方模板对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async Task CopyTemplate(FormulaTemplateInfo template)

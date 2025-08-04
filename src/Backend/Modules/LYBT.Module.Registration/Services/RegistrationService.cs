@@ -50,7 +50,9 @@ namespace LYBT.Module.Registration.Services {
             var dtos = _mapper.Map<List<RegistrationDto>>(list);
             return new PaginatedResult<RegistrationDto> {
                 Items = dtos,
-                TotalCount = total
+                TotalCount = total,
+                CurrentPage = query.CurrentPage,
+                PageSize = query.PageSize
             };
         }
 
@@ -62,21 +64,19 @@ namespace LYBT.Module.Registration.Services {
             model.Id = Guid.NewGuid();
             model.RegistrationTime = DateTime.Now;
             model.Status = RegistrationStatus.Scheduled;
-            if (Guid.TryParse(dto.PatientId, out var patId))
-                model.PatientId = patId;
-            if (Guid.TryParse(dto.DoctorId, out var docId))
-                model.DoctorId = docId;
+            model.PatientId = dto.PatientId;
+            model.DoctorId = dto.DoctorId;
             var result = await _registrationRepository.AddAsync(model);
             if (!result)
                 return false;
 
             var queue = new QueueingModel {
                 Id = Guid.NewGuid(),
-                PatientId = Guid.TryParse(dto.PatientId, out var pid) ? pid : Guid.Empty,
+                PatientId = dto.PatientId,
                 PatientName = model.PatientName,
-                DoctorId = Guid.TryParse(dto.DoctorId, out var did) ? did : Guid.Empty,
+                DoctorId = dto.DoctorId,
                 DoctorName = model.DoctorName,
-                QueueType = dto.RegistrationType,
+                QueueType = dto.RegistrationType.ToString(),
                 QueueTime = DateTime.Now,
                 Status = QueueStatus.Waiting,
                 Remark = "自动排队"

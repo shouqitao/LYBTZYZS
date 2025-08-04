@@ -59,7 +59,7 @@ namespace LYBT.Module.Auth.Services {
                 Id = Guid.NewGuid(),
                 Username = SYSADMIN_USERNAME,
                 RealName = "系统管理员",
-                PinyinCode = "XTGLY",
+                PinYinCode = "XTGLY",
                 Role = UserRole.Admin,
                 IsActive = true,
                 CreateTime = DateTime.Now,

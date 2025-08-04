@@ -28,6 +28,9 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         private string _password = "";
         private bool _rememberMe = false;
         private bool _hasSavedPassword = false;
+        private bool _isApiOnline = false;
+        private string _apiStatus = "正在检测API连接...";
+        private System.Threading.Timer? _apiCheckTimer;
 
         public DelegateCommand LoginCommand { get; }
         public DelegateCommand<PasswordBox>? PasswordChangedCommand { get; set; }
@@ -68,6 +71,24 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             set => SetProperty(ref _hasSavedPassword, value);
         }
 
+        /// <summary>API是否在线</summary>
+        public bool IsApiOnline
+        {
+            get => _isApiOnline;
+            set 
+            { 
+                SetProperty(ref _isApiOnline, value);
+                LoginCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        /// <summary>API状态信息</summary>
+        public string ApiStatus
+        {
+            get => _apiStatus;
+            set => SetProperty(ref _apiStatus, value);
+        }
+
         public LoginViewModel(IEventAggregator eventAggregator, IAuthenticationService authService, ICredentialService credentialService)
             : base(eventAggregator)
         {
@@ -81,6 +102,9 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             
             // 立即加载保存的凭据
             LoadSavedCredentials();
+            
+            // 启动API连接检测
+            StartApiConnectionCheck();
         }
 
         protected override void OnLoadingStateChanged(bool isLoading)
@@ -91,7 +115,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
 
         private bool CanExecuteLogin()
         {
-            return !IsLoading && !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
+            return !IsLoading && !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && IsApiOnline;
         }
 
         private async void ExecuteLoginAsync()
@@ -221,6 +245,53 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                 // 忽略错误
             }
             return "127.0.0.1";
+        }
+
+        /// <summary>
+        /// 启动API连接检测
+        /// </summary>
+        private void StartApiConnectionCheck()
+        {
+            // 立即执行一次检测
+            _ = CheckApiConnection();
+
+            // 设置定时器，每5秒检测一次
+            _apiCheckTimer = new System.Threading.Timer(async _ => await CheckApiConnection(), null, 
+                TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+        }
+
+        /// <summary>
+        /// 检测API连接状态
+        /// </summary>
+        private async Task CheckApiConnection()
+        {
+            try
+            {
+                // 调用认证服务的健康检查接口
+                var isOnline = await _authService.CheckConnectionAsync();
+                
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    IsApiOnline = isOnline;
+                    ApiStatus = isOnline ? "✅ API连接正常" : "❌ API服务不可用";
+                });
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    IsApiOnline = false;
+                    ApiStatus = $"❌ 连接失败: {ex.Message}";
+                });
+            }
+        }
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            _apiCheckTimer?.Dispose();
         }
     }
 }

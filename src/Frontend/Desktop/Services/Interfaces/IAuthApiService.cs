@@ -26,7 +26,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 健康检查
         /// </summary>
         [Get("/api/health")]
-        Task<string> HealthCheckAsync();
+        Task<LYBT.Shared.Models.Common.ApiResponse<object>> HealthCheckAsync();
 
         /// <summary>
         /// 模拟登录 - 不依赖数据库

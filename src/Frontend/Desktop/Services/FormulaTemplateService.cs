@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.FormulaTemplates;
+using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Services.Interfaces;
+using PagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.FormulaTemplates.FormulaTemplateInfo>;
 using LYBT.Shared.Models.Contracts.FormulaTemplates;
 using LYBT.Shared.Models.Contracts.Herbs;
 
@@ -21,6 +23,48 @@ namespace LYBT.WPF.Client.Services
         public FormulaTemplateService(IFormulaTemplateApiService apiService)
         {
             _apiService = apiService;
+        }
+
+        /// <summary>
+        /// 分页查询验方模板
+        /// </summary>
+        public async Task<PagedResult<FormulaTemplateInfo>> SearchFormulasAsync(PaginationRequest query)
+        {
+            try
+            {
+                var response = await _apiService.GetPagedFormulaTemplatesAsync(query);
+                if (response.IsSuccess && response.Data != null)
+                {
+                    var templateInfos = response.Data.Items.Select(ConvertToFormulaTemplateInfo).ToList();
+                    return new PagedResult<FormulaTemplateInfo>
+                    {
+                        Items = templateInfos,
+                        TotalCount = response.Data.TotalCount,
+                        CurrentPage = response.Data.CurrentPage,
+                        PageSize = response.Data.PageSize
+                    };
+                }
+
+                return new PagedResult<FormulaTemplateInfo>
+                {
+                    Items = new List<FormulaTemplateInfo>(),
+                    TotalCount = 0,
+                    CurrentPage = query.CurrentPage,
+                    PageSize = query.PageSize,
+                    ErrorMessage = response.Message ?? "获取验方模板失败"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PagedResult<FormulaTemplateInfo>
+                {
+                    Items = new List<FormulaTemplateInfo>(),
+                    TotalCount = 0,
+                    CurrentPage = query.CurrentPage,
+                    PageSize = query.PageSize,
+                    ErrorMessage = $"分页查询验方模板时发生错误：{ex.Message}"
+                };
+            }
         }
 
         public async Task<ApiResponse<List<FormulaTemplateInfo>>> GetListAsync(string? keyword = null, string? category = null)
@@ -57,23 +101,22 @@ namespace LYBT.WPF.Client.Services
             }
         }
 
-        public async Task<ApiResponse<FormulaTemplateInfo>> GetByIdAsync(Guid id)
+        public async Task<ApiResponse<FormulaTemplateDetailDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 var response = await _apiService.GetFormulaTemplateByIdAsync(id);
                 if (response.IsSuccess && response.Data != null)
                 {
-                    var template = ConvertToFormulaTemplateInfo(response.Data);
-                    return new ApiResponse<FormulaTemplateInfo>
+                    return new ApiResponse<FormulaTemplateDetailDto>
                     {
                         IsSuccess = true,
                         StatusCode = 200,
                         Message = "获取成功",
-                        Data = template
+                        Data = response.Data
                     };
                 }
-                return new ApiResponse<FormulaTemplateInfo>
+                return new ApiResponse<FormulaTemplateDetailDto>
                 {
                     IsSuccess = false,
                     StatusCode = 400,
@@ -82,7 +125,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<FormulaTemplateInfo>
+                return new ApiResponse<FormulaTemplateDetailDto>
                 {
                     IsSuccess = false,
                     StatusCode = 500,
@@ -91,23 +134,10 @@ namespace LYBT.WPF.Client.Services
             }
         }
 
-        public async Task<ApiResponse<FormulaTemplateInfo>> CreateAsync(FormulaTemplateInfo template)
+        public async Task<ApiResponse<FormulaTemplateInfo>> CreateAsync(FormulaTemplateCreateDto createDto)
         {
             try
             {
-                var createDto = new FormulaTemplateCreateDto
-                {
-                    Name = template.Name,
-                    Herbs = template.Herbs.Select(h => new FormulaIngredientDto
-                    {
-                        HerbId = h.HerbId,
-                        Dosage = h.Dosage,
-                        Unit = h.Unit,
-                        Remark = h.ProcessingMethod
-                    }).ToList(),
-                    Remark = template.Remark
-                };
-
                 var response = await _apiService.CreateFormulaTemplateAsync(createDto);
                 if (response.IsSuccess && response.Data != null)
                 {
@@ -138,27 +168,11 @@ namespace LYBT.WPF.Client.Services
             }
         }
 
-        public async Task<ApiResponse<FormulaTemplateInfo>> UpdateAsync(FormulaTemplateInfo template)
+        public async Task<ApiResponse<FormulaTemplateInfo>> UpdateAsync(FormulaTemplateUpdateDto updateDto)
         {
             try
             {
-                var updateDto = new FormulaTemplateEditDto
-                {
-                    Id = template.Id,
-                    Name = template.Name,
-                    Herbs = template.Herbs.Select(h => new FormulaIngredientDto
-                    {
-                        HerbId = h.HerbId,
-                        Name = h.HerbName,
-                        Dosage = h.Dosage,
-                        Unit = h.Unit,
-                        Price = h.UnitPrice,
-                        Remark = h.ProcessingMethod
-                    }).ToList(),
-                    Remark = template.Remark
-                };
-
-                var response = await _apiService.UpdateFormulaTemplateAsync(template.Id, updateDto);
+                var response = await _apiService.UpdateFormulaTemplateAsync(updateDto.Id, updateDto);
                 if (response.IsSuccess && response.Data != null)
                 {
                     var updatedTemplate = ConvertToFormulaTemplateInfo(response.Data);
@@ -306,20 +320,31 @@ namespace LYBT.WPF.Client.Services
 
         private FormulaTemplateInfo ConvertToFormulaTemplateInfo(FormulaTemplateDto dto)
         {
-            // FormulaTemplateDto只包含Id和Name，其他属性需要从详情接口获取
             return new FormulaTemplateInfo
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                Category = "其他",
-                Indications = "",
-                Usage = "",
-                Remark = "",
+                Category = dto.Category ?? "其他",
+                Indications = dto.Indications ?? "",
+                IsActive = dto.IsActive,
+                CreatedTime = dto.CreateTime,
+                UpdatedTime = dto.UpdateTime
+            };
+        }
+
+        private FormulaTemplateInfo ConvertToFormulaTemplateInfo(FormulaTemplateDetailDto dto)
+        {
+            return new FormulaTemplateInfo
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Category = dto.Category,
+                Indications = dto.Indications ?? "",
+                Usage = dto.Usage,
+                Remark = dto.Remark,
                 IsActive = true,
-                CreatedBy = "",
-                CreatedTime = DateTime.Now,
-                UpdatedTime = null,
-                Herbs = new List<FormulaHerbItem>()
+                CreatedTime = dto.CreateTime,
+                UpdatedTime = dto.UpdateTime
             };
         }
 

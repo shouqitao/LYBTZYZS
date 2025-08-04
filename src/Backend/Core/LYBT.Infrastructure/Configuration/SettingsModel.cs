@@ -72,14 +72,14 @@ namespace LYBT.Infrastructure.Configuration {
         /// 创建时间
         /// </summary>
         [DisplayName("创建时间")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreateTime { get; set; } = DateTime.Now;
 
         /// <summary>
         /// 更新时间
         /// </summary>
         [Required]
         [DisplayName("更新时间")]
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdateTime { get; set; } = DateTime.Now;
 
         /// <summary>
         /// 创建者ID

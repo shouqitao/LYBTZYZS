@@ -26,7 +26,7 @@ namespace LYBT.Shared.Models.Core {
 
         /// <summary>拼音码</summary>
         [DisplayName("拼音码")]
-        public string? PinyinCode { get; set; }
+        public string? PinYinCode { get; set; }
 
         /// <summary>五笔码</summary>
         [DisplayName("五笔码")]
@@ -84,5 +84,14 @@ namespace LYBT.Shared.Models.Core {
         /// </summary>
         [DisplayName("角色名称")]
         public string RoleDisplayName => Role.GetDescription();
+
+        /// <summary>更新时间</summary>
+        [DisplayName("更新时间")]
+        public DateTime? UpdateTime { get; set; }
+
+        /// <summary>备注信息</summary>
+        [DisplayName("备注")]
+        [StringLength(500)]
+        public string? Remark { get; set; }
     }
 }

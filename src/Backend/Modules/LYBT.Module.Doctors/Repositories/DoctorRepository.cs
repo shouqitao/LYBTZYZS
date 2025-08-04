@@ -64,13 +64,13 @@ namespace LYBT.Module.Doctors.Repositories {
                     d.User.RealName.Contains(keyword) ||
                     d.User.Username.Contains(keyword) ||
                     (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(keyword)) ||
-                    d.PinyinCode.Contains(upperKeyword) ||
+                    d.PinYinCode.Contains(upperKeyword) ||
                     (d.LicenseNumber != null && d.LicenseNumber.Contains(keyword)) ||
                     d.Specialty.Contains(keyword));
             }
 
             return await query
-                .OrderByDescending(d => d.CreatedTime)
+                .OrderByDescending(d => d.CreateTime)
                 .Take(50) // 限制搜索结果数量
                 .ToListAsync();
         }
@@ -91,7 +91,7 @@ namespace LYBT.Module.Doctors.Repositories {
                     d.User.RealName.Contains(query.Keyword) ||
                     d.User.Username.Contains(query.Keyword) ||
                     (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(query.Keyword)) ||
-                    d.PinyinCode.Contains(upperKeyword) ||
+                    d.PinYinCode.Contains(upperKeyword) ||
                     (d.LicenseNumber != null && d.LicenseNumber.Contains(query.Keyword)) ||
                     d.Specialty.Contains(query.Keyword));
             }
@@ -107,7 +107,7 @@ namespace LYBT.Module.Doctors.Repositories {
 
             // 分页查询
             var list = await dbQuery
-                .OrderByDescending(d => d.CreatedTime)
+                .OrderByDescending(d => d.CreateTime)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
@@ -130,7 +130,7 @@ namespace LYBT.Module.Doctors.Repositories {
 
                 // 只更新User的必要字段，避免冲突
                 if (model.User != null) {
-                    _context.Entry(model.User).Property(u => u.PinyinCode).IsModified = true;
+                    _context.Entry(model.User).Property(u => u.PinYinCode).IsModified = true;
                 }
 
                 return await _context.SaveChangesAsync() > 0;
@@ -204,7 +204,7 @@ namespace LYBT.Module.Doctors.Repositories {
 
             var query = _context.Doctors
                 .Include(d => d.User)
-                .Where(d => d.PinyinCode.Contains(pinyin.ToUpperInvariant()));
+                .Where(d => d.PinYinCode.Contains(pinyin.ToUpperInvariant()));
 
             if (!includeDisabled) {
                 query = query.Where(d => d.Status == DoctorStatus.Active);

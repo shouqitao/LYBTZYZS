@@ -29,7 +29,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 搜索用户
         /// </summary>
-        public async Task<PaginatedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request)
+        public async Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request)
         {
             try
             {
@@ -40,7 +40,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     var users = response.Data.Items.Select(ConvertToUserInfo).ToList();
                     
-                    return new PaginatedResult<UserInfo>
+                    return new LYBT.WPF.Client.Core.Models.Common.PagedResult<UserInfo>
                     {
                         Items = users,
                         TotalCount = response.Data.TotalCount,
@@ -49,7 +49,7 @@ namespace LYBT.WPF.Client.Services
                     };
                 }
 
-                return new PaginatedResult<UserInfo>
+                return new LYBT.WPF.Client.Core.Models.Common.PagedResult<UserInfo>
                 {
                     Items = new List<UserInfo>(),
                     TotalCount = 0,

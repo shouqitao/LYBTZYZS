@@ -80,7 +80,7 @@ namespace LYBT.Module.Users.Repositories {
                 dbSet = dbSet.Where(u => 
                     u.Username.Contains(keyword) ||
                     u.RealName.Contains(keyword) ||
-                    (u.PinyinCode != null && u.PinyinCode.Contains(keyword.ToUpperInvariant()))
+                    (u.PinYinCode != null && u.PinYinCode.Contains(keyword.ToUpperInvariant()))
                 );
             }
             // 特定字段搜索（精确搜索）
@@ -97,9 +97,9 @@ namespace LYBT.Module.Users.Repositories {
                 if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
                     dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
                 }
-                if (!string.IsNullOrWhiteSpace(query.PinyinCode)) {
-                    var keyword = query.PinyinCode.ToUpperInvariant();
-                    dbSet = dbSet.Where(u => u.PinyinCode != null && u.PinyinCode.Contains(keyword));
+                if (!string.IsNullOrWhiteSpace(query.PinYinCode)) {
+                    var keyword = query.PinYinCode.ToUpperInvariant();
+                    dbSet = dbSet.Where(u => u.PinYinCode != null && u.PinYinCode.Contains(keyword));
                 }
             }
 

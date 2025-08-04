@@ -61,6 +61,10 @@ namespace LYBT.Module.Herbs.Services {
         /// 分页查询药材
         /// </summary>
         public async Task<PaginatedResult<HerbDto>> GetPagedAsync(HerbPagedQueryDto query) {
+            // 添加调试日志
+            var totalInDb = await _context.Herbs.CountAsync();
+            System.Diagnostics.Debug.WriteLine($"[HerbService] 数据库中总药材数: {totalInDb}");
+            
             // 构建查询条件
             var dbQuery = _context.Herbs.AsQueryable();
 
@@ -71,14 +75,14 @@ namespace LYBT.Module.Herbs.Services {
             }
 
             // 拼音码搜索
-            if (!string.IsNullOrWhiteSpace(query.Pinyin)) {
-                var pinyin = query.Pinyin.Trim().ToUpperInvariant();
-                dbQuery = dbQuery.Where(h => h.PinyinCode != null && h.PinyinCode.Contains(pinyin));
+            if (!string.IsNullOrWhiteSpace(query.PinYinCode)) {
+                var pinyin = query.PinYinCode.Trim().ToUpperInvariant();
+                dbQuery = dbQuery.Where(h => h.PinYinCode != null && h.PinYinCode.Contains(pinyin));
             }
 
             // 五笔码搜索
-            if (!string.IsNullOrWhiteSpace(query.WuBi)) {
-                var wubi = query.WuBi.Trim().ToUpperInvariant();
+            if (!string.IsNullOrWhiteSpace(query.WuBiCode)) {
+                var wubi = query.WuBiCode.Trim().ToUpperInvariant();
                 dbQuery = dbQuery.Where(h => h.WuBiCode != null && h.WuBiCode.Contains(wubi));
             }
 
@@ -141,6 +145,7 @@ namespace LYBT.Module.Herbs.Services {
 
             // 获取总数
             var total = await dbQuery.CountAsync();
+            System.Diagnostics.Debug.WriteLine($"[HerbService] 应用过滤后药材数: {total}");
 
             // 分页查询
             var models = await dbQuery
@@ -148,6 +153,8 @@ namespace LYBT.Module.Herbs.Services {
                 .Skip((query.CurrentPage - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
+                
+            System.Diagnostics.Debug.WriteLine($"[HerbService] 分页查询返回: {models.Count} 条记录");
 
             var dtos = _mapper.Map<List<HerbDto>>(models);
 
@@ -158,7 +165,9 @@ namespace LYBT.Module.Herbs.Services {
 
             return new PaginatedResult<HerbDto> {
                 TotalCount = total,
-                Items = dtos
+                Items = dtos,
+                CurrentPage = query.CurrentPage,
+                PageSize = query.PageSize
             };
         }
 
@@ -168,9 +177,9 @@ namespace LYBT.Module.Herbs.Services {
         public async Task<bool> AddAsync(HerbCreateDto dto) {
             var model = _mapper.Map<HerbModel>(dto);
             model.Id = Guid.NewGuid();
-            model.PinyinCode = string.IsNullOrWhiteSpace(dto.Pinyin)
+            model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
                 ? GetSimplePinyinCode(model.Name)
-                : dto.Pinyin;
+                : dto.PinYinCode;
             model.CreateTime = DateTime.UtcNow;
             return await _repository.AddAsync(model);
         }
@@ -184,9 +193,9 @@ namespace LYBT.Module.Herbs.Services {
                 return false;
 
             model.Name = dto.Name;
-            model.PinyinCode = string.IsNullOrWhiteSpace(dto.Pinyin)
+            model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
                 ? GetSimplePinyinCode(dto.Name)
-                : dto.Pinyin;
+                : dto.PinYinCode;
             model.Origin = dto.Origin;
             model.Unit = dto.Unit;
             model.Price = dto.Price;
@@ -216,7 +225,7 @@ namespace LYBT.Module.Herbs.Services {
             foreach (var dto in dtos) {
                 var model = _mapper.Map<HerbModel>(dto);
                 model.Id = Guid.NewGuid();
-                model.PinyinCode = GetSimplePinyinCode(model.Name);
+                model.PinYinCode = GetSimplePinyinCode(model.Name);
                 model.CreateTime = DateTime.UtcNow;
                 models.Add(model);
             }

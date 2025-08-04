@@ -29,6 +29,8 @@
             <Border Grid.Column="0" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,0,1,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,20,0,0">
+                        <!-- ======= 已实现模块 ======= -->
+                        
                         <!-- 用户管理 -->
                         <Button Command="{Binding NavigateToUserManagementCommand}" 
                                 Style="{x:Null}"
@@ -83,6 +85,33 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- 挂号管理 -->
+                        <Button Command="{Binding NavigateToRegistrationManagementCommand}" 
+                                Style="{x:Null}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,15"
+                                HorizontalContentAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E9ECEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📅" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="挂号管理" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
                         <!-- 病历管理 -->
                         <Button Command="{Binding NavigateToRecordManagementCommand}" 
                                 Style="{x:Null}"
@@ -110,8 +139,8 @@
                             </StackPanel>
                         </Button>
 
-                        <!-- 角色权限管理 -->
-                        <Button Command="{Binding NavigateToRoleManagementCommand}" 
+                        <!-- 中医药材管理 -->
+                        <Button Command="{Binding NavigateToHerbManagementCommand}" 
                                 Style="{x:Null}"
                                 Background="Transparent"
                                 BorderThickness="0"
@@ -132,13 +161,13 @@
                                 </ControlTemplate>
                             </Button.Template>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🔒" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBlock Text="角色权限" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="🌿" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="中药材管理" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <!-- 系统设置 -->
-                        <Button Command="{Binding NavigateToSystemSettingsCommand}" 
+                        <!-- 验方模板管理 -->
+                        <Button Command="{Binding NavigateToFormulaTemplateManagementCommand}" 
                                 Style="{x:Null}"
                                 Background="Transparent"
                                 BorderThickness="0"
@@ -159,10 +188,13 @@
                                 </ControlTemplate>
                             </Button.Template>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBlock Text="系统设置" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="📜" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="验方模板" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+
+                        <!-- ======= 未实现模块 ======= -->
+                        <TextBlock Text="以下功能待开发" FontSize="12" Foreground="#999999" Margin="20,20,20,10" FontStyle="Italic"/>
 
                         <!-- 数据备份 -->
                         <Button Command="{Binding NavigateToBackupCommand}" 
@@ -218,8 +250,8 @@
                             </StackPanel>
                         </Button>
 
-                        <!-- 中医药材管理 -->
-                        <Button Command="{Binding NavigateToHerbManagementCommand}" 
+                        <!-- 角色权限管理 -->
+                        <Button Command="{Binding NavigateToRoleManagementCommand}" 
                                 Style="{x:Null}"
                                 Background="Transparent"
                                 BorderThickness="0"
@@ -240,13 +272,13 @@
                                 </ControlTemplate>
                             </Button.Template>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🌿" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBlock Text="中药材管理" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="🔒" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="角色权限" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <!-- 处方模板管理 -->
-                        <Button Command="{Binding NavigateToPrescriptionTemplatesCommand}" 
+                        <!-- 系统设置 -->
+                        <Button Command="{Binding NavigateToSystemSettingsCommand}" 
                                 Style="{x:Null}"
                                 Background="Transparent"
                                 BorderThickness="0"
@@ -267,8 +299,8 @@
                                 </ControlTemplate>
                             </Button.Template>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="📄" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBlock Text="处方模板" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="系统设置" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 

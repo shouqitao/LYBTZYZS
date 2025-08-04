@@ -44,7 +44,13 @@ namespace LYBT.Module.Prescriptions.Services {
             // 2. 处理每个验方模板的药材
             foreach (var template in formulaTemplates) {
                 foreach (var herb in template.Herbs) {
-                    ProcessFormulaItem(herb, allHerbs, duplicateWarnings, template.Name);
+                    var formulaItem = new FormulaIngredientDto {
+                        Name = herb.HerbName,
+                        Dosage = herb.Dosage,
+                        Unit = herb.Unit,
+                        Price = 0 // 价格在后续查询时获取
+                    };
+                    ProcessFormulaItem(formulaItem, allHerbs, duplicateWarnings, template.Name);
                 }
             }
 

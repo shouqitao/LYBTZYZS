@@ -2,13 +2,11 @@ using System;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Core;
 
-namespace LYBT.WPF.Client.Core.Models.Users
-{
+namespace LYBT.WPF.Client.Core.Models.Users {
     /// <summary>
     /// 用户信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class UserInfo : BaseUserModel
-    {
+    public class UserInfo : BaseUserModel {
         /// <summary>是否有超级管理员权限</summary>
         public bool IsSuperAdmin { get; set; }
 
@@ -20,11 +18,5 @@ namespace LYBT.WPF.Client.Core.Models.Users
 
         /// <summary>最后登录IP</summary>
         public string? LastLoginIp { get; set; }
-
-        /// <summary>更新时间</summary>
-        public DateTime? UpdateTime { get; set; }
-
-        /// <summary>备注</summary>
-        public string? Remark { get; set; }
     }
 }

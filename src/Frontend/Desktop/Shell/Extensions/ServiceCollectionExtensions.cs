@@ -132,6 +132,16 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 return RestService.For<IFormulaTemplateApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
+            // 注册挂号API服务
+            containerRegistry.Register<IRegistrationApiService>(container =>
+            {
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
+                return RestService.For<IRegistrationApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+            });
+
+
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();
         }
@@ -150,9 +160,14 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
             containerRegistry.RegisterSingleton<IUserService, UserService>();
             containerRegistry.RegisterSingleton<IPatientService, PatientService>();
+            containerRegistry.RegisterSingleton<IDoctorService, DoctorService>();
             containerRegistry.RegisterSingleton<IHerbService, HerbService>();
             containerRegistry.RegisterSingleton<IRecordService, RecordService>();
             containerRegistry.RegisterSingleton<IFormulaTemplateService, FormulaTemplateService>();
+            containerRegistry.RegisterSingleton<IRegistrationService, RegistrationService>();
+            containerRegistry.RegisterSingleton<IBillingService, BillingService>();
+            containerRegistry.RegisterSingleton<IPharmacyService, PharmacyService>();
+            containerRegistry.RegisterSingleton<IPhysiotherapyService, PhysiotherapyService>();
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, PrescriptionPrintService>();
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
         }

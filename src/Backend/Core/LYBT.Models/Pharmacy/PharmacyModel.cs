@@ -1,4 +1,5 @@
 using LYBT.Models.Herbs;
+using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -6,54 +7,15 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Models.Pharmacy {
 
     /// <summary>
-    /// 药房任务模型
+    /// 药房任务实体 - 继承共享基础模型，数据库映射
     /// </summary>
-    public class PharmacyModel {
+    public class PharmacyModel : BasePharmacyModel {
 
-        [Key]
-        [DisplayName("Id")]
-        public Guid Id { get; set; }
-
+        /// <summary>
+        /// 药材列表（后端导航属性）
+        /// </summary>
         [Required]
-        [DisplayName("TaskId")]
-        public Guid TaskId { get; set; }
-
-        [Required]
-        [DisplayName("PrescriptionId")]
-        public Guid PrescriptionId { get; set; }
-
-        [Required]
-        [DisplayName("PatientId")]
-        public Guid PatientId { get; set; }
-
-        [Required]
-        [DisplayName("Herbs")]
+        [DisplayName("药材列表")]
         public List<HerbModel> Herbs { get; set; } = new();
-
-        [DisplayName("NeedDecoction")]
-        public bool NeedDecoction { get; set; }
-
-        [Required]
-        [DisplayName("Status")]
-        public PharmacyStatus Status { get; set; }
-
-        [Required]
-        [DisplayName("CreateTime")]
-        public DateTime CreateTime { get; set; }
-
-        [Required]
-        [DisplayName("DoctorId")]
-        public Guid DoctorId { get; set; }
-
-        [Required]
-        [DisplayName("OperatorId")]
-        public Guid OperatorId { get; set; }
-
-        [DisplayName("DispenseTime")]
-        public DateTime DispenseTime { get; set; }
-
-        [StringLength(256)]
-        [DisplayName("Remark")]
-        public string? Remark { get; set; }
     }
 }

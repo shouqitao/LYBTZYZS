@@ -14,6 +14,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
 
         public DelegateCommand NavigateToUserManagementCommand { get; }
         public DelegateCommand NavigateToPatientManagementCommand { get; }
+        public DelegateCommand NavigateToRegistrationManagementCommand { get; }
         public DelegateCommand NavigateToRecordManagementCommand { get; }
         public DelegateCommand NavigateToRoleManagementCommand { get; }
         public DelegateCommand NavigateToSystemSettingsCommand { get; }
@@ -21,6 +22,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         public DelegateCommand NavigateToSystemLogsCommand { get; }
         public DelegateCommand NavigateToHerbManagementCommand { get; }
         public DelegateCommand NavigateToPrescriptionTemplatesCommand { get; }
+        public DelegateCommand NavigateToFormulaTemplateManagementCommand { get; }
         public DelegateCommand NavigateToPrescriptionManagementCommand { get; }
 
         public AdminMainViewModel(IRegionManager regionManager)
@@ -30,6 +32,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             // 初始化导航命令
             NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserManagementView"));
             NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
+            NavigateToRegistrationManagementCommand = new DelegateCommand(() => NavigateTo("RegistrationManagementView"));
             NavigateToRecordManagementCommand = new DelegateCommand(() => NavigateTo("RecordManagementView"));
             NavigateToRoleManagementCommand = new DelegateCommand(() => NavigateTo("RoleManagementView"));
             NavigateToSystemSettingsCommand = new DelegateCommand(() => NavigateTo("SystemSettingsView"));
@@ -37,6 +40,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             NavigateToSystemLogsCommand = new DelegateCommand(() => NavigateTo("SystemLogsView"));
             NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
             NavigateToPrescriptionTemplatesCommand = new DelegateCommand(() => NavigateTo("PrescriptionTemplatesView"));
+            NavigateToFormulaTemplateManagementCommand = new DelegateCommand(() => NavigateTo("FormulaTemplateManagementView"));
             NavigateToPrescriptionManagementCommand = new DelegateCommand(() => NavigateTo("PrescriptionManagementView"));
 
             // 默认导航到用户管理

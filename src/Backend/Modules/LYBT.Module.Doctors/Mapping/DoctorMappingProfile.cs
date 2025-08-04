@@ -29,7 +29,7 @@ namespace LYBT.Module.Doctors.Mapping {
             // DoctorDetailDto -> DoctorModel 映射 (新增/编辑)
             CreateMap<DoctorDetailDto, DoctorModel>()
                 .ForMember(d => d.User, opt => opt.Ignore()) // 不自动映射User对象
-                .ForMember(d => d.CreatedTime, opt => opt.Ignore()) // 在Service中设置
+                .ForMember(d => d.CreateTime, opt => opt.Ignore()) // 在Service中设置
                 .ForMember(d => d.Age, opt => opt.Ignore()); // 计算属性不映射
         }
     }

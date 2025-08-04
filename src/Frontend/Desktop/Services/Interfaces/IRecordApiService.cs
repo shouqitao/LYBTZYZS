@@ -5,20 +5,18 @@ using Refit;
 using LYBT.Shared.Models.Contracts.Records;
 using LYBT.Shared.Models.Records;
 
-namespace LYBT.WPF.Client.Services.Interfaces
-{
+namespace LYBT.WPF.Client.Services.Interfaces {
     /// <summary>
     /// 病例API服务接口
     /// </summary>
-    public interface IRecordApiService
-    {
+    public interface IRecordApiService {
         /// <summary>
         /// 获取病例列表
         /// </summary>
         [Get("/api/v1/records")]
         Task<LYBT.Shared.Models.Common.ApiResponse<List<RecordDto>>> GetRecordsAsync(
-            [Query] string? search = null, 
-            [Query] DateTime? startDate = null, 
+            [Query] string? search = null,
+            [Query] DateTime? startDate = null,
             [Query] DateTime? endDate = null,
             [Query] Guid? patientId = null,
             [Query] Guid? doctorId = null,
@@ -78,7 +76,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// </summary>
         [Get("/api/v1/records/statistics")]
         Task<LYBT.Shared.Models.Common.ApiResponse<RecordStatisticsDto>> GetStatisticsAsync(
-            [Query] DateTime startDate, 
+            [Query] DateTime startDate,
             [Query] DateTime endDate);
     }
 }

@@ -54,7 +54,7 @@ namespace LYBT.Module.FormulaTemplates.Services {
             var model = _mapper.Map<FormulaTemplateModel>(dto);
             model.Id = Guid.NewGuid();
             model.CreatedById = operatorId;
-            model.CreatedAt = DateTime.Now;
+            model.CreateTime = DateTime.Now;
             return await _repository.AddAsync(model);
         }
 
@@ -68,7 +68,7 @@ namespace LYBT.Module.FormulaTemplates.Services {
             model.Name = dto.Name;
             model.Herbs = _mapper.Map<List<FormulaTemplateHerbItem>>(dto.Herbs);
             model.Remark = dto.Remark;
-            model.UpdatedAt = DateTime.Now;
+            model.UpdateTime = DateTime.Now;
             return await _repository.UpdateAsync(model);
         }
 
@@ -80,7 +80,7 @@ namespace LYBT.Module.FormulaTemplates.Services {
             if (model == null)
                 return false;
             model.IsActive = false;
-            model.UpdatedAt = DateTime.Now;
+            model.UpdateTime = DateTime.Now;
             return await _repository.UpdateAsync(model);
         }
 

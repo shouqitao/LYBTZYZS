@@ -20,14 +20,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
     public class UserAddEditDialogViewModel : BindableBase
     {
         private readonly IUserService _userService;
-        private readonly UserInfo _originalUser;
+        private readonly UserInfo? _originalUser;
         
         private string _userName = string.Empty;
         private string _realName = string.Empty;
-        private string _email;
-        private string _phoneNumber;
+        private string _email = string.Empty;
+        private string _phoneNumber = string.Empty;
         private bool _isActive = true;
-        private RoleItem _selectedRole;
+        private RoleItem? _selectedRole;
         private string _validationMessage = string.Empty;
         private bool _isNewUser;
         
@@ -71,7 +71,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         }
 
         /// <summary>选中的角色</summary>
-        public RoleItem SelectedRole
+        public RoleItem? SelectedRole
         {
             get => _selectedRole;
             set => SetProperty(ref _selectedRole, value);
@@ -97,7 +97,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         /// <summary>对话框结果</summary>
         public bool? DialogResult { get; private set; }
 
-        public UserAddEditDialogViewModel(IUserService userService, UserInfo user = null)
+        public UserAddEditDialogViewModel(IUserService userService, UserInfo? user = null)
         {
             _userService = userService;
             _originalUser = user;
@@ -117,7 +117,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             else
             {
                 // 新增模式默认选择第一个角色
-                SelectedRole = Roles.FirstOrDefault();
+                SelectedRole = Roles.FirstOrDefault() ?? new RoleItem { Value = UserRole.RegistrationStaff, DisplayName = "挂号人员" };
             }
 
             SaveCommand = new DelegateCommand(ExecuteSave, CanExecuteSave);
@@ -137,10 +137,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         {
             UserName = user.Username;
             RealName = user.RealName;
-            Email = user.Email;
-            PhoneNumber = user.PhoneNumber;
+            Email = user.Email ?? string.Empty;
+            PhoneNumber = user.PhoneNumber ?? string.Empty;
             IsActive = user.IsActive;
-            SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role);
+            SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role) ?? Roles.FirstOrDefault();
         }
 
         private bool CanExecuteSave()
@@ -186,6 +186,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 else
                 {
                     // 更新用户
+                    if (_originalUser == null)
+                    {
+                        ValidationMessage = "原始用户信息不能为空";
+                        return;
+                    }
+
                     var updateRequest = new UserUpdateDto
                     {
                         Id = _originalUser.Id,

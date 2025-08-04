@@ -132,6 +132,28 @@
                       FontSize="12" 
                       Foreground="#666"/>
 
+            <!-- API状态显示 -->
+            <Border Grid.Row="7" 
+                    Background="#F0F0F0" 
+                    CornerRadius="4" 
+                    Padding="8,5"
+                    Margin="0,10,0,0">
+                <TextBlock Text="{Binding ApiStatus}" 
+                           FontSize="12" 
+                           HorizontalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="#F44336"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsApiOnline}" Value="True">
+                                    <Setter Property="Foreground" Value="#4CAF50"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Border>
+
             <!-- 登录按钮 -->
             <Button Grid.Row="8" 
                     Content="登录" 
@@ -159,6 +181,9 @@
                                         </Trigger>
                                         <Trigger Property="IsPressed" Value="True">
                                             <Setter Property="Background" Value="#164A7B"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Background" Value="#CCCCCC"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>

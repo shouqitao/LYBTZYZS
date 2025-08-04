@@ -35,7 +35,7 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
         public async Task<List<FormulaTemplateModel>> GetListAsync() {
             return await _context.FormulaTemplates
                 .Where(f => f.IsActive)
-                .OrderByDescending(f => f.CreatedAt)
+                .OrderByDescending(f => f.CreateTime)
                 .ToListAsync();
         }
 
@@ -56,7 +56,7 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
 
             // 分页和排序
             var list = await queryable
-                .OrderByDescending(f => f.CreatedAt)
+                .OrderByDescending(f => f.CreateTime)
                 .Skip((query.CurrentPage - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
@@ -113,7 +113,7 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
                     }).ToList(),
                     Remark = dto.Remark,
                     CreatedById = operatorId,
-                    CreatedAt = DateTime.Now,
+                    CreateTime = DateTime.Now,
                     IsActive = true
                 };
                 models.Add(model);
@@ -133,14 +133,17 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
             return list.Select(m => new FormulaTemplateDetailDto {
                 Id = m.Id,
                 Name = m.Name,
-                Herbs = m.Herbs.Select(h => new FormulaIngredientDto {
+                Usage = m.Usage,
+                Herbs = m.Herbs.Select(h => new FormulaTemplateHerbDto {
                     HerbId = h.HerbId,
-                    Name = h.HerbName,
+                    HerbName = h.HerbName,
                     Dosage = h.Quantity,
                     Unit = h.Unit,
-                    Price = 0 // FormulaTemplateHerbItem doesn't have UnitPrice, using 0 as default
+                    Remark = h.Remark
                 }).ToList(),
-                Remark = m.Remark
+                Remark = m.Remark,
+                CreateTime = m.CreateTime,
+                UpdateTime = m.UpdateTime
             }).ToList();
         }
 
@@ -179,7 +182,7 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
                 return false;
 
             template.IsShared = isShared;
-            template.UpdatedAt = DateTime.Now;
+            template.UpdateTime = DateTime.Now;
 
             if (isShared) {
                 template.SharedAt = DateTime.Now;

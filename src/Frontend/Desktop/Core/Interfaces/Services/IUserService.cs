@@ -15,7 +15,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 搜索用户
         /// </summary>
-        Task<PaginatedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request);
+        Task<Models.Common.PagedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request);
 
         /// <summary>
         /// 新增用户

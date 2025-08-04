@@ -38,8 +38,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             set => SetProperty(ref _records, value);
         }
 
-        private RecordDto _selectedRecord;
-        public RecordDto SelectedRecord
+        private RecordDto? _selectedRecord;
+        public RecordDto? SelectedRecord
         {
             get => _selectedRecord;
             set => SetProperty(ref _selectedRecord, value);
@@ -66,8 +66,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             set => SetProperty(ref _searchEndDate, value);
         }
 
-        private PatientDetailDto _selectedPatient;
-        public PatientDetailDto SelectedPatient
+        private PatientDetailDto? _selectedPatient;
+        public PatientDetailDto? SelectedPatient
         {
             get => _selectedPatient;
             set => SetProperty(ref _selectedPatient, value);

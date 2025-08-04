@@ -112,6 +112,34 @@ namespace LYBT.WPF.Client.Services {
             _currentUser = null;
         }
 
+        public async Task<bool> CheckConnectionAsync()
+        {
+            try
+            {
+                // 使用简单的HTTP客户端进行健康检查，避免Refit的复杂性
+                using var httpClient = new System.Net.Http.HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(3); // 3秒超时
+                
+                // 忽略SSL证书错误（仅用于开发环境）
+                var handler = new System.Net.Http.HttpClientHandler();
+                handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+                
+                using var client = new System.Net.Http.HttpClient(handler);
+                client.Timeout = TimeSpan.FromSeconds(3);
+                
+                // 从配置获取API基础URL
+                var baseUrl = LYBT.WPF.Client.Core.Configuration.ApiConfiguration.BaseUrl.TrimEnd('/');
+                var response = await client.GetAsync($"{baseUrl}/api/health");
+                
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                // 如果发生任何异常，认为API不可用
+                return false;
+            }
+        }
+
         /// <summary>
         /// 将共享UserInfo转换为前端UserInfo模型
         /// </summary>

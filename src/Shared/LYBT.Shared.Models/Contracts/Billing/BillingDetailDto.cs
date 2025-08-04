@@ -46,7 +46,7 @@ namespace LYBT.Shared.Models.Contracts.Billing {
 
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
-        public DateTime CreatedTime { get; set; }
+        public DateTime CreateTime { get; set; }
 
         /// <summary>支付时间</summary>
         [DisplayName("支付时间")]

@@ -56,44 +56,36 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// 加载配置设置
         /// </summary>
         private static void LoadSettings() {
-            const string defaultUrl = "https://localhost:7001/";
             const int defaultTimeout = 60;
             
             try {
                 var configuration = new ConfigurationBuilder()
-                    .AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"), optional: true, reloadOnChange: true)
+                    .AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"), optional: false, reloadOnChange: true)
                     .Build();
 
                 var apiSection = configuration.GetSection("ApiSettings");
                 var configuredUrl = apiSection["BaseUrl"];
                 
-                // 如果配置文件中的地址为空或者就是默认地址，则使用默认地址
-                // 否则使用配置文件中的自定义地址
-                string baseUrl;
-                if (string.IsNullOrWhiteSpace(configuredUrl) || configuredUrl.Trim() == defaultUrl)
+                // 从配置文件读取URL，如果为空则抛出异常
+                if (string.IsNullOrWhiteSpace(configuredUrl))
                 {
-                    baseUrl = defaultUrl;
+                    throw new InvalidOperationException("API BaseUrl 未在 appsettings.json 中配置");
                 }
-                else
+                
+                string baseUrl = configuredUrl.Trim();
+                // 确保URL以斜杠结尾
+                if (!baseUrl.EndsWith("/"))
                 {
-                    baseUrl = configuredUrl.Trim();
-                    // 确保URL以斜杠结尾
-                    if (!baseUrl.EndsWith("/"))
-                    {
-                        baseUrl += "/";
-                    }
+                    baseUrl += "/";
                 }
                 
                 _settings = new ApiSettings {
                     BaseUrl = baseUrl,
                     TimeoutSeconds = int.TryParse(apiSection["TimeoutSeconds"], out var timeout) ? timeout : defaultTimeout
                 };
-            } catch (Exception) {
-                // 如果配置文件加载失败，使用默认设置
-                _settings = new ApiSettings {
-                    BaseUrl = defaultUrl,
-                    TimeoutSeconds = defaultTimeout
-                };
+            } catch (Exception ex) {
+                // 如果配置文件加载失败，抛出更详细的异常
+                throw new InvalidOperationException($"无法加载API配置: {ex.Message}", ex);
             }
         }
 

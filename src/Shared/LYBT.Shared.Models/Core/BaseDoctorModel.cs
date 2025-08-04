@@ -22,7 +22,7 @@ namespace LYBT.Shared.Models.Core {
 
         /// <summary>拼音码（统一命名）</summary>
         [DisplayName("拼音码")]
-        public string? PinyinCode { get; set; }
+        public string? PinYinCode { get; set; }
 
         /// <summary>五笔码（统一命名）</summary>
         [DisplayName("五笔码")]

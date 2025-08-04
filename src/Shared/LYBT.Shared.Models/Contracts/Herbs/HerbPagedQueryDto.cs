@@ -16,11 +16,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
 
         /// <summary>拼音码关键词</summary>
         [DisplayName("拼音码")]
-        public string? Pinyin { get; set; }
+        public string? PinYinCode { get; set; }
 
         /// <summary>五笔码关键词</summary>
         [DisplayName("五笔码")]
-        public string? WuBi { get; set; }
+        public string? WuBiCode { get; set; }
 
         /// <summary>产地关键词</summary>
         [DisplayName("产地")]

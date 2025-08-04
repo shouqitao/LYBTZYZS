@@ -156,10 +156,10 @@ namespace LYBT.Module.Doctors.Services {
                 var model = _mapper.Map<DoctorModel>(dto);
                 model.Id = Guid.NewGuid();
                 model.User = user;
-                model.CreatedTime = DateTime.Now;
+                model.CreateTime = DateTime.Now;
 
                 // 生成拼音码
-                model.PinyinCode = CommonHelper.GetPinyinCode(user.RealName);
+                model.PinYinCode = CommonHelper.GetPinyinCode(user.RealName);
 
                 var result = await _doctorRepository.AddAsync(model);
                 var message = result ? "医生档案创建成功" : "医生档案创建失败";
@@ -224,7 +224,7 @@ namespace LYBT.Module.Doctors.Services {
                 model.ContactNumber = dto.ContactNumber;
 
                 // 更新拼音码
-                model.PinyinCode = CommonHelper.GetPinyinCode(model.User.RealName);
+                model.PinYinCode = CommonHelper.GetPinyinCode(model.User.RealName);
 
                 var result = await _doctorRepository.UpdateAsync(model);
                 var message = result ? "医生信息更新成功" : "医生信息更新失败";

@@ -136,6 +136,64 @@
                             </Style>
                         </Button.Style>
                     </Button>
+                    <Button Content="导出药材" 
+                            Padding="15,5" 
+                            Margin="0,0,10,0"
+                            Background="#FFC107" 
+                            Foreground="White" 
+                            BorderThickness="0"
+                            Command="{Binding ExportHerbsCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#E0A800"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="导出模板" 
+                            Padding="15,5" 
+                            Margin="0,0,10,0"
+                            Background="#6F42C1" 
+                            Foreground="White" 
+                            BorderThickness="0"
+                            Command="{Binding ExportTemplateCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#5936A0"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     <Button Content="刷新" 
                             Padding="15,5"
                             Background="#6C757D" 
@@ -182,7 +240,7 @@
                   RowBackground="White">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="药材名称" Binding="{Binding Name}" Width="150" IsReadOnly="True"/>
-                <DataGridTextColumn Header="拼音码" Binding="{Binding PinyinCode}" Width="100" IsReadOnly="True"/>
+                <DataGridTextColumn Header="拼音码" Binding="{Binding PinYinCode}" Width="100" IsReadOnly="True"/>
                 <DataGridTextColumn Header="产地" Binding="{Binding Origin}" Width="120" IsReadOnly="True"/>
                 <DataGridTextColumn Header="规格" Binding="{Binding Spec}" Width="80" IsReadOnly="True"/>
                 <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="60" IsReadOnly="True"/>

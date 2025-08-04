@@ -20,7 +20,7 @@ namespace LYBT.Shared.Models.Core {
 
         /// <summary>拼音码</summary>
         [DisplayName("拼音码")]
-        public string? PinyinCode { get; set; }
+        public string? PinYinCode { get; set; }
 
         /// <summary>五笔码</summary>
         [DisplayName("五笔码")]
@@ -87,6 +87,18 @@ namespace LYBT.Shared.Models.Core {
         /// <summary>更新时间</summary>
         [DisplayName("更新时间")]
         public DateTime? UpdateTime { get; set; }
+
+        /// <summary>患者状态</summary>
+        [DisplayName("患者状态")]
+        public PatientStatus Status { get; set; } = PatientStatus.Active;
+
+        /// <summary>最后就诊时间</summary>
+        [DisplayName("最后就诊时间")]
+        public DateTime? LastVisitTime { get; set; }
+
+        /// <summary>就诊次数</summary>
+        [DisplayName("就诊次数")]
+        public int VisitCount { get; set; }
 
         /// <summary>
         /// 性别显示文本（计算属性）

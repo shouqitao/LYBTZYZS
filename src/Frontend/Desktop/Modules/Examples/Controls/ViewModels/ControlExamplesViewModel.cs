@@ -171,7 +171,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Name = "麻黄",
-                PinyinCode = "MH",
+                PinYinCode = "MH",
                 Origin = "山西",
                 Spec = "优质",
                 Unit = "克",
@@ -186,7 +186,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Name = "桂枝",
-                PinyinCode = "GZ",
+                PinYinCode = "GZ",
                 Origin = "广西",
                 Spec = "标准",
                 Unit = "克",
@@ -201,7 +201,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Name = "甘草",
-                PinyinCode = "GC",
+                PinYinCode = "GC",
                 Origin = "内蒙古",
                 Spec = "优质",
                 Unit = "克",
@@ -228,7 +228,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
                 IDNumber = "110101198801011234",
                 AllergyHistory = "青霉素过敏",
                 Address = "北京市朝阳区",
-                PinyinCode = "ZS"
+                PinYinCode = "ZS"
             });
 
             SamplePatients.Add(new PatientDto
@@ -241,7 +241,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
                 IDNumber = "110101199301015678",
                 AllergyHistory = "",
                 Address = "北京市海淀区",
-                PinyinCode = "LS"
+                PinYinCode = "LS"
             });
 
             SamplePatients.Add(new PatientDto
@@ -254,7 +254,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
                 IDNumber = "110101198101019012",
                 AllergyHistory = "花生过敏、海鲜过敏",
                 Address = "北京市西城区",
-                PinyinCode = "WW"
+                PinYinCode = "WW"
             });
         }
 

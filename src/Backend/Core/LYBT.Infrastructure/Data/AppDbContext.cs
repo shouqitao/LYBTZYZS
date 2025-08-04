@@ -170,7 +170,7 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(u => u.RealName).HasMaxLength(100);
             entity.Property(u => u.PasswordHash).HasMaxLength(255);
             entity.Property(u => u.CreateTime).HasColumnName("CreatedTime");
-            entity.Property(u => u.PinyinCode).HasMaxLength(20);
+            entity.Property(u => u.PinYinCode).HasMaxLength(20);
             entity.Property(u => u.WuBiCode).HasMaxLength(20);
             entity.Property(u => u.Email).HasMaxLength(100);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
@@ -203,7 +203,7 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(p => p.Id);
             entity.Property(p => p.Name).HasMaxLength(100);
             entity.Property(p => p.WuBiCode).HasMaxLength(20);
-            entity.Property(p => p.PinyinCode).HasMaxLength(20);
+            entity.Property(p => p.PinYinCode).HasMaxLength(20);
             entity.Property(p => p.CreateTime).HasColumnName("CreatedAt");
             entity.Property(p => p.PhoneNumber).HasMaxLength(20);
             entity.Property(p => p.Address).HasMaxLength(256);
@@ -225,6 +225,7 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(d => d.Id);
             entity.Property(d => d.Specialty).HasMaxLength(100);
             entity.Property(d => d.LicenseNumber).HasMaxLength(32);
+            entity.Property(d => d.CreateTime).HasColumnName("CreatedTime");
         }
 
         private static void ConfigureRegistrations(ModelBuilder modelBuilder) {
@@ -266,7 +267,7 @@ namespace LYBT.Infrastructure.Data {
             entity.ToTable("Herbs");
             entity.HasKey(h => h.Id);
             entity.Property(h => h.Name).HasMaxLength(100);
-            entity.Property(h => h.PinyinCode).HasMaxLength(20);
+            entity.Property(h => h.PinYinCode).HasMaxLength(20);
             entity.Property(h => h.WuBiCode).HasMaxLength(20);
             entity.Property(h => h.BatchNo).HasMaxLength(32);
             entity.Property(h => h.CreateTime).HasColumnName("CreatedAt");
@@ -277,7 +278,7 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(h => h.Price).HasColumnType("decimal(18,2)");
             entity.Property(h => h.Specification).HasColumnType("decimal(18,2)");
             entity.HasIndex(h => h.Name);
-            entity.HasIndex(h => h.PinyinCode);
+            entity.HasIndex(h => h.PinYinCode);
             entity.HasIndex(h => h.WuBiCode);
             entity.HasIndex(h => h.ExpireDate);
             // 忽略IsActive字段，使用Status字段替代

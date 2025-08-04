@@ -27,18 +27,5 @@ namespace LYBT.Models.Users {
         /// </summary>
         [DisplayName("锁定结束时间")]
         public DateTime? LockoutEnd { get; set; }
-
-        /// <summary>
-        /// 更新时间
-        /// </summary>
-        [DisplayName("更新时间")]
-        public DateTime? UpdateTime { get; set; }
-
-        /// <summary>
-        /// 备注信息
-        /// </summary>
-        [StringLength(500)]
-        [DisplayName("备注")]
-        public string? Remark { get; set; }
     }
 }

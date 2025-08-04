@@ -18,6 +18,9 @@ namespace LYBT.WPF.Client.Modules.Pharmacist
         {
             // 注册药房人员主界面视图
             containerRegistry.RegisterForNavigation<PharmacyStaffMainView>();
+            
+            // 注册药房管理视图
+            containerRegistry.RegisterForNavigation<PharmacyManagementView>();
         }
     }
 }

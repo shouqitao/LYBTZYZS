@@ -64,7 +64,7 @@ namespace LYBT.Models.Users {
         /// <summary>拼音码（可选）</summary>
         [StringLength(100)]
         [DisplayName("拼音码")]
-        public string? PinyinCode { get; set; }
+        public string? PinYinCode { get; set; }
 
         /// <summary>五笔码（可选）</summary>
         [StringLength(100)]

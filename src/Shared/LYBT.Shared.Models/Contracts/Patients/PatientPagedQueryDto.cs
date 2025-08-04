@@ -60,7 +60,7 @@ namespace LYBT.Shared.Models.Contracts.Patients {
 
         /// <summary>按拼音码搜索</summary>
         [DisplayName("拼音码")]
-        public string? PinyinCode { get; set; }
+        public string? PinYinCode { get; set; }
 
         /// <summary>按五笔码搜索</summary>
         [DisplayName("五笔码")]

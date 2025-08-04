@@ -17,13 +17,6 @@ namespace LYBT.Models.Herbs {
         public decimal Specification { get; set; } = 1;
 
         /// <summary>
-        /// 用法说明（如：煎服、研末等）
-        /// </summary>
-        [StringLength(200)]
-        [DisplayName("用法")]
-        public string? Usage { get; set; }
-
-        /// <summary>
         /// 最后操作者ID
         /// </summary>
         [DisplayName("最后操作者ID")]

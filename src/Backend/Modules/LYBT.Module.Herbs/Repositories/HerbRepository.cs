@@ -126,7 +126,7 @@ namespace LYBT.Module.Herbs.Repositories {
                 if (!string.IsNullOrWhiteSpace(keyword)) {
                     var upper = keyword.ToUpperInvariant();
                     query = query.Where(h => h.Name.Contains(keyword) ||
-                                           (h.PinyinCode != null && h.PinyinCode.Contains(upper)));
+                                           (h.PinYinCode != null && h.PinYinCode.Contains(upper)));
                 }
 
                 int total = await query.CountAsync();
@@ -170,7 +170,7 @@ namespace LYBT.Module.Herbs.Repositories {
             try {
                 return await _herbDbContext.Herbs
                     .AsNoTracking()
-                    .Where(h => h.PinyinCode != null && h.PinyinCode.Contains(pinyin.ToUpperInvariant()))
+                    .Where(h => h.PinYinCode != null && h.PinYinCode.Contains(pinyin.ToUpperInvariant()))
                     .OrderBy(h => h.Name)
                     .ToListAsync();
             } catch (Exception ex) {

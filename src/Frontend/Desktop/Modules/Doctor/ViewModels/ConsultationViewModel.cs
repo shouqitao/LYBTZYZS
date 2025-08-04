@@ -10,15 +10,15 @@ using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.Consultation;
+using LYBT.WPF.Client.Core.Models.Records;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Patients;
-using LYBT.Shared.Models.Records;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Records;
 using LYBT.Shared.Models.Enums;
 using HerbStatus = LYBT.Shared.Models.Enums.HerbStatus;
+using Gender = LYBT.Shared.Models.Enums.Gender;
 
 namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
 {
@@ -43,8 +43,8 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
 
         #region Properties
 
-        private ConsultationRecord _currentRecord = new();
-        public ConsultationRecord CurrentRecord
+        private RecordInfo _currentRecord = new();
+        public RecordInfo CurrentRecord
         {
             get => _currentRecord;
             set
@@ -145,11 +145,14 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
 
         private void InitializeNewConsultation()
         {
-            CurrentRecord = new ConsultationRecord
+            CurrentRecord = new RecordInfo
             {
                 Id = Guid.NewGuid(),
-                ConsultationDate = DateTime.Now,
-                Status = ConsultationStatus.InProgress,
+                RecordId = Guid.NewGuid(),
+                CreateTime = DateTime.Now,
+                RecordTime = DateTime.Now,
+                VisitTime = DateTime.Now,
+                Status = "InProgress",
                 DoctorId = Guid.NewGuid(), // 当前登录医生ID
                 DoctorName = "当前医生", // 从登录信息获取
                 Patient = new PatientInfo
@@ -158,7 +161,8 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                     Name = "新患者",
                     Gender = Gender.Unknown,
                     BirthDate = DateTime.Now.AddYears(-30)
-                }
+                },
+                PatientId = Guid.NewGuid()
             };
         }
 
@@ -215,7 +219,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
         {
             try
             {
-                var medicalRecord = CurrentRecord.ToMedicalRecord();
+                var medicalRecord = ConvertToMedicalRecord(CurrentRecord);
                 var preview = await _prescriptionPrintService.PreviewPrescriptionAsync(medicalRecord);
                 PrescriptionPreview = preview.Content;
             }
@@ -229,10 +233,10 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
         {
             try
             {
-                var medicalRecord = CurrentRecord.ToMedicalRecord();
+                var medicalRecord = ConvertToMedicalRecord(CurrentRecord);
                 var createDto = new RecordCreateDto
                 {
-                    PatientId = medicalRecord.PatientId,
+                    PatientId = medicalRecord.PatientId.ToString(),
                     RegistrationId = Guid.NewGuid(), // TODO: 需要从实际挂号记录获取
                     Diagnosis = medicalRecord.Diagnosis,
                     ChiefComplaint = medicalRecord.ChiefComplaint,
@@ -246,7 +250,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                         Unit = h.Unit
                     }).ToList(),
                     IsShared = false,
-                    CreatedTime = DateTime.Now,
+                    CreateTime = DateTime.Now,
                     RecordTime = DateTime.Now
                 };
 
@@ -276,7 +280,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                     return;
                 }
 
-                var medicalRecord = CurrentRecord.ToMedicalRecord();
+                var medicalRecord = ConvertToMedicalRecord(CurrentRecord);
                 var success = await _prescriptionPrintService.PrintPrescriptionAsync(medicalRecord);
                 
                 if (success)
@@ -313,7 +317,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
 
                 if (saveDialog.ShowDialog() == true)
                 {
-                    var medicalRecord = CurrentRecord.ToMedicalRecord();
+                    var medicalRecord = ConvertToMedicalRecord(CurrentRecord);
                     var success = await _prescriptionPrintService.SaveAsPdfAsync(medicalRecord, saveDialog.FileName);
                     
                     if (success)
@@ -340,8 +344,8 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 await SaveRecord();
                 
                 // 标记看诊完成
-                CurrentRecord.Status = ConsultationStatus.Completed;
-                CurrentRecord.UpdatedTime = DateTime.Now;
+                CurrentRecord.Status = "Completed";
+                CurrentRecord.UpdateTime = DateTime.Now;
                 
                 MessageBox.Show("看诊已完成！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                 
@@ -362,14 +366,11 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
         {
             try
             {
-                var result = await _herbService.GetAvailableAsync();
-                if (result.IsSuccess && result.Data != null)
+                var herbs = await _herbService.GetAvailableHerbsAsync();
+                AvailableHerbs.Clear();
+                foreach (var herb in herbs)
                 {
-                    AvailableHerbs.Clear();
-                    foreach (var herb in result.Data)
-                    {
-                        AvailableHerbs.Add(ConvertHerbDtoToHerbInfo(herb));
-                    }
+                    AvailableHerbs.Add(herb);
                 }
             }
             catch (Exception ex)
@@ -387,7 +388,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             {
                 Id = herbDto.Id,
                 Name = herbDto.Name,
-                PinyinCode = herbDto.PinyinCode,
+                PinYinCode = herbDto.PinYinCode,
                 // WuBiCode = herbDto.WuBiCode, // HerbDto中没有WuBiCode属性
                 Origin = herbDto.Origin,
                 Spec = herbDto.Spec,
@@ -403,6 +404,51 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 CreateTime = herbDto.CreateTime,
                 UpdateTime = herbDto.UpdateTime
             };
+        }
+
+        /// <summary>
+        /// 将RecordInfo转换为MedicalRecord（用于打印和显示）
+        /// </summary>
+        private MedicalRecord ConvertToMedicalRecord(RecordInfo record)
+        {
+            return new MedicalRecord
+            {
+                Id = record.Id,
+                RecordId = record.RecordId,
+                PatientId = record.PatientId,
+                PatientName = record.Patient.Name,
+                PatientGender = record.Patient.Gender.ToString(),
+                PatientAge = GetPatientAge(record.Patient.BirthDate),
+                PatientPhone = record.Patient.PhoneNumber ?? string.Empty,
+                DoctorId = record.DoctorId,
+                DoctorName = record.DoctorName,
+                ChiefComplaint = record.ChiefComplaint,
+                Diagnosis = record.Diagnosis,
+                PresentIllness = record.PresentIllness,
+                TreatmentAdvice = record.TreatmentAdvice,
+                HerbalFormula = record.Prescription.Select(p => new FormulaIngredient
+                {
+                    HerbId = p.Herb.Id,
+                    HerbName = p.Herb.Name,
+                    Dosage = p.Dosage,
+                    Unit = p.Unit,
+                    Usage = p.Usage
+                }).ToList(),
+                RecordTime = record.RecordTime,
+                TotalAmount = record.TotalAmount
+            };
+        }
+
+        /// <summary>
+        /// 计算患者年龄
+        /// </summary>
+        private int GetPatientAge(DateTime? birthDate)
+        {
+            if (!birthDate.HasValue) return 0;
+            var age = DateTime.Now.Year - birthDate.Value.Year;
+            if (DateTime.Now.DayOfYear < birthDate.Value.DayOfYear)
+                age--;
+            return age;
         }
 
         #endregion

@@ -5,7 +5,10 @@ using LYBT.WPF.Client.Core.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Records;
+using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models.Patients;
+using System.Linq;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -138,18 +141,41 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        public async Task<ApiResponse<PaginatedResult<PatientDetailDto>>> GetPagedAsync(PatientPagedQueryDto query)
+        public async Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>> GetPagedAsync(PatientPagedQueryDto query)
         {
             try
             {
-                return await _apiService.PostAsync<PaginatedResult<PatientDetailDto>>("patients/paged", query);
+                var response = await _apiService.PostAsync<PaginatedResult<PatientDetailDto>>("patients/paged", query);
+                if (response.IsSuccess && response.Data != null)
+                {
+                    var patientInfos = response.Data.Items.Select(ConvertToPatientInfo).ToList();
+                    return new LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>
+                    {
+                        Items = patientInfos,
+                        TotalCount = response.Data.TotalCount,
+                        CurrentPage = response.Data.CurrentPage,
+                        PageSize = response.Data.PageSize
+                    };
+                }
+
+                return new LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>
+                {
+                    Items = new List<PatientInfo>(),
+                    TotalCount = 0,
+                    CurrentPage = query.CurrentPage,
+                    PageSize = query.PageSize,
+                    ErrorMessage = response.Message ?? "获取患者列表失败"
+                };
             }
             catch (Exception ex)
             {
-                return new ApiResponse<PaginatedResult<PatientDetailDto>>
+                return new LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>
                 {
-                    IsSuccess = false,
-                    Message = $"分页查询患者失败: {ex.Message}"
+                    Items = new List<PatientInfo>(),
+                    TotalCount = 0,
+                    CurrentPage = query.CurrentPage,
+                    PageSize = query.PageSize,
+                    ErrorMessage = $"分页查询患者失败: {ex.Message}"
                 };
             }
         }
@@ -314,6 +340,66 @@ namespace LYBT.WPF.Client.Services
         public async Task<ApiResponse<List<PatientDetailDto>>> QuickSearchAsync(string keyword)
         {
             return await SearchAsync(keyword);
+        }
+
+        /// <summary>
+        /// 转换PatientDetailDto到PatientInfo
+        /// </summary>
+        private PatientInfo ConvertToPatientInfo(PatientDetailDto dto)
+        {
+            return new PatientInfo
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Gender = dto.Gender,
+                Age = dto.Age,
+                PhoneNumber = dto.PhoneNumber,
+                IdNumber = dto.IDNumber,  // 注意大小写
+                Address = dto.Address,
+                AllergyHistory = dto.AllergyHistory,
+                BirthDate = dto.BirthDate,
+                CreateTime = dto.CreateTime,
+                UpdateTime = dto.UpdateTime,
+                Status = dto.IsActive ? PatientStatus.Active : PatientStatus.Inactive  // 根据IsActive设置状态
+            };
+        }
+
+        /// <summary>
+        /// 获取患者列表
+        /// </summary>
+        public async Task<List<PatientInfo>> GetListAsync()
+        {
+            try
+            {
+                // 模拟获取患者列表
+                await Task.Delay(300);
+                var patientInfos = new List<PatientInfo>
+                {
+                    new PatientInfo
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "张三",
+                        Gender = Gender.Male,
+                        Age = 35,
+                        PhoneNumber = "13800138001",
+                        IdNumber = "110101198801010001"
+                    },
+                    new PatientInfo
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "李四",
+                        Gender = Gender.Female,
+                        Age = 28,
+                        PhoneNumber = "13800138002",
+                        IdNumber = "110101199502020002"
+                    }
+                };
+                return patientInfos;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"获取患者列表失败: {ex.Message}", ex);
+            }
         }
     }
 }

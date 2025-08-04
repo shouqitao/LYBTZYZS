@@ -42,7 +42,7 @@ namespace LYBT.Shared.Models.Contracts.Doctors {
         public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
 
         [DisplayName("PinyinCode")]
-        public string PinyinCode { get; set; } = string.Empty;
+        public string PinYinCode { get; set; } = string.Empty;
 
         [DisplayName("Remark")]
         public string? Remark { get; set; }

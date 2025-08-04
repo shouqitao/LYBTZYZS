@@ -197,7 +197,7 @@ namespace LYBT.Infrastructure.Configuration {
                     existingSetting.ValueType = valueType;
                     existingSetting.Description = description ?? existingSetting.Description;
                     existingSetting.Group = group ?? existingSetting.Group;
-                    existingSetting.UpdatedAt = DateTime.Now;
+                    existingSetting.UpdateTime = DateTime.Now;
                     existingSetting.UpdatedBy = updatedBy;
                 } else {
                     // 创建新设置
@@ -208,8 +208,8 @@ namespace LYBT.Infrastructure.Configuration {
                         ValueType = valueType,
                         Description = description,
                         Group = group,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
+                        CreateTime = DateTime.Now,
+                        UpdateTime = DateTime.Now,
                         CreatedBy = updatedBy,
                         UpdatedBy = updatedBy,
                         IsEnabled = true
@@ -305,7 +305,7 @@ namespace LYBT.Infrastructure.Configuration {
                         SortOrder = s.SortOrder,
                         IsSystem = s.IsSystem,
                         IsEnabled = s.IsEnabled,
-                        UpdatedAt = s.UpdatedAt,
+                        UpdateTime = s.UpdateTime,
                         Remark = s.Remark
                     })
                     .ToListAsync();

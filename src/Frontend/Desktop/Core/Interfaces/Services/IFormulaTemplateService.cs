@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.FormulaTemplates;
+using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.FormulaTemplates;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
 {
@@ -12,6 +14,11 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
     public interface IFormulaTemplateService
     {
         /// <summary>
+        /// 分页查询验方模板
+        /// </summary>
+        Task<PagedResult<FormulaTemplateInfo>> SearchFormulasAsync(PaginationRequest query);
+
+        /// <summary>
         /// 获取验方模板列表
         /// </summary>
         Task<ApiResponse<List<FormulaTemplateInfo>>> GetListAsync(string? keyword = null, string? category = null);
@@ -19,17 +26,17 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 根据ID获取验方模板详情
         /// </summary>
-        Task<ApiResponse<FormulaTemplateInfo>> GetByIdAsync(Guid id);
+        Task<ApiResponse<FormulaTemplateDetailDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建验方模板
         /// </summary>
-        Task<ApiResponse<FormulaTemplateInfo>> CreateAsync(FormulaTemplateInfo template);
+        Task<ApiResponse<FormulaTemplateInfo>> CreateAsync(FormulaTemplateCreateDto createDto);
 
         /// <summary>
         /// 更新验方模板
         /// </summary>
-        Task<ApiResponse<FormulaTemplateInfo>> UpdateAsync(FormulaTemplateInfo template);
+        Task<ApiResponse<FormulaTemplateInfo>> UpdateAsync(FormulaTemplateUpdateDto updateDto);
 
         /// <summary>
         /// 删除验方模板

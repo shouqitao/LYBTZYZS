@@ -19,12 +19,12 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         /// <summary>拼音码</summary>
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
-        public string? Pinyin { get; set; }
+        public string? PinYinCode { get; set; }
 
         /// <summary>五笔码</summary>
         [StringLength(50, ErrorMessage = "五笔码长度不能超过50个字符")]
         [DisplayName("五笔码")]
-        public string? WuBi { get; set; }
+        public string? WuBiCode { get; set; }
 
         /// <summary>产地</summary>
         [StringLength(100, ErrorMessage = "产地长度不能超过100个字符")]
@@ -67,6 +67,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [StringLength(1000, ErrorMessage = "功效说明长度不能超过1000个字符")]
         [DisplayName("功效说明")]
         public string? Effect { get; set; }
+
+        /// <summary>用法</summary>
+        [StringLength(500, ErrorMessage = "用法长度不能超过500个字符")]
+        [DisplayName("用法")]
+        public string? Usage { get; set; }
 
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]

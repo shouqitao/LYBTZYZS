@@ -68,7 +68,9 @@ namespace LYBT.WebAPI.Controllers {
                     var pagedList = list?.Take(pageSize).ToList() ?? new List<RegistrationDto>();
                     var result = new PaginatedResult<RegistrationDto> {
                         TotalCount = totalCount,
-                        Items = pagedList
+                        Items = pagedList,
+                        CurrentPage = page,
+                        PageSize = pageSize
                     };
                     return Ok(ApiResponse<PaginatedResult<RegistrationDto>>.Success(result));
                 }

@@ -84,7 +84,7 @@ namespace LYBT.Infrastructure.Configuration.Dtos {
         /// 更新时间
         /// </summary>
         [DisplayName("更新时间")]
-        public DateTime UpdatedAt { get; set; }
+        public DateTime UpdateTime { get; set; }
 
         /// <summary>
         /// 备注

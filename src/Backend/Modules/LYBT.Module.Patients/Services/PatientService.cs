@@ -52,7 +52,7 @@ namespace LYBT.Module.Patients.Services {
 
             var model = _mapper.Map<PatientModel>(dto);
             model.Id = Guid.NewGuid();
-            model.PinyinCode = CommonHelper.GetPinyinCode(model.Name);
+            model.PinYinCode = CommonHelper.GetPinyinCode(model.Name);
             model.WuBiCode = CommonHelper.GetWuBiCode(model.Name);
             model.CreateTime = DateTime.Now;
             model.UpdateTime = DateTime.Now;
@@ -88,7 +88,7 @@ namespace LYBT.Module.Patients.Services {
 
             var oldJson = JsonSerializer.Serialize(model);
             _mapper.Map(dto, model);
-            model.PinyinCode = CommonHelper.GetPinyinCode(model.Name);
+            model.PinYinCode = CommonHelper.GetPinyinCode(model.Name);
 
             // 如果身份证号变了，重新解析出生日期和年龄
             if (!string.IsNullOrEmpty(model.IdNumber) && CommonHelper.CheckIdNumber(model.IdNumber)) {
@@ -147,7 +147,9 @@ namespace LYBT.Module.Patients.Services {
             var total = await _patientRepository.GetCountAsync(query.Name, includeDisabled);
             return new PaginatedResult<PatientDetailDto> {
                 TotalCount = total,
-                Items = list.Select(_mapper.Map<PatientDetailDto>).ToList()
+                Items = list.Select(_mapper.Map<PatientDetailDto>).ToList(),
+                CurrentPage = query.CurrentPage,
+                PageSize = query.PageSize
             };
         }
 
@@ -303,7 +305,7 @@ namespace LYBT.Module.Patients.Services {
                 PhoneNumber = dto.PhoneNumber ?? "",
                 IdNumber = dto.IDNumber ?? "",
                 Address = dto.Address ?? "",
-                PinyinCode = CommonHelper.GetPinyinCode(dto.Name),
+                PinYinCode = CommonHelper.GetPinyinCode(dto.Name),
                 WuBiCode = CommonHelper.GetWuBiCode(dto.Name),
                 CreateTime = DateTime.Now,
                 UpdateTime = DateTime.Now

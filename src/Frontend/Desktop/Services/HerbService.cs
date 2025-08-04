@@ -2,109 +2,153 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.WPF.Client.Core.Services;
-using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
-using LYBT.WPF.Client.Core.Models.Herbs;
-using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models.Herbs;
+using LYBT.WPF.Client.Services.Interfaces;
+using PagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.Herbs.HerbInfo>;
 
 namespace LYBT.WPF.Client.Services
 {
     /// <summary>
-    /// 药材服务实现
+    /// 药材服务实现类
     /// </summary>
     public class HerbService : IHerbService
     {
-        private readonly IApiService _apiService;
         private readonly IHerbApiService _herbApiService;
 
-        public HerbService(IApiService apiService, IHerbApiService herbApiService)
+        public HerbService(IHerbApiService herbApiService)
         {
-            _apiService = apiService;
             _herbApiService = herbApiService;
-        }
-
-        /// <summary>
-        /// 获取药材列表
-        /// </summary>
-        public async Task<ApiResponse<List<HerbDto>>> GetHerbsAsync()
-        {
-            try
-            {
-                return await _herbApiService.GetHerbsAsync();
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<HerbDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"获取药材列表失败: {ex.Message}"
-                };
-            }
         }
 
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        public async Task<ApiResponse<PaginatedResult<HerbDto>>> GetPagedAsync(dynamic query)
+        public async Task<PagedResult> SearchHerbsAsync(HerbPagedQueryDto query)
         {
             try
             {
-                return await _apiService.PostAsync<PaginatedResult<HerbDto>>("herbs/paged", query);
+                System.Diagnostics.Debug.WriteLine($"[HerbService] 开始搜索药材，请求参数: Page={query.CurrentPage}, PageSize={query.PageSize}");
+                
+                var response = await _herbApiService.GetPagedHerbsAsync(query);
+                
+                System.Diagnostics.Debug.WriteLine($"[HerbService] API响应: StatusCode={response.StatusCode}, IsSuccess={response.IsSuccessStatusCode}");
+                
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[HerbService] API返回数据: TotalCount={response.Content.TotalCount}, Items.Count={response.Content.Items.Count}");
+                    
+                    var herbInfos = response.Content.Items.Select(ConvertToHerbInfo).ToList();
+                    return new PagedResult
+                    {
+                        Items = herbInfos,
+                        TotalCount = response.Content.TotalCount,
+                        CurrentPage = response.Content.CurrentPage,
+                        PageSize = response.Content.PageSize
+                    };
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[HerbService] API响应失败: Error={response.Error?.Content}");
+                }
+                return new PagedResult { Items = new List<HerbInfo>(), TotalCount = 0 };
+            }
+            catch (Refit.ApiException apiEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"[HerbService] API异常: {apiEx.StatusCode} - {apiEx.Message}");
+                
+                // 返回空结果而不是抛出异常
+                return new PagedResult 
+                { 
+                    Items = new List<HerbInfo>(), 
+                    TotalCount = 0,
+                    ErrorMessage = apiEx.StatusCode == System.Net.HttpStatusCode.Unauthorized 
+                        ? "未授权访问，请先登录" 
+                        : $"API请求失败: {apiEx.StatusCode}"
+                };
+            }
+            catch (System.Net.Http.HttpRequestException httpEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"[HerbService] 网络异常: {httpEx.Message}");
+                
+                // 返回空结果而不是抛出异常
+                return new PagedResult 
+                { 
+                    Items = new List<HerbInfo>(), 
+                    TotalCount = 0,
+                    ErrorMessage = "无法连接到服务器，请检查网络连接和API服务状态"
+                };
             }
             catch (Exception ex)
             {
-                return new ApiResponse<PaginatedResult<HerbDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"分页查询药材失败: {ex.Message}"
+                System.Diagnostics.Debug.WriteLine($"[HerbService] 搜索药材异常: {ex.Message}");
+                
+                // 返回空结果而不是抛出异常
+                return new PagedResult 
+                { 
+                    Items = new List<HerbInfo>(), 
+                    TotalCount = 0,
+                    ErrorMessage = $"搜索药材失败: {ex.Message}"
                 };
+            }
+        }
+
+        /// <summary>
+        /// 获取药材列表
+        /// </summary>
+        public async Task<List<HerbInfo>> GetHerbsAsync()
+        {
+            try
+            {
+                var response = await _herbApiService.GetHerbsAsync();
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    return response.Content.Select(ConvertToHerbInfo).ToList();
+                }
+                return new List<HerbInfo>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"获取药材列表失败: {ex.Message}", ex);
             }
         }
 
         /// <summary>
         /// 获取药材详情
         /// </summary>
-        public async Task<ApiResponse<HerbDto>> GetByIdAsync(Guid id)
+        public async Task<HerbInfo?> GetByIdAsync(Guid id)
         {
             try
             {
                 var response = await _herbApiService.GetHerbByIdAsync(id);
-                if (response.IsSuccess && response.Data != null)
+                if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    return response;
+                    return ConvertDetailToHerbInfo(response.Content);
                 }
-                return new ApiResponse<HerbDto>
-                {
-                    IsSuccess = false,
-                    Message = response.Message
-                };
+                return null;
             }
             catch (Exception ex)
             {
-                return new ApiResponse<HerbDto>
-                {
-                    IsSuccess = false,
-                    Message = $"获取药材详情失败: {ex.Message}"
-                };
+                throw new Exception($"获取药材详情失败: {ex.Message}", ex);
             }
         }
 
         /// <summary>
         /// 新增药材
         /// </summary>
-        public async Task<ApiResponse<object>> AddAsync(HerbCreateDto dto)
+        public async Task<ApiResponse<object>> CreateHerbAsync(HerbCreateDto dto)
         {
             try
             {
-                // 直接使用传入的dto，它已经是HerbCreateDto类型
                 var response = await _herbApiService.CreateHerbAsync(dto);
                 return new ApiResponse<object>
                 {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
+                    IsSuccess = response.IsSuccessStatusCode,
+                    Message = response.IsSuccessStatusCode ? "新增药材成功" : response.Error?.Content ?? "新增药材失败",
+                    Data = response.Content
                 };
             }
             catch (Exception ex)
@@ -112,7 +156,7 @@ namespace LYBT.WPF.Client.Services
                 return new ApiResponse<object>
                 {
                     IsSuccess = false,
-                    Message = $"创建药材失败: {ex.Message}"
+                    Message = $"新增药材失败: {ex.Message}"
                 };
             }
         }
@@ -120,36 +164,41 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 编辑药材
         /// </summary>
-        public Task<ApiResponse<object>> UpdateAsync(HerbUpdateDto dto)
+        public async Task<ApiResponse<object>> UpdateHerbAsync(HerbUpdateDto dto)
         {
             try
             {
-                // TODO: 需要传入ID参数，建议后端添加Id属性到UpdateHerbDto
-                throw new NotImplementedException("UpdateAsync需要ID参数，但UpdateHerbDto中没有Id属性");
+                var response = await _herbApiService.UpdateHerbAsync(dto);
+                return new ApiResponse<object>
+                {
+                    IsSuccess = response.IsSuccessStatusCode,
+                    Message = response.IsSuccessStatusCode ? "更新药材成功" : response.Error?.Content ?? "更新药材失败",
+                    Data = response.Content
+                };
             }
             catch (Exception ex)
             {
-                return Task.FromResult(new ApiResponse<object>
+                return new ApiResponse<object>
                 {
                     IsSuccess = false,
                     Message = $"更新药材失败: {ex.Message}"
-                });
+                };
             }
         }
 
         /// <summary>
         /// 删除药材
         /// </summary>
-        public async Task<ApiResponse<object>> DeleteAsync(Guid id)
+        public async Task<ApiResponse<object>> DeleteHerbAsync(Guid id)
         {
             try
             {
                 var response = await _herbApiService.DeleteHerbAsync(id);
                 return new ApiResponse<object>
                 {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
+                    IsSuccess = response.IsSuccessStatusCode,
+                    Message = response.IsSuccessStatusCode ? "删除药材成功" : response.Error?.Content ?? "删除药材失败",
+                    Data = response.Content
                 };
             }
             catch (Exception ex)
@@ -163,95 +212,18 @@ namespace LYBT.WPF.Client.Services
         }
 
         /// <summary>
-        /// 获取缺货药材列表
-        /// </summary>
-        public async Task<ApiResponse<List<HerbDto>>> GetOutOfStockAsync()
-        {
-            try
-            {
-                return await _herbApiService.GetLowStockHerbsAsync(0);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<HerbDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"获取缺货药材失败: {ex.Message}"
-                };
-            }
-        }
-
-        /// <summary>
-        /// 获取即将过期的药材
-        /// </summary>
-        public async Task<ApiResponse<List<HerbDto>>> GetExpiringAsync(int days = 30)
-        {
-            try
-            {
-                return await _apiService.GetAsync<List<HerbDto>>($"herbs/expiring?days={days}");
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<HerbDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"获取即将过期药材失败: {ex.Message}"
-                };
-            }
-        }
-
-        /// <summary>
-        /// 获取可用药材列表
-        /// </summary>
-        public async Task<ApiResponse<List<HerbDto>>> GetAvailableAsync()
-        {
-            try
-            {
-                return await _apiService.GetAsync<List<HerbDto>>("herbs/available");
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<HerbDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"获取可用药材失败: {ex.Message}"
-                };
-            }
-        }
-
-        /// <summary>
-        /// 批量导入药材
-        /// </summary>
-        public async Task<ApiResponse<object>> ImportAsync(List<HerbCreateDto> herbs)
-        {
-            try
-            {
-                return await _apiService.PostAsync<object>("herbs/import", herbs);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"批量导入药材失败: {ex.Message}"
-                };
-            }
-        }
-
-        /// <summary>
         /// 更新药材状态
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateStatusAsync(BatchIdsDto dto)
+        public async Task<ApiResponse<object>> UpdateStatusAsync(Guid id, HerbStatusUpdateDto dto)
         {
             try
             {
-                // dto已经是BatchStatusUpdateDto类型，直接使用
-                var response = await _herbApiService.BatchUpdateStatusAsync(dto);
+                var response = await _herbApiService.UpdateStatusAsync(id, dto);
                 return new ApiResponse<object>
                 {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
+                    IsSuccess = response.IsSuccessStatusCode,
+                    Message = response.IsSuccessStatusCode ? "更新药材状态成功" : response.Error?.Content ?? "更新药材状态失败",
+                    Data = response.Content
                 };
             }
             catch (Exception ex)
@@ -264,23 +236,187 @@ namespace LYBT.WPF.Client.Services
             }
         }
 
+
         /// <summary>
-        /// 获取药材状态统计
+        /// 获取可用药材列表
         /// </summary>
-        public async Task<ApiResponse<Dictionary<int, int>>> GetStatisticsAsync()
+        public async Task<List<HerbInfo>> GetAvailableHerbsAsync()
         {
             try
             {
-                return await _apiService.GetAsync<Dictionary<int, int>>("herbs/statistics");
+                var response = await _herbApiService.GetAvailableHerbsAsync();
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    return response.Content.Select(ConvertToHerbInfo).ToList();
+                }
+                return new List<HerbInfo>();
             }
             catch (Exception ex)
             {
-                return new ApiResponse<Dictionary<int, int>>
+                throw new Exception($"获取可用药材失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取缺货药材列表
+        /// </summary>
+        public async Task<List<HerbInfo>> GetOutOfStockHerbsAsync()
+        {
+            try
+            {
+                var response = await _herbApiService.GetOutOfStockHerbsAsync();
+                if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    IsSuccess = false,
-                    Message = $"获取药材统计失败: {ex.Message}"
+                    return response.Content.Select(ConvertToHerbInfo).ToList();
+                }
+                return new List<HerbInfo>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"获取缺货药材失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取即将过期的药材
+        /// </summary>
+        public async Task<List<HerbInfo>> GetExpiringHerbsAsync(int days = 30)
+        {
+            try
+            {
+                var response = await _herbApiService.GetExpiringHerbsAsync(days);
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    return response.Content.Select(ConvertToHerbInfo).ToList();
+                }
+                return new List<HerbInfo>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"获取即将过期药材失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取药材状态统计
+        /// </summary>
+        public async Task<Dictionary<int, int>> GetStatisticsAsync()
+        {
+            try
+            {
+                var response = await _herbApiService.GetStatisticsAsync();
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    return response.Content;
+                }
+                return new Dictionary<int, int>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"获取药材统计失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 批量导入药材
+        /// </summary>
+        public async Task<ApiResponse<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
+        {
+            try
+            {
+                var response = await _herbApiService.ImportHerbsAsync(herbs);
+                return new ApiResponse<int>
+                {
+                    IsSuccess = response.IsSuccessStatusCode,
+                    Message = response.IsSuccessStatusCode ? "批量导入药材成功" : response.Error?.Content ?? "批量导入药材失败",
+                    Data = response.Content
                 };
             }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int>
+                {
+                    IsSuccess = false,
+                    Message = $"导入药材失败: {ex.Message}",
+                    Data = 0
+                };
+            }
+        }
+
+        /// <summary>
+        /// 导出药材数据
+        /// </summary>
+        public async Task<List<HerbInfo>> ExportHerbsAsync()
+        {
+            try
+            {
+                var response = await _herbApiService.ExportHerbsAsync();
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    return response.Content.Select(ConvertDetailToHerbInfo).ToList();
+                }
+                return new List<HerbInfo>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"导出药材数据失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 转换HerbDto到HerbInfo
+        /// </summary>
+        private HerbInfo ConvertToHerbInfo(HerbDto dto)
+        {
+            return new HerbInfo
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                PinYinCode = dto.PinYinCode ?? "",
+                WuBiCode = dto.WuBiCode ?? "",
+                Origin = dto.Origin,
+                Spec = dto.Spec,
+                Unit = dto.Unit,
+                Price = dto.Price,
+                Stock = (int)dto.Stock,
+                BatchNo = dto.BatchNo ?? "",
+                ExpireDate = dto.ExpireDate,
+                Effect = dto.Effect,
+                Usage = dto.Usage,
+                Status = dto.Status,
+                IsActive = dto.IsActive,
+                CreateTime = dto.CreateTime,
+                UpdateTime = dto.UpdateTime,
+                Remark = dto.Remark
+            };
+        }
+
+        /// <summary>
+        /// 转换HerbDetailDto到HerbInfo
+        /// </summary>
+        private HerbInfo ConvertDetailToHerbInfo(HerbDetailDto dto)
+        {
+            return new HerbInfo
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                PinYinCode = dto.PinYinCode ?? "",
+                WuBiCode = dto.WuBiCode ?? "",
+                Origin = dto.Origin,
+                Spec = dto.Spec,
+                Unit = dto.Unit,
+                Price = dto.Price,
+                Stock = (int)dto.Stock,
+                BatchNo = dto.BatchNo ?? "",
+                ExpireDate = dto.ExpireDate,
+                Effect = dto.Effect,
+                Usage = dto.Usage,
+                Status = dto.Status,
+                IsActive = dto.IsActive,
+                CreateTime = dto.CreateTime,
+                UpdateTime = dto.UpdateTime,
+                Remark = dto.Remark
+            };
         }
     }
 }

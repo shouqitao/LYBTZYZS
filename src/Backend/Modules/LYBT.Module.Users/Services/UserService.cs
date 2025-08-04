@@ -48,7 +48,9 @@ namespace LYBT.Module.Users.Services {
             var users = _mapper.Map<List<SharedUserDto>>(models);
             return new PaginatedResult<SharedUserDto> {
                 TotalCount = total,
-                Items = users
+                Items = users,
+                CurrentPage = query.CurrentPage,
+                PageSize = query.PageSize
             };
         }
 
@@ -234,7 +236,7 @@ namespace LYBT.Module.Users.Services {
             var oldSnapshot = JsonSerializer.Serialize(user);
 
             user.RealName = realName;
-            user.PinyinCode = CommonHelper.GetPinyinCode(realName);
+            user.PinYinCode = CommonHelper.GetPinyinCode(realName);
             user.Email = email;
             user.PhoneNumber = phoneNumber;
 
@@ -287,7 +289,7 @@ namespace LYBT.Module.Users.Services {
                 Id = Guid.NewGuid(),
                 Username = dto.Username,
                 RealName = dto.RealName,
-                PinyinCode = CommonHelper.GetPinyinCode(dto.RealName),
+                PinYinCode = CommonHelper.GetPinyinCode(dto.RealName),
                 Role = dto.Role,
                 IsActive = dto.IsActive,
                 Email = dto.Email,
@@ -302,7 +304,7 @@ namespace LYBT.Module.Users.Services {
         /// </summary>
         private void UpdateUserFromDto(UserModel user, SharedUserUpdateDto dto) {
             user.RealName = dto.RealName;
-            user.PinyinCode = CommonHelper.GetPinyinCode(dto.RealName);
+            user.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName);
             user.Role = dto.Role;
             user.IsActive = dto.IsActive;
             user.Email = dto.Email;

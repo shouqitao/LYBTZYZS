@@ -81,7 +81,7 @@ namespace LYBT.Shared.Models.Contracts.Patients {
         /// <summary>拼音码</summary>
         [StringLength(100, ErrorMessage = "拼音码长度不能超过100个字符")]
         [DisplayName("拼音码")]
-        public string PinyinCode { get; set; } = string.Empty;
+        public string PinYinCode { get; set; } = string.Empty;
 
         /// <summary>五笔码</summary>
         [StringLength(100, ErrorMessage = "五笔码长度不能超过100个字符")]

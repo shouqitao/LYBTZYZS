@@ -44,7 +44,7 @@ namespace LYBT.Module.Patients.Repositories {
             if (!string.IsNullOrWhiteSpace(keyword)) {
                 var upper = keyword.ToUpperInvariant();
                 query = query.Where(x => x.Name.Contains(keyword)
-                    || (x.PinyinCode != null && x.PinyinCode.Contains(upper))
+                    || (x.PinYinCode != null && x.PinYinCode.Contains(upper))
                     || (x.PhoneNumber != null && x.PhoneNumber.Contains(keyword))
                     || (x.IdNumber != null && x.IdNumber.Contains(keyword)));
             }
@@ -137,7 +137,7 @@ namespace LYBT.Module.Patients.Repositories {
             if (!string.IsNullOrWhiteSpace(keyword)) {
                 var upper = keyword.ToUpperInvariant();
                 query = query.Where(x => x.Name.Contains(keyword)
-                    || (x.PinyinCode != null && x.PinyinCode.Contains(upper))
+                    || (x.PinYinCode != null && x.PinYinCode.Contains(upper))
                     || (x.PhoneNumber != null && x.PhoneNumber.Contains(keyword))
                     || (x.IdNumber != null && x.IdNumber.Contains(keyword)));
             }
@@ -156,7 +156,7 @@ namespace LYBT.Module.Patients.Repositories {
             var upper = keyword.ToUpperInvariant();
             return await query
                 .Where(p => p.Name.Contains(keyword)
-                    || (p.PinyinCode != null && p.PinyinCode.Contains(upper))
+                    || (p.PinYinCode != null && p.PinYinCode.Contains(upper))
                     || (p.IdNumber != null && p.IdNumber.Contains(keyword))
                     || (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)))
                 .OrderByDescending(p => p.CreateTime)
@@ -229,10 +229,10 @@ namespace LYBT.Module.Patients.Repositories {
                 return new List<PatientModel>();
 
             // 简单的相似性检查：拼音码匹配或包含关系
-            var pinyinCode = CommonHelper.GetPinyinCode(name);
+            var pinYinCode = CommonHelper.GetPinyinCode(name);
 
             return await _dbContext.Patients
-                .Where(p => p.PinyinCode == pinyinCode ||
+                .Where(p => p.PinYinCode == pinYinCode ||
                            p.Name.Contains(name) ||
                            name.Contains(p.Name))
                 .Where(p => p.Name != name) // 排除完全相同的姓名

@@ -23,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         
         private string _searchKeyword = string.Empty;
         private string _searchType = "all"; // 默认全部搜索
-        private UserInfo _selectedUser;
+        private UserInfo? _selectedUser;
         private int _currentPage = 1;
         private int _pageSize = 20;
         private int _totalCount = 0;
@@ -59,7 +59,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         }
 
         /// <summary>选中的用户</summary>
-        public UserInfo SelectedUser
+        public UserInfo? SelectedUser
         {
             get => _selectedUser;
             set => SetProperty(ref _selectedUser, value);
@@ -195,7 +195,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                             request.RealName = SearchKeyword;
                             break;
                         case "pinyin":
-                            request.PinyinCode = SearchKeyword;
+                            request.PinYinCode = SearchKeyword;
                             break;
                         default:
                             request.SearchKeyword = SearchKeyword;

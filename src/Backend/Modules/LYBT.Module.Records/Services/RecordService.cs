@@ -62,7 +62,7 @@ namespace LYBT.Module.Records.Services {
             model.Id = Guid.NewGuid();
             model.RecordTime = DateTime.Now;
             model.CreatedBy = operatorId.ToString();
-            model.CreatedTime = DateTime.Now;
+            model.CreateTime = DateTime.Now;
             var result = await _recordRepository.AddAsync(model);
 
             if (result) {

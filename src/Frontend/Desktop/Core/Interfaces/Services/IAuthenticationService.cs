@@ -44,5 +44,11 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 清除认证信息
         /// </summary>
         void ClearAuthInfo();
+
+        /// <summary>
+        /// 检查API连接状态
+        /// </summary>
+        /// <returns>API是否在线</returns>
+        Task<bool> CheckConnectionAsync();
     }
 }
