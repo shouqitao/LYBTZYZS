@@ -27,7 +27,7 @@ namespace LYBT.Module.Records.Interfaces {
         /// <summary>
         /// 新增病历
         /// </summary>
-        Task<bool> AddAsync(RecordCreateDto recordCreateDto, Guid operatorId, string operatorName);
+        Task<RecordDto?> AddAsync(RecordCreateDto recordCreateDto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 编辑病历

@@ -66,11 +66,16 @@ namespace LYBT.Module.Pharmacy.Services {
         /// <summary>
         /// 新增药房单
         /// </summary>
-        public async Task<bool> AddAsync(PharmacyCreateDto pharmacyCreateDto) {
+        public async Task<PharmacyDto?> AddAsync(PharmacyCreateDto pharmacyCreateDto) {
             var model = _mapper.Map<PharmacyModel>(pharmacyCreateDto);
             model.Id = Guid.NewGuid();
             model.DispenseTime = DateTime.Now;
-            return await _pharmacyRepository.AddAsync(model);
+            var result = await _pharmacyRepository.AddAsync(model);
+            if (!result)
+                return null;
+            
+            // 返回创建的对象
+            return _mapper.Map<PharmacyDto>(model);
         }
 
         /// <summary>

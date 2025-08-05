@@ -10,15 +10,61 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using Prism.Dialogs;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 {
     /// <summary>
     /// 查看处方详情对话框视图模型
     /// </summary>
-    public class ViewPrescriptionDialogViewModel : BindableBase
+    public class ViewPrescriptionDialogViewModel : BindableBase, IDialogAware
     {
+        
+        #region IDialogAware
+
+        private string _title = "详情";
+        public string Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
+
+        public event Action<IDialogResult>? RequestClose;
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("prescriptionId"))
+            {
+                var id = parameters.GetValue<Guid>("prescriptionId");
+                _ = LoadPrescriptionAsync(id);
+            }
+            else if (parameters.ContainsKey("prescription"))
+            {
+                var data = parameters.GetValue<PrescriptionDetailDto>("prescription");
+                Prescription = data;
+                if (data?.Items != null)
+                {
+                    Items.Clear();
+                    foreach (var item in data.Items)
+                    {
+                        Items.Add(item);
+                    }
+                }
+                IsLoading = false;
+                UpdateComputedProperties();
+            }
+        }
+
+        #endregion
+
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IPrescriptionsApiService _prescriptionService;
-        private readonly Guid _prescriptionId;
+        
 
         #region 属性
 
@@ -114,13 +160,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         #endregion
 
-        public Action? CloseDialogCallback { get; set; }
-        public Action<PrescriptionDetailDto>? EditPrescriptionCallback { get; set; }
+        
+        
 
-        public ViewPrescriptionDialogViewModel(IPrescriptionsApiService prescriptionService, Guid prescriptionId)
+        public ViewPrescriptionDialogViewModel(IPrescriptionsApiService prescriptionService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _prescriptionService = prescriptionService;
-            _prescriptionId = prescriptionId;
 
             Items = new ObservableCollection<PrescriptionItemDto>();
 
@@ -129,16 +176,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             EditCommand = new DelegateCommand(ExecuteEdit, () => CanEdit);
             VoidCommand = new DelegateCommand(ExecuteVoid, () => CanVoid);
 
-            // 加载处方详情
-            _ = LoadPrescriptionAsync();
+            // 加载处方详情在 OnDialogOpened 中处理
         }
 
-        private async Task LoadPrescriptionAsync()
+        private async Task LoadPrescriptionAsync(Guid id)
         {
             try
             {
                 IsLoading = true;
-                var response = await _prescriptionService.GetByIdAsync(_prescriptionId);
+                var response = await _prescriptionService.GetByIdAsync(id);
                 
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
@@ -154,18 +200,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                         }
                     }
                     
-                    // 触发计算属性更新
-                    RaisePropertyChanged(nameof(PrescriptionNumber));
-                    RaisePropertyChanged(nameof(StatusDescription));
-                    RaisePropertyChanged(nameof(StatusColor));
-                    RaisePropertyChanged(nameof(PatientName));
-                    RaisePropertyChanged(nameof(DoctorName));
-                    RaisePropertyChanged(nameof(CreateTimeDescription));
-                    RaisePropertyChanged(nameof(TotalItemCount));
-                    RaisePropertyChanged(nameof(TotalWeight));
-                    RaisePropertyChanged(nameof(ItemsListText));
-                    RaisePropertyChanged(nameof(CanEdit));
-                    RaisePropertyChanged(nameof(CanVoid));
+                    UpdateComputedProperties();
                     
                     // 更新命令状态
                     EditCommand.RaiseCanExecuteChanged();
@@ -174,16 +209,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 else
                 {
                     var error = response.Error?.Content ?? "获取处方详情失败";
-                    MessageBox.Show($"加载处方详情失败: {error}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    CloseDialogCallback?.Invoke();
+                    _commonDialogService.ShowErrorAsync($"加载处方详情失败: {error}", "错误").GetAwaiter().GetResult();
+                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载处方详情失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                CloseDialogCallback?.Invoke();
+                _commonDialogService.ShowErrorAsync($"加载处方详情失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
             }
             finally
             {
@@ -193,7 +226,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         private void ExecuteClose()
         {
-            CloseDialogCallback?.Invoke();
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
         }
 
         private void ExecutePrint()
@@ -203,13 +236,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             try
             {
                 // TODO: 实现处方打印功能
-                MessageBox.Show($"处方打印功能开发中...\n处方编号：{PrescriptionNumber}", 
-                    "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync($"处方打印功能开发中...\n处方编号：{PrescriptionNumber}", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打印处方失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打印处方失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -218,7 +249,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             if (Prescription != null)
             {
                 EditPrescriptionCallback?.Invoke(Prescription);
-                CloseDialogCallback?.Invoke();
+                RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
             }
         }
 
@@ -226,10 +257,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             if (Prescription == null) return;
 
-            var result = MessageBox.Show($"确定要作废该处方吗？\n处方编号：{PrescriptionNumber}\n患者：{PatientName}\n\n作废后将无法恢复！", 
-                "确认作废", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要作废该处方吗？\n处方编号：{PrescriptionNumber}\n患者：{PatientName}\n\n作废后将无法恢复！", "确认作废");
 
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 try
                 {
@@ -238,29 +268,42 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                     
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show("处方作废成功", "成功", 
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync("处方作废成功", "成功").GetAwaiter().GetResult();
                         
                         // 重新加载处方信息以更新状态
-                        await LoadPrescriptionAsync();
+                        await LoadPrescriptionAsync(Prescription.Id);
                     }
                     else
                     {
                         var error = response.Error?.Content ?? "作废处方失败";
-                        MessageBox.Show($"作废处方失败: {error}", "错误", 
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"作废处方失败: {error}", "错误").GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"作废处方失败: {ex.Message}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"作废处方失败: {ex.Message}", "错误").GetAwaiter().GetResult();
                 }
                 finally
                 {
                     IsLoading = false;
                 }
             }
+        }
+        
+        private void UpdateComputedProperties()
+        {
+            // 触发计算属性更新
+            RaisePropertyChanged(nameof(PrescriptionNumber));
+            RaisePropertyChanged(nameof(StatusDescription));
+            RaisePropertyChanged(nameof(StatusColor));
+            RaisePropertyChanged(nameof(PatientName));
+            RaisePropertyChanged(nameof(DoctorName));
+            RaisePropertyChanged(nameof(CreateTimeDescription));
+            RaisePropertyChanged(nameof(TotalItemCount));
+            RaisePropertyChanged(nameof(TotalWeight));
+            RaisePropertyChanged(nameof(ItemsListText));
+            RaisePropertyChanged(nameof(CanEdit));
+            RaisePropertyChanged(nameof(CanVoid));
         }
     }
 }

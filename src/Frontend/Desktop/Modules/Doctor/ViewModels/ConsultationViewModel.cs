@@ -27,12 +27,16 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
     /// </summary>
     public class ConsultationViewModel : BindableBase, INotifyPropertyChanged
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IHerbService _herbService;
         private readonly IRecordService _recordService;
         private readonly IPrescriptionPrintService _prescriptionPrintService;
 
-        public ConsultationViewModel(IHerbService herbService, IRecordService recordService, IPrescriptionPrintService prescriptionPrintService)
+        public ConsultationViewModel(IHerbService herbService, IRecordService recordService, IPrescriptionPrintService prescriptionPrintService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _herbService = herbService;
             _recordService = recordService;
             _prescriptionPrintService = prescriptionPrintService;
@@ -183,7 +187,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             var existingItem = CurrentRecord.Prescription.FirstOrDefault(p => p.Herb.Id == SelectedHerb.Id);
             if (existingItem != null)
             {
-                MessageBox.Show("该药材已在处方中，请修改剂量或删除后重新添加。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("该药材已在处方中，请修改剂量或删除后重新添加。", "提示").GetAwaiter().GetResult();
                 return;
             }
 
@@ -225,7 +229,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"生成预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                await _commonDialogService.ShowErrorAsync($"生成预览失败：{ex.Message}", "错误");
             }
         }
 
@@ -257,16 +261,16 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 var result = await _recordService.AddAsync(createDto);
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show("病历保存成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("病历保存成功！", "成功").GetAwaiter().GetResult();
                 }
                 else
                 {
-                    MessageBox.Show($"病历保存失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"病历保存失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存病历时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存病历时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -276,7 +280,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             {
                 if (!CurrentRecord.Prescription.Any())
                 {
-                    MessageBox.Show("处方为空，无法打印。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await _commonDialogService.ShowWarningAsync("处方为空，无法打印。", "提示");
                     return;
                 }
 
@@ -285,16 +289,16 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 
                 if (success)
                 {
-                    MessageBox.Show("处方已发送到打印机。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("处方已发送到打印机。", "成功").GetAwaiter().GetResult();
                 }
                 else
                 {
-                    MessageBox.Show("打印失败，请检查打印机设置。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync("打印失败，请检查打印机设置。", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打印处方时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打印处方时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -304,7 +308,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             {
                 if (!CurrentRecord.Prescription.Any())
                 {
-                    MessageBox.Show("处方为空，无法保存。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await _commonDialogService.ShowWarningAsync("处方为空，无法保存。", "提示");
                     return;
                 }
 
@@ -322,17 +326,17 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                     
                     if (success)
                     {
-                        MessageBox.Show($"处方已保存到：{saveDialog.FileName}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync($"处方已保存到：{saveDialog.FileName}", "成功").GetAwaiter().GetResult();
                     }
                     else
                     {
-                        MessageBox.Show("保存失败。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync("保存失败。", "错误").GetAwaiter().GetResult();
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存PDF时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存PDF时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -347,14 +351,14 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 CurrentRecord.Status = "Completed";
                 CurrentRecord.UpdateTime = DateTime.Now;
                 
-                MessageBox.Show("看诊已完成！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                await _commonDialogService.ShowInformationAsync("看诊已完成！", "成功");
                 
                 // 重置为新的看诊
                 InitializeNewConsultation();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"完成看诊时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"完成看诊时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -375,7 +379,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载药材列表失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                await _commonDialogService.ShowErrorAsync($"加载药材列表失败：{ex.Message}", "错误");
             }
         }
 

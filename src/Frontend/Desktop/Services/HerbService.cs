@@ -31,16 +31,10 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[HerbService] 开始搜索药材，请求参数: Page={query.CurrentPage}, PageSize={query.PageSize}");
-                
                 var response = await _herbApiService.GetPagedHerbsAsync(query);
-                
-                System.Diagnostics.Debug.WriteLine($"[HerbService] API响应: StatusCode={response.StatusCode}, IsSuccess={response.IsSuccessStatusCode}");
                 
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[HerbService] API返回数据: TotalCount={response.Content.TotalCount}, Items.Count={response.Content.Items.Count}");
-                    
                     var herbInfos = response.Content.Items.Select(ConvertToHerbInfo).ToList();
                     return new PagedResult
                     {
@@ -50,16 +44,10 @@ namespace LYBT.WPF.Client.Services
                         PageSize = response.Content.PageSize
                     };
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[HerbService] API响应失败: Error={response.Error?.Content}");
-                }
                 return new PagedResult { Items = new List<HerbInfo>(), TotalCount = 0 };
             }
             catch (Refit.ApiException apiEx)
             {
-                System.Diagnostics.Debug.WriteLine($"[HerbService] API异常: {apiEx.StatusCode} - {apiEx.Message}");
-                
                 // 返回空结果而不是抛出异常
                 return new PagedResult 
                 { 
@@ -72,8 +60,6 @@ namespace LYBT.WPF.Client.Services
             }
             catch (System.Net.Http.HttpRequestException httpEx)
             {
-                System.Diagnostics.Debug.WriteLine($"[HerbService] 网络异常: {httpEx.Message}");
-                
                 // 返回空结果而不是抛出异常
                 return new PagedResult 
                 { 
@@ -84,8 +70,6 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[HerbService] 搜索药材异常: {ex.Message}");
-                
                 // 返回空结果而不是抛出异常
                 return new PagedResult 
                 { 
@@ -141,9 +125,10 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> CreateHerbAsync(HerbCreateDto dto)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
                 await _herbApiService.CreateHerbAsync(dto)
             );
+            return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage);
         }
 
         /// <summary>

@@ -14,6 +14,8 @@ namespace LYBT.WPF.Client.Modules.Physiotherapy.ViewModels
     /// </summary>
     public class PhysiotherapyManagementViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IPhysiotherapyService _physiotherapyService;
         #region 属性
 
@@ -97,24 +99,26 @@ namespace LYBT.WPF.Client.Modules.Physiotherapy.ViewModels
 
         #endregion
 
-        public PhysiotherapyManagementViewModel(IPhysiotherapyService physiotherapyService)
+        public PhysiotherapyManagementViewModel(IPhysiotherapyService physiotherapyService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _physiotherapyService = physiotherapyService;
             
             AppointmentList = new ObservableCollection<PhysiotherapyAppointmentInfo>();
             TreatmentTypeList = new ObservableCollection<TreatmentTypeInfo>();
 
             // 初始化命令
-            AddAppointmentCommand = new DelegateCommand(() => MessageBox.Show("新增预约功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information));
+            AddAppointmentCommand = new DelegateCommand(() => _commonDialogService.ShowInformationAsync("新增预约功能待实现", "提示").GetAwaiter().GetResult());
             SearchCommand = new DelegateCommand(async () => await LoadAppointments());
             RefreshCommand = new DelegateCommand(async () => await LoadAppointments());
-            StartTreatmentCommand = new DelegateCommand<object>(obj => MessageBox.Show("开始理疗功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information));
-            CompleteTreatmentCommand = new DelegateCommand<object>(obj => MessageBox.Show("完成理疗功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information));
-            EditAppointmentCommand = new DelegateCommand<object>(obj => MessageBox.Show("编辑预约功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information));
-            CancelAppointmentCommand = new DelegateCommand<object>(obj => MessageBox.Show("取消预约功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information));
-            AddTreatmentTypeCommand = new DelegateCommand(() => MessageBox.Show("新增项目功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information));
-            EditTreatmentTypeCommand = new DelegateCommand(() => MessageBox.Show("编辑项目功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information));
-            DeleteTreatmentTypeCommand = new DelegateCommand(() => MessageBox.Show("删除项目功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information));
+            StartTreatmentCommand = new DelegateCommand<object>(obj => _commonDialogService.ShowInformationAsync("开始理疗功能待实现", "提示").GetAwaiter().GetResult());
+            CompleteTreatmentCommand = new DelegateCommand<object>(obj => _commonDialogService.ShowInformationAsync("完成理疗功能待实现", "提示").GetAwaiter().GetResult());
+            EditAppointmentCommand = new DelegateCommand<object>(obj => _commonDialogService.ShowInformationAsync("编辑预约功能待实现", "提示").GetAwaiter().GetResult());
+            CancelAppointmentCommand = new DelegateCommand<object>(obj => _commonDialogService.ShowInformationAsync("取消预约功能待实现", "提示").GetAwaiter().GetResult());
+            AddTreatmentTypeCommand = new DelegateCommand(() => _commonDialogService.ShowInformationAsync("新增项目功能待实现", "提示").GetAwaiter().GetResult());
+            EditTreatmentTypeCommand = new DelegateCommand(() => _commonDialogService.ShowInformationAsync("编辑项目功能待实现", "提示").GetAwaiter().GetResult());
+            DeleteTreatmentTypeCommand = new DelegateCommand(() => _commonDialogService.ShowInformationAsync("删除项目功能待实现", "提示").GetAwaiter().GetResult());
 
             // 加载数据
             _ = LoadAppointments();
@@ -134,7 +138,7 @@ namespace LYBT.WPF.Client.Modules.Physiotherapy.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载预约列表失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                await _commonDialogService.ShowErrorAsync($"加载预约列表失败：{ex.Message}", "错误");
             }
         }
 
@@ -151,7 +155,7 @@ namespace LYBT.WPF.Client.Modules.Physiotherapy.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载理疗项目失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                await _commonDialogService.ShowErrorAsync($"加载理疗项目失败：{ex.Message}", "错误");
             }
         }
     }

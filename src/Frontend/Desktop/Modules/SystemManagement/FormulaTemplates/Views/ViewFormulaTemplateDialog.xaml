@@ -6,7 +6,7 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         mc:Ignorable="d"
-        Title="查看验方模板" Height="650" Width="800"
+        Title="{Binding Title}" Height="650" Width="800"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <Grid>

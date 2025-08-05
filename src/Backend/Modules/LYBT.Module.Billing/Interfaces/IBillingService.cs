@@ -27,7 +27,7 @@ namespace LYBT.Module.Billing.Interfaces {
         /// <summary>
         /// 新增费用结算记录
         /// </summary>
-        Task<bool> AddAsync(BillingCreateDto billingCreateDto);
+        Task<BillingDto?> AddAsync(BillingCreateDto billingCreateDto);
 
         /// <summary>
         /// 编辑费用结算记录

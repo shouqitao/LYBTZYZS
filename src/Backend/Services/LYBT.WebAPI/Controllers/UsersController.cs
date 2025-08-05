@@ -6,6 +6,9 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Memory;
+
+namespace LYBT.WebAPI.Controllers;
 
 /// <summary>
 /// 用户管理控制器，提供RESTful API接口
@@ -15,26 +18,12 @@ using System.Security.Claims;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize] // 全部接口必须登录
-public class UsersController : ControllerBase {
+public class UsersController : BaseController {
     private readonly IUserService _userService;
 
-    public UsersController(IUserService userService) {
+    public UsersController(IUserService userService, IMemoryCache cache, ILogger<UsersController> logger) 
+        : base(logger, cache) {
         _userService = userService;
-    }
-
-    /// <summary>
-    /// 获取当前操作者信息
-    /// </summary>
-    private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
-        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var userName = User?.Identity?.Name;
-        var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
-
-        if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-            var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-            return (opId, userName, role);
-        }
-        throw new UnauthorizedAccessException("未登录或用户信息无效");
     }
 
     /// <summary>
@@ -55,8 +44,9 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> Add([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _userService.AddAsync(dto, operatorId, operatorName);
-        if (result) {
-            return Ok(new { message = "用户创建成功" });
+        if (result != null) {
+            LogOperation("新增用户成功", result, result.Id);
+            return Ok(result);
         } else {
             return BadRequest(new ProblemDetails {
                 Title = "操作失败",
@@ -74,7 +64,11 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
         if (result) {
-            return Ok(new { message = "用户信息更新成功" });
+            // 获取更新后的资源
+                var (_, _, operatorRole) = GetOperator();
+                var updated = await _userService.GetByIdAsync(dto.Id, operatorRole);
+                LogOperation("用户信息更新成功", updated, dto.Id);
+                return Ok(updated);
         } else {
             return BadRequest(new ProblemDetails {
                 Title = "操作失败",
@@ -92,6 +86,7 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _userService.DisableAsync(id, operatorId, operatorName);
         if (result) {
+            LogOperation("禁用用户成功", null, id);
             return Ok(new { message = "用户已禁用" });
         } else {
             return BadRequest(new ProblemDetails {
@@ -110,6 +105,7 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _userService.EnableAsync(id, operatorId, operatorName);
         if (result) {
+            LogOperation("启用用户成功", null, id);
             return Ok(new { message = "用户已启用" });
         } else {
             return BadRequest(new ProblemDetails {
@@ -149,6 +145,7 @@ public class UsersController : ControllerBase {
         }
         
         if (result) {
+            LogOperation(message, null, id);
             return Ok(new { message });
         } else {
             return BadRequest(new ProblemDetails {
@@ -166,6 +163,7 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
+        LogOperation("批量禁用用户成功", new { Count = count, Ids = dto.Ids }, null);
         return Ok(new { message = $"成功禁用 {count} 个用户", count });
     }
 
@@ -176,6 +174,7 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
+        LogOperation("批量启用用户成功", new { Count = count, Ids = dto.Ids }, null);
         return Ok(new { message = $"成功启用 {count} 个用户", count });
     }
 
@@ -187,6 +186,7 @@ public class UsersController : ControllerBase {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
         if (result) {
+            LogOperation("重置用户密码成功", null, id);
             return Ok(new { message = "密码重置成功" });
         } else {
             return BadRequest(new ProblemDetails {
@@ -212,6 +212,7 @@ public class UsersController : ControllerBase {
 
         var result = await _userService.ChangePasswordAsync(id, dto.OldPassword, dto.NewPassword);
         if (result) {
+            LogOperation("修改密码成功", null, id);
             return Ok(new { message = "密码修改成功" });
         } else {
             return BadRequest(new ProblemDetails {
@@ -237,6 +238,7 @@ public class UsersController : ControllerBase {
 
         var result = await _userService.ChangeProfileAsync(id, dto.RealName, dto.Email, dto.PhoneNumber);
         if (result) {
+            LogOperation("修改个人信息成功", dto, id);
             return Ok(new { message = "个人信息修改成功" });
         } else {
             return BadRequest(new ProblemDetails {
@@ -339,8 +341,9 @@ public class UsersController : ControllerBase {
     public async Task<IActionResult> CreateUser([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _userService.AddAsync(dto, operatorId, operatorName);
-        if (result) {
-            return Ok(new { message = "用户创建成功" });
+        if (result != null) {
+            LogOperation("创建用户成功", result, result.Id);
+            return Ok(result);
         } else {
             return BadRequest(new ProblemDetails {
                 Title = "操作失败",
@@ -360,7 +363,11 @@ public class UsersController : ControllerBase {
         dto.Id = id;
         var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
         if (result) {
-            return Ok(new { message = "用户信息更新成功" });
+            // 获取更新后的资源
+                var (_, _, operatorRole) = GetOperator();
+                var updated = await _userService.GetByIdAsync(dto.Id, operatorRole);
+                LogOperation("用户信息更新成功", updated, dto.Id);
+                return Ok(updated);
         } else {
             return BadRequest(new ProblemDetails {
                 Title = "操作失败",

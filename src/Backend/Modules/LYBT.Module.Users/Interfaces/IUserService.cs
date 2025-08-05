@@ -27,7 +27,7 @@ namespace LYBT.Module.Users.Interfaces {
         /// <summary>
         /// 新增用户
         /// </summary>
-        Task<bool> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName);
+        Task<SharedUserDto?> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 编辑用户

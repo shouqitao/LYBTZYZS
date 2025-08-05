@@ -112,7 +112,10 @@ src/
 
 1. **数据库迁移**: 只能在 `LYBT.Infrastructure` 项目中添加
 2. **数据访问**: 使用统一的 `AppDbContext`
-3. **API 控制器**: 继承 `BaseController`，返回 `ApiResponse<T>`
+3. **API 响应格式**: 遵循 [API响应标准](docs/API响应标准.md)
+   - POST 方法返回 `Ok(createdObject)`
+   - PUT/DELETE 方法返回 `Ok(new { message = "xxx" })`
+   - 错误响应使用 `ProblemDetails`
 4. **对象映射**: 使用 AutoMapper
 5. **模块模式**: 新模块遵循现有模块结构（Interfaces/Services/Repositories/Mapping）
 
@@ -141,3 +144,17 @@ src/
 - 显示和回答都用中文
 - 本项目数据库为 SQL Server（不是 LocalDB）
 - 开发时手动用 VS 执行运行操作
+
+## 文档管理
+
+- 文档同时保留一份中文版，一份英文版。
+
+## 开发规范文档
+
+- [开发规范](docs/开发规范.md) - 完整的开发规范指南
+- [前后端契约规范](docs/前后端契约规范.md) - 前后端接口约定
+- [API响应标准](docs/API响应标准.md) - API 响应格式规范
+
+## 脚本管理
+
+- 脚本都用Python脚本

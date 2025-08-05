@@ -15,7 +15,7 @@ namespace LYBT.Module.Prescriptions.Services {
 
         Task<PrescriptionDetailDto?> GetByIdAsync(string id);
 
-        Task<bool> CreateAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName);
+        Task<PrescriptionDto?> CreateAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName);
 
         Task<bool> UpdateAsync(PrescriptionEditDto dto, Guid operatorId, string operatorName);
 

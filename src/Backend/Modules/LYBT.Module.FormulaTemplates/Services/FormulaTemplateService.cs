@@ -50,12 +50,17 @@ namespace LYBT.Module.FormulaTemplates.Services {
         /// <summary>
         /// 新增模板
         /// </summary>
-        public async Task<bool> AddAsync(FormulaTemplateCreateDto dto, Guid operatorId, string operatorName) {
+        public async Task<FormulaTemplateDto?> AddAsync(FormulaTemplateCreateDto dto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<FormulaTemplateModel>(dto);
             model.Id = Guid.NewGuid();
             model.CreatedById = operatorId;
             model.CreateTime = DateTime.Now;
-            return await _repository.AddAsync(model);
+            var success = await _repository.AddAsync(model);
+            if (!success) {
+                return null;
+            }
+            // 返回创建的对象
+            return _mapper.Map<FormulaTemplateDto>(model);
         }
 
         /// <summary>

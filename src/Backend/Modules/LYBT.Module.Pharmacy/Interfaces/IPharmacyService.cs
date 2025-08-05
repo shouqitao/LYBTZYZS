@@ -27,7 +27,7 @@ namespace LYBT.Module.Pharmacy.Interfaces {
         /// <summary>
         /// 新增药房单
         /// </summary>
-        Task<bool> AddAsync(PharmacyCreateDto pharmacyCreateDto);
+        Task<PharmacyDto?> AddAsync(PharmacyCreateDto pharmacyCreateDto);
 
         /// <summary>
         /// 编辑药房单

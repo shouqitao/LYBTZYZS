@@ -15,6 +15,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// </summary>
     public class EditHerbDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IHerbService _herbService;
         private readonly Window _window;
         private HerbInfo? _originalHerb;
@@ -121,8 +123,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             set => SetProperty(ref _remark, value);
         }
 
-        public EditHerbDialogViewModel(IHerbService herbService)
+        public EditHerbDialogViewModel(IHerbService herbService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _herbService = herbService;
 
             SaveCommand = new DelegateCommand(ExecuteSave, CanExecuteSave);
@@ -190,7 +194,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             {
                 if (_originalHerb == null)
                 {
-                    MessageBox.Show("原始药材信息不能为空", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _commonDialogService.ShowErrorAsync("原始药材信息不能为空", "错误");
                     return;
                 }
 
@@ -215,18 +219,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 var response = await _herbService.UpdateHerbAsync(dto);
                 if (response.IsSuccess)
                 {
-                    MessageBox.Show("药材更新成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("药材更新成功", "成功").GetAwaiter().GetResult();
                     _window.DialogResult = true;
                     _window.Close();
                 }
                 else
                 {
-                    MessageBox.Show($"更新药材失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"更新药材失败: {response.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"更新药材失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"更新药材失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

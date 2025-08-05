@@ -13,6 +13,10 @@ using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.FormulaTemplates;
 using Prism.Commands;
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Services;
+using Prism.Ioc;
+using Prism.Dialogs;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 {
@@ -21,6 +25,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
     /// </summary>
     public class FormulaTemplateManagementViewModelRefactored : BaseManagementViewModel<FormulaTemplateInfo, IFormulaTemplateApiService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _dialogService;
+
         protected override string ModuleName => "验方模板管理";
 
         #region Properties
@@ -48,9 +55,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
         #endregion
 
-        public FormulaTemplateManagementViewModelRefactored(IFormulaTemplateApiService service)
+        public FormulaTemplateManagementViewModelRefactored(IFormulaTemplateApiService service,
+            ICommonDialogService commonDialogService,
+            IDialogService dialogService)
             : base(service)
         {
+            _commonDialogService = commonDialogService;
+            _dialogService = dialogService;
             // 初始化额外的命令
             ImportTemplatesCommand = new DelegateCommand(ImportTemplates);
             CopyTemplateCommand = new DelegateCommand<FormulaTemplateInfo>(async (template) => await CopyTemplate(template));
@@ -147,31 +158,54 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
         {
             try
             {
-                // 暂时显示提示信息，因为新增验方模板功能需要重新设计
-                MessageBox.Show("新增验方模板功能正在开发中...\n\n" +
-                    "该功能需要：\n" +
-                    "1. 输入模板名称和分类\n" +
-                    "2. 添加药材组成\n" +
-                    "3. 设置用法用量\n" +
-                    "4. 记录功效和适应症", 
-                    "功能开发中", MessageBoxButton.OK, MessageBoxImage.Information);
-                
-                // TODO: 实现新增验方模板功能
-                // var dialog = new Views.AddFormulaTemplateDialog();
-                // dialog.Owner = Application.Current.MainWindow;
-                // 
-                // // 创建 ViewModel（需要注入必要的服务）
-                // var viewModel = new ViewModels.AddFormulaTemplateDialogViewModel(Service, herbService);
-                // dialog.DataContext = viewModel;
-                // 
-                // if (dialog.ShowDialog() == true)
-                // {
-                //     RefreshCommand.Execute();
-                // }
+                // 获取应用程序实例
+                var app = Application.Current as Prism.PrismApplicationBase;
+                if (app != null && app.Container != null)
+                {
+                    try
+                    {
+                        // 尝试从容器获取服务
+                        var herbService = app.Container.Resolve<IHerbService>();
+                        var formulaService = app.Container.Resolve<IFormulaTemplateService>();
+                        
+                        var dialog = new Views.AddFormulaTemplateDialog(herbService, formulaService);
+                        dialog.Owner = Application.Current.MainWindow;
+                        
+                        if (dialog.ShowDialog() == true)
+                        {
+                            RefreshCommand.Execute();
+                        }
+                    }
+                    catch (Exception resolveEx)
+                    {
+                        // 如果容器解析失败，使用备用方案
+                        _commonDialogService.ShowInformationAsync($"服务解析失败，将使用演示模式：{resolveEx.Message}", "提示").GetAwaiter().GetResult();
+                        
+                        // 使用演示模式
+                        var dialog = new Views.AddFormulaTemplateDialog(null, null);
+                        dialog.Owner = Application.Current.MainWindow;
+                        
+                        if (dialog.ShowDialog() == true)
+                        {
+                            RefreshCommand.Execute();
+                        }
+                    }
+                }
+                else
+                {
+                    // 无法获取容器，使用演示模式
+                    var dialog = new Views.AddFormulaTemplateDialog(null, null);
+                    dialog.Owner = Application.Current.MainWindow;
+                    
+                    if (dialog.ShowDialog() == true)
+                    {
+                        RefreshCommand.Execute();
+                    }
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开新增验方模板对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开新增验方模板对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -181,8 +215,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
             try
             {
-                var dialog = new Views.EditFormulaTemplateDialog(item.Id);
+                // 通过容器解析ViewModel
+                var containerProvider = (Application.Current as Prism.PrismApplicationBase)?.Container;
+                if (containerProvider == null)
+                {
+                    _commonDialogService.ShowErrorAsync("无法获取依赖注入容器", "错误").GetAwaiter().GetResult();
+                    return;
+                }
+
+                var viewModel = containerProvider.Resolve<EditFormulaTemplateDialogViewModel>();
+                var dialog = new Views.EditFormulaTemplateDialog(viewModel);
                 dialog.Owner = Application.Current.MainWindow;
+                dialog.Initialize(item.Id);
                 
                 if (dialog.ShowDialog() == true)
                 {
@@ -191,7 +235,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开编辑验方模板对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开编辑验方模板对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -201,13 +245,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
             try
             {
-                var dialog = new Views.ViewFormulaTemplateDialog(item.Id);
-                dialog.Owner = Application.Current.MainWindow;
-                dialog.ShowDialog();
+                var parameters = new DialogParameters
+                {
+                    { "formulaTemplateId", item.Id }
+                };
+
+                _dialogService.ShowDialog("ViewFormulaTemplateDialog", parameters, result =>
+                {
+                    // 对话框关闭后的处理（如果需要）
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开验方模板详情对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开验方模板详情对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -235,8 +285,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                     var extension = System.IO.Path.GetExtension(openDialog.FileName).ToLower();
                     if (extension != ".xlsx" && extension != ".csv")
                     {
-                        MessageBox.Show("不支持的文件格式，请选择 Excel (.xlsx) 或 CSV (.csv) 文件", 
-                            "格式错误", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        await _commonDialogService.ShowWarningAsync("不支持的文件格式，请选择 Excel (.xlsx) 或 CSV (.csv) 文件", "格式错误");
                         return;
                     }
                     
@@ -255,7 +304,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                                     "每个模板可包含多行药材信息。\n\n" +
                                     "导入功能当前为演示版本，实际导入需要后端支持。";
                     
-                    MessageBox.Show(helpMessage, "导入说明", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync(helpMessage, "导入说明").GetAwaiter().GetResult();
                     
                     // TODO: 实际导入时需要：
                     // 1. 使用 EPPlus 或类似库读取 Excel 文件
@@ -263,13 +312,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                     // 3. 批量调用 API 创建验方模板
                     // 4. 显示导入进度和结果
                     
-                    MessageBox.Show($"已选择文件：{openDialog.FileName}\n\n实际导入功能需要后端API支持批量导入。", 
-                        "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync($"已选择文件：{openDialog.FileName}\n\n实际导入功能需要后端API支持批量导入。", "提示").GetAwaiter().GetResult();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"导入验方模板时发生错误：{ex.Message}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"导入验方模板时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
                 }
                 finally
                 {
@@ -282,10 +329,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
         {
             if (template == null) return;
 
-            var result = MessageBox.Show($"确定要复制验方模板 \"{template.Name}\" 吗？", 
-                "确认复制", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要复制验方模板 \"{template.Name}\" 吗？", "确认复制");
             
-            if (result == MessageBoxResult.Yes)
+            if (result)
             {
                 try
                 {
@@ -293,18 +339,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                     var response = await Service.CopyFormulaTemplateAsync(template.Id, newName);
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show($"验方模板 \"{template.Name}\" 已复制", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync($"验方模板 \"{template.Name}\" 已复制", "成功").GetAwaiter().GetResult();
                         RefreshCommand.Execute();
                     }
                     else
                     {
                         var error = response.Error?.Content ?? "复制失败";
-                        MessageBox.Show($"复制验方模板失败：{error}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"复制验方模板失败：{error}", "错误").GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"复制验方模板时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"复制验方模板时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
                 }
             }
         }

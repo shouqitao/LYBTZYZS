@@ -14,6 +14,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 {
     /// <summary>
@@ -21,11 +22,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
     /// </summary>
     public class UserManagementViewModelSimple : BaseManagementViewModel<UserInfo, IUserApiService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         protected override string ModuleName => "用户管理";
 
-        public UserManagementViewModelSimple(IUserApiService service)
+        public UserManagementViewModelSimple(IUserApiService service,
+            ICommonDialogService commonDialogService)
             : base(service)
         {
+            _commonDialogService = commonDialogService;
         }
 
         #region 重写基类方法
@@ -144,12 +149,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 if (dialog.ShowDialog() == true)
                 {
                     RefreshCommand.Execute();
-                    MessageBox.Show("用户添加成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("用户添加成功", "成功").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"添加用户失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"添加用户失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -180,12 +185,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 if (dialog.ShowDialog() == true)
                 {
                     RefreshCommand.Execute();
-                    MessageBox.Show("用户编辑成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("用户编辑成功", "成功").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"编辑用户失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"编辑用户失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

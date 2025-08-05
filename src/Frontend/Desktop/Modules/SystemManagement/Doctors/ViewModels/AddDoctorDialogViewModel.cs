@@ -15,6 +15,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
     /// </summary>
     public class AddDoctorDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IDoctorService _doctorService;
 
         #region 属性
@@ -145,8 +147,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
         public Action<bool>? CloseDialogCallback { get; set; }
 
-        public AddDoctorDialogViewModel(IDoctorService doctorService)
+        public AddDoctorDialogViewModel(IDoctorService doctorService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _doctorService = doctorService;
 
             // 初始化职称选项
@@ -175,38 +179,38 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
             // 验证必填字段
             if (string.IsNullOrWhiteSpace(Name))
             {
-                MessageBox.Show("请输入医生姓名", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("请输入医生姓名", "提示");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Code))
             {
-                MessageBox.Show("请输入医生工号", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("请输入医生工号", "提示");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Department))
             {
-                MessageBox.Show("请选择所属科室", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请选择所属科室", "提示").GetAwaiter().GetResult();
                 return;
             }
 
             if (!BirthDate.HasValue)
             {
-                MessageBox.Show("请选择出生日期", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请选择出生日期", "提示").GetAwaiter().GetResult();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Phone))
             {
-                MessageBox.Show("请输入联系电话", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请输入联系电话", "提示").GetAwaiter().GetResult();
                 return;
             }
 
             // 验证手机号格式
             if (!System.Text.RegularExpressions.Regex.IsMatch(Phone, @"^1[3-9]\d{9}$"))
             {
-                MessageBox.Show("请输入正确的手机号码", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请输入正确的手机号码", "提示").GetAwaiter().GetResult();
                 return;
             }
 
@@ -245,17 +249,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 var result = await _doctorService.AddDoctorAsync(doctor);
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show("医生信息保存成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("医生信息保存成功", "成功").GetAwaiter().GetResult();
                     CloseDialogCallback?.Invoke(true);
                 }
                 else
                 {
-                    MessageBox.Show($"保存失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"保存失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

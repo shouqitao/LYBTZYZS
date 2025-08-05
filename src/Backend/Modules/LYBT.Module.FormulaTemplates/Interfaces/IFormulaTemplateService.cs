@@ -27,7 +27,7 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         /// <summary>
         /// 新增模板
         /// </summary>
-        Task<bool> AddAsync(FormulaTemplateCreateDto dto, Guid operatorId, string operatorName);
+        Task<FormulaTemplateDto?> AddAsync(FormulaTemplateCreateDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 更新模板

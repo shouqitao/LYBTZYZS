@@ -17,6 +17,8 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
     /// </summary>
     public class RegistrationMainViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IRegistrationService _registrationService;
         private string _searchKeyword = string.Empty;
         private string _searchType = "all";
@@ -26,8 +28,10 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
         private int _totalCount = 0;
         private bool _isLoading = false;
 
-        public RegistrationMainViewModel(IRegistrationService registrationService)
+        public RegistrationMainViewModel(IRegistrationService registrationService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _registrationService = registrationService;
             
             Registrations = new ObservableCollection<RegistrationInfo>();
@@ -199,8 +203,7 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
             {
                 // TODO: 需要通过依赖注入获取服务实例来创建ViewModel
                 // 暂时显示提示信息，避免运行时错误
-                MessageBox.Show("新增挂号功能需要配置依赖注入服务后才能使用。\n请在SystemManagement模块中使用该功能。", 
-                    "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("新增挂号功能需要配置依赖注入服务后才能使用。\n请在SystemManagement模块中使用该功能。", "提示").GetAwaiter().GetResult();
                 
                 // 正确的实现方式应该是：
                 // 1. 通过构造函数注入IContainerProvider或IServiceProvider
@@ -209,7 +212,7 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开新增挂号对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开新增挂号对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -234,7 +237,7 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开挂号详情对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开挂号详情对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -242,25 +245,25 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
         {
             if (registration == null) return;
             
-            var result = MessageBox.Show($"确定要删除挂号 '{registration.RegistrationNumber}' 吗？", "确认删除", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要删除挂号 '{registration.RegistrationNumber}' 吗？", "确认删除");
+            if (result )
             {
                 try
                 {
                     var response = await _registrationService.DeleteRegistrationAsync(registration.Id);
                     if (response.IsSuccess)
                     {
-                        MessageBox.Show("挂号删除成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync("挂号删除成功", "成功").GetAwaiter().GetResult();
                         LoadRegistrations(); // 刷新列表
                     }
                     else
                     {
-                        MessageBox.Show($"删除挂号失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"删除挂号失败: {response.ErrorMessage}", "错误").GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"删除挂号失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"删除挂号失败: {ex.Message}", "错误").GetAwaiter().GetResult();
                 }
             }
         }
@@ -269,25 +272,25 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
         {
             if (registration == null) return;
             
-            var result = MessageBox.Show($"确定要取消挂号 '{registration.RegistrationNumber}' 吗？", "确认取消", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要取消挂号 '{registration.RegistrationNumber}' 吗？", "确认取消");
+            if (result )
             {
                 try
                 {
                     var response = await _registrationService.CancelRegistrationAsync(registration.Id);
                     if (response.IsSuccess)
                     {
-                        MessageBox.Show("挂号取消成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync("挂号取消成功", "成功").GetAwaiter().GetResult();
                         LoadRegistrations(); // 刷新列表
                     }
                     else
                     {
-                        MessageBox.Show($"取消挂号失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"取消挂号失败: {response.ErrorMessage}", "错误").GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"取消挂号失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"取消挂号失败: {ex.Message}", "错误").GetAwaiter().GetResult();
                 }
             }
         }
@@ -299,14 +302,12 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
             // 检查当前状态是否可以签到
             if (registration.Status != LYBT.Shared.Models.Enums.RegistrationStatus.Scheduled)
             {
-                MessageBox.Show($"患者 '{registration.PatientName}' 当前状态为 '{registration.StatusText}'，无法签到", 
-                    "无法签到", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync($"患者 '{registration.PatientName}' 当前状态为 '{registration.StatusText}'，无法签到", "无法签到");
                 return;
             }
             
             // 确认签到操作
-            var result = MessageBox.Show($"确认患者 '{registration.PatientName}' 签到？\n将状态改为'已到达'", "确认签到", 
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = await _commonDialogService.ShowConfirmationAsync($"确认患者 '{registration.PatientName}' 签到？\n将状态改为'已到达'", "确认签到");
             if (result != MessageBoxResult.Yes) return;
             
             try
@@ -330,19 +331,17 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
                 var response = await _registrationService.UpdateRegistrationAsync(updateDto);
                 if (response.IsSuccess)
                 {
-                    MessageBox.Show($"患者 '{registration.PatientName}' 签到成功", "成功", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync($"患者 '{registration.PatientName}' 签到成功", "成功").GetAwaiter().GetResult();
                     LoadRegistrations(); // 刷新列表
                 }
                 else
                 {
-                    MessageBox.Show($"签到失败: {response.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"签到失败: {response.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"签到失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"签到失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -459,7 +458,7 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载挂号列表失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载挂号列表失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {

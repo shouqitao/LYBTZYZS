@@ -27,7 +27,7 @@ namespace LYBT.Module.Queueing.Interfaces {
         /// <summary>
         /// 新增排队
         /// </summary>
-        Task<bool> AddAsync(QueueingCreateDto dto);
+        Task<QueueingDto?> AddAsync(QueueingCreateDto dto);
 
         /// <summary>
         /// 编辑排队信息

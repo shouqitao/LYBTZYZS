@@ -9,6 +9,7 @@ using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Doctors.Views;
 using LYBT.Shared.Models.Common;
+using Prism.Dialogs;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 {
@@ -17,11 +18,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
     /// </summary>
     public class DoctorManagementViewModelRefactored : BaseManagementViewModel<DoctorInfo, IDoctorService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _dialogService;
+
         protected override string ModuleName => "医生";
 
-        public DoctorManagementViewModelRefactored(IDoctorService doctorService)
+        public DoctorManagementViewModelRefactored(IDoctorService doctorService,
+            ICommonDialogService commonDialogService,
+            IDialogService dialogService)
             : base(doctorService)
         {
+            _commonDialogService = commonDialogService;
+            _dialogService = dialogService;
         }
 
         #region 实现抽象方法
@@ -149,8 +157,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开新增医生对话框失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开新增医生对话框失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -184,8 +191,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开编辑医生对话框失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开编辑医生对话框失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -198,24 +204,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
             try
             {
-                var viewModel = new ViewDoctorDialogViewModel(Service, doctor.Id);
-                var dialog = new ViewDoctorDialog
+                var parameters = new DialogParameters
                 {
-                    DataContext = viewModel,
-                    Owner = Application.Current.MainWindow
+                    { "doctorId", doctor.Id }
                 };
 
-                viewModel.CloseDialogCallback = () =>
+                _dialogService.ShowDialog("ViewDoctorDialog", parameters, result =>
                 {
-                    dialog.Close();
-                };
-
-                dialog.ShowDialog();
+                    // 对话框关闭后的处理（如果需要）
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开医生详情对话框失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开医生详情对话框失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -231,11 +232,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
             if (doctor == null) return;
 
             var action = doctor.IsActive ? "禁用" : "启用";
-            var confirmResult = MessageBox.Show(
-                $"确定要{action}医生 {doctor.Name} 吗？", 
-                "确认", 
-                MessageBoxButton.YesNo, 
-                MessageBoxImage.Question);
+            var confirmResult = await _commonDialogService.ShowConfirmationAsync($"确定要{action}医生 {doctor.Name} 吗？", "确认");
                 
             if (confirmResult != MessageBoxResult.Yes) return;
 
@@ -246,24 +243,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show($"{action}成功", "提示", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync($"{action}成功", "提示").GetAwaiter().GetResult();
                     RefreshCommand.Execute();
                 }
                 else
                 {
                     // 恢复原状态
                     doctor.IsActive = !doctor.IsActive;
-                    MessageBox.Show($"{action}失败：{result.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"{action}失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
                 // 恢复原状态
                 doctor.IsActive = !doctor.IsActive;
-                MessageBox.Show($"{action}失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"{action}失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

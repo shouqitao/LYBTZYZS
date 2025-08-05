@@ -4,16 +4,49 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Doctors;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Dialogs;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 {
     /// <summary>
     /// 查看医生详情对话框视图模型
     /// </summary>
-    public class ViewDoctorDialogViewModel : BindableBase
+    public class ViewDoctorDialogViewModel : BindableBase, IDialogAware
     {
+        private readonly ICommonDialogService _commonDialogService;
         private readonly IDoctorService _doctorService;
-        private readonly Guid _doctorId;
+
+        #region IDialogAware
+
+        private string _title = "医生详情";
+        public string Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
+
+        public event Action<IDialogResult>? RequestClose;
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("doctorId"))
+            {
+                var doctorId = parameters.GetValue<Guid>("doctorId");
+                _ = LoadDoctorAsync(doctorId);
+            }
+            else if (parameters.ContainsKey("doctor"))
+            {
+                Doctor = parameters.GetValue<DoctorInfo>("doctor");
+                IsLoading = false;
+                UpdateComputedProperties();
+            }
+        }
+
+        #endregion
 
         #region 属性
 
@@ -68,52 +101,38 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
         #endregion
 
-        public Action? CloseDialogCallback { get; set; }
-
-        public ViewDoctorDialogViewModel(IDoctorService doctorService, Guid doctorId)
+        public ViewDoctorDialogViewModel(IDoctorService doctorService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _doctorService = doctorService;
-            _doctorId = doctorId;
 
             CloseCommand = new DelegateCommand(ExecuteClose);
             PrintCommand = new DelegateCommand(ExecutePrint);
-
-            // 加载医生信息
-            _ = LoadDoctorAsync();
         }
 
-        private async System.Threading.Tasks.Task LoadDoctorAsync()
+        private async System.Threading.Tasks.Task LoadDoctorAsync(Guid doctorId)
         {
             try
             {
                 IsLoading = true;
-                var result = await _doctorService.GetDoctorByIdAsync(_doctorId);
+                var result = await _doctorService.GetDoctorByIdAsync(doctorId);
                 
                 if (result.IsSuccess && result.Data != null)
                 {
                     Doctor = result.Data;
-                    
-                    // 触发计算属性更新
-                    RaisePropertyChanged(nameof(AgeDescription));
-                    RaisePropertyChanged(nameof(GenderDescription));
-                    RaisePropertyChanged(nameof(TitleDescription));
-                    RaisePropertyChanged(nameof(StatusDescription));
-                    RaisePropertyChanged(nameof(WorkStatusDescription));
-                    RaisePropertyChanged(nameof(ActiveStatusDescription));
-                    RaisePropertyChanged(nameof(CreateTimeDescription));
+                    UpdateComputedProperties();
                 }
                 else
                 {
-                    MessageBox.Show($"加载医生信息失败：{result.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    CloseDialogCallback?.Invoke();
+                    await _commonDialogService.ShowErrorAsync($"加载医生信息失败：{result.ErrorMessage}", "错误");
+                    RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载医生信息失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                CloseDialogCallback?.Invoke();
+                await _commonDialogService.ShowErrorAsync($"加载医生信息失败：{ex.Message}", "错误");
+                RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
             }
             finally
             {
@@ -123,13 +142,25 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
         private void ExecuteClose()
         {
-            CloseDialogCallback?.Invoke();
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
         }
 
-        private void ExecutePrint()
+        private async void ExecutePrint()
         {
             // TODO: 实现打印功能
-            MessageBox.Show("打印功能开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            await _commonDialogService.ShowInformationAsync("打印功能开发中...", "提示");
+        }
+
+        private void UpdateComputedProperties()
+        {
+            // 触发计算属性更新
+            RaisePropertyChanged(nameof(AgeDescription));
+            RaisePropertyChanged(nameof(GenderDescription));
+            RaisePropertyChanged(nameof(TitleDescription));
+            RaisePropertyChanged(nameof(StatusDescription));
+            RaisePropertyChanged(nameof(WorkStatusDescription));
+            RaisePropertyChanged(nameof(ActiveStatusDescription));
+            RaisePropertyChanged(nameof(CreateTimeDescription));
         }
     }
 }

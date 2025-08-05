@@ -14,7 +14,7 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 新增病人
         /// </summary>
-        Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName);
+        Task<PatientDto?> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 编辑病人

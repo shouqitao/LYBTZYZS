@@ -7,6 +7,7 @@ using LYBT.WPF.Client.Core.Models.Roles;
 using Prism.Commands;
 using Prism.Mvvm;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
 {
     /// <summary>
@@ -14,6 +15,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
     /// </summary>
     public class EditRolePermissionDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly RolePermissionInfo _originalRole;
         private bool _isLoading = false;
 
@@ -50,8 +53,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
         public Action? CloseDialogCallback { get; set; }
         public Action<bool>? SaveCompleteCallback { get; set; }
 
-        public EditRolePermissionDialogViewModel(RolePermissionInfo role)
+        public EditRolePermissionDialogViewModel(RolePermissionInfo role,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _originalRole = role ?? throw new ArgumentNullException(nameof(role));
             
             // 创建副本用于编辑
@@ -213,15 +218,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
                 // TODO: 这里应该调用服务保存到后端
                 // await _roleService.UpdateRolePermissionsAsync(Role.Role, selectedPermissions);
 
-                MessageBox.Show("角色权限保存成功！", "成功", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("角色权限保存成功！", "成功").GetAwaiter().GetResult();
 
                 SaveCompleteCallback?.Invoke(true);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存角色权限失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存角色权限失败: {ex.Message}", "错误").GetAwaiter().GetResult();
                 SaveCompleteCallback?.Invoke(false);
             }
             finally
@@ -234,8 +237,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
         {
             if (HasChanges)
             {
-                var result = MessageBox.Show("有未保存的更改，确定要关闭吗？", "确认", 
-                    MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var result = _commonDialogService.ShowConfirmationAsync("有未保存的更改，确定要关闭吗？", "确认").GetAwaiter().GetResult();
                 if (result != MessageBoxResult.Yes)
                     return;
             }
@@ -245,9 +247,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
 
         private void ExecuteReset()
         {
-            var result = MessageBox.Show("确定要重置所有权限设置吗？", "确认重置", 
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            var result = _commonDialogService.ShowConfirmationAsync("确定要重置所有权限设置吗？", "确认重置").GetAwaiter().GetResult();
+            if (result )
             {
                 InitializePermissions();
             }

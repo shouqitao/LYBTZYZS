@@ -37,7 +37,7 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 新增患者档案档案，并记录操作日志
         /// </summary>
-        public async Task<bool> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
+        public async Task<PatientDto?> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
             // 三要素匹配验证，防止重复患者档案
             var duplicateCheck = await CheckPatientDuplicateAsync(dto.Name, dto.PhoneNumber, dto.IDNumber);
             if (duplicateCheck.HasDuplicate) {
@@ -70,9 +70,12 @@ namespace LYBT.Module.Patients.Services {
             if (result) {
                 await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
                     $"新增患者档案：{model.Name}", JsonSerializer.Serialize(model));
+                    
+                // 返回创建的对象
+                return _mapper.Map<PatientDto>(model);
             }
 
-            return result;
+            return null;
         }
 
         public async Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
@@ -252,7 +255,8 @@ namespace LYBT.Module.Patients.Services {
             int count = 0;
             foreach (var dto in dtos) {
                 try {
-                    if (await AddAsync(dto, operatorId, operatorName))
+                    var result = await AddAsync(dto, operatorId, operatorName);
+                    if (result != null)
                         count++;
                 } catch (Exception) {
                     // 导入失败的记录跳过，继续处理下一条

@@ -68,12 +68,17 @@ namespace LYBT.Module.Queueing.Services {
         /// <summary>
         /// 新增排队
         /// </summary>
-        public async Task<bool> AddAsync(QueueingCreateDto dto) {
+        public async Task<QueueingDto?> AddAsync(QueueingCreateDto dto) {
             var model = _mapper.Map<QueueingModel>(dto);
             model.Id = Guid.NewGuid();
             model.QueueTime = DateTime.Now;
             model.Status = QueueStatus.Waiting;
-            return await _repository.AddAsync(model);
+            var result = await _repository.AddAsync(model);
+            if (!result)
+                return null;
+            
+            // 返回创建的对象
+            return _mapper.Map<QueueingDto>(model);
         }
 
         /// <summary>

@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers {
 
@@ -16,28 +17,11 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class PrescriptionsController : ControllerBase {
+    public class PrescriptionsController : BaseController {
         private readonly IPrescriptionService _service;
-        private readonly ILogger<PrescriptionsController> _logger;
-
-        public PrescriptionsController(IPrescriptionService service, ILogger<PrescriptionsController> logger) {
+        public PrescriptionsController(IPrescriptionService service, IMemoryCache cache, ILogger<PrescriptionsController> logger) 
+            : base(logger, cache) {
             _service = service;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 获取当前操作者信息
-        /// </summary>
-        private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-                return (opId, userName, role);
-            }
-            throw new UnauthorizedAccessException("未登录或用户信息无效");
         }
 
         /// <summary>
@@ -83,8 +67,7 @@ namespace LYBT.WebAPI.Controllers {
                 var pagedResult = await _service.GetPagedAsync(query, operatorRole);
                 return Ok(pagedResult);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取处方列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取处方列表失败", Status = 500 });
+                return HandleException(ex, "获取处方列表");
             }
         }
 
@@ -94,17 +77,14 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("paged")]
         public async Task<ActionResult<PaginatedResult<PrescriptionDto>>> GetPagedList([FromQuery] PaginationRequest query) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _service.GetPagedAsync(query, operatorRole);
                 return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "分页获取处方列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "分页获取处方列表失败", Status = 500 });
+                return HandleException(ex, "分页获取处方列表");
             }
         }
 
@@ -114,9 +94,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("{id}")]
         public async Task<ActionResult<PrescriptionDetailDto>> GetById(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "处方ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "处方ID");
+                if (validationResult != null) return validationResult;
 
                 var detail = await _service.GetByIdAsync(id.ToString());
                 if (detail == null) {
@@ -124,8 +103,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
                 return Ok(detail);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取处方详情失败，ID: {PrescriptionId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取处方详情失败", Status = 500 });
+                return HandleException(ex, "获取处方详情", new { PrescriptionId = id });
             }
         }
 
@@ -133,24 +111,21 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增处方
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<object>> Add([FromBody] PrescriptionCreateDto dto) {
+        public async Task<ActionResult<PrescriptionDto>> Add([FromBody] PrescriptionCreateDto dto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.CreateAsync(dto, operatorId, operatorName);
-                if (!result) {
+                if (result == null) {
                     return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "新增处方失败", Status = 400 });
                 }
 
-                _logger.LogInformation("新增处方成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return Ok(new { message = "新增处方成功" });
+                LogOperation("新增处方成功", result, result.Id);
+                return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "新增处方失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "新增处方失败", Status = 500 });
+                return HandleException(ex, "新增处方");
             }
         }
 
@@ -158,12 +133,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 编辑处方
         /// </summary>
         [HttpPut]
-        public async Task<ActionResult<object>> Update([FromBody] PrescriptionEditDto dto) {
+        public async Task<ActionResult<PrescriptionDto>> Update([FromBody] PrescriptionEditDto dto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.UpdateAsync(dto, operatorId, operatorName);
@@ -171,11 +144,12 @@ namespace LYBT.WebAPI.Controllers {
                     return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "编辑处方失败", Status = 400 });
                 }
 
-                _logger.LogInformation("编辑处方成功，处方ID: {PrescriptionId}，操作者: {OperatorName}({OperatorId})", dto.Id, operatorName, operatorId);
-                return Ok(new { message = "编辑处方成功" });
+                // 获取更新后的资源
+                var updated = await _service.GetByIdAsync(dto.Id.ToString());
+                LogOperation("编辑处方成功", updated, dto.Id);
+                return Ok(updated);
             } catch (Exception ex) {
-                _logger.LogError(ex, "编辑处方失败，处方ID: {PrescriptionId}", dto.Id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "编辑处方失败", Status = 500 });
+                return HandleException(ex, "编辑处方", new { PrescriptionId = dto.Id });
             }
         }
 
@@ -183,11 +157,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 删除处方
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<object>> Delete(Guid id) {
+        public async Task<IActionResult> Delete(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "处方ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "处方ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.DeleteAsync(id.ToString(), operatorId, operatorName);
@@ -195,11 +168,10 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "处方不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("删除处方成功，处方ID: {PrescriptionId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(new { message = "删除处方成功" });
+                LogOperation("删除处方成功", null, id);
+                return NoContent();
             } catch (Exception ex) {
-                _logger.LogError(ex, "删除处方失败，处方ID: {PrescriptionId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "删除处方失败", Status = 500 });
+                return HandleException(ex, "删除处方", new { PrescriptionId = id });
             }
         }
 
@@ -207,11 +179,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 作废处方
         /// </summary>
         [HttpPost("void/{id}")]
-        public async Task<ActionResult<object>> Cancel(Guid id) {
+        public async Task<ActionResult<PrescriptionDto>> Cancel(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "处方ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "处方ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.CancelAsync(id.ToString(), operatorId, operatorName);
@@ -219,11 +190,12 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "处方不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("作废处方成功，处方ID: {PrescriptionId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(new { message = "作废处方成功" });
+                // 获取更新后的资源
+                var updated = await _service.GetByIdAsync(id.ToString());
+                LogOperation("作废处方成功", updated, id);
+                return Ok(updated);
             } catch (Exception ex) {
-                _logger.LogError(ex, "作废处方失败，处方ID: {PrescriptionId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "作废处方失败", Status = 500 });
+                return HandleException(ex, "作废处方", new { PrescriptionId = id });
             }
         }
     }

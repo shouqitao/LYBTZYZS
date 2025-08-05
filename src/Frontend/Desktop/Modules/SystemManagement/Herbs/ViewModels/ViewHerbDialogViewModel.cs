@@ -5,16 +5,49 @@ using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Dialogs;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 {
     /// <summary>
     /// 查看中药材详情对话框视图模型
     /// </summary>
-    public class ViewHerbDialogViewModel : BindableBase
+    public class ViewHerbDialogViewModel : BindableBase, IDialogAware
     {
+        private readonly ICommonDialogService _commonDialogService;
         private readonly IHerbService _herbService;
-        private readonly Guid _herbId;
+
+        #region IDialogAware
+
+        private string _title = "中药材详情";
+        public string Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
+
+        public event Action<IDialogResult>? RequestClose;
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("herbId"))
+            {
+                var herbId = parameters.GetValue<Guid>("herbId");
+                _ = LoadHerbAsync(herbId);
+            }
+            else if (parameters.ContainsKey("herb"))
+            {
+                Herb = parameters.GetValue<HerbInfo>("herb");
+                IsLoading = false;
+                UpdateComputedProperties();
+            }
+        }
+
+        #endregion
 
         #region 属性
 
@@ -118,60 +151,39 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         #endregion
 
-        public Action? CloseDialogCallback { get; set; }
-        public Action<HerbInfo>? EditHerbCallback { get; set; }
-
-        public ViewHerbDialogViewModel(IHerbService herbService, Guid herbId)
+        public ViewHerbDialogViewModel(IHerbService herbService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _herbService = herbService;
-            _herbId = herbId;
 
             CloseCommand = new DelegateCommand(ExecuteClose);
             PrintCommand = new DelegateCommand(ExecutePrint);
             EditCommand = new DelegateCommand(ExecuteEdit);
-
-            // 加载中药材信息
-            _ = LoadHerbAsync();
         }
 
-        private async System.Threading.Tasks.Task LoadHerbAsync()
+        private async System.Threading.Tasks.Task LoadHerbAsync(Guid herbId)
         {
             try
             {
                 IsLoading = true;
-                var herb = await _herbService.GetByIdAsync(_herbId);
+                var herb = await _herbService.GetByIdAsync(herbId);
                 
                 if (herb != null)
                 {
                     Herb = herb;
-                    
-                    // 触发计算属性更新
-                    RaisePropertyChanged(nameof(StockStatusDescription));
-                    RaisePropertyChanged(nameof(StockStatusColor));
-                    RaisePropertyChanged(nameof(StatusDescription));
-                    RaisePropertyChanged(nameof(StatusColor));
-                    RaisePropertyChanged(nameof(ActiveStatusDescription));
-                    RaisePropertyChanged(nameof(ActiveStatusColor));
-                    RaisePropertyChanged(nameof(CreateTimeDescription));
-                    RaisePropertyChanged(nameof(UpdateTimeDescription));
-                    RaisePropertyChanged(nameof(PriceDescription));
-                    RaisePropertyChanged(nameof(StockDescription));
-                    RaisePropertyChanged(nameof(ExpireDateDescription));
-                    RaisePropertyChanged(nameof(IsExpiringSoon));
-                    RaisePropertyChanged(nameof(ExpireDateColor));
+                    UpdateComputedProperties();
                 }
                 else
                 {
-                    MessageBox.Show("未找到指定的中药材信息", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    CloseDialogCallback?.Invoke();
+                    await _commonDialogService.ShowErrorAsync("未找到指定的中药材信息", "错误");
+                    RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载中药材信息失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                CloseDialogCallback?.Invoke();
+                await _commonDialogService.ShowErrorAsync($"加载中药材信息失败：{ex.Message}", "错误");
+                RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
             }
             finally
             {
@@ -181,22 +193,43 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         private void ExecuteClose()
         {
-            CloseDialogCallback?.Invoke();
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
         }
 
         private void ExecutePrint()
         {
             // TODO: 实现打印功能
-            MessageBox.Show("中药材信息打印功能开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("中药材信息打印功能开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private void ExecuteEdit()
         {
             if (Herb != null)
             {
-                EditHerbCallback?.Invoke(Herb);
-                CloseDialogCallback?.Invoke();
+                var parameters = new DialogParameters
+                {
+                    { "herb", Herb }
+                };
+                RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
             }
+        }
+
+        private void UpdateComputedProperties()
+        {
+            // 触发计算属性更新
+            RaisePropertyChanged(nameof(StockStatusDescription));
+            RaisePropertyChanged(nameof(StockStatusColor));
+            RaisePropertyChanged(nameof(StatusDescription));
+            RaisePropertyChanged(nameof(StatusColor));
+            RaisePropertyChanged(nameof(ActiveStatusDescription));
+            RaisePropertyChanged(nameof(ActiveStatusColor));
+            RaisePropertyChanged(nameof(CreateTimeDescription));
+            RaisePropertyChanged(nameof(UpdateTimeDescription));
+            RaisePropertyChanged(nameof(PriceDescription));
+            RaisePropertyChanged(nameof(StockDescription));
+            RaisePropertyChanged(nameof(ExpireDateDescription));
+            RaisePropertyChanged(nameof(IsExpiringSoon));
+            RaisePropertyChanged(nameof(ExpireDateColor));
         }
     }
 }

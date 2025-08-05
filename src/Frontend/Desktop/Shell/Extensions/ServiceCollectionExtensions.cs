@@ -26,6 +26,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             RegisterHttpServices(containerRegistry);
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
+            RegisterDialogs(containerRegistry);
         }
 
         /// <summary>
@@ -214,6 +215,19 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IPhysiotherapyService, PhysiotherapyService>();
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, PrescriptionPrintService>();
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
+        }
+
+        /// <summary>
+        /// 注册对话框
+        /// </summary>
+        private static void RegisterDialogs(IContainerRegistry containerRegistry)
+        {
+            // 注册通用对话框
+            containerRegistry.RegisterDialog<LYBT.WPF.Client.Shell.Dialogs.Views.ConfirmationDialog, LYBT.WPF.Client.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel>();
+            containerRegistry.RegisterDialog<LYBT.WPF.Client.Shell.Dialogs.Views.InformationDialog, LYBT.WPF.Client.Shell.Dialogs.ViewModels.InformationDialogViewModel>();
+            
+            // 注册对话框服务（使用 PrismDialogService 代替 CommonDialogService）
+            containerRegistry.RegisterSingleton<ICommonDialogService, PrismDialogService>();
         }
     }
 }

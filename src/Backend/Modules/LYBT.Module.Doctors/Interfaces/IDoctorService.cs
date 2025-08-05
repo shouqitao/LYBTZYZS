@@ -37,7 +37,7 @@ namespace LYBT.Module.Doctors.Interfaces {
         /// <summary>
         /// 新增医生档案（仅管理员可操作，且用户必须具有医生角色）
         /// </summary>
-        Task<bool> AddAsync(DoctorDetailDto dto, UserRole operatorRole);
+        Task<DoctorDto?> AddAsync(DoctorDetailDto dto, UserRole operatorRole);
 
         /// <summary>
         /// 更新医生信息（管理员可操作，医生可修改自己的档案）

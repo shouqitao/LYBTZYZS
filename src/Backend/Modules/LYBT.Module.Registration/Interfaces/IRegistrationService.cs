@@ -27,7 +27,7 @@ namespace LYBT.Module.Registration.Interfaces {
         /// <summary>
         /// 新增挂号
         /// </summary>
-        Task<bool> AddAsync(RegistrationCreateDto dto);
+        Task<RegistrationDto?> AddAsync(RegistrationCreateDto dto);
 
         /// <summary>
         /// 编辑挂号

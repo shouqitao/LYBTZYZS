@@ -12,6 +12,7 @@ using LYBT.Infrastructure.Configuration.Dtos;
 using Prism.Commands;
 using Prism.Mvvm;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
 {
     /// <summary>
@@ -19,6 +20,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
     /// </summary>
     public class SystemSettingsViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly ISystemSettingsApiService _service;
 
         #region 全局设置属性
@@ -170,8 +173,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
 
         #endregion
 
-        public SystemSettingsViewModel(ISystemSettingsApiService service)
+        public SystemSettingsViewModel(ISystemSettingsApiService service,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _service = service;
 
             // 初始化分组选项
@@ -261,14 +266,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
                 else
                 {
                     var error = response.Error?.Content ?? "获取全局设置失败";
-                    MessageBox.Show($"获取全局设置失败: {error}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _commonDialogService.ShowErrorAsync($"获取全局设置失败: {error}", "错误");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载全局设置异常: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载全局设置异常: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -286,30 +289,26 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
                 if (response.IsSuccessStatusCode)
                 {
                     IsGlobalSettingsChanged = false;
-                    MessageBox.Show("全局设置保存成功", "成功", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _commonDialogService.ShowInformationAsync("全局设置保存成功", "成功");
                     await LoadGlobalSettingsAsync(); // 重新加载获取最新数据
                 }
                 else
                 {
                     var error = response.Error?.Content ?? "保存全局设置失败";
-                    MessageBox.Show($"保存全局设置失败: {error}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"保存全局设置失败: {error}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存全局设置异常: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存全局设置异常: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
         private void ExecuteResetGlobalSettings()
         {
-            var result = MessageBox.Show("确定要重置全局设置为默认值吗？", "确认重置", 
-                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = _commonDialogService.ShowConfirmationAsync("确定要重置全局设置为默认值吗？", "确认重置").GetAwaiter().GetResult();
             
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 GlobalSettings = new GlobalSettingInfo();
                 IsGlobalSettingsChanged = true;
@@ -339,14 +338,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
                 else
                 {
                     var error = response.Error?.Content ?? "获取设置列表失败";
-                    MessageBox.Show($"获取设置列表失败: {error}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"获取设置列表失败: {error}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载设置列表异常: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载设置列表异常: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -368,13 +365,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
             _ = LoadSettingsAsync();
         }
 
-        private void ExecuteEditSetting(SettingInfo setting)
+        private async void ExecuteEditSetting(SettingInfo setting)
         {
             if (setting == null) return;
 
             // TODO: 实现设置编辑对话框
-            MessageBox.Show($"编辑设置功能开发中...\n设置键: {setting.Key}", "提示", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            await _commonDialogService.ShowInformationAsync($"编辑设置功能开发中...\n设置键: {setting.Key}", "提示");
         }
 
         private async Task ExecuteDeleteSettingAsync(SettingInfo setting)
@@ -383,36 +379,31 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
             
             if (setting.IsSystem)
             {
-                MessageBox.Show("系统设置不能删除", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("系统设置不能删除", "提示");
                 return;
             }
 
-            var result = MessageBox.Show($"确定要删除设置 '{setting.Key}' 吗？", "确认删除", 
-                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要删除设置 '{setting.Key}' 吗？", "确认删除");
             
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 try
                 {
                     var response = await _service.DeleteSettingAsync(setting.Key);
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show("设置删除成功", "成功", 
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync("设置删除成功", "成功").GetAwaiter().GetResult();
                         await LoadSettingsAsync();
                     }
                     else
                     {
                         var error = response.Error?.Content ?? "删除设置失败";
-                        MessageBox.Show($"删除设置失败: {error}", "错误", 
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"删除设置失败: {error}", "错误").GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"删除设置异常: {ex.Message}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"删除设置异常: {ex.Message}", "错误").GetAwaiter().GetResult();
                 }
             }
         }
@@ -420,8 +411,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
         private void ExecuteAddSetting()
         {
             // TODO: 实现添加设置对话框
-            MessageBox.Show("添加设置功能开发中...", "提示", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("添加设置功能开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private async Task RefreshCacheAsync()
@@ -431,20 +421,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Settings.ViewModels
                 var response = await _service.RefreshAllCacheAsync();
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("缓存刷新成功", "成功", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _commonDialogService.ShowInformationAsync("缓存刷新成功", "成功");
                 }
                 else
                 {
                     var error = response.Error?.Content ?? "刷新缓存失败";
-                    MessageBox.Show($"刷新缓存失败: {error}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _commonDialogService.ShowErrorAsync($"刷新缓存失败: {error}", "错误");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"刷新缓存异常: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"刷新缓存异常: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

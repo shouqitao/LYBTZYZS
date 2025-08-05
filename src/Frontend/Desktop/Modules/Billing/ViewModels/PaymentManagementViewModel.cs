@@ -7,7 +7,7 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Payment;
 using LYBT.WPF.Client.Modules.Payment.Dialogs;
 using Prism.Commands;
-using Prism.Services.Dialogs;
+using Prism.Dialogs;
 
 namespace LYBT.WPF.Client.Modules.Payment.ViewModels
 {

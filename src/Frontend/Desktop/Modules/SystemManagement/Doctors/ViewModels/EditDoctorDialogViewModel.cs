@@ -15,6 +15,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
     /// </summary>
     public class EditDoctorDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IDoctorService _doctorService;
         private readonly Guid _doctorId;
         private DoctorInfo? _originalDoctor;
@@ -163,8 +165,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
         public Action<bool>? CloseDialogCallback { get; set; }
 
-        public EditDoctorDialogViewModel(IDoctorService doctorService, Guid doctorId)
+        public EditDoctorDialogViewModel(IDoctorService doctorService, Guid doctorId,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _doctorService = doctorService;
             _doctorId = doctorId;
 
@@ -218,15 +222,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"加载医生信息失败：{result.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"加载医生信息失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                     CloseDialogCallback?.Invoke(false);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载医生信息失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载医生信息失败：{ex.Message}", "错误").GetAwaiter().GetResult();
                 CloseDialogCallback?.Invoke(false);
             }
             finally
@@ -240,38 +242,38 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
             // 验证必填字段
             if (string.IsNullOrWhiteSpace(Name))
             {
-                MessageBox.Show("请输入医生姓名", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("请输入医生姓名", "提示");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Code))
             {
-                MessageBox.Show("请输入医生工号", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("请输入医生工号", "提示");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Department))
             {
-                MessageBox.Show("请选择所属科室", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请选择所属科室", "提示").GetAwaiter().GetResult();
                 return;
             }
 
             if (!BirthDate.HasValue)
             {
-                MessageBox.Show("请选择出生日期", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请选择出生日期", "提示").GetAwaiter().GetResult();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Phone))
             {
-                MessageBox.Show("请输入联系电话", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请输入联系电话", "提示").GetAwaiter().GetResult();
                 return;
             }
 
             // 验证手机号格式
             if (!System.Text.RegularExpressions.Regex.IsMatch(Phone, @"^1[3-9]\d{9}$"))
             {
-                MessageBox.Show("请输入正确的手机号码", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请输入正确的手机号码", "提示").GetAwaiter().GetResult();
                 return;
             }
 
@@ -305,17 +307,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 var result = await _doctorService.UpdateDoctorAsync(_originalDoctor);
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show("医生信息更新成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("医生信息更新成功", "成功").GetAwaiter().GetResult();
                     CloseDialogCallback?.Invoke(true);
                 }
                 else
                 {
-                    MessageBox.Show($"更新失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"更新失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"更新失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"更新失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

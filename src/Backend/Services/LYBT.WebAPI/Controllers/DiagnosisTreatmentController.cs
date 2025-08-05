@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers {
 
@@ -16,31 +17,14 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class DiagnosisTreatmentController : ControllerBase {
+    public class DiagnosisTreatmentController : BaseController {
         private readonly IDiagnosisTreatmentService _diagnosisTreatmentService;
-        private readonly ILogger<DiagnosisTreatmentController> _logger;
-
         /// <summary>
         /// 构造方法，注入诊疗服务
         /// </summary>
-        public DiagnosisTreatmentController(IDiagnosisTreatmentService diagnosisTreatmentService, ILogger<DiagnosisTreatmentController> logger) {
+        public DiagnosisTreatmentController(IDiagnosisTreatmentService diagnosisTreatmentService, IMemoryCache cache, ILogger<DiagnosisTreatmentController> logger) 
+            : base(logger, cache) {
             _diagnosisTreatmentService = diagnosisTreatmentService;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 获取当前操作者信息
-        /// </summary>
-        private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-                return (opId, userName, role);
-            }
-            throw new UnauthorizedAccessException("未登录或用户信息无效");
         }
 
         /// <summary>
@@ -52,8 +36,7 @@ namespace LYBT.WebAPI.Controllers {
                 var list = await _diagnosisTreatmentService.GetListAsync();
                 return Ok(list);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取诊疗列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取诊疗列表失败" });
+                return HandleException(ex, "获取诊疗列表");
             }
         }
 
@@ -63,17 +46,14 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("paged")]
         public async Task<ActionResult<PaginatedResult<DiagnosisTreatmentDto>>> GetPagedList([FromQuery] PaginationRequest query) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _diagnosisTreatmentService.GetPagedAsync(query, operatorRole);
                 return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "分页获取诊疗列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "分页获取诊疗列表失败" });
+                return HandleException(ex, "分页获取诊疗列表");
             }
         }
 
@@ -83,9 +63,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("{id}")]
         public async Task<ActionResult<DiagnosisTreatmentDetailDto>> GetById(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "诊疗ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "诊疗ID");
+                if (validationResult != null) return validationResult;
 
                 var detail = await _diagnosisTreatmentService.GetByIdAsync(id);
                 if (detail == null) {
@@ -93,8 +72,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
                 return Ok(detail);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取诊疗详情失败，ID: {DiagnosisTreatmentId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取诊疗详情失败" });
+                return HandleException(ex, "获取诊疗详情", new { DiagnosisTreatmentId = id });
             }
         }
 
@@ -102,24 +80,21 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增诊疗
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<object>> Add([FromBody] DiagnosisTreatmentCreateDto dto) {
+        public async Task<ActionResult<DiagnosisTreatmentDto>> Add([FromBody] DiagnosisTreatmentCreateDto dto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _diagnosisTreatmentService.AddAsync(dto);
-                if (!result) {
+                if (result == null) {
                     return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "新增诊疗失败" });
                 }
 
-                _logger.LogInformation("新增诊疗成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return Ok(new { message = "新增诊疗成功" });
+                LogOperation("新增诊疗成功", result, result.Id);
+                return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "新增诊疗失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "新增诊疗失败" });
+                return HandleException(ex, "新增诊疗");
             }
         }
 
@@ -127,12 +102,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 编辑诊疗
         /// </summary>
         [HttpPut]
-        public async Task<ActionResult<object>> Update([FromBody] DiagnosisTreatmentEditDto dto) {
+        public async Task<ActionResult<DiagnosisTreatmentDto>> Update([FromBody] DiagnosisTreatmentEditDto dto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _diagnosisTreatmentService.UpdateAsync(dto);
@@ -140,11 +113,12 @@ namespace LYBT.WebAPI.Controllers {
                     return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "编辑诊疗失败" });
                 }
 
-                _logger.LogInformation("编辑诊疗成功，诊疗ID: {DiagnosisTreatmentId}，操作者: {OperatorName}({OperatorId})", dto.Id, operatorName, operatorId);
-                return Ok(new { message = "编辑诊疗成功" });
+                // 获取更新后的资源
+                var updated = await _diagnosisTreatmentService.GetByIdAsync(dto.Id);
+                LogOperation("编辑诊疗成功", updated, dto.Id);
+                return Ok(updated);
             } catch (Exception ex) {
-                _logger.LogError(ex, "编辑诊疗失败，诊疗ID: {DiagnosisTreatmentId}", dto.Id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "编辑诊疗失败" });
+                return HandleException(ex, "编辑诊疗", new { DiagnosisTreatmentId = dto.Id });
             }
         }
 
@@ -152,11 +126,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 删除诊疗
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<object>> Delete(Guid id) {
+        public async Task<IActionResult> Delete(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "诊疗ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "诊疗ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _diagnosisTreatmentService.DeleteAsync(id);
@@ -164,11 +137,10 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "诊疗记录不存在" });
                 }
 
-                _logger.LogInformation("删除诊疗成功，诊疗ID: {DiagnosisTreatmentId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(new { message = "删除诊疗成功" });
+                LogOperation("删除诊疗成功", null, id);
+                return NoContent();
             } catch (Exception ex) {
-                _logger.LogError(ex, "删除诊疗失败，诊疗ID: {DiagnosisTreatmentId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "删除诊疗失败" });
+                return HandleException(ex, "删除诊疗", new { DiagnosisTreatmentId = id });
             }
         }
     }

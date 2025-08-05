@@ -9,15 +9,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
     /// </summary>
     public partial class EditFormulaTemplateDialog : Window
     {
-        public EditFormulaTemplateDialog(Guid templateId)
+        private readonly EditFormulaTemplateDialogViewModel _viewModel;
+
+        public EditFormulaTemplateDialog(EditFormulaTemplateDialogViewModel viewModel)
         {
             InitializeComponent();
+            
+            _viewModel = viewModel;
+            DataContext = _viewModel;
+        }
 
-            // 初始化ViewModel
-            if (DataContext is EditFormulaTemplateDialogViewModel viewModel)
-            {
-                viewModel.Initialize(templateId);
-            }
+        public void Initialize(Guid templateId)
+        {
+            _viewModel.Initialize(templateId);
         }
     }
 }

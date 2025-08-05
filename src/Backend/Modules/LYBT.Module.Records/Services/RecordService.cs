@@ -57,7 +57,7 @@ namespace LYBT.Module.Records.Services {
         /// <summary>
         /// 新增病历记录
         /// </summary>
-        public async Task<bool> AddAsync(RecordCreateDto recordCreateDto, Guid operatorId, string operatorName) {
+        public async Task<RecordDto?> AddAsync(RecordCreateDto recordCreateDto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<RecordModel>(recordCreateDto);
             model.Id = Guid.NewGuid();
             model.RecordTime = DateTime.Now;
@@ -76,9 +76,12 @@ namespace LYBT.Module.Records.Services {
                     Content = "新增病历",
                     NewValue = JsonSerializer.Serialize(model)
                 });
+                
+                // 返回创建的对象
+                return _mapper.Map<RecordDto>(model);
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>

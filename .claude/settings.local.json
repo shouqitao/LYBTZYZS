@@ -168,7 +168,11 @@
       "Bash(start \"\" \"凌隐宝堂中医诊所管理系统.exe\")",
       "Bash(\"./凌隐宝堂中医诊所管理系统.exe\")",
       "Bash(.main-en.bat)",
-      "Bash(.LYBT.WPF.Client.Shell.exe)"
+      "Bash(.LYBT.WPF.Client.Shell.exe)",
+      "Bash(sqlcmd:*)",
+      "Bash(python:*)",
+      "Bash(del:*)",
+      "Bash(clean_all_bin_obj.bat)"
     ],
     "deny": []
   }

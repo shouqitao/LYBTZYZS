@@ -6,15 +6,52 @@ using LYBT.Shared.Models.Contracts.Records;
 using Prism.Commands;
 using Prism.Mvvm;
 
+using Prism.Dialogs;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 {
     /// <summary>
     /// 查看病历详情对话框视图模型
     /// </summary>
-    public class ViewRecordDialogViewModel : BindableBase
+    public class ViewRecordDialogViewModel : BindableBase, IDialogAware
     {
+        
+        #region IDialogAware
+
+        private string _title = "详情";
+        public string Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
+
+        public event Action<IDialogResult>? RequestClose;
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("commondialoginfoId"))
+            {
+                var id = parameters.GetValue<Guid>("commondialoginfoId");
+                _ = LoadDataAsync(id);
+            }
+            else if (parameters.ContainsKey("commondialoginfo"))
+            {
+                var data = parameters.GetValue<CommonDialogInfo>("commondialoginfo");
+                SetData(data);
+                IsLoading = false;
+                UpdateComputedProperties();
+            }
+        }
+
+        #endregion
+
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IRecordService _recordService;
-        private readonly Guid _recordId;
+        
 
         #region 属性
 
@@ -94,10 +131,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
         #endregion
 
-        public Action? CloseDialogCallback { get; set; }
+        
 
-        public ViewRecordDialogViewModel(IRecordService recordService, Guid recordId)
+        public ViewRecordDialogViewModel(IRecordService recordService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _recordService = recordService;
             _recordId = recordId;
 
@@ -109,12 +148,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             _ = LoadRecordAsync();
         }
 
-        private async System.Threading.Tasks.Task LoadRecordAsync()
+        private async System.Threading.Tasks.Task LoadRecordAsync(Guid id)
         {
             try
             {
                 IsLoading = true;
-                var result = await _recordService.GetByIdAsync(_recordId);
+                var result = await _recordService.GetByIdAsync(id);
                 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -130,16 +169,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"加载病历详情失败：{result.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    CloseDialogCallback?.Invoke();
+                    _commonDialogService.ShowErrorAsync($"加载病历详情失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
+                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载病历详情失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                CloseDialogCallback?.Invoke();
+                _commonDialogService.ShowErrorAsync($"加载病历详情失败：{ex.Message}", "错误").GetAwaiter().GetResult();
+                RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
             }
             finally
             {
@@ -149,19 +186,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
         private void ExecuteClose()
         {
-            CloseDialogCallback?.Invoke();
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
         }
 
         private void ExecutePrint()
         {
             // TODO: 实现打印功能
-            MessageBox.Show("病历打印功能开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("病历打印功能开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private void ExecuteExport()
         {
             // TODO: 实现导出功能
-            MessageBox.Show("病历导出功能开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("病历导出功能开发中...", "提示").GetAwaiter().GetResult();
         }
     }
 }

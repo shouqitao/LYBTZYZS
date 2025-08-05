@@ -16,6 +16,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
     /// </summary>
     public class RoleManagementViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IPermissionService _permissionService;
         private string _searchKeyword = string.Empty;
         private RolePermissionInfo? _selectedRole;
@@ -53,8 +55,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
         /// <summary>状态文本</summary>
         public string StatusText => $"共 {Roles.Count} 个角色";
 
-        public RoleManagementViewModel(IPermissionService permissionService)
+        public RoleManagementViewModel(IPermissionService permissionService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _permissionService = permissionService;
             Roles = new ObservableCollection<RolePermissionInfo>();
 
@@ -109,8 +113,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载角色列表失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载角色列表失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -179,8 +182,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开角色详情对话框失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开角色详情对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -212,8 +214,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开权限编辑对话框失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开权限编辑对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
     }

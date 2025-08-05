@@ -22,6 +22,8 @@ namespace LYBT.WPF.Client.Shell.ViewModels
     /// </summary>
     public class MainWindowViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IAuthenticationService _authService;
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
@@ -36,13 +38,14 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         public DelegateCommand TestApiCommand { get; }
         public DelegateCommand ShowControlExamplesCommand { get; }
 
-        public MainWindowViewModel(
-            IRegionManager regionManager, 
+        public MainWindowViewModel(IRegionManager regionManager, 
             IEventAggregator eventAggregator, 
             IAuthenticationService authService,
             IPermissionService permissionService,
-            IUserService userService)
+            IUserService userService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _authService = authService;
@@ -96,8 +99,8 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         /// </summary>
         private async void ExecuteLogout()
         {
-            var result = MessageBox.Show("确定要退出登录吗？", "退出确认", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            var result = await _commonDialogService.ShowConfirmationAsync("确定要退出登录吗？", "退出确认");
+            if (result )
             {
                 try
                 {
@@ -122,7 +125,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"退出登录失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"退出登录失败：{ex.Message}", "错误").GetAwaiter().GetResult();
                 }
             }
         }
@@ -175,7 +178,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         {
             if (CurrentUser == null) 
             {
-                MessageBox.Show("当前用户信息为空，无法加载主界面", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync("当前用户信息为空，无法加载主界面", "错误").GetAwaiter().GetResult();
                 return;
             }
 
@@ -209,15 +212,14 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                 {
                     // 如果视图不存在，显示欢迎消息
                     var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Role, CurrentUser.RealName);
-                    MessageBox.Show($"{welcomeMessage}\n\n注意：{mainViewName} 模块尚未实现。\n错误详情：{ex.Message}", 
-                        "登录成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：{mainViewName} 模块尚未实现。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
                 }
             }
             else
             {
                 // 显示欢迎消息
                 var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Role, CurrentUser.RealName);
-                MessageBox.Show($"RegionManager为空\n{welcomeMessage}", "登录成功", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync($"RegionManager为空\n{welcomeMessage}", "登录成功").GetAwaiter().GetResult();
             }
         }
 
@@ -234,7 +236,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"API测试失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                await _commonDialogService.ShowErrorAsync($"API测试失败: {ex.Message}", "错误");
             }
         }
 
@@ -247,7 +249,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开控件示例页面失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开控件示例页面失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

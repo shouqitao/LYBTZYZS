@@ -16,6 +16,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
     /// </summary>
     public class AddPatientDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IPatientService _patientService;
         private readonly bool _isEditMode;
         private readonly Guid? _editingPatientId;
@@ -132,7 +134,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         /// <summary>
         /// 用于新增的构造函数
         /// </summary>
-        public AddPatientDialogViewModel(IPatientService patientService)
+        public AddPatientDialogViewModel(IPatientService patientService,
+            ICommonDialogService commonDialogService)
             : this(patientService, null)
         {
         }
@@ -142,6 +145,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         /// </summary>
         public AddPatientDialogViewModel(IPatientService patientService, PatientInfo? editingPatient)
         {
+            _commonDialogService = commonDialogService;
             _patientService = patientService;
             
             if (editingPatient != null)
@@ -175,19 +179,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             // 验证必填字段
             if (string.IsNullOrWhiteSpace(Name))
             {
-                MessageBox.Show("请输入患者姓名", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("请输入患者姓名", "提示");
                 return;
             }
 
             if (!BirthDate.HasValue)
             {
-                MessageBox.Show("请选择出生日期", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("请选择出生日期", "提示");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Phone))
             {
-                MessageBox.Show("请输入联系电话", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请输入联系电话", "提示").GetAwaiter().GetResult();
                 return;
             }
 
@@ -230,17 +234,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show($"患者信息{(_isEditMode ? "更新" : "保存")}成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync($"患者信息{(_isEditMode ? "更新" : "保存", "信息").GetAwaiter().GetResult()}成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                     CloseDialogCallback?.Invoke(true);
                 }
                 else
                 {
-                    MessageBox.Show($"{(_isEditMode ? "更新" : "保存")}失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowInformationAsync($"{(_isEditMode ? "更新" : "保存", "信息").GetAwaiter().GetResult()}失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

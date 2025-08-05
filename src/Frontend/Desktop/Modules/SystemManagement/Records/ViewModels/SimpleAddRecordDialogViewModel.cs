@@ -4,6 +4,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Shared.Models.Contracts.Records;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 {
     /// <summary>
@@ -11,6 +12,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
     /// </summary>
     public class SimpleAddRecordDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         #region 属性
 
         private string _patientName = string.Empty;
@@ -93,8 +96,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
         #endregion
 
-        public SimpleAddRecordDialogViewModel()
+        public SimpleAddRecordDialogViewModel(ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             SaveCommand = new DelegateCommand(ExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
         }
@@ -104,19 +108,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             // 验证必填字段
             if (string.IsNullOrWhiteSpace(PatientName))
             {
-                MessageBox.Show("请输入患者姓名", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请输入患者姓名", "提示").GetAwaiter().GetResult();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(ChiefComplaint))
             {
-                MessageBox.Show("请输入主诉", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请输入主诉", "提示").GetAwaiter().GetResult();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(Diagnosis))
             {
-                MessageBox.Show("请输入诊断", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync("请输入诊断", "提示").GetAwaiter().GetResult();
                 return;
             }
 
@@ -137,19 +141,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 };
 
                 // 显示成功消息（实际应该调用API保存）
-                MessageBox.Show($"病历信息已记录：\n\n" +
+                _commonDialogService.ShowInformationAsync($"病历信息已记录：\n\n" +
                     $"患者：{PatientName}\n" +
                     $"主诉：{ChiefComplaint}\n" +
                     $"诊断：{Diagnosis}\n" +
                     $"就诊时间：{RecordDate:yyyy-MM-dd HH:mm}\n\n" +
-                    $"注意：当前为演示版本，数据未实际保存到数据库。", 
-                    "保存成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    $"注意：当前为演示版本，数据未实际保存到数据库。", "保存成功").GetAwaiter().GetResult();
 
                 CloseDialogCallback?.Invoke(true);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存病历失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存病历失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

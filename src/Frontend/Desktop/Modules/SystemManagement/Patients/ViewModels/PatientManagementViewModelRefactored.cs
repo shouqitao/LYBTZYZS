@@ -15,11 +15,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
     /// </summary>
     public class PatientManagementViewModelRefactored : BaseManagementViewModel<PatientInfo, IPatientService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         protected override string ModuleName => "患者";
 
-        public PatientManagementViewModelRefactored(IPatientService patientService) 
+        public PatientManagementViewModelRefactored(IPatientService patientService,
+            ICommonDialogService commonDialogService) 
             : base(patientService)
         {
+            _commonDialogService = commonDialogService;
         }
 
         #region 实现抽象方法
@@ -125,8 +129,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"添加患者失败: {ex.Message}", "错误", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows._commonDialogService.ShowErrorAsync($"添加患者失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -168,8 +171,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"编辑患者失败: {ex.Message}", "错误", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows._commonDialogService.ShowErrorAsync($"编辑患者失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -195,9 +197,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                       $"电话：{patient.PhoneNumber ?? "未填写"}\n" +
                       $"地址：{patient.Address ?? "未填写"}";
             
-            System.Windows.MessageBox.Show(info, "患者详情", 
-                System.Windows.MessageBoxButton.OK, 
-                System.Windows.MessageBoxImage.Information);
+            System.Windows._commonDialogService.ShowInformationAsync(info, "患者详情").GetAwaiter().GetResult();
         }
 
         #endregion

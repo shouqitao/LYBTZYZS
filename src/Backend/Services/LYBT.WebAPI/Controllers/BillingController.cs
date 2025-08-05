@@ -17,33 +17,15 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class BillingController : ControllerBase {
+    public class BillingController : BaseController {
         private readonly IBillingService _billingService;
-        private readonly IMemoryCache _cache;
-        private readonly ILogger<BillingController> _logger;
 
         /// <summary>
         /// 构造方法，注入业务服务
         /// </summary>
-        public BillingController(IBillingService billingService, IMemoryCache cache, ILogger<BillingController> logger) {
+        public BillingController(IBillingService billingService, IMemoryCache cache, ILogger<BillingController> logger) 
+            : base(logger, cache) {
             _billingService = billingService;
-            _cache = cache;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 获取当前操作者信息
-        /// </summary>
-        private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-                return (opId, userName, role);
-            }
-            throw new UnauthorizedAccessException("未登录或用户信息无效");
         }
 
         /// <summary>
@@ -96,8 +78,7 @@ namespace LYBT.WebAPI.Controllers {
                 var pagedResult = await _billingService.GetPagedAsync(query, operatorRole);
                 return Ok(pagedResult);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取费用结算列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取费用结算列表失败" });
+                return HandleException(ex, "获取费用结算列表");
             }
         }
 
@@ -107,17 +88,14 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("paged")]
         public async Task<ActionResult<PaginatedResult<BillingDto>>> GetPagedList([FromQuery] LYBT.Shared.Models.Common.PaginationRequest query) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _billingService.GetPagedAsync(query, operatorRole);
                 return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "分页获取费用结算列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "分页获取费用结算列表失败" });
+                return HandleException(ex, "分页获取费用结算列表");
             }
         }
 
@@ -127,9 +105,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("{id}")]
         public async Task<ActionResult<BillingDetailDto>> GetById(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "费用结算ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "费用结算ID");
+                if (validationResult != null) return validationResult;
 
                 var cacheKey = $"billing_detail_{id}";
                 if (!_cache.TryGetValue(cacheKey, out BillingDetailDto? detail)) {
@@ -143,8 +120,7 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "费用结算不存在" });
                 return Ok(detail);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取费用结算详情失败，ID: {BillingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取费用结算详情失败" });
+                return HandleException(ex, "获取费用结算详情", new { BillingId = id });
             }
         }
 
@@ -152,25 +128,22 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增费用结算
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<object>> Add([FromBody] BillingCreateDto billingCreateDto) {
+        public async Task<ActionResult<BillingDto>> Add([FromBody] BillingCreateDto billingCreateDto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
-                var (operatorId, operatorName, _) = GetOperator();
                 var result = await _billingService.AddAsync(billingCreateDto);
-                if (!result)
+                if (result == null)
                     return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "新增费用结算失败" });
 
                 // 清除缓存
                 _cache.Remove("billing_list");
-
-                return Ok("新增费用结算成功");
+                
+                LogOperation("新增费用结算成功", result, result.Id);
+                return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "新增费用结算失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "新增费用结算失败" });
+                return HandleException(ex, "新增费用结算");
             }
         }
 
@@ -180,10 +153,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPut("{id}")]
         public async Task<ActionResult<object>> Update([FromBody] BillingEditDto billingEditDto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _billingService.UpdateAsync(billingEditDto);
@@ -196,8 +167,7 @@ namespace LYBT.WebAPI.Controllers {
 
                 return Ok("编辑费用结算成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "编辑费用结算失败，ID: {BillingId}", billingEditDto.Id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "编辑费用结算失败" });
+                return HandleException(ex, "编辑费用结算", new { BillingId = billingEditDto.Id });
             }
         }
 
@@ -207,9 +177,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpDelete("{id}")]
         public async Task<ActionResult<object>> Delete(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "费用结算ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "费用结算ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _billingService.DeleteAsync(id);
@@ -222,17 +191,15 @@ namespace LYBT.WebAPI.Controllers {
 
                 return Ok("删除费用结算成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "删除费用结算失败，ID: {BillingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "删除费用结算失败" });
+                return HandleException(ex, "删除费用结算", new { BillingId = id });
             }
         }
 
         [HttpPatch("{id}/paid")]
         public async Task<ActionResult<object>> MarkAsPaid(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "费用结算ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "费用结算ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var success = await _billingService.MarkAsPaidAsync(id);
@@ -245,17 +212,15 @@ namespace LYBT.WebAPI.Controllers {
 
                 return Ok("标记为已付款成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "标记为已付款失败，ID: {BillingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "标记为已付款失败" });
+                return HandleException(ex, "标记为已付款", new { BillingId = id });
             }
         }
 
         [HttpPatch("{id}/completed")]
         public async Task<ActionResult<object>> MarkAsCompleted(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "费用结算ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "费用结算ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var success = await _billingService.MarkAsCompletedAsync(id);
@@ -268,17 +233,15 @@ namespace LYBT.WebAPI.Controllers {
 
                 return Ok("标记为已完成成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "标记为已完成失败，ID: {BillingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "标记为已完成失败" });
+                return HandleException(ex, "标记为已完成", new { BillingId = id });
             }
         }
 
         [HttpPost("request-refund/{id}")]
         public async Task<ActionResult<object>> RequestRefund(Guid id, [FromBody] string reason) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "费用结算ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "费用结算ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var success = await _billingService.RequestRefundAsync(id, reason);
@@ -291,17 +254,15 @@ namespace LYBT.WebAPI.Controllers {
 
                 return Ok("申请退款成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "申请退款失败，ID: {BillingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "申请退款失败" });
+                return HandleException(ex, "申请退款", new { BillingId = id });
             }
         }
 
         [HttpPost("approve-refund/{id}")]
         public async Task<ActionResult<object>> ApproveRefund(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "费用结算ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "费用结算ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var success = await _billingService.ApproveRefundAsync(id);
@@ -314,17 +275,15 @@ namespace LYBT.WebAPI.Controllers {
 
                 return Ok("批准退款成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "批准退款失败，ID: {BillingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "批准退款失败" });
+                return HandleException(ex, "批准退款", new { BillingId = id });
             }
         }
 
         [HttpPost("reject-refund/{id}")]
         public async Task<ActionResult<object>> RejectRefund(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "费用结算ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "费用结算ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var success = await _billingService.RejectRefundAsync(id);
@@ -337,17 +296,15 @@ namespace LYBT.WebAPI.Controllers {
 
                 return Ok("拒绝退款成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "拒绝退款失败，ID: {BillingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "拒绝退款失败" });
+                return HandleException(ex, "拒绝退款", new { BillingId = id });
             }
         }
 
         [HttpPost("cancel/{id}")]
         public async Task<ActionResult<object>> Cancel(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "费用结算ID不能为空" });
-                }
+                var validationResult = ValidateGuid(id, "费用结算ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var success = await _billingService.CancelAsync(id);
@@ -360,17 +317,15 @@ namespace LYBT.WebAPI.Controllers {
 
                 return Ok("取消费用结算成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "取消费用结算失败，ID: {BillingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "取消费用结算失败" });
+                return HandleException(ex, "取消费用结算", new { BillingId = id });
             }
         }
 
         [HttpGet("patient/{patientId}")]
         public async Task<ActionResult<List<BillingDto>>> GetByPatientId(Guid patientId) {
             try {
-                if (patientId == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "患者ID不能为空" });
-                }
+                var validationResult = ValidateGuid(patientId, "患者ID");
+                if (validationResult != null) return validationResult;
 
                 var cacheKey = $"billing_patient_{patientId}";
                 if (!_cache.TryGetValue(cacheKey, out List<BillingDto>? list)) {
@@ -379,8 +334,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
                 return Ok(list ?? new List<BillingDto>());
             } catch (Exception ex) {
-                _logger.LogError(ex, "根据患者ID获取费用结算失败，患者ID: {PatientId}", patientId);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "根据患者ID获取费用结算失败" });
+                return HandleException(ex, "根据患者ID获取费用结算", new { PatientId = patientId });
             }
         }
 
@@ -394,8 +348,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
                 return Ok(list ?? new List<BillingDto>());
             } catch (Exception ex) {
-                _logger.LogError(ex, "搜索费用结算失败，关键词: {Keyword}", keyword);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "搜索费用结算失败" });
+                return HandleException(ex, "搜索费用结算", new { Keyword = keyword });
             }
         }
 
@@ -409,8 +362,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
                 return Ok(list ?? new List<BillingDto>());
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取可退款费用结算失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取可退款费用结算失败" });
+                return HandleException(ex, "获取可退款费用结算");
             }
         }
 
@@ -424,8 +376,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
                 return Ok(list ?? new List<BillingDto>());
             } catch (Exception ex) {
-                _logger.LogError(ex, "根据状态获取费用结算失败，状态: {Status}", status);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "根据状态获取费用结算失败" });
+                return HandleException(ex, "根据状态获取费用结算", new { Status = status });
             }
         }
     }

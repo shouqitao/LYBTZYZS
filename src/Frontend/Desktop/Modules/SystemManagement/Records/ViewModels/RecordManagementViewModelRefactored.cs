@@ -9,6 +9,7 @@ using LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Records.Views;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Records;
+using Prism.Dialogs;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 {
@@ -17,13 +18,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
     /// </summary>
     public class RecordManagementViewModelRefactored : BaseManagementViewModel<RecordDto, IRecordService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _dialogService;
         private readonly IPatientService _patientService;
         
         protected override string ModuleName => "病历";
 
-        public RecordManagementViewModelRefactored(IRecordService recordService, IPatientService patientService)
+        public RecordManagementViewModelRefactored(IRecordService recordService, IPatientService patientService,
+            ICommonDialogService commonDialogService,
+            IDialogService dialogService)
             : base(recordService)
         {
+            _commonDialogService = commonDialogService;
+            _dialogService = dialogService;
             _patientService = patientService;
         }
 
@@ -117,16 +124,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
         {
             if (record == null) return false;
 
-            var result = MessageBox.Show(
-                $"确定要删除患者 \"{record.PatientName}\" 的病历记录吗？\n" +
+            var result = _commonDialogService.ShowConfirmationAsync($"确定要删除患者 \"{record.PatientName}\" 的病历记录吗？\n" +
                 $"病历时间：{record.RecordTime:yyyy-MM-dd HH:mm}\n" +
                 $"诊断：{record.Diagnosis}\n\n" +
-                $"此操作不可恢复！", 
-                "确认删除", 
-                MessageBoxButton.YesNo, 
-                MessageBoxImage.Warning);
+                $"此操作不可恢复！", "确认删除").GetAwaiter().GetResult();
                 
-            return result == MessageBoxResult.Yes;
+            return result ;
         }
 
         /// <summary>
@@ -159,8 +162,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开新增病历对话框失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开新增病历对话框失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -194,8 +196,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开编辑病历对话框失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开编辑病历对话框失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -208,24 +209,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
             try
             {
-                var viewModel = new ViewRecordDialogViewModel(Service, record.Id);
-                var dialog = new ViewRecordDialog
+                var parameters = new DialogParameters
                 {
-                    DataContext = viewModel,
-                    Owner = Application.Current.MainWindow
+                    { "recordId", record.Id }
                 };
 
-                viewModel.CloseDialogCallback = () =>
+                _dialogService.ShowDialog("ViewRecordDialog", parameters, result =>
                 {
-                    dialog.Close();
-                };
-
-                dialog.ShowDialog();
+                    // 对话框关闭后的处理（如果需要）
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开病历详情对话框失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开病历详情对话框失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -241,8 +237,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             if (record == null) return;
 
             // TODO: 实现医生选择对话框
-            MessageBox.Show("共享病历功能待实现", "提示", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            await _commonDialogService.ShowInformationAsync("共享病历功能待实现", "提示");
             await Task.CompletedTask;
         }
 
@@ -253,11 +248,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
         {
             if (record == null) return;
 
-            var confirmResult = MessageBox.Show(
-                $"确定要撤销病历的共享吗？\n患者：{record.PatientName}", 
-                "确认撤销", 
-                MessageBoxButton.YesNo, 
-                MessageBoxImage.Question);
+            var confirmResult = await _commonDialogService.ShowConfirmationAsync($"确定要撤销病历的共享吗？\n患者：{record.PatientName}", "确认撤销");
                 
             if (confirmResult != MessageBoxResult.Yes) return;
 
@@ -267,20 +258,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show("病历共享已撤销", "成功", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("病历共享已撤销", "成功").GetAwaiter().GetResult();
                     RefreshCommand.Execute();
                 }
                 else
                 {
-                    MessageBox.Show($"撤销共享失败：{result.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"撤销共享失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"撤销共享失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"撤销共享失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

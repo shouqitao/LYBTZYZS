@@ -6,13 +6,50 @@ using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.FormulaTemplates;
 
+using Prism.Dialogs;
 namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 {
     /// <summary>
     /// 查看验方模板对话框视图模型
     /// </summary>
-    public class ViewFormulaTemplateDialogViewModel : BindableBase
+    public class ViewFormulaTemplateDialogViewModel : BindableBase, IDialogAware
     {
+        
+        #region IDialogAware
+
+        private string _title = "详情";
+        public string Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
+
+        public event Action<IDialogResult>? RequestClose;
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("commondialoginfoId"))
+            {
+                var id = parameters.GetValue<Guid>("commondialoginfoId");
+                _ = LoadDataAsync(id);
+            }
+            else if (parameters.ContainsKey("commondialoginfo"))
+            {
+                var data = parameters.GetValue<CommonDialogInfo>("commondialoginfo");
+                SetData(data);
+                IsLoading = false;
+                UpdateComputedProperties();
+            }
+        }
+
+        #endregion
+
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IFormulaTemplateService _formulaTemplateService;
         private readonly Window _window;
         private Guid _templateId;
@@ -84,8 +121,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
         #endregion
 
-        public ViewFormulaTemplateDialogViewModel(IFormulaTemplateService formulaTemplateService)
+        public ViewFormulaTemplateDialogViewModel(IFormulaTemplateService formulaTemplateService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _formulaTemplateService = formulaTemplateService;
 
             CopyCommand = new DelegateCommand(ExecuteCopy);
@@ -137,13 +176,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"加载验方模板失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"加载验方模板失败: {response.ErrorMessage}", "错误").GetAwaiter().GetResult();
                     _window.Close();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载验方模板失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载验方模板失败: {ex.Message}", "错误").GetAwaiter().GetResult();
                 _window.Close();
             }
         }
@@ -153,11 +192,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             try
             {
                 // TODO: 实现复制功能
-                MessageBox.Show("验方模板复制功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("验方模板复制功能待实现", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"复制验方模板失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"复制验方模板失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

@@ -85,6 +85,35 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             
             // 注册医生管理视图
             containerRegistry.RegisterForNavigation<DoctorManagementView>();
+            
+            // 注册对话框
+            RegisterDialogs(containerRegistry);
+        }
+        
+        private void RegisterDialogs(IContainerRegistry containerRegistry)
+        {
+            // 角色管理对话框
+            containerRegistry.RegisterDialog<ViewRoleDialog, ViewRoleDialogViewModel>();
+            
+            // 中药材管理对话框
+            containerRegistry.RegisterDialog<Herbs.Views.ViewHerbDialog, Herbs.ViewModels.ViewHerbDialogViewModel>();
+            
+            // 医生管理对话框
+            containerRegistry.RegisterDialog<Doctors.Views.ViewDoctorDialog, Doctors.ViewModels.ViewDoctorDialogViewModel>();
+            
+            // 挂号管理对话框
+            containerRegistry.RegisterDialog<Registrations.Views.ViewRegistrationDialog, Registrations.ViewModels.ViewRegistrationDialogViewModel>();
+            
+            // 病历管理对话框
+            containerRegistry.RegisterDialog<Records.Views.ViewRecordDialog, Records.ViewModels.ViewRecordDialogViewModel>();
+            
+            // 验方模板管理对话框
+            containerRegistry.RegisterDialog<FormulaTemplates.Views.ViewFormulaTemplateDialog, FormulaTemplates.ViewModels.ViewFormulaTemplateDialogViewModel>();
+            
+            // 处方管理对话框
+            containerRegistry.RegisterDialog<Prescriptions.Views.ViewPrescriptionDialog, Prescriptions.ViewModels.ViewPrescriptionDialogViewModel>();
+            
+            // TODO: 注册其他对话框
         }
     }
 }

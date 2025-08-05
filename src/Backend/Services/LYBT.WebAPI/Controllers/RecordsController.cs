@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers {
 
@@ -16,31 +17,14 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/Records")]
     [Authorize]
-    public class RecordsController : ControllerBase {
+    public class RecordsController : BaseController {
         private readonly IRecordService _recordService;
-        private readonly ILogger<RecordsController> _logger;
-
         /// <summary>
         /// 构造方法，注入病历服务
         /// </summary>
-        public RecordsController(IRecordService recordService, ILogger<RecordsController> logger) {
+        public RecordsController(IRecordService recordService, IMemoryCache cache, ILogger<RecordsController> logger) 
+            : base(logger, cache) {
             _recordService = recordService;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 获取当前操作者信息
-        /// </summary>
-        private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-                return (opId, userName, role);
-            }
-            throw new UnauthorizedAccessException("未登录或用户信息无效");
         }
 
         /// <summary>
@@ -87,8 +71,7 @@ namespace LYBT.WebAPI.Controllers {
                 var pagedResult = await _recordService.GetPagedAsync(query, operatorRole);
                 return Ok(pagedResult);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取病历列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取病历列表失败", Status = 500 });
+                return HandleException(ex, "获取病历列表");
             }
         }
 
@@ -102,8 +85,7 @@ namespace LYBT.WebAPI.Controllers {
                 var result = await _recordService.GetPagedAsync(query, operatorRole);
                 return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "分页查询病历失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "分页查询病历失败", Status = 500 });
+                return HandleException(ex, "分页查询病历");
             }
         }
 
@@ -113,15 +95,13 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("patient/{patientId}")]
         public async Task<ActionResult<List<RecordDto>>> GetByPatient(Guid patientId) {
             try {
-                if (patientId == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "患者ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(patientId, "患者ID");
+                if (validationResult != null) return validationResult;
 
                 var list = await _recordService.GetByPatientIdAsync(patientId);
                 return Ok(list);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取患者病历失败，患者ID: {PatientId}", patientId);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取患者病历失败", Status = 500 });
+                return HandleException(ex, "获取患者病历", new { PatientId = patientId });
             }
         }
 
@@ -131,9 +111,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("{id}")]
         public async Task<ActionResult<RecordDetailDto>> GetById(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "病历ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "病历ID");
+                if (validationResult != null) return validationResult;
 
                 var detail = await _recordService.GetByIdAsync(id);
                 if (detail == null) {
@@ -141,8 +120,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
                 return Ok(detail);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取病历详情失败，ID: {RecordId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取病历详情失败", Status = 500 });
+                return HandleException(ex, "获取病历详情", new { RecordId = id });
             }
         }
 
@@ -150,24 +128,21 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增病历
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<object>> Add([FromBody] RecordCreateDto recordCreateDto) {
+        public async Task<ActionResult<RecordDto>> Add([FromBody] RecordCreateDto recordCreateDto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _recordService.AddAsync(recordCreateDto, operatorId, operatorName);
-                if (!result) {
+                if (result == null) {
                     return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "新增病历失败", Status = 400 });
                 }
 
-                _logger.LogInformation("新增病历成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return Ok(new { message = "新增病历成功" });
+                LogOperation("新增病历成功", result, result.Id);
+                return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "新增病历失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "新增病历失败", Status = 500 });
+                return HandleException(ex, "新增病历");
             }
         }
 
@@ -177,10 +152,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPut]
         public async Task<ActionResult<object>> Update([FromBody] RecordEditDto recordEditDto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _recordService.UpdateAsync(recordEditDto, operatorId, operatorName);
@@ -188,11 +161,12 @@ namespace LYBT.WebAPI.Controllers {
                     return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "编辑病历失败", Status = 400 });
                 }
 
-                _logger.LogInformation("编辑病历成功，病历ID: {RecordId}，操作者: {OperatorName}({OperatorId})", recordEditDto.Id, operatorName, operatorId);
-                return Ok(new { message = "编辑病历成功" });
+                // 获取更新后的资源
+                var updated = await _recordService.GetByIdAsync(recordEditDto.Id);
+                LogOperation("编辑病历成功", updated, recordEditDto.Id);
+                return Ok(updated);
             } catch (Exception ex) {
-                _logger.LogError(ex, "编辑病历失败，病历ID: {RecordId}", recordEditDto.Id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "编辑病历失败", Status = 500 });
+                return HandleException(ex, "编辑病历", new { RecordId = recordEditDto.Id });
             }
         }
 
@@ -202,9 +176,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpDelete("{id}")]
         public async Task<ActionResult<object>> Delete(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "病历ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "病历ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _recordService.DeleteAsync(id, operatorId, operatorName);
@@ -212,11 +185,10 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "病历不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("删除病历成功，病历ID: {RecordId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(new { message = "删除病历成功" });
+                LogOperation("删除病历成功", null, id);
+                return NoContent();
             } catch (Exception ex) {
-                _logger.LogError(ex, "删除病历失败，病历ID: {RecordId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "删除病历失败", Status = 500 });
+                return HandleException(ex, "删除病历", new { RecordId = id });
             }
         }
 
@@ -226,20 +198,18 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("share/{id}")]
         public async Task<ActionResult<object>> MarkAsShared(Guid id, [FromBody] List<string> doctorIds) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "病历ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "病历ID");
+                if (validationResult != null) return validationResult;
 
                 var result = await _recordService.MarkAsSharedAsync(id, doctorIds);
                 if (!result) {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "病历不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("病历共享设置成功，病历ID: {RecordId}", id);
+                LogOperation("病历共享设置成功", new { RecordId = id, DoctorIds = doctorIds }, id);
                 return Ok(new { message = "病历共享设置成功" });
             } catch (Exception ex) {
-                _logger.LogError(ex, "病历共享设置失败，病历ID: {RecordId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "病历共享设置失败", Status = 500 });
+                return HandleException(ex, "病历共享设置", new { RecordId = id });
             }
         }
 
@@ -249,20 +219,18 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("unshare/{id}")]
         public async Task<ActionResult<object>> RevokeSharing(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "病历ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "病历ID");
+                if (validationResult != null) return validationResult;
 
                 var result = await _recordService.RevokeSharingAsync(id);
                 if (!result) {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "病历不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("病历共享取消成功，病历ID: {RecordId}", id);
+                LogOperation("病历共享取消成功", null, id);
                 return Ok(new { message = "病历共享取消成功" });
             } catch (Exception ex) {
-                _logger.LogError(ex, "病历共享取消失败，病历ID: {RecordId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "病历共享取消失败", Status = 500 });
+                return HandleException(ex, "病历共享取消", new { RecordId = id });
             }
         }
 
@@ -272,15 +240,13 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("shared/{doctorId}")]
         public async Task<ActionResult<List<RecordDto>>> GetShared(Guid doctorId) {
             try {
-                if (doctorId == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "医生ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(doctorId, "医生ID");
+                if (validationResult != null) return validationResult;
 
                 var list = await _recordService.GetSharedRecordsAsync(doctorId);
                 return Ok(list);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取共享病历失败，医生ID: {DoctorId}", doctorId);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取共享病历失败", Status = 500 });
+                return HandleException(ex, "获取共享病历", new { DoctorId = doctorId });
             }
         }
     }

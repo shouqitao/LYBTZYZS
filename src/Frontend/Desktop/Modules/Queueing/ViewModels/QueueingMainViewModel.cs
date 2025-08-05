@@ -4,6 +4,7 @@ using Prism.Mvvm;
 using System.Collections.ObjectModel;
 using System.Windows;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.Queueing.ViewModels
 {
     /// <summary>
@@ -11,12 +12,16 @@ namespace LYBT.WPF.Client.Modules.Queueing.ViewModels
     /// </summary>
     public class QueueingMainViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IApiService _apiService;
         private bool _isLoading;
         private string _selectedDepartment = "全部";
 
-        public QueueingMainViewModel(IApiService apiService)
+        public QueueingMainViewModel(IApiService apiService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _apiService = apiService;
             
             RefreshCommand = new DelegateCommand(ExecuteRefreshCommand);
@@ -81,13 +86,11 @@ namespace LYBT.WPF.Client.Modules.Queueing.ViewModels
                 WaitingQueue.RemoveAt(0);
                 ProcessingQueue.Add(nextPatient);
                 
-                MessageBox.Show($"已呼叫患者：{nextPatient.PatientName}", "呼叫患者", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync($"已呼叫患者：{nextPatient.PatientName}", "呼叫患者").GetAwaiter().GetResult();
             }
             else
             {
-                MessageBox.Show("当前没有等待的患者", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("当前没有等待的患者", "提示").GetAwaiter().GetResult();
             }
         }
 
@@ -95,23 +98,21 @@ namespace LYBT.WPF.Client.Modules.Queueing.ViewModels
         {
             if (parameter != null)
             {
-                var result = MessageBox.Show("确定要跳过这位患者吗？", "确认跳过", 
-                    MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var result = _commonDialogService.ShowConfirmationAsync("确定要跳过这位患者吗？", "确认跳过").GetAwaiter().GetResult();
                 
-                if (result == MessageBoxResult.Yes)
+                if (result )
                 {
                     // TODO: 实现跳过患者逻辑
-                    MessageBox.Show("跳过患者功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("跳过患者功能待实现", "提示").GetAwaiter().GetResult();
                 }
             }
         }
 
         private void ExecuteResetQueueCommand()
         {
-            var result = MessageBox.Show("确定要重置排队队列吗？这将清空所有排队信息。", "确认重置", 
-                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = _commonDialogService.ShowConfirmationAsync("确定要重置排队队列吗？这将清空所有排队信息。", "确认重置").GetAwaiter().GetResult();
             
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 WaitingQueue.Clear();
                 ProcessingQueue.Clear();
@@ -182,8 +183,7 @@ namespace LYBT.WPF.Client.Modules.Queueing.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载排队数据失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载排队数据失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {

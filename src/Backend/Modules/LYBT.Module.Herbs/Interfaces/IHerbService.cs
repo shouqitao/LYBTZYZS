@@ -27,7 +27,7 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// <summary>
         /// 新增药材
         /// </summary>
-        Task<bool> AddAsync(HerbCreateDto dto);
+        Task<HerbDto?> AddAsync(HerbCreateDto dto);
 
         /// <summary>
         /// 编辑药材

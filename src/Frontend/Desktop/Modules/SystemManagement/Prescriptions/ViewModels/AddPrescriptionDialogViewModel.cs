@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 {
     /// <summary>
@@ -17,6 +18,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     /// </summary>
     public class AddPrescriptionDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IPrescriptionsApiService _prescriptionService;
         // private readonly IHerbsApiService _herbService; // TODO: 等待IHerbsApiService实现
 
@@ -141,8 +144,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public Action? CloseDialogCallback { get; set; }
         public Action<object>? SaveSuccessCallback { get; set; } // TODO: 替换为实际的CreatePrescriptionRequest类型
 
-        public AddPrescriptionDialogViewModel(IPrescriptionsApiService prescriptionService)
+        public AddPrescriptionDialogViewModel(IPrescriptionsApiService prescriptionService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _prescriptionService = prescriptionService;
             // _herbService = herbService; // TODO: 等待IHerbsApiService实现
 
@@ -181,8 +186,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             
             // 清空表单，准备下一个处方
             ClearForm();
-            MessageBox.Show("处方保存成功，可以继续添加新处方", "成功", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            await _commonDialogService.ShowInformationAsync("处方保存成功，可以继续添加新处方", "成功");
         }
 
         private async Task<bool> SavePrescriptionAsync()
@@ -216,14 +220,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 // 暂时模拟成功响应
                 await Task.Delay(1000); // 模拟网络延迟
                 SaveSuccessCallback?.Invoke(requestData);
-                MessageBox.Show("处方保存成功（模拟）", "成功", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("处方保存成功（模拟）", "成功").GetAwaiter().GetResult();
                 return true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存处方失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存处方失败: {ex.Message}", "错误").GetAwaiter().GetResult();
                 return false;
             }
             finally
@@ -234,10 +236,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         private void ExecuteCancel()
         {
-            var result = MessageBox.Show("确定要取消新增处方吗？未保存的数据将丢失。", "确认取消", 
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = _commonDialogService.ShowConfirmationAsync("确定要取消新增处方吗？未保存的数据将丢失。", "确认取消").GetAwaiter().GetResult();
             
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 CloseDialogCallback?.Invoke();
             }
@@ -262,10 +263,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             if (item == null) return;
 
-            var result = MessageBox.Show($"确定要移除药材 {item.HerbName} 吗？", "确认移除", 
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = _commonDialogService.ShowConfirmationAsync($"确定要移除药材 {item.HerbName} 吗？", "确认移除").GetAwaiter().GetResult();
             
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 Items.Remove(item);
             }
@@ -278,13 +278,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             try
             {
                 // TODO: 实现药材选择对话框
-                MessageBox.Show("药材选择功能开发中...", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("药材选择功能开发中...", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"选择药材失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"选择药材失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

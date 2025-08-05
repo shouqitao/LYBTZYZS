@@ -18,6 +18,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
     /// </summary>
     public class EditRegistrationDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IRegistrationService _registrationService;
         private readonly IDoctorService _doctorService;
         private readonly Window _window;
@@ -136,10 +138,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
 
         #endregion
 
-        public EditRegistrationDialogViewModel(
-            IRegistrationService registrationService,
-            IDoctorService doctorService)
+        public EditRegistrationDialogViewModel(IRegistrationService registrationService,
+            IDoctorService doctorService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _registrationService = registrationService;
             _doctorService = doctorService;
 
@@ -218,13 +221,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show("未找到挂号信息", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync("未找到挂号信息", "错误").GetAwaiter().GetResult();
                     _window.Close();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载挂号信息失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载挂号信息失败: {ex.Message}", "错误").GetAwaiter().GetResult();
                 _window.Close();
             }
         }
@@ -251,7 +254,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载医生列表失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载医生列表失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -301,18 +304,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                 var response = await _registrationService.UpdateAsync(dto);
                 if (response.IsSuccess)
                 {
-                    MessageBox.Show("挂号更新成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("挂号更新成功", "成功").GetAwaiter().GetResult();
                     _window.DialogResult = true;
                     _window.Close();
                 }
                 else
                 {
-                    MessageBox.Show($"更新挂号失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"更新挂号失败: {response.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"更新挂号失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"更新挂号失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

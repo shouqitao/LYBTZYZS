@@ -17,11 +17,15 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
     /// </summary>
     public class FrontDeskMainViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IPatientService _patientService;
         private readonly IRecordService _recordService;
 
-        public FrontDeskMainViewModel(IPatientService patientService, IRecordService recordService)
+        public FrontDeskMainViewModel(IPatientService patientService, IRecordService recordService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _patientService = patientService;
             _recordService = recordService;
             InitializeCommands();
@@ -162,8 +166,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载今日挂号信息失败：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"加载今日挂号信息失败：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -175,8 +178,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
         {
             if (string.IsNullOrWhiteSpace(SearchKeyword))
             {
-                MessageBox.Show("请输入搜索关键词", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("请输入搜索关键词", "提示");
                 return;
             }
 
@@ -191,19 +193,16 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                     {
                         TodayRegistrations.Add(patient);
                     }
-                    MessageBox.Show($"找到 {result.Data.Count} 个患者", "搜索结果", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync($"找到 {result.Data.Count} 个患者", "搜索结果").GetAwaiter().GetResult();
                 }
                 else
                 {
-                    MessageBox.Show($"搜索失败：{result.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"搜索失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"搜索患者时发生错误：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"搜索患者时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -215,8 +214,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
         {
             if (string.IsNullOrWhiteSpace(NewPatientName) || string.IsNullOrWhiteSpace(NewPatientPhone))
             {
-                MessageBox.Show("请填写患者姓名和手机号", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("请填写患者姓名和手机号", "提示");
                 return;
             }
 
@@ -239,8 +237,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 var result = await _patientService.AddAsync(newPatient);
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show("患者注册成功！", "成功", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("患者注册成功！", "成功").GetAwaiter().GetResult();
                     
                     TodayRegistrations.Insert(0, newPatient);
                     ClearNewPatientForm();
@@ -248,14 +245,12 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"患者注册失败：{result.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"患者注册失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"注册患者时发生错误：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"注册患者时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -269,15 +264,13 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
 
             if (WaitingQueue.Any(p => p.Id == patient.Id))
             {
-                MessageBox.Show("该患者已在等待队列中", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("该患者已在等待队列中", "提示");
                 return;
             }
 
             WaitingQueue.Add(patient);
             RaisePropertyChanged(nameof(WaitingQueueCount));
-            MessageBox.Show($"患者 {patient.Name} 已加入等待队列", "成功", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            await _commonDialogService.ShowInformationAsync($"患者 {patient.Name} 已加入等待队列", "成功");
             await Task.CompletedTask;
         }
 
@@ -290,8 +283,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
             {
                 WaitingQueue.Remove(patientInQueue);
                 RaisePropertyChanged(nameof(WaitingQueueCount));
-                MessageBox.Show($"患者 {patient.Name} 已从等待队列中移除", "成功", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                await _commonDialogService.ShowInformationAsync($"患者 {patient.Name} 已从等待队列中移除", "成功");
             }
             await Task.CompletedTask;
         }
@@ -308,8 +300,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                       $"地址：{patient.Address}\n" +
                       $"身份证：{patient.IDNumber}";
 
-            MessageBox.Show(info, "患者详细信息", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync(info, "患者详细信息").GetAwaiter().GetResult();
         }
 
         private async Task ViewPatientHistory(PatientDetailDto patient)
@@ -336,19 +327,16 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                         }
                     }
 
-                    MessageBox.Show(history, "就诊历史", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync(history, "就诊历史").GetAwaiter().GetResult();
                 }
                 else
                 {
-                    MessageBox.Show($"获取就诊历史失败：{result.ErrorMessage}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"获取就诊历史失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"获取就诊历史时发生错误：{ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"获取就诊历史时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {

@@ -82,7 +82,7 @@ namespace LYBT.Module.Doctors.Services {
             return new PaginatedResult<DoctorDto>(dtos, total, query.Page, query.PageSize);
         }
 
-        public async Task<bool> AddAsync(DoctorDetailDto dto, UserRole operatorRole) {
+        public async Task<DoctorDto?> AddAsync(DoctorDetailDto dto, UserRole operatorRole) {
             // 权限验证：只有管理员可以创建医生档案
             if (operatorRole != UserRole.Admin) {
                 throw new UnauthorizedAccessException("只有管理员可以创建医生档案");
@@ -136,7 +136,13 @@ namespace LYBT.Module.Doctors.Services {
             // 生成拼音码
             model.PinYinCode = CommonHelper.GetPinyinCode(user.RealName);
 
-            return await _doctorRepository.AddAsync(model);
+            var success = await _doctorRepository.AddAsync(model);
+            if (!success) {
+                return null;
+            }
+            
+            // 返回创建的对象
+            return _mapper.Map<DoctorDto>(model);
         }
 
         public async Task<bool> UpdateAsync(DoctorDetailDto dto, UserRole operatorRole, Guid operatorUserId) {

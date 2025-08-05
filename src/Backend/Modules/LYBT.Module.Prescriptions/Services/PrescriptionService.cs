@@ -83,10 +83,13 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <param name="operatorId">参数operatorId</param>
         /// <param name="operatorName">参数operatorName</param>
         /// <returns>返回值</returns>
-        public async Task<bool> CreateAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName) {
+        public async Task<PrescriptionDto?> CreateAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName) {
             var model = _mapper.Map<LYBT.Models.Prescriptions.PrescriptionModel>(dto);
             model.Id = Guid.NewGuid();
             var success = await _repository.AddAsync(model);
+            if (!success)
+                return null;
+                
             await _logService.CreateLogAsync(new LogCreateDto {
                 LogType = LogType.Operation,
                 ObjectType = ObjectType.Prescription,
@@ -97,7 +100,9 @@ namespace LYBT.Module.Prescriptions.Services {
                 Content = "新增处方",
                 NewValue = JsonSerializer.Serialize(model)
             });
-            return success;
+            
+            // 返回创建的对象
+            return _mapper.Map<PrescriptionDto>(model);
         }
 
         /// <summary>

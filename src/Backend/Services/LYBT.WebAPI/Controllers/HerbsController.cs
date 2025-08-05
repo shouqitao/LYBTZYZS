@@ -17,33 +17,15 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class HerbsController : ControllerBase {
+    public class HerbsController : BaseController {
         private readonly IHerbService _herbService;
-        private readonly IMemoryCache _cache;
-        private readonly ILogger<HerbsController> _logger;
 
         /// <summary>
         /// 构造方法，注入药材服务
         /// </summary>
-        public HerbsController(IHerbService herbService, IMemoryCache cache, ILogger<HerbsController> logger) {
+        public HerbsController(IHerbService herbService, IMemoryCache cache, ILogger<HerbsController> logger) 
+            : base(logger, cache) {
             _herbService = herbService;
-            _cache = cache;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 获取当前操作者信息
-        /// </summary>
-        private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-                return (opId, userName, role);
-            }
-            throw new UnauthorizedAccessException("未登录或用户信息无效");
         }
 
         /// <summary>
@@ -134,13 +116,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<HerbDetailDto>> GetById(Guid id) {
-            if (id == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "药材ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(id, "药材ID");
+            if (validationResult != null) return validationResult;
 
             var detail = await _herbService.GetByIdAsync(id);
             if (detail == null) {
@@ -158,18 +135,12 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] HerbCreateDto dto) {
-            if (!ModelState.IsValid) {
-                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = errors,
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateModel();
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _herbService.AddAsync(dto);
-            if (!result) {
+            if (result == null) {
                 return BadRequest(new ProblemDetails {
                     Title = "操作失败",
                     Detail = "新增药材失败",
@@ -181,23 +152,18 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove("herbs_list");
             _cache.Remove("active_herbs");
 
-            return Ok(new { message = "新增药材成功" });
+            LogOperation("新增药材成功", result, result.Id);
+            return Ok(result);
         }
 
         /// <summary>
         /// 编辑药材
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] HerbUpdateDto dto) {
+        public async Task<ActionResult<HerbDto>> Update(Guid id, [FromBody] HerbUpdateDto dto) {
             dto.Id = id; // 确保ID一致
-            if (!ModelState.IsValid) {
-                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = errors,
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateModel();
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _herbService.UpdateAsync(dto);
@@ -214,7 +180,10 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove("active_herbs");
             _cache.Remove($"herb_detail_{dto.Id}");
 
-            return Ok(new { message = "编辑药材成功" });
+            // 获取更新后的资源
+            var updated = await _herbService.GetByIdAsync(dto.Id);
+            LogOperation("编辑药材成功", updated, dto.Id);
+            return Ok(updated);
         }
 
         /// <summary>
@@ -222,13 +191,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPatch("{id}/enable")]
         public async Task<IActionResult> Enable(Guid id) {
-            if (id == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "药材ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(id, "药材ID");
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
             var dto = new HerbStatusUpdateDto { Id = id, Status = LYBT.Shared.Models.Enums.HerbStatus.Active, IsEnabled = true };
@@ -246,6 +210,7 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove("active_herbs");
             _cache.Remove($"herb_detail_{id}");
 
+            LogOperation("启用药材成功", dto, id);
             return Ok(new { message = "启用药材成功" });
         }
 
@@ -254,13 +219,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPatch("{id}/disable")]
         public async Task<IActionResult> Disable(Guid id) {
-            if (id == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "药材ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(id, "药材ID");
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
             var dto = new HerbStatusUpdateDto { Id = id, Status = LYBT.Shared.Models.Enums.HerbStatus.Inactive, IsEnabled = false };
@@ -278,6 +238,7 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove("active_herbs");
             _cache.Remove($"herb_detail_{id}");
 
+            LogOperation("禁用药材成功", dto, id);
             return Ok(new { message = "禁用药材成功" });
         }
 
@@ -286,13 +247,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPatch("{id}/toggle-status")]
         public async Task<IActionResult> ToggleStatus(Guid id) {
-            if (id == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "药材ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(id, "药材ID");
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
             
@@ -328,6 +284,7 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove($"herb_detail_{id}");
 
             var message = herb.IsActive ? "药材已禁用" : "药材已启用";
+            LogOperation(message, dto, id);
             return Ok(new { message });
         }
 
@@ -347,10 +304,10 @@ namespace LYBT.WebAPI.Controllers {
                 _cache.Remove("herbs_list");
                 _cache.Remove("active_herbs");
 
+                LogOperation("批量导入药材成功", new { Count = count }, null);
                 return Ok(new { Imported = count, Message = $"成功导入 {count} 个药材" });
             } catch (Exception ex) {
-                _logger.LogError(ex, "批量导入药材失败");
-                return StatusCode(500, "批量导入药材失败");
+                return HandleException(ex, "批量导入药材");
             }
         }
 
@@ -363,8 +320,7 @@ namespace LYBT.WebAPI.Controllers {
                 var data = await _herbService.ExportAsync();
                 return Ok(data);
             } catch (Exception ex) {
-                _logger.LogError(ex, "导出药材数据失败");
-                return StatusCode(500, "导出药材数据失败");
+                return HandleException(ex, "导出药材数据");
             }
         }
 
@@ -386,10 +342,10 @@ namespace LYBT.WebAPI.Controllers {
                 _cache.Remove("active_herbs");
                 _cache.Remove($"herb_detail_{dto.Id}");
 
+                LogOperation("更新药材状态成功", dto, dto.Id);
                 return Ok("药材状态更新成功");
             } catch (Exception ex) {
-                _logger.LogError(ex, "更新药材状态失败，ID: {HerbId}", dto.Id);
-                return StatusCode(500, "更新药材状态失败");
+                return HandleException(ex, "更新药材状态", new { HerbId = dto.Id });
             }
         }
 
@@ -415,10 +371,10 @@ namespace LYBT.WebAPI.Controllers {
                     _cache.Remove($"herb_detail_{id}");
                 }
 
+                LogOperation("批量更新药材状态成功", new { Count = count, Ids = dto.Ids }, null);
                 return Ok(new { UpdatedCount = count, Message = $"成功更新 {count} 个药材状态" });
             } catch (Exception ex) {
-                _logger.LogError(ex, "批量更新药材状态失败");
-                return StatusCode(500, "批量更新药材状态失败");
+                return HandleException(ex, "批量更新药材状态");
             }
         }
 
@@ -431,8 +387,7 @@ namespace LYBT.WebAPI.Controllers {
                 var list = await _herbService.GetByStatusAsync(status);
                 return Ok(list);
             } catch (Exception ex) {
-                _logger.LogError(ex, "根据状态获取药材列表失败，状态: {Status}", status);
-                return StatusCode(500, "根据状态获取药材列表失败");
+                return HandleException(ex, "根据状态获取药材列表", new { Status = status });
             }
         }
 
@@ -459,8 +414,7 @@ namespace LYBT.WebAPI.Controllers {
                 var list = await _herbService.GetOutOfStockHerbsAsync();
                 return Ok(list);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取缺货药材列表失败");
-                return StatusCode(500, "获取缺货药材列表失败");
+                return HandleException(ex, "获取缺货药材列表");
             }
         }
 
@@ -475,8 +429,7 @@ namespace LYBT.WebAPI.Controllers {
                 var list = await _herbService.GetExpiringHerbsAsync(days);
                 return Ok(list);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取即将过期药材列表失败");
-                return StatusCode(500, "获取即将过期药材列表失败");
+                return HandleException(ex, "获取即将过期药材列表");
             }
         }
 
@@ -492,10 +445,10 @@ namespace LYBT.WebAPI.Controllers {
                 _cache.Remove("herbs_list");
                 _cache.Remove("active_herbs");
 
+                LogOperation("检查过期药材成功", new { Count = count }, null);
                 return Ok(new { UpdatedCount = count, Message = $"检查完成，更新了 {count} 个过期药材" });
             } catch (Exception ex) {
-                _logger.LogError(ex, "检查过期药材失败");
-                return StatusCode(500, "检查过期药材失败");
+                return HandleException(ex, "检查过期药材");
             }
         }
 
@@ -508,8 +461,7 @@ namespace LYBT.WebAPI.Controllers {
                 var statistics = await _herbService.GetStatusStatisticsAsync();
                 return Ok(statistics);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取药材状态统计失败");
-                return StatusCode(500, "获取药材状态统计失败");
+                return HandleException(ex, "获取药材状态统计");
             }
         }
 
@@ -520,23 +472,18 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> CreateHerb([FromBody] HerbCreateDto dto) {
-            if (!ModelState.IsValid) {
-                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = errors,
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateModel();
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _herbService.AddAsync(dto);
-            if (result) {
+            if (result != null) {
                 // 清除缓存
                 _cache.Remove("herbs_list");
                 _cache.Remove("active_herbs");
 
-                return StatusCode(201, new { message = "药材创建成功" });
+                LogOperation("创建药材成功", result, result.Id);
+                return Ok(result);
             } else {
                 return BadRequest(new ProblemDetails {
                     Title = "操作失败",

@@ -27,7 +27,7 @@ namespace LYBT.Module.DiagnosisTreatment.Interfaces {
         /// <summary>
         /// 新增诊疗
         /// </summary>
-        Task<bool> AddAsync(DiagnosisTreatmentCreateDto dto);
+        Task<DiagnosisTreatmentDto?> AddAsync(DiagnosisTreatmentCreateDto dto);
 
         /// <summary>
         /// 编辑诊疗

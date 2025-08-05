@@ -67,11 +67,16 @@ namespace LYBT.Module.Billing.Services {
         /// <summary>
         /// 新增费用结算
         /// </summary>
-        public async Task<bool> AddAsync(BillingCreateDto billingCreateDto) {
+        public async Task<BillingDto?> AddAsync(BillingCreateDto billingCreateDto) {
             var model = _mapper.Map<BillingModel>(billingCreateDto);
             model.Id = Guid.NewGuid();
             model.CreateTime = DateTime.Now;
-            return await _billingRepository.AddAsync(model);
+            var result = await _billingRepository.AddAsync(model);
+            if (!result)
+                return null;
+            
+            // 返回创建的对象
+            return _mapper.Map<BillingDto>(model);
         }
 
         /// <summary>

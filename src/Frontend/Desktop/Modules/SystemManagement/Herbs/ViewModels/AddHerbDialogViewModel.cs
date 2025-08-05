@@ -14,6 +14,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// </summary>
     public class AddHerbDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IHerbService _herbService;
         private readonly Window _window;
         
@@ -116,8 +118,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             set => SetProperty(ref _remark, value);
         }
 
-        public AddHerbDialogViewModel(IHerbService herbService)
+        public AddHerbDialogViewModel(IHerbService herbService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _herbService = herbService;
 
             SaveCommand = new DelegateCommand(ExecuteSave, CanExecuteSave)
@@ -182,18 +186,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 var response = await _herbService.CreateHerbAsync(dto);
                 if (response.IsSuccess)
                 {
-                    MessageBox.Show("药材新增成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("药材新增成功", "成功").GetAwaiter().GetResult();
                     _window.DialogResult = true;
                     _window.Close();
                 }
                 else
                 {
-                    MessageBox.Show($"新增药材失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"新增药材失败: {response.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"新增药材失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"新增药材失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

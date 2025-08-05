@@ -59,7 +59,7 @@ namespace LYBT.Module.Registration.Services {
         /// <summary>
         /// 新增挂号
         /// </summary>
-        public async Task<bool> AddAsync(RegistrationCreateDto dto) {
+        public async Task<RegistrationDto?> AddAsync(RegistrationCreateDto dto) {
             var model = _mapper.Map<RegistrationModel>(dto);
             model.Id = Guid.NewGuid();
             model.RegistrationTime = DateTime.Now;
@@ -68,7 +68,7 @@ namespace LYBT.Module.Registration.Services {
             model.DoctorId = dto.DoctorId;
             var result = await _registrationRepository.AddAsync(model);
             if (!result)
-                return false;
+                return null;
 
             var queue = new QueueingModel {
                 Id = Guid.NewGuid(),
@@ -82,7 +82,9 @@ namespace LYBT.Module.Registration.Services {
                 Remark = "自动排队"
             };
             await _queueingRepository.AddAsync(queue);
-            return true;
+            
+            // 返回创建的对象
+            return _mapper.Map<RegistrationDto>(model);
         }
 
         /// <summary>

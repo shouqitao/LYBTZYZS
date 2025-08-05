@@ -13,6 +13,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 {
     /// <summary>
@@ -20,6 +21,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     /// </summary>
     public class PrescriptionManagementViewModel : BaseManagementViewModel<PrescriptionInfo, IPrescriptionsApiService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         #region 搜索条件
 
         private string _patientName = string.Empty;
@@ -88,9 +91,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         protected override string ModuleName => "处方";
 
-        public PrescriptionManagementViewModel(IPrescriptionsApiService service)
+        public PrescriptionManagementViewModel(IPrescriptionsApiService service,
+            ICommonDialogService commonDialogService)
             : base(service)
         {
+            _commonDialogService = commonDialogService;
             // 初始化状态选项
             StatusOptions = new List<PrescriptionStatusOption>
             {
@@ -198,15 +203,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             // 只有草稿状态的处方可以删除
             if (item.Status != PrescriptionStatus.Draft)
             {
-                MessageBox.Show($"只有草稿状态的处方才能删除，当前状态：{item.StatusName}", 
-                    "无法删除", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync($"只有草稿状态的处方才能删除，当前状态：{item.StatusName}", "无法删除").GetAwaiter().GetResult();
                 return false;
             }
 
-            var result = MessageBox.Show($"确定要删除处方吗？\n患者：{item.PatientName}\n诊断：{item.Diagnosis}\n创建时间：{item.CreateTime:yyyy-MM-dd HH:mm}", 
-                "确认删除", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = _commonDialogService.ShowConfirmationAsync($"确定要删除处方吗？\n患者：{item.PatientName}\n诊断：{item.Diagnosis}\n创建时间：{item.CreateTime:yyyy-MM-dd HH:mm}", "确认删除").GetAwaiter().GetResult();
             
-            return result == MessageBoxResult.Yes;
+            return result ;
         }
 
         private PrescriptionInfo ConvertToPrescriptionInfo(PrescriptionDto dto)
@@ -262,13 +265,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 };
 
                 // TODO: 创建并显示对话框窗口
-                MessageBox.Show($"处方详情对话框功能已准备就绪\n处方编号：{prescription.PrescriptionNumber}\n患者：{prescription.PatientName}", 
-                    "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync($"处方详情对话框功能已准备就绪\n处方编号：{prescription.PrescriptionNumber}\n患者：{prescription.PatientName}", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开处方详情失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开处方详情失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -279,13 +280,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             try
             {
                 // TODO: 实现处方打印功能
-                MessageBox.Show($"处方打印功能开发中...\n处方编号：{prescription.PrescriptionNumber}", 
-                    "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync($"处方打印功能开发中...\n处方编号：{prescription.PrescriptionNumber}", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打印处方失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打印处方失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -297,15 +296,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             if (prescription.Status == PrescriptionStatus.Voided || 
                 prescription.Status == PrescriptionStatus.Cancelled)
             {
-                MessageBox.Show("该处方已被作废或取消，无法再次作废", "无法作废", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _commonDialogService.ShowWarningAsync("该处方已被作废或取消，无法再次作废", "无法作废");
                 return;
             }
 
-            var result = MessageBox.Show($"确定要作废该处方吗？\n患者：{prescription.PatientName}\n处方编号：{prescription.PrescriptionNumber}\n\n作废后将无法恢复！", 
-                "确认作废", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要作废该处方吗？\n患者：{prescription.PatientName}\n处方编号：{prescription.PrescriptionNumber}\n\n作废后将无法恢复！", "确认作废");
 
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 try
                 {
@@ -314,21 +311,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                     
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show("处方作废成功", "成功", 
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync("处方作废成功", "成功").GetAwaiter().GetResult();
                         RefreshCommand.Execute();
                     }
                     else
                     {
                         var error = response.Error?.Content ?? "作废处方失败";
-                        MessageBox.Show($"作废处方失败: {error}", "错误", 
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"作废处方失败: {error}", "错误").GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"作废处方失败: {ex.Message}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"作废处方失败: {ex.Message}", "错误").GetAwaiter().GetResult();
                 }
                 finally
                 {
@@ -356,13 +350,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             try
             {
                 // TODO: 实现处方导出功能
-                MessageBox.Show("处方导出功能开发中...", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("处方导出功能开发中...", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"导出处方失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"导出处方失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -388,13 +380,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 if (dialog.ShowDialog() == true)
                 {
                     RefreshCommand.Execute();
-                    MessageBox.Show("处方添加成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("处方添加成功", "成功").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开新增处方对话框失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开新增处方对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -405,8 +396,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             // 检查是否可以编辑
             if (item.Status != PrescriptionStatus.Draft)
             {
-                MessageBox.Show($"只有草稿状态的处方才能编辑，当前状态：{item.StatusName}", 
-                    "无法编辑", MessageBoxButton.OK, MessageBoxImage.Warning);
+                _commonDialogService.ShowWarningAsync($"只有草稿状态的处方才能编辑，当前状态：{item.StatusName}", "无法编辑").GetAwaiter().GetResult();
                 return;
             }
 
@@ -430,13 +420,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 if (dialog.ShowDialog() == true)
                 {
                     RefreshCommand.Execute();
-                    MessageBox.Show("处方编辑成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("处方编辑成功", "成功").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开编辑处方对话框失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开编辑处方对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
     }

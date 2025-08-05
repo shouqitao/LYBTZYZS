@@ -34,7 +34,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建药材
         /// </summary>
         [Post("/api/v1/herbs")]
-        Task<Refit.ApiResponse<object>> CreateHerbAsync([Body] HerbCreateDto dto);
+        Task<Refit.ApiResponse<HerbDto>> CreateHerbAsync([Body] HerbCreateDto dto);
 
         /// <summary>
         /// 更新药材

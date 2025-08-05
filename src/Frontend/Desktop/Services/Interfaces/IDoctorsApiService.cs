@@ -120,7 +120,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建新医生 (RESTful POST)
         /// </summary>
         [Post("/api/v1/doctors")]
-        Task<Refit.ApiResponse<object>> CreateDoctorAsync([Body] DoctorDetailDto dto);
+        Task<Refit.ApiResponse<DoctorDto>> CreateDoctorAsync([Body] DoctorDetailDto dto);
 
         /// <summary>
         /// 删除医生 (RESTful DELETE) - 实际执行软删除

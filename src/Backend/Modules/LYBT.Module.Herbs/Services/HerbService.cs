@@ -174,14 +174,19 @@ namespace LYBT.Module.Herbs.Services {
         /// <summary>
         /// 新增药材
         /// </summary>
-        public async Task<bool> AddAsync(HerbCreateDto dto) {
+        public async Task<HerbDto?> AddAsync(HerbCreateDto dto) {
             var model = _mapper.Map<HerbModel>(dto);
             model.Id = Guid.NewGuid();
             model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
                 ? GetSimplePinyinCode(model.Name)
                 : dto.PinYinCode;
             model.CreateTime = DateTime.UtcNow;
-            return await _repository.AddAsync(model);
+            var success = await _repository.AddAsync(model);
+            if (!success) {
+                return null;
+            }
+            // 返回创建的对象
+            return _mapper.Map<HerbDto>(model);
         }
 
         /// <summary>

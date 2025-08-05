@@ -69,11 +69,16 @@ namespace LYBT.Module.DiagnosisTreatment.Services {
         /// <summary>
         /// 新增诊疗
         /// </summary>
-        public async Task<bool> AddAsync(DiagnosisTreatmentCreateDto dto) {
+        public async Task<DiagnosisTreatmentDto?> AddAsync(DiagnosisTreatmentCreateDto dto) {
             var model = _mapper.Map<DiagnosisTreatmentModel>(dto);
             model.Id = Guid.NewGuid();
             model.CreateTime = DateTime.Now;
-            return await _diagnosisTreatmentRepository.AddAsync(model);
+            var result = await _diagnosisTreatmentRepository.AddAsync(model);
+            if (!result)
+                return null;
+            
+            // 返回创建的对象
+            return _mapper.Map<DiagnosisTreatmentDto>(model);
         }
 
         /// <summary>

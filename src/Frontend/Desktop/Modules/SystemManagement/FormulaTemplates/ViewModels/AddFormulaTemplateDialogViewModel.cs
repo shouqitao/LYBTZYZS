@@ -16,6 +16,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
     /// </summary>
     public class AddFormulaTemplateDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IFormulaTemplateService _formulaTemplateService;
         private readonly IHerbService _herbService;
         private readonly Window _window;
@@ -117,8 +119,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
         #endregion
 
-        public AddFormulaTemplateDialogViewModel(IFormulaTemplateService formulaTemplateService, IHerbService herbService)
+        public AddFormulaTemplateDialogViewModel(IFormulaTemplateService formulaTemplateService, IHerbService herbService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _formulaTemplateService = formulaTemplateService;
             _herbService = herbService;
 
@@ -155,7 +159,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"加载药材列表失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                await _commonDialogService.ShowErrorAsync($"加载药材列表失败: {ex.Message}", "错误");
             }
         }
 
@@ -192,18 +196,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                 var response = await _formulaTemplateService.CreateAsync(dto);
                 if (response.IsSuccess)
                 {
-                    MessageBox.Show("验方模板创建成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("验方模板创建成功", "成功").GetAwaiter().GetResult();
                     _window.DialogResult = true;
                     _window.Close();
                 }
                 else
                 {
-                    MessageBox.Show($"创建验方模板失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"创建验方模板失败: {response.ErrorMessage}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"创建验方模板失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"创建验方模板失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -225,7 +229,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             // 检查是否已经添加
             if (TemplateHerbs.Any(h => h.HerbId == SelectedHerb.Id))
             {
-                MessageBox.Show($"药材 {SelectedHerb.Name} 已经在配方中", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync($"药材 {SelectedHerb.Name} 已经在配方中", "提示").GetAwaiter().GetResult();
                 return;
             }
 

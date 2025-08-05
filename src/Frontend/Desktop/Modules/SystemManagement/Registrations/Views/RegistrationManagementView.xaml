@@ -63,7 +63,7 @@
                     <Button Content="+ 新增挂号" 
                             Margin="0,0,10,0"
                             Style="{StaticResource SuccessButton}"
-                            Command="{Binding AddRegistrationCommand}"/>
+                            Command="{Binding AddCommand}"/>
                     <Button Content="批量取消" 
                             Margin="0,0,10,0"
                             Style="{StaticResource DangerButton}"

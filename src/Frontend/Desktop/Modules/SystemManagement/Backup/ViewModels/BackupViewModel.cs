@@ -13,6 +13,7 @@ using LYBT.Shared.Models.Common;
 using Prism.Commands;
 using Prism.Mvvm;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 {
     /// <summary>
@@ -20,6 +21,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
     /// </summary>
     public class BackupViewModel : BaseManagementViewModel<BackupInfo, IBackupApiService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         #region 属性
 
         private BackupType? _selectedBackupType;
@@ -166,9 +169,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
         protected override string ModuleName => "数据备份";
 
-        public BackupViewModel(IBackupApiService service)
+        public BackupViewModel(IBackupApiService service,
+            ICommonDialogService commonDialogService)
             : base(service)
         {
+            _commonDialogService = commonDialogService;
             // 初始化选项
             BackupTypeOptions = new List<BackupTypeOption>
             {
@@ -305,8 +310,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
         protected override void ExecuteEdit(BackupInfo item)
         {
-            MessageBox.Show("备份记录不支持编辑", "提示", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("备份记录不支持编辑", "提示").GetAwaiter().GetResult();
         }
 
         #endregion
@@ -324,38 +328,31 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
             try
             {
-                var result = MessageBox.Show(
-                    $"确定要恢复备份 \"{backup.Name}\" 吗？\n\n" +
+                var result = await _commonDialogService.ShowConfirmationAsync($"确定要恢复备份 \"{backup.Name}\" 吗？\n\n" +
                     $"备份时间: {backup.BackupTime:yyyy-MM-dd HH:mm:ss}\n" +
                     $"文件大小: {backup.FileSizeDisplay}\n\n" +
-                    "警告：恢复操作将覆盖当前数据，此操作无法撤销！",
-                    "确认恢复", 
-                    MessageBoxButton.YesNo, 
-                    MessageBoxImage.Warning);
+                    "警告：恢复操作将覆盖当前数据，此操作无法撤销！", "确认恢复");
 
-                if (result == MessageBoxResult.Yes)
+                if (result )
                 {
                     IsRestoring = true;
                     var response = await Service.RestoreBackupAsync(backup.Id);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show("数据恢复成功！", "成功", 
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync("数据恢复成功！", "成功").GetAwaiter().GetResult();
                         RefreshCommand.Execute();
                     }
                     else
                     {
                         var error = response.Error?.Content ?? "恢复备份失败";
-                        MessageBox.Show($"恢复备份失败: {error}", "错误", 
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"恢复备份失败: {error}", "错误").GetAwaiter().GetResult();
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"恢复备份失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"恢复备份失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -379,20 +376,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
                 if (response.IsSuccessStatusCode && response.Content)
                 {
-                    MessageBox.Show("备份文件验证成功！", "成功", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _commonDialogService.ShowInformationAsync("备份文件验证成功！", "成功");
                     RefreshCommand.Execute();
                 }
                 else
                 {
-                    MessageBox.Show("备份文件验证失败！", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync("备份文件验证失败！", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"验证备份失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"验证备份失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -412,13 +406,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
             try
             {
                 // TODO: 实现备份文件下载功能
-                MessageBox.Show("备份文件下载功能开发中...", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _commonDialogService.ShowInformationAsync("备份文件下载功能开发中...", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"下载备份失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"下载备份失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -440,22 +432,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    MessageBox.Show("备份创建成功！", "成功", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("备份创建成功！", "成功").GetAwaiter().GetResult();
                     RefreshCommand.Execute();
                     await LoadStatisticsAsync();
                 }
                 else
                 {
                     var error = response.Error?.Content ?? "创建备份失败";
-                    MessageBox.Show($"创建备份失败: {error}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"创建备份失败: {error}", "错误").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"创建备份失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"创建备份失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -511,8 +500,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
         private void ExecuteAddSchedule()
         {
             // TODO: 实现添加计划对话框
-            MessageBox.Show("添加备份计划功能开发中...", "提示", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("添加备份计划功能开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private void ExecuteEditSchedule(BackupScheduleInfo schedule)
@@ -520,8 +508,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
             if (schedule == null) return;
 
             // TODO: 实现编辑计划对话框
-            MessageBox.Show($"编辑备份计划 \"{schedule.Name}\" 功能开发中...", "提示", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync($"编辑备份计划 \"{schedule.Name}\" 功能开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private async void ExecuteDeleteSchedule(BackupScheduleInfo schedule)
@@ -530,13 +517,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
             try
             {
-                var result = MessageBox.Show(
-                    $"确定要删除备份计划 \"{schedule.Name}\" 吗？",
-                    "确认删除", 
-                    MessageBoxButton.YesNo, 
-                    MessageBoxImage.Question);
+                var result = await _commonDialogService.ShowConfirmationAsync($"确定要删除备份计划 \"{schedule.Name}\" 吗？", "确认删除");
 
-                if (result == MessageBoxResult.Yes)
+                if (result )
                 {
                     var response = await Service.DeleteBackupScheduleAsync(schedule.Id);
                     if (response.IsSuccessStatusCode)
@@ -546,15 +529,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
                     else
                     {
                         var error = response.Error?.Content ?? "删除计划失败";
-                        MessageBox.Show($"删除计划失败: {error}", "错误", 
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"删除计划失败: {error}", "错误").GetAwaiter().GetResult();
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"删除计划失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"删除计划失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -571,15 +552,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
                 {
                     schedule.IsEnabled = !schedule.IsEnabled; // 恢复原状态
                     var error = response.Error?.Content ?? "切换状态失败";
-                    MessageBox.Show($"切换状态失败: {error}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _commonDialogService.ShowErrorAsync($"切换状态失败: {error}", "错误");
                 }
             }
             catch (Exception ex)
             {
                 schedule.IsEnabled = !schedule.IsEnabled; // 恢复原状态
-                MessageBox.Show($"切换状态失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"切换状态失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -643,20 +622,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("备份配置保存成功！", "成功", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _commonDialogService.ShowInformationAsync("备份配置保存成功！", "成功");
                 }
                 else
                 {
                     var error = response.Error?.Content ?? "保存配置失败";
-                    MessageBox.Show($"保存配置失败: {error}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _commonDialogService.ShowErrorAsync($"保存配置失败: {error}", "错误");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存配置失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"保存配置失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -668,29 +644,23 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
         {
             try
             {
-                var result = MessageBox.Show(
-                    "确定要重置为默认配置吗？",
-                    "确认重置", 
-                    MessageBoxButton.YesNo, 
-                    MessageBoxImage.Question);
+                var result = await _commonDialogService.ShowConfirmationAsync("确定要重置为默认配置吗？", "确认重置");
 
-                if (result == MessageBoxResult.Yes)
+                if (result )
                 {
                     await LoadConfigurationAsync();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"重置配置失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                await _commonDialogService.ShowErrorAsync($"重置配置失败: {ex.Message}", "错误");
             }
         }
 
         private void ExecuteBrowseBackupPath()
         {
             // TODO: 实现文件夹选择对话框
-            MessageBox.Show("选择备份路径功能开发中...", "提示", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("选择备份路径功能开发中...", "提示").GetAwaiter().GetResult();
         }
 
         #endregion

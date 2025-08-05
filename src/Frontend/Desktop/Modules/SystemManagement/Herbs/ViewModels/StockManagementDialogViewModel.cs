@@ -7,6 +7,7 @@ using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Herbs;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 {
     /// <summary>
@@ -14,6 +15,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// </summary>
     public class StockManagementDialogViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IHerbApiService _herbService;
 
         #region 属性
@@ -90,8 +93,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         #region 构造函数
 
-        public StockManagementDialogViewModel(IHerbApiService herbService)
+        public StockManagementDialogViewModel(IHerbApiService herbService,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _herbService = herbService;
 
             SaveCommand = new DelegateCommand(async () => await ExecuteSave(), CanExecuteSave);
@@ -136,7 +141,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 // 验证库存调整合理性
                 if (NewStock < 0)
                 {
-                    MessageBox.Show("调整后库存不能为负数", "调整失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await _commonDialogService.ShowWarningAsync("调整后库存不能为负数", "调整失败");
                     return;
                 }
 
@@ -159,8 +164,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 var result = await _herbService.UpdateHerbAsync(updateDto);
                 if (result.IsSuccessStatusCode)
                 {
-                    MessageBox.Show($"库存调整成功！\n{Herb.Name} 库存从 {CurrentStock} 调整为 {NewStock}", 
-                        "调整成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync($"库存调整成功！\n{Herb.Name} 库存从 {CurrentStock} 调整为 {NewStock}", "调整成功").GetAwaiter().GetResult();
                     
                     SaveCompleteCallback?.Invoke(true);
                     CloseDialogCallback?.Invoke();
@@ -168,13 +172,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 else
                 {
                     var error = result.Error?.Content ?? "库存调整失败";
-                    MessageBox.Show($"库存调整失败：{error}", "调整失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"库存调整失败：{error}", "调整失败").GetAwaiter().GetResult();
                     SaveCompleteCallback?.Invoke(false);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"库存调整失败：{ex.Message}", "调整失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"库存调整失败：{ex.Message}", "调整失败").GetAwaiter().GetResult();
                 SaveCompleteCallback?.Invoke(false);
             }
             finally

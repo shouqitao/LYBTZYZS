@@ -3,6 +3,7 @@ using Prism.Mvvm;
 using Prism.Navigation.Regions;
 using System.Windows;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
 {
     /// <summary>
@@ -10,6 +11,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
     /// </summary>
     public class SystemManagementViewModel : BindableBase
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         private readonly IRegionManager _regionManager;
 
         public DelegateCommand NavigateToUserManagementCommand { get; }
@@ -23,8 +26,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         public DelegateCommand NavigateToPatientManagementCommand { get; }
         public DelegateCommand NavigateToRecordManagementCommand { get; }
 
-        public SystemManagementViewModel(IRegionManager regionManager)
+        public SystemManagementViewModel(IRegionManager regionManager,
+            ICommonDialogService commonDialogService)
         {
+            _commonDialogService = commonDialogService;
             _regionManager = regionManager;
 
             // 初始化命令
@@ -50,22 +55,22 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
 
         private void ExecuteNavigateToRoleManagement()
         {
-            MessageBox.Show("角色权限管理功能正在开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("角色权限管理功能正在开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private void ExecuteNavigateToSystemSettings()
         {
-            MessageBox.Show("系统设置功能正在开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("系统设置功能正在开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private void ExecuteNavigateToBackup()
         {
-            MessageBox.Show("数据备份功能正在开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("数据备份功能正在开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private void ExecuteNavigateToSystemLogs()
         {
-            MessageBox.Show("系统日志功能正在开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("系统日志功能正在开发中...", "提示").GetAwaiter().GetResult();
         }
 
         private void ExecuteNavigateToHerbManagement()

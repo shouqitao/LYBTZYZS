@@ -69,7 +69,7 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 新增用户
         /// </summary>
-        public async Task<bool> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName) {
+        public async Task<SharedUserDto?> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName) {
             await ValidateUserCreation(dto);
 
             var user = CreateUserFromDto(dto);
@@ -81,9 +81,12 @@ namespace LYBT.Module.Users.Services {
                     $"新增用户：{user.Username}",
                     newValue: user
                 );
+                
+                // 返回创建的对象
+                return _mapper.Map<SharedUserDto>(user);
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>

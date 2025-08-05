@@ -11,6 +11,7 @@ using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Core.Models.Roles;
 using LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels;
 using Prism.Commands;
+using Prism.Dialogs;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
 {
@@ -19,6 +20,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
     /// </summary>
     public class RoleManagementViewModelRefactored : BaseManagementViewModel<RolePermissionInfo, IPermissionService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _dialogService;
+
         #region 字段和属性
 
         /// <summary>模块名称</summary>
@@ -31,9 +35,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
 
         #region 构造函数
 
-        public RoleManagementViewModelRefactored(IPermissionService permissionService) 
+        public RoleManagementViewModelRefactored(IPermissionService permissionService,
+            ICommonDialogService commonDialogService,
+            IDialogService dialogService) 
             : base(permissionService)
         {
+            _commonDialogService = commonDialogService;
+            _dialogService = dialogService;
             InitializeAdditionalCommands();
         }
 
@@ -149,8 +157,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
 
         protected override void ExecuteAdd()
         {
-            MessageBox.Show("角色基于系统枚举定义，无法添加新角色。\n如需新增角色类型，请联系系统管理员修改代码。", 
-                "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            _commonDialogService.ShowInformationAsync("角色基于系统枚举定义，无法添加新角色。\n如需新增角色类型，请联系系统管理员修改代码。", "提示").GetAwaiter().GetResult();
         }
 
         protected override void ExecuteEdit(RolePermissionInfo item)
@@ -167,22 +174,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
 
             try
             {
-                var dialog = new Views.ViewRoleDialog();
-                dialog.Owner = Application.Current.MainWindow;
-
-                // 设置ViewModel
-                var viewModel = new ViewRoleDialogViewModel(item)
+                var parameters = new DialogParameters
                 {
-                    CloseDialogCallback = () => dialog.Close()
+                    { "role", item }
                 };
 
-                dialog.DataContext = viewModel;
-                dialog.ShowDialog();
+                _dialogService.ShowDialog("ViewRoleDialog", parameters, result =>
+                {
+                    // 对话框关闭后的处理（如果需要）
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开角色详情对话框失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开角色详情对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -224,8 +228,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开权限编辑对话框失败: {ex.Message}", "错误", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开权限编辑对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

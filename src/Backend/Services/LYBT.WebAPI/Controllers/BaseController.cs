@@ -36,7 +36,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 统一的异常处理和日志记录
         /// </summary>
-        protected IActionResult HandleException(Exception ex, string operation, object? context = null) {
+        protected ActionResult HandleException(Exception ex, string operation, object? context = null) {
             var contextInfo = context != null ? $", 上下文: {System.Text.Json.JsonSerializer.Serialize(context)}" : "";
             _logger.LogError(ex, "{Operation}失败{Context}", operation, contextInfo);
             return StatusCode(500, new ProblemDetails {
@@ -49,7 +49,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 验证模型状态
         /// </summary>
-        protected IActionResult? ValidateModel() {
+        protected ActionResult? ValidateModel() {
             if (!ModelState.IsValid) {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new ProblemDetails {
@@ -64,7 +64,7 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 验证GUID参数
         /// </summary>
-        protected IActionResult? ValidateGuid(Guid id, string paramName) {
+        protected ActionResult? ValidateGuid(Guid id, string paramName) {
             if (id == Guid.Empty) {
                 return BadRequest(new ProblemDetails {
                     Title = "参数验证失败",

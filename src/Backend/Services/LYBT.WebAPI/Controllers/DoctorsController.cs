@@ -18,33 +18,14 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class DoctorsController : ControllerBase {
+    public class DoctorsController : BaseController {
         private readonly IDoctorService _doctorService;
-        private readonly IMemoryCache _cache;
-        private readonly ILogger<DoctorsController> _logger;
-
         public DoctorsController(
             IDoctorService doctorService,
             IMemoryCache cache,
-            ILogger<DoctorsController> logger) {
+            ILogger<DoctorsController> logger) 
+            : base(logger, cache) {
             _doctorService = doctorService;
-            _cache = cache;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 获取当前操作者信息
-        /// </summary>
-        private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-                return (opId, userName, role);
-            }
-            throw new UnauthorizedAccessException("未登录或用户信息无效");
         }
 
         /// <summary>
@@ -144,13 +125,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<DoctorDetailDto>> GetById(Guid id) {
-            if (id == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "医生ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(id, "医生ID");
+            if (validationResult != null) return validationResult;
 
             var (_, _, operatorRole) = GetOperator();
 
@@ -180,13 +156,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpGet("by-user/{userId}")]
         public async Task<ActionResult<DoctorDetailDto>> GetByUserId(Guid userId) {
-            if (userId == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "用户ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(userId, "用户ID");
+            if (validationResult != null) return validationResult;
 
             var (_, _, operatorRole) = GetOperator();
             var result = await _doctorService.GetByUserIdAsync(userId, operatorRole);
@@ -207,23 +178,17 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] DoctorDetailDto dto) {
-            if (!ModelState.IsValid) {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = string.Join("; ", errors),
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateModel();
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var result = await _doctorService.AddAsync(dto, operatorRole);
 
-            if (result) {
+            if (result != null) {
                 // 清除相关缓存
                 _cache.Remove("active_doctors");
-                _logger.LogInformation("医生档案创建成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return Ok(new { message = "医生档案创建成功" });
+                LogOperation("新增医生档案成功", result, result.Id);
+                return Ok(result);
             } else {
                 return BadRequest(new ProblemDetails {
                     Title = "操作失败",
@@ -237,16 +202,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 更新医生信息
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] DoctorDetailDto dto) {
+        public async Task<ActionResult<DoctorDto>> Update(Guid id, [FromBody] DoctorDetailDto dto) {
             dto.Id = id; // 确保ID一致
-            if (!ModelState.IsValid) {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = string.Join("; ", errors),
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateModel();
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var result = await _doctorService.UpdateAsync(dto, operatorRole, operatorId);
@@ -257,9 +216,10 @@ namespace LYBT.WebAPI.Controllers {
                 _cache.Remove($"doctor_detail:{dto.Id}:DiagnosingDoctor");
                 _cache.Remove($"doctor_detail:{dto.Id}:Staff");
                 _cache.Remove("active_doctors");
-                _logger.LogInformation("医生信息更新成功，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
-                    dto.Id, operatorName, operatorId);
-                return Ok(new { message = "医生信息更新成功" });
+                // 获取更新后的资源
+                var updated = await _doctorService.GetByIdAsync(dto.Id, operatorRole);
+                LogOperation("编辑医生信息成功", updated, dto.Id);
+                return Ok(updated);
             } else {
                 return BadRequest(new ProblemDetails {
                     Title = "操作失败",
@@ -274,13 +234,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPatch("{id}/disable")]
         public async Task<IActionResult> Disable(Guid id) {
-            if (id == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "医生ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(id, "医生ID");
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _doctorService.DisableAsync(id);
@@ -288,8 +243,7 @@ namespace LYBT.WebAPI.Controllers {
             if (result) {
                 // 清除相关缓存
                 ClearDoctorCache(id);
-                _logger.LogInformation("医生已禁用，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
-                    id, operatorName, operatorId);
+                LogOperation("禁用医生成功", null, id);
                 return Ok(new { message = "医生已禁用" });
             } else {
                 return NotFound(new ProblemDetails {
@@ -305,13 +259,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPatch("{id}/enable")]
         public async Task<IActionResult> Enable(Guid id) {
-            if (id == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "医生ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(id, "医生ID");
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _doctorService.EnableAsync(id);
@@ -319,8 +268,7 @@ namespace LYBT.WebAPI.Controllers {
             if (result) {
                 // 清除相关缓存
                 ClearDoctorCache(id);
-                _logger.LogInformation("医生已启用，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
-                    id, operatorName, operatorId);
+                LogOperation("启用医生成功", null, id);
                 return Ok(new { message = "医生已启用" });
             } else {
                 return NotFound(new ProblemDetails {
@@ -336,13 +284,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPatch("{id}/toggle-status")]
         public async Task<IActionResult> ToggleStatus(Guid id) {
-            if (id == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "医生ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(id, "医生ID");
+            if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, operatorRole) = GetOperator();
             
@@ -370,8 +313,7 @@ namespace LYBT.WebAPI.Controllers {
             if (result) {
                 // 清除相关缓存
                 ClearDoctorCache(id);
-                _logger.LogInformation("切换医生状态成功，医生ID: {DoctorId}，操作者: {OperatorName}({OperatorId})",
-                    id, operatorName, operatorId);
+                LogOperation(message, null, id);
                 return Ok(new { message });
             }
             
@@ -400,8 +342,7 @@ namespace LYBT.WebAPI.Controllers {
 
             // 清除所有医生相关缓存
             ClearAllDoctorCache();
-            _logger.LogInformation("批量禁用医生成功，数量: {Count}，操作者: {OperatorName}({OperatorId})",
-                count, operatorName, operatorId);
+            LogOperation("批量禁用医生成功", new { Count = count, Ids = dto.Ids }, null);
             return Ok(new { count = count, message = $"成功禁用 {count} 名医生" });
         }
 
@@ -423,8 +364,7 @@ namespace LYBT.WebAPI.Controllers {
 
             // 清除所有医生相关缓存
             ClearAllDoctorCache();
-            _logger.LogInformation("批量启用医生成功，数量: {Count}，操作者: {OperatorName}({OperatorId})",
-                count, operatorName, operatorId);
+            LogOperation("批量启用医生成功", new { Count = count, Ids = dto.Ids }, null);
             return Ok(new { count = count, message = $"成功启用 {count} 名医生" });
         }
 
@@ -433,13 +373,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpGet("check-user-link/{userId}")]
         public async Task<ActionResult<bool>> CheckUserLink(Guid userId) {
-            if (userId == Guid.Empty) {
-                return BadRequest(new ProblemDetails {
-                    Title = "参数验证失败",
-                    Detail = "用户ID不能为空",
-                    Status = 400
-                });
-            }
+            var validationResult = ValidateGuid(userId, "用户ID");
+            if (validationResult != null) return validationResult;
 
             var result = await _doctorService.IsUserLinkedToDoctorAsync(userId);
             return Ok(result);
@@ -480,9 +415,10 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> CreateDoctor([FromBody] DoctorDetailDto dto) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var result = await _doctorService.AddAsync(dto, operatorRole);
-            if (result) {
+            if (result != null) {
                 ClearAllDoctorCache();
-                return StatusCode(201, new { message = "医生创建成功" });
+                LogOperation("创建医生成功", result, result.Id);
+                return Ok(result);
             } else {
                 return BadRequest(new ProblemDetails {
                     Title = "操作失败",

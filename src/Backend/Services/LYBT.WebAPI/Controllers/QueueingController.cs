@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Queueing;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace LYBT.WebAPI.Controllers {
@@ -16,31 +17,15 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class QueueingController : ControllerBase {
+    public class QueueingController : BaseController {
         private readonly IQueueingService _queueingService;
-        private readonly ILogger<QueueingController> _logger;
 
         /// <summary>
         /// 构造方法，注入排队服务
         /// </summary>
-        public QueueingController(IQueueingService queueingService, ILogger<QueueingController> logger) {
+        public QueueingController(IQueueingService queueingService, IMemoryCache cache, ILogger<QueueingController> logger) 
+            : base(logger, cache) {
             _queueingService = queueingService;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 获取当前操作者信息
-        /// </summary>
-        private (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-                return (opId, userName, role);
-            }
-            throw new UnauthorizedAccessException("未登录或用户信息无效");
         }
 
         /// <summary>
@@ -84,8 +69,7 @@ namespace LYBT.WebAPI.Controllers {
                 var pagedResult = await _queueingService.GetPagedAsync(query, operatorRole);
                 return Ok(pagedResult);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取排队列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取排队列表失败", Status = 500 });
+                return HandleException(ex, "获取排队列表");
             }
         }
 
@@ -95,17 +79,14 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("paged")]
         public async Task<ActionResult<PaginatedResult<QueueingDto>>> GetPagedList([FromQuery] LYBT.Shared.Models.Common.PaginationRequest query) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _queueingService.GetPagedAsync(query, operatorRole);
                 return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "分页获取排队列表失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "分页获取排队列表失败", Status = 500 });
+                return HandleException(ex, "分页获取排队列表");
             }
         }
 
@@ -115,9 +96,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("{id}")]
         public async Task<ActionResult<QueueingDetailDto>> GetById(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "排队ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "排队ID");
+                if (validationResult != null) return validationResult;
 
                 var detail = await _queueingService.GetByIdAsync(id);
                 if (detail == null) {
@@ -125,8 +105,7 @@ namespace LYBT.WebAPI.Controllers {
                 }
                 return Ok(detail);
             } catch (Exception ex) {
-                _logger.LogError(ex, "获取排队详情失败，ID: {QueueingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取排队详情失败", Status = 500 });
+                return HandleException(ex, "获取排队详情", new { QueueingId = id });
             }
         }
 
@@ -134,24 +113,20 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增排队
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<object>> Add([FromBody] QueueingCreateDto dto) {
+        public async Task<ActionResult<QueueingDto>> Add([FromBody] QueueingCreateDto dto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
-                var (operatorId, operatorName, _) = GetOperator();
                 var result = await _queueingService.AddAsync(dto);
-                if (!result) {
+                if (result == null) {
                     return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "新增排队失败", Status = 400 });
                 }
 
-                _logger.LogInformation("新增排队成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return Ok(new { message = "新增排队成功" });
+                LogOperation("新增排队成功", result, result.Id);
+                return Ok(result);
             } catch (Exception ex) {
-                _logger.LogError(ex, "新增排队失败");
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "新增排队失败", Status = 500 });
+                return HandleException(ex, "新增排队");
             }
         }
 
@@ -161,10 +136,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPut]
         public async Task<ActionResult<object>> Update([FromBody] QueueingEditDto dto) {
             try {
-                if (!ModelState.IsValid) {
-                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
-                }
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _queueingService.UpdateAsync(dto);
@@ -172,11 +145,12 @@ namespace LYBT.WebAPI.Controllers {
                     return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "编辑排队失败", Status = 400 });
                 }
 
-                _logger.LogInformation("编辑排队成功，排队ID: {QueueingId}，操作者: {OperatorName}({OperatorId})", dto.Id, operatorName, operatorId);
-                return Ok(new { message = "编辑排队成功" });
+                // 获取更新后的资源
+                var updated = await _queueingService.GetByIdAsync(dto.Id);
+                LogOperation("编辑排队成功", updated, dto.Id);
+                return Ok(updated);
             } catch (Exception ex) {
-                _logger.LogError(ex, "编辑排队失败，排队ID: {QueueingId}", dto.Id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "编辑排队失败", Status = 500 });
+                return HandleException(ex, "编辑排队", new { QueueingId = dto.Id });
             }
         }
 
@@ -186,9 +160,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpDelete("{id}")]
         public async Task<ActionResult<object>> Delete(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "排队ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "排队ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _queueingService.DeleteAsync(id);
@@ -196,11 +169,10 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "排队记录不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("删除排队成功，排队ID: {QueueingId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(new { message = "删除排队成功" });
+                LogOperation("删除排队成功", null, id);
+                return NoContent();
             } catch (Exception ex) {
-                _logger.LogError(ex, "删除排队失败，排队ID: {QueueingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "删除排队失败", Status = 500 });
+                return HandleException(ex, "删除排队", new { QueueingId = id });
             }
         }
 
@@ -210,9 +182,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("cancel/{id}")]
         public async Task<ActionResult<object>> Cancel(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "排队ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "排队ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _queueingService.CancelAsync(id);
@@ -220,11 +191,12 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "排队记录不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("取消排队成功，排队ID: {QueueingId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(new { message = "取消排队成功" });
+                // 获取更新后的资源
+                var updated = await _queueingService.GetByIdAsync(id);
+                LogOperation("取消排队成功", updated, id);
+                return Ok(updated);
             } catch (Exception ex) {
-                _logger.LogError(ex, "取消排队失败，排队ID: {QueueingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "取消排队失败", Status = 500 });
+                return HandleException(ex, "取消排队", new { QueueingId = id });
             }
         }
 
@@ -234,9 +206,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("complete/{id}")]
         public async Task<ActionResult<object>> Complete(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "排队ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "排队ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _queueingService.CompleteAsync(id);
@@ -244,11 +215,12 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "排队记录不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("完成排队成功，排队ID: {QueueingId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(new { message = "完成排队成功" });
+                // 获取更新后的资源
+                var updated = await _queueingService.GetByIdAsync(id);
+                LogOperation("完成排队成功", updated, id);
+                return Ok(updated);
             } catch (Exception ex) {
-                _logger.LogError(ex, "完成排队失败，排队ID: {QueueingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "完成排队失败", Status = 500 });
+                return HandleException(ex, "完成排队", new { QueueingId = id });
             }
         }
 
@@ -258,9 +230,8 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("hold/{id}")]
         public async Task<ActionResult<object>> Hold(Guid id) {
             try {
-                if (id == Guid.Empty) {
-                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "排队ID不能为空", Status = 400 });
-                }
+                var validationResult = ValidateGuid(id, "排队ID");
+                if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _queueingService.HoldAsync(id);
@@ -268,11 +239,10 @@ namespace LYBT.WebAPI.Controllers {
                     return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "排队记录不存在", Status = 404 });
                 }
 
-                _logger.LogInformation("暂停排队成功，排队ID: {QueueingId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
+                LogOperation("暂停排队成功", null, id);
                 return Ok(new { message = "暂停排队成功" });
             } catch (Exception ex) {
-                _logger.LogError(ex, "暂停排队失败，排队ID: {QueueingId}", id);
-                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "暂停排队失败", Status = 500 });
+                return HandleException(ex, "暂停排队", new { QueueingId = id });
             }
         }
     }

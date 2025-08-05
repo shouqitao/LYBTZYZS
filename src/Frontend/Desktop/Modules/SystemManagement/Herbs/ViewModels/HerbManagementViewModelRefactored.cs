@@ -15,6 +15,9 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using Prism.Dialogs;
+
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 {
     /// <summary>
@@ -22,6 +25,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// </summary>
     public class HerbManagementViewModelRefactored : BaseManagementViewModel<HerbInfo, IHerbApiService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _dialogService;
+
         protected override string ModuleName => "中药材管理";
 
         #region Properties
@@ -43,9 +49,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         #endregion
 
-        public HerbManagementViewModelRefactored(IHerbApiService service)
+        public HerbManagementViewModelRefactored(IHerbApiService service,
+            ICommonDialogService commonDialogService,
+            IDialogService dialogService)
             : base(service)
         {
+            _commonDialogService = commonDialogService;
+            _dialogService = dialogService;
             // 初始化额外的命令
             ImportHerbsCommand = new DelegateCommand(async () => await ImportHerbs());
             ExportTemplateCommand = new DelegateCommand(ExportTemplate);
@@ -140,7 +150,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开新增药材对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开新增药材对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -164,7 +174,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开编辑药材对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开编辑药材对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -174,25 +184,24 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
             try
             {
-                var dialog = new Views.ViewHerbDialog();
-                dialog.Owner = Application.Current.MainWindow;
-                
-                // 创建独立的IHerbService实例用于对话框
-                var herbService = new LYBT.WPF.Client.Services.HerbService(Service);
-                
-                // 设置ViewModel和回调
-                var viewModel = new ViewModels.ViewHerbDialogViewModel(herbService, item.Id)
+                var parameters = new DialogParameters
                 {
-                    CloseDialogCallback = () => dialog.Close(),
-                    EditHerbCallback = (editHerb) => ExecuteEdit(editHerb)
+                    { "herbId", item.Id }
                 };
-                
-                dialog.DataContext = viewModel;
-                dialog.ShowDialog();
+
+                _dialogService.ShowDialog("ViewHerbDialog", parameters, result =>
+                {
+                    // 如果返回了编辑参数，执行编辑
+                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("herb"))
+                    {
+                        var herbToEdit = result.Parameters.GetValue<HerbInfo>("herb");
+                        ExecuteEdit(herbToEdit);
+                    }
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开查看药材对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开查看药材对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -219,7 +228,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     
                     if (dataTable.Rows.Count == 0)
                     {
-                        MessageBox.Show("Excel文件中没有数据", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        _commonDialogService.ShowWarningAsync("Excel文件中没有数据", "提示").GetAwaiter().GetResult();
                         return;
                     }
                     
@@ -229,7 +238,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     {
                         if (!dataTable.Columns.Contains(column))
                         {
-                            MessageBox.Show($"Excel文件缺少必需的列：{column}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                            _commonDialogService.ShowErrorAsync($"Excel文件缺少必需的列：{column}", "错误").GetAwaiter().GetResult();
                             return;
                         }
                     }
@@ -312,8 +321,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                         }
                     }
                     
-                    MessageBox.Show(message, "导入结果", MessageBoxButton.OK, 
-                        failCount == 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                    _commonDialogService.ShowWarningAsync(message, "导入结果").GetAwaiter().GetResult();
                     
                     // 刷新列表
                     if (successCount > 0)
@@ -324,7 +332,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"导入药材失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"导入药材失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
             finally
             {
@@ -369,13 +377,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     // 创建模板
                     Core.Helpers.ExcelHelper.CreateTemplate(columns, dialog.FileName, "药材导入模板", sampleData);
                     
-                    MessageBox.Show("药材导入模板创建成功！\n\n说明：\n1. 带*号的列为必填项\n2. 拼音码和五笔码将在导入时自动生成\n3. 请删除示例数据后再导入实际数据", 
-                        "导出成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _commonDialogService.ShowInformationAsync("药材导入模板创建成功！\n\n说明：\n1. 带*号的列为必填项\n2. 拼音码和五笔码将在导入时自动生成\n3. 请删除示例数据后再导入实际数据", "导出成功").GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"导出模板失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"导出模板失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -417,7 +424,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开库存管理对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开库存管理对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 

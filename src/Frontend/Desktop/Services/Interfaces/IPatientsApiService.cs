@@ -127,7 +127,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建新患者 (RESTful POST)
         /// </summary>
         [Post("/api/v1/patients")]
-        Task<Refit.ApiResponse<object>> CreatePatientAsync([Body] PatientDetailDto dto);
+        Task<Refit.ApiResponse<PatientDto>> CreatePatientAsync([Body] PatientDetailDto dto);
 
         /// <summary>
         /// 根据ID获取患者 (RESTful GET)

@@ -14,6 +14,8 @@ using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using Prism.Dialogs;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
 {
     /// <summary>
@@ -21,6 +23,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
     /// </summary>
     public class RegistrationManagementViewModelRefactored : BaseManagementViewModel<RegistrationInfo, IRegistrationApiService>
     {
+        private readonly ICommonDialogService _commonDialogService;
+
         protected override string ModuleName => "挂号管理";
 
         #region Properties
@@ -70,9 +74,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
 
         #endregion
 
-        public RegistrationManagementViewModelRefactored(IRegistrationApiService service)
+        public RegistrationManagementViewModelRefactored(IRegistrationApiService service,
+            ICommonDialogService commonDialogService)
             : base(service)
         {
+            _commonDialogService = commonDialogService;
             // 初始化额外的命令
             BatchCancelCommand = new DelegateCommand(BatchCancel);
             CancelCommand = new DelegateCommand<RegistrationInfo>(async (r) => await CancelRegistration(r));
@@ -197,31 +203,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
         {
             try
             {
-                // 暂时显示提示信息，因为新增挂号功能需要重新设计
-                MessageBox.Show("新增挂号功能正在开发中...\n\n" +
-                    "该功能需要：\n" +
-                    "1. 选择或创建患者\n" +
-                    "2. 选择医生和科室\n" +
-                    "3. 选择预约时间\n" +
-                    "4. 设置挂号费用", 
-                    "功能开发中", MessageBoxButton.OK, MessageBoxImage.Information);
+                // 使用简化版对话框
+                var dialog = new Views.SimpleAddRegistrationDialog();
+                dialog.Owner = Application.Current.MainWindow;
                 
-                // TODO: 实现新增挂号功能
-                // var dialog = new Views.AddRegistrationDialog();
-                // dialog.Owner = Application.Current.MainWindow;
-                // 
-                // // 创建 ViewModel（需要注入必要的服务）
-                // var viewModel = new ViewModels.AddRegistrationDialogViewModel(service, patientService, doctorService);
-                // dialog.DataContext = viewModel;
-                // 
-                // if (dialog.ShowDialog() == true)
-                // {
-                //     RefreshCommand.Execute();
-                // }
+                if (dialog.ShowDialog() == true)
+                {
+                    RefreshCommand.Execute();
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开新增挂号对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开新增挂号对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -241,7 +234,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开编辑挂号对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开编辑挂号对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -251,13 +244,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
 
             try
             {
-                var dialog = new Views.ViewRegistrationDialog(item.Id);
-                dialog.Owner = Application.Current.MainWindow;
-                dialog.ShowDialog();
+                var parameters = new DialogParameters
+                {
+                    { "registrationId", item.Id }
+                };
+
+                _dialogService.ShowDialog("ViewRegistrationDialog", parameters, result =>
+                {
+                    // 对话框关闭后的处理（如果需要）
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开挂号详情对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                _commonDialogService.ShowErrorAsync($"打开详情对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -271,14 +270,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             var selectedItems = Items.Where(r => r.IsSelected && r.CanCancel).ToList();
             if (!selectedItems.Any())
             {
-                MessageBox.Show("请选择要取消的挂号记录", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                await _commonDialogService.ShowInformationAsync("请选择要取消的挂号记录", "提示");
                 return;
             }
 
-            var result = MessageBox.Show($"确定要取消选中的 {selectedItems.Count} 条挂号记录吗？", 
-                "确认取消", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要取消选中的 {selectedItems.Count} 条挂号记录吗？", "确认取消");
             
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 try
                 {
@@ -310,14 +308,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                     }
                     
                     var message = $"批量取消完成\n成功：{successCount} 条\n失败：{failedCount} 条";
-                    MessageBox.Show(message, "批量取消结果", MessageBoxButton.OK, 
-                        failedCount > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+                    _commonDialogService.ShowWarningAsync(message, "批量取消结果").GetAwaiter().GetResult();
                     
                     RefreshCommand.Execute();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"批量取消时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"批量取消时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
                 }
                 finally
                 {
@@ -330,28 +327,27 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
         {
             if (registration == null || !registration.CanCancel) return;
 
-            var result = MessageBox.Show($"确定要取消挂号单 {registration.RegistrationNo} 吗？", 
-                "确认取消", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要取消挂号单 {registration.RegistrationNo} 吗？", "确认取消");
             
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 try
                 {
                     var response = await Service.CancelRegistrationAsync(registration.Id);
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show("挂号已取消", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync("挂号已取消", "成功").GetAwaiter().GetResult();
                         RefreshCommand.Execute();
                     }
                     else
                     {
                         var error = response.Error?.Content ?? "取消挂号失败";
-                        MessageBox.Show($"取消挂号失败：{error}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"取消挂号失败：{error}", "错误").GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"取消挂号时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"取消挂号时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
                 }
             }
         }
@@ -360,10 +356,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
         {
             if (registration == null || !registration.CanCheckIn) return;
 
-            var result = MessageBox.Show($"确定要为患者 {registration.PatientName} 签到吗？\n挂号单号：{registration.RegistrationNumber}", 
-                "确认签到", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = await _commonDialogService.ShowConfirmationAsync($"确定要为患者 {registration.PatientName} 签到吗？\n挂号单号：{registration.RegistrationNumber}", "确认签到");
             
-            if (result == MessageBoxResult.Yes)
+            if (result )
             {
                 try
                 {
@@ -383,21 +378,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                     var response = await Service.UpdateRegistrationAsync(updateDto);
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show($"患者 {registration.PatientName} 签到成功", "成功", 
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        _commonDialogService.ShowInformationAsync($"患者 {registration.PatientName} 签到成功", "成功").GetAwaiter().GetResult();
                         RefreshCommand.Execute();
                     }
                     else
                     {
                         var error = response.Error?.Content ?? "签到失败";
-                        MessageBox.Show($"签到失败：{error}", "错误", 
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        _commonDialogService.ShowErrorAsync($"签到失败：{error}", "错误").GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"签到时发生错误：{ex.Message}", "错误", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _commonDialogService.ShowErrorAsync($"签到时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
                 }
                 finally
                 {
