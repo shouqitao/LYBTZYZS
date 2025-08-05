@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Interfaces.Services;
@@ -139,101 +139,41 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 新增药材
         /// </summary>
-        public async Task<ApiResponse<object>> CreateHerbAsync(HerbCreateDto dto)
+        public async Task<ServiceResult> CreateHerbAsync(HerbCreateDto dto)
         {
-            try
-            {
-                var response = await _herbApiService.CreateHerbAsync(dto);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "新增药材成功" : response.Error?.Content ?? "新增药材失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"新增药材失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _herbApiService.CreateHerbAsync(dto)
+            );
         }
 
         /// <summary>
         /// 编辑药材
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateHerbAsync(HerbUpdateDto dto)
+        public async Task<ServiceResult> UpdateHerbAsync(HerbUpdateDto dto)
         {
-            try
-            {
-                var response = await _herbApiService.UpdateHerbAsync(dto);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "更新药材成功" : response.Error?.Content ?? "更新药材失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"更新药材失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _herbApiService.UpdateHerbAsync(dto)
+            );
         }
 
         /// <summary>
         /// 删除药材
         /// </summary>
-        public async Task<ApiResponse<object>> DeleteHerbAsync(Guid id)
+        public async Task<ServiceResult> DeleteHerbAsync(Guid id)
         {
-            try
-            {
-                var response = await _herbApiService.DeleteHerbAsync(id);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "删除药材成功" : response.Error?.Content ?? "删除药材失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"删除药材失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _herbApiService.DeleteHerbAsync(id)
+            );
         }
 
         /// <summary>
         /// 更新药材状态
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateStatusAsync(Guid id, HerbStatusUpdateDto dto)
+        public async Task<ServiceResult> UpdateStatusAsync(Guid id, HerbStatusUpdateDto dto)
         {
-            try
-            {
-                var response = await _herbApiService.UpdateStatusAsync(id, dto);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "更新药材状态成功" : response.Error?.Content ?? "更新药材状态失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"更新药材状态失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _herbApiService.UpdateStatusAsync(id, dto)
+            );
         }
 
 
@@ -320,27 +260,11 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 批量导入药材
         /// </summary>
-        public async Task<ApiResponse<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
+        public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
         {
-            try
-            {
-                var response = await _herbApiService.ImportHerbsAsync(herbs);
-                return new ApiResponse<int>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "批量导入药材成功" : response.Error?.Content ?? "批量导入药材失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<int>
-                {
-                    IsSuccess = false,
-                    Message = $"导入药材失败: {ex.Message}",
-                    Data = 0
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _herbApiService.ImportHerbsAsync(herbs)
+            );
         }
 
         /// <summary>

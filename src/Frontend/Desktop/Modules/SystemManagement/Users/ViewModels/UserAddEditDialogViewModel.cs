@@ -179,7 +179,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                     
                     if (!success)
                     {
-                        ValidationMessage = response.Message ?? "创建用户失败";
+                        ValidationMessage = response.ErrorMessage ?? "创建用户失败";
                         return;
                     }
                 }
@@ -208,7 +208,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                     
                     if (!success)
                     {
-                        ValidationMessage = response.Message ?? "更新用户失败";
+                        ValidationMessage = response.ErrorMessage ?? "更新用户失败";
                         return;
                     }
                 }

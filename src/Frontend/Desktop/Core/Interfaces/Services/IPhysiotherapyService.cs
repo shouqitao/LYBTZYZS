@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.WPF.Client.Core.Models.Physiotherapy;
 using LYBT.WPF.Client.Core.Models.TreatmentRoom;
 using LYBT.WPF.Client.Core.Models.Users;
 
@@ -66,5 +67,14 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// </summary>
         Task<List<UserInfo>> GetTherapistsAsync();
 
+        /// <summary>
+        /// 获取理疗预约列表
+        /// </summary>
+        Task<List<PhysiotherapyAppointmentInfo>> GetAppointmentsAsync(DateTime? date = null, string? status = null);
+
+        /// <summary>
+        /// 获取理疗项目类型列表
+        /// </summary>
+        Task<List<TreatmentTypeInfo>> GetTreatmentTypesAsync();
     }
 }

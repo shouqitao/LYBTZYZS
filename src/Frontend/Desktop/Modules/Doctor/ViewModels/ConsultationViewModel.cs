@@ -261,7 +261,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"病历保存失败：{result.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"病历保存失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

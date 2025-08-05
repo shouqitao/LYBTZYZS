@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.WPF.Client.Core.Models.Registration;
@@ -28,22 +28,22 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 新增挂号
         /// </summary>
-        Task<ApiResponse<object>> CreateRegistrationAsync(RegistrationCreateDto dto);
+        Task<ServiceResult> CreateRegistrationAsync(RegistrationCreateDto dto);
 
         /// <summary>
         /// 编辑挂号
         /// </summary>
-        Task<ApiResponse<object>> UpdateRegistrationAsync(RegistrationEditDto dto);
+        Task<ServiceResult> UpdateRegistrationAsync(RegistrationEditDto dto);
 
         /// <summary>
         /// 删除挂号
         /// </summary>
-        Task<ApiResponse<object>> DeleteRegistrationAsync(Guid id);
+        Task<ServiceResult> DeleteRegistrationAsync(Guid id);
 
         /// <summary>
         /// 取消挂号
         /// </summary>
-        Task<ApiResponse<object>> CancelRegistrationAsync(Guid id);
+        Task<ServiceResult> CancelRegistrationAsync(Guid id);
 
 
         /// <summary>
@@ -59,21 +59,21 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 创建挂号
         /// </summary>
-        Task<ApiResponse<object>> CreateAsync(RegistrationCreateDto dto);
+        Task<ServiceResult> CreateAsync(RegistrationCreateDto dto);
 
         /// <summary>
         /// 更新挂号
         /// </summary>
-        Task<ApiResponse<object>> UpdateAsync(RegistrationEditDto dto);
+        Task<ServiceResult> UpdateAsync(RegistrationEditDto dto);
 
         /// <summary>
         /// 取消挂号
         /// </summary>
-        Task<ApiResponse<object>> CancelAsync(Guid id);
+        Task<ServiceResult> CancelAsync(Guid id);
 
         /// <summary>
         /// 批量取消挂号
         /// </summary>
-        Task<ApiResponse<object>> BatchCancelAsync(List<Guid> ids);
+        Task<ServiceResult> BatchCancelAsync(List<Guid> ids);
     }
 }

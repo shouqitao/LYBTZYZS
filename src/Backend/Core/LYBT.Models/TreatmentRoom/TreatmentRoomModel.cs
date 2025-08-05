@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Models.Configuration {
+namespace LYBT.Models.TreatmentRoom {
 
     /// <summary>
-    /// 治疗室基本信息模型
+    /// 治疗室模型 - 数据库映射
     /// </summary>
-    public class TreatmentRoomInfoModel {
+    public class TreatmentRoomModel {
 
         /// <summary>
         /// 主键ID

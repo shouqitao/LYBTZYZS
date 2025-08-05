@@ -1,7 +1,6 @@
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Logging;
 using LYBT.Models.Billing;
-using LYBT.Models.Configuration;
 using LYBT.Models.DiagnosisTreatment;
 using LYBT.Models.Doctors;
 using LYBT.Models.FormulaTemplates;
@@ -70,13 +69,14 @@ namespace LYBT.Infrastructure.Data {
         // 计费管理
         public DbSet<BillingModel> Billings { get; set; }
 
-        public DbSet<BillingItem> BillingItems { get; set; }
+        public DbSet<BillingItemModel> BillingItems { get; set; }
 
         // 病历管理
         public DbSet<RecordModel> Records { get; set; }
 
         // 治疗室管理
         public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; }
+        public DbSet<TreatmentTaskModel> TreatmentTasks { get; set; }
 
         // 同步管理
         public DbSet<SyncTaskModel> SyncTasks { get; set; }
@@ -135,7 +135,7 @@ namespace LYBT.Infrastructure.Data {
         /// <summary>
         /// 治疗目录
         /// </summary>
-        public DbSet<TreatmentCatalogModel> TreatmentCatalogs { get; set; }
+        public DbSet<LYBT.Models.TreatmentRoom.TreatmentCatalogModel> TreatmentCatalogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -155,6 +155,7 @@ namespace LYBT.Infrastructure.Data {
             ConfigureBillings(modelBuilder);
             ConfigureRecords(modelBuilder);
             ConfigureTreatmentRooms(modelBuilder);
+            ConfigureTreatmentTasks(modelBuilder);
             ConfigureSyncs(modelBuilder);
             ConfigureLogModels(modelBuilder);
             ConfigureConfigurationModels(modelBuilder);
@@ -322,11 +323,11 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(b => b.Id);
             entity.HasMany(b => b.Items).WithOne().HasForeignKey(i => i.BillingId);
 
-            // 配置 BillingItem 实体
-            var itemEntity = modelBuilder.Entity<BillingItem>();
+            // 配置 BillingItemModel 实体
+            var itemEntity = modelBuilder.Entity<BillingItemModel>();
             itemEntity.ToTable("BillingItems");
             itemEntity.HasKey(i => i.ItemId);
-            itemEntity.Property(i => i.Name).HasMaxLength(64).IsRequired();
+            itemEntity.Property(i => i.ItemName).HasMaxLength(200).IsRequired();
             itemEntity.Property(i => i.UnitPrice).HasColumnType("decimal(18,2)");
             itemEntity.Property(i => i.Quantity).HasColumnType("decimal(18,2)");
         }
@@ -370,6 +371,12 @@ namespace LYBT.Infrastructure.Data {
         private static void ConfigureTreatmentRooms(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<TreatmentRoomModel>();
             entity.ToTable("TreatmentRooms");
+            entity.HasKey(t => t.Id);
+        }
+
+        private static void ConfigureTreatmentTasks(ModelBuilder modelBuilder) {
+            var entity = modelBuilder.Entity<TreatmentTaskModel>();
+            entity.ToTable("TreatmentTasks");
             entity.HasKey(t => t.Id);
         }
 
@@ -552,25 +559,20 @@ namespace LYBT.Infrastructure.Data {
             modelBuilder.Entity<TreatmentCatalogModel>(entity => {
                 entity.ToTable("TreatmentCatalogs");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Code).HasMaxLength(20);
+                entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
                 entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
                 entity.Property(e => e.Description).HasMaxLength(500);
-                entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Price).HasColumnType("decimal(18,2)").IsRequired();
                 entity.Property(e => e.Indications).HasMaxLength(500);
                 entity.Property(e => e.Contraindications).HasMaxLength(500);
-                entity.Property(e => e.Precautions).HasMaxLength(1000);
-                entity.Property(e => e.Remark).HasMaxLength(500);
+                entity.Property(e => e.Precautions).HasMaxLength(500);
+                entity.Property(e => e.CreatedBy).HasMaxLength(50);
+                entity.Property(e => e.UpdatedBy).HasMaxLength(50);
                 entity.HasIndex(e => e.Code);
                 entity.HasIndex(e => e.Name);
-                entity.HasIndex(e => e.ParentId);
-                entity.HasIndex(e => e.IsEnabled);
-                entity.HasIndex(e => e.IsCommon);
-
-                // 自引用关系
-                entity.HasOne<TreatmentCatalogModel>()
-                      .WithMany()
-                      .HasForeignKey(e => e.ParentId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(e => e.Category);
+                entity.HasIndex(e => e.IsActive);
             });
         }
     }

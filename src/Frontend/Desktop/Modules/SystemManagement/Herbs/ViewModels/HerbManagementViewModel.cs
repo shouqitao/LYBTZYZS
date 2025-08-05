@@ -41,6 +41,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand<HerbInfo> EditHerbCommand { get; }
         public DelegateCommand<HerbInfo> DeleteHerbCommand { get; }
+        public DelegateCommand<HerbInfo> ViewHerbCommand { get; }
         public DelegateCommand<HerbInfo> ManageStockCommand { get; }
         public DelegateCommand FirstPageCommand { get; }
         public DelegateCommand PreviousPageCommand { get; }
@@ -117,6 +118,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             RefreshCommand = new DelegateCommand(ExecuteRefresh);
             EditHerbCommand = new DelegateCommand<HerbInfo>(ExecuteEditHerb);
             DeleteHerbCommand = new DelegateCommand<HerbInfo>(ExecuteDeleteHerb);
+            ViewHerbCommand = new DelegateCommand<HerbInfo>(ExecuteViewHerb);
             ManageStockCommand = new DelegateCommand<HerbInfo>(ExecuteManageStock);
             FirstPageCommand = new DelegateCommand(ExecuteFirstPage, CanExecuteFirstPage);
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage, CanExecutePreviousPage);
@@ -324,7 +326,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                             else
                             {
                                 failCount++;
-                                errors.Add($"第{dataTable.Rows.IndexOf(row) + 2}行：{response.Message}");
+                                errors.Add($"第{dataTable.Rows.IndexOf(row) + 2}行：{response.ErrorMessage}");
                             }
                         }
                         catch (Exception ex)
@@ -395,6 +397,31 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             }
         }
 
+        private void ExecuteViewHerb(HerbInfo herb)
+        {
+            if (herb == null) return;
+            
+            try
+            {
+                var dialog = new Views.ViewHerbDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                
+                // 设置ViewModel和回调
+                var viewModel = new ViewModels.ViewHerbDialogViewModel(_herbService, herb.Id)
+                {
+                    CloseDialogCallback = () => dialog.Close(),
+                    EditHerbCallback = (editHerb) => ExecuteEditHerb(editHerb)
+                };
+                
+                dialog.DataContext = viewModel;
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"打开查看药材对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private async void ExecuteDeleteHerb(HerbInfo herb)
         {
             if (herb == null) return;
@@ -412,7 +439,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"删除药材失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"删除药材失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)

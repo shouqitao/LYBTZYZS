@@ -3,13 +3,121 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <Grid>
-        <Border Background="#F8F9FA" CornerRadius="8" Margin="20">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="🔒" FontSize="72" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                <TextBlock Text="角色权限管理" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                <TextBlock Text="功能开发中..." FontSize="16" Foreground="#666" HorizontalAlignment="Center"/>
+    
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="#2E86AB" Padding="20,15">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="🔒" FontSize="24" Foreground="White" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                <TextBlock Text="角色权限管理" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
+
+        <!-- 加载指示器 -->
+        <ProgressBar Grid.Row="1" IsIndeterminate="True" 
+                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                     Height="4"/>
+
+        <!-- 搜索和操作栏 -->
+        <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,1" Padding="20,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 搜索框 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="搜索:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
+                    <TextBox Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" 
+                             Width="300" Height="32" Padding="8" VerticalContentAlignment="Center"
+                             BorderBrush="#CED4DA" BorderThickness="1"/>
+                    <Button Content="搜索" Command="{Binding SearchCommand}" 
+                            Width="80" Height="32" Margin="10,0,0,0"
+                            Background="#007BFF" Foreground="White" BorderThickness="0"/>
+                </StackPanel>
+
+                <!-- 操作按钮 -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="刷新" Command="{Binding RefreshCommand}" 
+                            Width="80" Height="32" Margin="10,0,0,0"
+                            Background="#28A745" Foreground="White" BorderThickness="0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 角色列表 -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="20">
+            <ItemsControl ItemsSource="{Binding Roles}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="White" BorderBrush="#DEE2E6" BorderThickness="1" 
+                                CornerRadius="8" Margin="0,0,0,15" Padding="20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 角色信息 -->
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <TextBlock Text="{Binding RoleName}" FontSize="18" FontWeight="Bold" 
+                                                   Foreground="#2E86AB" VerticalAlignment="Center"/>
+                                        <Border Background="#17A2B8" CornerRadius="12" Padding="8,4" Margin="15,0,0,0">
+                                            <TextBlock Text="{Binding StatusDescription}" FontSize="12" 
+                                                       Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                        <Border Background="#6C757D" CornerRadius="12" Padding="8,4" Margin="10,0,0,0">
+                                            <TextBlock Text="{Binding UserCountDescription}" FontSize="12" 
+                                                       Foreground="White" FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding Description}" FontSize="14" Foreground="#666" 
+                                               Margin="0,0,0,10" TextWrapping="Wrap"/>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="权限范围：" FontSize="12" Foreground="#888" FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding PermissionSummary}" FontSize="12" Foreground="#007BFF"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- 操作按钮 -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="查看详情" 
+                                            Command="{Binding DataContext.ViewRoleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Width="100" Height="36" Margin="0,0,10,0"
+                                            Background="#17A2B8" Foreground="White" BorderThickness="0"/>
+                                    
+                                    <Button Content="权限配置" 
+                                            Command="{Binding DataContext.EditPermissionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Width="100" Height="36"
+                                            Background="#FFC107" Foreground="White" BorderThickness="0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- 状态栏 -->
+        <Border Grid.Row="3" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,0" Padding="20,10">
+            <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#666"/>
+        </Border>
     </Grid>
+    
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
 </UserControl>

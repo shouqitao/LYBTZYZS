@@ -144,7 +144,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"加载病历列表失败：{result.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"加载病历列表失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
                 // 加载患者列表用于筛选
@@ -290,7 +290,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"删除病历失败：{response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"删除病历失败：{response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
@@ -328,7 +328,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"撤销病历共享失败：{response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"撤销病历共享失败：{response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
@@ -360,7 +360,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"加载患者病历失败：{result.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"加载患者病历失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

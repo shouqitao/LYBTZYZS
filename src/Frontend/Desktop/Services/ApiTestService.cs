@@ -95,7 +95,7 @@ namespace LYBT.WPF.Client.Services
                 }
                 else
                 {
-                    return $"❌ 登录失败: {response.Message}";
+                    return $"❌ 登录失败: {response.ErrorMessage}";
                 }
             }
             catch (Exception ex)

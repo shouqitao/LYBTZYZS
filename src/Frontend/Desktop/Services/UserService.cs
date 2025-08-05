@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services.Interfaces;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Services
@@ -36,16 +37,16 @@ namespace LYBT.WPF.Client.Services
                 // 使用Refit调用分页API
                 var response = await _userApiService.GetPagedUsersAsync(request);
                 
-                if (response.IsSuccess && response.Data != null)
+                if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    var users = response.Data.Items.Select(ConvertToUserInfo).ToList();
+                    var users = response.Content.Items.Select(ConvertToUserInfo).ToList();
                     
                     return new LYBT.WPF.Client.Core.Models.Common.PagedResult<UserInfo>
                     {
                         Items = users,
-                        TotalCount = response.Data.TotalCount,
-                        CurrentPage = response.Data.CurrentPage,
-                        PageSize = response.Data.PageSize
+                        TotalCount = response.Content.TotalCount,
+                        CurrentPage = response.Content.CurrentPage,
+                        PageSize = response.Content.PageSize
                     };
                 }
 
@@ -66,128 +67,51 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 新增用户
         /// </summary>
-        public async Task<ApiResponse<object>> CreateUserAsync(UserCreateDto request)
+        public async Task<ServiceResult> CreateUserAsync(UserCreateDto request)
         {
-            try
-            {
-                // 直接使用request，因为现在已经是UserCreateDto类型
-                var response = await _userApiService.CreateUserAsync(request);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"创建用户失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.CreateUserAsync(request)
+            );
         }
 
         /// <summary>
         /// 更新用户
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateUserAsync(UserUpdateDto request)
+        public async Task<ServiceResult> UpdateUserAsync(UserUpdateDto request)
         {
-            try
-            {
-                // 直接传递完整的UpdateDto对象
-                var response = await _userApiService.UpdateUserAsync(request);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"更新用户失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.UpdateUserAsync(request)
+            );
         }
 
         /// <summary>
         /// 禁用用户
         /// </summary>
-        public async Task<ApiResponse<object>> DisableUserAsync(Guid userId)
+        public async Task<ServiceResult> DisableUserAsync(Guid userId)
         {
-            try
-            {
-                var response = await _userApiService.DisableUserAsync(userId);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"禁用用户失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.DisableUserAsync(userId)
+            );
         }
 
         /// <summary>
         /// 启用用户
         /// </summary>
-        public async Task<ApiResponse<object>> EnableUserAsync(Guid userId)
+        public async Task<ServiceResult> EnableUserAsync(Guid userId)
         {
-            try
-            {
-                var response = await _userApiService.EnableUserAsync(userId);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"启用用户失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.EnableUserAsync(userId)
+            );
         }
 
         /// <summary>
         /// 重置用户密码
         /// </summary>
-        public async Task<ApiResponse<object>> ResetPasswordAsync(Guid userId)
+        public async Task<ServiceResult> ResetPasswordAsync(Guid userId)
         {
-            try
-            {
-                var response = await _userApiService.ResetPasswordAsync(userId);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccess,
-                    Message = response.Message,
-                    Data = response.Data
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"重置密码失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.ResetPasswordAsync(userId)
+            );
         }
 
         /// <summary>
@@ -209,134 +133,80 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 根据ID获取用户详情
         /// </summary>
-        public async Task<ApiResponse<UserInfo>> GetUserByIdAsync(Guid userId)
+        public async Task<ServiceResult<UserInfo>> GetUserByIdAsync(Guid userId)
         {
-            try
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _userApiService.GetUserByIdAsync(userId)
+            );
+            
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                var response = await _userApiService.GetUserByIdAsync(userId);
-                if (response.IsSuccess && response.Data != null)
-                {
-                    return new ApiResponse<UserInfo>
-                    {
-                        IsSuccess = true,
-                        Data = ConvertToUserInfo(response.Data),
-                        Message = response.Message
-                    };
-                }
-                return new ApiResponse<UserInfo>
-                {
-                    IsSuccess = false,
-                    Message = response.Message
-                };
+                return ServiceResult<UserInfo>.Success(ConvertToUserInfo(apiResponse.Data));
             }
-            catch (Exception ex)
-            {
-                return new ApiResponse<UserInfo>
-                {
-                    IsSuccess = false,
-                    Message = $"获取用户详情失败: {ex.Message}"
-                };
-            }
+            
+            return ServiceResult<UserInfo>.Failure(apiResponse.ErrorMessage ?? "获取用户详情失败", apiResponse.Exception);
         }
 
         /// <summary>
         /// 获取活跃用户列表
         /// </summary>
-        public async Task<ApiResponse<List<UserInfo>>> GetActiveUsersAsync()
+        public async Task<ServiceResult<List<UserInfo>>> GetActiveUsersAsync()
         {
-            try
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _userApiService.GetActiveUsersAsync()
+            );
+            
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                return await _apiService.GetAsync<List<UserInfo>>("api/v1/Users/active");
+                var users = apiResponse.Data.Select(ConvertToUserInfo).ToList();
+                return ServiceResult<List<UserInfo>>.Success(users);
             }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<UserInfo>>
-                {
-                    IsSuccess = false,
-                    Message = $"获取活跃用户失败: {ex.Message}",
-                    Data = new List<UserInfo>()
-                };
-            }
+            
+            return ServiceResult<List<UserInfo>>.Failure(apiResponse.ErrorMessage ?? "获取活跃用户失败", apiResponse.Exception);
         }
 
         /// <summary>
         /// 批量禁用用户
         /// </summary>
-        public async Task<ApiResponse<object>> BatchDisableUsersAsync(List<Guid> userIds)
+        public async Task<ServiceResult> BatchDisableUsersAsync(List<Guid> userIds)
         {
-            try
-            {
-                var dto = new { ids = userIds };
-                return await _apiService.PostAsync<object>("api/v1/Users/batchDisable", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"批量禁用用户失败: {ex.Message}"
-                };
-            }
+            var dto = new BatchIdsDto { Ids = userIds };
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.BatchDisableAsync(dto)
+            );
         }
 
         /// <summary>
         /// 批量启用用户
         /// </summary>
-        public async Task<ApiResponse<object>> BatchEnableUsersAsync(List<Guid> userIds)
+        public async Task<ServiceResult> BatchEnableUsersAsync(List<Guid> userIds)
         {
-            try
-            {
-                var dto = new { ids = userIds };
-                return await _apiService.PostAsync<object>("api/v1/Users/batchEnable", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"批量启用用户失败: {ex.Message}"
-                };
-            }
+            var dto = new BatchIdsDto { Ids = userIds };
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.BatchEnableAsync(dto)
+            );
         }
 
         /// <summary>
         /// 修改用户密码
         /// </summary>
-        public async Task<ApiResponse<object>> ChangePasswordAsync(string oldPassword, string newPassword)
+        public async Task<ServiceResult> ChangePasswordAsync(string oldPassword, string newPassword)
         {
-            try
-            {
-                var dto = new { oldPassword, newPassword };
-                return await _apiService.PostAsync<object>("api/v1/Users/changePassword", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"修改密码失败: {ex.Message}"
-                };
-            }
+            var dto = new ChangePasswordDto { OldPassword = oldPassword, NewPassword = newPassword };
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.ChangePasswordAsync(dto)
+            );
         }
 
         /// <summary>
         /// 修改个人信息
         /// </summary>
-        public async Task<ApiResponse<object>> ChangeProfileAsync(string realName, string? email, string? phoneNumber)
+        public async Task<ServiceResult> ChangeProfileAsync(string realName, string? email, string? phoneNumber)
         {
-            try
-            {
-                var dto = new { realName, email, phoneNumber };
-                return await _apiService.PostAsync<object>("api/v1/Users/changeProfile", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"修改个人信息失败: {ex.Message}"
-                };
-            }
+            var dto = new ChangeProfileDto { RealName = realName, Email = email, PhoneNumber = phoneNumber };
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _userApiService.ChangeProfileAsync(dto)
+            );
         }
 
         /// <summary>

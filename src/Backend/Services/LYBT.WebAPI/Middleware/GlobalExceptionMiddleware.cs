@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Common;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Text.Json;
 
@@ -27,34 +27,49 @@ namespace LYBT.WebAPI.Middleware {
         private async Task HandleExceptionAsync(HttpContext context, Exception exception) {
             _logger.LogError(exception, "发生未处理的异常");
 
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
 
-            var response = exception switch {
-                UnauthorizedAccessException => new {
-                    StatusCode = (int)HttpStatusCode.Unauthorized,
-                    Response = ApiResponse<object>.Fail("未授权访问", 401)
+            var problemDetails = exception switch {
+                UnauthorizedAccessException => new ProblemDetails {
+                    Status = (int)HttpStatusCode.Unauthorized,
+                    Title = "未授权",
+                    Detail = "未授权访问",
+                    Instance = context.Request.Path
                 },
-                ArgumentException => new {
-                    StatusCode = (int)HttpStatusCode.BadRequest,
-                    Response = ApiResponse<object>.Fail(exception.Message, 400)
+                ArgumentException => new ProblemDetails {
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Title = "参数错误",
+                    Detail = exception.Message,
+                    Instance = context.Request.Path
                 },
-                KeyNotFoundException => new {
-                    StatusCode = (int)HttpStatusCode.NotFound,
-                    Response = ApiResponse<object>.Fail("资源未找到", 404)
+                KeyNotFoundException => new ProblemDetails {
+                    Status = (int)HttpStatusCode.NotFound,
+                    Title = "资源未找到",
+                    Detail = "请求的资源不存在",
+                    Instance = context.Request.Path
                 },
-                InvalidOperationException => new {
-                    StatusCode = (int)HttpStatusCode.BadRequest,
-                    Response = ApiResponse<object>.Fail(exception.Message, 400)
+                InvalidOperationException => new ProblemDetails {
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Title = "操作无效",
+                    Detail = exception.Message,
+                    Instance = context.Request.Path
                 },
-                _ => new {
-                    StatusCode = (int)HttpStatusCode.InternalServerError,
-                    Response = ApiResponse<object>.Fail($"服务器内部错误: {exception.Message}", 500)
+                _ => new ProblemDetails {
+                    Status = (int)HttpStatusCode.InternalServerError,
+                    Title = "服务器内部错误",
+                    Detail = context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment() 
+                        ? exception.Message 
+                        : "处理请求时发生错误，请稍后重试",
+                    Instance = context.Request.Path
                 }
             };
 
-            context.Response.StatusCode = response.StatusCode;
+            // 添加追踪ID
+            problemDetails.Extensions["traceId"] = context.TraceIdentifier;
 
-            var jsonResponse = JsonSerializer.Serialize(response.Response, new JsonSerializerOptions {
+            context.Response.StatusCode = problemDetails.Status ?? 500;
+
+            var jsonResponse = JsonSerializer.Serialize(problemDetails, new JsonSerializerOptions {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
 

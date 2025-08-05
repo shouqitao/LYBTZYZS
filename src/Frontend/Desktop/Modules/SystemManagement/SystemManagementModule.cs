@@ -11,6 +11,7 @@ using LYBT.WPF.Client.Modules.SystemManagement.Backup.Views;
 // using LYBT.WPF.Client.Modules.SystemManagement.Logs.Views; // TODO: 待实现
 using LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Doctors.Views;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -66,6 +67,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             
             // 注册挂号管理视图
             containerRegistry.RegisterForNavigation<RegistrationManagementView>();
+            
+            // 注册医生管理视图
+            containerRegistry.RegisterForNavigation<DoctorManagementView>();
         }
     }
 }

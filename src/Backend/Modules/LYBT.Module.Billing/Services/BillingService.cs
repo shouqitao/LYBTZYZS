@@ -70,7 +70,7 @@ namespace LYBT.Module.Billing.Services {
         public async Task<bool> AddAsync(BillingCreateDto billingCreateDto) {
             var model = _mapper.Map<BillingModel>(billingCreateDto);
             model.Id = Guid.NewGuid();
-            model.BillingTime = DateTime.Now;
+            model.CreateTime = DateTime.Now;
             return await _billingRepository.AddAsync(model);
         }
 
@@ -83,7 +83,6 @@ namespace LYBT.Module.Billing.Services {
                 return false;
             // 仅允许修改部分字段
             model.PaidAmount = billingEditDto.PaidAmount;
-            model.BillingTime = billingEditDto.BillingTime;
             model.Remark = billingEditDto.Remark;
             model.Status = billingEditDto.Status;
             return await _billingRepository.UpdateAsync(model);
@@ -120,7 +119,7 @@ namespace LYBT.Module.Billing.Services {
             if (model == null)
                 return false;
             model.Status = BillingStatus.Paid;
-            model.CompletedTime = DateTime.Now;
+            model.PaidTime = DateTime.Now;
             return await _billingRepository.UpdateAsync(model);
         }
 

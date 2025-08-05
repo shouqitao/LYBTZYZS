@@ -24,6 +24,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         public DelegateCommand NavigateToPrescriptionTemplatesCommand { get; }
         public DelegateCommand NavigateToFormulaTemplateManagementCommand { get; }
         public DelegateCommand NavigateToPrescriptionManagementCommand { get; }
+        public DelegateCommand NavigateToDoctorManagementCommand { get; }
 
         public AdminMainViewModel(IRegionManager regionManager)
         {
@@ -42,6 +43,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             NavigateToPrescriptionTemplatesCommand = new DelegateCommand(() => NavigateTo("PrescriptionTemplatesView"));
             NavigateToFormulaTemplateManagementCommand = new DelegateCommand(() => NavigateTo("FormulaTemplateManagementView"));
             NavigateToPrescriptionManagementCommand = new DelegateCommand(() => NavigateTo("PrescriptionManagementView"));
+            NavigateToDoctorManagementCommand = new DelegateCommand(() => NavigateTo("DoctorManagementView"));
 
             // 默认导航到用户管理
             NavigateTo("UserManagementView");

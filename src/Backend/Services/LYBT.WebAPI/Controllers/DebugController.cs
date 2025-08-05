@@ -1,5 +1,4 @@
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,13 +27,17 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> TestConnection() {
             try {
                 var canConnect = await _context.Database.CanConnectAsync();
-                return Ok(ApiResponse<object>.Success(new {
-                    CanConnect = canConnect,
-                    ConnectionString = _context.Database.GetConnectionString()?.Substring(0, 50) + "..."
-                }));
+                return Ok(new {
+                    canConnect = canConnect,
+                    connectionString = _context.Database.GetConnectionString()?.Substring(0, 50) + "..."
+                });
             } catch (Exception ex) {
                 _logger.LogError(ex, "数据库连接测试失败");
-                return StatusCode(500, ApiResponse<object>.Fail($"数据库连接失败: {ex.Message}", 500));
+                return StatusCode(500, new ProblemDetails {
+                    Title = "数据库连接失败",
+                    Detail = ex.Message,
+                    Status = 500
+                });
             }
         }
 
@@ -64,13 +67,17 @@ namespace LYBT.WebAPI.Controllers {
 
                 _logger.LogInformation($"成功查询到 {users.Count} 个用户");
 
-                return Ok(ApiResponse<object>.Success(new {
-                    TotalCount = userCount,
-                    Users = users
-                }));
+                return Ok(new {
+                    totalCount = userCount,
+                    users = users
+                });
             } catch (Exception ex) {
                 _logger.LogError(ex, "用户表查询失败");
-                return StatusCode(500, ApiResponse<object>.Fail($"用户表查询失败: {ex.Message}", 500));
+                return StatusCode(500, new ProblemDetails {
+                    Title = "用户表查询失败",
+                    Detail = ex.Message,
+                    Status = 500
+                });
             }
         }
 
@@ -102,13 +109,17 @@ namespace LYBT.WebAPI.Controllers {
                     patients = new object[0];
                 }
 
-                return Ok(ApiResponse<object>.Success(new {
-                    TotalCount = patientCount,
-                    Patients = patients
-                }));
+                return Ok(new {
+                    totalCount = patientCount,
+                    patients = patients
+                });
             } catch (Exception ex) {
                 _logger.LogError(ex, "患者表查询失败");
-                return StatusCode(500, ApiResponse<object>.Fail($"患者表查询失败: {ex.Message}", 500));
+                return StatusCode(500, new ProblemDetails {
+                    Title = "患者表查询失败",
+                    Detail = ex.Message,
+                    Status = 500
+                });
             }
         }
 
@@ -141,13 +152,17 @@ namespace LYBT.WebAPI.Controllers {
                     herbs = new object[0];
                 }
 
-                return Ok(ApiResponse<object>.Success(new {
-                    TotalCount = herbCount,
-                    Herbs = herbs
-                }));
+                return Ok(new {
+                    totalCount = herbCount,
+                    herbs = herbs
+                });
             } catch (Exception ex) {
                 _logger.LogError(ex, "药材表查询失败");
-                return StatusCode(500, ApiResponse<object>.Fail($"药材表查询失败: {ex.Message}", 500));
+                return StatusCode(500, new ProblemDetails {
+                    Title = "药材表查询失败",
+                    Detail = ex.Message,
+                    Status = 500
+                });
             }
         }
 
@@ -160,13 +175,17 @@ namespace LYBT.WebAPI.Controllers {
                 var sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
                 var tables = await _context.Database.SqlQueryRaw<string>(sql).ToListAsync();
 
-                return Ok(ApiResponse<object>.Success(new {
-                    TableCount = tables.Count,
-                    Tables = tables
-                }));
+                return Ok(new {
+                    tableCount = tables.Count,
+                    tables = tables
+                });
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取表列表失败");
-                return StatusCode(500, ApiResponse<object>.Fail($"获取表列表失败: {ex.Message}", 500));
+                return StatusCode(500, new ProblemDetails {
+                    Title = "获取表列表失败",
+                    Detail = ex.Message,
+                    Status = 500
+                });
             }
         }
 
@@ -180,14 +199,18 @@ namespace LYBT.WebAPI.Controllers {
                 var columnSql = "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "' ORDER BY ORDINAL_POSITION";
                 var columns = await _context.Database.SqlQueryRaw<dynamic>(columnSql).ToListAsync();
 
-                return Ok(ApiResponse<object>.Success(new {
-                    TableName = tableName,
-                    ColumnCount = columns.Count,
-                    Columns = columns
-                }));
+                return Ok(new {
+                    tableName = tableName,
+                    columnCount = columns.Count,
+                    columns = columns
+                });
             } catch (Exception ex) {
                 _logger.LogError(ex, $"检查表结构失败: {tableName}");
-                return StatusCode(500, ApiResponse<object>.Fail($"检查表结构失败: {ex.Message}", 500));
+                return StatusCode(500, new ProblemDetails {
+                    Title = "检查表结构失败",
+                    Detail = ex.Message,
+                    Status = 500
+                });
             }
         }
     }

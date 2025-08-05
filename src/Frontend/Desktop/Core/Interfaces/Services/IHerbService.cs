@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Common;
@@ -31,22 +31,22 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 新增药材
         /// </summary>
-        Task<ApiResponse<object>> CreateHerbAsync(HerbCreateDto dto);
+        Task<ServiceResult> CreateHerbAsync(HerbCreateDto dto);
 
         /// <summary>
         /// 编辑药材
         /// </summary>
-        Task<ApiResponse<object>> UpdateHerbAsync(HerbUpdateDto dto);
+        Task<ServiceResult> UpdateHerbAsync(HerbUpdateDto dto);
 
         /// <summary>
         /// 删除药材
         /// </summary>
-        Task<ApiResponse<object>> DeleteHerbAsync(Guid id);
+        Task<ServiceResult> DeleteHerbAsync(Guid id);
 
         /// <summary>
         /// 更新药材状态
         /// </summary>
-        Task<ApiResponse<object>> UpdateStatusAsync(Guid id, HerbStatusUpdateDto dto);
+        Task<ServiceResult> UpdateStatusAsync(Guid id, HerbStatusUpdateDto dto);
 
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 批量导入药材
         /// </summary>
-        Task<ApiResponse<int>> ImportHerbsAsync(List<HerbImportDto> herbs);
+        Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs);
 
         /// <summary>
         /// 导出药材数据

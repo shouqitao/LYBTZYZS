@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
 using Refit;
 using LYBT.WPF.Client.Core.Models.Authentication;
-using ApiResponse = LYBT.Shared.Models.Common.ApiResponse;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Core;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {
@@ -14,24 +15,36 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 用户登录
         /// </summary>
         [Post("/api/v1/auth/login")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync([Body] object loginRequest);
+        Task<Refit.ApiResponse<LoginResponseDto>> LoginAsync([Body] LoginRequest loginRequest);
 
         /// <summary>
         /// 用户登出
         /// </summary>
         [Post("/api/v1/auth/logout")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<object>> LogoutAsync([Body] object logoutRequest);
+        Task<Refit.ApiResponse<object>> LogoutAsync();
 
         /// <summary>
         /// 健康检查
         /// </summary>
         [Get("/api/health")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<object>> HealthCheckAsync();
+        Task<Refit.ApiResponse<string>> HealthCheckAsync();
 
         /// <summary>
-        /// 模拟登录 - 不依赖数据库
+        /// 获取当前用户信息
         /// </summary>
-        [Post("/api/v1/auth/mockLogin")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> MockLoginAsync([Body] object loginRequest);
+        [Get("/api/v1/auth/current-user")]
+        Task<Refit.ApiResponse<BaseUserModel>> GetCurrentUserAsync();
+
+        /// <summary>
+        /// 刷新JWT令牌
+        /// </summary>
+        [Post("/api/v1/auth/refresh-token")]
+        Task<Refit.ApiResponse<object>> RefreshTokenAsync();
+
+        /// <summary>
+        /// 修改密码
+        /// </summary>
+        [Post("/api/v1/auth/change-password")]
+        Task<Refit.ApiResponse<object>> ChangePasswordAsync([Body] object changePasswordRequest);
     }
 }

@@ -112,7 +112,11 @@ builder.Services.AddApiVersioning(opt => {
     setup.SubstituteApiVersionInUrl = true;
 });
 
-// =========== 5. 添加Swagger文档 ===========
+// =========== 5. 添加 ProblemDetails 和异常处理服务 ===========
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// =========== 6. 添加Swagger文档 ===========
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
@@ -153,7 +157,7 @@ builder.Services.AddSwaggerGen(c => {
     }
 });
 
-// =========== 6. 添加控制器和JSON配置 ===========
+// =========== 7. 添加控制器和JSON配置 ===========
 // 确保UTF-8编码支持
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
@@ -167,10 +171,10 @@ builder.Services.AddControllers().AddJsonOptions(options => {
     options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
 });
 
-// =========== 7. 构建应用 ===========
+// =========== 8. 构建应用 ===========
 var app = builder.Build();
 
-// =========== 8. 数据库和应用初始化 ===========
+// =========== 9. 数据库和应用初始化 ===========
 using (var scope = app.Services.CreateScope()) {
     try {
         Console.WriteLine("🔄 正在初始化应用程序...");
@@ -237,7 +241,7 @@ using (var scope = app.Services.CreateScope()) {
     }
 }
 
-// =========== 9. 配置中间件管道 ===========
+// =========== 10. 配置中间件管道 ===========
 
 // 启用Swagger（优先级最高）
 app.UseSwagger();
@@ -248,8 +252,8 @@ app.UseSwaggerUI(c => {
 });
 Console.WriteLine("📖 Swagger UI 已启用 - /swagger");
 
-// 全局异常处理中间件
-app.UseGlobalExceptionHandling();
+// 使用新的异常处理中间件
+app.UseExceptionHandler();
 
 // 性能监控中间件
 app.UsePerformanceMonitoring();
@@ -260,7 +264,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// =========== 10. 启动应用 ===========
+// =========== 11. 启动应用 ===========
 var urls = app.Urls.Count > 0 ? string.Join(", ", app.Urls) : "默认端口";
 Console.WriteLine($"");
 Console.WriteLine($"🚀 LYBT中医诊所管理系统启动成功!");

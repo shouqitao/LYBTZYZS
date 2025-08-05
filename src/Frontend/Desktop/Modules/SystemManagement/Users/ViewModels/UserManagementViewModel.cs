@@ -1,4 +1,5 @@
 using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.WPF.Client.Core.Interfaces.Services;
@@ -301,7 +302,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             {
                 try
                 {
-                    ApiResponse<object> response;
+                    ServiceResult response;
                     if (user.IsActive)
                     {
                         response = await _userService.DisableUserAsync(user.Id);
@@ -318,7 +319,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"{action}用户失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"{action}用户失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
@@ -344,7 +345,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"重置密码失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"重置密码失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)

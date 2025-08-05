@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.WPF.Client.Core.Models.Users;
 
@@ -20,27 +20,27 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 新增用户
         /// </summary>
-        Task<ApiResponse<object>> CreateUserAsync(UserCreateDto request);
+        Task<ServiceResult> CreateUserAsync(UserCreateDto request);
 
         /// <summary>
         /// 更新用户
         /// </summary>
-        Task<ApiResponse<object>> UpdateUserAsync(UserUpdateDto request);
+        Task<ServiceResult> UpdateUserAsync(UserUpdateDto request);
 
         /// <summary>
         /// 禁用用户
         /// </summary>
-        Task<ApiResponse<object>> DisableUserAsync(Guid userId);
+        Task<ServiceResult> DisableUserAsync(Guid userId);
 
         /// <summary>
         /// 启用用户
         /// </summary>
-        Task<ApiResponse<object>> EnableUserAsync(Guid userId);
+        Task<ServiceResult> EnableUserAsync(Guid userId);
 
         /// <summary>
         /// 重置用户密码
         /// </summary>
-        Task<ApiResponse<object>> ResetPasswordAsync(Guid userId);
+        Task<ServiceResult> ResetPasswordAsync(Guid userId);
 
         /// <summary>
         /// 获取所有角色

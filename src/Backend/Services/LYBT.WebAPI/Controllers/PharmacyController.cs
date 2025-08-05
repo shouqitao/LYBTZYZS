@@ -47,13 +47,13 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取待抓药的处方列表
         /// </summary>
         [HttpGet("waiting")]
-        public async Task<ActionResult<ApiResponse<List<PharmacyDto>>>> GetWaitingList() {
+        public async Task<ActionResult<List<PharmacyDto>>> GetWaitingList() {
             try {
                 var list = await _pharmacyService.GetWaitingListAsync();
-                return Ok(ApiResponse<List<PharmacyDto>>.Success(list));
+                return Ok(list);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取待抓药处方列表失败");
-                return StatusCode(500, ApiResponse<List<PharmacyDto>>.Fail("获取待抓药处方列表失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取待抓药处方列表失败" });
             }
         }
 
@@ -61,7 +61,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取药房单列表 (RESTful GET /Pharmacy) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<PharmacyDto>>>> GetList(
+        public async Task<ActionResult<PaginatedResult<PharmacyDto>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -84,7 +84,7 @@ namespace LYBT.WebAPI.Controllers {
                         TotalCount = totalCount,
                         Items = pagedList
                     };
-                    return Ok(ApiResponse<PaginatedResult<PharmacyDto>>.Success(result));
+                    return Ok(result);
                 }
 
                 // 使用分页查询服务 (简化版本，只保留基本搜索功能)
@@ -96,10 +96,10 @@ namespace LYBT.WebAPI.Controllers {
                 
                 var (_, _, operatorRole) = GetOperator();
                 var pagedResult = await _pharmacyService.GetPagedAsync(query, operatorRole);
-                return Ok(ApiResponse<PaginatedResult<PharmacyDto>>.Success(pagedResult));
+                return Ok(pagedResult);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取药房单列表失败");
-                return StatusCode(500, ApiResponse<PaginatedResult<PharmacyDto>>.Fail("获取药房单列表失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取药房单列表失败" });
             }
         }
 
@@ -107,19 +107,19 @@ namespace LYBT.WebAPI.Controllers {
         /// 分页获取药房单列表
         /// </summary>
         [HttpGet("paged")]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<PharmacyDto>>>> GetPagedList([FromQuery] LYBT.Shared.Models.Common.PaginationRequest query) {
+        public async Task<ActionResult<PaginatedResult<PharmacyDto>>> GetPagedList([FromQuery] LYBT.Shared.Models.Common.PaginationRequest query) {
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(ApiResponse<PaginatedResult<PharmacyDto>>.Fail($"参数验证失败：{errors}", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
                 }
 
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _pharmacyService.GetPagedAsync(query, operatorRole);
-                return Ok(ApiResponse<PaginatedResult<PharmacyDto>>.Success(result));
+                return Ok(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "分页获取药房单列表失败");
-                return StatusCode(500, ApiResponse<PaginatedResult<PharmacyDto>>.Fail("分页获取药房单列表失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "分页获取药房单列表失败" });
             }
         }
 
@@ -127,20 +127,20 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取药房单详情
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<PharmacyDetailDto>>> GetById(Guid id) {
+        public async Task<ActionResult<PharmacyDetailDto>> GetById(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<PharmacyDetailDto>.Fail("药房单ID不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "药房单ID不能为空" });
                 }
 
                 var detail = await _pharmacyService.GetByIdAsync(id);
                 if (detail == null) {
-                    return NotFound(ApiResponse<PharmacyDetailDto>.Fail("药房单不存在", 404));
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "药房单不存在" });
                 }
-                return Ok(ApiResponse<PharmacyDetailDto>.Success(detail));
+                return Ok(detail);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取药房单详情失败，ID: {PharmacyId}", id);
-                return StatusCode(500, ApiResponse<PharmacyDetailDto>.Fail("获取药房单详情失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取药房单详情失败" });
             }
         }
 
@@ -148,24 +148,24 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增药房单
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<object>>> Add([FromBody] PharmacyCreateDto pharmacyCreateDto) {
+        public async Task<ActionResult<object>> Add([FromBody] PharmacyCreateDto pharmacyCreateDto) {
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{errors}", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _pharmacyService.AddAsync(pharmacyCreateDto);
                 if (!result) {
-                    return BadRequest(ApiResponse<object>.Fail("新增药房单失败", 400));
+                    return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "新增药房单失败" });
                 }
 
                 _logger.LogInformation("新增药房单成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "新增药房单成功"));
+                return Ok(new { message = "新增药房单成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "新增药房单失败");
-                return StatusCode(500, ApiResponse<object>.Fail("新增药房单失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "新增药房单失败" });
             }
         }
 
@@ -173,24 +173,24 @@ namespace LYBT.WebAPI.Controllers {
         /// 编辑药房单
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update([FromBody] PharmacyEditDto pharmacyEditDto) {
+        public async Task<ActionResult<object>> Update([FromBody] PharmacyEditDto pharmacyEditDto) {
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{errors}", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _pharmacyService.UpdateAsync(pharmacyEditDto);
                 if (!result) {
-                    return BadRequest(ApiResponse<object>.Fail("编辑药房单失败", 400));
+                    return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "编辑药房单失败" });
                 }
 
                 _logger.LogInformation("编辑药房单成功，药房单ID: {PharmacyId}，操作者: {OperatorName}({OperatorId})", pharmacyEditDto.Id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "编辑药房单成功"));
+                return Ok(new { message = "编辑药房单成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "编辑药房单失败，药房单ID: {PharmacyId}", pharmacyEditDto.Id);
-                return StatusCode(500, ApiResponse<object>.Fail("编辑药房单失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "编辑药房单失败" });
             }
         }
 
@@ -198,23 +198,23 @@ namespace LYBT.WebAPI.Controllers {
         /// 删除药房单
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id) {
+        public async Task<ActionResult<object>> Delete(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<object>.Fail("药房单ID不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "药房单ID不能为空" });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _pharmacyService.DeleteAsync(id);
                 if (!result) {
-                    return NotFound(ApiResponse<object>.Fail("药房单不存在", 404));
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "药房单不存在" });
                 }
 
                 _logger.LogInformation("删除药房单成功，药房单ID: {PharmacyId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "删除药房单成功"));
+                return Ok(new { message = "删除药房单成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "删除药房单失败，药房单ID: {PharmacyId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("删除药房单失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "删除药房单失败" });
             }
         }
 
@@ -222,23 +222,23 @@ namespace LYBT.WebAPI.Controllers {
         /// 标记处方为已抓药
         /// </summary>
         [HttpPost("{id}/prepared")]
-        public async Task<ActionResult<ApiResponse<object>>> MarkAsPrepared(Guid id) {
+        public async Task<ActionResult<object>> MarkAsPrepared(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<object>.Fail("药房单ID不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "药房单ID不能为空" });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _pharmacyService.MarkAsPreparedAsync(id);
                 if (!result) {
-                    return NotFound(ApiResponse<object>.Fail("药房单不存在", 404));
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "药房单不存在" });
                 }
 
                 _logger.LogInformation("标记处方为已抓药成功，药房单ID: {PharmacyId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "标记为已抓药成功"));
+                return Ok(new { message = "标记为已抓药成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "标记处方为已抓药失败，药房单ID: {PharmacyId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("标记为已抓药失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "标记为已抓药失败" });
             }
         }
     }

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Auth;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
 {
@@ -14,13 +14,13 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// </summary>
         /// <param name="request">登录请求</param>
         /// <returns>登录响应</returns>
-        Task<ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync(LoginRequest request);
+        Task<ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync(LoginRequest request);
 
         /// <summary>
         /// 用户登出
         /// </summary>
         /// <returns></returns>
-        Task<ApiResponse<object>> LogoutAsync();
+        Task<ServiceResult> LogoutAsync();
 
         /// <summary>
         /// 检查是否已登录

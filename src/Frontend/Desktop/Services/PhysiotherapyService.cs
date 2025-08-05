@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models.Physiotherapy;
 using LYBT.WPF.Client.Core.Models.TreatmentRoom;
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.Shared.Models.Enums;
@@ -202,5 +203,74 @@ namespace LYBT.WPF.Client.Services
             };
         }
 
+        public async Task<List<PhysiotherapyAppointmentInfo>> GetAppointmentsAsync(DateTime? date = null, string? status = null)
+        {
+            await Task.Delay(200);
+            
+            return new List<PhysiotherapyAppointmentInfo>
+            {
+                new PhysiotherapyAppointmentInfo
+                {
+                    Id = Guid.NewGuid(),
+                    PatientId = Guid.NewGuid(),
+                    PatientName = "张三",
+                    TreatmentType = "针灸",
+                    TreatmentName = "针灸治疗",
+                    AppointmentTime = DateTime.Today.AddHours(9),
+                    TherapistId = Guid.NewGuid(),
+                    TherapistName = "李医师",
+                    Status = "已预约",
+                    Remark = "首次治疗",
+                    CreateTime = DateTime.Now.AddDays(-1)
+                },
+                new PhysiotherapyAppointmentInfo
+                {
+                    Id = Guid.NewGuid(),
+                    PatientId = Guid.NewGuid(),
+                    PatientName = "李四",
+                    TreatmentType = "推拿",
+                    TreatmentName = "推拿按摩",
+                    AppointmentTime = DateTime.Today.AddHours(10),
+                    TherapistId = Guid.NewGuid(),
+                    TherapistName = "王医师",
+                    Status = "进行中",
+                    Remark = "第二次治疗",
+                    CreateTime = DateTime.Now.AddDays(-1)
+                }
+            };
+        }
+
+        public async Task<List<TreatmentTypeInfo>> GetTreatmentTypesAsync()
+        {
+            await Task.Delay(200);
+            
+            return new List<TreatmentTypeInfo>
+            {
+                new TreatmentTypeInfo
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "针灸治疗",
+                    Duration = 30,
+                    Price = 180,
+                    Description = "传统针灸治疗"
+                },
+                new TreatmentTypeInfo
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "推拿按摩",
+                    Duration = 45,
+                    Price = 150,
+                    Description = "中医推拿按摩"
+                },
+                new TreatmentTypeInfo
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "拔罐治疗",
+                    Duration = 20,
+                    Price = 120,
+                    Description = "拔罐疗法"
+                }
+            };
+        }
     }
 }

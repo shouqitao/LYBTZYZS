@@ -45,4 +45,5 @@ namespace LYBT.Shared.Models.Common {
         [DisplayName("目标状态")]
         public TEnum Status { get; set; } = default!;
     }
+
 }

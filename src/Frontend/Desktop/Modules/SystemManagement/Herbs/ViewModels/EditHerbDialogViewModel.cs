@@ -221,7 +221,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"更新药材失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"更新药材失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.Shared.Models.Auth;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
+using Refit;
+using System.Net;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Enums;
@@ -27,65 +29,49 @@ namespace LYBT.WPF.Client.Services {
 
         public bool IsLoggedIn => _isLoggedIn;
 
-        public async Task<ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync(LoginRequest request) {
-            try {
-                // 创建后端API格式的登录请求
-                var loginDto = new {
-                    username = request.Username,
-                    password = request.Password,
-                    rememberMe = request.RememberMe,
-                    clientIp = request.ClientIp,
-                    userAgent = request.UserAgent,
-                    loginType = request.LoginType
+        public async Task<ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync(LoginRequest request) {
+            // 转换 LoginRequest 类型
+            var clientLoginRequest = new LYBT.WPF.Client.Core.Models.Authentication.LoginRequest
+            {
+                Username = request.Username,
+                Password = request.Password,
+                RememberMe = request.RememberMe
+            };
+            
+            var result = await ApiErrorHandler.HandleApiResponseAsync(
+                async () => await _authApiService.LoginAsync(clientLoginRequest)
+            );
+            
+            if (result.IsSuccess && result.Data != null && !string.IsNullOrEmpty(result.Data.Token)) {
+                _isLoggedIn = true;
+                _tokenManager.SetToken(result.Data.Token);
+
+                // 将BaseUserModel转换为前端UserInfo模型
+                _currentUser = ConvertBaseUserModelToFrontend(result.Data.User);
+                
+                // 转换DTO为API契约类型
+                var authResponse = new LYBT.Shared.Models.Auth.LoginResponse
+                {
+                    Token = result.Data.Token,
+                    User = ConvertBaseUserModelToAuthUserInfo(result.Data.User)
                 };
-
-                // 使用真实登录端点
-                var response = await _authApiService.LoginAsync(loginDto);
-
-                if (response.IsSuccess && response.Data != null && !string.IsNullOrEmpty(response.Data.Token)) {
-                    _isLoggedIn = true;
-                    _tokenManager.SetToken(response.Data.Token);
-
-                    // 将API返回的共享UserInfo转换为前端UserInfo模型
-                    _currentUser = ConvertSharedUserInfoToFrontend(response.Data.User);
-                }
-
-                // 转换为前端类型
-                return ConvertApiResponse(response);
-            } catch (Exception ex) {
-                return new ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> {
-                    IsSuccess = false,
-                    Message = $"登录过程中发生错误: {ex.Message}"
-                };
+                
+                return ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>.Success(authResponse);
             }
+            
+            return ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>.Failure(result.ErrorMessage ?? "登录失败", result.Exception);
         }
 
-        public async Task<ApiResponse<object>> LogoutAsync() {
-            try {
-                // 获取当前用户信息用于登出
-                var currentUser = await GetCurrentUserAsync();
-                var logoutDto = new {
-                    username = currentUser?.Username ?? "unknown",
-                    token = _tokenManager.GetToken()
-                };
-
-                var response = await _authApiService.LogoutAsync(logoutDto);
-
-                // 无论API调用是否成功，都清除本地登录状态
-                ClearAuthInfo();
-
-                return response.IsSuccess ? ConvertApiResponse(response) : new ApiResponse<object> {
-                    IsSuccess = true,
-                    Message = "已清除本地登录状态"
-                };
-            } catch (Exception ex) {
-                // 即使API调用失败，也清除本地状态
-                ClearAuthInfo();
-                return new ApiResponse<object> {
-                    IsSuccess = true,
-                    Message = $"登出完成，但API调用失败: {ex.Message}"
-                };
-            }
+        public async Task<ServiceResult> LogoutAsync() {
+            var result = await ApiErrorHandler.HandleApiCallAsync(
+                async () => await _authApiService.LogoutAsync()
+            );
+            
+            // 无论API调用是否成功，都清除本地登录状态
+            ClearAuthInfo();
+            
+            // 总是返回成功，因为本地状态已清除
+            return ServiceResult.Success();
         }
 
         public Task<UserInfo?> GetCurrentUserAsync() {
@@ -141,23 +127,41 @@ namespace LYBT.WPF.Client.Services {
         }
 
         /// <summary>
-        /// 将共享UserInfo转换为前端UserInfo模型
+        /// 将BaseUserModel转换为前端UserInfo模型
         /// </summary>
-        private UserInfo? ConvertSharedUserInfoToFrontend(LYBT.Shared.Models.Auth.UserInfo? sharedUser) {
-            if (sharedUser == null)
+        private UserInfo? ConvertBaseUserModelToFrontend(LYBT.Shared.Models.Core.BaseUserModel? baseUser) {
+            if (baseUser == null)
                 return null;
 
             return new UserInfo {
-                Id = sharedUser.Id,
-                Username = sharedUser.Username,
-                RealName = sharedUser.RealName,
-                Role = sharedUser.Role,
-                IsActive = sharedUser.IsActive,
-                CreateTime = DateTime.Now, // 使用当前时间
-                LastLoginTime = null, // 共享模型没有这个字段
-                Email = sharedUser.Email,
-                PhoneNumber = sharedUser.PhoneNumber,
-                IsSuperAdmin = sharedUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
+                Id = baseUser.Id,
+                Username = baseUser.Username,
+                RealName = baseUser.RealName,
+                Role = baseUser.Role,
+                IsActive = baseUser.IsActive,
+                CreateTime = baseUser.CreateTime,
+                LastLoginTime = baseUser.LastLoginTime,
+                Email = baseUser.Email,
+                PhoneNumber = baseUser.PhoneNumber,
+                IsSuperAdmin = baseUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
+            };
+        }
+
+        /// <summary>
+        /// 将BaseUserModel转换为Auth.UserInfo模型
+        /// </summary>
+        private LYBT.Shared.Models.Auth.UserInfo ConvertBaseUserModelToAuthUserInfo(LYBT.Shared.Models.Core.BaseUserModel? baseUser) {
+            if (baseUser == null)
+                return new LYBT.Shared.Models.Auth.UserInfo();
+
+            return new LYBT.Shared.Models.Auth.UserInfo {
+                Id = baseUser.Id,
+                Username = baseUser.Username,
+                RealName = baseUser.RealName,
+                Role = baseUser.Role,
+                IsActive = baseUser.IsActive,
+                Email = baseUser.Email,
+                PhoneNumber = baseUser.PhoneNumber
             };
         }
 
@@ -234,33 +238,6 @@ namespace LYBT.WPF.Client.Services {
             return result;
         }
 
-        /// <summary>
-        /// 转换API响应类型
-        /// </summary>
-        private ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> ConvertApiResponse(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse> apiResponse)
-        {
-            // 直接返回，因为现在使用共享的LoginResponse
-            return new ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>
-            {
-                IsSuccess = apiResponse.IsSuccess,
-                Message = apiResponse.Message,
-                StatusCode = apiResponse.StatusCode,
-                Data = apiResponse.Data
-            };
-        }
 
-        /// <summary>
-        /// 转换API响应类型 - 通用对象版本
-        /// </summary>
-        private ApiResponse<object> ConvertApiResponse(LYBT.Shared.Models.Common.ApiResponse<object> apiResponse)
-        {
-            return new ApiResponse<object>
-            {
-                IsSuccess = apiResponse.IsSuccess,
-                Message = apiResponse.Message,
-                StatusCode = apiResponse.StatusCode,
-                Data = apiResponse.Data
-            };
-        }
     }
 }

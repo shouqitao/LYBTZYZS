@@ -332,9 +332,9 @@ LYBT.Models/
 
 系统治疗项目目录配置，支持层级结构和价格管理。
 
-### TreatmentRoomInfoModel - 治疗室信息配置
+### TreatmentRoomModel - 治疗室信息配置
 
-**文件位置**: `Configuration/TreatmentRoomInfoModel.cs`
+**文件位置**: `Configuration/TreatmentRoomModel.cs`
 
 治疗室基础信息配置。
 

@@ -196,7 +196,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"搜索失败：{result.Message}", "错误", 
+                    MessageBox.Show($"搜索失败：{result.ErrorMessage}", "错误", 
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -248,7 +248,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"患者注册失败：{result.Message}", "错误", 
+                    MessageBox.Show($"患者注册失败：{result.ErrorMessage}", "错误", 
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -341,7 +341,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"获取就诊历史失败：{result.Message}", "错误", 
+                    MessageBox.Show($"获取就诊历史失败：{result.ErrorMessage}", "错误", 
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }

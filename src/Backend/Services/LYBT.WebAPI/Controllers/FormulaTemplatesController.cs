@@ -48,7 +48,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取所有模板列表 (RESTful GET /FormulaTemplates) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<FormulaTemplateDto>>>> GetList(
+        public async Task<ActionResult<PaginatedResult<FormulaTemplateDto>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -71,7 +71,7 @@ namespace LYBT.WebAPI.Controllers {
                         TotalCount = totalCount,
                         Items = pagedList
                     };
-                    return Ok(ApiResponse<PaginatedResult<FormulaTemplateDto>>.Success(result));
+                    return Ok(result);
                 }
 
                 // 使用分页查询服务
@@ -83,10 +83,10 @@ namespace LYBT.WebAPI.Controllers {
                 
                 var (_, _, operatorRole) = GetOperator();
                 var pagedResult = await _service.GetPagedAsync(query, operatorRole);
-                return Ok(ApiResponse<PaginatedResult<FormulaTemplateDto>>.Success(pagedResult));
+                return Ok(pagedResult);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取验方模板列表失败");
-                return StatusCode(500, ApiResponse<PaginatedResult<FormulaTemplateDto>>.Fail("获取验方模板列表失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取验方模板列表失败" });
             }
         }
 
@@ -94,14 +94,14 @@ namespace LYBT.WebAPI.Controllers {
         /// 分页查询验方模板列表
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<FormulaTemplateDto>>>> GetPaged([FromBody] LYBT.Shared.Models.Common.PaginationRequest query) {
+        public async Task<ActionResult<PaginatedResult<FormulaTemplateDto>>> GetPaged([FromBody] LYBT.Shared.Models.Common.PaginationRequest query) {
             try {
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _service.GetPagedAsync(query, operatorRole);
-                return Ok(ApiResponse<PaginatedResult<FormulaTemplateDto>>.Success(result));
+                return Ok(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "分页查询验方模板失败");
-                return StatusCode(500, ApiResponse<PaginatedResult<FormulaTemplateDto>>.Fail("分页查询验方模板失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "分页查询验方模板失败" });
             }
         }
 
@@ -109,20 +109,20 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取模板详情
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<FormulaTemplateDetailDto>>> GetById(Guid id) {
+        public async Task<ActionResult<FormulaTemplateDetailDto>> GetById(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<FormulaTemplateDetailDto>.Fail("模板ID不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "模板ID不能为空" });
                 }
 
                 var detail = await _service.GetByIdAsync(id);
                 if (detail == null) {
-                    return NotFound(ApiResponse<FormulaTemplateDetailDto>.Fail("验方模板不存在", 404));
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "验方模板不存在" });
                 }
-                return Ok(ApiResponse<FormulaTemplateDetailDto>.Success(detail));
+                return Ok(detail);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取验方模板详情失败，ID: {TemplateId}", id);
-                return StatusCode(500, ApiResponse<FormulaTemplateDetailDto>.Fail("获取验方模板详情失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取验方模板详情失败" });
             }
         }
 
@@ -130,24 +130,24 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增模板
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<object>>> Add([FromBody] FormulaTemplateCreateDto dto) {
+        public async Task<ActionResult<object>> Add([FromBody] FormulaTemplateCreateDto dto) {
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{errors}", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.AddAsync(dto, operatorId, operatorName);
                 if (!result) {
-                    return BadRequest(ApiResponse<object>.Fail("新增验方模板失败", 400));
+                    return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "新增验方模板失败" });
                 }
 
                 _logger.LogInformation("新增验方模板成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return StatusCode(201, ApiResponse<object>.Success(new { }, "新增验方模板成功"));
+                return StatusCode(201, new { message = "新增验方模板成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "新增验方模板失败");
-                return StatusCode(500, ApiResponse<object>.Fail("新增验方模板失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "新增验方模板失败" });
             }
         }
 
@@ -155,25 +155,25 @@ namespace LYBT.WebAPI.Controllers {
         /// 编辑模板
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update(Guid id, [FromBody] FormulaTemplateEditDto dto) {
+        public async Task<ActionResult<object>> Update(Guid id, [FromBody] FormulaTemplateEditDto dto) {
             dto.Id = id; // 确保ID一致
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{errors}", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数验证失败", Detail = errors });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.UpdateAsync(dto, operatorId, operatorName);
                 if (!result) {
-                    return BadRequest(ApiResponse<object>.Fail("编辑验方模板失败", 400));
+                    return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "编辑验方模板失败" });
                 }
 
                 _logger.LogInformation("编辑验方模板成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", dto.Id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "编辑验方模板成功"));
+                return Ok(new { message = "编辑验方模板成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "编辑验方模板失败，模板ID: {TemplateId}", dto.Id);
-                return StatusCode(500, ApiResponse<object>.Fail("编辑验方模板失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "编辑验方模板失败" });
             }
         }
 
@@ -181,10 +181,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 禁用模板（软删除）
         /// </summary>
         [HttpPatch("{id}/disable")]
-        public Task<ActionResult<ApiResponse<object>>> Disable(Guid id) {
+        public Task<ActionResult<object>> Disable(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return Task.FromResult<ActionResult<ApiResponse<object>>>(BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400)));
+                    return Task.FromResult<ActionResult<object>>(BadRequest(new ProblemDetails { Title = "参数错误", Detail = "模板ID不能为空" }));
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
@@ -195,10 +195,10 @@ namespace LYBT.WebAPI.Controllers {
                 // }
 
                 _logger.LogInformation("禁用验方模板成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Task.FromResult<ActionResult<ApiResponse<object>>>(Ok(ApiResponse<object>.Success(new { }, "禁用验方模板成功")));
+                return Task.FromResult<ActionResult<object>>(Ok(new { message = "禁用验方模板成功" }));
             } catch (Exception ex) {
                 _logger.LogError(ex, "禁用验方模板失败，模板ID: {TemplateId}", id);
-                return Task.FromResult<ActionResult<ApiResponse<object>>>(StatusCode(500, ApiResponse<object>.Fail("禁用验方模板失败", 500)));
+                return Task.FromResult<ActionResult<object>>(StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "禁用验方模板失败" }));
             }
         }
 
@@ -206,10 +206,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 启用模板
         /// </summary>
         [HttpPatch("{id}/enable")]
-        public Task<ActionResult<ApiResponse<object>>> Enable(Guid id) {
+        public Task<ActionResult<object>> Enable(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return Task.FromResult<ActionResult<ApiResponse<object>>>(BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400)));
+                    return Task.FromResult<ActionResult<object>>(BadRequest(new ProblemDetails { Title = "参数错误", Detail = "模板ID不能为空" }));
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
@@ -220,10 +220,10 @@ namespace LYBT.WebAPI.Controllers {
                 // }
 
                 _logger.LogInformation("启用验方模板成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Task.FromResult<ActionResult<ApiResponse<object>>>(Ok(ApiResponse<object>.Success(new { }, "启用验方模板成功")));
+                return Task.FromResult<ActionResult<object>>(Ok(new { message = "启用验方模板成功" }));
             } catch (Exception ex) {
                 _logger.LogError(ex, "启用验方模板失败，模板ID: {TemplateId}", id);
-                return Task.FromResult<ActionResult<ApiResponse<object>>>(StatusCode(500, ApiResponse<object>.Fail("启用验方模板失败", 500)));
+                return Task.FromResult<ActionResult<object>>(StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "启用验方模板失败" }));
             }
         }
 
@@ -231,10 +231,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 切换模板状态（启用/禁用）
         /// </summary>
         [HttpPatch("{id}/toggle-status")]
-        public async Task<ActionResult<ApiResponse<object>>> ToggleStatus(Guid id) {
+        public async Task<ActionResult<object>> ToggleStatus(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<object>.Fail("模板ID不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "模板ID不能为空" });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
@@ -242,7 +242,7 @@ namespace LYBT.WebAPI.Controllers {
                 // 先获取模板当前状态
                 var template = await _service.GetByIdAsync(id);
                 if (template == null) {
-                    return NotFound(ApiResponse<object>.Fail("验方模板不存在", 404));
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "验方模板不存在" });
                 }
 
                 // TODO: 需要在服务层实现切换状态功能
@@ -259,10 +259,10 @@ namespace LYBT.WebAPI.Controllers {
                 
                 var message = "状态切换成功";
                 _logger.LogInformation("切换验方模板状态成功，模板ID: {TemplateId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(message));
+                return Ok(new { message });
             } catch (Exception ex) {
                 _logger.LogError(ex, "切换验方模板状态失败，模板ID: {TemplateId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("状态切换失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "状态切换失败" });
             }
         }
 
@@ -274,19 +274,19 @@ namespace LYBT.WebAPI.Controllers {
         /// 批量导入验方模板
         /// </summary>
         [HttpPost("import")]
-        public async Task<ActionResult<ApiResponse<object>>> Import([FromBody] List<FormulaTemplateImportDto> dtos) {
+        public async Task<ActionResult<object>> Import([FromBody] List<FormulaTemplateImportDto> dtos) {
             try {
                 if (dtos == null || !dtos.Any()) {
-                    return BadRequest(ApiResponse<object>.Fail("导入数据不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "导入数据不能为空" });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var count = await _service.ImportAsync(dtos, operatorId, operatorName);
                 _logger.LogInformation("批量导入验方模板成功，导入数量: {Count}，操作者: {OperatorName}({OperatorId})", count, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { Imported = count }, $"成功导入 {count} 个验方模板"));
+                return Ok(new { Imported = count, message = $"成功导入 {count} 个验方模板" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "批量导入验方模板失败");
-                return StatusCode(500, ApiResponse<object>.Fail("批量导入验方模板失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "批量导入验方模板失败" });
             }
         }
 
@@ -294,13 +294,13 @@ namespace LYBT.WebAPI.Controllers {
         /// 导出验方模板数据
         /// </summary>
         [HttpGet("export")]
-        public async Task<ActionResult<ApiResponse<List<FormulaTemplateDetailDto>>>> Export() {
+        public async Task<ActionResult<List<FormulaTemplateDetailDto>>> Export() {
             try {
                 var data = await _service.ExportAsync();
-                return Ok(ApiResponse<List<FormulaTemplateDetailDto>>.Success(data, "导出验方模板数据成功"));
+                return Ok(data);
             } catch (Exception ex) {
                 _logger.LogError(ex, "导出验方模板数据失败");
-                return StatusCode(500, ApiResponse<List<FormulaTemplateDetailDto>>.Fail("导出验方模板数据失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "导出验方模板数据失败" });
             }
         }
     }

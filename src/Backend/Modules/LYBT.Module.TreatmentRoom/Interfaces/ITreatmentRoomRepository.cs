@@ -3,38 +3,38 @@
 namespace LYBT.Module.TreatmentRoom.Interfaces {
 
     /// <summary>
-    /// 治疗室仓储接口，定义治疗室数据操作方法
+    /// 治疗室任务仓储接口，定义治疗室任务数据操作方法
     /// </summary>
     public interface ITreatmentRoomRepository {
 
         /// <summary>
-        /// 根据治疗室单ID获取记录
+        /// 根据治疗任务ID获取记录
         /// </summary>
-        Task<TreatmentRoomModel?> GetByIdAsync(Guid id);
+        Task<TreatmentTaskModel?> GetByIdAsync(Guid id);
 
         /// <summary>
-        /// 获取所有治疗室记录列表
+        /// 获取所有治疗任务记录列表
         /// </summary>
-        Task<List<TreatmentRoomModel>> GetListAsync();
+        Task<List<TreatmentTaskModel>> GetListAsync();
 
         /// <summary>
-        /// 新增治疗室记录
+        /// 新增治疗任务记录
         /// </summary>
-        Task<bool> AddAsync(TreatmentRoomModel treatmentRoomModel);
+        Task<bool> AddAsync(TreatmentTaskModel treatmentTaskModel);
 
         /// <summary>
-        /// 更新治疗室记录
+        /// 更新治疗任务记录
         /// </summary>
-        Task<bool> UpdateAsync(TreatmentRoomModel treatmentRoomModel);
+        Task<bool> UpdateAsync(TreatmentTaskModel treatmentTaskModel);
 
         /// <summary>
-        /// 删除治疗室记录
+        /// 删除治疗任务记录
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
 
         /// <summary>
-        /// 根据状态获取治疗室记录
+        /// 根据状态获取治疗任务记录
         /// </summary>
-        Task<List<TreatmentRoomModel>> GetByStatusAsync(string status);
+        Task<List<TreatmentTaskModel>> GetByStatusAsync(string status);
     }
 }

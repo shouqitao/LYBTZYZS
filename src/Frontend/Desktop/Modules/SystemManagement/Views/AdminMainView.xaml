@@ -193,6 +193,33 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- 医生管理 -->
+                        <Button Command="{Binding NavigateToDoctorManagementCommand}" 
+                                Style="{x:Null}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,15"
+                                HorizontalContentAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E9ECEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="👨‍⚕️" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="医生管理" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
                         <!-- ======= 未实现模块 ======= -->
                         <TextBlock Text="以下功能待开发" FontSize="12" Foreground="#999999" Margin="20,20,20,10" FontStyle="Italic"/>
 

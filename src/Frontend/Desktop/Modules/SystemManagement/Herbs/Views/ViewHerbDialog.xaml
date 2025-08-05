@@ -1,0 +1,312 @@
+<Window x:Class="LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views.ViewHerbDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+        mc:Ignorable="d" 
+        Title="中药材详情" 
+        Height="700" Width="550"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+    
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <Border Grid.Row="0" Background="#2E86AB" Padding="20,15">
+            <TextBlock Text="中药材详细信息" FontSize="18" FontWeight="Bold" Foreground="White"/>
+        </Border>
+
+        <!-- 加载指示器 -->
+        <ProgressBar Grid.Row="1" IsIndeterminate="True" 
+                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                     Height="4" VerticalAlignment="Top"/>
+
+        <!-- 详情内容 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
+            <ScrollViewer.Style>
+                <Style TargetType="ScrollViewer">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="False">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ScrollViewer.Style>
+            
+            <StackPanel>
+                <!-- 基本信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="基本信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 药材名称 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="药材名称：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.Name}" FontSize="16" FontWeight="Bold" Foreground="#2E86AB"/>
+                        </Grid>
+
+                        <!-- 拼音码 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="拼音码：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.PinYinCode}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 五笔码 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="五笔码：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.WuBiCode}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 产地 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="产地：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.Origin}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 规格 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="规格：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.Spec}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 批次号 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="批次号：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.BatchNo}" FontSize="14"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 价格库存信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="价格库存信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 单价 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="单价：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding PriceDescription}" FontSize="14" FontWeight="Bold" Foreground="#28A745"/>
+                        </Grid>
+
+                        <!-- 库存数量 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="库存数量：" FontWeight="Bold" Foreground="#666"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <TextBlock Text="{Binding StockDescription}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <Border Background="{Binding StockStatusColor}" CornerRadius="10" Padding="8,2" Margin="10,0,0,0">
+                                    <TextBlock Text="{Binding StockStatusDescription}" FontSize="12" Foreground="White" FontWeight="Bold"/>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 过期日期 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="过期日期：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ExpireDateDescription}" FontSize="14" Foreground="{Binding ExpireDateColor}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 功效信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="功效信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 功效说明 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="功效说明：" FontWeight="Bold" Foreground="#666" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.Effect}" FontSize="14" TextWrapping="Wrap"/>
+                        </Grid>
+
+                        <!-- 用法用量 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="用法用量：" FontWeight="Bold" Foreground="#666" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.Usage}" FontSize="14" TextWrapping="Wrap"/>
+                        </Grid>
+
+                        <!-- 禁忌 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="禁忌：" FontWeight="Bold" Foreground="#666" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.Contraindications}" FontSize="14" TextWrapping="Wrap"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 状态信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="状态信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 药材状态 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="药材状态：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding StatusDescription}" FontSize="14" FontWeight="Bold" Foreground="{Binding StatusColor}"/>
+                        </Grid>
+
+                        <!-- 启用状态 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="启用状态：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ActiveStatusDescription}" FontSize="14" FontWeight="Bold" Foreground="{Binding ActiveStatusColor}"/>
+                        </Grid>
+
+                        <!-- 创建时间 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="创建时间：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding CreateTimeDescription}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 更新时间 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="更新时间：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding UpdateTimeDescription}" FontSize="14"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 备注信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="备注信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 备注 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="备注：" FontWeight="Bold" Foreground="#666" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Herb.Remark}" FontSize="14" TextWrapping="Wrap"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 按钮栏 -->
+        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,0" Padding="20,15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="编辑" 
+                        Command="{Binding EditCommand}"
+                        Width="100" Height="36"
+                        Background="#FFC107"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                
+                <Button Content="打印" 
+                        Command="{Binding PrintCommand}"
+                        Width="100" Height="36"
+                        Background="#17A2B8"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                
+                <Button Content="关闭" 
+                        Command="{Binding CloseCommand}"
+                        Width="100" Height="36"
+                        Background="#6C757D"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        IsDefault="True">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+</Window>

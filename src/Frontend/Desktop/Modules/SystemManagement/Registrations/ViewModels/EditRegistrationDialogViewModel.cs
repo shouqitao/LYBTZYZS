@@ -239,11 +239,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
 
             try
             {
-                var doctors = await _doctorService.GetByDepartmentAsync(SelectedDepartment);
+                var result = await _doctorService.GetByDepartmentAsync(SelectedDepartment);
                 Doctors.Clear();
-                foreach (var doctor in doctors)
+                if (result.IsSuccess && result.Data != null)
                 {
-                    Doctors.Add(doctor);
+                    foreach (var doctor in result.Data)
+                    {
+                        Doctors.Add(doctor);
+                    }
                 }
             }
             catch (Exception ex)
@@ -304,7 +307,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"更新挂号失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"更新挂号失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

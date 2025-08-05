@@ -6,7 +6,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Events;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 
 namespace LYBT.WPF.Client.Core.ViewModels
 {
@@ -121,7 +121,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
         /// <summary>
         /// 处理API响应
         /// </summary>
-        protected void HandleApiResponse<T>(ApiResponse<T> response, string? successMessage = null)
+        protected void HandleApiResponse<T>(ServiceResult<T> response, string? successMessage = null)
         {
             if (response.IsSuccess)
             {
@@ -133,7 +133,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
             }
             else
             {
-                ErrorMessage = response.Message ?? "操作失败";
+                ErrorMessage = response.ErrorMessage ?? "操作失败";
             }
         }
 

@@ -53,76 +53,87 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> Login([FromBody] LYBT.Shared.Models.Auth.LoginRequest dto) {
-            try {
-                _logger.LogInformation("用户 {Username} 尝试登录", dto.Username);
+        public async Task<ActionResult<LYBT.Shared.Models.Auth.LoginResponse>> Login([FromBody] LYBT.Shared.Models.Auth.LoginRequest dto) {
+            _logger.LogInformation("用户 {Username} 尝试登录", dto.Username);
 
-                // 基本参数验证
-                if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password)) {
-                    return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail("用户名和密码不能为空", 400);
-                }
+            // 基本参数验证
+            if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password)) {
+                return BadRequest(new ProblemDetails {
+                    Title = "参数验证失败",
+                    Detail = "用户名和密码不能为空",
+                    Status = 400
+                });
+            }
 
                 // 设置客户端信息
                 dto.ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
                 dto.UserAgent = Request.Headers["User-Agent"].ToString();
 
-                // 简化的sysadmin验证
-                if (dto.Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)) {
-                    return await HandleSysAdminLogin(dto);
-                }
-
-                // 普通用户登录
-                var localDto = MapToLocalDto(dto);
-                var user = await _authService.LoginAsync(localDto);
-                if (user == null) {
-                    _logger.LogWarning("用户 {Username} 登录失败", dto.Username);
-                    return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail("用户名或密码错误", 401);
-                }
-
-                var token = _jwtService.GenerateToken(
-                    user.Id.ToString(),
-                    user.Username,
-                    new[] { user.Role.ToString() },
-                    dto.RememberMe
-                );
-
-                var response = new LYBT.Shared.Models.Auth.LoginResponse {
-                    Token = token,
-                    User = new LYBT.Shared.Models.Auth.UserInfo {
-                        Id = user.Id,
-                        Username = user.Username,
-                        RealName = user.RealName,
-                        Role = user.Role,
-                        Email = user.Email,
-                        PhoneNumber = user.PhoneNumber,
-                        IsActive = user.IsActive
-                    }
-                };
-
-                _logger.LogInformation("用户 {Username} 登录成功", dto.Username);
-                return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Success(response);
-            } catch (Exception ex) {
-                _logger.LogError(ex, "用户 {Username} 登录过程发生异常", dto.Username);
-                return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail($"登录失败: {ex.Message}", 500);
+            // 简化的sysadmin验证
+            if (dto.Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)) {
+                return await HandleSysAdminLogin(dto);
             }
+
+            // 普通用户登录
+            var localDto = MapToLocalDto(dto);
+            var user = await _authService.LoginAsync(localDto);
+            if (user == null) {
+                _logger.LogWarning("用户 {Username} 登录失败", dto.Username);
+                return Unauthorized(new ProblemDetails {
+                    Title = "认证失败",
+                    Detail = "用户名或密码错误",
+                    Status = 401
+                });
+            }
+
+            var token = _jwtService.GenerateToken(
+                user.Id.ToString(),
+                user.Username,
+                new[] { user.Role.ToString() },
+                dto.RememberMe
+            );
+
+            var response = new LYBT.Shared.Models.Auth.LoginResponse {
+                Token = token,
+                User = new LYBT.Shared.Models.Auth.UserInfo {
+                    Id = user.Id,
+                    Username = user.Username,
+                    RealName = user.RealName,
+                    Role = user.Role,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    IsActive = user.IsActive
+                }
+            };
+
+            _logger.LogInformation("用户 {Username} 登录成功", dto.Username);
+            return Ok(response);
         }
 
         /// <summary>
         /// 专门处理sysadmin登录
         /// </summary>
-        private async Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>> HandleSysAdminLogin(LYBT.Shared.Models.Auth.LoginRequest dto) {
+        private async Task<ActionResult<LYBT.Shared.Models.Auth.LoginResponse>> HandleSysAdminLogin(LYBT.Shared.Models.Auth.LoginRequest dto) {
             try {
                 // 获取存储的密码哈希
                 var storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
                 if (string.IsNullOrEmpty(storedHash)) {
                     _logger.LogError("sysadmin密码哈希未找到");
-                    return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail("系统配置错误", 500);
+                    return StatusCode(500, new ProblemDetails {
+                        Title = "系统配置错误",
+                        Detail = "系统配置错误",
+                        Status = 500
+                    });
                 }
 
                 // 验证密码
                 if (!PasswordHelper.Verify(storedHash, dto.Password)) {
                     _logger.LogWarning("sysadmin密码验证失败");
-                    return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail("密码错误", 401);
+                    return Unauthorized(new ProblemDetails {
+                        Title = "认证失败",
+                        Detail = "密码错误",
+                        Status = 401
+                    });
                 }
 
                 // 创建用户信息
@@ -158,10 +169,14 @@ namespace LYBT.WebAPI.Controllers {
                 };
 
                 _logger.LogInformation("sysadmin登录成功");
-                return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Success(response);
+                return Ok(response);
             } catch (Exception ex) {
                 _logger.LogError(ex, "sysadmin登录处理异常");
-                return LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>.Fail("登录处理异常", 500);
+                return StatusCode(500, new ProblemDetails {
+                    Title = "系统错误",
+                    Detail = "登录处理异常",
+                    Status = 500
+                });
             }
         }
 
@@ -169,138 +184,141 @@ namespace LYBT.WebAPI.Controllers {
         /// 用户登出
         /// </summary>
         [HttpPost("logout")]
-        public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> Logout() {
-            try {
-                // 从JWT token中获取用户名
-                var username = User?.Identity?.Name ?? string.Empty;
-                if (string.IsNullOrEmpty(username)) {
-                    return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("无效的用户身份", 401);
-                }
-
-                var dto = new LogoutRequestDto {
-                    Username = username
-                };
-
-                await _authService.LogoutAsync(dto);
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Success(new { }, "登出成功");
-            } catch (Exception ex) {
-                _logger.LogError(ex, "用户登出异常");
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("登出失败", 500);
+        public async Task<IActionResult> Logout() {
+            // 从JWT token中获取用户名
+            var username = User?.Identity?.Name ?? string.Empty;
+            if (string.IsNullOrEmpty(username)) {
+                return Unauthorized(new ProblemDetails {
+                    Title = "认证失败",
+                    Detail = "无效的用户身份",
+                    Status = 401
+                });
             }
+
+            var dto = new LogoutRequestDto {
+                Username = username
+            };
+
+            await _authService.LogoutAsync(dto);
+            return Ok(new { message = "登出成功" });
         }
 
         /// <summary>
         /// 修改sysadmin密码
         /// </summary>
         [HttpPost("changeSysAdminPassword")]
-        public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> ChangeSysAdminPassword([FromBody] ChangeSysAdminPasswordDto dto) {
-            try {
-                var success = await _authService.ChangeSysAdminPasswordAsync(dto);
-                if (!success) {
-                    return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("修改密码失败，请检查当前密码", 400);
-                }
-
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Success(new { }, "密码修改成功");
-            } catch (Exception ex) {
-                _logger.LogError(ex, "修改sysadmin密码异常");
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("密码修改失败", 500);
+        public async Task<IActionResult> ChangeSysAdminPassword([FromBody] ChangeSysAdminPasswordDto dto) {
+            var success = await _authService.ChangeSysAdminPasswordAsync(dto);
+            if (!success) {
+                return BadRequest(new ProblemDetails {
+                    Title = "操作失败",
+                    Detail = "修改密码失败，请检查当前密码",
+                    Status = 400
+                });
             }
+
+            return Ok(new { message = "密码修改成功" });
         }
 
         /// <summary>
         /// 获取当前用户信息
         /// </summary>
         [HttpGet("current-user")]
-        public Task<LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>> GetCurrentUser() {
-            try {
-                var username = User?.Identity?.Name;
-                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        public ActionResult<LYBT.Shared.Models.Auth.UserInfo> GetCurrentUser() {
+            var username = User?.Identity?.Name;
+            var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 
-                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId)) {
-                    return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>.Fail("无效的用户身份", 401));
-                }
-
-                var userRole = UserRole.RegistrationStaff; // 默认角色
-                if (!string.IsNullOrEmpty(role) && Enum.TryParse<UserRole>(role, true, out var parsedRole)) {
-                    userRole = parsedRole;
-                }
-
-                var userInfo = new LYBT.Shared.Models.Auth.UserInfo {
-                    Id = Guid.Parse(userId),
-                    Username = username,
-                    RealName = username == "sysadmin" ? "系统管理员" : username,
-                    Role = userRole,
-                    IsActive = true
-                };
-
-                return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>.Success(userInfo));
-            } catch (Exception ex) {
-                _logger.LogError(ex, "获取当前用户信息异常");
-                return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<LYBT.Shared.Models.Auth.UserInfo>.Fail("获取用户信息失败", 500));
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId)) {
+                return Unauthorized(new ProblemDetails {
+                    Title = "认证失败",
+                    Detail = "无效的用户身份",
+                    Status = 401
+                });
             }
+
+            var userRole = UserRole.RegistrationStaff; // 默认角色
+            if (!string.IsNullOrEmpty(role) && Enum.TryParse<UserRole>(role, true, out var parsedRole)) {
+                userRole = parsedRole;
+            }
+
+            var userInfo = new LYBT.Shared.Models.Auth.UserInfo {
+                Id = Guid.Parse(userId),
+                Username = username,
+                RealName = username == "sysadmin" ? "系统管理员" : username,
+                Role = userRole,
+                IsActive = true
+            };
+
+            return Ok(userInfo);
         }
 
         /// <summary>
         /// 刷新JWT令牌
         /// </summary>
         [HttpPost("refresh-token")]
-        public Task<LYBT.Shared.Models.Common.ApiResponse<object>> RefreshToken() {
-            try {
-                var username = User?.Identity?.Name;
-                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        public IActionResult RefreshToken() {
+            var username = User?.Identity?.Name;
+            var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 
-                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId)) {
-                    return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<object>.Fail("无效的用户身份", 401));
-                }
-
-                // 生成新的JWT令牌
-                var roles = role != null ? new[] { role } : new string[0];
-                var newToken = _jwtService.GenerateToken(userId, username, roles, false);
-
-                var response = new {
-                    Token = newToken,
-                    RefreshedAt = DateTime.UtcNow
-                };
-
-                return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<object>.Success(response, "令牌刷新成功"));
-            } catch (Exception ex) {
-                _logger.LogError(ex, "刷新令牌异常");
-                return Task.FromResult(LYBT.Shared.Models.Common.ApiResponse<object>.Fail("刷新令牌失败", 500));
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId)) {
+                return Unauthorized(new ProblemDetails {
+                    Title = "认证失败",
+                    Detail = "无效的用户身份",
+                    Status = 401
+                });
             }
+
+            // 生成新的JWT令牌
+            var roles = role != null ? new[] { role } : new string[0];
+            var newToken = _jwtService.GenerateToken(userId, username, roles, false);
+
+            var response = new {
+                token = newToken,
+                refreshedAt = DateTime.UtcNow
+            };
+
+            return Ok(response);
         }
 
         /// <summary>
         /// 修改密码 (通用接口)
         /// </summary>
         [HttpPost("change-password")]
-        public async Task<LYBT.Shared.Models.Common.ApiResponse<object>> ChangePassword([FromBody] ChangePasswordRequestDto dto) {
-            try {
-                var username = User?.Identity?.Name;
-                if (string.IsNullOrEmpty(username)) {
-                    return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("无效的用户身份", 401);
-                }
-
-                // 如果是sysadmin，使用专用的修改密码方法
-                if (username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)) {
-                    var sysAdminDto = new ChangeSysAdminPasswordDto {
-                        OldPassword = dto.OldPassword,
-                        NewPassword = dto.NewPassword
-                    };
-                    var success = await _authService.ChangeSysAdminPasswordAsync(sysAdminDto);
-                    if (!success) {
-                        return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("修改密码失败，请检查当前密码", 400);
-                    }
-                    return LYBT.Shared.Models.Common.ApiResponse<object>.Success(new { }, "密码修改成功");
-                }
-
-                // 其他用户的密码修改逻辑可以在这里实现
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("普通用户密码修改功能尚未实现", 501);
-            } catch (Exception ex) {
-                _logger.LogError(ex, "修改密码异常");
-                return LYBT.Shared.Models.Common.ApiResponse<object>.Fail("密码修改失败", 500);
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto) {
+            var username = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) {
+                return Unauthorized(new ProblemDetails {
+                    Title = "认证失败",
+                    Detail = "无效的用户身份",
+                    Status = 401
+                });
             }
+
+            // 如果是sysadmin，使用专用的修改密码方法
+            if (username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)) {
+                var sysAdminDto = new ChangeSysAdminPasswordDto {
+                    OldPassword = dto.OldPassword,
+                    NewPassword = dto.NewPassword
+                };
+                var success = await _authService.ChangeSysAdminPasswordAsync(sysAdminDto);
+                if (!success) {
+                    return BadRequest(new ProblemDetails {
+                        Title = "操作失败",
+                        Detail = "修改密码失败，请检查当前密码",
+                        Status = 400
+                    });
+                }
+                return Ok(new { message = "密码修改成功" });
+            }
+
+            // 其他用户的密码修改逻辑可以在这里实现
+            return StatusCode(501, new ProblemDetails {
+                Title = "功能未实现",
+                Detail = "普通用户密码修改功能尚未实现",
+                Status = 501
+            });
         }
     }
 }

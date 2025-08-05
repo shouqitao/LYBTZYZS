@@ -52,13 +52,15 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] PatientDetailDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
-            try {
-                var result = await _patientService.AddAsync(dto, operatorId, operatorName);
-                return result
-                    ? Ok(ApiResponse<object>.Success(new { }, "患者档案创建成功"))
-                    : BadRequest(ApiResponse<object>.Fail("患者档案创建失败，必填项不完整或已存在"));
-            } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail($"患者档案创建失败：{ex.Message}"));
+            var result = await _patientService.AddAsync(dto, operatorId, operatorName);
+            if (result) {
+                return Ok(new { message = "患者档案创建成功" });
+            } else {
+                return BadRequest(new ProblemDetails {
+                    Title = "操作失败",
+                    Detail = "患者档案创建失败，必填项不完整或已存在",
+                    Status = 400
+                });
             }
         }
 
@@ -68,23 +70,25 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("quick")]
         public async Task<IActionResult> QuickCreate([FromBody] QuickPatientCreateDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
-            try {
-                // 将QuickPatientCreateDto转换为PatientDetailDto
-                var patientDto = new PatientDetailDto {
-                    Name = dto.Name,
-                    Gender = dto.Gender,
-                    Age = dto.Age ?? 0,
-                    PhoneNumber = dto.PhoneNumber ?? dto.Phone ?? string.Empty,
-                    IDNumber = dto.IDNumber ?? string.Empty,
-                    Address = dto.Address ?? string.Empty
-                };
+            // 将QuickPatientCreateDto转换为PatientDetailDto
+            var patientDto = new PatientDetailDto {
+                Name = dto.Name,
+                Gender = dto.Gender,
+                Age = dto.Age ?? 0,
+                PhoneNumber = dto.PhoneNumber ?? dto.Phone ?? string.Empty,
+                IDNumber = dto.IDNumber ?? string.Empty,
+                Address = dto.Address ?? string.Empty
+            };
 
-                var result = await _patientService.AddAsync(patientDto, operatorId, operatorName);
-                return result
-                    ? Ok(ApiResponse<object>.Success(new { }, "患者档案快速创建成功"))
-                    : BadRequest(ApiResponse<object>.Fail("患者档案快速创建失败，必填项不完整或已存在"));
-            } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail($"患者档案快速创建失败：{ex.Message}"));
+            var result = await _patientService.AddAsync(patientDto, operatorId, operatorName);
+            if (result) {
+                return Ok(new { message = "患者档案快速创建成功" });
+            } else {
+                return BadRequest(new ProblemDetails {
+                    Title = "操作失败",
+                    Detail = "患者档案快速创建失败，必填项不完整或已存在",
+                    Status = 400
+                });
             }
         }
 
@@ -96,7 +100,15 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> Enable(Guid id) {
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _patientService.EnableAsync(id, operatorId, operatorName);
-            return result ? Ok(ApiResponse<object>.Success(new { }, "患者档案已启用")) : NotFound(ApiResponse<object>.Fail("患者档案不存在"));
+            if (result) {
+                return Ok(new { message = "患者档案已启用" });
+            } else {
+                return NotFound(new ProblemDetails {
+                    Title = "资源未找到",
+                    Detail = "患者档案不存在",
+                    Status = 404
+                });
+            }
         }
 
         /// <summary>
@@ -106,7 +118,15 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> Disable(Guid id) {
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _patientService.DisableAsync(id, operatorId, operatorName);
-            return result ? Ok(ApiResponse<object>.Success(new { }, "患者档案已禁用")) : NotFound(ApiResponse<object>.Fail("患者档案不存在"));
+            if (result) {
+                return Ok(new { message = "患者档案已禁用" });
+            } else {
+                return NotFound(new ProblemDetails {
+                    Title = "资源未找到",
+                    Detail = "患者档案不存在",
+                    Status = 404
+                });
+            }
         }
 
         /// <summary>
@@ -115,27 +135,35 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPatch("{id}/toggle-status")]
         public async Task<IActionResult> ToggleStatus(Guid id) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
-            try {
-                // 先获取患者当前状态
-                var patient = await _patientService.GetByIdAsync(id, operatorRole);
-                if (patient == null) {
-                    return NotFound(ApiResponse<object>.Fail("患者档案不存在", 404));
-                }
+            // 先获取患者当前状态
+            var patient = await _patientService.GetByIdAsync(id, operatorRole);
+            if (patient == null) {
+                return NotFound(new ProblemDetails {
+                    Title = "资源未找到",
+                    Detail = "患者档案不存在",
+                    Status = 404
+                });
+            }
 
-                // 根据当前状态切换
-                bool result;
-                string message;
-                if (patient.IsActive) {
-                    result = await _patientService.DisableAsync(id, operatorId, operatorName);
-                    message = "患者档案已禁用";
-                } else {
-                    result = await _patientService.EnableAsync(id, operatorId, operatorName);
-                    message = "患者档案已启用";
-                }
-                
-                return result ? Ok(ApiResponse<object>.Success(message)) : BadRequest(ApiResponse<object>.Fail("状态切换失败", 400));
-            } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+            // 根据当前状态切换
+            bool result;
+            string message;
+            if (patient.IsActive) {
+                result = await _patientService.DisableAsync(id, operatorId, operatorName);
+                message = "患者档案已禁用";
+            } else {
+                result = await _patientService.EnableAsync(id, operatorId, operatorName);
+                message = "患者档案已启用";
+            }
+            
+            if (result) {
+                return Ok(new { message });
+            } else {
+                return BadRequest(new ProblemDetails {
+                    Title = "操作失败",
+                    Detail = "状态切换失败",
+                    Status = 400
+                });
             }
         }
 
@@ -144,14 +172,14 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("all")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetAll() {
+        public async Task<ActionResult<List<PatientDetailDto>>> GetAll() {
             var (_, _, operatorRole) = GetOperator();
 
             if (!_cache.TryGetValue($"patients:all:{operatorRole}", out List<PatientDetailDto>? data)) {
                 data = await _patientService.GetAllAsync(operatorRole);
                 _cache.Set($"patients:all:{operatorRole}", data, TimeSpan.FromMinutes(5));
             }
-            return Ok(ApiResponse<List<PatientDetailDto>>.Success(data ?? new List<PatientDetailDto>()));
+            return Ok(data ?? new List<PatientDetailDto>());
         }
 
         /// <summary>
@@ -159,10 +187,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<PatientDetailDto>>>> GetPaged([FromBody] PatientPagedQueryDto query) {
+        public async Task<ActionResult<PaginatedResult<PatientDetailDto>>> GetPaged([FromBody] PatientPagedQueryDto query) {
             var (_, _, operatorRole) = GetOperator();
             var result = await _patientService.GetPagedAsync(query, operatorRole);
-            return Ok(ApiResponse<PaginatedResult<PatientDetailDto>>.Success(result));
+            return Ok(result);
         }
 
         /// <summary>
@@ -172,7 +200,7 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> BatchDisable([FromBody] BatchOperationDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
-            return Ok(ApiResponse<object>.Success(new { DisabledCount = count, Message = $"成功禁用 {count} 名患者档案" }));
+            return Ok(new { disabledCount = count, message = $"成功禁用 {count} 名患者档案" });
         }
 
         /// <summary>
@@ -182,7 +210,7 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> BatchEnable([FromBody] BatchOperationDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
-            return Ok(ApiResponse<object>.Success(new { EnabledCount = count, Message = $"成功启用 {count} 名患者档案" }));
+            return Ok(new { enabledCount = count, message = $"成功启用 {count} 名患者档案" });
         }
 
         /// <summary>
@@ -190,10 +218,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("search")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Search([FromQuery] string keyword = "") {
+        public async Task<ActionResult<List<PatientDetailDto>>> Search([FromQuery] string keyword = "") {
             var (_, _, operatorRole) = GetOperator();
             var list = await _patientService.SearchAsync(keyword, operatorRole);
-            return Ok(ApiResponse<List<PatientDetailDto>>.Success(list));
+            return Ok(list);
         }
 
         /// <summary>
@@ -203,7 +231,7 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> Import([FromBody] List<PatientDetailDto> dtos) {
             var (operatorId, operatorName, _) = GetOperator();
             var count = await _patientService.ImportAsync(dtos, operatorId, operatorName);
-            return Ok(ApiResponse<object>.Success(new { Imported = count, Message = $"成功导入 {count} 名患者档案" }));
+            return Ok(new { imported = count, message = $"成功导入 {count} 名患者档案" });
         }
 
         /// <summary>
@@ -211,28 +239,28 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("export")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Export() {
+        public async Task<ActionResult<List<PatientDetailDto>>> Export() {
             var (_, _, operatorRole) = GetOperator();
             var data = await _patientService.ExportAsync(operatorRole);
-            return Ok(ApiResponse<List<PatientDetailDto>>.Success(data));
+            return Ok(data);
         }
 
         /// <summary>
         /// 获取患者档案历史病历
         /// </summary>
         [HttpGet("{id}/records")]
-        public async Task<ActionResult<ApiResponse<List<RecordDto>>>> GetHistory(Guid id) {
+        public async Task<ActionResult<List<RecordDto>>> GetHistory(Guid id) {
             var data = await _patientService.GetHistoryRecordsAsync(id);
-            return Ok(ApiResponse<List<RecordDto>>.Success(data));
+            return Ok(data);
         }
 
         /// <summary>
         /// 获取启用的患者档案列表
         /// </summary>
         [HttpGet("active")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetActivePatients() {
+        public async Task<ActionResult<List<PatientDetailDto>>> GetActivePatients() {
             var patients = await _patientService.GetActivePatientsAsync();
-            return Ok(ApiResponse<List<PatientDetailDto>>.Success(patients));
+            return Ok(patients);
         }
 
         /// <summary>
@@ -240,14 +268,10 @@ namespace LYBT.WebAPI.Controllers {
         /// 根据姓名和身份证号查询患者档案，如果不存在则创建新档案
         /// </summary>
         [HttpPost("find-or-create")]
-        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> FindOrCreate([FromBody] PatientDetailDto dto) {
+        public async Task<ActionResult<PatientDetailDto>> FindOrCreate([FromBody] PatientDetailDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
-            try {
-                var patient = await _patientService.FindOrCreateAsync(dto, operatorId, operatorName);
-                return Ok(ApiResponse<PatientDetailDto>.Success(patient, patient.Id == Guid.Empty ? "患者档案创建成功" : "患者档案查询成功"));
-            } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail($"患者档案查询或创建失败：{ex.Message}"));
-            }
+            var patient = await _patientService.FindOrCreateAsync(dto, operatorId, operatorName);
+            return Ok(patient);
         }
 
         // ======================== RESTful 标准接口 ========================
@@ -256,7 +280,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取所有患者列表 (RESTful GET /Patients) - 支持多字段模糊查询
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetPatients(
+        public async Task<ActionResult<PaginatedResult<PatientDetailDto>>> GetPatients(
             [FromQuery] int page = 1, 
             [FromQuery] int pageSize = 20, 
             [FromQuery] string? keyword = null,
@@ -282,7 +306,7 @@ namespace LYBT.WebAPI.Controllers {
                 MaxAge = maxAge
             };
             var result = await _patientService.GetPagedAsync(query, operatorRole);
-            return Ok(ApiResponse<PaginatedResult<PatientDetailDto>>.Success(result));
+            return Ok(result);
         }
 
         /// <summary>
@@ -291,15 +315,15 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost]
         public async Task<IActionResult> CreatePatient([FromBody] PatientDetailDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
-            try {
-                var result = await _patientService.AddAsync(dto, operatorId, operatorName);
-                if (result) {
-                    return StatusCode(201, ApiResponse<object>.Success("患者创建成功"));
-                } else {
-                    return BadRequest(ApiResponse<object>.Fail("患者创建失败", 400));
-                }
-            } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+            var result = await _patientService.AddAsync(dto, operatorId, operatorName);
+            if (result) {
+                return StatusCode(201, new { message = "患者创建成功" });
+            } else {
+                return BadRequest(new ProblemDetails {
+                    Title = "操作失败",
+                    Detail = "患者创建失败",
+                    Status = 400
+                });
             }
         }
 
@@ -307,13 +331,17 @@ namespace LYBT.WebAPI.Controllers {
         /// 根据ID获取患者 (RESTful GET /Patients/{id})
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPatient(Guid id) {
+        public async Task<ActionResult<PatientDetailDto>> GetPatient(Guid id) {
             var (_, _, operatorRole) = GetOperator();
             var patient = await _patientService.GetByIdAsync(id, operatorRole);
             if (patient == null) {
-                return NotFound(ApiResponse<object>.Fail("患者不存在", 404));
+                return NotFound(new ProblemDetails {
+                    Title = "资源未找到",
+                    Detail = "患者不存在",
+                    Status = 404
+                });
             }
-            return Ok(ApiResponse<object>.Success(patient));
+            return Ok(patient);
         }
 
         /// <summary>
@@ -322,17 +350,17 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePatient(Guid id, [FromBody] PatientDetailDto dto) {
             var (operatorId, operatorName, _) = GetOperator();
-            try {
-                // 确保DTO的ID与路由参数一致
-                dto.Id = id;
-                var result = await _patientService.UpdateAsync(dto, operatorId, operatorName);
-                if (result) {
-                    return Ok(ApiResponse<object>.Success("患者信息更新成功"));
-                } else {
-                    return BadRequest(ApiResponse<object>.Fail("患者信息更新失败", 400));
-                }
-            } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+            // 确保DTO的ID与路由参数一致
+            dto.Id = id;
+            var result = await _patientService.UpdateAsync(dto, operatorId, operatorName);
+            if (result) {
+                return Ok(new { message = "患者信息更新成功" });
+            } else {
+                return BadRequest(new ProblemDetails {
+                    Title = "操作失败",
+                    Detail = "患者信息更新失败",
+                    Status = 400
+                });
             }
         }
 
@@ -342,15 +370,15 @@ namespace LYBT.WebAPI.Controllers {
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePatient(Guid id) {
             var (operatorId, operatorName, _) = GetOperator();
-            try {
-                var result = await _patientService.DisableAsync(id, operatorId, operatorName);
-                if (result) {
-                    return Ok(ApiResponse<object>.Success("患者已禁用"));
-                } else {
-                    return BadRequest(ApiResponse<object>.Fail("禁用患者失败", 400));
-                }
-            } catch (Exception ex) {
-                return BadRequest(ApiResponse<object>.Fail(ex.Message, 400));
+            var result = await _patientService.DisableAsync(id, operatorId, operatorName);
+            if (result) {
+                return Ok(new { message = "患者已禁用" });
+            } else {
+                return BadRequest(new ProblemDetails {
+                    Title = "操作失败",
+                    Detail = "禁用患者失败",
+                    Status = 400
+                });
             }
         }
 

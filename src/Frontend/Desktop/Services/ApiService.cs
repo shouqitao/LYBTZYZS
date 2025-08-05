@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Models.Authentication;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 
@@ -32,7 +32,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 发送GET请求
         /// </summary>
-        public async Task<ApiResponse<T>> GetAsync<T>(string endpoint)
+        public async Task<ServiceResult<T>> GetAsync<T>(string endpoint)
         {
             try
             {
@@ -42,18 +42,14 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<T>
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
         /// <summary>
         /// 发送POST请求
         /// </summary>
-        public async Task<ApiResponse<T>> PostAsync<T>(string endpoint, object data)
+        public async Task<ServiceResult<T>> PostAsync<T>(string endpoint, object data)
         {
             try
             {
@@ -74,18 +70,14 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<T>
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
         /// <summary>
         /// 发送PUT请求
         /// </summary>
-        public async Task<ApiResponse<T>> PutAsync<T>(string endpoint, object data)
+        public async Task<ServiceResult<T>> PutAsync<T>(string endpoint, object data)
         {
             try
             {
@@ -101,18 +93,14 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<T>
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
         /// <summary>
         /// 发送DELETE请求
         /// </summary>
-        public async Task<ApiResponse<T>> DeleteAsync<T>(string endpoint)
+        public async Task<ServiceResult<T>> DeleteAsync<T>(string endpoint)
         {
             try
             {
@@ -122,18 +110,14 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<T>
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
         /// <summary>
         /// 发送PATCH请求
         /// </summary>
-        public async Task<ApiResponse<T>> PatchAsync<T>(string endpoint, object data)
+        public async Task<ServiceResult<T>> PatchAsync<T>(string endpoint, object data)
         {
             try
             {
@@ -149,11 +133,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new ApiResponse<T>
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
@@ -174,7 +154,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 处理HTTP响应
         /// </summary>
-        private async Task<ApiResponse<T>> ProcessResponse<T>(HttpResponseMessage response)
+        private async Task<ServiceResult<T>> ProcessResponse<T>(HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();
             
@@ -182,29 +162,43 @@ namespace LYBT.WPF.Client.Services
             {
                 try
                 {
-                    var result = JsonSerializer.Deserialize<ApiResponse<T>>(content, new JsonSerializerOptions
+                    // 现在后端直接返回数据，不再包装在 ApiResponse 中
+                    if (string.IsNullOrWhiteSpace(content) || content == "null")
+                    {
+                        return ServiceResult<T>.Success(default(T)!);
+                    }
+                    
+                    var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
                     {
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                         PropertyNameCaseInsensitive = true
                     });
-                    return result ?? new ApiResponse<T> { IsSuccess = false, Message = "响应数据解析失败" };
+                    return ServiceResult<T>.Success(result!);
                 }
                 catch (JsonException ex)
                 {
-                    return new ApiResponse<T>
-                    {
-                        IsSuccess = false,
-                        Message = $"响应数据格式错误: {ex.Message}"
-                    };
+                    return ServiceResult<T>.Failure($"响应数据格式错误: {ex.Message}", ex);
                 }
             }
             else
             {
-                return new ApiResponse<T>
+                // 尝试解析错误响应
+                string errorMessage;
+                try
                 {
-                    IsSuccess = false,
-                    Message = $"请求失败: {response.StatusCode} - {content}"
-                };
+                    var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(content, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        PropertyNameCaseInsensitive = true
+                    });
+                    errorMessage = problemDetails?.Detail ?? problemDetails?.Title ?? $"请求失败: {response.StatusCode}";
+                }
+                catch
+                {
+                    errorMessage = $"请求失败: {response.StatusCode} - {content}";
+                }
+                
+                return ServiceResult<T>.Failure(errorMessage);
             }
         }
     }

@@ -184,7 +184,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"加载验方模板失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"加载验方模板失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     _window.Close();
                 }
             }
@@ -253,7 +253,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"更新验方模板失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"更新验方模板失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

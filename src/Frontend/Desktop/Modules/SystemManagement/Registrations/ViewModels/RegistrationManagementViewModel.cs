@@ -292,12 +292,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                     var response = await _registrationService.BatchCancelAsync(ids);
                     if (response.IsSuccess)
                     {
-                        MessageBox.Show($"成功取消 {response.Data} 条挂号记录", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"成功取消 {selectedItems.Count} 条挂号记录", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                         await LoadRegistrationsAsync();
                     }
                     else
                     {
-                        MessageBox.Show($"批量取消失败：{response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"批量取消失败：{response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
@@ -387,7 +387,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"取消挂号失败：{response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"取消挂号失败：{response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)

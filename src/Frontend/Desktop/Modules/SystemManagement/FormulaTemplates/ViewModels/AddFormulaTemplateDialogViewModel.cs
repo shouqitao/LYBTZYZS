@@ -198,7 +198,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"创建验方模板失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"创建验方模板失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Doctors;
+using LYBT.WPF.Client.Services.Interfaces;
+using LYBT.WPF.Client.Core.Models;
+using LYBT.Shared.Models.Contracts.Doctors;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Services
@@ -12,83 +16,137 @@ namespace LYBT.WPF.Client.Services
     /// </summary>
     public class DoctorService : IDoctorService
     {
-        public async Task<List<DoctorInfo>> GetDoctorsAsync()
+        private readonly IDoctorsApiService _doctorsApiService;
+
+        public DoctorService(IDoctorsApiService doctorsApiService)
         {
-            await Task.Delay(300); // 模拟API调用
+            _doctorsApiService = doctorsApiService;
+        }
+
+        public async Task<ServiceResult<List<DoctorInfo>>> GetDoctorsAsync()
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _doctorsApiService.GetActiveDoctorsAsync()
+            );
             
-            return new List<DoctorInfo>
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                new DoctorInfo
-                {
-                    Id = Guid.NewGuid(),
-                    Code = "D001",
-                    Name = "张医生",
-                    Gender = Gender.Male,
-                    Department = "内科",
-                    Title = DoctorTitle.ChiefPhysician,
-                    Phone = "13800138001",
-                    Specialties = "中医内科、脾胃病",
-                    IsActive = true,
-                    CreateTime = DateTime.Now.AddMonths(-6)
-                },
-                new DoctorInfo
-                {
-                    Id = Guid.NewGuid(),
-                    Code = "D002",
-                    Name = "李医生",
-                    Gender = Gender.Female,
-                    Department = "妇科",
-                    Title = DoctorTitle.AssociateChiefPhysician,
-                    Phone = "13900139001",
-                    Specialties = "中医妇科、月经病",
-                    IsActive = true,
-                    CreateTime = DateTime.Now.AddMonths(-3)
-                },
-                new DoctorInfo
-                {
-                    Id = Guid.NewGuid(),
-                    Code = "D003",
-                    Name = "王医生",
-                    Gender = Gender.Male,
-                    Department = "骨科",
-                    Title = DoctorTitle.AttendingPhysician,
-                    Phone = "13700137001",
-                    Specialties = "中医骨伤、针灸推拿",
-                    IsActive = true,
-                    CreateTime = DateTime.Now.AddMonths(-1)
-                }
+                var doctors = apiResponse.Data.Select(ConvertToDoctorInfo).ToList();
+                return ServiceResult<List<DoctorInfo>>.Success(doctors);
+            }
+            
+            return ServiceResult<List<DoctorInfo>>.Failure(apiResponse.ErrorMessage ?? "获取医生列表失败", apiResponse.Exception);
+        }
+
+        public async Task<ServiceResult<DoctorInfo>> GetDoctorByIdAsync(Guid id)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _doctorsApiService.GetByIdAsync(id)
+            );
+            
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                return ServiceResult<DoctorInfo>.Success(ConvertDetailToDoctorInfo(apiResponse.Data));
+            }
+            
+            return ServiceResult<DoctorInfo>.Failure(apiResponse.ErrorMessage ?? "获取医生详情失败", apiResponse.Exception);
+        }
+
+        public async Task<ServiceResult> AddDoctorAsync(DoctorInfo doctor)
+        {
+            var dto = ConvertToDetailDto(doctor);
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _doctorsApiService.AddAsync(dto)
+            );
+            return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
+        }
+
+        public async Task<ServiceResult> UpdateDoctorAsync(DoctorInfo doctor)
+        {
+            var dto = ConvertToDetailDto(doctor);
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _doctorsApiService.UpdateAsync(doctor.Id, dto)
+            );
+            return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
+        }
+
+        public async Task<ServiceResult> DeleteDoctorAsync(Guid id)
+        {
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _doctorsApiService.DisableAsync(id)
+            );
+            return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
+        }
+
+        public async Task<ServiceResult<List<DoctorInfo>>> GetByDepartmentAsync(string department)
+        {
+            // 由于API没有提供按科室查询的接口，暂时获取所有医生后在本地过滤
+            var allDoctorsResult = await GetDoctorsAsync();
+            if (allDoctorsResult.IsSuccess && allDoctorsResult.Data != null)
+            {
+                var filteredDoctors = allDoctorsResult.Data.Where(d => d.Department == department).ToList();
+                return ServiceResult<List<DoctorInfo>>.Success(filteredDoctors);
+            }
+            
+            return ServiceResult<List<DoctorInfo>>.Failure(allDoctorsResult.ErrorMessage ?? "获取科室医生失败", allDoctorsResult.Exception);
+        }
+
+        /// <summary>
+        /// 转换DoctorDto到DoctorInfo
+        /// </summary>
+        private DoctorInfo ConvertToDoctorInfo(DoctorDto dto)
+        {
+            return new DoctorInfo
+            {
+                Id = dto.Id,
+                Code = dto.PinYinCode ?? "",
+                Name = dto.RealName ?? "",
+                Gender = dto.Gender,
+                Department = dto.Specialty ?? "",
+                Title = dto.Title,
+                Phone = dto.PhoneNumber ?? "",
+                Specialties = dto.Specialty ?? "",
+                IsActive = dto.Status == DoctorStatus.Active,
+                CreateTime = DateTime.Now // DoctorDto 不包含 CreateTime
             };
         }
 
-        public async Task<DoctorInfo> GetDoctorByIdAsync(Guid id)
+        /// <summary>
+        /// 转换DoctorDetailDto到DoctorInfo
+        /// </summary>
+        private DoctorInfo ConvertDetailToDoctorInfo(DoctorDetailDto dto)
         {
-            var doctors = await GetDoctorsAsync();
-            return doctors.Find(d => d.Id == id) ?? new DoctorInfo();
+            return new DoctorInfo
+            {
+                Id = dto.Id,
+                Code = dto.PinYinCode ?? "",
+                Name = dto.RealName ?? "",
+                Gender = dto.Gender,
+                Department = dto.Specialty ?? "",
+                Title = dto.Title,
+                Phone = dto.PhoneNumber ?? "",
+                Specialties = dto.Specialty ?? "",
+                IsActive = dto.Status == DoctorStatus.Active,
+                CreateTime = DateTime.Now // DoctorDetailDto 不包含 CreateTime
+            };
         }
 
-        public async Task<bool> AddDoctorAsync(DoctorInfo doctor)
+        /// <summary>
+        /// 转换DoctorInfo到DoctorDetailDto
+        /// </summary>
+        private DoctorDetailDto ConvertToDetailDto(DoctorInfo info)
         {
-            await Task.Delay(300);
-            return true;
-        }
-
-        public async Task<bool> UpdateDoctorAsync(DoctorInfo doctor)
-        {
-            await Task.Delay(300);
-            return true;
-        }
-
-        public async Task<bool> DeleteDoctorAsync(Guid id)
-        {
-            await Task.Delay(300);
-            return true;
-        }
-
-        public async Task<List<DoctorInfo>> GetByDepartmentAsync(string department)
-        {
-            await Task.Delay(300);
-            var allDoctors = await GetDoctorsAsync();
-            return allDoctors.FindAll(d => d.Department == department);
+            return new DoctorDetailDto
+            {
+                Id = info.Id,
+                PinYinCode = info.Code,
+                RealName = info.Name,
+                Gender = info.Gender,
+                Title = info.Title,
+                PhoneNumber = info.Phone,
+                Specialty = info.Specialties,
+                Status = info.IsActive ? DoctorStatus.Active : DoctorStatus.Inactive
+            };
         }
     }
 }

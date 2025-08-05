@@ -237,7 +237,7 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"删除挂号失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"删除挂号失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
@@ -264,7 +264,7 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"取消挂号失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"取消挂号失败: {response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)

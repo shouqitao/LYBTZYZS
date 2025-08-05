@@ -36,19 +36,27 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 统一的异常处理和日志记录
         /// </summary>
-        protected ActionResult<ApiResponse<T>> HandleException<T>(Exception ex, string operation, object? context = null) {
+        protected IActionResult HandleException(Exception ex, string operation, object? context = null) {
             var contextInfo = context != null ? $", 上下文: {System.Text.Json.JsonSerializer.Serialize(context)}" : "";
             _logger.LogError(ex, "{Operation}失败{Context}", operation, contextInfo);
-            return StatusCode(500, ApiResponse<T>.Fail($"{operation}失败"));
+            return StatusCode(500, new ProblemDetails {
+                Title = "系统错误",
+                Detail = $"{operation}失败",
+                Status = 500
+            });
         }
 
         /// <summary>
         /// 验证模型状态
         /// </summary>
-        protected ActionResult<ApiResponse<T>>? ValidateModel<T>() {
+        protected IActionResult? ValidateModel() {
             if (!ModelState.IsValid) {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                return BadRequest(ApiResponse<T>.Fail($"参数验证失败：{string.Join("; ", errors)}"));
+                return BadRequest(new ProblemDetails {
+                    Title = "参数验证失败",
+                    Detail = string.Join("; ", errors),
+                    Status = 400
+                });
             }
             return null;
         }
@@ -56,9 +64,13 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 验证GUID参数
         /// </summary>
-        protected ActionResult<ApiResponse<T>>? ValidateGuid<T>(Guid id, string paramName) {
+        protected IActionResult? ValidateGuid(Guid id, string paramName) {
             if (id == Guid.Empty) {
-                return BadRequest(ApiResponse<T>.Fail($"{paramName}不能为空"));
+                return BadRequest(new ProblemDetails {
+                    Title = "参数验证失败",
+                    Detail = $"{paramName}不能为空",
+                    Status = 400
+                });
             }
             return null;
         }

@@ -5,7 +5,7 @@ using LYBT.Module.TreatmentRoom.Interfaces;
 namespace LYBT.Module.TreatmentRoom.Repositories {
 
     /// <summary>
-    /// 治疗室仓储实现类，封装数据库操作
+    /// 治疗任务仓储实现类，封装数据库操作
     /// </summary>
     public class TreatmentRoomRepository : ITreatmentRoomRepository {
         private readonly AppDbContext _context;
@@ -18,53 +18,53 @@ namespace LYBT.Module.TreatmentRoom.Repositories {
         }
 
         /// <summary>
-        /// 根据ID获取治疗室记录
+        /// 根据ID获取治疗任务记录
         /// </summary>
-        public async Task<TreatmentRoomModel?> GetByIdAsync(Guid id) {
-            return await _context.TreatmentRooms.FindAsync(id);
+        public async Task<TreatmentTaskModel?> GetByIdAsync(Guid id) {
+            return await _context.TreatmentTasks.FindAsync(id);
         }
 
         /// <summary>
-        /// 获取所有治疗室记录
+        /// 获取所有治疗任务记录
         /// </summary>
-        public async Task<List<TreatmentRoomModel>> GetListAsync() {
-            return await Task.FromResult(_context.TreatmentRooms.ToList());
+        public async Task<List<TreatmentTaskModel>> GetListAsync() {
+            return await Task.FromResult(_context.TreatmentTasks.ToList());
         }
 
         /// <summary>
-        /// 新增治疗室记录
+        /// 新增治疗任务记录
         /// </summary>
-        public async Task<bool> AddAsync(TreatmentRoomModel treatmentRoomModel) {
-            _context.TreatmentRooms.Add(treatmentRoomModel);
+        public async Task<bool> AddAsync(TreatmentTaskModel treatmentTaskModel) {
+            _context.TreatmentTasks.Add(treatmentTaskModel);
             return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
-        /// 更新治疗室记录
+        /// 更新治疗任务记录
         /// </summary>
-        public async Task<bool> UpdateAsync(TreatmentRoomModel treatmentRoomModel) {
-            _context.TreatmentRooms.Update(treatmentRoomModel);
+        public async Task<bool> UpdateAsync(TreatmentTaskModel treatmentTaskModel) {
+            _context.TreatmentTasks.Update(treatmentTaskModel);
             return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
-        /// 删除治疗室记录
+        /// 删除治疗任务记录
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id) {
-            var model = await _context.TreatmentRooms.FindAsync(id);
+            var model = await _context.TreatmentTasks.FindAsync(id);
             if (model == null)
                 return false;
-            _context.TreatmentRooms.Remove(model);
+            _context.TreatmentTasks.Remove(model);
             return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
-        /// 执行GetByStatusAsync操作。
+        /// 根据状态获取治疗任务记录
         /// </summary>
         /// <param name="status">参数status</param>
         /// <returns>返回值</returns>
-        public async Task<List<TreatmentRoomModel>> GetByStatusAsync(string status) {
-            var list = _context.TreatmentRooms
+        public async Task<List<TreatmentTaskModel>> GetByStatusAsync(string status) {
+            var list = _context.TreatmentTasks
                 .Where(t => t.Status == status)
                 .ToList();
             return await Task.FromResult(list);

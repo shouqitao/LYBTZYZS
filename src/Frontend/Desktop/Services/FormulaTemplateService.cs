@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.FormulaTemplates;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Services.Interfaces;
 using PagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.FormulaTemplates.FormulaTemplateInfo>;
 using LYBT.Shared.Models.Contracts.FormulaTemplates;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Common;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -33,15 +34,15 @@ namespace LYBT.WPF.Client.Services
             try
             {
                 var response = await _apiService.GetPagedFormulaTemplatesAsync(query);
-                if (response.IsSuccess && response.Data != null)
+                if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    var templateInfos = response.Data.Items.Select(ConvertToFormulaTemplateInfo).ToList();
+                    var templateInfos = response.Content.Items.Select(ConvertToFormulaTemplateInfo).ToList();
                     return new PagedResult<FormulaTemplateInfo>
                     {
                         Items = templateInfos,
-                        TotalCount = response.Data.TotalCount,
-                        CurrentPage = response.Data.CurrentPage,
-                        PageSize = response.Data.PageSize
+                        TotalCount = response.Content.TotalCount,
+                        CurrentPage = response.Content.CurrentPage,
+                        PageSize = response.Content.PageSize
                     };
                 }
 
@@ -51,7 +52,7 @@ namespace LYBT.WPF.Client.Services
                     TotalCount = 0,
                     CurrentPage = query.CurrentPage,
                     PageSize = query.PageSize,
-                    ErrorMessage = response.Message ?? "获取验方模板失败"
+                    ErrorMessage = "获取验方模板失败"
                 };
             }
             catch (Exception ex)
@@ -67,253 +68,127 @@ namespace LYBT.WPF.Client.Services
             }
         }
 
-        public async Task<ApiResponse<List<FormulaTemplateInfo>>> GetListAsync(string? keyword = null, string? category = null)
+        public async Task<ServiceResult<List<FormulaTemplateInfo>>> GetListAsync(string? keyword = null, string? category = null)
         {
-            try
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.GetFormulaTemplatesAsync(keyword, category)
+            );
+            
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                var response = await _apiService.GetFormulaTemplatesAsync(keyword, category);
-                if (response.IsSuccess && response.Data != null)
-                {
-                    var templates = response.Data.Select(ConvertToFormulaTemplateInfo).ToList();
-                    return new ApiResponse<List<FormulaTemplateInfo>>
-                    {
-                        IsSuccess = true,
-                        StatusCode = 200,
-                        Message = "获取成功",
-                        Data = templates
-                    };
-                }
-                return new ApiResponse<List<FormulaTemplateInfo>>
-                {
-                    IsSuccess = false,
-                    StatusCode = 400,
-                    Message = response.Message ?? "获取验方模板列表失败"
-                };
+                // 从 PaginatedResult 中提取 Items
+                var templates = apiResponse.Data.Items.Select(ConvertToFormulaTemplateInfo).ToList();
+                return ServiceResult<List<FormulaTemplateInfo>>.Success(templates);
             }
-            catch (Exception ex)
+            
+            return ServiceResult<List<FormulaTemplateInfo>>.Failure(apiResponse.ErrorMessage ?? "获取验方模板列表失败", apiResponse.Exception);
+        }
+
+        public async Task<ServiceResult<FormulaTemplateDetailDto>> GetByIdAsync(Guid id)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.GetFormulaTemplateByIdAsync(id)
+            );
+        }
+
+        public async Task<ServiceResult<FormulaTemplateInfo>> CreateAsync(FormulaTemplateCreateDto createDto)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.CreateFormulaTemplateAsync(createDto)
+            );
+            
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                return new ApiResponse<List<FormulaTemplateInfo>>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"获取验方模板列表时发生错误：{ex.Message}"
-                };
+                var createdTemplate = ConvertToFormulaTemplateInfo(apiResponse.Data);
+                return ServiceResult<FormulaTemplateInfo>.Success(createdTemplate);
+            }
+            
+            return ServiceResult<FormulaTemplateInfo>.Failure(apiResponse.ErrorMessage ?? "创建验方模板失败", apiResponse.Exception);
+        }
+
+        public async Task<ServiceResult<FormulaTemplateInfo>> UpdateAsync(FormulaTemplateUpdateDto updateDto)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.UpdateFormulaTemplateAsync(updateDto.Id, updateDto)
+            );
+            
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                var updatedTemplate = ConvertToFormulaTemplateInfo(apiResponse.Data);
+                return ServiceResult<FormulaTemplateInfo>.Success(updatedTemplate);
+            }
+            
+            return ServiceResult<FormulaTemplateInfo>.Failure(apiResponse.ErrorMessage ?? "更新验方模板失败", apiResponse.Exception);
+        }
+
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        {
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.DeleteFormulaTemplateAsync(id)
+            );
+            
+            if (result.IsSuccess)
+            {
+                return ServiceResult<bool>.Success(true);
+            }
+            else 
+            {
+                return ServiceResult<bool>.Failure(result.ErrorMessage ?? "删除验方模板失败", result.Exception);
             }
         }
 
-        public async Task<ApiResponse<FormulaTemplateDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<int>> BatchDeleteAsync(List<Guid> ids)
         {
-            try
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.BatchDeleteFormulaTemplatesAsync(ids)
+            );
+            
+            if (result.IsSuccess)
             {
-                var response = await _apiService.GetFormulaTemplateByIdAsync(id);
-                if (response.IsSuccess && response.Data != null)
-                {
-                    return new ApiResponse<FormulaTemplateDetailDto>
-                    {
-                        IsSuccess = true,
-                        StatusCode = 200,
-                        Message = "获取成功",
-                        Data = response.Data
-                    };
-                }
-                return new ApiResponse<FormulaTemplateDetailDto>
-                {
-                    IsSuccess = false,
-                    StatusCode = 400,
-                    Message = response.Message ?? "获取验方模板详情失败"
-                };
+                return ServiceResult<int>.Success(ids.Count);
             }
-            catch (Exception ex)
+            else 
             {
-                return new ApiResponse<FormulaTemplateDetailDto>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"获取验方模板详情时发生错误：{ex.Message}"
-                };
+                return ServiceResult<int>.Failure(result.ErrorMessage ?? "批量删除验方模板失败", result.Exception);
             }
         }
 
-        public async Task<ApiResponse<FormulaTemplateInfo>> CreateAsync(FormulaTemplateCreateDto createDto)
+        public async Task<ServiceResult<FormulaTemplateInfo>> CopyAsync(Guid id, string newName)
         {
-            try
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.CopyFormulaTemplateAsync(id, newName)
+            );
+            
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                var response = await _apiService.CreateFormulaTemplateAsync(createDto);
-                if (response.IsSuccess && response.Data != null)
-                {
-                    var createdTemplate = ConvertToFormulaTemplateInfo(response.Data);
-                    return new ApiResponse<FormulaTemplateInfo>
-                    {
-                        IsSuccess = true,
-                        StatusCode = 200,
-                        Message = "创建成功",
-                        Data = createdTemplate
-                    };
-                }
-                return new ApiResponse<FormulaTemplateInfo>
-                {
-                    IsSuccess = false,
-                    StatusCode = 400,
-                    Message = response.Message ?? "创建验方模板失败"
-                };
+                var copiedTemplate = ConvertToFormulaTemplateInfo(apiResponse.Data);
+                return ServiceResult<FormulaTemplateInfo>.Success(copiedTemplate);
             }
-            catch (Exception ex)
+            
+            return ServiceResult<FormulaTemplateInfo>.Failure(apiResponse.ErrorMessage ?? "复制验方模板失败", apiResponse.Exception);
+        }
+
+        public async Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
+        {
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.ToggleFormulaTemplateStatusAsync(id)
+            );
+            
+            if (result.IsSuccess)
             {
-                return new ApiResponse<FormulaTemplateInfo>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"创建验方模板时发生错误：{ex.Message}"
-                };
+                return ServiceResult<bool>.Success(true);
+            }
+            else 
+            {
+                return ServiceResult<bool>.Failure(result.ErrorMessage ?? "切换验方模板状态失败", result.Exception);
             }
         }
 
-        public async Task<ApiResponse<FormulaTemplateInfo>> UpdateAsync(FormulaTemplateUpdateDto updateDto)
+        public async Task<ServiceResult<List<string>>> GetCategoriesAsync()
         {
-            try
-            {
-                var response = await _apiService.UpdateFormulaTemplateAsync(updateDto.Id, updateDto);
-                if (response.IsSuccess && response.Data != null)
-                {
-                    var updatedTemplate = ConvertToFormulaTemplateInfo(response.Data);
-                    return new ApiResponse<FormulaTemplateInfo>
-                    {
-                        IsSuccess = true,
-                        StatusCode = 200,
-                        Message = "更新成功",
-                        Data = updatedTemplate
-                    };
-                }
-                return new ApiResponse<FormulaTemplateInfo>
-                {
-                    IsSuccess = false,
-                    StatusCode = 400,
-                    Message = response.Message ?? "更新验方模板失败"
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<FormulaTemplateInfo>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"更新验方模板时发生错误：{ex.Message}"
-                };
-            }
-        }
-
-        public async Task<ApiResponse<bool>> DeleteAsync(Guid id)
-        {
-            try
-            {
-                var response = await _apiService.DeleteFormulaTemplateAsync(id);
-                return response.IsSuccess 
-                    ? new ApiResponse<bool> { IsSuccess = true, StatusCode = 200, Message = "删除成功", Data = true }
-                    : new ApiResponse<bool> { IsSuccess = false, StatusCode = 400, Message = response.Message ?? "删除验方模板失败" };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<bool>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"删除验方模板时发生错误：{ex.Message}"
-                };
-            }
-        }
-
-        public async Task<ApiResponse<int>> BatchDeleteAsync(List<Guid> ids)
-        {
-            try
-            {
-                var response = await _apiService.BatchDeleteFormulaTemplatesAsync(ids);
-                return response.IsSuccess
-                    ? new ApiResponse<int> { IsSuccess = true, StatusCode = 200, Message = "批量删除成功", Data = response.Data }
-                    : new ApiResponse<int> { IsSuccess = false, StatusCode = 400, Message = response.Message ?? "批量删除验方模板失败" };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<int>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"批量删除验方模板时发生错误：{ex.Message}"
-                };
-            }
-        }
-
-        public async Task<ApiResponse<FormulaTemplateInfo>> CopyAsync(Guid id, string newName)
-        {
-            try
-            {
-                var response = await _apiService.CopyFormulaTemplateAsync(id, newName);
-                if (response.IsSuccess && response.Data != null)
-                {
-                    var copiedTemplate = ConvertToFormulaTemplateInfo(response.Data);
-                    return new ApiResponse<FormulaTemplateInfo>
-                    {
-                        IsSuccess = true,
-                        StatusCode = 200,
-                        Message = "复制成功",
-                        Data = copiedTemplate
-                    };
-                }
-                return new ApiResponse<FormulaTemplateInfo>
-                {
-                    IsSuccess = false,
-                    StatusCode = 400,
-                    Message = response.Message ?? "复制验方模板失败"
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<FormulaTemplateInfo>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"复制验方模板时发生错误：{ex.Message}"
-                };
-            }
-        }
-
-        public async Task<ApiResponse<bool>> ToggleStatusAsync(Guid id)
-        {
-            try
-            {
-                var response = await _apiService.ToggleFormulaTemplateStatusAsync(id);
-                return response.IsSuccess
-                    ? new ApiResponse<bool> { IsSuccess = true, StatusCode = 200, Message = "切换状态成功", Data = true }
-                    : new ApiResponse<bool> { IsSuccess = false, StatusCode = 400, Message = response.Message ?? "切换验方模板状态失败" };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<bool>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"切换验方模板状态时发生错误：{ex.Message}"
-                };
-            }
-        }
-
-        public async Task<ApiResponse<List<string>>> GetCategoriesAsync()
-        {
-            try
-            {
-                var response = await _apiService.GetCategoriesAsync();
-                return response.IsSuccess && response.Data != null
-                    ? new ApiResponse<List<string>> { IsSuccess = true, StatusCode = 200, Message = "获取成功", Data = response.Data }
-                    : new ApiResponse<List<string>> { IsSuccess = false, StatusCode = 400, Message = response.Message ?? "获取分类列表失败" };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<string>>
-                {
-                    IsSuccess = false,
-                    StatusCode = 500,
-                    Message = $"获取分类列表时发生错误：{ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _apiService.GetCategoriesAsync()
+            );
         }
 
         #region Private Methods

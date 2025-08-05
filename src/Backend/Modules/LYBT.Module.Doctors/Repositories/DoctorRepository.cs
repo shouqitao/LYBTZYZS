@@ -64,9 +64,9 @@ namespace LYBT.Module.Doctors.Repositories {
                     d.User.RealName.Contains(keyword) ||
                     d.User.Username.Contains(keyword) ||
                     (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(keyword)) ||
-                    d.PinYinCode.Contains(upperKeyword) ||
+                    (d.PinYinCode != null && d.PinYinCode.Contains(upperKeyword)) ||
                     (d.LicenseNumber != null && d.LicenseNumber.Contains(keyword)) ||
-                    d.Specialty.Contains(keyword));
+                    (d.Specialty != null && d.Specialty.Contains(keyword)));
             }
 
             return await query
@@ -91,9 +91,9 @@ namespace LYBT.Module.Doctors.Repositories {
                     d.User.RealName.Contains(query.Keyword) ||
                     d.User.Username.Contains(query.Keyword) ||
                     (d.User.PhoneNumber != null && d.User.PhoneNumber.Contains(query.Keyword)) ||
-                    d.PinYinCode.Contains(upperKeyword) ||
+                    (d.PinYinCode != null && d.PinYinCode.Contains(upperKeyword)) ||
                     (d.LicenseNumber != null && d.LicenseNumber.Contains(query.Keyword)) ||
-                    d.Specialty.Contains(query.Keyword));
+                    (d.Specialty != null && d.Specialty.Contains(query.Keyword)));
             }
 
             // 状态筛选
@@ -204,7 +204,7 @@ namespace LYBT.Module.Doctors.Repositories {
 
             var query = _context.Doctors
                 .Include(d => d.User)
-                .Where(d => d.PinYinCode.Contains(pinyin.ToUpperInvariant()));
+                .Where(d => d.PinYinCode != null && d.PinYinCode.Contains(pinyin.ToUpperInvariant()));
 
             if (!includeDisabled) {
                 query = query.Where(d => d.Status == DoctorStatus.Active);

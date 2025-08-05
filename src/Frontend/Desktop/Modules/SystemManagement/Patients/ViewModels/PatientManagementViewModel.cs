@@ -224,7 +224,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"禁用患者失败：{response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"禁用患者失败：{response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -245,7 +245,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             }
             else
             {
-                MessageBox.Show($"启用患者失败：{response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"启用患者失败：{response.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -271,7 +271,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"导出患者数据失败：{result.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"导出患者数据失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

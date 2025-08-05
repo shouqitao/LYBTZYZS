@@ -1,0 +1,152 @@
+<Window x:Class="LYBT.WPF.Client.Modules.SystemManagement.Roles.Views.EditRolePermissionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+        mc:Ignorable="d" 
+        Title="权限配置" 
+        Height="700" Width="600"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+    
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <Border Grid.Row="0" Background="#2E86AB" Padding="20,15">
+            <StackPanel>
+                <TextBlock Text="角色权限配置" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="{Binding Role.RoleName, StringFormat='配置角色：{0}'}" 
+                           FontSize="14" Foreground="#E3F2FD" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 加载指示器 -->
+        <ProgressBar Grid.Row="1" IsIndeterminate="True" 
+                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                     Height="4"/>
+
+        <!-- 操作栏 -->
+        <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,1" Padding="20,10">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="全选" Command="{Binding SelectAllCommand}" 
+                        Width="80" Height="32" Margin="0,0,10,0"
+                        Background="#28A745" Foreground="White" BorderThickness="0"/>
+                <Button Content="全不选" Command="{Binding SelectNoneCommand}" 
+                        Width="80" Height="32" Margin="0,0,10,0"
+                        Background="#DC3545" Foreground="White" BorderThickness="0"/>
+                <Button Content="重置" Command="{Binding ResetCommand}" 
+                        Width="80" Height="32" Margin="0,0,10,0"
+                        Background="#6C757D" Foreground="White" BorderThickness="0"/>
+                
+                <TextBlock Text="{Binding HasChanges, StringFormat='状态：{0}'}" 
+                           VerticalAlignment="Center" Margin="20,0,0,0" FontStyle="Italic" Foreground="#666"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 权限配置内容 -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="20">
+            <ScrollViewer.Style>
+                <Style TargetType="ScrollViewer">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="False">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ScrollViewer.Style>
+            
+            <ItemsControl ItemsSource="{Binding PermissionGroups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#F8F9FA" CornerRadius="8" Margin="0,0,0,20" Padding="20">
+                            <StackPanel>
+                                <!-- 分组标题 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                    <TextBlock Text="{Binding GroupName}" FontSize="16" FontWeight="Bold" 
+                                               Foreground="#2E86AB" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#666" 
+                                               Margin="15,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                
+                                <!-- 权限项列表 -->
+                                <ItemsControl ItemsSource="{Binding Permissions}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="White" BorderBrush="#DEE2E6" BorderThickness="1" 
+                                                    CornerRadius="6" Margin="0,0,15,10" Padding="15" Width="260">
+                                                <StackPanel>
+                                                    <CheckBox IsChecked="{Binding IsChecked}" Margin="0,0,0,8">
+                                                        <CheckBox.Content>
+                                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" 
+                                                                       Foreground="#333" FontSize="14"/>
+                                                        </CheckBox.Content>
+                                                    </CheckBox>
+                                                    <TextBlock Text="{Binding Description}" FontSize="12" 
+                                                               Foreground="#666" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- 按钮栏 -->
+        <Border Grid.Row="3" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,0" Padding="20,15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="保存" 
+                        Command="{Binding SaveCommand}"
+                        Width="100" Height="36"
+                        Background="#007BFF"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                
+                <Button Content="取消" 
+                        Command="{Binding CancelCommand}"
+                        Width="100" Height="36"
+                        Background="#6C757D"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        IsCancel="True">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+</Window>

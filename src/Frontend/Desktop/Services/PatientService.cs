@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Records;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Patients;
+using LYBT.WPF.Client.Services.Interfaces;
 using System.Linq;
 
 namespace LYBT.WPF.Client.Services
@@ -18,124 +20,72 @@ namespace LYBT.WPF.Client.Services
     public class PatientService : IPatientService
     {
         private readonly IApiService _apiService;
+        private readonly IPatientsApiService _patientsApiService;
 
-        public PatientService(IApiService apiService)
+        public PatientService(IApiService apiService, IPatientsApiService patientsApiService)
         {
             _apiService = apiService;
+            _patientsApiService = patientsApiService;
         }
 
         /// <summary>
         /// 新增患者
         /// </summary>
-        public async Task<ApiResponse<object>> AddAsync(PatientDetailDto dto)
+        public async Task<ServiceResult> AddAsync(PatientDetailDto dto)
         {
-            try
-            {
-                return await _apiService.PostAsync<object>("patients", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"创建患者失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _patientsApiService.CreatePatientAsync(dto)
+            );
         }
 
         /// <summary>
         /// 编辑患者
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateAsync(PatientDetailDto dto)
+        public async Task<ServiceResult> UpdateAsync(PatientDetailDto dto)
         {
-            try
-            {
-                return await _apiService.PutAsync<object>($"patients/{dto.Id}", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"更新患者失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _patientsApiService.UpdatePatientAsync(dto.Id, dto)
+            );
         }
 
         /// <summary>
         /// 启用患者档案
         /// </summary>
-        public async Task<ApiResponse<object>> EnableAsync(Guid id)
+        public async Task<ServiceResult> EnableAsync(Guid id)
         {
-            try
-            {
-                return await _apiService.PatchAsync<object>($"patients/{id}/enable", new object());
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"启用患者失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _patientsApiService.EnableAsync(id)
+            );
         }
 
         /// <summary>
         /// 禁用患者档案
         /// </summary>
-        public async Task<ApiResponse<object>> DisableAsync(Guid id)
+        public async Task<ServiceResult> DisableAsync(Guid id)
         {
-            try
-            {
-                return await _apiService.PatchAsync<object>($"patients/{id}/disable", new object());
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"禁用患者失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _patientsApiService.DisableAsync(id)
+            );
         }
 
         /// <summary>
         /// 获取患者详情
         /// </summary>
-        public async Task<ApiResponse<PatientDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id)
         {
-            try
-            {
-                return await _apiService.GetAsync<PatientDetailDto>($"patients/{id}");
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<PatientDetailDto>
-                {
-                    IsSuccess = false,
-                    Message = $"获取患者详情失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _patientsApiService.GetPatientAsync(id)
+            );
         }
 
         /// <summary>
         /// 获取所有患者
         /// </summary>
-        public async Task<ApiResponse<List<PatientDetailDto>>> GetAllAsync()
+        public async Task<ServiceResult<List<PatientDetailDto>>> GetAllAsync()
         {
-            try
-            {
-                return await _apiService.GetAsync<List<PatientDetailDto>>("patients");
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<PatientDetailDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"获取患者列表失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _patientsApiService.GetAllAsync()
+            );
         }
 
         /// <summary>
@@ -145,16 +95,16 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var response = await _apiService.PostAsync<PaginatedResult<PatientDetailDto>>("patients/paged", query);
-                if (response.IsSuccess && response.Data != null)
+                var response = await _patientsApiService.GetPagedAsync(query);
+                if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    var patientInfos = response.Data.Items.Select(ConvertToPatientInfo).ToList();
+                    var patientInfos = response.Content.Items.Select(ConvertToPatientInfo).ToList();
                     return new LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>
                     {
                         Items = patientInfos,
-                        TotalCount = response.Data.TotalCount,
-                        CurrentPage = response.Data.CurrentPage,
-                        PageSize = response.Data.PageSize
+                        TotalCount = response.Content.TotalCount,
+                        CurrentPage = response.Content.CurrentPage,
+                        PageSize = response.Content.PageSize
                     };
                 }
 
@@ -164,7 +114,7 @@ namespace LYBT.WPF.Client.Services
                     TotalCount = 0,
                     CurrentPage = query.CurrentPage,
                     PageSize = query.PageSize,
-                    ErrorMessage = response.Message ?? "获取患者列表失败"
+                    ErrorMessage = "获取患者列表失败"
                 };
             }
             catch (Exception ex)
@@ -183,161 +133,89 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 批量禁用患者
         /// </summary>
-        public async Task<ApiResponse<object>> BatchDisableAsync(List<Guid> ids)
+        public async Task<ServiceResult> BatchDisableAsync(List<Guid> ids)
         {
-            try
-            {
-                var dto = new { Ids = ids };
-                return await _apiService.PatchAsync<object>("patients/batch-disable", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"批量禁用患者失败: {ex.Message}"
-                };
-            }
+            var dto = new BatchOperationDto { Ids = ids };
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _patientsApiService.BatchDisableAsync(dto)
+            );
         }
 
         /// <summary>
         /// 批量启用患者
         /// </summary>
-        public async Task<ApiResponse<object>> BatchEnableAsync(List<Guid> ids)
+        public async Task<ServiceResult> BatchEnableAsync(List<Guid> ids)
         {
-            try
-            {
-                var dto = new { Ids = ids };
-                return await _apiService.PatchAsync<object>("patients/batch-enable", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"批量启用患者失败: {ex.Message}"
-                };
-            }
+            var dto = new BatchOperationDto { Ids = ids };
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _patientsApiService.BatchEnableAsync(dto)
+            );
         }
 
         /// <summary>
         /// 搜索患者
         /// </summary>
-        public async Task<ApiResponse<List<PatientDetailDto>>> SearchAsync(string keyword)
+        public async Task<ServiceResult<List<PatientDetailDto>>> SearchAsync(string keyword)
         {
-            try
-            {
-                return await _apiService.GetAsync<List<PatientDetailDto>>($"patients/search?keyword={Uri.EscapeDataString(keyword)}");
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<PatientDetailDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"搜索患者失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _patientsApiService.SearchAsync(keyword)
+            );
         }
 
         /// <summary>
         /// 导入患者数据
         /// </summary>
-        public async Task<ApiResponse<object>> ImportAsync(List<PatientDetailDto> patients)
+        public async Task<ServiceResult> ImportAsync(List<PatientDetailDto> patients)
         {
-            try
-            {
-                return await _apiService.PostAsync<object>("patients/import", patients);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"导入患者数据失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _patientsApiService.ImportAsync(patients)
+            );
         }
 
         /// <summary>
         /// 导出患者数据
         /// </summary>
-        public async Task<ApiResponse<List<PatientDetailDto>>> ExportAsync()
+        public async Task<ServiceResult<List<PatientDetailDto>>> ExportAsync()
         {
-            try
-            {
-                return await _apiService.GetAsync<List<PatientDetailDto>>("patients/export");
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<PatientDetailDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"导出患者数据失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _patientsApiService.ExportAsync()
+            );
         }
 
         /// <summary>
         /// 获取患者历史病历
         /// </summary>
-        public async Task<ApiResponse<List<RecordDto>>> GetHistoryRecordsAsync(Guid patientId)
+        public async Task<ServiceResult<List<RecordDto>>> GetHistoryRecordsAsync(Guid patientId)
         {
-            try
-            {
-                return await _apiService.GetAsync<List<RecordDto>>($"patients/{patientId}/records");
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<RecordDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"获取患者病历历史失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _patientsApiService.GetHistoryAsync(patientId)
+            );
         }
 
         /// <summary>
         /// 获取活跃患者列表
         /// </summary>
-        public async Task<ApiResponse<List<PatientDetailDto>>> GetActivePatientsAsync()
+        public async Task<ServiceResult<List<PatientDetailDto>>> GetActivePatientsAsync()
         {
-            try
-            {
-                return await _apiService.GetAsync<List<PatientDetailDto>>("patients/active");
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<List<PatientDetailDto>>
-                {
-                    IsSuccess = false,
-                    Message = $"获取活跃患者列表失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _patientsApiService.GetActivePatientsAsync()
+            );
         }
 
         /// <summary>
         /// 查询或创建患者
         /// </summary>
-        public async Task<ApiResponse<PatientDetailDto>> FindOrCreateAsync(PatientDetailDto dto)
+        public async Task<ServiceResult<PatientDetailDto>> FindOrCreateAsync(PatientDetailDto dto)
         {
-            try
-            {
-                return await _apiService.PostAsync<PatientDetailDto>("patients/find-or-create", dto);
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<PatientDetailDto>
-                {
-                    IsSuccess = false,
-                    Message = $"查询或创建患者失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+                await _patientsApiService.FindOrCreateAsync(dto)
+            );
         }
 
         /// <summary>
         /// 快速搜索患者（根据关键词）
         /// </summary>
-        public async Task<ApiResponse<List<PatientDetailDto>>> QuickSearchAsync(string keyword)
+        public async Task<ServiceResult<List<PatientDetailDto>>> QuickSearchAsync(string keyword)
         {
             return await SearchAsync(keyword);
         }

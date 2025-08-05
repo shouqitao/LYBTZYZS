@@ -69,7 +69,7 @@ namespace LYBT.Module.TreatmentRoom.Services {
         /// 新增治疗室单
         /// </summary>
         public async Task<bool> AddAsync(TreatmentRoomCreateDto treatmentRoomCreateDto) {
-            var model = _mapper.Map<TreatmentRoomModel>(treatmentRoomCreateDto);
+            var model = _mapper.Map<TreatmentTaskModel>(treatmentRoomCreateDto);
             model.Id = Guid.NewGuid();
             model.StartTime = DateTime.Now;
             return await _treatmentRoomRepository.AddAsync(model);

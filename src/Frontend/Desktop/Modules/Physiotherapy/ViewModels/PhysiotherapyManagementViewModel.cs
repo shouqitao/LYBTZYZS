@@ -17,35 +17,35 @@ namespace LYBT.WPF.Client.Modules.Physiotherapy.ViewModels
         private readonly IPhysiotherapyService _physiotherapyService;
         #region 属性
 
-        private ObservableCollection<PhysiotherapyAppointmentInfo> _appointmentList;
+        private ObservableCollection<PhysiotherapyAppointmentInfo> _appointmentList = new();
         public ObservableCollection<PhysiotherapyAppointmentInfo> AppointmentList
         {
             get => _appointmentList;
             set => SetProperty(ref _appointmentList, value);
         }
 
-        private PhysiotherapyAppointmentInfo _selectedAppointment;
-        public PhysiotherapyAppointmentInfo SelectedAppointment
+        private PhysiotherapyAppointmentInfo? _selectedAppointment;
+        public PhysiotherapyAppointmentInfo? SelectedAppointment
         {
             get => _selectedAppointment;
             set => SetProperty(ref _selectedAppointment, value);
         }
 
-        private ObservableCollection<TreatmentTypeInfo> _treatmentTypeList;
+        private ObservableCollection<TreatmentTypeInfo> _treatmentTypeList = new();
         public ObservableCollection<TreatmentTypeInfo> TreatmentTypeList
         {
             get => _treatmentTypeList;
             set => SetProperty(ref _treatmentTypeList, value);
         }
 
-        private TreatmentTypeInfo _selectedTreatmentType;
-        public TreatmentTypeInfo SelectedTreatmentType
+        private TreatmentTypeInfo? _selectedTreatmentType;
+        public TreatmentTypeInfo? SelectedTreatmentType
         {
             get => _selectedTreatmentType;
             set => SetProperty(ref _selectedTreatmentType, value);
         }
 
-        private string _searchKeyword;
+        private string _searchKeyword = string.Empty;
         public string SearchKeyword
         {
             get => _searchKeyword;

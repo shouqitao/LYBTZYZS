@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
@@ -109,101 +109,41 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 新增挂号
         /// </summary>
-        public async Task<ApiResponse<object>> CreateRegistrationAsync(RegistrationCreateDto dto)
+        public async Task<ServiceResult> CreateRegistrationAsync(RegistrationCreateDto dto)
         {
-            try
-            {
-                var response = await _registrationApiService.CreateRegistrationAsync(dto);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "新增挂号成功" : response.Error?.Content ?? "新增挂号失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"新增挂号失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _registrationApiService.CreateRegistrationAsync(dto)
+            );
         }
 
         /// <summary>
         /// 编辑挂号
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateRegistrationAsync(RegistrationEditDto dto)
+        public async Task<ServiceResult> UpdateRegistrationAsync(RegistrationEditDto dto)
         {
-            try
-            {
-                var response = await _registrationApiService.UpdateRegistrationAsync(dto);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "更新挂号成功" : response.Error?.Content ?? "更新挂号失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"更新挂号失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _registrationApiService.UpdateRegistrationAsync(dto)
+            );
         }
 
         /// <summary>
         /// 删除挂号
         /// </summary>
-        public async Task<ApiResponse<object>> DeleteRegistrationAsync(Guid id)
+        public async Task<ServiceResult> DeleteRegistrationAsync(Guid id)
         {
-            try
-            {
-                var response = await _registrationApiService.DeleteRegistrationAsync(id);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "删除挂号成功" : response.Error?.Content ?? "删除挂号失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"删除挂号失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _registrationApiService.DeleteRegistrationAsync(id)
+            );
         }
 
         /// <summary>
         /// 取消挂号
         /// </summary>
-        public async Task<ApiResponse<object>> CancelRegistrationAsync(Guid id)
+        public async Task<ServiceResult> CancelRegistrationAsync(Guid id)
         {
-            try
-            {
-                var response = await _registrationApiService.CancelRegistrationAsync(id);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = response.IsSuccessStatusCode,
-                    Message = response.IsSuccessStatusCode ? "取消挂号成功" : response.Error?.Content ?? "取消挂号失败",
-                    Data = response.Content
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"取消挂号失败: {ex.Message}"
-                };
-            }
+            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+                await _registrationApiService.CancelRegistrationAsync(id)
+            );
         }
 
 
@@ -357,7 +297,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 创建挂号
         /// </summary>
-        public async Task<ApiResponse<object>> CreateAsync(RegistrationCreateDto dto)
+        public async Task<ServiceResult> CreateAsync(RegistrationCreateDto dto)
         {
             return await CreateRegistrationAsync(dto);
         }
@@ -365,7 +305,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 更新挂号
         /// </summary>
-        public async Task<ApiResponse<object>> UpdateAsync(RegistrationEditDto dto)
+        public async Task<ServiceResult> UpdateAsync(RegistrationEditDto dto)
         {
             return await UpdateRegistrationAsync(dto);
         }
@@ -373,7 +313,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 取消挂号
         /// </summary>
-        public async Task<ApiResponse<object>> CancelAsync(Guid id)
+        public async Task<ServiceResult> CancelAsync(Guid id)
         {
             return await CancelRegistrationAsync(id);
         }
@@ -381,25 +321,17 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 批量取消挂号
         /// </summary>
-        public async Task<ApiResponse<object>> BatchCancelAsync(List<Guid> ids)
+        public async Task<ServiceResult> BatchCancelAsync(List<Guid> ids)
         {
             try
             {
                 // 模拟批量取消
                 await Task.Delay(300);
-                return new ApiResponse<object>
-                {
-                    IsSuccess = true,
-                    Message = $"成功取消 {ids.Count} 个挂号"
-                };
+                return ServiceResult.Success();
             }
             catch (Exception ex)
             {
-                return new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = $"批量取消失败: {ex.Message}"
-                };
+                return ServiceResult.Failure($"批量取消失败: {ex.Message}", ex);
             }
         }
     }

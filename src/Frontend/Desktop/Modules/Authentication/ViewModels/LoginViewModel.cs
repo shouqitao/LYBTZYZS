@@ -174,7 +174,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                 }
                 else
                 {
-                    ErrorMessage = response.Message ?? "登录失败，请检查用户名和密码";
+                    ErrorMessage = response.ErrorMessage ?? "登录失败，请检查用户名和密码";
                 }
             }
             catch (Exception ex)
@@ -289,9 +289,10 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         /// <summary>
         /// 清理资源
         /// </summary>
-        public void Dispose()
+        public new void Dispose()
         {
             _apiCheckTimer?.Dispose();
+            base.Dispose();
         }
     }
 }

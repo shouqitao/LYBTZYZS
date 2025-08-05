@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Records;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
@@ -14,46 +14,46 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 获取病历列表
         /// </summary>
-        Task<ApiResponse<List<RecordDto>>> GetListAsync();
+        Task<ServiceResult<List<RecordDto>>> GetListAsync();
 
         /// <summary>
         /// 根据患者ID获取病历列表
         /// </summary>
-        Task<ApiResponse<List<RecordDto>>> GetByPatientIdAsync(Guid patientId);
+        Task<ServiceResult<List<RecordDto>>> GetByPatientIdAsync(Guid patientId);
 
         /// <summary>
         /// 获取病历详情
         /// </summary>
-        Task<ApiResponse<RecordDetailDto>> GetByIdAsync(Guid id);
+        Task<ServiceResult<RecordDetailDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 新增病历
         /// </summary>
-        Task<ApiResponse<object>> AddAsync(RecordCreateDto dto);
+        Task<ServiceResult> AddAsync(RecordCreateDto dto);
 
         /// <summary>
         /// 编辑病历
         /// </summary>
-        Task<ApiResponse<object>> UpdateAsync(RecordEditDto dto);
+        Task<ServiceResult> UpdateAsync(RecordEditDto dto);
 
         /// <summary>
         /// 删除病历
         /// </summary>
-        Task<ApiResponse<object>> DeleteAsync(Guid id);
+        Task<ServiceResult> DeleteAsync(Guid id);
 
         /// <summary>
         /// 标记病历为共享
         /// </summary>
-        Task<ApiResponse<object>> MarkAsSharedAsync(Guid id, List<string> doctorIds);
+        Task<ServiceResult> MarkAsSharedAsync(Guid id, List<string> doctorIds);
 
         /// <summary>
         /// 撤销病历共享
         /// </summary>
-        Task<ApiResponse<object>> RevokeSharingAsync(Guid id);
+        Task<ServiceResult> RevokeSharingAsync(Guid id);
 
         /// <summary>
         /// 获取共享给当前医生的病历
         /// </summary>
-        Task<ApiResponse<List<RecordDto>>> GetSharedRecordsAsync(Guid doctorId);
+        Task<ServiceResult<List<RecordDto>>> GetSharedRecordsAsync(Guid doctorId);
     }
 }

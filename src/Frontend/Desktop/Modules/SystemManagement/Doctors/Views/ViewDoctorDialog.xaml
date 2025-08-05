@@ -1,0 +1,291 @@
+<Window x:Class="LYBT.WPF.Client.Modules.SystemManagement.Doctors.Views.ViewDoctorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+        mc:Ignorable="d" 
+        Title="医生详情" 
+        Height="650" Width="550"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+    
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <Border Grid.Row="0" Background="#2E86AB" Padding="20,15">
+            <TextBlock Text="医生详细信息" FontSize="18" FontWeight="Bold" Foreground="White"/>
+        </Border>
+
+        <!-- 加载指示器 -->
+        <ProgressBar Grid.Row="1" IsIndeterminate="True" 
+                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                     Height="4" VerticalAlignment="Top"/>
+
+        <!-- 详情内容 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
+            <ScrollViewer.Style>
+                <Style TargetType="ScrollViewer">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="False">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ScrollViewer.Style>
+            
+            <StackPanel>
+                <!-- 基本信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="基本信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 姓名 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="姓名：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Doctor.Name}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 工号 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="工号：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Doctor.Code}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 性别 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="性别：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding GenderDescription}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 年龄 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="年龄：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding AgeDescription}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 出生日期 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="出生日期：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Doctor.Birthday, StringFormat='{}{0:yyyy-MM-dd}'}" FontSize="14"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 职业信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="职业信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 职称 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="职称：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding TitleDescription}" FontSize="14" FontWeight="Bold" Foreground="#2E86AB"/>
+                        </Grid>
+
+                        <!-- 科室 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="科室：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Doctor.Department}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 专长 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="专长：" FontWeight="Bold" Foreground="#666" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Doctor.Specialty}" FontSize="14" TextWrapping="Wrap"/>
+                        </Grid>
+
+                        <!-- 执业证书编号 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="执业证书号：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Doctor.LicenseNumber}" FontSize="14"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 状态信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="状态信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 医生状态 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="医生状态：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding StatusDescription}" FontSize="14" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Doctor.Status}" Value="Active">
+                                                <Setter Property="Foreground" Value="#28A745"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Doctor.Status}" Value="Inactive">
+                                                <Setter Property="Foreground" Value="#DC3545"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+
+                        <!-- 工作状态 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="工作状态：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding WorkStatusDescription}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 启用状态 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="账号状态：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ActiveStatusDescription}" FontSize="14" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Doctor.IsActive}" Value="True">
+                                                <Setter Property="Foreground" Value="#28A745"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Doctor.IsActive}" Value="False">
+                                                <Setter Property="Foreground" Value="#DC3545"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 其他信息 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="其他信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 联系电话 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="联系电话：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Doctor.Phone}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 创建时间 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="创建时间：" FontWeight="Bold" Foreground="#666"/>
+                            <TextBlock Grid.Column="1" Text="{Binding CreateTimeDescription}" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 备注 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="备注：" FontWeight="Bold" Foreground="#666" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Doctor.Remark}" FontSize="14" TextWrapping="Wrap"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 按钮栏 -->
+        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,0" Padding="20,15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="打印" 
+                        Command="{Binding PrintCommand}"
+                        Width="100" Height="36"
+                        Background="#17A2B8"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                
+                <Button Content="关闭" 
+                        Command="{Binding CloseCommand}"
+                        Width="100" Height="36"
+                        Background="#6C757D"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        IsDefault="True">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+</Window>

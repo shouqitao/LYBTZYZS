@@ -53,10 +53,10 @@ namespace LYBT.WPF.Client.Shell.Extensions
             {
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
             };
-            return new HttpClient(handler);
+            return HttpClientFactory.CreateWithRetryPolicy(handler);
 #else
             // 生产环境使用默认设置
-            return new HttpClient();
+            return HttpClientFactory.CreateWithRetryPolicy(new HttpClientHandler());
 #endif
         }
 
@@ -79,7 +79,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             authHandler.InnerHandler = new HttpClientHandler();
 #endif
 
-            return new HttpClient(authHandler);
+            return HttpClientFactory.CreateWithRetryPolicy(authHandler);
         }
 
         /// <summary>
@@ -141,6 +141,23 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 return RestService.For<IRegistrationApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
+            // 注册患者API服务
+            containerRegistry.Register<IPatientsApiService>(container =>
+            {
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
+                return RestService.For<IPatientsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+            });
+
+            // 注册医生API服务
+            containerRegistry.Register<IDoctorsApiService>(container =>
+            {
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
+                return RestService.For<IDoctorsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+            });
 
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();

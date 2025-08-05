@@ -14,7 +14,7 @@ namespace LYBT.WPF.Client.Services.Interfaces {
         /// 获取病例列表
         /// </summary>
         [Get("/api/v1/records")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<List<RecordDto>>> GetRecordsAsync(
+        Task<Refit.ApiResponse<List<RecordDto>>> GetRecordsAsync(
             [Query] string? search = null,
             [Query] DateTime? startDate = null,
             [Query] DateTime? endDate = null,
@@ -27,55 +27,55 @@ namespace LYBT.WPF.Client.Services.Interfaces {
         /// 获取病例详情
         /// </summary>
         [Get("/api/v1/records/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<RecordDetailDto>> GetRecordByIdAsync(Guid id);
+        Task<Refit.ApiResponse<RecordDetailDto>> GetRecordByIdAsync(Guid id);
 
         /// <summary>
         /// 创建病例
         /// </summary>
         [Post("/api/v1/records")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<RecordDto>> CreateRecordAsync([Body] RecordCreateDto dto);
+        Task<Refit.ApiResponse<RecordDto>> CreateRecordAsync([Body] RecordCreateDto dto);
 
         /// <summary>
         /// 更新病例
         /// </summary>
         [Put("/api/v1/records/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<RecordDto>> UpdateRecordAsync(Guid id, [Body] RecordEditDto dto);
+        Task<Refit.ApiResponse<RecordDto>> UpdateRecordAsync(Guid id, [Body] RecordEditDto dto);
 
         /// <summary>
         /// 删除病例
         /// </summary>
         [Delete("/api/v1/records/{id}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<bool>> DeleteRecordAsync(Guid id);
+        Task<Refit.ApiResponse<bool>> DeleteRecordAsync(Guid id);
 
         /// <summary>
         /// 获取患者病例历史
         /// </summary>
         [Get("/api/v1/records/patient/{patientId}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<List<RecordDto>>> GetPatientRecordsAsync(Guid patientId);
+        Task<Refit.ApiResponse<List<RecordDto>>> GetPatientRecordsAsync(Guid patientId);
 
         /// <summary>
         /// 获取医生病例列表
         /// </summary>
         [Get("/api/v1/records/doctor/{doctorId}")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<List<RecordDto>>> GetDoctorRecordsAsync(Guid doctorId);
+        Task<Refit.ApiResponse<List<RecordDto>>> GetDoctorRecordsAsync(Guid doctorId);
 
         /// <summary>
         /// 获取今日病例
         /// </summary>
         [Get("/api/v1/records/today")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<List<RecordDto>>> GetTodayRecordsAsync();
+        Task<Refit.ApiResponse<List<RecordDto>>> GetTodayRecordsAsync();
 
         /// <summary>
         /// 导出病例
         /// </summary>
         [Get("/api/v1/records/{id}/export")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<byte[]>> ExportRecordAsync(Guid id, [Query] string format = "pdf");
+        Task<Refit.ApiResponse<byte[]>> ExportRecordAsync(Guid id, [Query] string format = "pdf");
 
         /// <summary>
         /// 获取病例统计
         /// </summary>
         [Get("/api/v1/records/statistics")]
-        Task<LYBT.Shared.Models.Common.ApiResponse<RecordStatisticsDto>> GetStatisticsAsync(
+        Task<Refit.ApiResponse<RecordStatisticsDto>> GetStatisticsAsync(
             [Query] DateTime startDate,
             [Query] DateTime endDate);
     }

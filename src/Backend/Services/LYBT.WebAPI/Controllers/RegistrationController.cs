@@ -46,7 +46,7 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取挂号列表 (RESTful GET /Registration) - 支持模糊查询和分页
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<RegistrationDto>>>> GetList(
+        public async Task<ActionResult<PaginatedResult<RegistrationDto>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -72,7 +72,7 @@ namespace LYBT.WebAPI.Controllers {
                         CurrentPage = page,
                         PageSize = pageSize
                     };
-                    return Ok(ApiResponse<PaginatedResult<RegistrationDto>>.Success(result));
+                    return Ok(result);
                 }
 
                 // 使用分页查询服务 (简化版本，只保留基本搜索功能)
@@ -84,10 +84,10 @@ namespace LYBT.WebAPI.Controllers {
                 
                 var (_, _, operatorRole) = GetOperator();
                 var pagedResult = await _registrationService.GetPagedAsync(query, operatorRole);
-                return Ok(ApiResponse<PaginatedResult<RegistrationDto>>.Success(pagedResult));
+                return Ok(pagedResult);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取挂号列表失败");
-                return StatusCode(500, ApiResponse<PaginatedResult<RegistrationDto>>.Fail("获取挂号列表失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取挂号列表失败", Status = 500 });
             }
         }
 
@@ -95,20 +95,20 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取挂号详情
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<RegistrationDetailDto>>> GetById(Guid id) {
+        public async Task<ActionResult<RegistrationDetailDto>> GetById(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<RegistrationDetailDto>.Fail("挂号ID不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "挂号ID不能为空", Status = 400 });
                 }
 
                 var detail = await _registrationService.GetByIdAsync(id);
                 if (detail == null) {
-                    return NotFound(ApiResponse<RegistrationDetailDto>.Fail("挂号记录不存在", 404));
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "挂号记录不存在", Status = 404 });
                 }
-                return Ok(ApiResponse<RegistrationDetailDto>.Success(detail));
+                return Ok(detail);
             } catch (Exception ex) {
                 _logger.LogError(ex, "获取挂号详情失败，ID: {RegistrationId}", id);
-                return StatusCode(500, ApiResponse<RegistrationDetailDto>.Fail("获取挂号详情失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "获取挂号详情失败", Status = 500 });
             }
         }
 
@@ -116,24 +116,24 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增挂号
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<object>>> Add([FromBody] RegistrationCreateDto dto) {
+        public async Task<ActionResult<object>> Add([FromBody] RegistrationCreateDto dto) {
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{errors}", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _registrationService.AddAsync(dto);
                 if (!result) {
-                    return BadRequest(ApiResponse<object>.Fail("新增挂号失败", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "新增挂号失败", Status = 400 });
                 }
 
                 _logger.LogInformation("新增挂号成功，操作者: {OperatorName}({OperatorId})", operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "新增挂号成功"));
+                return Ok(new { message = "新增挂号成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "新增挂号失败");
-                return StatusCode(500, ApiResponse<object>.Fail("新增挂号失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "新增挂号失败", Status = 500 });
             }
         }
 
@@ -141,24 +141,24 @@ namespace LYBT.WebAPI.Controllers {
         /// 编辑挂号
         /// </summary>
         [HttpPut]
-        public async Task<ActionResult<ApiResponse<object>>> Update([FromBody] RegistrationEditDto dto) {
+        public async Task<ActionResult<object>> Update([FromBody] RegistrationEditDto dto) {
             try {
                 if (!ModelState.IsValid) {
                     var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    return BadRequest(ApiResponse<object>.Fail($"参数验证失败：{errors}", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = $"参数验证失败：{errors}", Status = 400 });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _registrationService.UpdateAsync(dto);
                 if (!result) {
-                    return BadRequest(ApiResponse<object>.Fail("编辑挂号失败", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "编辑挂号失败", Status = 400 });
                 }
 
                 _logger.LogInformation("编辑挂号成功，挂号ID: {RegistrationId}，操作者: {OperatorName}({OperatorId})", dto.Id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "编辑挂号成功"));
+                return Ok(new { message = "编辑挂号成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "编辑挂号失败，挂号ID: {RegistrationId}", dto.Id);
-                return StatusCode(500, ApiResponse<object>.Fail("编辑挂号失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "编辑挂号失败", Status = 500 });
             }
         }
 
@@ -166,23 +166,23 @@ namespace LYBT.WebAPI.Controllers {
         /// 删除挂号
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id) {
+        public async Task<ActionResult<object>> Delete(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<object>.Fail("挂号ID不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "挂号ID不能为空", Status = 400 });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _registrationService.DeleteAsync(id);
                 if (!result) {
-                    return NotFound(ApiResponse<object>.Fail("挂号记录不存在", 404));
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "挂号记录不存在", Status = 404 });
                 }
 
                 _logger.LogInformation("删除挂号成功，挂号ID: {RegistrationId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "删除挂号成功"));
+                return Ok(new { message = "删除挂号成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "删除挂号失败，挂号ID: {RegistrationId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("删除挂号失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "删除挂号失败", Status = 500 });
             }
         }
 
@@ -190,23 +190,23 @@ namespace LYBT.WebAPI.Controllers {
         /// 取消挂号（软删除）
         /// </summary>
         [HttpPost("cancel/{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Cancel(Guid id) {
+        public async Task<ActionResult<object>> Cancel(Guid id) {
             try {
                 if (id == Guid.Empty) {
-                    return BadRequest(ApiResponse<object>.Fail("挂号ID不能为空", 400));
+                    return BadRequest(new ProblemDetails { Title = "参数错误", Detail = "挂号ID不能为空", Status = 400 });
                 }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _registrationService.CancelAsync(id);
                 if (!result) {
-                    return NotFound(ApiResponse<object>.Fail("挂号记录不存在", 404));
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "挂号记录不存在", Status = 404 });
                 }
 
                 _logger.LogInformation("取消挂号成功，挂号ID: {RegistrationId}，操作者: {OperatorName}({OperatorId})", id, operatorName, operatorId);
-                return Ok(ApiResponse<object>.Success(new { }, "取消挂号成功"));
+                return Ok(new { message = "取消挂号成功" });
             } catch (Exception ex) {
                 _logger.LogError(ex, "取消挂号失败，挂号ID: {RegistrationId}", id);
-                return StatusCode(500, ApiResponse<object>.Fail("取消挂号失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "取消挂号失败", Status = 500 });
             }
         }
 
@@ -214,14 +214,14 @@ namespace LYBT.WebAPI.Controllers {
         /// 分页查询挂号列表
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<RegistrationDto>>>> GetPaged([FromBody] LYBT.Shared.Models.Common.PaginationRequest query) {
+        public async Task<ActionResult<PaginatedResult<RegistrationDto>>> GetPaged([FromBody] LYBT.Shared.Models.Common.PaginationRequest query) {
             try {
                 var (_, _, operatorRole) = GetOperator();
                 var result = await _registrationService.GetPagedAsync(query, operatorRole);
-                return Ok(ApiResponse<PaginatedResult<RegistrationDto>>.Success(result));
+                return Ok(result);
             } catch (Exception ex) {
                 _logger.LogError(ex, "分页查询挂号失败");
-                return StatusCode(500, ApiResponse<PaginatedResult<RegistrationDto>>.Fail("分页查询挂号失败", 500));
+                return StatusCode(500, new ProblemDetails { Title = "服务器内部错误", Detail = "分页查询挂号失败", Status = 500 });
             }
         }
     }
