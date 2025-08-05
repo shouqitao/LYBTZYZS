@@ -1,234 +1,257 @@
 <UserControl x:Class="LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views.RegistrationManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
-             prism:ViewModelLocator.AutoWireViewModel="True"
-             mc:Ignorable="d"
-             d:DesignHeight="700" d:DesignWidth="1000">
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Styles/ManagementViewStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="#2196F3" Padding="20,15">
-            <TextBlock Text="挂号管理" FontSize="20" FontWeight="Bold" Foreground="White"/>
-        </Border>
-
-        <!-- 搜索栏 -->
-        <Border Grid.Row="1" Background="White" Padding="20,15" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+        <!-- 工具栏 -->
+        <Border Grid.Row="0" Style="{StaticResource ToolBarBorder}">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <TextBlock Grid.Column="0" Text="患者姓名:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBox Grid.Column="1" Text="{Binding SearchPatientName}" VerticalAlignment="Center"/>
+                <!-- 搜索区域 -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="患者姓名：" Style="{StaticResource LabelText}"/>
+                    <TextBox Style="{StaticResource SearchTextBox}"
+                             Width="150"
+                             Text="{Binding SearchPatientName, UpdateSourceTrigger=PropertyChanged}"/>
+                    
+                    <TextBlock Text="就诊日期：" Style="{StaticResource LabelText}" Margin="20,0,10,0"/>
+                    <DatePicker SelectedDate="{Binding SearchDate}" 
+                                VerticalAlignment="Center"
+                                Width="150"/>
+                    
+                    <TextBlock Text="挂号状态：" Style="{StaticResource LabelText}" Margin="20,0,10,0"/>
+                    <ComboBox SelectedItem="{Binding SelectedStatus}" 
+                              ItemsSource="{Binding StatusList}" 
+                              VerticalAlignment="Center"
+                              Width="120"/>
+                    
+                    <TextBlock Text="科室：" Style="{StaticResource LabelText}" Margin="20,0,10,0"/>
+                    <ComboBox SelectedItem="{Binding SelectedDepartment}" 
+                              ItemsSource="{Binding DepartmentList}" 
+                              VerticalAlignment="Center"
+                              Width="120"/>
+                    
+                    <Button Content="搜索" 
+                            Margin="20,0,10,0"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding SearchCommand}"/>
+                    <Button Content="重置" 
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ResetCommand}"/>
+                </StackPanel>
 
-                <TextBlock Grid.Column="2" Text="就诊日期:" VerticalAlignment="Center" Margin="20,0,10,0"/>
-                <DatePicker Grid.Column="3" SelectedDate="{Binding SearchDate}" VerticalAlignment="Center"/>
-
-                <TextBlock Grid.Column="4" Text="挂号状态:" VerticalAlignment="Center" Margin="20,0,10,0"/>
-                <ComboBox Grid.Column="5" SelectedItem="{Binding SelectedStatus}" ItemsSource="{Binding StatusList}" 
-                          VerticalAlignment="Center"/>
-
-                <TextBlock Grid.Column="6" Text="科室:" VerticalAlignment="Center" Margin="20,0,10,0"/>
-                <ComboBox Grid.Column="7" SelectedItem="{Binding SelectedDepartment}" ItemsSource="{Binding DepartmentList}" 
-                          VerticalAlignment="Center"/>
-
-                <StackPanel Grid.Column="9" Orientation="Horizontal">
-                    <Button Content="搜索" Command="{Binding SearchCommand}" Width="80" Height="30" Margin="0,0,10,0"
-                            Background="#2196F3" Foreground="White" BorderThickness="0"/>
-                    <Button Content="重置" Command="{Binding ResetCommand}" Width="80" Height="30"
-                            Background="#757575" Foreground="White" BorderThickness="0"/>
+                <!-- 操作按钮区域 -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <Button Content="+ 新增挂号" 
+                            Margin="0,0,10,0"
+                            Style="{StaticResource SuccessButton}"
+                            Command="{Binding AddRegistrationCommand}"/>
+                    <Button Content="批量取消" 
+                            Margin="0,0,10,0"
+                            Style="{StaticResource DangerButton}"
+                            Command="{Binding BatchCancelCommand}"/>
+                    <Button Content="导出列表" 
+                            Margin="0,0,10,0"
+                            Style="{StaticResource InfoButton}"
+                            Command="{Binding ExportCommand}"/>
+                    <Button Content="刷新" 
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding RefreshCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- 工具栏 -->
-        <Border Grid.Row="1" Background="#F5F5F5" Padding="20,10" Margin="0,50,0,0">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="新增挂号" Command="{Binding AddRegistrationCommand}" 
-                        Width="100" Height="35" Margin="0,0,10,0"
-                        Background="#4CAF50" Foreground="White" BorderThickness="0">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="5"
-                                                Padding="{TemplateBinding Padding}">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#388E3C"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                </Button>
-                <Button Content="批量取消" Command="{Binding BatchCancelCommand}" 
-                        Width="100" Height="35" Margin="0,0,10,0"
-                        Background="#FF5722" Foreground="White" BorderThickness="0"/>
-                <Button Content="导出列表" Command="{Binding ExportCommand}" 
-                        Width="100" Height="35" Margin="0,0,10,0"
-                        Background="#607D8B" Foreground="White" BorderThickness="0"/>
-                <Button Content="刷新" Command="{Binding RefreshCommand}" 
-                        Width="80" Height="35" 
-                        Background="#9E9E9E" Foreground="White" BorderThickness="0"/>
-            </StackPanel>
-        </Border>
-
-        <!-- 数据列表 -->
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Registrations}" SelectedItem="{Binding SelectedRegistration}"
-                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                  HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                  BorderThickness="0" Background="White" Margin="20,10">
-            <DataGrid.ColumnHeaderStyle>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="#F5F5F5"/>
-                    <Setter Property="Height" Value="40"/>
-                    <Setter Property="FontWeight" Value="Bold"/>
-                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
-                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                </Style>
-            </DataGrid.ColumnHeaderStyle>
+        <!-- 数据表格 -->
+        <DataGrid Grid.Row="1" 
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding SelectedItem}"
+                  Style="{StaticResource ManagementDataGrid}"
+                  RowStyle="{StaticResource DataGridRowStyle}"
+                  ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="" Width="40" Binding="{Binding IsSelected}"/>
-                <DataGridTextColumn Header="挂号单号" Binding="{Binding RegistrationNumber}" Width="120"/>
-                <DataGridTextColumn Header="患者姓名" Binding="{Binding PatientName}" Width="100"/>
-                <DataGridTextColumn Header="患者电话" Binding="{Binding PatientPhone}" Width="100"/>
-                <DataGridTextColumn Header="科室" Binding="{Binding Department}" Width="100"/>
-                <DataGridTextColumn Header="医生" Binding="{Binding DoctorName}" Width="100"/>
-                <DataGridTextColumn Header="挂号类型" Binding="{Binding RegistrationTypeName}" Width="80"/>
-                <DataGridTextColumn Header="预约日期" Binding="{Binding AppointmentDate, StringFormat={}{0:yyyy-MM-dd}}" Width="100"/>
-                <DataGridTextColumn Header="时段" Binding="{Binding AppointmentTimeSlot}" Width="80"/>
-                <DataGridTextColumn Header="挂号费" Binding="{Binding RegistrationFee, StringFormat={}{0:C}}" Width="80"/>
-                <DataGridTextColumn Header="支付状态" Binding="{Binding PaymentStatusName}" Width="80">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsPaid}" Value="True">
-                                    <Setter Property="Foreground" Value="#4CAF50"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsPaid}" Value="False">
-                                    <Setter Property="Foreground" Value="#F44336"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="状态" Binding="{Binding StatusName}" Width="80">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding StatusName}" Value="已预约">
-                                    <Setter Property="Foreground" Value="#2196F3"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding StatusName}" Value="已到达">
-                                    <Setter Property="Foreground" Value="#FF9800"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding StatusName}" Value="就诊中">
-                                    <Setter Property="Foreground" Value="#9C27B0"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding StatusName}" Value="已完成">
-                                    <Setter Property="Foreground" Value="#4CAF50"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding StatusName}" Value="已取消">
-                                    <Setter Property="Foreground" Value="#F44336"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding StatusName}" Value="爽约">
-                                    <Setter Property="Foreground" Value="#795548"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding StatusName}" Value="已过期">
-                                    <Setter Property="Foreground" Value="#9E9E9E"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="挂号时间" Binding="{Binding CreateTime, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Width="140"/>
+                <!-- 选择框 -->
+                <DataGridCheckBoxColumn Header="" 
+                                        Width="40" 
+                                        Binding="{Binding IsSelected}"/>
+                
+                <!-- 挂号单号 -->
+                <DataGridTextColumn Header="挂号单号" 
+                                    Binding="{Binding RegistrationNumber}" 
+                                    Width="120"/>
+                
+                <!-- 患者姓名 -->
+                <DataGridTextColumn Header="患者姓名" 
+                                    Binding="{Binding PatientName}" 
+                                    Width="100"/>
+                
+                <!-- 患者电话 -->
+                <DataGridTextColumn Header="患者电话" 
+                                    Binding="{Binding PatientPhone}" 
+                                    Width="110"/>
+                
+                <!-- 科室 -->
+                <DataGridTextColumn Header="科室" 
+                                    Binding="{Binding Department}" 
+                                    Width="100"/>
+                
+                <!-- 医生 -->
+                <DataGridTextColumn Header="医生" 
+                                    Binding="{Binding DoctorName}" 
+                                    Width="100"/>
+                
+                <!-- 挂号类型 -->
+                <DataGridTextColumn Header="挂号类型" 
+                                    Binding="{Binding RegistrationTypeName}" 
+                                    Width="80"/>
+                
+                <!-- 预约日期 -->
+                <DataGridTextColumn Header="预约日期" 
+                                    Binding="{Binding AppointmentDate, StringFormat='{}{0:yyyy-MM-dd}'}" 
+                                    Width="100"/>
+                
+                <!-- 时段 -->
+                <DataGridTextColumn Header="时段" 
+                                    Binding="{Binding AppointmentTimeSlot}" 
+                                    Width="80"/>
+                
+                <!-- 挂号费 -->
+                <DataGridTextColumn Header="挂号费" 
+                                    Binding="{Binding RegistrationFee, StringFormat='¥{0:F2}'}" 
+                                    Width="80"/>
+                
+                <!-- 支付状态 -->
+                <DataGridTemplateColumn Header="支付状态" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Background="{Binding PaymentStatusColor}" 
+                                    CornerRadius="3" 
+                                    Padding="8,4"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding PaymentStatusName}" 
+                                           Foreground="White" 
+                                           FontSize="12"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <!-- 状态 -->
+                <DataGridTemplateColumn Header="状态" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Background="{Binding StatusColor}" 
+                                    CornerRadius="3" 
+                                    Padding="8,4"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding StatusName}" 
+                                           Foreground="White" 
+                                           FontSize="12"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <!-- 挂号时间 -->
+                <DataGridTextColumn Header="挂号时间" 
+                                    Binding="{Binding CreateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" 
+                                    Width="140"/>
+                
+                <!-- 操作 -->
                 <DataGridTemplateColumn Header="操作" Width="200">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="查看" Command="{Binding DataContext.ViewCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="查看" 
+                                        Style="{StaticResource PrimaryButton}"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        Margin="2"
+                                        Command="{Binding DataContext.ViewCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Content="编辑" 
+                                        Style="{StaticResource SuccessButton}"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        Margin="2"
+                                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
-                                        Width="50" Height="25" Margin="2"
-                                        Background="#2196F3" Foreground="White" BorderThickness="0"/>
-                                <Button Content="编辑" Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}"
-                                        Width="50" Height="25" Margin="2"
-                                        Background="#FF9800" Foreground="White" BorderThickness="0"
                                         Visibility="{Binding CanEdit, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                <Button Content="取消" Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                <Button Content="取消" 
+                                        Style="{StaticResource DangerButton}"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        Margin="2"
+                                        Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
-                                        Width="50" Height="25" Margin="2"
-                                        Background="#F44336" Foreground="White" BorderThickness="0"
                                         Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
-            <DataGrid.RowStyle>
-                <Style TargetType="DataGridRow">
-                    <Setter Property="Height" Value="45"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#E3F2FD"/>
-                        </Trigger>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="#BBDEFB"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </DataGrid.RowStyle>
         </DataGrid>
 
-        <!-- 分页栏 -->
-        <Border Grid.Row="3" Background="#F5F5F5" Padding="20,10">
+        <!-- 状态栏和分页 -->
+        <Border Grid.Row="2" Style="{StaticResource StatusBarBorder}">
             <Grid>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                    <TextBlock Text="共 " VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding TotalCount}" VerticalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Text=" 条记录" VerticalAlignment="Center"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBlock Text="每页显示:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <ComboBox SelectedItem="{Binding PageSize}" Width="60" Margin="0,0,20,0">
-                        <ComboBoxItem>10</ComboBoxItem>
-                        <ComboBoxItem>20</ComboBoxItem>
-                        <ComboBoxItem>50</ComboBoxItem>
-                        <ComboBoxItem>100</ComboBoxItem>
-                    </ComboBox>
-                    <Button Content="上一页" Command="{Binding PreviousPageCommand}" 
-                            Width="60" Height="25" Margin="0,0,5,0"/>
-                    <TextBlock VerticalAlignment="Center">
-                        <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
-                        <Run Text=" / "/>
-                        <Run Text="{Binding TotalPages, Mode=OneWay}"/>
-                    </TextBlock>
-                    <Button Content="下一页" Command="{Binding NextPageCommand}" 
-                            Width="60" Height="25" Margin="5,0,0,0"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 统计信息 -->
+                <TextBlock Grid.Column="0" 
+                           Style="{StaticResource StatusText}"
+                           Text="{Binding StatusText}"/>
+
+                <!-- 分页控件 -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <Button Content="首页" 
+                            Style="{StaticResource PaginationButton}"
+                            Command="{Binding FirstPageCommand}"/>
+                    
+                    <Button Content="上一页" 
+                            Style="{StaticResource PaginationButton}"
+                            Command="{Binding PreviousPageCommand}"/>
+                    
+                    <Border Style="{StaticResource PageNumberBorder}">
+                        <TextBlock FontWeight="Bold" FontSize="13">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} / {1}">
+                                    <Binding Path="CurrentPage"/>
+                                    <Binding Path="TotalPages"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Border>
+                    
+                    <Button Content="下一页" 
+                            Style="{StaticResource PaginationButton}"
+                            Command="{Binding NextPageCommand}"/>
+                    
+                    <Button Content="末页" 
+                            Style="{StaticResource PaginationButton}"
+                            Command="{Binding LastPageCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>

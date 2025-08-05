@@ -3,6 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Styles/ManagementViewStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -11,7 +19,7 @@
         </Grid.RowDefinitions>
 
         <!-- 工具栏 -->
-        <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,0,0,1" Padding="20,15">
+        <Border Grid.Row="0" Style="{StaticResource ToolBarBorder}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -20,359 +28,153 @@
 
                 <!-- 搜索区域 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Text="搜索：" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"/>
-                    <TextBox Width="250" Height="32" 
-                             Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
-                             VerticalContentAlignment="Center"
-                             Padding="8,0"
-                             BorderBrush="#CED4DA"
-                             BorderThickness="1">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="TextBox">
-                                            <Border Background="White" 
-                                                    BorderBrush="{TemplateBinding BorderBrush}" 
-                                                    BorderThickness="{TemplateBinding BorderThickness}" 
-                                                    CornerRadius="4">
-                                                <ScrollViewer x:Name="PART_ContentHost" 
-                                                              Margin="{TemplateBinding Padding}"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </TextBox.Style>
+                    <TextBlock Text="搜索：" Style="{StaticResource LabelText}"/>
+                    <TextBox Style="{StaticResource SearchTextBox}"
+                             Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                        </TextBox.InputBindings>
                     </TextBox>
                     <Button Content="搜索" 
-                            Margin="10,0,0,0" 
-                            Padding="15,5"
-                            Background="#007BFF" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            Command="{Binding SearchCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="4"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#0056B3"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Margin="10,0,0,0"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding SearchCommand}"/>
                 </StackPanel>
 
                 <!-- 操作按钮区域 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Content="新增药材" 
-                            Padding="15,5" 
+                    <Button Content="+ 新增药材" 
                             Margin="0,0,10,0"
-                            Background="#28A745" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            Command="{Binding AddHerbCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="4"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#1E7E34"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Style="{StaticResource SuccessButton}"
+                            Command="{Binding AddCommand}"/>
                     <Button Content="导入药材" 
-                            Padding="15,5" 
                             Margin="0,0,10,0"
-                            Background="#17A2B8" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            Command="{Binding ImportHerbsCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="4"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#138496"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                    <Button Content="导出药材" 
-                            Padding="15,5" 
-                            Margin="0,0,10,0"
-                            Background="#FFC107" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            Command="{Binding ExportHerbsCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="4"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#E0A800"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Style="{StaticResource InfoButton}"
+                            Command="{Binding ImportHerbsCommand}"/>
                     <Button Content="导出模板" 
-                            Padding="15,5" 
                             Margin="0,0,10,0"
-                            Background="#6F42C1" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            Command="{Binding ExportTemplateCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="4"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#5936A0"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ExportTemplateCommand}"/>
                     <Button Content="刷新" 
-                            Padding="15,5"
-                            Background="#6C757D" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            Command="{Binding RefreshCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="4"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#545B62"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding RefreshCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- 药材列表 -->
+        <!-- 数据表格 -->
         <DataGrid Grid.Row="1" 
-                  ItemsSource="{Binding Herbs}" 
-                  SelectedItem="{Binding SelectedHerb}"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  GridLinesVisibility="Horizontal"
-                  HeadersVisibility="Column"
-                  SelectionMode="Single"
-                  AlternatingRowBackground="#F8F9FA"
-                  RowBackground="White">
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding SelectedItem}"
+                  Style="{StaticResource ManagementDataGrid}"
+                  RowStyle="{StaticResource DataGridRowStyle}"
+                  ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="药材名称" Binding="{Binding Name}" Width="150" IsReadOnly="True"/>
-                <DataGridTextColumn Header="拼音码" Binding="{Binding PinYinCode}" Width="100" IsReadOnly="True"/>
-                <DataGridTextColumn Header="产地" Binding="{Binding Origin}" Width="120" IsReadOnly="True"/>
-                <DataGridTextColumn Header="规格" Binding="{Binding Spec}" Width="80" IsReadOnly="True"/>
-                <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="60" IsReadOnly="True"/>
-                <DataGridTextColumn Header="单价" Binding="{Binding Price, StringFormat=F2}" Width="80" IsReadOnly="True"/>
-                <DataGridTextColumn Header="库存" Binding="{Binding Stock}" Width="60" IsReadOnly="True"/>
-                <DataGridTextColumn Header="库存状态" Binding="{Binding StockStatusDescription}" Width="80" IsReadOnly="True">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding StockStatusDescription}" Value="缺货">
-                                    <Setter Property="Foreground" Value="Red"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding StockStatusDescription}" Value="库存不足">
-                                    <Setter Property="Foreground" Value="Orange"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="批号" Binding="{Binding BatchNo}" Width="100" IsReadOnly="True"/>
-                <DataGridTextColumn Header="有效期" Binding="{Binding ExpireDate, StringFormat=yyyy-MM-dd}" Width="100" IsReadOnly="True">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsExpired}" Value="True">
-                                    <Setter Property="Foreground" Value="Red"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="功效" Binding="{Binding Effect}" Width="200" IsReadOnly="True"/>
-                <DataGridTemplateColumn Header="操作" Width="180">
+                <!-- 药材名称 -->
+                <DataGridTextColumn Header="药材名称" 
+                                    Binding="{Binding Name}" 
+                                    Width="120"/>
+                
+                <!-- 拼音码 -->
+                <DataGridTextColumn Header="拼音码" 
+                                    Binding="{Binding PinYinCode}" 
+                                    Width="80"/>
+                
+                <!-- 产地 -->
+                <DataGridTextColumn Header="产地" 
+                                    Binding="{Binding Origin}" 
+                                    Width="100"/>
+                
+                <!-- 规格 -->
+                <DataGridTextColumn Header="规格" 
+                                    Binding="{Binding Spec}" 
+                                    Width="80"/>
+                
+                <!-- 单位 -->
+                <DataGridTextColumn Header="单位" 
+                                    Binding="{Binding Unit}" 
+                                    Width="60"/>
+                
+                <!-- 单价 -->
+                <DataGridTextColumn Header="单价(元)" 
+                                    Binding="{Binding Price, StringFormat='{}{0:F2}'}" 
+                                    Width="80"/>
+                
+                <!-- 库存 -->
+                <DataGridTemplateColumn Header="库存" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{Binding Stock}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                                                <Setter Property="Foreground" Value="#DC3545"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <!-- 功效 -->
+                <DataGridTextColumn Header="功效" 
+                                    Binding="{Binding Effect}" 
+                                    Width="200"/>
+                
+                <!-- 状态 -->
+                <DataGridTemplateColumn Header="状态" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Background="{Binding StatusColor}" 
+                                    CornerRadius="3" 
+                                    Padding="8,4"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding StatusText}" 
+                                           Foreground="White" 
+                                           FontSize="12"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <!-- 操作 -->
+                <DataGridTemplateColumn Header="操作" Width="260">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="查看" 
+                                        Style="{StaticResource PrimaryButton}"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        Margin="2"
+                                        Command="{Binding DataContext.ViewCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"/>
                                 <Button Content="编辑" 
-                                        Padding="8,4" 
-                                        Margin="2"
-                                        Background="#FFC107" 
-                                        Foreground="White" 
-                                        BorderThickness="0"
+                                        Style="{StaticResource SuccessButton}"
+                                        Padding="8,4"
                                         FontSize="12"
-                                        Command="{Binding DataContext.EditHerbCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                CornerRadius="3"
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" 
-                                                                              VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#E0A800"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                                <Button Content="删除" 
-                                        Padding="8,4" 
                                         Margin="2"
-                                        Background="#DC3545" 
-                                        Foreground="White" 
-                                        BorderThickness="0"
-                                        FontSize="12"
-                                        Command="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                CornerRadius="3"
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" 
-                                                                              VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#C82333"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
+                                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"/>
                                 <Button Content="库存" 
-                                        Padding="8,4" 
-                                        Margin="2"
-                                        Background="#17A2B8" 
-                                        Foreground="White" 
-                                        BorderThickness="0"
+                                        Style="{StaticResource InfoButton}"
+                                        Padding="8,4"
                                         FontSize="12"
+                                        Margin="2"
                                         Command="{Binding DataContext.ManageStockCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                CornerRadius="3"
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" 
-                                                                              VerticalAlignment="Center"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#138496"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
+                                        CommandParameter="{Binding}"/>
+                                <Button Content="删除" 
+                                        Style="{StaticResource DangerButton}"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        Margin="2"
+                                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -380,8 +182,8 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- 分页控件 -->
-        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,0" Padding="20,10">
+        <!-- 状态栏和分页 -->
+        <Border Grid.Row="2" Style="{StaticResource StatusBarBorder}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -389,149 +191,51 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- 统计信息 -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding StatusText}" 
-                               FontSize="14" 
-                               Foreground="#6C757D" 
-                               Margin="0,0,20,0"/>
-                    <TextBlock Text="库存预警: " 
-                               FontSize="14" 
-                               Foreground="#6C757D"/>
-                    <TextBlock Text="{Binding LowStockCount}" 
-                               FontSize="14" 
-                               Foreground="Orange" 
-                               FontWeight="Bold"/>
-                    <TextBlock Text=" 种药材库存不足" 
-                               FontSize="14" 
-                               Foreground="#6C757D"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource StatusText}"
+                               Text="{Binding StatusText}"/>
+                    <TextBlock Style="{StaticResource StatusText}"
+                               Margin="20,0,0,0"
+                               Foreground="#DC3545"
+                               FontWeight="Bold">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="库存不足：{0} 种">
+                                <Binding Path="LowStockCount"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
                 </StackPanel>
 
                 <!-- 分页控件 -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
                     <Button Content="首页" 
-                            Padding="8,4" 
-                            Margin="2"
-                            Background="#6C757D" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            FontSize="12"
-                            Command="{Binding FirstPageCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="3"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#545B62"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Style="{StaticResource PaginationButton}"
+                            Command="{Binding FirstPageCommand}"/>
+                    
                     <Button Content="上一页" 
-                            Padding="8,4" 
-                            Margin="2"
-                            Background="#6C757D" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            FontSize="12"
-                            Command="{Binding PreviousPageCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="3"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#545B62"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                    <TextBlock Text="{Binding CurrentPage}" 
-                               VerticalAlignment="Center" 
-                               Margin="10,0" 
-                               FontWeight="SemiBold"/>
+                            Style="{StaticResource PaginationButton}"
+                            Command="{Binding PreviousPageCommand}"/>
+                    
+                    <Border Style="{StaticResource PageNumberBorder}">
+                        <TextBlock FontWeight="Bold" FontSize="13">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} / {1}">
+                                    <Binding Path="CurrentPage"/>
+                                    <Binding Path="TotalPages"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Border>
+                    
                     <Button Content="下一页" 
-                            Padding="8,4" 
-                            Margin="2"
-                            Background="#6C757D" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            FontSize="12"
-                            Command="{Binding NextPageCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="3"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#545B62"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Style="{StaticResource PaginationButton}"
+                            Command="{Binding NextPageCommand}"/>
+                    
                     <Button Content="末页" 
-                            Padding="8,4" 
-                            Margin="2"
-                            Background="#6C757D" 
-                            Foreground="White" 
-                            BorderThickness="0"
-                            FontSize="12"
-                            Command="{Binding LastPageCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="3"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                  VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#545B62"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            Style="{StaticResource PaginationButton}"
+                            Command="{Binding LastPageCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>
