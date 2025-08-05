@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
+    <ProjectReference Include="..\..\..\Backend\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

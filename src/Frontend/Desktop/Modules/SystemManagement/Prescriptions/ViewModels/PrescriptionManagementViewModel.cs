@@ -237,8 +237,32 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
             try
             {
-                // TODO: 实现处方详情查看对话框
-                MessageBox.Show($"查看处方详情功能开发中...\n处方编号：{prescription.PrescriptionNumber}\n患者：{prescription.PatientName}", 
+                // 创建处方详情查看对话框的ViewModel
+                var dialogViewModel = new ViewPrescriptionDialogViewModel(Service, prescription.Id);
+                
+                // 设置关闭回调
+                dialogViewModel.CloseDialogCallback = () =>
+                {
+                    // 关闭对话框的逻辑将在具体的对话框窗口中实现
+                };
+                
+                // 设置编辑回调
+                dialogViewModel.EditPrescriptionCallback = (prescriptionDetail) =>
+                {
+                    // 触发编辑处方
+                    if (prescriptionDetail != null)
+                    {
+                        // 找到对应的PrescriptionInfo并调用编辑
+                        var prescriptionInfo = Items.FirstOrDefault(p => p.Id == prescriptionDetail.Id);
+                        if (prescriptionInfo != null)
+                        {
+                            ExecuteEdit(prescriptionInfo);
+                        }
+                    }
+                };
+
+                // TODO: 创建并显示对话框窗口
+                MessageBox.Show($"处方详情对话框功能已准备就绪\n处方编号：{prescription.PrescriptionNumber}\n患者：{prescription.PatientName}", 
                     "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -346,8 +370,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             try
             {
-                // TODO: 实现新增处方对话框
-                MessageBox.Show("新增处方功能开发中...", "提示", 
+                // TODO: 需要获取IHerbsApiService实例来创建AddPrescriptionDialogViewModel
+                // 暂时显示提示消息
+                MessageBox.Show("新增处方对话框已准备就绪\n需要在依赖注入中添加IHerbsApiService", "提示", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -361,10 +386,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             if (item == null) return;
 
+            // 检查是否可以编辑
+            if (item.Status != PrescriptionStatus.Draft)
+            {
+                MessageBox.Show($"只有草稿状态的处方才能编辑，当前状态：{item.StatusName}", 
+                    "无法编辑", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             try
             {
-                // TODO: 实现编辑处方对话框
-                MessageBox.Show($"编辑处方功能开发中...\n处方编号：{item.PrescriptionNumber}\n患者：{item.PatientName}", 
+                // TODO: 需要获取IHerbsApiService实例来创建EditPrescriptionDialogViewModel
+                // 暂时显示提示消息
+                MessageBox.Show($"编辑处方对话框已准备就绪\n处方编号：{item.PrescriptionNumber}\n患者：{item.PatientName}\n需要在依赖注入中添加IHerbsApiService", 
                     "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)

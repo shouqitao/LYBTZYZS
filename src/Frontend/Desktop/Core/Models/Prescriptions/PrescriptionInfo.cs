@@ -33,11 +33,13 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions {
         private string GetStatusName() {
             return Status switch {
                 PrescriptionStatus.Draft => "草稿",
+                PrescriptionStatus.Issued => "已开具",
                 PrescriptionStatus.Confirmed => "已确认",
-                PrescriptionStatus.Dispensed => "已发药",
+                PrescriptionStatus.Dispensed => "已调配",
                 PrescriptionStatus.Completed => "已完成",
                 PrescriptionStatus.Cancelled => "已取消",
-                _ => "未知"
+                PrescriptionStatus.Voided => "已作废",
+                _ => "未知状态"
             };
         }
     }

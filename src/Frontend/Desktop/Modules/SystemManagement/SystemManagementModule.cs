@@ -8,7 +8,7 @@ using LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Roles.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Settings.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Backup.Views;
-// using LYBT.WPF.Client.Modules.SystemManagement.Logs.Views; // TODO: 待实现
+using LYBT.WPF.Client.Modules.SystemManagement.Logs.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Doctors.Views;
@@ -51,7 +51,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             containerRegistry.RegisterForNavigation<BackupView>();
             
             // 注册系统日志视图
-            // containerRegistry.RegisterForNavigation<SystemLogsView>(); // TODO: 待实现
+            containerRegistry.RegisterForNavigation<SystemLogsView>();
             
             // 注册中药材管理视图
             containerRegistry.RegisterForNavigation<HerbManagementView>();

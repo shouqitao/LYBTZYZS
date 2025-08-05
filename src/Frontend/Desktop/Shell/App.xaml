@@ -9,6 +9,7 @@
     <Application.Resources>
         <!-- 全局转换器 -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         
         <!-- Core Converters -->
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
@@ -21,6 +22,9 @@
         
         <!-- 反向布尔转换器 -->
         <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <converters:IndexToNumberConverter x:Key="IndexToNumberConverter"/>
+        <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
         
         <!-- 全局样式 -->
         <Style TargetType="TextBlock">

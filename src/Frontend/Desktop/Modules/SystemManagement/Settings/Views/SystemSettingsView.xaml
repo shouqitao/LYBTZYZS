@@ -3,13 +3,367 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <Grid>
-        <Border Background="#F8F9FA" CornerRadius="8" Margin="20">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="⚙️" FontSize="72" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                <TextBlock Text="系统设置" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                <TextBlock Text="功能开发中..." FontSize="16" Foreground="#666" HorizontalAlignment="Center"/>
+
+    <UserControl.Resources>
+        <!-- 圆角边框样式 -->
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Gray" Direction="315" ShadowDepth="2" BlurRadius="5" Opacity="0.2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 按钮样式 -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="Margin" Value="5,0"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#007BFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#0056B3"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#004085"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#CCCCCC"/>
+                                <Setter Property="Foreground" Value="#999999"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 标签样式 -->
+        <Style x:Key="FormLabelStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#333333"/>
+        </Style>
+
+        <!-- 输入框样式 -->
+        <Style x:Key="FormInputStyle" TargetType="Control">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="0,5"/>
+            <Setter Property="Padding" Value="8,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="#F8F9FA">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="20">
+                
+                <!-- 标题栏 -->
+                <Grid Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="⚙️" FontSize="28" Margin="0,0,10,0"/>
+                        <TextBlock Text="系统设置管理" FontSize="24" FontWeight="Bold" Foreground="#333333"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="刷新缓存" Command="{Binding RefreshCacheCommand}" Style="{StaticResource ActionButtonStyle}" Background="#17A2B8"/>
+                        <Button Content="重新加载" Command="{Binding LoadGlobalSettingsCommand}" Style="{StaticResource ActionButtonStyle}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Tab控件 -->
+                <TabControl>
+                    <!-- 全局设置标签页 -->
+                    <TabItem Header="全局设置" FontSize="14">
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="10">
+                            <StackPanel>
+                                <!-- 加载指示器 -->
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                            Visibility="{Binding IsGlobalSettingsLoading, Converter={StaticResource BoolToVisibilityConverter}}" 
+                                            Margin="0,50,0,50">
+                                    <TextBlock Text="正在加载全局设置..." FontSize="14" Foreground="#666666" HorizontalAlignment="Center"/>
+                                    <ProgressBar Width="200" Height="4" Margin="0,10,0,0" IsIndeterminate="True"/>
+                                </StackPanel>
+
+                                <!-- 全局设置表单 -->
+                                <Grid Visibility="{Binding IsGlobalSettingsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 左侧列 -->
+                                    <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                                        <TextBlock Text="基本信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                                        
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="系统名称：" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBox Grid.Column="1" Text="{Binding GlobalSettings.SystemName}" Style="{StaticResource FormInputStyle}"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="系统版本：" Style="{StaticResource FormLabelStyle}"/>
+                                            <TextBox Grid.Column="1" Text="{Binding GlobalSettings.SystemVersion}" Style="{StaticResource FormInputStyle}"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="病历共享：" Style="{StaticResource FormLabelStyle}"/>
+                                            <ComboBox Grid.Column="1" SelectedValue="{Binding GlobalSettings.DefaultRecordSharing}" 
+                                                      ItemsSource="{Binding RecordSharingOptions}" DisplayMemberPath="Value" 
+                                                      SelectedValuePath="Key" Style="{StaticResource FormInputStyle}"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="同步模式：" Style="{StaticResource FormLabelStyle}"/>
+                                            <ComboBox Grid.Column="1" SelectedValue="{Binding GlobalSettings.SyncMode}" 
+                                                      ItemsSource="{Binding SyncModeOptions}" DisplayMemberPath="Value" 
+                                                      SelectedValuePath="Key" Style="{StaticResource FormInputStyle}"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="会话超时：" Style="{StaticResource FormLabelStyle}"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <TextBox Text="{Binding GlobalSettings.SessionTimeoutMinutes}" Width="100" Style="{StaticResource FormInputStyle}"/>
+                                                <TextBlock Text="分钟" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- 右侧列 -->
+                                    <StackPanel Grid.Column="1" Margin="15,0,0,0">
+                                        <TextBlock Text="系统配置" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                                        
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="备份间隔：" Style="{StaticResource FormLabelStyle}"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <TextBox Text="{Binding GlobalSettings.BackupInterval}" Width="100" Style="{StaticResource FormInputStyle}"/>
+                                                <TextBlock Text="小时" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="日志保留：" Style="{StaticResource FormLabelStyle}"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <TextBox Text="{Binding GlobalSettings.LogRetentionDays}" Width="100" Style="{StaticResource FormInputStyle}"/>
+                                                <TextBlock Text="天" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="文件上传：" Style="{StaticResource FormLabelStyle}"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <TextBox Text="{Binding GlobalSettings.MaxFileUploadSizeMB}" Width="100" Style="{StaticResource FormInputStyle}"/>
+                                                <TextBlock Text="MB" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="审计日志：" Style="{StaticResource FormLabelStyle}"/>
+                                            <CheckBox Grid.Column="1" IsChecked="{Binding GlobalSettings.EnableAuditLog}" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="性能监控：" Style="{StaticResource FormLabelStyle}"/>
+                                            <CheckBox Grid.Column="1" IsChecked="{Binding GlobalSettings.EnablePerformanceMonitoring}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- 操作按钮 -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0"
+                                            Visibility="{Binding IsGlobalSettingsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                    <Button Content="重置" Command="{Binding ResetGlobalSettingsCommand}" Style="{StaticResource ActionButtonStyle}" Background="#6C757D"/>
+                                    <Button Content="保存" Command="{Binding SaveGlobalSettingsCommand}" Style="{StaticResource ActionButtonStyle}" Background="#28A745"/>
+                                </StackPanel>
+
+                                <!-- 更新信息 -->
+                                <Grid Margin="0,15,0,0" Visibility="{Binding IsGlobalSettingsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding GlobalSettings.LastUpdated, StringFormat='最后更新: {0:yyyy-MM-dd HH:mm:ss}'}" 
+                                               FontSize="12" Foreground="#666666" HorizontalAlignment="Left"/>
+                                    <TextBlock Text="{Binding GlobalSettings.UpdatedByName, StringFormat='更新者: {0}'}" 
+                                               FontSize="12" Foreground="#666666" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </TabItem>
+
+                    <!-- 详细设置标签页 -->
+                    <TabItem Header="详细设置" FontSize="14">
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="10">
+                            <StackPanel>
+                                <!-- 搜索过滤器 -->
+                                <Grid Margin="0,0,0,15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="关键词：" Style="{StaticResource FormLabelStyle}"/>
+                                    <TextBox Grid.Column="1" Text="{Binding SearchKeyword}" Style="{StaticResource FormInputStyle}" Margin="0,0,20,0"/>
+                                    
+                                    <TextBlock Grid.Column="2" Text="分组：" Style="{StaticResource FormLabelStyle}"/>
+                                    <ComboBox Grid.Column="3" SelectedItem="{Binding SelectedGroup}" 
+                                              ItemsSource="{Binding GroupOptions}" Style="{StaticResource FormInputStyle}" Margin="0,0,20,0"/>
+                                    
+                                    <StackPanel Grid.Column="5" Orientation="Horizontal">
+                                        <Button Content="搜索" Command="{Binding SearchSettingsCommand}" Style="{StaticResource ActionButtonStyle}"/>
+                                        <Button Content="清除" Command="{Binding ClearSearchCommand}" Style="{StaticResource ActionButtonStyle}" Background="#6C757D"/>
+                                        <Button Content="添加" Command="{Binding AddSettingCommand}" Style="{StaticResource ActionButtonStyle}" Background="#28A745"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- 加载指示器 -->
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                            Visibility="{Binding IsSettingsLoading, Converter={StaticResource BoolToVisibilityConverter}}" 
+                                            Margin="0,50,0,50">
+                                    <TextBlock Text="正在加载设置列表..." FontSize="14" Foreground="#666666" HorizontalAlignment="Center"/>
+                                    <ProgressBar Width="200" Height="4" Margin="0,10,0,0" IsIndeterminate="True"/>
+                                </StackPanel>
+
+                                <!-- 设置表格 -->
+                                <DataGrid ItemsSource="{Binding Settings}" AutoGenerateColumns="False" 
+                                          CanUserAddRows="False" CanUserDeleteRows="False" 
+                                          IsReadOnly="True" GridLinesVisibility="Horizontal"
+                                          HeadersVisibility="Column" RowHeight="35"
+                                          Visibility="{Binding IsSettingsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="设置键" Binding="{Binding Key}" Width="200"/>
+                                        <DataGridTextColumn Header="设置值" Binding="{Binding Value}" Width="*"/>
+                                        <DataGridTextColumn Header="说明" Binding="{Binding Description}" Width="200"/>
+                                        <DataGridTextColumn Header="分组" Binding="{Binding GroupDisplayName}" Width="100"/>
+                                        <DataGridTemplateColumn Header="类型" Width="80">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{Binding SystemColor}" CornerRadius="4" Padding="4,2">
+                                                        <TextBlock Text="{Binding SystemText}" Foreground="White" 
+                                                                   FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="状态" Width="60">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{Binding EnabledColor}" CornerRadius="4" Padding="4,2">
+                                                        <TextBlock Text="{Binding EnabledText}" Foreground="White" 
+                                                                   FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="操作" Width="120">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button Content="编辑" 
+                                                                Command="{Binding DataContext.EditSettingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="#007BFF" Foreground="White" BorderThickness="0"
+                                                                Height="24" Width="40" FontSize="10" Margin="2"/>
+                                                        <Button Content="删除" 
+                                                                Command="{Binding DataContext.DeleteSettingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="#DC3545" Foreground="White" BorderThickness="0"
+                                                                Height="24" Width="40" FontSize="10" Margin="2"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- 空数据提示 -->
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                            Visibility="{Binding Settings.Count, Converter={StaticResource ZeroToVisibilityConverter}}" 
+                                            Margin="0,50,0,50">
+                                    <TextBlock Text="⚙️" FontSize="48" HorizontalAlignment="Center" Foreground="#CCCCCC"/>
+                                    <TextBlock Text="暂无设置数据" FontSize="14" Foreground="#666666" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                                </StackPanel>
+
+                                <!-- 分页控件 -->
+                                <Grid Margin="0,15,0,0" Visibility="{Binding Settings.Count, Converter={StaticResource ZeroToVisibilityConverter}, ConverterParameter=True}">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#666666"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="首页" Command="{Binding FirstPageCommand}" Style="{StaticResource ActionButtonStyle}" 
+                                                Background="#6C757D" IsEnabled="{Binding CanGoFirstPage}"/>
+                                        <Button Content="上一页" Command="{Binding PreviousPageCommand}" Style="{StaticResource ActionButtonStyle}" 
+                                                Background="#6C757D" IsEnabled="{Binding CanGoPreviousPage}"/>
+                                        <TextBlock Text="{Binding CurrentPage}" FontSize="14" VerticalAlignment="Center" 
+                                                   Margin="10,0" MinWidth="20" TextAlignment="Center"/>
+                                        <Button Content="下一页" Command="{Binding NextPageCommand}" Style="{StaticResource ActionButtonStyle}" 
+                                                Background="#6C757D" IsEnabled="{Binding CanGoNextPage}"/>
+                                        <Button Content="末页" Command="{Binding LastPageCommand}" Style="{StaticResource ActionButtonStyle}" 
+                                                Background="#6C757D" IsEnabled="{Binding CanGoLastPage}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </TabItem>
+                </TabControl>
             </StackPanel>
-        </Border>
+        </ScrollViewer>
     </Grid>
 </UserControl>
