@@ -147,20 +147,23 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             // _herbService = herbService; // TODO: 等待IHerbsApiService实现
 
             Items = new ObservableCollection<PrescriptionItemEditModel>();
-            Items.CollectionChanged += (s, e) =>
-            {
-                RaisePropertyChanged(nameof(TotalPrice));
-                RaisePropertyChanged(nameof(CanSave));
-                SaveCommand.RaiseCanExecuteChanged();
-                SaveAndContinueCommand.RaiseCanExecuteChanged();
-            };
-
+            
+            // 先初始化命令
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), () => CanSave);
             SaveAndContinueCommand = new DelegateCommand(async () => await ExecuteSaveAndContinueAsync(), () => CanSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
             AddItemCommand = new DelegateCommand(ExecuteAddItem);
             RemoveItemCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteRemoveItem);
             SelectHerbCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteSelectHerb);
+            
+            // 然后添加事件处理器
+            Items.CollectionChanged += (s, e) =>
+            {
+                RaisePropertyChanged(nameof(TotalPrice));
+                RaisePropertyChanged(nameof(CanSave));
+                SaveCommand?.RaiseCanExecuteChanged();
+                SaveAndContinueCommand?.RaiseCanExecuteChanged();
+            };
 
             // 添加默认的处方项目
             ExecuteAddItem();
@@ -301,8 +304,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         private void UpdateCanSaveState()
         {
             RaisePropertyChanged(nameof(CanSave));
-            SaveCommand.RaiseCanExecuteChanged();
-            SaveAndContinueCommand.RaiseCanExecuteChanged();
+            SaveCommand?.RaiseCanExecuteChanged();
+            SaveAndContinueCommand?.RaiseCanExecuteChanged();
         }
     }
 

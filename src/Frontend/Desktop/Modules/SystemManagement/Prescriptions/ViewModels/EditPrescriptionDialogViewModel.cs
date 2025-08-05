@@ -178,19 +178,22 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             _prescriptionId = prescriptionId;
 
             Items = new ObservableCollection<PrescriptionItemEditModel>();
-            Items.CollectionChanged += (s, e) =>
-            {
-                RaisePropertyChanged(nameof(TotalPrice));
-                RaisePropertyChanged(nameof(HasChanges));
-                RaisePropertyChanged(nameof(CanSave));
-                SaveCommand.RaiseCanExecuteChanged();
-            };
-
+            
+            // 先初始化命令
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), () => CanSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
             AddItemCommand = new DelegateCommand(ExecuteAddItem);
             RemoveItemCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteRemoveItem);
             SelectHerbCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteSelectHerb);
+            
+            // 然后添加事件处理器
+            Items.CollectionChanged += (s, e) =>
+            {
+                RaisePropertyChanged(nameof(TotalPrice));
+                RaisePropertyChanged(nameof(HasChanges));
+                RaisePropertyChanged(nameof(CanSave));
+                SaveCommand?.RaiseCanExecuteChanged();
+            };
 
             // 加载处方详情
             _ = LoadPrescriptionAsync();
@@ -210,7 +213,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                     // 填充表单数据
                     PatientName = "患者" + OriginalPrescription.PatientId.ToString()[..8]; // TODO: 从其他服务获取患者姓名
                     DoctorName = "医生" + OriginalPrescription.DoctorId.ToString()[..8];   // TODO: 从其他服务获取医生姓名
-                    Diagnosis = OriginalPrescription.Diagnosis;
+                    Diagnosis = OriginalPrescription.Diagnosis ?? string.Empty;
                     DosageCount = 1; // TODO: OriginalPrescription.DosageCount; - 等待DTO属性添加
                     Usage = string.Empty; // TODO: OriginalPrescription.Usage ?? string.Empty; - 等待DTO属性添加
                     Remark = OriginalPrescription.Remark ?? string.Empty;

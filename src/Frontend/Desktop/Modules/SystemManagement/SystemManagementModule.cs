@@ -34,6 +34,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             ViewModelLocationProvider.Register<UserManagementView, UserManagementViewModelSimple>();
             ViewModelLocationProvider.Register<RegistrationManagementView, RegistrationManagementViewModelRefactored>();
             ViewModelLocationProvider.Register<FormulaTemplateManagementView, FormulaTemplateManagementViewModelRefactored>();
+            ViewModelLocationProvider.Register<HerbManagementView, Herbs.ViewModels.HerbManagementViewModelRefactored>();
+            ViewModelLocationProvider.Register<DoctorManagementView, Doctors.ViewModels.DoctorManagementViewModelRefactored>();
+            ViewModelLocationProvider.Register<PatientManagementView, Patients.ViewModels.PatientManagementViewModelRefactored>();
+            ViewModelLocationProvider.Register<RecordManagementView, Records.ViewModels.RecordManagementViewModelRefactored>();
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)

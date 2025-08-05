@@ -74,7 +74,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             : base(service)
         {
             // 初始化额外的命令
-            BatchCancelCommand = new DelegateCommand(async () => await BatchCancel());
+            BatchCancelCommand = new DelegateCommand(BatchCancel);
             CancelCommand = new DelegateCommand<RegistrationInfo>(async (r) => await CancelRegistration(r));
             CheckInCommand = new DelegateCommand<RegistrationInfo>(CheckIn);
 
@@ -252,7 +252,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
 
         #region 额外功能
 
-        private async Task BatchCancel()
+        private void BatchCancel()
         {
             var selectedItems = Items.Where(r => r.IsSelected && r.CanCancel).ToList();
             if (!selectedItems.Any())
