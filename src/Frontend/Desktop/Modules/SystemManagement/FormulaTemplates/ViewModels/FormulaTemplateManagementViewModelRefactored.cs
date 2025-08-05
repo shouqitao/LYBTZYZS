@@ -168,7 +168,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                         var herbService = app.Container.Resolve<IHerbService>();
                         var formulaService = app.Container.Resolve<IFormulaTemplateService>();
                         
-                        var dialog = new Views.AddFormulaTemplateDialog(herbService, formulaService);
+                        var dialog = new Views.AddFormulaTemplateDialog(herbService, formulaService, _commonDialogService);
                         dialog.Owner = Application.Current.MainWindow;
                         
                         if (dialog.ShowDialog() == true)
@@ -182,7 +182,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                         _commonDialogService.ShowInformationAsync($"服务解析失败，将使用演示模式：{resolveEx.Message}", "提示").GetAwaiter().GetResult();
                         
                         // 使用演示模式
-                        var dialog = new Views.AddFormulaTemplateDialog(null, null);
+                        var dialog = new Views.AddFormulaTemplateDialog(null!, null!, _commonDialogService);
                         dialog.Owner = Application.Current.MainWindow;
                         
                         if (dialog.ShowDialog() == true)
@@ -194,7 +194,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                 else
                 {
                     // 无法获取容器，使用演示模式
-                    var dialog = new Views.AddFormulaTemplateDialog(null, null);
+                    var dialog = new Views.AddFormulaTemplateDialog(null!, null!, _commonDialogService);
                     dialog.Owner = Application.Current.MainWindow;
                     
                     if (dialog.ShowDialog() == true)

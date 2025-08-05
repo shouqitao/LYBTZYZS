@@ -238,7 +238,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
             if (HasChanges)
             {
                 var result = _commonDialogService.ShowConfirmationAsync("有未保存的更改，确定要关闭吗？", "确认").GetAwaiter().GetResult();
-                if (result != MessageBoxResult.Yes)
+                if (!result)
                     return;
             }
 

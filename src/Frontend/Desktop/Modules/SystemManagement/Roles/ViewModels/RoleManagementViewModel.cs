@@ -172,10 +172,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
                 dialog.Owner = Application.Current.MainWindow;
 
                 // 设置ViewModel
-                var viewModel = new ViewModels.ViewRoleDialogViewModel(roleInfo)
-                {
-                    CloseDialogCallback = () => dialog.Close()
-                };
+                var viewModel = new ViewModels.ViewRoleDialogViewModel(_commonDialogService);
 
                 dialog.DataContext = viewModel;
                 dialog.ShowDialog();
@@ -196,21 +193,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
                 dialog.Owner = Application.Current.MainWindow;
 
                 // 设置ViewModel
-                var viewModel = new ViewModels.EditRolePermissionDialogViewModel(roleInfo)
-                {
-                    CloseDialogCallback = () => dialog.Close(),
-                    SaveCompleteCallback = (success) =>
-                    {
-                        if (success)
-                        {
-                            dialog.DialogResult = true;
-                            LoadRoles(); // 刷新列表
-                        }
-                    }
-                };
+                var viewModel = new ViewModels.EditRolePermissionDialogViewModel(roleInfo, _commonDialogService);
+                // Callbacks removed - handled through dialog result
 
                 dialog.DataContext = viewModel;
-                dialog.ShowDialog();
+                if (dialog.ShowDialog() == true)
+                {
+                    LoadRoles(); // 刷新列表
+                }
             }
             catch (Exception ex)
             {

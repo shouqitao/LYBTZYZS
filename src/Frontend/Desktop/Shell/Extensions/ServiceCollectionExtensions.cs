@@ -222,12 +222,12 @@ namespace LYBT.WPF.Client.Shell.Extensions
         /// </summary>
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
-            // 注册通用对话框
-            containerRegistry.RegisterDialog<LYBT.WPF.Client.Shell.Dialogs.Views.ConfirmationDialog, LYBT.WPF.Client.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel>();
-            containerRegistry.RegisterDialog<LYBT.WPF.Client.Shell.Dialogs.Views.InformationDialog, LYBT.WPF.Client.Shell.Dialogs.ViewModels.InformationDialogViewModel>();
+            // 暂时不注册 Prism 对话框，因为 IDialogAware 接口有兼容性问题
+            // containerRegistry.RegisterDialog<LYBT.WPF.Client.Shell.Dialogs.Views.ConfirmationDialog, LYBT.WPF.Client.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel>("ConfirmationDialog");
+            // containerRegistry.RegisterDialog<LYBT.WPF.Client.Shell.Dialogs.Views.InformationDialog, LYBT.WPF.Client.Shell.Dialogs.ViewModels.InformationDialogViewModel>("InformationDialog");
             
-            // 注册对话框服务（使用 PrismDialogService 代替 CommonDialogService）
-            containerRegistry.RegisterSingleton<ICommonDialogService, PrismDialogService>();
+            // 注册简单的对话框服务，使用 MessageBox 实现
+            containerRegistry.RegisterSingleton<ICommonDialogService, SimpleDialogService>();
         }
     }
 }

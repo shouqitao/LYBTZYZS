@@ -11,42 +11,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
     /// <summary>
     /// 查看医生详情对话框视图模型
     /// </summary>
-    public class ViewDoctorDialogViewModel : BindableBase, IDialogAware
+    public class ViewDoctorDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
-        private readonly IDoctorService _doctorService;
-
-        #region IDialogAware
-
-        private string _title = "医生详情";
+        private string _title = "详情";
         public string Title
         {
             get => _title;
             set => SetProperty(ref _title, value);
         }
 
-        public event Action<IDialogResult>? RequestClose;
 
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            if (parameters.ContainsKey("doctorId"))
-            {
-                var doctorId = parameters.GetValue<Guid>("doctorId");
-                _ = LoadDoctorAsync(doctorId);
-            }
-            else if (parameters.ContainsKey("doctor"))
-            {
-                Doctor = parameters.GetValue<DoctorInfo>("doctor");
-                IsLoading = false;
-                UpdateComputedProperties();
-            }
-        }
-
-        #endregion
+        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDoctorService _doctorService;
 
         #region 属性
 
@@ -104,11 +80,22 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
         public ViewDoctorDialogViewModel(IDoctorService doctorService,
             ICommonDialogService commonDialogService)
         {
+            Title = "医生详情";
             _commonDialogService = commonDialogService;
             _doctorService = doctorService;
 
             CloseCommand = new DelegateCommand(ExecuteClose);
             PrintCommand = new DelegateCommand(ExecutePrint);
+        }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("doctorId"))
+            {
+                var doctorId = parameters.GetValue<Guid>("doctorId");
+                _ = LoadDoctorAsync(doctorId);
+            }
+
         }
 
         private async System.Threading.Tasks.Task LoadDoctorAsync(Guid doctorId)
@@ -126,13 +113,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 else
                 {
                     await _commonDialogService.ShowErrorAsync($"加载医生信息失败：{result.ErrorMessage}", "错误");
-                    RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+                    RaiseRequestClose(new DialogResult(ButtonResult.Cancel));
                 }
             }
             catch (Exception ex)
             {
                 await _commonDialogService.ShowErrorAsync($"加载医生信息失败：{ex.Message}", "错误");
-                RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+                RaiseRequestClose(new DialogResult(ButtonResult.Cancel));
             }
             finally
             {
@@ -142,7 +129,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
         private void ExecuteClose()
         {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+            RaiseRequestClose(new DialogResult(ButtonResult.OK));
         }
 
         private async void ExecutePrint()
@@ -162,5 +149,33 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
             RaisePropertyChanged(nameof(ActiveStatusDescription));
             RaisePropertyChanged(nameof(CreateTimeDescription));
         }
-    }
+        // 临时占位方法 - 等待IDialogAware问题解决
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            // TODO: 实现对话框关闭逻辑
+        }
+
+
+
+        /* #region IDialogAware Implementation
+
+        event Action<IDialogResult> IDialogAware.RequestClose
+        {
+            add { _requestClose += value; }
+            remove { _requestClose -= value; }
+        }
+        
+        private Action<IDialogResult>? _requestClose;
+
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            _requestClose?.Invoke(dialogResult);
+        }
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        #endregion */
+        }
 }

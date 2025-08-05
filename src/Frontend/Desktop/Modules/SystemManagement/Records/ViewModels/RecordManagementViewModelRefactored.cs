@@ -145,7 +145,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 };
 
                 // 创建简化版的 ViewModel
-                var viewModel = new SimpleAddRecordDialogViewModel();
+                var viewModel = new SimpleAddRecordDialogViewModel(_commonDialogService);
                 dialog.DataContext = viewModel;
 
                 viewModel.CloseDialogCallback = (success) =>
@@ -175,7 +175,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
             try
             {
-                var viewModel = new EditRecordDialogViewModel(Service, _patientService, record.Id);
+                var viewModel = new EditRecordDialogViewModel(Service, _patientService, record.Id, _commonDialogService);
                 var dialog = new EditRecordDialog
                 {
                     DataContext = viewModel,
@@ -250,7 +250,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
             var confirmResult = await _commonDialogService.ShowConfirmationAsync($"确定要撤销病历的共享吗？\n患者：{record.PatientName}", "确认撤销");
                 
-            if (confirmResult != MessageBoxResult.Yes) return;
+            if (confirmResult != true) return;
 
             try
             {

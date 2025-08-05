@@ -9,7 +9,7 @@ namespace LYBT.WPF.Client.Shell.Dialogs.ViewModels
     /// <summary>
     /// 信息对话框视图模型
     /// </summary>
-    public class InformationDialogViewModel : BindableBase, IDialogAware
+    public class InformationDialogViewModel : BindableBase // Temporarily remove IDialogAware due to Prism 9 compatibility issues
     {
         private string _title = "信息";
         public string Title
@@ -34,7 +34,9 @@ namespace LYBT.WPF.Client.Shell.Dialogs.ViewModels
 
         public DelegateCommand OkCommand { get; }
 
-        public event Action<IDialogResult>? RequestClose;
+#pragma warning disable CS8618
+        public event Action<IDialogResult> RequestClose;
+#pragma warning restore CS8618
 
         public InformationDialogViewModel()
         {

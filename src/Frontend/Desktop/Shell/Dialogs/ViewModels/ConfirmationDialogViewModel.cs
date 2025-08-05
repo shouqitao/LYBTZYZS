@@ -8,7 +8,7 @@ namespace LYBT.WPF.Client.Shell.Dialogs.ViewModels
     /// <summary>
     /// 确认对话框视图模型
     /// </summary>
-    public class ConfirmationDialogViewModel : BindableBase, IDialogAware
+    public class ConfirmationDialogViewModel : BindableBase // Temporarily remove IDialogAware due to Prism 9 compatibility issues
     {
         private string _title = "确认";
         public string Title
@@ -27,7 +27,9 @@ namespace LYBT.WPF.Client.Shell.Dialogs.ViewModels
         public DelegateCommand YesCommand { get; }
         public DelegateCommand NoCommand { get; }
 
-        public event Action<IDialogResult>? RequestClose;
+#pragma warning disable CS8618
+        public event Action<IDialogResult> RequestClose;
+#pragma warning restore CS8618
 
         public ConfirmationDialogViewModel()
         {

@@ -152,7 +152,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     Name = Herb.Name,
                     Origin = Herb.Origin,
                     Spec = Herb.Spec,
-                    Unit = Herb.Unit,
+                    Unit = Herb.Unit ?? string.Empty,
                     Price = Herb.Price,
                     Stock = NewStock, // 更新后的库存
                     BatchNo = Herb.BatchNo,

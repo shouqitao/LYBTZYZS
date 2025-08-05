@@ -393,7 +393,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             try
             {
                 // 创建ViewModel并传入Service依赖
-                var viewModel = new StockManagementDialogViewModel(Service);
+                var viewModel = new StockManagementDialogViewModel(Service, _commonDialogService);
                 viewModel.SetHerb(herb);
                 
                 // 创建对话框并设置ViewModel

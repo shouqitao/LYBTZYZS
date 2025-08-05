@@ -136,7 +136,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
         {
             try
             {
-                var viewModel = new AddDoctorDialogViewModel(Service);
+                var viewModel = new AddDoctorDialogViewModel(Service, _commonDialogService);
                 var dialog = new AddDoctorDialog
                 {
                     DataContext = viewModel,
@@ -170,7 +170,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
             try
             {
-                var viewModel = new EditDoctorDialogViewModel(Service, doctor.Id);
+                var viewModel = new EditDoctorDialogViewModel(Service, doctor.Id, _commonDialogService);
                 var dialog = new EditDoctorDialog
                 {
                     DataContext = viewModel,
@@ -234,7 +234,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
             var action = doctor.IsActive ? "禁用" : "启用";
             var confirmResult = await _commonDialogService.ShowConfirmationAsync($"确定要{action}医生 {doctor.Name} 吗？", "确认");
                 
-            if (confirmResult != MessageBoxResult.Yes) return;
+            if (confirmResult != true) return;
 
             try
             {

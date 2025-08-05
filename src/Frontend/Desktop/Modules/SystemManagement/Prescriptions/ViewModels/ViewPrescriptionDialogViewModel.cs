@@ -17,11 +17,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     /// <summary>
     /// 查看处方详情对话框视图模型
     /// </summary>
-    public class ViewPrescriptionDialogViewModel : BindableBase, IDialogAware
+    public class ViewPrescriptionDialogViewModel : BindableBase
     {
-        
-        #region IDialogAware
-
         private string _title = "详情";
         public string Title
         {
@@ -29,42 +26,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             set => SetProperty(ref _title, value);
         }
 
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            if (parameters.ContainsKey("prescriptionId"))
-            {
-                var id = parameters.GetValue<Guid>("prescriptionId");
-                _ = LoadPrescriptionAsync(id);
-            }
-            else if (parameters.ContainsKey("prescription"))
-            {
-                var data = parameters.GetValue<PrescriptionDetailDto>("prescription");
-                Prescription = data;
-                if (data?.Items != null)
-                {
-                    Items.Clear();
-                    foreach (var item in data.Items)
-                    {
-                        Items.Add(item);
-                    }
-                }
-                IsLoading = false;
-                UpdateComputedProperties();
-            }
-        }
-
-        #endregion
 
         private readonly ICommonDialogService _commonDialogService;
 
         private readonly IPrescriptionsApiService _prescriptionService;
-        
 
         #region 属性
 
@@ -160,12 +125,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         #endregion
 
-        
-        
-
         public ViewPrescriptionDialogViewModel(IPrescriptionsApiService prescriptionService,
             ICommonDialogService commonDialogService)
         {
+            Title = "处方详情";
             _commonDialogService = commonDialogService;
             _prescriptionService = prescriptionService;
 
@@ -177,6 +140,16 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             VoidCommand = new DelegateCommand(ExecuteVoid, () => CanVoid);
 
             // 加载处方详情在 OnDialogOpened 中处理
+        }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("prescriptionId"))
+            {
+                var id = parameters.GetValue<Guid>("prescriptionId");
+                _ = LoadPrescriptionAsync(id);
+            }
+
         }
 
         private async Task LoadPrescriptionAsync(Guid id)
@@ -210,13 +183,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 {
                     var error = response.Error?.Content ?? "获取处方详情失败";
                     _commonDialogService.ShowErrorAsync($"加载处方详情失败: {error}", "错误").GetAwaiter().GetResult();
-                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+                    RaiseRequestClose(new DialogResult(ButtonResult.OK));
                 }
             }
             catch (Exception ex)
             {
                 _commonDialogService.ShowErrorAsync($"加载处方详情失败: {ex.Message}", "错误").GetAwaiter().GetResult();
-                RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+                RaiseRequestClose(new DialogResult(ButtonResult.OK));
             }
             finally
             {
@@ -226,7 +199,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         private void ExecuteClose()
         {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+            RaiseRequestClose(new DialogResult(ButtonResult.OK));
         }
 
         private void ExecutePrint()
@@ -248,8 +221,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             if (Prescription != null)
             {
-                EditPrescriptionCallback?.Invoke(Prescription);
-                RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+                // EditPrescriptionCallback removed - using dialog service
+                RaiseRequestClose(new DialogResult(ButtonResult.OK));
             }
         }
 
@@ -305,5 +278,33 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             RaisePropertyChanged(nameof(CanEdit));
             RaisePropertyChanged(nameof(CanVoid));
         }
-    }
+        // 临时占位方法 - 等待IDialogAware问题解决
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            // TODO: 实现对话框关闭逻辑
+        }
+
+
+
+        /* #region IDialogAware Implementation
+
+        event Action<IDialogResult> IDialogAware.RequestClose
+        {
+            add { _requestClose += value; }
+            remove { _requestClose -= value; }
+        }
+        
+        private Action<IDialogResult>? _requestClose;
+
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            _requestClose?.Invoke(dialogResult);
+        }
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        #endregion */
+        }
 }

@@ -105,7 +105,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 dialog.Title = "新增患者";
                 
                 // 创建 ViewModel 并设置为添加模式
-                var viewModel = new AddPatientDialogViewModel(Service);
+                var viewModel = new AddPatientDialogViewModel(Service, _commonDialogService);
                 dialog.DataContext = viewModel;
                 
                 // 设置保存成功回调
@@ -129,7 +129,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             }
             catch (Exception ex)
             {
-                System.Windows._commonDialogService.ShowErrorAsync($"添加患者失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                _commonDialogService.ShowErrorAsync($"添加患者失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -147,7 +147,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 dialog.Title = "编辑患者";
                 
                 // 创建 ViewModel 并设置为编辑模式
-                var viewModel = new AddPatientDialogViewModel(Service, patient);
+                var viewModel = new AddPatientDialogViewModel(Service, _commonDialogService);
                 dialog.DataContext = viewModel;
                 
                 // 设置保存成功回调
@@ -171,7 +171,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             }
             catch (Exception ex)
             {
-                System.Windows._commonDialogService.ShowErrorAsync($"编辑患者失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                _commonDialogService.ShowErrorAsync($"编辑患者失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
 
@@ -197,7 +197,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                       $"电话：{patient.PhoneNumber ?? "未填写"}\n" +
                       $"地址：{patient.Address ?? "未填写"}";
             
-            System.Windows._commonDialogService.ShowInformationAsync(info, "患者详情").GetAwaiter().GetResult();
+            _commonDialogService.ShowInformationAsync(info, "患者详情").GetAwaiter().GetResult();
         }
 
         #endregion

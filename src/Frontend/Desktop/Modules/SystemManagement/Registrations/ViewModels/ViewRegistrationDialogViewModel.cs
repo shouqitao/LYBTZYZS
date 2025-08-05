@@ -12,11 +12,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
     /// <summary>
     /// 查看挂号对话框视图模型
     /// </summary>
-    public class ViewRegistrationDialogViewModel : BindableBase, IDialogAware
+    public class ViewRegistrationDialogViewModel : BindableBase
     {
-        
-        #region IDialogAware
-
         private string _title = "详情";
         public string Title
         {
@@ -24,29 +21,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             set => SetProperty(ref _title, value);
         }
 
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            if (parameters.ContainsKey("commondialoginfoId"))
-            {
-                var id = parameters.GetValue<Guid>("commondialoginfoId");
-                _ = LoadDataAsync(id);
-            }
-            else if (parameters.ContainsKey("commondialoginfo"))
-            {
-                var data = parameters.GetValue<CommonDialogInfo>("commondialoginfo");
-                SetData(data);
-                IsLoading = false;
-                UpdateComputedProperties();
-            }
-        }
-
-        #endregion
 
         private readonly ICommonDialogService _commonDialogService;
 
@@ -70,11 +44,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
         public DelegateCommand PrintCommand { get; }
         public DelegateCommand CloseCommand { get; }
 
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
         #endregion
 
         public ViewRegistrationDialogViewModel(IRegistrationService registrationService,
             ICommonDialogService commonDialogService)
         {
+            Title = "挂号详情";
             _commonDialogService = commonDialogService;
             _registrationService = registrationService;
 
@@ -83,6 +65,34 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
 
             // 获取当前窗口实例
             _window = Application.Current.Windows[Application.Current.Windows.Count - 1];
+        }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("registrationId"))
+            {
+                var id = parameters.GetValue<Guid>("registrationId");
+                _ = LoadRegistrationAsync(id);
+            }
+
+        }
+        
+        private async System.Threading.Tasks.Task LoadRegistrationAsync(Guid registrationId)
+        {
+            try
+            {
+                IsLoading = true;
+                _registrationId = registrationId;
+                await LoadRegistrationData();
+            }
+            catch (Exception)
+            {
+                // Handle error
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         public async void Initialize(Guid registrationId)
@@ -123,5 +133,33 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
         {
             _window.Close();
         }
-    }
+        // 临时占位方法 - 等待IDialogAware问题解决
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            // TODO: 实现对话框关闭逻辑
+        }
+
+
+
+        /* #region IDialogAware Implementation
+
+        event Action<IDialogResult> IDialogAware.RequestClose
+        {
+            add { _requestClose += value; }
+            remove { _requestClose -= value; }
+        }
+        
+        private Action<IDialogResult>? _requestClose;
+
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            _requestClose?.Invoke(dialogResult);
+        }
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        #endregion */
+        }
 }

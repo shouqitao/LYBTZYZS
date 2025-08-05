@@ -12,11 +12,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
     /// <summary>
     /// 查看验方模板对话框视图模型
     /// </summary>
-    public class ViewFormulaTemplateDialogViewModel : BindableBase, IDialogAware
+    public class ViewFormulaTemplateDialogViewModel : BindableBase
     {
-        
-        #region IDialogAware
-
         private string _title = "详情";
         public string Title
         {
@@ -24,29 +21,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             set => SetProperty(ref _title, value);
         }
 
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            if (parameters.ContainsKey("commondialoginfoId"))
-            {
-                var id = parameters.GetValue<Guid>("commondialoginfoId");
-                _ = LoadDataAsync(id);
-            }
-            else if (parameters.ContainsKey("commondialoginfo"))
-            {
-                var data = parameters.GetValue<CommonDialogInfo>("commondialoginfo");
-                SetData(data);
-                IsLoading = false;
-                UpdateComputedProperties();
-            }
-        }
-
-        #endregion
 
         private readonly ICommonDialogService _commonDialogService;
 
@@ -112,6 +86,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             set => SetProperty(ref _templateHerbs, value);
         }
 
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
         #endregion
 
         #region Commands
@@ -124,6 +105,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
         public ViewFormulaTemplateDialogViewModel(IFormulaTemplateService formulaTemplateService,
             ICommonDialogService commonDialogService)
         {
+            Title = "验方模板详情";
             _commonDialogService = commonDialogService;
             _formulaTemplateService = formulaTemplateService;
 
@@ -132,6 +114,34 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
             // 获取当前窗口实例
             _window = Application.Current.Windows[Application.Current.Windows.Count - 1];
+        }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("templateId"))
+            {
+                var id = parameters.GetValue<Guid>("templateId");
+                _ = LoadFormulaTemplateAsync(id);
+            }
+
+        }
+        
+        private async System.Threading.Tasks.Task LoadFormulaTemplateAsync(Guid templateId)
+        {
+            try
+            {
+                IsLoading = true;
+                _templateId = templateId;
+                await LoadTemplateData();
+            }
+            catch (Exception)
+            {
+                // Handle error
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         public async void Initialize(Guid templateId)
@@ -204,5 +214,33 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
         {
             _window.Close();
         }
-    }
+        // 临时占位方法 - 等待IDialogAware问题解决
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            // TODO: 实现对话框关闭逻辑
+        }
+
+
+
+        /* #region IDialogAware Implementation
+
+        event Action<IDialogResult> IDialogAware.RequestClose
+        {
+            add { _requestClose += value; }
+            remove { _requestClose -= value; }
+        }
+        
+        private Action<IDialogResult>? _requestClose;
+
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            _requestClose?.Invoke(dialogResult);
+        }
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        #endregion */
+        }
 }

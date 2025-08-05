@@ -12,11 +12,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
     /// <summary>
     /// 查看病历详情对话框视图模型
     /// </summary>
-    public class ViewRecordDialogViewModel : BindableBase, IDialogAware
+    public class ViewRecordDialogViewModel : BindableBase
     {
-        
-        #region IDialogAware
-
         private string _title = "详情";
         public string Title
         {
@@ -24,34 +21,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             set => SetProperty(ref _title, value);
         }
 
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            if (parameters.ContainsKey("commondialoginfoId"))
-            {
-                var id = parameters.GetValue<Guid>("commondialoginfoId");
-                _ = LoadDataAsync(id);
-            }
-            else if (parameters.ContainsKey("commondialoginfo"))
-            {
-                var data = parameters.GetValue<CommonDialogInfo>("commondialoginfo");
-                SetData(data);
-                IsLoading = false;
-                UpdateComputedProperties();
-            }
-        }
-
-        #endregion
 
         private readonly ICommonDialogService _commonDialogService;
 
         private readonly IRecordService _recordService;
-        
 
         #region 属性
 
@@ -131,21 +104,30 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
         #endregion
 
-        
-
         public ViewRecordDialogViewModel(IRecordService recordService,
             ICommonDialogService commonDialogService)
         {
+            Title = "病历详情";
             _commonDialogService = commonDialogService;
             _recordService = recordService;
-            _recordId = recordId;
+            // _recordId = recordId; // Variable not needed
 
             CloseCommand = new DelegateCommand(ExecuteClose);
             PrintCommand = new DelegateCommand(ExecutePrint);
             ExportCommand = new DelegateCommand(ExecuteExport);
 
             // 加载病历详情
-            _ = LoadRecordAsync();
+            // _ = LoadRecordAsync(); // TODO: Pass record ID
+        }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("recordId"))
+            {
+                var id = parameters.GetValue<Guid>("recordId");
+                _ = LoadRecordAsync(id);
+            }
+
         }
 
         private async System.Threading.Tasks.Task LoadRecordAsync(Guid id)
@@ -170,13 +152,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 else
                 {
                     _commonDialogService.ShowErrorAsync($"加载病历详情失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
-                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+                    RaiseRequestClose(new DialogResult(ButtonResult.OK));
                 }
             }
             catch (Exception ex)
             {
                 _commonDialogService.ShowErrorAsync($"加载病历详情失败：{ex.Message}", "错误").GetAwaiter().GetResult();
-                RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+                RaiseRequestClose(new DialogResult(ButtonResult.OK));
             }
             finally
             {
@@ -186,7 +168,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
         private void ExecuteClose()
         {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+            RaiseRequestClose(new DialogResult(ButtonResult.OK));
         }
 
         private void ExecutePrint()
@@ -200,5 +182,33 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
             // TODO: 实现导出功能
             _commonDialogService.ShowInformationAsync("病历导出功能开发中...", "提示").GetAwaiter().GetResult();
         }
-    }
+        // 临时占位方法 - 等待IDialogAware问题解决
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            // TODO: 实现对话框关闭逻辑
+        }
+
+
+
+        /* #region IDialogAware Implementation
+
+        event Action<IDialogResult> IDialogAware.RequestClose
+        {
+            add { _requestClose += value; }
+            remove { _requestClose -= value; }
+        }
+        
+        private Action<IDialogResult>? _requestClose;
+
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            _requestClose?.Invoke(dialogResult);
+        }
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        #endregion */
+        }
 }

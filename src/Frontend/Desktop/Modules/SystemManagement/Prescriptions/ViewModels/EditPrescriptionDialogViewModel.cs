@@ -321,7 +321,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             {
                 var result = _commonDialogService.ShowConfirmationAsync("确定要取消编辑吗？未保存的数据将丢失。", "确认取消").GetAwaiter().GetResult();
                 
-                if (result != MessageBoxResult.Yes)
+                if (!result)
                     return;
             }
             

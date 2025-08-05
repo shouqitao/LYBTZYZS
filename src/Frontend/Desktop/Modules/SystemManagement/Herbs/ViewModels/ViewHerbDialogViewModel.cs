@@ -12,42 +12,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// <summary>
     /// 查看中药材详情对话框视图模型
     /// </summary>
-    public class ViewHerbDialogViewModel : BindableBase, IDialogAware
+    public class ViewHerbDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
-        private readonly IHerbService _herbService;
-
-        #region IDialogAware
-
-        private string _title = "中药材详情";
+        private string _title = "详情";
         public string Title
         {
             get => _title;
             set => SetProperty(ref _title, value);
         }
 
-        public event Action<IDialogResult>? RequestClose;
 
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            if (parameters.ContainsKey("herbId"))
-            {
-                var herbId = parameters.GetValue<Guid>("herbId");
-                _ = LoadHerbAsync(herbId);
-            }
-            else if (parameters.ContainsKey("herb"))
-            {
-                Herb = parameters.GetValue<HerbInfo>("herb");
-                IsLoading = false;
-                UpdateComputedProperties();
-            }
-        }
-
-        #endregion
+        private readonly ICommonDialogService _commonDialogService;
+        private readonly IHerbService _herbService;
 
         #region 属性
 
@@ -154,12 +130,23 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         public ViewHerbDialogViewModel(IHerbService herbService,
             ICommonDialogService commonDialogService)
         {
+            Title = "药材详情";
             _commonDialogService = commonDialogService;
             _herbService = herbService;
 
             CloseCommand = new DelegateCommand(ExecuteClose);
             PrintCommand = new DelegateCommand(ExecutePrint);
             EditCommand = new DelegateCommand(ExecuteEdit);
+        }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("herbId"))
+            {
+                var id = parameters.GetValue<Guid>("herbId");
+                _ = LoadHerbAsync(id);
+            }
+
         }
 
         private async System.Threading.Tasks.Task LoadHerbAsync(Guid herbId)
@@ -177,13 +164,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 else
                 {
                     await _commonDialogService.ShowErrorAsync("未找到指定的中药材信息", "错误");
-                    RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+                    RaiseRequestClose(new DialogResult(ButtonResult.Cancel));
                 }
             }
             catch (Exception ex)
             {
                 await _commonDialogService.ShowErrorAsync($"加载中药材信息失败：{ex.Message}", "错误");
-                RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+                RaiseRequestClose(new DialogResult(ButtonResult.Cancel));
             }
             finally
             {
@@ -193,7 +180,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         private void ExecuteClose()
         {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+            RaiseRequestClose(new DialogResult(ButtonResult.OK));
         }
 
         private void ExecutePrint()
@@ -210,7 +197,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 {
                     { "herb", Herb }
                 };
-                RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                RaiseRequestClose(new DialogResult(ButtonResult.OK));
             }
         }
 
@@ -231,5 +218,33 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             RaisePropertyChanged(nameof(IsExpiringSoon));
             RaisePropertyChanged(nameof(ExpireDateColor));
         }
-    }
+        // 临时占位方法 - 等待IDialogAware问题解决
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            // TODO: 实现对话框关闭逻辑
+        }
+
+
+
+        /* #region IDialogAware Implementation
+
+        event Action<IDialogResult> IDialogAware.RequestClose
+        {
+            add { _requestClose += value; }
+            remove { _requestClose -= value; }
+        }
+        
+        private Action<IDialogResult>? _requestClose;
+
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            _requestClose?.Invoke(dialogResult);
+        }
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        #endregion */
+        }
 }

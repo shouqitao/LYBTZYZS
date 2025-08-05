@@ -11,30 +11,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
     /// <summary>
     /// 查看角色详情对话框视图模型
     /// </summary>
-    public class ViewRoleDialogViewModel : BindableBase, IDialogAware
+    public class ViewRoleDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
-        private RolePermissionInfo? _role;
-
-        #region IDialogAware
-
-        public string Title => "角色详情";
-
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
+        private string _title = "详情";
+        public string Title
         {
-            if (parameters.ContainsKey("role"))
-            {
-                Role = parameters.GetValue<RolePermissionInfo>("role");
-            }
+            get => _title;
+            set => SetProperty(ref _title, value);
         }
 
-        #endregion
+                private readonly ICommonDialogService _commonDialogService;
+        private RolePermissionInfo? _role;
 
         #region 属性
 
@@ -73,19 +60,55 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
         public DelegateCommand CloseCommand { get; }
         public DelegateCommand PrintCommand { get; }
 
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
         #endregion
 
         public ViewRoleDialogViewModel(ICommonDialogService commonDialogService)
         {
+            Title = "角色详情";
             _commonDialogService = commonDialogService;
 
             CloseCommand = new DelegateCommand(ExecuteClose);
             PrintCommand = new DelegateCommand(ExecutePrint);
         }
 
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.ContainsKey("roleId"))
+            {
+                var id = parameters.GetValue<Guid>("roleId");
+                _ = LoadRoleAsync(id);
+            }
+
+        }
+        
+        private async System.Threading.Tasks.Task LoadRoleAsync(Guid roleId)
+        {
+            try
+            {
+                IsLoading = true;
+                // TODO: Implement loading logic
+                await System.Threading.Tasks.Task.Delay(100);
+            }
+            catch (Exception)
+            {
+                // Handle error
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
         private void ExecuteClose()
         {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+            RaiseRequestClose(new DialogResult(ButtonResult.OK));
         }
 
         private async void ExecutePrint()
@@ -93,5 +116,33 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
             // TODO: 实现打印功能
             await _commonDialogService.ShowInformationAsync("角色信息打印功能开发中...", "提示");
         }
-    }
+        // 临时占位方法 - 等待IDialogAware问题解决
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            // TODO: 实现对话框关闭逻辑
+        }
+
+
+
+        /* #region IDialogAware Implementation
+
+        event Action<IDialogResult> IDialogAware.RequestClose
+        {
+            add { _requestClose += value; }
+            remove { _requestClose -= value; }
+        }
+        
+        private Action<IDialogResult>? _requestClose;
+
+        private void RaiseRequestClose(IDialogResult dialogResult)
+        {
+            _requestClose?.Invoke(dialogResult);
+        }
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        #endregion */
+        }
 }

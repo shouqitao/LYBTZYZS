@@ -29,7 +29,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
         protected override string ModuleName => "角色";
 
         /// <summary>额外的权限编辑命令</summary>
-        public DelegateCommand<RolePermissionInfo> EditPermissionCommand { get; private set; }
+        public DelegateCommand<RolePermissionInfo> EditPermissionCommand { get; private set; } = null!;
 
         #endregion
 
@@ -42,6 +42,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
         {
             _commonDialogService = commonDialogService;
             _dialogService = dialogService;
+            
+            // 初始化命令以避免null引用警告
+            EditPermissionCommand = new DelegateCommand<RolePermissionInfo>(_ => { });
             InitializeAdditionalCommands();
         }
 
@@ -210,18 +213,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels
                 dialog.Owner = Application.Current.MainWindow;
 
                 // 设置ViewModel
-                var viewModel = new EditRolePermissionDialogViewModel(roleInfo)
-                {
-                    CloseDialogCallback = () => dialog.Close(),
-                    SaveCompleteCallback = (success) =>
-                    {
-                        if (success)
-                        {
-                            dialog.DialogResult = true;
-                            RefreshCommand.Execute(); // 刷新列表
-                        }
-                    }
-                };
+                var viewModel = new EditRolePermissionDialogViewModel(roleInfo, _commonDialogService);
+                // Callbacks removed - handled through dialog result
 
                 dialog.DataContext = viewModel;
                 dialog.ShowDialog();

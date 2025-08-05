@@ -241,29 +241,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             try
             {
                 // 创建处方详情查看对话框的ViewModel
-                var dialogViewModel = new ViewPrescriptionDialogViewModel(Service, prescription.Id);
+                var dialogViewModel = new ViewPrescriptionDialogViewModel(Service, _commonDialogService);
                 
-                // 设置关闭回调
-                dialogViewModel.CloseDialogCallback = () =>
-                {
-                    // 关闭对话框的逻辑将在具体的对话框窗口中实现
-                };
-                
-                // 设置编辑回调
-                dialogViewModel.EditPrescriptionCallback = (prescriptionDetail) =>
-                {
-                    // 触发编辑处方
-                    if (prescriptionDetail != null)
-                    {
-                        // 找到对应的PrescriptionInfo并调用编辑
-                        var prescriptionInfo = Items.FirstOrDefault(p => p.Id == prescriptionDetail.Id);
-                        if (prescriptionInfo != null)
-                        {
-                            ExecuteEdit(prescriptionInfo);
-                        }
-                    }
-                };
-
+                // Callbacks removed - handled through dialog result
                 // TODO: 创建并显示对话框窗口
                 _commonDialogService.ShowInformationAsync($"处方详情对话框功能已准备就绪\n处方编号：{prescription.PrescriptionNumber}\n患者：{prescription.PatientName}", "提示").GetAwaiter().GetResult();
             }
@@ -367,15 +347,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 dialog.Title = "新增处方";
                 
                 // 创建 ViewModel
-                var viewModel = new AddPrescriptionDialogViewModel(Service);
+                var viewModel = new AddPrescriptionDialogViewModel(Service, _commonDialogService);
                 dialog.DataContext = viewModel;
                 
-                // 设置回调
-                viewModel.CloseDialogCallback = () =>
-                {
-                    dialog.DialogResult = true;
-                    dialog.Close();
-                };
+                // 设置回调已移除
                 
                 if (dialog.ShowDialog() == true)
                 {
@@ -407,15 +382,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 dialog.Title = "编辑处方";
                 
                 // 创建 ViewModel
-                var viewModel = new EditPrescriptionDialogViewModel(Service, item.Id);
+                var viewModel = new EditPrescriptionDialogViewModel(Service, item.Id, _commonDialogService);
                 dialog.DataContext = viewModel;
                 
-                // 设置回调
-                viewModel.CloseDialogCallback = () =>
-                {
-                    dialog.DialogResult = true;
-                    dialog.Close();
-                };
+                // 设置回调已移除
                 
                 if (dialog.ShowDialog() == true)
                 {

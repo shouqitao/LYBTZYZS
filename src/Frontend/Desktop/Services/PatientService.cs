@@ -36,7 +36,7 @@ namespace LYBT.WPF.Client.Services
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
                 await _patientsApiService.CreatePatientAsync(dto)
             );
-            return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage);
+            return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
         }
 
         /// <summary>

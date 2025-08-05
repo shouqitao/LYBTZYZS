@@ -20,7 +20,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 
         private readonly IPatientService _patientService;
         private readonly bool _isEditMode;
-        private readonly Guid? _editingPatientId;
+        private readonly Guid? _editingPatientId = null;
         
         #region 属性
         
@@ -136,39 +136,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         /// </summary>
         public AddPatientDialogViewModel(IPatientService patientService,
             ICommonDialogService commonDialogService)
-            : this(patientService, null)
         {
-        }
-
-        /// <summary>
-        /// 用于新增或编辑的构造函数
-        /// </summary>
-        public AddPatientDialogViewModel(IPatientService patientService, PatientInfo? editingPatient)
-        {
-            _commonDialogService = commonDialogService;
             _patientService = patientService;
-            
-            if (editingPatient != null)
-            {
-                _isEditMode = true;
-                _editingPatientId = editingPatient.Id;
-                
-                // 加载患者信息到界面
-                Name = editingPatient.Name;
-                IsMale = editingPatient.Gender == LYBT.Shared.Models.Enums.Gender.Male;
-                BirthDate = editingPatient.BirthDate;
-                // IdCard = editingPatient.IDNumber ?? string.Empty; // PatientInfo 没有 IDNumber 属性
-                IdCard = string.Empty; // TODO: 需要从其他地方获取身份证号
-                Phone = editingPatient.PhoneNumber ?? string.Empty;
-                Address = editingPatient.Address ?? string.Empty;
-                // 紧急联系人信息可能在备注中，这里暂时不解析
-                Allergies = editingPatient.AllergyHistory ?? string.Empty;
-                // 医疗历史等信息需要根据实际情况处理
-            }
-            else
-            {
-                _isEditMode = false;
-            }
+            _commonDialogService = commonDialogService;
+            _isEditMode = false;
             
             SaveCommand = new DelegateCommand(ExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
@@ -234,17 +205,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 
                 if (result.IsSuccess)
                 {
-                    _commonDialogService.ShowInformationAsync($"患者信息{(_isEditMode ? "更新" : "保存", "信息").GetAwaiter().GetResult()}成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _commonDialogService.ShowInformationAsync($"患者信息{(_isEditMode ? "更新" : "保存")}成功", "成功");
                     CloseDialogCallback?.Invoke(true);
                 }
                 else
                 {
-                    _commonDialogService.ShowInformationAsync($"{(_isEditMode ? "更新" : "保存", "信息").GetAwaiter().GetResult()}失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await _commonDialogService.ShowErrorAsync($"{(_isEditMode ? "更新" : "保存")}失败：{result.ErrorMessage}", "错误");
                 }
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"保存失败：{ex.Message}", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync($"保存失败：{ex.Message}", "错误");
             }
         }
 

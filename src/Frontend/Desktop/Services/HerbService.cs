@@ -58,7 +58,7 @@ namespace LYBT.WPF.Client.Services
                         : $"API请求失败: {apiEx.StatusCode}"
                 };
             }
-            catch (System.Net.Http.HttpRequestException httpEx)
+            catch (System.Net.Http.HttpRequestException)
             {
                 // 返回空结果而不是抛出异常
                 return new PagedResult 
@@ -128,7 +128,7 @@ namespace LYBT.WPF.Client.Services
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
                 await _herbApiService.CreateHerbAsync(dto)
             );
-            return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage);
+            return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
         }
 
         /// <summary>

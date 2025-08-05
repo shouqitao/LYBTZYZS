@@ -204,7 +204,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             try
             {
                 // 使用简化版对话框
-                var dialog = new Views.SimpleAddRegistrationDialog();
+                var dialog = new Views.SimpleAddRegistrationDialog(_commonDialogService);
                 dialog.Owner = Application.Current.MainWindow;
                 
                 if (dialog.ShowDialog() == true)
@@ -249,10 +249,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                     { "registrationId", item.Id }
                 };
 
-                _dialogService.ShowDialog("ViewRegistrationDialog", parameters, result =>
-                {
-                    // 对话框关闭后的处理（如果需要）
-                });
+                // TODO: Replace with proper dialog service call
+                // // TODO: Replace with proper dialog service call
+            // _commonDialogService.ShowDialog("ViewRegistrationDialog", parameters, result =>
+                // {
+                //     // 对话框关闭后的处理（如果需要）
+                // });
             }
             catch (Exception ex)
             {

@@ -172,7 +172,8 @@
       "Bash(sqlcmd:*)",
       "Bash(python:*)",
       "Bash(del:*)",
-      "Bash(clean_all_bin_obj.bat)"
+      "Bash(clean_all_bin_obj.bat)",
+      "Bash(dotnet nuget locals:*)"
     ],
     "deny": []
   }
