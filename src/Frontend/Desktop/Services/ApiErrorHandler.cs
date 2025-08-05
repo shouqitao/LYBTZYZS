@@ -156,5 +156,21 @@ namespace LYBT.WPF.Client.Services
                 return ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
             }
         }
+
+        /// <summary>
+        /// 简化的错误处理方法，用于不需要返回数据的操作（泛型版本）
+        /// </summary>
+        public static async Task<ServiceResult> HandleApiCallAsync<T>(Func<Task<Refit.ApiResponse<T>>> apiCall)
+        {
+            var result = await HandleApiResponseAsync(apiCall);
+            if (result.IsSuccess)
+            {
+                return ServiceResult.Success();
+            }
+            else
+            {
+                return ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
+            }
+        }
     }
 }

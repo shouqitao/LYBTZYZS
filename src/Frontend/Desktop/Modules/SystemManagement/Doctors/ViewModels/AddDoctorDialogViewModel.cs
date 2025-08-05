@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Doctors;
+using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
@@ -16,14 +20,36 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
     public class AddDoctorDialogViewModel : BindableBase
     {
         private readonly ICommonDialogService _commonDialogService;
-
         private readonly IDoctorService _doctorService;
+        private readonly IUserService _userService;
 
         #region 属性
 
+        private ObservableCollection<UserInfo> _doctorRoleUsers = new();
+        /// <summary>具有医生角色的用户列表</summary>
+        public ObservableCollection<UserInfo> DoctorRoleUsers
+        {
+            get => _doctorRoleUsers;
+            set => SetProperty(ref _doctorRoleUsers, value);
+        }
+
+        private UserInfo? _selectedUser;
+        /// <summary>选中的用户</summary>
+        public UserInfo? SelectedUser
+        {
+            get => _selectedUser;
+            set
+            {
+                if (SetProperty(ref _selectedUser, value))
+                {
+                    OnSelectedUserChanged();
+                }
+            }
+        }
+
         private string _name = string.Empty;
         private string _code = string.Empty;
-        private string _department = "内科"; // 默认科室
+        private string _department = "中医科"; // 默认科室
         private Gender _gender = Gender.Male;
         private DateTime? _birthDate = DateTime.Now.AddYears(-30); // 默认30岁
         private DoctorTitle _title = DoctorTitle.AttendingPhysician; // 默认主治医师
@@ -148,10 +174,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
         public Action<bool>? CloseDialogCallback { get; set; }
 
         public AddDoctorDialogViewModel(IDoctorService doctorService,
+            IUserService userService,
             ICommonDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             _doctorService = doctorService;
+            _userService = userService;
 
             // 初始化职称选项
             TitleOptions = new List<KeyValuePair<DoctorTitle, string>>
@@ -172,69 +200,130 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
             SaveCommand = new DelegateCommand(ExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
+
+            // 加载具有医生角色的用户
+            _ = LoadDoctorRoleUsersAsync();
+        }
+
+        /// <summary>
+        /// 加载具有医生角色的用户
+        /// </summary>
+        private async Task LoadDoctorRoleUsersAsync()
+        {
+            try
+            {
+                // 获取所有用户
+                var users = await _userService.GetUsersAsync();
+                
+                // 筛选具有医生角色的用户（UserRole.DiagnosingDoctor = 1）
+                var doctorUsers = users.Where(u => u.Role == UserRole.DiagnosingDoctor).ToList();
+
+                DoctorRoleUsers.Clear();
+                foreach (var user in doctorUsers)
+                {
+                    // 检查该用户是否已经有医生档案
+                    var existingDoctor = await _doctorService.GetDoctorByUserIdAsync(user.Id);
+                    if (existingDoctor == null || !existingDoctor.IsSuccess)
+                    {
+                        DoctorRoleUsers.Add(user);
+                    }
+                }
+
+                if (!DoctorRoleUsers.Any())
+                {
+                    await _commonDialogService.ShowWarningAsync(
+                        "没有找到可用的医生角色用户。\n" +
+                        "请先在用户管理中创建具有医生角色的用户。", 
+                        "提示");
+                }
+            }
+            catch (Exception ex)
+            {
+                await _commonDialogService.ShowErrorAsync($"加载用户列表失败: {ex.Message}", "错误");
+            }
+        }
+
+        /// <summary>
+        /// 当选中的用户改变时
+        /// </summary>
+        private void OnSelectedUserChanged()
+        {
+            if (SelectedUser != null)
+            {
+                Name = SelectedUser.RealName ?? SelectedUser.Username;
+                Phone = SelectedUser.PhoneNumber ?? string.Empty;
+                
+                // BaseUserModel 没有 Gender 属性，保持默认性别设置
+            }
         }
 
         private async void ExecuteSave()
         {
-            // 验证必填字段
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                await _commonDialogService.ShowWarningAsync("请输入医生姓名", "提示");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(Code))
-            {
-                await _commonDialogService.ShowWarningAsync("请输入医生工号", "提示");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(Department))
-            {
-                _commonDialogService.ShowWarningAsync("请选择所属科室", "提示").GetAwaiter().GetResult();
-                return;
-            }
-
-            if (!BirthDate.HasValue)
-            {
-                _commonDialogService.ShowWarningAsync("请选择出生日期", "提示").GetAwaiter().GetResult();
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(Phone))
-            {
-                _commonDialogService.ShowWarningAsync("请输入联系电话", "提示").GetAwaiter().GetResult();
-                return;
-            }
-
-            // 验证手机号格式
-            if (!System.Text.RegularExpressions.Regex.IsMatch(Phone, @"^1[3-9]\d{9}$"))
-            {
-                _commonDialogService.ShowWarningAsync("请输入正确的手机号码", "提示").GetAwaiter().GetResult();
-                return;
-            }
-
             try
             {
+                System.Diagnostics.Debug.WriteLine("ExecuteSave 方法被调用");
+                
+                // 验证必须选择用户
+                if (SelectedUser == null)
+                {
+                    await _commonDialogService.ShowWarningAsync("请选择一个具有医生角色的用户", "提示");
+                    return;
+                }
+
+                // 验证必填字段
+                if (string.IsNullOrWhiteSpace(Code))
+                {
+                    await _commonDialogService.ShowWarningAsync("请输入医生工号", "提示");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(Department))
+                {
+                    await _commonDialogService.ShowWarningAsync("请选择所属科室", "提示");
+                    return;
+                }
+
+                if (!BirthDate.HasValue)
+                {
+                    await _commonDialogService.ShowWarningAsync("请选择出生日期", "提示");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(Phone))
+                {
+                    await _commonDialogService.ShowWarningAsync("请输入联系电话", "提示");
+                    return;
+                }
+
+                // 验证手机号格式
+                if (!System.Text.RegularExpressions.Regex.IsMatch(Phone, @"^1[3-9]\d{9}$"))
+                {
+                    await _commonDialogService.ShowWarningAsync("请输入正确的手机号码", "提示");
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"开始创建医生对象，关联用户: {SelectedUser.Username}");
+                
                 var doctor = new DoctorInfo
                 {
                     Id = Guid.NewGuid(),
-                    UserId = Guid.NewGuid(), // 后端会创建对应的用户
-                    Name = Name,
+                    UserId = SelectedUser.Id,  // 使用选中用户的ID
+                    Name = SelectedUser.RealName ?? SelectedUser.Username,  // 使用用户的真实姓名
                     Code = Code,
                     Department = Department,
                     Gender = Gender,
                     Birthday = BirthDate.Value,
                     Title = Title,
-                    Specialty = Specialty,
-                    LicenseNumber = LicenseNumber,
+                    Specialty = Specialty ?? string.Empty,
+                    LicenseNumber = LicenseNumber ?? string.Empty,
                     ContactNumber = Phone,
                     Phone = Phone,
                     Status = DoctorStatus.Active,
                     WorkStatus = DoctorWorkStatus.Clinic,
                     IsActive = true,
                     CreateTime = DateTime.Now,
-                    Remark = Remark
+                    Remark = Remark ?? string.Empty,
+                    Specialties = Specialty ?? string.Empty  // 添加 Specialties 属性
                 };
 
                 // 计算年龄
@@ -246,20 +335,27 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 // 生成拼音码（简单示例，实际应使用拼音库）
                 doctor.PinYinCode = Name.ToUpper();
 
+                System.Diagnostics.Debug.WriteLine($"开始调用API保存医生: {Name}");
+                
                 var result = await _doctorService.AddDoctorAsync(doctor);
+                
+                System.Diagnostics.Debug.WriteLine($"API调用结果: IsSuccess={result.IsSuccess}, Error={result.ErrorMessage}");
+                
                 if (result.IsSuccess)
                 {
-                    _commonDialogService.ShowInformationAsync("医生信息保存成功", "成功").GetAwaiter().GetResult();
+                    await _commonDialogService.ShowInformationAsync("医生信息保存成功", "成功");
                     CloseDialogCallback?.Invoke(true);
                 }
                 else
                 {
-                    _commonDialogService.ShowErrorAsync($"保存失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
+                    await _commonDialogService.ShowErrorAsync($"保存失败：{result.ErrorMessage}", "错误");
                 }
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"保存失败：{ex.Message}", "错误").GetAwaiter().GetResult();
+                System.Diagnostics.Debug.WriteLine($"ExecuteSave 发生异常: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"异常堆栈: {ex.StackTrace}");
+                await _commonDialogService.ShowErrorAsync($"保存失败：{ex.Message}", "错误");
             }
         }
 

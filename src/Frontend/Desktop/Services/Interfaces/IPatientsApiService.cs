@@ -127,7 +127,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建新患者 (RESTful POST)
         /// </summary>
         [Post("/api/v1/patients")]
-        Task<Refit.ApiResponse<PatientDto>> CreatePatientAsync([Body] PatientDetailDto dto);
+        Task<Refit.ApiResponse<PatientDetailDto>> CreatePatientAsync([Body] PatientDetailDto dto);
 
         /// <summary>
         /// 根据ID获取患者 (RESTful GET)
@@ -139,7 +139,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 更新患者信息 (RESTful PUT)
         /// </summary>
         [Put("/api/v1/patients/{id}")]
-        Task<Refit.ApiResponse<object>> UpdatePatientAsync(Guid id, [Body] PatientDetailDto dto);
+        Task<Refit.ApiResponse<PatientDetailDto>> UpdatePatientAsync(Guid id, [Body] PatientDetailDto dto);
 
         /// <summary>
         /// 删除患者 (RESTful DELETE) - 实际执行软删除

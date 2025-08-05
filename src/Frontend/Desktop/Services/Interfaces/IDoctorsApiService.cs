@@ -64,13 +64,13 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 新增医生
         /// </summary>
         [Post("/api/v1/doctors/add")]
-        Task<Refit.ApiResponse<bool>> AddAsync([Body] DoctorDetailDto dto);
+        Task<Refit.ApiResponse<DoctorDetailDto>> AddAsync([Body] DoctorDetailDto dto);
 
         /// <summary>
         /// 更新医生信息
         /// </summary>
         [Put("/api/v1/doctors/{id}")]
-        Task<Refit.ApiResponse<bool>> UpdateAsync(Guid id, [Body] DoctorDetailDto dto);
+        Task<Refit.ApiResponse<DoctorDetailDto>> UpdateAsync(Guid id, [Body] DoctorDetailDto dto);
 
         /// <summary>
         /// 禁用医生

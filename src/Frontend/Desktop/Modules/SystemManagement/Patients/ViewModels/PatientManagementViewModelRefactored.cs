@@ -148,6 +148,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 
                 // 创建 ViewModel 并设置为编辑模式
                 var viewModel = new AddPatientDialogViewModel(Service, _commonDialogService);
+                
+                // 设置编辑模式并加载患者信息
+                viewModel.SetEditMode(patient);
+                
                 dialog.DataContext = viewModel;
                 
                 // 设置保存成功回调

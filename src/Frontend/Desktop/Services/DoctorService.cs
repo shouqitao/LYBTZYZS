@@ -91,6 +91,23 @@ namespace LYBT.WPF.Client.Services
             return ServiceResult<List<DoctorInfo>>.Failure(allDoctorsResult.ErrorMessage ?? "获取科室医生失败", allDoctorsResult.Exception);
         }
 
+        public async Task<ServiceResult<DoctorInfo>> GetDoctorByUserIdAsync(Guid userId)
+        {
+            // 获取所有医生后在本地过滤
+            var allDoctorsResult = await GetDoctorsAsync();
+            if (allDoctorsResult.IsSuccess && allDoctorsResult.Data != null)
+            {
+                var doctor = allDoctorsResult.Data.FirstOrDefault(d => d.UserId == userId);
+                if (doctor != null)
+                {
+                    return ServiceResult<DoctorInfo>.Success(doctor);
+                }
+                return ServiceResult<DoctorInfo>.Failure("未找到该用户的医生档案");
+            }
+            
+            return ServiceResult<DoctorInfo>.Failure(allDoctorsResult.ErrorMessage ?? "获取医生信息失败", allDoctorsResult.Exception);
+        }
+
         /// <summary>
         /// 转换DoctorDto到DoctorInfo
         /// </summary>
@@ -139,13 +156,20 @@ namespace LYBT.WPF.Client.Services
             return new DoctorDetailDto
             {
                 Id = info.Id,
-                PinYinCode = info.Code,
+                UserId = info.UserId != Guid.Empty ? info.UserId : Guid.NewGuid(), // 如果没有UserId，生成一个新的
+                PinYinCode = info.PinYinCode ?? info.Code ?? string.Empty,
                 RealName = info.Name,
                 Gender = info.Gender,
+                Birthday = info.Birthday,
                 Title = info.Title,
+                LicenseNumber = info.LicenseNumber,
                 PhoneNumber = info.Phone,
-                Specialty = info.Specialties,
-                Status = info.IsActive ? DoctorStatus.Active : DoctorStatus.Inactive
+                ContactNumber = info.ContactNumber ?? info.Phone,
+                Specialty = info.Specialties ?? info.Specialty ?? string.Empty,
+                Status = info.IsActive ? DoctorStatus.Active : DoctorStatus.Inactive,
+                WorkStatus = info.WorkStatus,
+                Remark = info.Remark,
+                Age = info.Age
             };
         }
     }

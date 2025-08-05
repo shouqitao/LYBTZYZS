@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
@@ -19,8 +20,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         private readonly ICommonDialogService _commonDialogService;
 
         private readonly IPatientService _patientService;
-        private readonly bool _isEditMode;
-        private readonly Guid? _editingPatientId = null;
+        private bool _isEditMode;
+        private Guid? _editingPatientId = null;
         
         #region 属性
         
@@ -222,6 +223,88 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         private void ExecuteCancel()
         {
             CloseDialogCallback?.Invoke(false);
+        }
+
+        /// <summary>
+        /// 设置编辑模式并加载患者信息
+        /// </summary>
+        public async Task SetEditMode(Guid patientId)
+        {
+            _isEditMode = true;
+            _editingPatientId = patientId;
+            
+            try
+            {
+                var result = await _patientService.GetByIdAsync(patientId);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    var patient = result.Data;
+                    Name = patient.Name;
+                    IsMale = patient.Gender == Gender.Male;
+                    BirthDate = patient.BirthDate;
+                    IdCard = patient.IDNumber ?? string.Empty;
+                    Phone = patient.PhoneNumber ?? string.Empty;
+                    Address = patient.Address ?? string.Empty;
+                    Allergies = patient.AllergyHistory ?? string.Empty;
+                    
+                    // 从备注中解析紧急联系人信息和既往病史
+                    if (!string.IsNullOrEmpty(patient.Remark))
+                    {
+                        var lines = patient.Remark.Split('\n');
+                        foreach (var line in lines)
+                        {
+                            if (line.StartsWith("紧急联系人："))
+                            {
+                                var parts = line.Substring("紧急联系人：".Length).Split('，');
+                                if (parts.Length > 0)
+                                {
+                                    EmergencyContact = parts[0];
+                                    if (parts.Length > 1 && parts[1].StartsWith("紧急电话："))
+                                    {
+                                        EmergencyPhone = parts[1].Substring("紧急电话：".Length);
+                                    }
+                                }
+                            }
+                            else if (line.StartsWith("既往病史："))
+                            {
+                                MedicalHistory = line.Substring("既往病史：".Length);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    await _commonDialogService.ShowErrorAsync($"加载患者信息失败: {result.ErrorMessage}", "错误");
+                    CloseDialogCallback?.Invoke(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                await _commonDialogService.ShowErrorAsync($"加载患者信息失败: {ex.Message}", "错误");
+                CloseDialogCallback?.Invoke(false);
+            }
+        }
+
+        /// <summary>
+        /// 设置编辑模式并加载患者信息（重载方法，直接传入患者信息）
+        /// </summary>
+        public void SetEditMode(PatientInfo patient)
+        {
+            if (patient == null) return;
+            
+            _isEditMode = true;
+            _editingPatientId = patient.Id;
+            
+            Name = patient.Name;
+            IsMale = patient.Gender == Gender.Male;
+            BirthDate = patient.BirthDate;
+            IdCard = patient.IdNumber ?? string.Empty;
+            Phone = patient.PhoneNumber ?? string.Empty;
+            Address = patient.Address ?? string.Empty;
+            Allergies = patient.AllergyHistory ?? string.Empty;
+            
+            // 备注和既往病史等可能需要从完整的详情中获取
+            // 这里先设置基本信息
         }
     }
 }

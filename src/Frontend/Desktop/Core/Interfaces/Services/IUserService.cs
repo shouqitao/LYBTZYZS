@@ -46,5 +46,10 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 获取所有角色
         /// </summary>
         Task<List<LYBT.Shared.Models.Enums.UserRole>> GetRolesAsync();
+
+        /// <summary>
+        /// 获取所有用户
+        /// </summary>
+        Task<List<UserInfo>> GetUsersAsync();
     }
 }

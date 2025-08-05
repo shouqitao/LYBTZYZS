@@ -32,13 +32,13 @@ namespace LYBT.WPF.Client.Services.Interfaces {
         /// 创建挂号
         /// </summary>
         [Post("/api/v1/registration")]
-        Task<Refit.ApiResponse<object>> CreateRegistrationAsync([Body] RegistrationCreateDto registration);
+        Task<Refit.ApiResponse<RegistrationDetailDto>> CreateRegistrationAsync([Body] RegistrationCreateDto registration);
 
         /// <summary>
         /// 更新挂号
         /// </summary>
-        [Put("/api/v1/registration")]
-        Task<Refit.ApiResponse<object>> UpdateRegistrationAsync([Body] RegistrationEditDto registration);
+        [Put("/api/v1/registration/{id}")]
+        Task<Refit.ApiResponse<RegistrationDetailDto>> UpdateRegistrationAsync(Guid id, [Body] RegistrationEditDto registration);
 
         /// <summary>
         /// 删除挂号

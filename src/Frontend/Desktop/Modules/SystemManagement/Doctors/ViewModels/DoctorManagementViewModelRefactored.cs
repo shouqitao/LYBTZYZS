@@ -20,16 +20,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
     {
         private readonly ICommonDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
+        private readonly IUserService _userService;
 
         protected override string ModuleName => "医生";
 
         public DoctorManagementViewModelRefactored(IDoctorService doctorService,
+            IUserService userService,
             ICommonDialogService commonDialogService,
             IDialogService dialogService)
             : base(doctorService)
         {
             _commonDialogService = commonDialogService;
             _dialogService = dialogService;
+            _userService = userService;
         }
 
         #region 实现抽象方法
@@ -136,7 +139,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
         {
             try
             {
-                var viewModel = new AddDoctorDialogViewModel(Service, _commonDialogService);
+                var viewModel = new AddDoctorDialogViewModel(Service, _userService, _commonDialogService);
                 var dialog = new AddDoctorDialog
                 {
                     DataContext = viewModel,

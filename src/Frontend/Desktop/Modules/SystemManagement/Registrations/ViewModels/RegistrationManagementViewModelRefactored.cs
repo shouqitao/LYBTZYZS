@@ -377,7 +377,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                     
                     // 注意：由于 RegistrationEditDto 没有 Status 字段，
                     // 可能需要调用专门的签到 API 或者使用其他方法
-                    var response = await Service.UpdateRegistrationAsync(updateDto);
+                    var response = await Service.UpdateRegistrationAsync(registration.Id, updateDto);
                     if (response.IsSuccessStatusCode)
                     {
                         _commonDialogService.ShowInformationAsync($"患者 {registration.PatientName} 签到成功", "成功").GetAwaiter().GetResult();

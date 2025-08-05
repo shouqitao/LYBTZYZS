@@ -29,7 +29,37 @@
                 <!-- 基本信息 -->
                 <TextBlock Text="基本信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
                 
-                <!-- 姓名 -->
+                <!-- 选择用户 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold">
+                        <Run Text="选择用户："/>
+                        <Run Text="*" Foreground="Red"/>
+                    </TextBlock>
+                    <ComboBox Grid.Column="1" 
+                              ItemsSource="{Binding DoctorRoleUsers}" 
+                              SelectedItem="{Binding SelectedUser}"
+                              Height="32" 
+                              VerticalContentAlignment="Center">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} ({1})">
+                                            <Binding Path="RealName"/>
+                                            <Binding Path="Username"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+                
+                <!-- 姓名（只读，从选中的用户获取） -->
                 <Grid Margin="0,0,0,15">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="100"/>
@@ -37,9 +67,8 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold">
                         <Run Text="姓名："/>
-                        <Run Text="*" Foreground="Red"/>
                     </TextBlock>
-                    <TextBox Grid.Column="1" Text="{Binding Name}" Height="32" VerticalContentAlignment="Center" Padding="8,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding Name}" Height="32" VerticalContentAlignment="Center" Padding="8,0" IsReadOnly="True" Background="#F5F5F5"/>
                 </Grid>
 
                 <!-- 工号 -->

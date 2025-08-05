@@ -250,6 +250,19 @@ namespace LYBT.WPF.Client.Services
                 IsSuperAdmin = dto.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
             };
         }
+
+        /// <summary>
+        /// 获取所有用户
+        /// </summary>
+        public async Task<List<UserInfo>> GetUsersAsync()
+        {
+            var result = await GetActiveUsersAsync();
+            if (result.IsSuccess && result.Data != null)
+            {
+                return result.Data;
+            }
+            return new List<UserInfo>();
+        }
     }
 
     /// <summary>

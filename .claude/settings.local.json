@@ -173,7 +173,10 @@
       "Bash(python:*)",
       "Bash(del:*)",
       "Bash(clean_all_bin_obj.bat)",
-      "Bash(dotnet nuget locals:*)"
+      "Bash(dotnet nuget locals:*)",
+      "Bash(node:*)",
+      "Bash(start dotnet run --project src/Backend/Services/LYBT.WebAPI --urls \"https://localhost:7001\")",
+      "Bash(touch:*)"
     ],
     "deny": []
   }

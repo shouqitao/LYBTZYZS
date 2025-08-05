@@ -40,5 +40,10 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 根据科室获取医生列表
         /// </summary>
         Task<ServiceResult<List<DoctorInfo>>> GetByDepartmentAsync(string department);
+
+        /// <summary>
+        /// 根据用户ID获取医生信息
+        /// </summary>
+        Task<ServiceResult<DoctorInfo>> GetDoctorByUserIdAsync(Guid userId);
     }
 }

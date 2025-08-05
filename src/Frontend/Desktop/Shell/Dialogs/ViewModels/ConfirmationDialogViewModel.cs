@@ -27,9 +27,7 @@ namespace LYBT.WPF.Client.Shell.Dialogs.ViewModels
         public DelegateCommand YesCommand { get; }
         public DelegateCommand NoCommand { get; }
 
-#pragma warning disable CS8618
-        public event Action<IDialogResult> RequestClose;
-#pragma warning restore CS8618
+        public event Action<IDialogResult>? RequestClose;
 
         public ConfirmationDialogViewModel()
         {

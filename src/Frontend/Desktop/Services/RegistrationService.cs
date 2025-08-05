@@ -122,7 +122,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> UpdateRegistrationAsync(RegistrationEditDto dto)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _registrationApiService.UpdateRegistrationAsync(dto)
+                await _registrationApiService.UpdateRegistrationAsync(dto.Id, dto)
             );
         }
 
