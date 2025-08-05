@@ -20,7 +20,7 @@ namespace LYBT.Shared.Models.Contracts.Queueing {
 
         /// <summary>医生ID</summary>
         [DisplayName("医生ID")]
-        public string DoctorId { get; set; } = string.Empty;
+        public Guid DoctorId { get; set; }
 
         /// <summary>备注</summary>
         [DisplayName("备注")]

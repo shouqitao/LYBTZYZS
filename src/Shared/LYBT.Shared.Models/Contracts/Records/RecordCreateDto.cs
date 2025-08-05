@@ -13,7 +13,7 @@ namespace LYBT.Shared.Models.Contracts.Records {
         /// <summary>病人ID</summary>
         [Required(ErrorMessage = "病人ID不能为空")]
         [DisplayName("病人ID")]
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>挂号ID</summary>
         [Required(ErrorMessage = "挂号ID不能为空")]
@@ -63,11 +63,11 @@ namespace LYBT.Shared.Models.Contracts.Records {
 
         /// <summary>共享给医生ID列表</summary>
         [DisplayName("共享给医生ID列表")]
-        public List<string> SharedToDoctorIds { get; set; } = new();
+        public List<Guid> SharedToDoctorIds { get; set; } = new();
 
         /// <summary>创建医生ID</summary>
         [DisplayName("创建医生ID")]
-        public string? CreatedBy { get; set; }
+        public Guid? CreatedBy { get; set; }
 
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]

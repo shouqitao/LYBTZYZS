@@ -6,6 +6,7 @@ using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Core.Models.Patients;
 using LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels;
 using LYBT.Shared.Models.Common;
+using Prism.Commands;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 {
@@ -93,18 +94,40 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         /// </summary>
         protected override void ExecuteAdd()
         {
-            // TODO: 实现新增患者对话框
-            // 当对话框实现后，替换为：
-            // var parameters = new DialogParameters();
-            // _dialogService.ShowDialog("AddPatientDialog", parameters, async result =>
-            // {
-            //     if (result.Result == ButtonResult.OK)
-            //     {
-            //         await LoadDataAsync();
-            //     }
-            // });
-            
-            base.ExecuteAdd(); // 暂时显示开发中提示
+            try
+            {
+                var dialog = new Views.AddPatientDialog();
+                dialog.Owner = System.Windows.Application.Current.MainWindow;
+                dialog.Title = "新增患者";
+                
+                // 创建 ViewModel 并设置为添加模式
+                var viewModel = new AddPatientDialogViewModel(Service);
+                dialog.DataContext = viewModel;
+                
+                // 设置保存成功回调
+                viewModel.CloseDialogCallback = (success) =>
+                {
+                    if (success)
+                    {
+                        dialog.DialogResult = true;
+                        dialog.Close();
+                    }
+                    else
+                    {
+                        dialog.Close();
+                    }
+                };
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    RefreshCommand.Execute();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"添加患者失败: {ex.Message}", "错误", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
         /// <summary>
@@ -114,20 +137,40 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         {
             if (patient == null) return;
 
-            // TODO: 实现编辑患者对话框
-            // var parameters = new DialogParameters
-            // {
-            //     { "PatientId", patient.Id }
-            // };
-            // _dialogService.ShowDialog("EditPatientDialog", parameters, async result =>
-            // {
-            //     if (result.Result == ButtonResult.OK)
-            //     {
-            //         await LoadDataAsync();
-            //     }
-            // });
-            
-            base.ExecuteEdit(patient); // 暂时显示开发中提示
+            try
+            {
+                var dialog = new Views.AddPatientDialog();
+                dialog.Owner = System.Windows.Application.Current.MainWindow;
+                dialog.Title = "编辑患者";
+                
+                // 创建 ViewModel 并设置为编辑模式
+                var viewModel = new AddPatientDialogViewModel(Service, patient);
+                dialog.DataContext = viewModel;
+                
+                // 设置保存成功回调
+                viewModel.CloseDialogCallback = (success) =>
+                {
+                    if (success)
+                    {
+                        dialog.DialogResult = true;
+                        dialog.Close();
+                    }
+                    else
+                    {
+                        dialog.Close();
+                    }
+                };
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    RefreshCommand.Execute();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"编辑患者失败: {ex.Message}", "错误", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
         /// <summary>

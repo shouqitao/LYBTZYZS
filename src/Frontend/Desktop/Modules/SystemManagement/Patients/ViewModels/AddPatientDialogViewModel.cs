@@ -1,4 +1,7 @@
+using LYBT.WPF.Client.Core.Interfaces;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models;
+using LYBT.WPF.Client.Core.Models.Patients;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
@@ -9,11 +12,13 @@ using System.Windows;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 {
     /// <summary>
-    /// 新增患者对话框视图模型
+    /// 新增/编辑患者对话框视图模型
     /// </summary>
     public class AddPatientDialogViewModel : BindableBase
     {
         private readonly IPatientService _patientService;
+        private readonly bool _isEditMode;
+        private readonly Guid? _editingPatientId;
         
         #region 属性
         
@@ -124,9 +129,42 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 
         public Action<bool>? CloseDialogCallback { get; set; }
 
+        /// <summary>
+        /// 用于新增的构造函数
+        /// </summary>
         public AddPatientDialogViewModel(IPatientService patientService)
+            : this(patientService, null)
+        {
+        }
+
+        /// <summary>
+        /// 用于新增或编辑的构造函数
+        /// </summary>
+        public AddPatientDialogViewModel(IPatientService patientService, PatientInfo? editingPatient)
         {
             _patientService = patientService;
+            
+            if (editingPatient != null)
+            {
+                _isEditMode = true;
+                _editingPatientId = editingPatient.Id;
+                
+                // 加载患者信息到界面
+                Name = editingPatient.Name;
+                IsMale = editingPatient.Gender == LYBT.Shared.Models.Enums.Gender.Male;
+                BirthDate = editingPatient.BirthDate;
+                // IdCard = editingPatient.IDNumber ?? string.Empty; // PatientInfo 没有 IDNumber 属性
+                IdCard = string.Empty; // TODO: 需要从其他地方获取身份证号
+                Phone = editingPatient.PhoneNumber ?? string.Empty;
+                Address = editingPatient.Address ?? string.Empty;
+                // 紧急联系人信息可能在备注中，这里暂时不解析
+                Allergies = editingPatient.AllergyHistory ?? string.Empty;
+                // 医疗历史等信息需要根据实际情况处理
+            }
+            else
+            {
+                _isEditMode = false;
+            }
             
             SaveCommand = new DelegateCommand(ExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
@@ -157,7 +195,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             {
                 var patient = new PatientDetailDto
                 {
-                    Id = Guid.NewGuid(),
+                    Id = _isEditMode && _editingPatientId.HasValue ? _editingPatientId.Value : Guid.NewGuid(),
                     Name = Name,
                     Gender = IsMale ? Gender.Male : Gender.Female,
                     BirthDate = BirthDate.Value,
@@ -166,9 +204,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                     Address = Address,
                     AllergyHistory = Allergies,
                     Remark = $"紧急联系人：{EmergencyContact}，紧急电话：{EmergencyPhone}\n既往病史：{MedicalHistory}",
-                    IsActive = true,
-                    CreateTime = DateTime.Now
+                    IsActive = true
                 };
+
+                if (!_isEditMode)
+                {
+                    patient.CreateTime = DateTime.Now;
+                }
 
                 // 计算年龄
                 var today = DateTime.Today;
@@ -176,15 +218,24 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 if (BirthDate.Value.Date > today.AddYears(-age)) age--;
                 patient.Age = age;
 
-                var result = await _patientService.AddAsync(patient);
+                ServiceResult result;
+                if (_isEditMode)
+                {
+                    result = await _patientService.UpdateAsync(patient);
+                }
+                else
+                {
+                    result = await _patientService.AddAsync(patient);
+                }
+                
                 if (result.IsSuccess)
                 {
-                    MessageBox.Show("患者信息保存成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"患者信息{(_isEditMode ? "更新" : "保存")}成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                     CloseDialogCallback?.Invoke(true);
                 }
                 else
                 {
-                    MessageBox.Show($"保存失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"{(_isEditMode ? "更新" : "保存")}失败：{result.ErrorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)

@@ -151,7 +151,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                     _originalRecord = recordResult.Data;
                     
                     // 填充表单
-                    SelectedPatient = Patients.FirstOrDefault(p => p.Id.ToString() == _originalRecord.PatientId);
+                    SelectedPatient = Patients.FirstOrDefault(p => p.Id == _originalRecord.PatientId);
                     Diagnosis = _originalRecord.Diagnosis;
                     ChiefComplaint = _originalRecord.ChiefComplaint ?? string.Empty;
                     PresentIllness = _originalRecord.PresentIllness ?? string.Empty;

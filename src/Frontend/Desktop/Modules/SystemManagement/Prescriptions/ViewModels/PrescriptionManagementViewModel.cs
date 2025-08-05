@@ -370,10 +370,26 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             try
             {
-                // TODO: 需要获取IHerbsApiService实例来创建AddPrescriptionDialogViewModel
-                // 暂时显示提示消息
-                MessageBox.Show("新增处方对话框已准备就绪\n需要在依赖注入中添加IHerbsApiService", "提示", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                var dialog = new Views.AddPrescriptionDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.Title = "新增处方";
+                
+                // 创建 ViewModel
+                var viewModel = new AddPrescriptionDialogViewModel(Service);
+                dialog.DataContext = viewModel;
+                
+                // 设置回调
+                viewModel.CloseDialogCallback = () =>
+                {
+                    dialog.DialogResult = true;
+                    dialog.Close();
+                };
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    RefreshCommand.Execute();
+                    MessageBox.Show("处方添加成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {
@@ -396,10 +412,26 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
             try
             {
-                // TODO: 需要获取IHerbsApiService实例来创建EditPrescriptionDialogViewModel
-                // 暂时显示提示消息
-                MessageBox.Show($"编辑处方对话框已准备就绪\n处方编号：{item.PrescriptionNumber}\n患者：{item.PatientName}\n需要在依赖注入中添加IHerbsApiService", 
-                    "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                var dialog = new Views.EditPrescriptionDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.Title = "编辑处方";
+                
+                // 创建 ViewModel
+                var viewModel = new EditPrescriptionDialogViewModel(Service, item.Id);
+                dialog.DataContext = viewModel;
+                
+                // 设置回调
+                viewModel.CloseDialogCallback = () =>
+                {
+                    dialog.DialogResult = true;
+                    dialog.Close();
+                };
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    RefreshCommand.Execute();
+                    MessageBox.Show("处方编辑成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {

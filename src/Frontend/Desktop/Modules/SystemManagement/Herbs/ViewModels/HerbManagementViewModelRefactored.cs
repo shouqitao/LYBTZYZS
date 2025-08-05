@@ -385,8 +385,35 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             
             try
             {
-                // TODO: 实现库存管理对话框
-                MessageBox.Show($"管理药材 '{herb.Name}' 库存功能正在开发中", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                // 创建ViewModel并传入Service依赖
+                var viewModel = new StockManagementDialogViewModel(Service);
+                viewModel.SetHerb(herb);
+                
+                // 创建对话框并设置ViewModel
+                var dialog = new Views.StockManagementDialog();
+                dialog.DataContext = viewModel;
+                dialog.Owner = Application.Current.MainWindow;
+                
+                // 设置关闭回调
+                viewModel.CloseDialogCallback = () => dialog.Close();
+                viewModel.SaveCompleteCallback = (success) =>
+                {
+                    if (success)
+                    {
+                        // 刷新列表
+                        RefreshCommand.Execute();
+                        // 更新库存预警计数
+                        UpdateLowStockCount();
+                    }
+                };
+
+                void UpdateLowStockCount()
+                {
+                    // 计算库存不足的药材数量（暂定小于10为库存不足）
+                    LowStockCount = Items.Count(item => item.Stock < 10);
+                }
+
+                dialog.ShowDialog();
             }
             catch (Exception ex)
             {

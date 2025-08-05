@@ -15,7 +15,7 @@ namespace LYBT.Shared.Models.Contracts.Records {
 
         /// <summary>病人ID</summary>
         [DisplayName("病人ID")]
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>病人姓名</summary>
         [DisplayName("病人姓名")]

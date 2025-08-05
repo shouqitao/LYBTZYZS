@@ -11,12 +11,12 @@ namespace LYBT.Shared.Models.Contracts.Queueing {
         /// <summary>病人ID</summary>
         [Required(ErrorMessage = "病人ID不能为空")]
         [DisplayName("病人ID")]
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>医生ID</summary>
         [Required(ErrorMessage = "医生ID不能为空")]
         [DisplayName("医生ID")]
-        public string DoctorId { get; set; } = string.Empty;
+        public Guid DoctorId { get; set; }
 
         /// <summary>排队类型（如"普通"、"急诊"）</summary>
         [Required(ErrorMessage = "排队类型不能为空")]

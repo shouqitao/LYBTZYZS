@@ -136,12 +136,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
         {
             try
             {
-                var viewModel = new AddRecordDialogViewModel(Service, _patientService);
                 var dialog = new AddRecordDialog
                 {
-                    DataContext = viewModel,
                     Owner = Application.Current.MainWindow
                 };
+
+                // 创建简化版的 ViewModel
+                var viewModel = new SimpleAddRecordDialogViewModel();
+                dialog.DataContext = viewModel;
 
                 viewModel.CloseDialogCallback = (success) =>
                 {

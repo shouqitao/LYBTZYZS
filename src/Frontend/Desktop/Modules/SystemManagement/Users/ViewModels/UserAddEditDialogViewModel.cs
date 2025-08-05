@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Core.Models.Users;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -19,7 +20,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
     /// </summary>
     public class UserAddEditDialogViewModel : BindableBase
     {
-        private readonly IUserService _userService;
+        private readonly IUserApiService _userService;
         private readonly UserInfo? _originalUser;
         
         private string _userName = string.Empty;
@@ -96,8 +97,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
         /// <summary>对话框结果</summary>
         public bool? DialogResult { get; private set; }
+        
+        /// <summary>保存完成回调</summary>
+        public Action<bool>? SaveCompleteCallback { get; set; }
+        
+        /// <summary>关闭对话框回调</summary>
+        public Action? CloseDialogCallback { get; set; }
 
-        public UserAddEditDialogViewModel(IUserService userService, UserInfo? user = null)
+        public UserAddEditDialogViewModel(IUserApiService userService, UserInfo? user = null)
         {
             _userService = userService;
             _originalUser = user;
@@ -175,11 +182,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                     };
 
                     var response = await _userService.CreateUserAsync(createRequest);
-                    success = response.IsSuccess;
+                    success = response.IsSuccessStatusCode;
                     
                     if (!success)
                     {
-                        ValidationMessage = response.ErrorMessage ?? "创建用户失败";
+                        ValidationMessage = response.Error?.Content ?? "创建用户失败";
                         return;
                     }
                 }
@@ -204,18 +211,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                     };
 
                     var response = await _userService.UpdateUserAsync(updateRequest);
-                    success = response.IsSuccess;
+                    success = response.IsSuccessStatusCode;
                     
                     if (!success)
                     {
-                        ValidationMessage = response.ErrorMessage ?? "更新用户失败";
+                        ValidationMessage = response.Error?.Content ?? "更新用户失败";
                         return;
                     }
                 }
 
-                // 成功后关闭对话框
+                // 成功后调用回调并关闭对话框
                 DialogResult = true;
-                CloseDialog();
+                SaveCompleteCallback?.Invoke(true);
+                // 注意：不要在这里调用 CloseDialog()，让回调处理关闭
             }
             catch (Exception ex)
             {

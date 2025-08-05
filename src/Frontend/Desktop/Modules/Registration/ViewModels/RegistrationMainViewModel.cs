@@ -4,6 +4,7 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Registration;
 using Prism.Commands;
 using Prism.Mvvm;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -196,8 +197,15 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
         {
             try
             {
-                // TODO: 实现挂号新增对话框
-                MessageBox.Show("新增挂号功能正在开发中", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                // TODO: 需要通过依赖注入获取服务实例来创建ViewModel
+                // 暂时显示提示信息，避免运行时错误
+                MessageBox.Show("新增挂号功能需要配置依赖注入服务后才能使用。\n请在SystemManagement模块中使用该功能。", 
+                    "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                // 正确的实现方式应该是：
+                // 1. 通过构造函数注入IContainerProvider或IServiceProvider
+                // 2. 使用容器解析ViewModel及其依赖
+                // 3. 创建对话框并设置DataContext
             }
             catch (Exception ex)
             {
@@ -211,12 +219,22 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
             
             try
             {
-                // TODO: 实现挂号编辑对话框
-                MessageBox.Show($"编辑挂号 '{registration.RegistrationNumber}' 功能正在开发中", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                // 使用SystemManagement模块的View对话框，直接传递挂号ID
+                var dialog = new LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views.ViewRegistrationDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                
+                // 设置要查看的挂号数据
+                if (dialog.DataContext is LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels.ViewRegistrationDialogViewModel viewModel)
+                {
+                    // 设置挂号ID进行加载
+                    viewModel.SetRegistrationId(registration.Id);
+                }
+
+                dialog.ShowDialog(); // 查看对话框不需要返回结果
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"打开编辑挂号对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"打开挂号详情对话框失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -274,14 +292,53 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
             }
         }
 
-        private void ExecuteCheckIn(RegistrationInfo registration)
+        private async void ExecuteCheckIn(RegistrationInfo registration)
         {
             if (registration == null) return;
             
+            // 检查当前状态是否可以签到
+            if (registration.Status != LYBT.Shared.Models.Enums.RegistrationStatus.Scheduled)
+            {
+                MessageBox.Show($"患者 '{registration.PatientName}' 当前状态为 '{registration.StatusText}'，无法签到", 
+                    "无法签到", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            
+            // 确认签到操作
+            var result = MessageBox.Show($"确认患者 '{registration.PatientName}' 签到？\n将状态改为'已到达'", "确认签到", 
+                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes) return;
+            
             try
             {
-                // TODO: 实现签到功能
-                MessageBox.Show($"患者 '{registration.PatientName}' 签到功能正在开发中", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                // 创建更新DTO，将状态改为已到达
+                var updateDto = new LYBT.Shared.Models.Contracts.Registration.RegistrationEditDto
+                {
+                    Id = registration.Id,
+                    PatientId = registration.PatientId,
+                    DoctorId = registration.DoctorId,
+                    Department = registration.Department,
+                    RegistrationType = registration.RegistrationType,
+                    VisitDate = registration.VisitDate,
+                    TimeSlot = registration.TimeSlot,
+                    Fee = registration.Fee,
+                    Status = LYBT.Shared.Models.Enums.RegistrationStatus.Arrived, // 设置为已到达状态
+                    Remark = registration.Remark
+                };
+
+                // 调用更新API
+                var response = await _registrationService.UpdateRegistrationAsync(updateDto);
+                if (response.IsSuccess)
+                {
+                    MessageBox.Show($"患者 '{registration.PatientName}' 签到成功", "成功", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    LoadRegistrations(); // 刷新列表
+                }
+                else
+                {
+                    MessageBox.Show($"签到失败: {response.ErrorMessage}", "错误", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {

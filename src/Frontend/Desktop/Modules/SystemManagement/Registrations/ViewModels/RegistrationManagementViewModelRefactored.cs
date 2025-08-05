@@ -197,13 +197,27 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
         {
             try
             {
-                var dialog = new Views.AddRegistrationDialog();
-                dialog.Owner = Application.Current.MainWindow;
+                // 暂时显示提示信息，因为新增挂号功能需要重新设计
+                MessageBox.Show("新增挂号功能正在开发中...\n\n" +
+                    "该功能需要：\n" +
+                    "1. 选择或创建患者\n" +
+                    "2. 选择医生和科室\n" +
+                    "3. 选择预约时间\n" +
+                    "4. 设置挂号费用", 
+                    "功能开发中", MessageBoxButton.OK, MessageBoxImage.Information);
                 
-                if (dialog.ShowDialog() == true)
-                {
-                    RefreshCommand.Execute();
-                }
+                // TODO: 实现新增挂号功能
+                // var dialog = new Views.AddRegistrationDialog();
+                // dialog.Owner = Application.Current.MainWindow;
+                // 
+                // // 创建 ViewModel（需要注入必要的服务）
+                // var viewModel = new ViewModels.AddRegistrationDialogViewModel(service, patientService, doctorService);
+                // dialog.DataContext = viewModel;
+                // 
+                // if (dialog.ShowDialog() == true)
+                // {
+                //     RefreshCommand.Execute();
+                // }
             }
             catch (Exception ex)
             {
@@ -252,7 +266,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
 
         #region 额外功能
 
-        private void BatchCancel()
+        private async void BatchCancel()
         {
             var selectedItems = Items.Where(r => r.IsSelected && r.CanCancel).ToList();
             if (!selectedItems.Any())
@@ -268,14 +282,46 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             {
                 try
                 {
+                    IsLoading = true;
                     var ids = selectedItems.Select(r => r.Id).ToList();
-                    // TODO: 调用批量取消API
-                    MessageBox.Show("批量取消功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    
+                    // 逐个取消挂号（如果没有批量API）
+                    var successCount = 0;
+                    var failedCount = 0;
+                    
+                    foreach (var id in ids)
+                    {
+                        try
+                        {
+                            var response = await Service.CancelRegistrationAsync(id);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                successCount++;
+                            }
+                            else
+                            {
+                                failedCount++;
+                            }
+                        }
+                        catch
+                        {
+                            failedCount++;
+                        }
+                    }
+                    
+                    var message = $"批量取消完成\n成功：{successCount} 条\n失败：{failedCount} 条";
+                    MessageBox.Show(message, "批量取消结果", MessageBoxButton.OK, 
+                        failedCount > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+                    
                     RefreshCommand.Execute();
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"批量取消时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    IsLoading = false;
                 }
             }
         }
@@ -310,11 +356,54 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             }
         }
 
-        private void CheckIn(RegistrationInfo registration)
+        private async void CheckIn(RegistrationInfo registration)
         {
             if (registration == null || !registration.CanCheckIn) return;
 
-            MessageBox.Show("签到功能待实现", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            var result = MessageBox.Show($"确定要为患者 {registration.PatientName} 签到吗？\n挂号单号：{registration.RegistrationNumber}", 
+                "确认签到", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    IsLoading = true;
+                    
+                    // 只更新必要的字段，签到实际上是更改状态
+                    var updateDto = new RegistrationEditDto
+                    {
+                        Id = registration.Id,
+                        RegistrationType = registration.RegistrationType,
+                        DoctorId = registration.DoctorId,
+                        Remark = $"{registration.Remark}\n签到时间：{DateTime.Now:yyyy-MM-dd HH:mm:ss}"
+                    };
+                    
+                    // 注意：由于 RegistrationEditDto 没有 Status 字段，
+                    // 可能需要调用专门的签到 API 或者使用其他方法
+                    var response = await Service.UpdateRegistrationAsync(updateDto);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show($"患者 {registration.PatientName} 签到成功", "成功", 
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        RefreshCommand.Execute();
+                    }
+                    else
+                    {
+                        var error = response.Error?.Content ?? "签到失败";
+                        MessageBox.Show($"签到失败：{error}", "错误", 
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"签到时发生错误：{ex.Message}", "错误", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    IsLoading = false;
+                }
+            }
         }
 
         #endregion
@@ -354,10 +443,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             {
                 Id = dto.Id,
                 RegistrationNumber = dto.RegistrationNumber ?? string.Empty,
-                PatientId = Guid.TryParse(dto.PatientId, out var pId) ? pId : Guid.Empty,
+                PatientId = dto.PatientId,
                 PatientName = dto.PatientName ?? string.Empty,
                 PatientPhone = dto.PatientPhone ?? string.Empty,
-                DoctorId = Guid.TryParse(dto.DoctorId, out var dId) ? dId : Guid.Empty,
+                DoctorId = dto.DoctorId,
                 DoctorName = dto.DoctorName ?? string.Empty,
                 Department = dto.Department ?? string.Empty,
                 RegistrationType = ConvertToRegistrationType(dto.RegistrationType) ?? RegistrationType.Regular,

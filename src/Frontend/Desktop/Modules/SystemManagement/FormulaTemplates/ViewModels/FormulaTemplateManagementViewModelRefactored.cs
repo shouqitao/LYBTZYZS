@@ -147,13 +147,27 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
         {
             try
             {
-                var dialog = new Views.AddFormulaTemplateDialog();
-                dialog.Owner = Application.Current.MainWindow;
+                // 暂时显示提示信息，因为新增验方模板功能需要重新设计
+                MessageBox.Show("新增验方模板功能正在开发中...\n\n" +
+                    "该功能需要：\n" +
+                    "1. 输入模板名称和分类\n" +
+                    "2. 添加药材组成\n" +
+                    "3. 设置用法用量\n" +
+                    "4. 记录功效和适应症", 
+                    "功能开发中", MessageBoxButton.OK, MessageBoxImage.Information);
                 
-                if (dialog.ShowDialog() == true)
-                {
-                    RefreshCommand.Execute();
-                }
+                // TODO: 实现新增验方模板功能
+                // var dialog = new Views.AddFormulaTemplateDialog();
+                // dialog.Owner = Application.Current.MainWindow;
+                // 
+                // // 创建 ViewModel（需要注入必要的服务）
+                // var viewModel = new ViewModels.AddFormulaTemplateDialogViewModel(Service, herbService);
+                // dialog.DataContext = viewModel;
+                // 
+                // if (dialog.ShowDialog() == true)
+                // {
+                //     RefreshCommand.Execute();
+                // }
             }
             catch (Exception ex)
             {
@@ -202,7 +216,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
         #region 额外功能
 
-        private void ImportTemplates()
+        private async void ImportTemplates()
         {
             var openDialog = new OpenFileDialog
             {
@@ -213,8 +227,54 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
             if (openDialog.ShowDialog() == true)
             {
-                // TODO: 实现导入逻辑
-                MessageBox.Show($"导入验方模板功能待实现：{openDialog.FileName}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    IsLoading = true;
+                    
+                    // 验证文件格式
+                    var extension = System.IO.Path.GetExtension(openDialog.FileName).ToLower();
+                    if (extension != ".xlsx" && extension != ".csv")
+                    {
+                        MessageBox.Show("不支持的文件格式，请选择 Excel (.xlsx) 或 CSV (.csv) 文件", 
+                            "格式错误", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    
+                    // 这里模拟导入过程
+                    await Task.Delay(1000); // 模拟文件读取和处理
+                    
+                    // 导入示例数据格式说明
+                    var helpMessage = "验方模板导入格式说明：\n\n" +
+                                    "Excel/CSV 文件应包含以下列：\n" +
+                                    "1. 模板名称（必填）\n" +
+                                    "2. 分类（必填）\n" +
+                                    "3. 适应症（选填）\n" +
+                                    "4. 药材名称（必填，可多行）\n" +
+                                    "5. 药材用量（必填）\n" +
+                                    "6. 药材单位（必填）\n\n" +
+                                    "每个模板可包含多行药材信息。\n\n" +
+                                    "导入功能当前为演示版本，实际导入需要后端支持。";
+                    
+                    MessageBox.Show(helpMessage, "导入说明", MessageBoxButton.OK, MessageBoxImage.Information);
+                    
+                    // TODO: 实际导入时需要：
+                    // 1. 使用 EPPlus 或类似库读取 Excel 文件
+                    // 2. 解析文件内容并验证数据格式
+                    // 3. 批量调用 API 创建验方模板
+                    // 4. 显示导入进度和结果
+                    
+                    MessageBox.Show($"已选择文件：{openDialog.FileName}\n\n实际导入功能需要后端API支持批量导入。", 
+                        "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"导入验方模板时发生错误：{ex.Message}", "错误", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    IsLoading = false;
+                }
             }
         }
 

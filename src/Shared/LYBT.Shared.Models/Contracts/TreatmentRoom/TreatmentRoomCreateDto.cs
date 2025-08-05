@@ -11,7 +11,7 @@ namespace LYBT.Shared.Models.Contracts.TreatmentRoom {
         /// <summary>病人ID</summary>
         [Required(ErrorMessage = "病人ID不能为空")]
         [DisplayName("病人ID")]
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>病人姓名</summary>
         [DisplayName("病人姓名")]
@@ -20,7 +20,7 @@ namespace LYBT.Shared.Models.Contracts.TreatmentRoom {
         /// <summary>医生ID</summary>
         [Required(ErrorMessage = "医生ID不能为空")]
         [DisplayName("医生ID")]
-        public string DoctorId { get; set; } = string.Empty;
+        public Guid DoctorId { get; set; }
 
         /// <summary>诊疗项目</summary>
         [Required(ErrorMessage = "诊疗项目不能为空")]

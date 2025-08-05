@@ -10,7 +10,7 @@ namespace LYBT.Shared.Models.Contracts.Sync {
 
         /// <summary>同步日志ID</summary>
         [DisplayName("同步日志ID")]
-        public string Id { get; set; } = string.Empty;
+        public Guid Id { get; set; }
 
         /// <summary>同步时间</summary>
         [DisplayName("同步时间")]

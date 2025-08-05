@@ -123,8 +123,29 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         {
             try
             {
-                // 简单实现：直接创建一个新用户
-                MessageBox.Show("用户添加功能开发中...", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                var dialog = new Views.UserAddEditDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.Title = "新增用户";
+                
+                // 创建ViewModel并设置为添加模式
+                var viewModel = new UserAddEditDialogViewModel(Service, null); // null表示新增
+                dialog.DataContext = viewModel;
+                
+                // 设置保存成功回调
+                viewModel.SaveCompleteCallback = (success) =>
+                {
+                    if (success)
+                    {
+                        dialog.DialogResult = true;
+                        dialog.Close();
+                    }
+                };
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    RefreshCommand.Execute();
+                    MessageBox.Show("用户添加成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {
@@ -138,16 +159,29 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
             try
             {
-                // 简单实现：显示用户信息
-                MessageBox.Show(
-                    $"用户名: {item.Username}\n" +
-                    $"真实姓名: {item.RealName}\n" +
-                    $"角色: {item.RoleDisplayName}\n" +
-                    $"部门: {item.Department ?? "未设置"}\n" +
-                    $"状态: {(item.IsActive ? "启用" : "禁用")}",
-                    "用户信息", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Information);
+                var dialog = new Views.UserAddEditDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.Title = "编辑用户";
+                
+                // 创建ViewModel并设置为编辑模式
+                var viewModel = new UserAddEditDialogViewModel(Service, item);
+                dialog.DataContext = viewModel;
+                
+                // 设置保存成功回调
+                viewModel.SaveCompleteCallback = (success) =>
+                {
+                    if (success)
+                    {
+                        dialog.DialogResult = true;
+                        dialog.Close();
+                    }
+                };
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    RefreshCommand.Execute();
+                    MessageBox.Show("用户编辑成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {

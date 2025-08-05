@@ -236,7 +236,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 var medicalRecord = ConvertToMedicalRecord(CurrentRecord);
                 var createDto = new RecordCreateDto
                 {
-                    PatientId = medicalRecord.PatientId.ToString(),
+                    PatientId = medicalRecord.PatientId,
                     RegistrationId = Guid.NewGuid(), // TODO: 需要从实际挂号记录获取
                     Diagnosis = medicalRecord.Diagnosis,
                     ChiefComplaint = medicalRecord.ChiefComplaint,

@@ -14,15 +14,15 @@ namespace LYBT.Shared.Models.Core {
 
         /// <summary>执行ID</summary>
         [DisplayName("执行ID")]
-        public string ExecutionId { get; set; } = string.Empty;
+        public Guid ExecutionId { get; set; }
 
         /// <summary>计划ID</summary>
         [DisplayName("计划ID")]
-        public string PlanId { get; set; } = string.Empty;
+        public Guid PlanId { get; set; }
 
         /// <summary>患者ID</summary>
         [DisplayName("患者ID")]
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>治疗类型</summary>
         [DisplayName("治疗类型")]
@@ -50,7 +50,7 @@ namespace LYBT.Shared.Models.Core {
 
         /// <summary>医生ID</summary>
         [DisplayName("医生ID")]
-        public string DoctorId { get; set; } = string.Empty;
+        public Guid DoctorId { get; set; }
 
         /// <summary>开始时间</summary>
         [DisplayName("开始时间")]

@@ -192,7 +192,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
 
                 var dto = new RecordCreateDto
                 {
-                    PatientId = SelectedPatient.Id.ToString(),
+                    PatientId = SelectedPatient.Id,
                     RegistrationId = Guid.NewGuid(), // TODO: 实际应该关联真实的挂号记录
                     Diagnosis = Diagnosis,
                     ChiefComplaint = ChiefComplaint,
@@ -202,7 +202,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                     IsShared = IsShared,
                     RecordTime = RecordTime,
                     CreateTime = DateTime.Now,
-                    CreatedBy = "当前医生" // TODO: 获取当前登录医生ID
+                    CreatedBy = null // TODO: 获取当前登录医生ID
                 };
 
                 var result = await _recordService.AddAsync(dto);

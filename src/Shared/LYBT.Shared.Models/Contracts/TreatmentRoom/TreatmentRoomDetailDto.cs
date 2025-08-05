@@ -13,7 +13,7 @@ namespace LYBT.Shared.Models.Contracts.TreatmentRoom {
 
         /// <summary>病人ID</summary>
         [DisplayName("病人ID")]
-        public string PatientId { get; set; } = string.Empty;
+        public Guid PatientId { get; set; }
 
         /// <summary>病人姓名</summary>
         [DisplayName("病人姓名")]
@@ -21,7 +21,7 @@ namespace LYBT.Shared.Models.Contracts.TreatmentRoom {
 
         /// <summary>医生ID</summary>
         [DisplayName("医生ID")]
-        public string DoctorId { get; set; } = string.Empty;
+        public Guid DoctorId { get; set; }
 
         /// <summary>医生姓名</summary>
         [DisplayName("医生姓名")]

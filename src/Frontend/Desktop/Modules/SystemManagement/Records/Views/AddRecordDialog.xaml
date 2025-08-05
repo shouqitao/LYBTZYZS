@@ -5,232 +5,167 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         mc:Ignorable="d" 
         Title="新增病历" 
-        Height="700" Width="600"
+        Height="650" Width="550"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False">
     
-    <Grid Background="White">
+    <Grid Background="#F5F5F5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 标题 -->
-        <Border Grid.Row="0" Background="#2E86AB" Padding="20,15">
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="#1976D2" Padding="20,15">
             <TextBlock Text="新增病历记录" FontSize="18" FontWeight="Bold" Foreground="White"/>
         </Border>
 
-        <!-- 加载指示器 -->
-        <ProgressBar Grid.Row="1" IsIndeterminate="True" 
-                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                     Height="4" VerticalAlignment="Top"/>
-
-        <!-- 表单内容 -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
-            <ScrollViewer.Style>
-                <Style TargetType="ScrollViewer">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding IsLoading}" Value="False">
-                            <Setter Property="Visibility" Value="Visible"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </ScrollViewer.Style>
-            
-            <StackPanel>
-                <!-- 基本信息 -->
-                <TextBlock Text="基本信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+        <!-- 主要内容区域 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="30,20">
                 
-                <!-- 患者选择 -->
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold">
-                        <Run Text="患者："/>
-                        <Run Text="*" Foreground="Red"/>
-                    </TextBlock>
-                    <ComboBox Grid.Column="1" 
-                              ItemsSource="{Binding Patients}"
-                              SelectedItem="{Binding SelectedPatient}"
-                              DisplayMemberPath="Name"
-                              Height="32" 
-                              VerticalContentAlignment="Center">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock>
-                                    <Run Text="{Binding Name}"/>
-                                    <Run Text=" - "/>
-                                    <Run Text="{Binding Age}"/>
-                                    <Run Text="岁"/>
-                                </TextBlock>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </Grid>
+                <!-- 基本信息 -->
+                <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="患者信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- 患者姓名 -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="患者姓名 *" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding PatientName}" Height="35" Padding="8,5"/>
+                            </StackPanel>
+                            
+                            <!-- 患者ID/病历号 -->
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="病历号/ID" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding PatientId}" Height="35" Padding="8,5"/>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <!-- 就诊日期 -->
+                        <StackPanel Margin="0,15,0,0">
+                            <TextBlock Text="就诊日期" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <DatePicker SelectedDate="{Binding RecordDate}" Height="35"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
-                <!-- 病历时间 -->
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="病历时间：" VerticalAlignment="Center" FontWeight="Bold"/>
-                    <DatePicker Grid.Column="1" 
-                                SelectedDate="{Binding RecordTime}" 
-                                Height="32" 
-                                VerticalContentAlignment="Center"/>
-                </Grid>
+                <!-- 病历内容 -->
+                <Border Background="White" CornerRadius="8" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="病历记录" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="#333"/>
+                        
+                        <!-- 主诉 -->
+                        <StackPanel Margin="0,0,0,15">
+                            <TextBlock Text="主诉 *" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding ChiefComplaint}" 
+                                     Height="60" 
+                                     Padding="8,5"
+                                     TextWrapping="Wrap" 
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </StackPanel>
 
-                <!-- 主诉 -->
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Top" FontWeight="Bold" Margin="0,5,0,0">
-                        <Run Text="主诉："/>
-                        <Run Text="*" Foreground="Red"/>
-                    </TextBlock>
-                    <TextBox Grid.Column="1" 
-                             Text="{Binding ChiefComplaint}" 
-                             Height="60" 
-                             TextWrapping="Wrap" 
-                             AcceptsReturn="True" 
-                             VerticalContentAlignment="Top" 
-                             Padding="8,5"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                </Grid>
+                        <!-- 现病史 -->
+                        <StackPanel Margin="0,0,0,15">
+                            <TextBlock Text="现病史" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding PresentIllness}" 
+                                     Height="80" 
+                                     Padding="8,5"
+                                     TextWrapping="Wrap" 
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </StackPanel>
 
-                <!-- 现病史 -->
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="现病史：" VerticalAlignment="Top" FontWeight="Bold" Margin="0,5,0,0"/>
-                    <TextBox Grid.Column="1" 
-                             Text="{Binding PresentIllness}" 
-                             Height="80" 
-                             TextWrapping="Wrap" 
-                             AcceptsReturn="True" 
-                             VerticalContentAlignment="Top" 
-                             Padding="8,5"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                </Grid>
+                        <!-- 诊断 -->
+                        <StackPanel Margin="0,0,0,15">
+                            <TextBlock Text="诊断 *" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding Diagnosis}" Height="35" Padding="8,5"/>
+                        </StackPanel>
 
-                <!-- 诊断内容 -->
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Top" FontWeight="Bold" Margin="0,5,0,0">
-                        <Run Text="诊断内容："/>
-                        <Run Text="*" Foreground="Red"/>
-                    </TextBlock>
-                    <TextBox Grid.Column="1" 
-                             Text="{Binding Diagnosis}" 
-                             Height="80" 
-                             TextWrapping="Wrap" 
-                             AcceptsReturn="True" 
-                             VerticalContentAlignment="Top" 
-                             Padding="8,5"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                </Grid>
+                        <!-- 治疗方案 -->
+                        <StackPanel Margin="0,0,0,15">
+                            <TextBlock Text="治疗方案" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding TreatmentPlan}" 
+                                     Height="80" 
+                                     Padding="8,5"
+                                     TextWrapping="Wrap" 
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </StackPanel>
 
-                <!-- 辨证结果 -->
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="辨证结果：" VerticalAlignment="Center" FontWeight="Bold"/>
-                    <TextBox Grid.Column="1" 
-                             Text="{Binding DiagnosisResultsText}" 
-                             Height="32" 
-                             VerticalContentAlignment="Center" 
-                             Padding="8,0"
-                             ToolTip="多个结果请用逗号分隔"/>
-                </Grid>
+                        <!-- 备注 -->
+                        <StackPanel>
+                            <TextBlock Text="备注" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding Remark}" 
+                                     Height="60" 
+                                     Padding="8,5"
+                                     TextWrapping="Wrap" 
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
-                <!-- 诊疗建议 -->
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="诊疗建议：" VerticalAlignment="Top" FontWeight="Bold" Margin="0,5,0,0"/>
-                    <TextBox Grid.Column="1" 
-                             Text="{Binding TreatmentAdvice}" 
-                             Height="80" 
-                             TextWrapping="Wrap" 
-                             AcceptsReturn="True" 
-                             VerticalContentAlignment="Top" 
-                             Padding="8,5"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                </Grid>
-
-                <!-- 共享设置 -->
-                <TextBlock Text="共享设置" FontSize="16" FontWeight="Bold" Margin="0,20,0,15" Foreground="#333"/>
-
-                <!-- 是否共享 -->
-                <Grid Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="共享病历：" VerticalAlignment="Center" FontWeight="Bold"/>
-                    <CheckBox Grid.Column="1" 
-                              Content="允许其他医生查看此病历" 
-                              IsChecked="{Binding IsShared}" 
-                              VerticalAlignment="Center"/>
-                </Grid>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- 按钮栏 -->
-        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,1,0,0" Padding="20,15">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <!-- 底部按钮 -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,15">
                 <Button Content="保存" 
                         Command="{Binding SaveCommand}"
-                        Width="100" Height="36"
-                        Background="#28A745"
-                        Foreground="White"
+                        Width="100" 
+                        Height="35" 
+                        Background="#1976D2" 
+                        Foreground="White" 
                         BorderThickness="0"
                         Cursor="Hand"
                         Margin="0,0,10,0">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="4"/>
-                        </Style>
-                    </Button.Resources>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#1565C0"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
                 </Button>
-                
                 <Button Content="取消" 
                         Command="{Binding CancelCommand}"
-                        Width="100" Height="36"
-                        Background="#6C757D"
-                        Foreground="White"
+                        Width="100" 
+                        Height="35" 
+                        Background="#757575" 
+                        Foreground="White" 
                         BorderThickness="0"
                         Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="4"/>
-                        </Style>
-                    </Button.Resources>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#616161"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
                 </Button>
             </StackPanel>
         </Border>
     </Grid>
-    
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-    </Window.Resources>
 </Window>

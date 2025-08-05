@@ -15,6 +15,7 @@ using LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Doctors.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
@@ -38,6 +39,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             ViewModelLocationProvider.Register<DoctorManagementView, Doctors.ViewModels.DoctorManagementViewModelRefactored>();
             ViewModelLocationProvider.Register<PatientManagementView, Patients.ViewModels.PatientManagementViewModelRefactored>();
             ViewModelLocationProvider.Register<RecordManagementView, Records.ViewModels.RecordManagementViewModelRefactored>();
+            ViewModelLocationProvider.Register<RoleManagementView, RoleManagementViewModelRefactored>();
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)

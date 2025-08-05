@@ -293,7 +293,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                 var dto = new RegistrationEditDto
                 {
                     Id = _registrationId,
-                    DoctorId = SelectedDoctor?.Id.ToString() ?? throw new InvalidOperationException("未选中医生"),
+                    DoctorId = SelectedDoctor?.Id ?? throw new InvalidOperationException("未选中医生"),
                     RegistrationType = registrationType,
                     Remark = Remark ?? string.Empty
                 };
