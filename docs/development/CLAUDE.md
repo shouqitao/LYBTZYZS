@@ -2,253 +2,146 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Build and Development Commands
+## 项目概述
 
-### 快速启动脚本
+凌隐宝堂中医诊所诊疗系统 (LYBTZYZS) - 基于 .NET 8 的企业级中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构。
 
-**主控制台** (推荐使用):
+## 常用开发命令
+
+### 快速启动
+
 ```bash
-# 项目根目录下直接双击
-启动控制台.bat
+# 交互式开发管理器（推荐）
+scripts\dev-manager.bat
 
-# 或者在scripts目录中
-scripts\main.bat
-```
-
-**开发环境快速启动**:
-```bash
+# 快速启动开发服务器
 scripts\start-dev.bat
+
+# 手动启动（开发时通常使用 Visual Studio）
+dotnet run --project src/Backend/Services/LYBT.WebAPI
 ```
 
-**一键部署到生产环境**:
+### 构建命令
+
 ```bash
-scripts\deploy-all.bat
+# 构建解决方案
+dotnet build LYBT.Backend.sln    # 后端
+dotnet build LYBT.Desktop.sln    # 前端
+dotnet build LYBT.All.sln        # 完整方案
+
+# 发布生产版本
+scripts\publish-production.bat
 ```
 
-**数据库管理工具**:
+### 数据库管理
+
 ```bash
+# 交互式数据库管理器
 scripts\database-manager.bat
+
+# 添加迁移 - 必须使用 Infrastructure 项目
+dotnet ef migrations add [迁移名称] --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
+
+# 更新数据库
+dotnet ef database update --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
 ```
 
-### 传统命令行方式
-
-### Building the Solution
+### 测试
 
 ```bash
-dotnet build LYBTZYZS.sln
-```
-
-### Running the WebAPI
-
-```bash
-cd LYBT.WebAPI
-dotnet run
-```
-
-The API will be available at `https://localhost:5001` or `http://localhost:5000` with Swagger UI at the root path.
-
-**自动数据库初始化功能**:
-WebAPI启动时会自动执行以下数据库检查和初始化操作：
-- ✅ 检查数据库连接状态
-- ✅ 自动创建数据库（如果不存在）  
-- ✅ 自动应用待处理的迁移
-- ✅ 验证核心表结构
-- ✅ 显示详细的数据库状态信息
-
-启动日志示例：
-```
-🔄 正在初始化应用程序...
-📊 数据库信息:
-   ├─ 数据库名: LYBTDB
-   ├─ 连接状态: ✅ 已连接
-   ├─ 已应用迁移: 1 个
-   ├─ 待处理迁移: 0 个
-   └─ 最新迁移: 20250729041436_CreateAllTables
-✅ 应用程序初始化完成
-```
-
-**健康检查端点**:
-- `GET /api/health` - 基本健康检查
-- `GET /api/health/database` - 数据库状态检查
-- `GET /api/health/detailed` - 详细系统状态
-
-### Running Tests
-
-```bash
+# 运行所有测试
 dotnet test
+
+# API 自动化测试
+cd tests/api
+python api_test_automation.py
 ```
 
-### Database Migrations
+## 高层架构
 
-**Note: This system uses a unified database architecture with AppDbContext in LYBT.Infrastructure.**
+### 整体技术栈
+- **后端**: .NET 8, ASP.NET Core Web API, Entity Framework Core 8.0.17, SQL Server
+- **前端**: WPF (.NET 8), Prism.DryIoc 9.0.537, Refit
+- **认证**: JWT Bearer Token
+- **API文档**: Swagger/Swashbuckle 9.0.1
 
-#### Standard Migration Operations
-
-```bash
-# Add a new migration (replace MigrationName)
-dotnet ef migrations add MigrationName --project LYBT.Infrastructure --startup-project LYBT.WebAPI
-
-# Update database
-dotnet ef database update --project LYBT.Infrastructure --startup-project LYBT.WebAPI
-
-# Remove last migration (if not applied)
-dotnet ef migrations remove --project LYBT.Infrastructure --startup-project LYBT.WebAPI
-```
-
-#### Complete Database Rebuild
-
-**⚠️ Warning: This will permanently delete ALL data. Use only in development environment.**
-
-When entity models undergo major changes and you need to completely rebuild the database:
-
-```bash
-# 1. Drop the entire database (will lose all data)
-dotnet ef database drop --project LYBT.Infrastructure --startup-project LYBT.WebAPI --force
-
-# 2. Delete all migration files
-rmdir /s /q "LYBT.Infrastructure\Migrations"
-# On Linux/Mac: rm -rf "LYBT.Infrastructure/Migrations"
-
-# 3. Create fresh initial migration
-dotnet ef migrations add InitialCreate --project LYBT.Infrastructure --startup-project LYBT.WebAPI
-
-# 4. Create new database with updated schema
-dotnet ef database update --project LYBT.Infrastructure --startup-project LYBT.WebAPI
-```
-
-#### One-Command Database Rebuild
-
-```bash
-# Quick rebuild sequence (development only)
-dotnet ef database drop --project LYBT.Infrastructure --startup-project LYBT.WebAPI --force && rmdir /s /q "LYBT.Infrastructure\Migrations" && dotnet ef migrations add InitialCreate --project LYBT.Infrastructure --startup-project LYBT.WebAPI && dotnet ef database update --project LYBT.Infrastructure --startup-project LYBT.WebAPI
-```
-
-#### When to Use Complete Rebuild
-
-- Major entity model restructuring
-- Changing primary key types or relationships
-- Database schema architectural changes
-- Development phase rapid iteration
-- Cleaning up test/development data
-
-#### Production Migration Best Practices
-
-- Always use incremental migrations in production
-- Test migrations on development database first
-- Backup production database before applying migrations
-- Use `dotnet ef migrations script` to generate SQL scripts for review
-
-## Architecture Overview
-
-This is a **modular Traditional Chinese Medicine (TCM) clinic management system** built with ASP.NET Core 8.0 using a clean, modular architecture pattern.
-
-### Core Architecture Principles
-
-- **Modular Design**: Each business domain is implemented as a separate module with its own services, repositories, and models
-- **Unified Infrastructure**: Shared infrastructure services for logging, caching, configuration, and authentication
-- **Unified Database**: Single AppDbContext in LYBT.Infrastructure manages all business entities
-- **Agent-Based Services**: Each module exposes standardized service interfaces for cross-module communication
-
-### Module Structure
-
-Each business module follows this structure:
+### 项目结构
 
 ```
-LYBT.Module.[Name]/
-├── Models/                  # Domain models and DTOs
-├── Services/                # Business logic services
-├── Repositories/            # Data access layer
-├── Interfaces/              # Service contracts
-├── Mapping/                 # AutoMapper profiles
-└── [Name]Module.cs         # Module registration
+src/
+├── Backend/
+│   ├── Core/
+│   │   ├── LYBT.Infrastructure/     # 统一 AppDbContext，所有迁移在此
+│   │   └── LYBT.Models/            # 领域模型
+│   ├── Modules/                    # 15个业务模块
+│   └── Services/LYBT.WebAPI/       # Web API 入口
+├── Frontend/Desktop/               # WPF 客户端
+└── Shared/                        # 前后端共享模型
 ```
 
-**Note: Database context and migrations are centralized in LYBT.Infrastructure.**
+### 关键架构特点
 
-### Key Modules
+1. **统一数据访问**: 所有模块共享 `AppDbContext`（在 Infrastructure 中）
+2. **模块化设计**: 每个业务模块独立但共享数据上下文
+3. **整洁架构**: 严格分离关注点
+4. **API 响应包装**: 所有响应包装在 `ApiResponse<T>` 中
+5. **依赖注入**: 构造函数注入模式
+6. **异步优先**: 数据库操作使用 async/await
 
-**Core Infrastructure:**
+### 业务模块列表
 
-- `LYBT.Infrastructure` - Unified logging, caching, configuration, authentication, and storage services
-- `LYBT.Common` - Shared enums, extensions, helpers, and response models
-- `LYBT.Models` - Shared domain models and DTOs
+1. **Auth** - 身份认证和授权
+2. **Users** - 用户管理  
+3. **Patients** - 患者档案
+4. **Doctors** - 医生管理
+5. **Registration** - 挂号预约
+6. **DiagnosisTreatment** - 诊断治疗
+7. **Prescriptions** - 处方管理
+8. **Herbs** - 中药材管理
+9. **FormulaTemplates** - 验方模板
+10. **Pharmacy** - 药房管理
+11. **Billing** - 收费结算
+12. **Records** - 病历档案
+13. **Queueing** - 排队叫号
+14. **TreatmentRoom** - 治疗室管理
+15. **Sync** - 数据同步
 
-**Business Modules:**
+## 开发约定
 
-- `LYBT.Module.Auth` - Authentication and authorization
-- `LYBT.Module.Users` - User account management and roles
-- `LYBT.Module.Patients` - Patient records and information management
-- `LYBT.Module.Doctors` - Doctor profiles and credentials
-- `LYBT.Module.Registration` - Patient registration and appointment booking
-- `LYBT.Module.Queueing` - Clinic queue management
-- `LYBT.Module.DiagnosisTreatment` - Diagnosis records and treatment plans
-- `LYBT.Module.Prescriptions` - Prescription management
-- `LYBT.Module.Herbs` - Traditional Chinese herb catalog and inventory
-- `LYBT.Module.FormulaTemplates` - Prescription template management
-- `LYBT.Module.Pharmacy` - Dispensing and pharmacy operations
-- `LYBT.Module.Billing` - Fee calculation and payment processing
-- `LYBT.Module.Records` - Medical record management
-- `LYBT.Module.TreatmentRoom` - Treatment room and facility management
-- `LYBT.Module.Sync` - Data synchronization services
-- `LYBT.Module.Settings` - System configuration management
+### 必须遵循的规则
 
-### Service Registration Pattern
+1. **数据库迁移**: 只能在 `LYBT.Infrastructure` 项目中添加
+2. **数据访问**: 使用统一的 `AppDbContext`
+3. **API 控制器**: 继承 `BaseController`，返回 `ApiResponse<T>`
+4. **对象映射**: 使用 AutoMapper
+5. **模块模式**: 新模块遵循现有模块结构（Interfaces/Services/Repositories/Mapping）
 
-Modules are registered in `LYBT.WebAPI/Extensions/ServiceCollectionExtension.cs` using extension methods:
+### 环境配置
 
-```csharp
-public static void AddLybtModules(this IServiceCollection services)
-{
-    services.AddUsersModuleServices();
-    services.AddPatientsModuleServices();
-    // ... other modules
-}
-```
+- **数据库**: SQL Server (localhost/LYBTDB)
+- **API端口**: https://localhost:7001
+- **默认登录**: sysadmin / Admin@123456
+- **JWT过期**: 8小时（Remember Me: 30天）
 
-### Database Configuration
+### 开发流程
 
-The system uses a unified database architecture with a single AppDbContext in LYBT.Infrastructure:
+1. 使用 Visual Studio 手动运行项目（根据 CLAUDE.local.md）
+2. API 文档访问: https://localhost:7001/swagger
+3. 使用 scripts/ 目录的批处理文件执行常见任务
+4. 数据库在首次运行时自动初始化
 
-```csharp
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options => {
-    options.UseSqlServer(connectionString, sqlOptions => {
-        sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
-        sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
-    });
-});
-```
+## 术语说明
 
-### API Controller Pattern
+- **Pharmacy**: 药房
+- **Prescriptions**: 处方
+- **FormulaTemplate**: 验方
 
-Controllers inherit from `BaseController` and follow RESTful conventions. They use dependency injection to access module services and return standardized `ApiResponse<T>` objects.
+## 项目特定指令
 
-### Unified Services
+- 显示和回答都用中文
+- 本项目数据库为 SQL Server（不是 LocalDB）
+- 开发时手动用 VS 执行运行操作
 
-The infrastructure provides these unified services accessible across all modules:
+## 文档管理
 
-- `IUnifiedLogService` - Centralized logging with audit trails
-- `IUnifiedConfigService` - Global configuration management
-- `ICacheService` - Distributed caching
-- `IFileStorageService` - File storage abstraction
-- `IJwtAuthenticationService` - JWT token management
-
-### Development Guidelines
-
-- The system uses a unified AppDbContext for all modules in LYBT.Infrastructure
-- All database migrations are centralized in LYBT.Infrastructure/Migrations
-- Use AutoMapper for DTO conversions with profiles defined in each module
-- Follow the Repository pattern for data access
-- Implement comprehensive logging for all business operations
-- Use standardized DTOs for API requests/responses
-- Maintain separation of concerns between modules
-- Follow async/await patterns consistently
-
-### Configuration
-
-- Connection strings and module settings are configured in `appsettings.json`
-- Each module can have its own configuration section
-- JWT authentication is configured through `JwtOptions`
-- User defaults are configurable through `UserOptions`
-
-This architecture supports horizontal scaling, independent module development, and maintains clean separation between business domains while providing shared infrastructure services.
+- 文档同时保留一份中文版，一份英文版。
