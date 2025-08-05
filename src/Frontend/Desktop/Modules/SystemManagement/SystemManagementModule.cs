@@ -11,6 +11,7 @@ using LYBT.WPF.Client.Modules.SystemManagement.Settings.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Backup.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Logs.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Doctors.Views;
@@ -32,6 +33,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             // 注册自定义的ViewModel映射
             ViewModelLocationProvider.Register<UserManagementView, UserManagementViewModelSimple>();
             ViewModelLocationProvider.Register<RegistrationManagementView, RegistrationManagementViewModelRefactored>();
+            ViewModelLocationProvider.Register<FormulaTemplateManagementView, FormulaTemplateManagementViewModelRefactored>();
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
