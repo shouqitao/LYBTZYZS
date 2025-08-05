@@ -1,5 +1,6 @@
 using LYBT.WPF.Client.Modules.SystemManagement.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Users.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.PrescriptionTemplates.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Patients.Views;
@@ -14,6 +15,7 @@ using LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Doctors.Views;
 using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Mvvm;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement
 {
@@ -25,6 +27,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成
+            
+            // 注册自定义的ViewModel映射
+            ViewModelLocationProvider.Register<UserManagementView, UserManagementViewModelSimple>();
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
