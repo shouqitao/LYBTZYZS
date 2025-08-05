@@ -3,13 +3,448 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <Style x:Key="InfoCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="10" Direction="270" Color="#000" Opacity="0.1" ShadowDepth="2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    
     <Grid>
-        <Border Background="#F8F9FA" CornerRadius="8" Margin="20">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="💾" FontSize="72" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                <TextBlock Text="数据备份" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                <TextBlock Text="功能开发中..." FontSize="16" Foreground="#666" HorizontalAlignment="Center"/>
-            </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题和统计信息 -->
+        <Border Grid.Row="0" Background="White" Padding="20" 
+                BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 标题 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="💾" FontSize="32" VerticalAlignment="Center" Foreground="#1976D2"/>
+                    <TextBlock Text="数据备份管理" FontSize="24" FontWeight="Bold" 
+                               VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </StackPanel>
+
+                <!-- 统计信息 -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal"
+                            Visibility="{Binding IsLoadingStatistics, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}">
+                    <StackPanel Margin="0,0,30,0">
+                        <TextBlock Text="{Binding Statistics.TotalBackups}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="总备份数" FontSize="12" Foreground="#666"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,30,0">
+                        <TextBlock Text="{Binding Statistics.SuccessfulBackups}" FontSize="20" FontWeight="Bold" 
+                                   HorizontalAlignment="Center" Foreground="#28A745"/>
+                        <TextBlock Text="成功" FontSize="12" Foreground="#666"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,30,0">
+                        <TextBlock Text="{Binding Statistics.FailedBackups}" FontSize="20" FontWeight="Bold" 
+                                   HorizontalAlignment="Center" Foreground="#DC3545"/>
+                        <TextBlock Text="失败" FontSize="12" Foreground="#666"/>
+                    </StackPanel>
+                    <Button Content="刷新统计" Command="{Binding RefreshStatisticsCommand}" 
+                            Style="{StaticResource MaterialDesignFlatButton}"/>
+                </StackPanel>
+            </Grid>
         </Border>
+
+        <!-- 主内容区域 -->
+        <TabControl Grid.Row="1" SelectedItem="{Binding ActiveTab}" 
+                    >
+            <!-- 备份历史标签页 -->
+            <TabItem Header="备份历史">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 搜索和筛选区域 -->
+                    <Border Grid.Row="0" Background="#F8F9FA" Padding="20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 第一行：搜索框和操作按钮 -->
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox Grid.Column="0" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                                         Tag="搜索备份名称、说明..."
+                                                                                  VerticalAlignment="Center"/>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0,0,0">
+                                    <Button Content="手动备份" Command="{Binding CreateManualBackupCommand}"
+                                                                                        Margin="0,0,10,0"/>
+                                    <Button Content="搜索" Command="{Binding RefreshCommand}"
+                                            Style="{StaticResource MaterialDesignOutlinedButton}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 第二行：筛选条件 -->
+                            <Grid Grid.Row="1" Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ComboBox Grid.Column="0" ItemsSource="{Binding BackupTypeOptions}"
+                                          SelectedValue="{Binding SelectedBackupType}"
+                                          SelectedValuePath="Value" DisplayMemberPath="Display"
+                                          Tag="备份类型"
+                                                                                    Width="120" Margin="0,0,10,0"/>
+
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding BackupStatusOptions}"
+                                          SelectedValue="{Binding SelectedStatus}"
+                                          SelectedValuePath="Value" DisplayMemberPath="Display"
+                                          Tag="状态"
+                                                                                    Width="120" Margin="0,0,10,0"/>
+
+                                <DatePicker Grid.Column="2" SelectedDate="{Binding StartDate}"
+                                            Tag="开始日期"
+                                                                                        Width="140" Margin="0,0,10,0"/>
+
+                                <TextBlock Grid.Column="3" Text="至" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                                <DatePicker Grid.Column="4" SelectedDate="{Binding EndDate}"
+                                            Tag="结束日期"
+                                                                                        Width="140"/>
+
+                                <Button Grid.Column="6" Content="清除筛选" Command="{Binding ClearFiltersCommand}"
+                                        Style="{StaticResource MaterialDesignFlatButton}"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- 数据列表 -->
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}"
+                              AutoGenerateColumns="False" CanUserAddRows="False"
+                              IsReadOnly="True" SelectionMode="Single"
+                                                            >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="备份名称" Binding="{Binding Name}" Width="2*"/>
+                            <DataGridTextColumn Header="类型" Binding="{Binding TypeName}" Width="100"/>
+                            <DataGridTextColumn Header="状态" Width="80">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{Binding StatusName}"/>
+                                        <Setter Property="Foreground" Value="{Binding StatusColor}"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="文件大小" Binding="{Binding FileSizeDisplay}" Width="100"/>
+                            <DataGridTextColumn Header="备份时间" Binding="{Binding BackupTime, StringFormat='yyyy-MM-dd HH:mm:ss'}" Width="160"/>
+                            <DataGridTextColumn Header="操作员" Binding="{Binding Operator}" Width="100"/>
+                            <DataGridTemplateColumn Header="操作" Width="250">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="恢复" Command="{Binding DataContext.RestoreCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    IsEnabled="{Binding CanRestore}"
+                                                                                                        Margin="0,0,5,0"/>
+                                            <Button Content="验证" Command="{Binding DataContext.VerifyCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                                                                        Margin="0,0,5,0"/>
+                                            <Button Content="下载" Command="{Binding DataContext.DownloadCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                                                                        Margin="0,0,5,0"/>
+                                            <Button Content="删除" Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    IsEnabled="{Binding CanDelete}"
+                                                                                                        Foreground="#DC3545"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- 分页控件 -->
+                    <Border Grid.Row="2" Background="White" Padding="10" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="共 {0} 条记录">
+                                        <Binding Path="TotalCount"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Content="首页" Command="{Binding FirstPageCommand}"
+                                                                                IsEnabled="{Binding CanGoToPreviousPage}"/>
+                                <Button Content="上一页" Command="{Binding PreviousPageCommand}"
+                                                                                IsEnabled="{Binding CanGoToPreviousPage}"/>
+                                <TextBlock VerticalAlignment="Center" Margin="10,0">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="第 {0} / {1} 页">
+                                            <Binding Path="CurrentPage"/>
+                                            <Binding Path="TotalPages"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <Button Content="下一页" Command="{Binding NextPageCommand}"
+                                                                                IsEnabled="{Binding CanGoToNextPage}"/>
+                                <Button Content="末页" Command="{Binding LastPageCommand}"
+                                                                                IsEnabled="{Binding CanGoToNextPage}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- 加载中和空数据提示 -->
+                    <Border Grid.Row="1" Background="White" 
+                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ProgressBar  
+                                         Value="0" IsIndeterminate="True" Width="50" Height="50"/>
+                            <TextBlock Text="正在加载备份历史..." Margin="0,10,0,0" FontSize="14"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" 
+                            Visibility="{Binding HasNoData, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="📁" FontSize="64" Foreground="#BDBDBD" HorizontalAlignment="Center"/>
+                            <TextBlock Text="暂无备份记录" FontSize="16" Foreground="#757575" 
+                                       Margin="0,10,0,0" HorizontalAlignment="Center"/>
+                            <Button Content="创建备份" Command="{Binding CreateManualBackupCommand}"
+                                                                        Margin="0,20,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- 备份计划标签页 -->
+            <TabItem Header="备份计划">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 工具栏 -->
+                    <ToolBar Grid.Row="0" Background="White">
+                        <Button Command="{Binding AddScheduleCommand}">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="➕" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="新建计划"/>
+                                </StackPanel>
+                            </Button.Content>
+                        </Button>
+                        <Separator/>
+                        <Button Command="{Binding RefreshSchedulesCommand}">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🔄" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="刷新"/>
+                                </StackPanel>
+                            </Button.Content>
+                        </Button>
+                    </ToolBar>
+
+                    <!-- 计划列表 -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Schedules}" Margin="20">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource InfoCardStyle}" Width="350" Margin="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- 标题和状态 -->
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="18" FontWeight="Bold"/>
+                                                <ToggleButton Grid.Column="1" IsChecked="{Binding IsEnabled}"
+                                                              Command="{Binding DataContext.ToggleScheduleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                              CommandParameter="{Binding}"
+                                                              />
+                                            </Grid>
+
+                                            <!-- 计划详情 -->
+                                            <StackPanel Grid.Row="1" Margin="0,10,0,0">
+                                                <TextBlock Text="{Binding ExecutionTimeDisplay}" FontSize="14" Foreground="#666"/>
+                                                <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#999" 
+                                                           TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                            </StackPanel>
+
+                                            <!-- 执行信息 -->
+                                            <Grid Grid.Row="2" Margin="0,15,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="上次执行" FontSize="12" Foreground="#666"/>
+                                                    <TextBlock Text="{Binding LastExecutionTime, StringFormat='yyyy-MM-dd HH:mm', TargetNullValue='从未执行'}" 
+                                                               FontSize="12" FontWeight="Bold"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="下次执行" FontSize="12" Foreground="#666"/>
+                                                    <TextBlock Text="{Binding NextExecutionTime, StringFormat='yyyy-MM-dd HH:mm', TargetNullValue='-'}" 
+                                                               FontSize="12" FontWeight="Bold" Foreground="{Binding StatusColor}"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- 操作按钮 -->
+                                            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                                <Button Content="编辑" 
+                                                        Command="{Binding DataContext.EditScheduleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource MaterialDesignFlatButton}"/>
+                                                <Button Content="删除" 
+                                                        Command="{Binding DataContext.DeleteScheduleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                                                                                Foreground="#DC3545"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- 加载中提示 -->
+                    <Border Grid.Row="1" Background="White" 
+                            Visibility="{Binding IsLoadingSchedules, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ProgressBar  
+                                         Value="0" IsIndeterminate="True" Width="50" Height="50"/>
+                            <TextBlock Text="正在加载备份计划..." Margin="0,10,0,0" FontSize="14"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- 备份配置标签页 -->
+            <TabItem Header="备份配置">
+                <Grid>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="40">
+                        <!-- 基本配置 -->
+                        <TextBlock Text="基本配置" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="默认备份路径" VerticalAlignment="Center"/>
+                            <Grid Grid.Row="0" Grid.Column="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding Configuration.DefaultBackupPath}"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                                <Button Grid.Column="1" Content="浏览" Command="{Binding BrowseBackupPathCommand}"
+                                                                                Margin="10,0,0,0"/>
+                            </Grid>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="启用自动备份" VerticalAlignment="Center" Margin="0,20,0,0"/>
+                            <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding Configuration.EnableAutoBackup}"
+                                      Margin="0,20,0,0"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="自动备份间隔（小时）" VerticalAlignment="Center" Margin="0,20,0,0"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Configuration.AutoBackupInterval}"
+                                                                          Width="100" HorizontalAlignment="Left" Margin="0,20,0,0"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="备份保留天数" VerticalAlignment="Center" Margin="0,20,0,0"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Configuration.BackupRetentionDays}"
+                                                                          Width="100" HorizontalAlignment="Left" Margin="0,20,0,0"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="最大备份数量" VerticalAlignment="Center" Margin="0,20,0,0"/>
+                            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Configuration.MaxBackupCount}"
+                                                                          Width="100" HorizontalAlignment="Left" Margin="0,20,0,0"/>
+                        </Grid>
+
+                        <!-- 高级配置 -->
+                        <TextBlock Text="高级配置" FontSize="20" FontWeight="Bold" Margin="0,40,0,20"/>
+                        
+                        <StackPanel>
+                            <CheckBox IsChecked="{Binding Configuration.CompressBackupFiles}"
+                                      Content="压缩备份文件" Margin="0,0,0,10"/>
+                            <CheckBox IsChecked="{Binding Configuration.EncryptBackupFiles}"
+                                      Content="加密备份文件" Margin="0,0,0,10"/>
+                        </StackPanel>
+
+                        <!-- 操作按钮 -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,40,0,0">
+                            <Button Content="保存配置" Command="{Binding SaveConfigurationCommand}"
+                                                                        Margin="0,0,10,0"/>
+                            <Button Content="重置默认" Command="{Binding ResetConfigurationCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 加载中提示 -->
+                <Border Background="White" 
+                        Visibility="{Binding IsLoadingConfiguration, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ProgressBar  
+                                     Value="0" IsIndeterminate="True" Width="50" Height="50"/>
+                        <TextBlock Text="正在加载配置..." Margin="0,10,0,0" FontSize="14"/>
+                    </StackPanel>
+                </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>
