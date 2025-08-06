@@ -1,95 +1,130 @@
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using LYBT.Module.Consultation.Interfaces;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Infrastructure.Data;
 using LYBT.Models.Consultation;
+using LYBT.Models.MedicalCase;
+using LYBT.Models.Patients;
+using LYBT.Models.Doctors;
+using LYBT.Module.Consultation.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Consultation.Services
 {
     /// <summary>
-    /// 看诊服务实现（替代DiagnosisTreatmentService）
+    /// 看诊服务实现
     /// </summary>
     public class ConsultationService : IConsultationService
     {
-        private readonly IConsultationRepository _repository;
+        private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<ConsultationService> _logger;
 
         public ConsultationService(
-            IConsultationRepository repository,
+            AppDbContext context,
             IMapper mapper,
             ILogger<ConsultationService> logger)
         {
-            _repository = repository;
+            _context = context;
             _mapper = mapper;
             _logger = logger;
         }
 
         /// <summary>
-        /// 获取看诊列表
+        /// 分页查询看诊记录
         /// </summary>
-        public async Task<List<ConsultationDto>> GetListAsync()
+        public async Task<PagedResult<ConsultationDto>> GetPagedAsync(ConsultationPagedQueryDto query)
         {
             try
             {
-                var models = await _repository.GetListAsync();
-                return _mapper.Map<List<ConsultationDto>>(models);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取看诊列表失败");
-                throw;
-            }
-        }
+                var consultationsQuery = _context.Consultations
+                    .Where(c => c.IsActive)
+                    .AsQueryable();
 
-        /// <summary>
-        /// 分页获取看诊列表
-        /// </summary>
-        public async Task<PaginatedResult<ConsultationDto>> GetPagedAsync(PaginationRequest request)
-        {
-            try
-            {
-                var models = await _repository.GetListAsync();
-                var dtos = _mapper.Map<List<ConsultationDto>>(models);
-
-                // 搜索过滤
-                if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+                // 应用筛选条件
+                if (query.PatientId.HasValue)
                 {
-                    dtos = dtos.Where(x =>
-                        x.PatientName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        x.DoctorName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        x.Diagnosis.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase)
-                    ).ToList();
+                    consultationsQuery = consultationsQuery.Where(c => c.PatientId == query.PatientId.Value);
+                }
+
+                if (query.DoctorId.HasValue)
+                {
+                    consultationsQuery = consultationsQuery.Where(c => c.DoctorId == query.DoctorId.Value);
+                }
+
+                if (query.StartDate.HasValue)
+                {
+                    consultationsQuery = consultationsQuery.Where(c => c.ConsultationTime >= query.StartDate.Value);
+                }
+
+                if (query.EndDate.HasValue)
+                {
+                    consultationsQuery = consultationsQuery.Where(c => c.ConsultationTime <= query.EndDate.Value);
+                }
+
+                if (!string.IsNullOrWhiteSpace(query.DiagnosisKeyword))
+                {
+                    consultationsQuery = consultationsQuery.Where(c => 
+                        c.Diagnosis.Contains(query.DiagnosisKeyword) ||
+                        c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(query.DiagnosisKeyword) ||
+                        c.WesternDiagnosis != null && c.WesternDiagnosis.Contains(query.DiagnosisKeyword));
+                }
+
+                if (!string.IsNullOrWhiteSpace(query.SearchKeyword))
+                {
+                    consultationsQuery = consultationsQuery.Where(c =>
+                        c.ChiefComplaint != null && c.ChiefComplaint.Contains(query.SearchKeyword) ||
+                        c.Diagnosis.Contains(query.SearchKeyword));
                 }
 
                 // 排序
-                dtos = request.SortBy?.ToLower() switch
-                {
-                    "patientname" => request.SortDesc ? dtos.OrderByDescending(x => x.PatientName).ToList() : dtos.OrderBy(x => x.PatientName).ToList(),
-                    "doctorname" => request.SortDesc ? dtos.OrderByDescending(x => x.DoctorName).ToList() : dtos.OrderBy(x => x.DoctorName).ToList(),
-                    "consultationtime" => request.SortDesc ? dtos.OrderByDescending(x => x.ConsultationTime).ToList() : dtos.OrderBy(x => x.ConsultationTime).ToList(),
-                    _ => dtos.OrderByDescending(x => x.ConsultationTime).ToList()
-                };
+                consultationsQuery = consultationsQuery.OrderByDescending(c => c.ConsultationTime);
 
                 // 分页
-                var total = dtos.Count;
-                var items = dtos
-                    .Skip((request.PageNumber - 1) * request.PageSize)
-                    .Take(request.PageSize)
-                    .ToList();
+                var totalCount = await consultationsQuery.CountAsync();
+                var consultations = await consultationsQuery
+                    .Skip((query.CurrentPage - 1) * query.PageSize)
+                    .Take(query.PageSize)
+                    .ToListAsync();
 
-                return new PaginatedResult<ConsultationDto>
+                // 获取关联数据
+                var patientIds = consultations.Select(c => c.PatientId).Distinct().ToList();
+                var doctorIds = consultations.Select(c => c.DoctorId).Distinct().ToList();
+
+                var patients = await _context.Patients
+                    .Where(p => patientIds.Contains(p.Id))
+                    .ToDictionaryAsync(p => p.Id);
+
+                var doctors = await _context.Doctors
+                    .Where(d => doctorIds.Contains(d.Id))
+                    .ToDictionaryAsync(d => d.Id);
+
+                // 转换为DTO
+                var items = consultations.Select(c => new ConsultationDto
                 {
-                    Items = items,
-                    TotalCount = total,
-                    PageNumber = request.PageNumber,
-                    PageSize = request.PageSize
+                    Id = c.Id,
+                    MedicalCaseId = c.MedicalCaseId,
+                    PatientId = c.PatientId,
+                    PatientName = patients.ContainsKey(c.PatientId) ? patients[c.PatientId].Name : "",
+                    DoctorId = c.DoctorId,
+                    DoctorName = doctors.ContainsKey(c.DoctorId) ? doctors[c.DoctorId].Name : "",
+                    Diagnosis = c.Diagnosis,
+                    ConsultationTime = c.ConsultationTime,
+                    Status = GetConsultationStatus(c)
+                }).ToList();
+
+                return new PagedResult<ConsultationDto>
+                {
+                    Data = items,
+                    TotalCount = totalCount,
+                    PageIndex = query.CurrentPage,
+                    PageSize = query.PageSize
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页获取看诊列表失败");
+                _logger.LogError(ex, "分页查询看诊记录失败");
                 throw;
             }
         }
@@ -101,90 +136,318 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                return model == null ? null : _mapper.Map<ConsultationDetailDto>(model);
+                var consultation = await _context.Consultations
+                    .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+
+                if (consultation == null)
+                    return null;
+
+                return await ConvertToDetailDto(consultation);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取看诊详情失败，ID: {Id}", id);
+                _logger.LogError(ex, "获取看诊详情失败: {Id}", id);
                 throw;
             }
         }
 
         /// <summary>
-        /// 创建看诊记录
+        /// 根据医疗案例ID获取看诊信息
         /// </summary>
-        public async Task<ConsultationDetailDto> CreateAsync(ConsultationCreateDto dto)
+        public async Task<ConsultationDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             try
             {
-                var model = _mapper.Map<ConsultationModel>(dto);
-                model.Id = Guid.NewGuid();
-                model.ConsultationTime = DateTime.Now;
-                model.CreateTime = DateTime.Now;
-                model.IsActive = true;
+                var consultation = await _context.Consultations
+                    .FirstOrDefaultAsync(c => c.MedicalCaseId == medicalCaseId && c.IsActive);
 
-                var created = await _repository.CreateAsync(model);
-                
-                // 更新医疗案例状态为看诊中
-                // TODO: 调用MedicalCaseService更新状态
+                if (consultation == null)
+                    return null;
 
-                return _mapper.Map<ConsultationDetailDto>(created);
+                return await ConvertToDetailDto(consultation);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建看诊记录失败");
+                _logger.LogError(ex, "根据医疗案例ID获取看诊信息失败: {MedicalCaseId}", medicalCaseId);
                 throw;
             }
         }
 
         /// <summary>
-        /// 更新看诊记录
+        /// 开始看诊
         /// </summary>
-        public async Task<bool> UpdateAsync(Guid id, ConsultationUpdateDto dto)
+        public async Task<ConsultationDetailDto> StartConsultationAsync(ConsultationStartDto dto)
         {
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
+                // 检查是否已存在看诊记录
+                var existingConsultation = await _context.Consultations
+                    .FirstOrDefaultAsync(c => c.MedicalCaseId == dto.MedicalCaseId && c.IsActive);
+
+                if (existingConsultation != null)
                 {
-                    _logger.LogWarning("看诊记录不存在，ID: {Id}", id);
-                    return false;
+                    throw new InvalidOperationException("该医疗案例已存在看诊记录");
                 }
 
-                // 更新字段
-                if (!string.IsNullOrWhiteSpace(dto.ChiefComplaint))
-                    model.ChiefComplaint = dto.ChiefComplaint;
-                if (!string.IsNullOrWhiteSpace(dto.PresentIllness))
-                    model.PresentIllness = dto.PresentIllness;
-                if (!string.IsNullOrWhiteSpace(dto.PastHistory))
-                    model.PastHistory = dto.PastHistory;
-                if (!string.IsNullOrWhiteSpace(dto.AllergyHistory))
-                    model.AllergyHistory = dto.AllergyHistory;
-                if (!string.IsNullOrWhiteSpace(dto.PhysicalExamination))
-                    model.PhysicalExamination = dto.PhysicalExamination;
-                if (!string.IsNullOrWhiteSpace(dto.TongueInspection))
-                    model.TongueInspection = dto.TongueInspection;
-                if (!string.IsNullOrWhiteSpace(dto.PulseCondition))
-                    model.PulseCondition = dto.PulseCondition;
-                if (!string.IsNullOrWhiteSpace(dto.TCMDiagnosis))
-                    model.TCMDiagnosis = dto.TCMDiagnosis;
-                if (!string.IsNullOrWhiteSpace(dto.WesternDiagnosis))
-                    model.WesternDiagnosis = dto.WesternDiagnosis;
-                if (!string.IsNullOrWhiteSpace(dto.Diagnosis))
-                    model.Diagnosis = dto.Diagnosis;
-                if (!string.IsNullOrWhiteSpace(dto.TreatmentPrinciple))
-                    model.TreatmentPrinciple = dto.TreatmentPrinciple;
-                if (!string.IsNullOrWhiteSpace(dto.MedicalAdvice))
-                    model.MedicalAdvice = dto.MedicalAdvice;
+                // 创建看诊记录
+                var consultation = new ConsultationModel
+                {
+                    Id = Guid.NewGuid(),
+                    MedicalCaseId = dto.MedicalCaseId,
+                    PatientId = dto.PatientId,
+                    DoctorId = dto.DoctorId,
+                    ConsultationTime = DateTime.Now,
+                    CreateTime = DateTime.Now,
+                    IsActive = true
+                };
 
-                model.UpdateTime = DateTime.Now;
+                _context.Consultations.Add(consultation);
 
-                return await _repository.UpdateAsync(model);
+                // 更新医疗案例状态
+                var medicalCase = await _context.MedicalCases
+                    .FirstOrDefaultAsync(m => m.Id == dto.MedicalCaseId);
+
+                if (medicalCase != null)
+                {
+                    medicalCase.Status = MedicalCaseStatus.InConsultation;
+                    medicalCase.ConsultationId = consultation.Id;
+                    medicalCase.UpdateTime = DateTime.Now;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return await ConvertToDetailDto(consultation);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新看诊记录失败，ID: {Id}", id);
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "开始看诊失败");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 更新看诊信息
+        /// </summary>
+        public async Task<ConsultationDetailDto> UpdateConsultationAsync(Guid id, ConsultationUpdateDto dto)
+        {
+            try
+            {
+                var consultation = await _context.Consultations
+                    .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+
+                if (consultation == null)
+                {
+                    throw new InvalidOperationException("看诊记录不存在");
+                }
+
+                // 更新病史信息
+                if (dto.ChiefComplaint != null) consultation.ChiefComplaint = dto.ChiefComplaint;
+                if (dto.PresentIllness != null) consultation.PresentIllness = dto.PresentIllness;
+                if (dto.PastHistory != null) consultation.PastHistory = dto.PastHistory;
+                if (dto.AllergyHistory != null) consultation.AllergyHistory = dto.AllergyHistory;
+                if (dto.PhysicalExamination != null) consultation.PhysicalExamination = dto.PhysicalExamination;
+
+                // 更新中医四诊
+                if (dto.Inspection != null) consultation.Inspection = dto.Inspection;
+                if (dto.AuscultationOlfaction != null) consultation.AuscultationOlfaction = dto.AuscultationOlfaction;
+                if (dto.Inquiry != null) consultation.Inquiry = dto.Inquiry;
+                if (dto.Palpation != null) consultation.Palpation = dto.Palpation;
+                if (dto.TongueInspection != null) consultation.TongueInspection = dto.TongueInspection;
+                if (dto.PulseCondition != null) consultation.PulseCondition = dto.PulseCondition;
+
+                // 更新生命体征
+                if (dto.Temperature.HasValue) consultation.Temperature = dto.Temperature.Value;
+                if (dto.SystolicPressure.HasValue) consultation.SystolicPressure = dto.SystolicPressure.Value;
+                if (dto.DiastolicPressure.HasValue) consultation.DiastolicPressure = dto.DiastolicPressure.Value;
+                if (dto.HeartRate.HasValue) consultation.HeartRate = dto.HeartRate.Value;
+                if (dto.RespiratoryRate.HasValue) consultation.RespiratoryRate = dto.RespiratoryRate.Value;
+
+                // 更新诊断信息
+                if (dto.TCMDiagnosis != null) consultation.TCMDiagnosis = dto.TCMDiagnosis;
+                if (dto.WesternDiagnosis != null) consultation.WesternDiagnosis = dto.WesternDiagnosis;
+                if (!string.IsNullOrEmpty(dto.Diagnosis)) consultation.Diagnosis = dto.Diagnosis;
+                if (dto.TreatmentPrinciple != null) consultation.TreatmentPrinciple = dto.TreatmentPrinciple;
+                if (dto.MedicalAdvice != null) consultation.MedicalAdvice = dto.MedicalAdvice;
+
+                consultation.UpdateTime = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                return await ConvertToDetailDto(consultation);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新看诊信息失败: {Id}", id);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 完成看诊
+        /// </summary>
+        public async Task<bool> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var consultation = await _context.Consultations
+                    .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+
+                if (consultation == null)
+                {
+                    throw new InvalidOperationException("看诊记录不存在");
+                }
+
+                // 更新诊断信息
+                consultation.Diagnosis = dto.Diagnosis;
+                consultation.TCMDiagnosis = dto.TCMDiagnosis;
+                consultation.WesternDiagnosis = dto.WesternDiagnosis;
+                consultation.TreatmentPrinciple = dto.TreatmentPrinciple;
+                consultation.MedicalAdvice = dto.MedicalAdvice;
+                consultation.Duration = (int)(DateTime.Now - consultation.ConsultationTime).TotalMinutes;
+                consultation.UpdateTime = DateTime.Now;
+
+                // 更新医疗案例状态
+                var medicalCase = await _context.MedicalCases
+                    .FirstOrDefaultAsync(m => m.ConsultationId == consultation.Id);
+
+                if (medicalCase != null)
+                {
+                    medicalCase.Status = dto.TreatmentPlanId.HasValue 
+                        ? MedicalCaseStatus.WaitingPayment 
+                        : MedicalCaseStatus.Completed;
+                    medicalCase.TreatmentPlanId = dto.TreatmentPlanId;
+                    medicalCase.UpdateTime = DateTime.Now;
+
+                    if (!dto.TreatmentPlanId.HasValue)
+                    {
+                        medicalCase.CompleteTime = DateTime.Now;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "完成看诊失败: {Id}", id);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取医生今日看诊列表
+        /// </summary>
+        public async Task<List<ConsultationDto>> GetTodayConsultationsByDoctorAsync(Guid doctorId)
+        {
+            try
+            {
+                var today = DateTime.Today;
+                var tomorrow = today.AddDays(1);
+
+                var consultations = await _context.Consultations
+                    .Where(c => c.DoctorId == doctorId && 
+                                c.ConsultationTime >= today && 
+                                c.ConsultationTime < tomorrow &&
+                                c.IsActive)
+                    .OrderBy(c => c.ConsultationTime)
+                    .ToListAsync();
+
+                // 获取患者信息
+                var patientIds = consultations.Select(c => c.PatientId).Distinct().ToList();
+                var patients = await _context.Patients
+                    .Where(p => patientIds.Contains(p.Id))
+                    .ToDictionaryAsync(p => p.Id);
+
+                return consultations.Select(c => new ConsultationDto
+                {
+                    Id = c.Id,
+                    MedicalCaseId = c.MedicalCaseId,
+                    PatientId = c.PatientId,
+                    PatientName = patients.ContainsKey(c.PatientId) ? patients[c.PatientId].Name : "",
+                    DoctorId = c.DoctorId,
+                    DoctorName = "",
+                    Diagnosis = c.Diagnosis,
+                    ConsultationTime = c.ConsultationTime,
+                    Status = GetConsultationStatus(c)
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医生今日看诊列表失败: {DoctorId}", doctorId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取患者历史看诊记录
+        /// </summary>
+        public async Task<List<ConsultationDto>> GetPatientHistoryAsync(Guid patientId)
+        {
+            try
+            {
+                var consultations = await _context.Consultations
+                    .Where(c => c.PatientId == patientId && c.IsActive)
+                    .OrderByDescending(c => c.ConsultationTime)
+                    .ToListAsync();
+
+                // 获取医生信息
+                var doctorIds = consultations.Select(c => c.DoctorId).Distinct().ToList();
+                var doctors = await _context.Doctors
+                    .Where(d => doctorIds.Contains(d.Id))
+                    .ToDictionaryAsync(d => d.Id);
+
+                return consultations.Select(c => new ConsultationDto
+                {
+                    Id = c.Id,
+                    MedicalCaseId = c.MedicalCaseId,
+                    PatientId = c.PatientId,
+                    PatientName = "",
+                    DoctorId = c.DoctorId,
+                    DoctorName = doctors.ContainsKey(c.DoctorId) ? doctors[c.DoctorId].Name : "",
+                    Diagnosis = c.Diagnosis,
+                    ConsultationTime = c.ConsultationTime,
+                    Status = GetConsultationStatus(c)
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者历史看诊记录失败: {PatientId}", patientId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 统计医生看诊数量
+        /// </summary>
+        public async Task<int> GetDoctorConsultationCountAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
+                var query = _context.Consultations
+                    .Where(c => c.DoctorId == doctorId && c.IsActive);
+
+                if (startDate.HasValue)
+                {
+                    query = query.Where(c => c.ConsultationTime >= startDate.Value);
+                }
+
+                if (endDate.HasValue)
+                {
+                    query = query.Where(c => c.ConsultationTime <= endDate.Value);
+                }
+
+                return await query.CountAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "统计医生看诊数量失败: {DoctorId}", doctorId);
                 throw;
             }
         }
@@ -196,120 +459,90 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                {
-                    _logger.LogWarning("看诊记录不存在，ID: {Id}", id);
+                var consultation = await _context.Consultations
+                    .FirstOrDefaultAsync(c => c.Id == id);
+
+                if (consultation == null)
                     return false;
-                }
 
-                model.IsActive = false;
-                model.UpdateTime = DateTime.Now;
+                consultation.IsActive = false;
+                consultation.UpdateTime = DateTime.Now;
 
-                return await _repository.UpdateAsync(model);
+                await _context.SaveChangesAsync();
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除看诊记录失败，ID: {Id}", id);
+                _logger.LogError(ex, "删除看诊记录失败: {Id}", id);
                 throw;
             }
+        }
+
+        #region Private Methods
+
+        /// <summary>
+        /// 转换为详情DTO
+        /// </summary>
+        private async Task<ConsultationDetailDto> ConvertToDetailDto(ConsultationModel consultation)
+        {
+            var patient = await _context.Patients.FindAsync(consultation.PatientId);
+            var doctor = await _context.Doctors.FindAsync(consultation.DoctorId);
+
+            return new ConsultationDetailDto
+            {
+                Id = consultation.Id,
+                MedicalCaseId = consultation.MedicalCaseId,
+                PatientId = consultation.PatientId,
+                PatientName = patient?.Name ?? "",
+                DoctorId = consultation.DoctorId,
+                DoctorName = doctor?.Name ?? "",
+                ChiefComplaint = consultation.ChiefComplaint,
+                PresentIllness = consultation.PresentIllness,
+                PastHistory = consultation.PastHistory,
+                AllergyHistory = consultation.AllergyHistory,
+                PhysicalExamination = consultation.PhysicalExamination,
+                Inspection = consultation.Inspection,
+                AuscultationOlfaction = consultation.AuscultationOlfaction,
+                Inquiry = consultation.Inquiry,
+                Palpation = consultation.Palpation,
+                TongueInspection = consultation.TongueInspection,
+                PulseCondition = consultation.PulseCondition,
+                Temperature = consultation.Temperature,
+                SystolicPressure = consultation.SystolicPressure,
+                DiastolicPressure = consultation.DiastolicPressure,
+                HeartRate = consultation.HeartRate,
+                RespiratoryRate = consultation.RespiratoryRate,
+                TCMDiagnosis = consultation.TCMDiagnosis,
+                WesternDiagnosis = consultation.WesternDiagnosis,
+                Diagnosis = consultation.Diagnosis,
+                TreatmentPrinciple = consultation.TreatmentPrinciple,
+                TreatmentPlanId = null, // 需要从MedicalCase获取
+                MedicalAdvice = consultation.MedicalAdvice,
+                ConsultationTime = consultation.ConsultationTime,
+                CreateTime = consultation.CreateTime,
+                UpdateTime = consultation.UpdateTime
+            };
         }
 
         /// <summary>
-        /// 根据医疗案例ID获取看诊记录
+        /// 获取看诊状态
         /// </summary>
-        public async Task<ConsultationDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        private static string GetConsultationStatus(ConsultationModel consultation)
         {
-            try
+            if (consultation.Duration.HasValue && consultation.Duration.Value > 0)
             {
-                var model = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
-                return model == null ? null : _mapper.Map<ConsultationDetailDto>(model);
+                return "已完成";
             }
-            catch (Exception ex)
+            else if ((DateTime.Now - consultation.ConsultationTime).TotalMinutes < 30)
             {
-                _logger.LogError(ex, "根据医疗案例ID获取看诊记录失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
+                return "看诊中";
+            }
+            else
+            {
+                return "待完成";
             }
         }
 
-        /// <summary>
-        /// 根据患者ID获取看诊历史
-        /// </summary>
-        public async Task<List<ConsultationDto>> GetByPatientIdAsync(Guid patientId)
-        {
-            try
-            {
-                var models = await _repository.GetByPatientIdAsync(patientId);
-                return _mapper.Map<List<ConsultationDto>>(models);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据患者ID获取看诊历史失败，PatientId: {PatientId}", patientId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 根据医生ID获取看诊记录
-        /// </summary>
-        public async Task<List<ConsultationDto>> GetByDoctorIdAsync(Guid doctorId)
-        {
-            try
-            {
-                var models = await _repository.GetByDoctorIdAsync(doctorId);
-                return _mapper.Map<List<ConsultationDto>>(models);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据医生ID获取看诊记录失败，DoctorId: {DoctorId}", doctorId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 获取今日看诊列表
-        /// </summary>
-        public async Task<List<ConsultationDto>> GetTodayConsultationsAsync()
-        {
-            try
-            {
-                var today = DateTime.Today;
-                var models = await _repository.GetByDateRangeAsync(today, today.AddDays(1));
-                return _mapper.Map<List<ConsultationDto>>(models);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取今日看诊列表失败");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 完成看诊
-        /// </summary>
-        public async Task<bool> CompleteConsultationAsync(Guid id)
-        {
-            try
-            {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                {
-                    _logger.LogWarning("看诊记录不存在，ID: {Id}", id);
-                    return false;
-                }
-
-                model.UpdateTime = DateTime.Now;
-                var result = await _repository.UpdateAsync(model);
-
-                // TODO: 更新医疗案例状态为待付费
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "完成看诊失败，ID: {Id}", id);
-                throw;
-            }
-        }
+        #endregion
     }
 }

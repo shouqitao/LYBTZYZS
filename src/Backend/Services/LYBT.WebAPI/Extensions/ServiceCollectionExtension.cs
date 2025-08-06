@@ -2,6 +2,8 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
 using LYBT.Module.Billing.Interfaces;
+using LYBT.Module.Consultation.Interfaces;
+using LYBT.Module.Consultation.Services;
 using LYBT.Module.Billing.Repositories;
 using LYBT.Module.Billing.Services;
 using LYBT.Module.DiagnosisTreatment.Interfaces;
@@ -80,6 +82,9 @@ public static class ServiceCollectionExtension {
         // 排队模块
         services.AddScoped<IQueueingService, QueueingService>();
         services.AddScoped<IQueueingRepository, QueueingRepository>();
+
+        // 看诊模块
+        services.AddScoped<IConsultationService, ConsultationService>();
 
         // 诊疗模块
         services.AddScoped<IDiagnosisTreatmentService, DiagnosisTreatmentService>();

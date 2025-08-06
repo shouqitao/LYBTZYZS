@@ -15,12 +15,8 @@ namespace LYBT.WPF.Client.Services {
     /// <summary>
     /// 挂号服务实现类
     /// </summary>
-    public class RegistrationService : IRegistrationService {
-        private readonly IRegistrationApiService _registrationApiService;
-
-        public RegistrationService(IRegistrationApiService registrationApiService) {
-            _registrationApiService = registrationApiService;
-        }
+    public class RegistrationService(IRegistrationApiService registrationApiService) : IRegistrationService {
+        private readonly IRegistrationApiService _registrationApiService = registrationApiService;
 
         /// <summary>
         /// 分页查询挂号记录
@@ -64,7 +60,7 @@ namespace LYBT.WPF.Client.Services {
                 if (response.IsSuccessStatusCode && response.Content != null) {
                     return response.Content.Select(ConvertToRegistrationInfo).ToList();
                 }
-                return [];
+                return new List<RegistrationInfo>();
             } catch (Exception ex) {
                 throw new Exception($"获取挂号列表失败: {ex.Message}", ex);
             }

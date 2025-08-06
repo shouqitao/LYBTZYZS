@@ -4,9 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Models.Registration;
 using LYBT.Models.Consultation;
 using LYBT.Models.TreatmentPlan;
-using LYBT.Models.Cashier;
 using LYBT.Models.Pharmacy;
-using LYBT.Models.TreatmentRoom;
 
 namespace LYBT.Models.MedicalCase
 {
@@ -60,27 +58,15 @@ namespace LYBT.Models.MedicalCase
         [DisplayName("治疗方案ID")]
         public Guid? TreatmentPlanId { get; set; }
 
-        /// <summary>收银信息</summary>
-        [DisplayName("收银信息")]
-        public virtual CashierModel? Cashier { get; set; }
-
-        /// <summary>收银ID</summary>
+        /// <summary>收银ID（预留）</summary>
         [DisplayName("收银ID")]
         public Guid? CashierId { get; set; }
-
-        /// <summary>药房服务</summary>
-        [DisplayName("药房服务")]
-        public virtual PharmacyModel? Pharmacy { get; set; }
 
         /// <summary>药房服务ID</summary>
         [DisplayName("药房服务ID")]
         public Guid? PharmacyId { get; set; }
 
-        /// <summary>治疗室服务</summary>
-        [DisplayName("治疗室服务")]
-        public virtual TreatmentRoomServiceModel? TreatmentRoomService { get; set; }
-
-        /// <summary>治疗室服务ID</summary>
+        /// <summary>治疗室服务ID（预留）</summary>
         [DisplayName("治疗室服务ID")]
         public Guid? TreatmentRoomServiceId { get; set; }
 

@@ -23,7 +23,7 @@ namespace LYBT.Models.TreatmentPlan
 
         /// <summary>处方信息</summary>
         [DisplayName("处方信息")]
-        public PrescriptionModel? Prescription { get; set; }
+        public TreatmentPrescriptionModel? Prescription { get; set; }
 
         /// <summary>理疗项目列表</summary>
         [DisplayName("理疗项目列表")]
@@ -63,14 +63,14 @@ namespace LYBT.Models.TreatmentPlan
     }
 
     /// <summary>
-    /// 处方实体（作为治疗方案的一部分）
+    /// 治疗处方实体（作为治疗方案的一部分）
     /// </summary>
     [Owned]
-    public class PrescriptionModel
+    public class TreatmentPrescriptionModel
     {
         /// <summary>处方药材列表</summary>
         [DisplayName("处方药材列表")]
-        public List<PrescriptionHerbModel> Herbs { get; set; } = new();
+        public List<TreatmentPrescriptionHerbModel> Herbs { get; set; } = new();
 
         /// <summary>付数</summary>
         [DisplayName("付数")]
@@ -93,10 +93,10 @@ namespace LYBT.Models.TreatmentPlan
     }
 
     /// <summary>
-    /// 处方药材实体
+    /// 治疗处方药材实体
     /// </summary>
     [Owned]
-    public class PrescriptionHerbModel
+    public class TreatmentPrescriptionHerbModel
     {
         /// <summary>药材ID</summary>
         [DisplayName("药材ID")]

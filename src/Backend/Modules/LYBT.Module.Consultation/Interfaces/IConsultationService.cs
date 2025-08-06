@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
 namespace LYBT.Module.Consultation.Interfaces
@@ -9,14 +9,9 @@ namespace LYBT.Module.Consultation.Interfaces
     public interface IConsultationService
     {
         /// <summary>
-        /// 获取看诊列表
+        /// 分页查询看诊记录
         /// </summary>
-        Task<List<ConsultationDto>> GetListAsync();
-
-        /// <summary>
-        /// 分页获取看诊列表
-        /// </summary>
-        Task<PaginatedResult<ConsultationDto>> GetPagedAsync(PaginationRequest request);
+        Task<PagedResult<ConsultationDto>> GetPagedAsync(ConsultationPagedQueryDto query);
 
         /// <summary>
         /// 获取看诊详情
@@ -24,43 +19,43 @@ namespace LYBT.Module.Consultation.Interfaces
         Task<ConsultationDetailDto?> GetByIdAsync(Guid id);
 
         /// <summary>
-        /// 创建看诊记录
+        /// 根据医疗案例ID获取看诊信息
         /// </summary>
-        Task<ConsultationDetailDto> CreateAsync(ConsultationCreateDto dto);
+        Task<ConsultationDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
         /// <summary>
-        /// 更新看诊记录
+        /// 开始看诊
         /// </summary>
-        Task<bool> UpdateAsync(Guid id, ConsultationUpdateDto dto);
+        Task<ConsultationDetailDto> StartConsultationAsync(ConsultationStartDto dto);
+
+        /// <summary>
+        /// 更新看诊信息
+        /// </summary>
+        Task<ConsultationDetailDto> UpdateConsultationAsync(Guid id, ConsultationUpdateDto dto);
+
+        /// <summary>
+        /// 完成看诊
+        /// </summary>
+        Task<bool> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto);
+
+        /// <summary>
+        /// 获取医生今日看诊列表
+        /// </summary>
+        Task<List<ConsultationDto>> GetTodayConsultationsByDoctorAsync(Guid doctorId);
+
+        /// <summary>
+        /// 获取患者历史看诊记录
+        /// </summary>
+        Task<List<ConsultationDto>> GetPatientHistoryAsync(Guid patientId);
+
+        /// <summary>
+        /// 统计医生看诊数量
+        /// </summary>
+        Task<int> GetDoctorConsultationCountAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null);
 
         /// <summary>
         /// 删除看诊记录（软删除）
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
-
-        /// <summary>
-        /// 根据医疗案例ID获取看诊记录
-        /// </summary>
-        Task<ConsultationDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId);
-
-        /// <summary>
-        /// 根据患者ID获取看诊历史
-        /// </summary>
-        Task<List<ConsultationDto>> GetByPatientIdAsync(Guid patientId);
-
-        /// <summary>
-        /// 根据医生ID获取看诊记录
-        /// </summary>
-        Task<List<ConsultationDto>> GetByDoctorIdAsync(Guid doctorId);
-
-        /// <summary>
-        /// 获取今日看诊列表
-        /// </summary>
-        Task<List<ConsultationDto>> GetTodayConsultationsAsync();
-
-        /// <summary>
-        /// 完成看诊
-        /// </summary>
-        Task<bool> CompleteConsultationAsync(Guid id);
     }
 }

@@ -55,6 +55,26 @@ namespace LYBT.Models.Consultation
         [DisplayName("体格检查")]
         public string? PhysicalExamination { get; set; }
 
+        /// <summary>望诊</summary>
+        [StringLength(500)]
+        [DisplayName("望诊")]
+        public string? Inspection { get; set; }
+
+        /// <summary>闻诊</summary>
+        [StringLength(500)]
+        [DisplayName("闻诊")]
+        public string? AuscultationOlfaction { get; set; }
+
+        /// <summary>问诊</summary>
+        [StringLength(1000)]
+        [DisplayName("问诊")]
+        public string? Inquiry { get; set; }
+
+        /// <summary>切诊</summary>
+        [StringLength(500)]
+        [DisplayName("切诊")]
+        public string? Palpation { get; set; }
+
         /// <summary>舌诊</summary>
         [StringLength(200)]
         [DisplayName("舌诊")]
@@ -64,6 +84,26 @@ namespace LYBT.Models.Consultation
         [StringLength(200)]
         [DisplayName("脉诊")]
         public string? PulseCondition { get; set; }
+
+        /// <summary>体温</summary>
+        [DisplayName("体温")]
+        public decimal? Temperature { get; set; }
+
+        /// <summary>血压（收缩压）</summary>
+        [DisplayName("收缩压")]
+        public int? SystolicPressure { get; set; }
+
+        /// <summary>血压（舒张压）</summary>
+        [DisplayName("舒张压")]
+        public int? DiastolicPressure { get; set; }
+
+        /// <summary>心率</summary>
+        [DisplayName("心率")]
+        public int? HeartRate { get; set; }
+
+        /// <summary>呼吸频率</summary>
+        [DisplayName("呼吸频率")]
+        public int? RespiratoryRate { get; set; }
 
         /// <summary>中医辨证</summary>
         [StringLength(500)]

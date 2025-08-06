@@ -12,7 +12,7 @@ namespace LYBT.Models.DiagnosisTreatment {
         /// 治疗项目（如针灸、正骨等）
         /// </summary>
         [DisplayName("治疗项目")]
-        public List<TreatmentItemModel> Treatments { get; set; } = new();
+        public List<TreatmentItemModel> Treatments { get; set; } = [];
 
         /// <summary>
         /// 本次形成的独立治疗药方

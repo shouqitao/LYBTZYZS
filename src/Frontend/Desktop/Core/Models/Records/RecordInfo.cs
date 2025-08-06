@@ -80,7 +80,7 @@ namespace LYBT.WPF.Client.Core.Models.Records
         public string Status { get; set; } = "InProgress"; // InProgress, Completed
 
         /// <summary>处方项目列表</summary>
-        public ObservableCollection<PrescriptionItem> Prescription { get; set; } = new ObservableCollection<PrescriptionItem>();
+        public ObservableCollection<PrescriptionItem> Prescription { get; set; } = [];
 
         /// <summary>总金额</summary>
         public decimal TotalAmount

@@ -187,6 +187,15 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 return RestService.For<IBackupApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
+            // 注册看诊API服务
+            containerRegistry.Register<IConsultationApiService>(container =>
+            {
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
+                return RestService.For<IConsultationApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+            });
+
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();
         }

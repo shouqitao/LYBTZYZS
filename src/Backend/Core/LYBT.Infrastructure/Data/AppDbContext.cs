@@ -1,10 +1,12 @@
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Logging;
 using LYBT.Models.Billing;
+using LYBT.Models.Consultation;
 using LYBT.Models.DiagnosisTreatment;
 using LYBT.Models.Doctors;
 using LYBT.Models.FormulaTemplates;
 using LYBT.Models.Herbs;
+using LYBT.Models.MedicalCase;
 using LYBT.Models.Patients;
 using LYBT.Models.Pharmacy;
 using LYBT.Models.Prescriptions;
@@ -12,6 +14,7 @@ using LYBT.Models.Queueing;
 using LYBT.Models.Records;
 using LYBT.Models.Registration;
 using LYBT.Models.Sync;
+using LYBT.Models.TreatmentPlan;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Models.Users;
 using Microsoft.EntityFrameworkCore;
@@ -47,7 +50,16 @@ namespace LYBT.Infrastructure.Data {
         // 排队管理
         public DbSet<QueueingModel> Queueings { get; set; }
 
-        // 诊断治疗
+        // 医疗案例
+        public DbSet<MedicalCaseModel> MedicalCases { get; set; }
+
+        // 看诊
+        public DbSet<ConsultationModel> Consultations { get; set; }
+
+        // 治疗方案
+        public DbSet<TreatmentPlanModel> TreatmentPlans { get; set; }
+
+        // 诊断治疗（保留兼容）
         public DbSet<DiagnosisTreatmentModel> DiagnosisTreatments { get; set; }
 
         // 处方管理
@@ -147,6 +159,9 @@ namespace LYBT.Infrastructure.Data {
             ConfigureDoctors(modelBuilder);
             ConfigureRegistrations(modelBuilder);
             ConfigureQueueings(modelBuilder);
+            ConfigureMedicalCases(modelBuilder);
+            ConfigureConsultations(modelBuilder);
+            ConfigureTreatmentPlans(modelBuilder);
             ConfigureDiagnosisTreatments(modelBuilder);
             ConfigurePrescriptions(modelBuilder);
             ConfigureHerbs(modelBuilder);
@@ -240,6 +255,81 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<QueueingModel>();
             entity.ToTable("Queueings");
             entity.HasKey(q => q.Id);
+        }
+
+        private static void ConfigureMedicalCases(ModelBuilder modelBuilder) {
+            var entity = modelBuilder.Entity<MedicalCaseModel>();
+            entity.ToTable("MedicalCases");
+            entity.HasKey(m => m.Id);
+            entity.Property(m => m.Department).HasMaxLength(50);
+            entity.Property(m => m.Status).HasConversion<string>();
+            entity.Property(m => m.Remark).HasMaxLength(500);
+            entity.HasIndex(m => m.PatientId);
+            entity.HasIndex(m => m.DoctorId);
+            entity.HasIndex(m => m.CreateTime);
+            entity.HasIndex(m => m.Status);
+            
+            // 配置关联关系
+            entity.HasOne(m => m.Registration).WithMany().HasForeignKey(m => m.RegistrationId);
+            entity.HasOne(m => m.Consultation).WithMany().HasForeignKey(m => m.ConsultationId);
+            entity.HasOne(m => m.TreatmentPlan).WithMany().HasForeignKey(m => m.TreatmentPlanId);
+        }
+
+        private static void ConfigureConsultations(ModelBuilder modelBuilder) {
+            var entity = modelBuilder.Entity<ConsultationModel>();
+            entity.ToTable("Consultations");
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.ChiefComplaint).HasMaxLength(500);
+            entity.Property(c => c.PresentIllness).HasMaxLength(1000);
+            entity.Property(c => c.PastHistory).HasMaxLength(500);
+            entity.Property(c => c.AllergyHistory).HasMaxLength(200);
+            entity.Property(c => c.PhysicalExamination).HasMaxLength(1000);
+            entity.Property(c => c.Inspection).HasMaxLength(500);
+            entity.Property(c => c.AuscultationOlfaction).HasMaxLength(500);
+            entity.Property(c => c.Inquiry).HasMaxLength(1000);
+            entity.Property(c => c.Palpation).HasMaxLength(500);
+            entity.Property(c => c.TongueInspection).HasMaxLength(200);
+            entity.Property(c => c.PulseCondition).HasMaxLength(200);
+            entity.Property(c => c.TCMDiagnosis).HasMaxLength(500);
+            entity.Property(c => c.WesternDiagnosis).HasMaxLength(500);
+            entity.Property(c => c.Diagnosis).HasMaxLength(500);
+            entity.Property(c => c.TreatmentPrinciple).HasMaxLength(200);
+            entity.Property(c => c.MedicalAdvice).HasMaxLength(500);
+            entity.HasIndex(c => c.MedicalCaseId);
+            entity.HasIndex(c => c.PatientId);
+            entity.HasIndex(c => c.DoctorId);
+            entity.HasIndex(c => c.ConsultationTime);
+        }
+
+        private static void ConfigureTreatmentPlans(ModelBuilder modelBuilder) {
+            var entity = modelBuilder.Entity<TreatmentPlanModel>();
+            entity.ToTable("TreatmentPlans");
+            entity.HasKey(t => t.Id);
+            
+            // 配置处方为Owned类型
+            entity.OwnsOne(t => t.Prescription, p => {
+                p.OwnsMany(x => x.Herbs, h => {
+                    h.Property(herb => herb.HerbName).HasMaxLength(100);
+                    h.Property(herb => herb.Unit).HasMaxLength(10);
+                    h.Property(herb => herb.SpecialUsage).HasMaxLength(50);
+                });
+                p.Property(x => x.Instructions).HasMaxLength(200);
+                p.Property(x => x.SpecialInstructions).HasMaxLength(100);
+            });
+            
+            // 配置理疗项目为Owned类型
+            entity.OwnsMany(t => t.PhysiotherapyItems, i => {
+                i.Property(x => x.Name).HasMaxLength(50);
+                i.Property(x => x.Type).HasMaxLength(20);
+                i.Property(x => x.TreatmentArea).HasMaxLength(100);
+                i.Property(x => x.Status).HasMaxLength(20);
+                i.Property(x => x.Remark).HasMaxLength(200);
+            });
+            
+            entity.Property(t => t.PrescriptionAmount).HasColumnType("decimal(18,2)");
+            entity.Property(t => t.PhysiotherapyAmount).HasColumnType("decimal(18,2)");
+            entity.Property(t => t.Remark).HasMaxLength(500);
+            entity.HasIndex(t => t.ConsultationId);
         }
 
         private static void ConfigureDiagnosisTreatments(ModelBuilder modelBuilder) {
