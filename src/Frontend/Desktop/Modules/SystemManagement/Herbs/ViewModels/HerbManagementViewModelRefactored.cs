@@ -269,7 +269,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                                 Spec = row.Table.Columns.Contains("规格") ? row["规格"]?.ToString()?.Trim() : null,
                                 Unit = row["单位*"]?.ToString()?.Trim() ?? "克",
                                 Price = decimal.TryParse(row["单价（元）*"]?.ToString(), out var price) ? price : 0,
-                                /* Stock = int.TryParse(row["初始库存*"]?.ToString(), */ out var stock) ? stock : 0,
+                                /* Stock = int.TryParse(row["初始库存*"]?.ToString(), out var stock) ? stock : 0, */
                                 Effect = row.Table.Columns.Contains("功效说明") ? row["功效说明"]?.ToString()?.Trim() : null,
                                 Usage = row.Table.Columns.Contains("用法") ? row["用法"]?.ToString()?.Trim() : null,
                                 Remark = row.Table.Columns.Contains("备注") ? row["备注"]?.ToString()?.Trim() : null,

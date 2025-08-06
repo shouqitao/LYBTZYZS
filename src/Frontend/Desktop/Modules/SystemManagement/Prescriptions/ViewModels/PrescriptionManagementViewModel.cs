@@ -273,10 +273,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             if (prescription == null) return;
 
             // 检查是否可以作废
-            if (prescription/* .Status = */= PrescriptionStatus.Voided || 
+            if (prescription = PrescriptionStatus.Voided || 
                 prescription/* .Status = */= PrescriptionStatus.Cancelled)
             {
-                await _commonDialogService.ShowWarningAsync("该处方已被作废或取消，无法再次作废", "无法作废");
+                await _commonDialogService.ShowWarningAsync("该处方已被作废或取消，无法再次作废" /* .Status = PrescriptionStatus.Voided || 
+                prescription/* .Status = */= PrescriptionStatus.Cancelled);
+            {
+                await _commonDialogService.ShowWarningAsync("该处方已被作废或取消，无法再次作废" */, "无法作废");
                 return;
             }
 

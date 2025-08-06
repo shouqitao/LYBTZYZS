@@ -85,10 +85,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         }
 
         /// <summary>状态描述</summary>
-        public string StatusDescription => Herb?/* .Status = */= HerbStatus.Active ? "正常" : "停用";
+        public string StatusDescription => Herb?.Status == HerbStatus.Active ? "正常" : "停用";
 
         /// <summary>状态颜色</summary>
-        public string StatusColor => Herb?/* .Status = */= HerbStatus.Active ? "#28A745" : "#DC3545";
+        public string StatusColor => Herb?.Status == HerbStatus.Active ? "#28A745" : "#DC3545";
 
         /// <summary>启用状态描述</summary>
         public string ActiveStatusDescription => Herb?.IsActive == true ? "已启用" : "已禁用";

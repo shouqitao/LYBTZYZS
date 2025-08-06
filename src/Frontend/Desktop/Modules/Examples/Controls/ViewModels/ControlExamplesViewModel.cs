@@ -132,7 +132,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Username = "zhangsan",
-                Name = "张三",
+                RealName = "张三",
                 Role = UserRole.Admin,
                 Email = "zhangsan@example.com",
                 IsActive = true,
@@ -143,7 +143,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Username = "lisi",
-                Name = "李四",
+                RealName = "李四",
                 Role = UserRole.DiagnosingDoctor,
                 Email = "lisi@example.com",
                 IsActive = false,
@@ -154,7 +154,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Username = "wangwu",
-                Name = "王五",
+                RealName = "王五",
                 Role = UserRole.PharmacyStaff,
                 Email = "wangwu@example.com",
                 IsActive = true,

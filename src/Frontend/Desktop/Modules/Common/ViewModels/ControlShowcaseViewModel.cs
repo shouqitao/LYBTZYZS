@@ -165,7 +165,7 @@ namespace LYBT.WPF.Client.Modules.Common.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Username = "doctor01",
-                Name = "王医生",
+                RealName = "王医生",
                 Role = UserRole.DiagnosingDoctor,
                 IsActive = true,
                 IsOnline = true

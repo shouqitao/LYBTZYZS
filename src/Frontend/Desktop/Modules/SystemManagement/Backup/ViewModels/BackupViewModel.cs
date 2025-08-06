@@ -362,7 +362,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
         private bool CanExecuteVerify(BackupInfo backup)
         {
-            return backup?/* .Status = */= BackupStatus.Success || backup?/* .Status = */= BackupStatus.Verified;
+            return backup?.Status == BackupStatus.Success || backup?.Status == BackupStatus.Verified;
         }
 
         private async void ExecuteVerify(BackupInfo backup)
@@ -396,7 +396,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Backup.ViewModels
 
         private bool CanExecuteDownload(BackupInfo backup)
         {
-            return backup?/* .Status = */= BackupStatus.Success || backup?/* .Status = */= BackupStatus.Verified;
+            return backup?.Status == BackupStatus.Success || backup?.Status == BackupStatus.Verified;
         }
 
         private void ExecuteDownload(BackupInfo backup)
