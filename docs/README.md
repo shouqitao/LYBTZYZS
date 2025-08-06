@@ -1,40 +1,65 @@
-## Documentation References
+# LYBTZYZS项目文档中心
 
-### 核心文档 / Core Documents
+**项目名称**: 凌隐宝堂中医诊所管理系统 (Lingyin Baotang TCM Clinic Management System)  
+**项目代号**: LYBTZYZS  
+**文档版本**: v1.0.0  
+**更新日期**: 2025-08-06  
 
-所有文档都提供中英文双语版本 / All documents are available in both Chinese and English:
+---
 
-#### 架构文档 / Architecture
-- 🇨🇳 系统架构文档: `docs/architecture/ARCHITECTURE.md`
-- 🇬🇧 System Architecture: `docs/architecture/ARCHITECTURE_EN.md`
+## 📚 文档导航
 
-#### 模块规范 / Module Specifications  
-- 🇨🇳 模块规格说明: `docs/architecture/MODULES.md`
-- 🇬🇧 Module Specifications: `docs/architecture/MODULES_EN.md`
+### 📋 01-项目管理
+管理项目的计划、进度、团队协作等方面的文档
+- [📄 项目概述](./01-项目管理/项目概述.md) - 项目基本信息和总体介绍
+- [📅 开发计划与里程碑](./01-项目管理/开发计划与里程碑.md) - 详细开发计划和时间安排
+- [🤝 团队协作规范](./01-项目管理/团队协作规范.md) - 团队工作流程和协作规范
+- [📦 项目交付清单](./01-项目管理/项目交付清单.md) - 完整的项目交付物清单
 
-#### API契约 / API Contracts
-- 🇨🇳 API契约规范: `docs/architecture/API_CONTRACTS_CN.md`
-- 🇬🇧 API Contract Specification: `docs/architecture/API_CONTRACTS.md`
+### 📊 02-需求分析
+详细的业务需求和功能规格说明
+- [🏥 业务需求规格书](./02-需求分析/业务需求规格书.md) - 完整的业务需求分析
+- [⚙️ 功能需求规格书](./02-需求分析/功能需求规格书.md) - 详细的功能规格定义
+- [👤 用户角色与权限](./02-需求分析/用户角色与权限.md) - 用户角色和权限设计
+- [🔄 中医诊所业务流程](./02-需求分析/中医诊所业务流程.md) - 业务流程详细说明
 
-#### 开发设置 / Development Setup
-- 🇨🇳 开发环境设置指南: `docs/development/SETUP.md`
-- 🇬🇧 Development Environment Setup: `docs/development/SETUP_EN.md`
+### 🏗️ 03-架构设计
+系统技术架构和设计方案
+- [🏛️ 系统架构总览](./03-架构设计/系统架构总览.md) - 系统整体架构设计
+- [💾 数据库设计文档](./03-架构设计/数据库设计文档.md) - 完整数据库设计
+- [🧩 模块设计文档](./03-架构设计/模块设计文档.md) - 各业务模块设计
+- [🛡️ 安全架构设计](./03-架构设计/安全架构设计.md) - 系统安全架构
+- [🔧 技术选型说明](./03-架构设计/技术选型说明.md) - 技术栈选择依据
 
-#### 编码标准 / Coding Standards
-- 🇨🇳 编码标准: `docs/development/CODING_STANDARDS.md`
-- 🇬🇧 Coding Standards: `docs/development/CODING_STANDARDS_EN.md`
+### 🔌 04-接口设计
+API接口设计和前后端契约
+- [📋 API设计规范](./04-接口设计/API设计规范.md) - API设计标准和规范
+- [📄 前后端契约规范](./04-接口设计/前后端契约规范.md) - 前后端接口约定
+- [📊 数据传输模型](./04-接口设计/数据传输模型.md) - DTO模型设计文档
+- [📁 接口文档](./04-接口设计/接口文档/) - 各模块详细接口文档
 
-#### 开发路线图 / Development Roadmap
-- 🇨🇳 12周开发路线图: `docs/development/ROADMAP.md`
-- 🇬🇧 12-Week Development Roadmap: `docs/development/ROADMAP_EN.md`
+### 🔧 05-开发指南
+开发环境、规范和最佳实践
+- [🚀 开发环境搭建](./05-开发指南/开发环境搭建.md) - 完整的环境配置指南
+- [📝 编码规范](./05-开发指南/编码规范.md) - 代码质量和风格规范
+- [🌿 Git工作流程](./05-开发指南/Git工作流程.md) - 代码管理和协作流程
+- [🐛 调试和故障排除](./05-开发指南/调试和故障排除.md) - 问题诊断和解决
+- [⭐ 开发最佳实践](./05-开发指南/开发最佳实践.md) - 开发经验和技巧
 
-### 文档整理
-- Document Reorganization Plan:'docs/DOCUMENT_REORGANIZATION.md'
+## 🚀 快速开始
 
-### 其他重要文档
-- Project Development Guide: 'CLAUDE.md' (根目录)
-- API Documentation: 'docs/api/'
-- Testing Guide: 'docs/testing/'
-- Deployment Guide: 'docs/deployment/'
-- Frontend Documentation: 'docs/frontend/'
-- Development Templates: 'docs/dev-templates/'
+### 新团队成员必读
+1. **项目了解**: 阅读 [项目概述](./01-项目管理/项目概述.md)
+2. **环境搭建**: 按照 [开发环境搭建](./05-开发指南/开发环境搭建.md) 配置环境
+3. **代码规范**: 学习 [编码规范](./05-开发指南/编码规范.md) 和工作流程
+4. **架构理解**: 熟悉 [系统架构总览](./03-架构设计/系统架构总览.md)
+
+### 开发人员快速导航
+- **后端开发**: [API设计规范](./04-接口设计/API设计规范.md) + [数据库设计](./03-架构设计/数据库设计文档.md)
+- **前端开发**: [前后端契约](./04-接口设计/前后端契约规范.md) + [功能需求](./02-需求分析/功能需求规格书.md)
+- **业务人员**: [业务需求](./02-需求分析/业务需求规格书.md) + [项目计划](./01-项目管理/开发计划与里程碑.md)
+
+---
+
+**文档状态**: 🔄 正在重构和完善中  
+**问题反馈**: 如发现文档问题，请联系项目文档维护人员
