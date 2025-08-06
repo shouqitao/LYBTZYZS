@@ -95,16 +95,31 @@ src/
 3. **Patients** - 患者档案
 4. **Doctors** - 医生管理
 5. **Registration** - 挂号预约
-6. **DiagnosisTreatment** - 诊断治疗
-7. **Prescriptions** - 处方管理
-8. **Herbs** - 中药材管理
-9. **FormulaTemplates** - 验方模板
-10. **Pharmacy** - 药房管理
-11. **Billing** - 收费结算
-12. **Records** - 病历档案
-13. **Queueing** - 排队叫号
-14. **TreatmentRoom** - 治疗室管理
-15. **Sync** - 数据同步
+6. **Consultation** - 看诊管理（核心模块，支持中医四诊）
+7. **MedicalCase** - 医疗案例（统一管理整个诊疗流程）
+8. **Prescriptions** - 处方管理
+9. **Herbs** - 中药材管理
+10. **FormulaTemplates** - 验方模板
+11. **Pharmacy** - 药房管理
+12. **Billing** - 收费结算
+13. **Records** - 病历档案
+14. **Queueing** - 排队叫号（工作流协调器）
+15. **TreatmentRoom** - 治疗室管理
+16. **Sync** - 数据同步
+17. **DiagnosisTreatment** - 诊断治疗（保留兼容）
+
+## 核心工作流
+
+### 诊疗流程（以看诊为主线）
+
+```
+挂号(Registration) → 排队(Queueing) → 看诊(Consultation) → 
+缴费(Billing) → 药房/理疗室(Pharmacy/TreatmentRoom)
+```
+
+- **MedicalCase** 贯穿整个流程，统一管理患者的诊疗案例
+- **Queueing** 作为工作流协调器，管理各环节的排队叫号
+- **Consultation** 是核心，支持中医四诊（望闻问切）和现代医学检查
 
 ## 开发约定
 
