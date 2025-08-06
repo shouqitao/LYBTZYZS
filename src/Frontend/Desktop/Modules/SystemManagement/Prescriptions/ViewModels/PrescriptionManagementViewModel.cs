@@ -273,13 +273,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             if (prescription == null) return;
 
             // 检查是否可以作废
-            if (prescription = PrescriptionStatus.Voided || 
-                prescription/* .Status = */= PrescriptionStatus.Cancelled)
+            if (prescription.Status == PrescriptionStatus.Voided || 
+                prescription.Status == PrescriptionStatus.Cancelled)
             {
-                await _commonDialogService.ShowWarningAsync("该处方已被作废或取消，无法再次作废" /* .Status = PrescriptionStatus.Voided || 
-                prescription/* .Status = */= PrescriptionStatus.Cancelled);
-            {
-                await _commonDialogService.ShowWarningAsync("该处方已被作废或取消，无法再次作废" */, "无法作废");
+                await _commonDialogService.ShowWarningAsync("该处方已被作废或取消，无法再次作废", "无法作废");
                 return;
             }
 
@@ -347,7 +344,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             {
                 var dialog = new Views.AddPrescriptionDialog();
                 dialog.Owner = Application.Current.MainWindow;
-                dialog/* .Title = */ "新增处方";
+                dialog.Title = "新增处方";
                 
                 // 创建 ViewModel
                 var viewModel = new AddPrescriptionDialogViewModel(Service, _commonDialogService);
@@ -382,7 +379,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             {
                 var dialog = new Views.EditPrescriptionDialog();
                 dialog.Owner = Application.Current.MainWindow;
-                dialog/* .Title = */ "编辑处方";
+                dialog.Title = "编辑处方";
                 
                 // 创建 ViewModel
                 var viewModel = new EditPrescriptionDialogViewModel(Service, item.Id, _commonDialogService);

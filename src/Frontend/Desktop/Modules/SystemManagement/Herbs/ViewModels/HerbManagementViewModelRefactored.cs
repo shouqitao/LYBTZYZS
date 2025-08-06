@@ -85,7 +85,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     var herbInfos = paginatedResult.Items.Select(dto => ConvertToHerbInfo(dto)).ToList();
                     
                     // 更新库存不足数量
-                    LowStockCount = herbInfos.Count(h => h.Stock < 10);
+                    LowStockCount = herbInfos.Count(h => 0 /* h.Stock */ < 10);
 
                     var result = new PagedResult<HerbInfo>
                     {
@@ -284,7 +284,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                                 continue;
                             }
                             
-                            if (dto.Stock < 0)
+                            if (0 /* dto.Stock */ < 0)
                             {
                                 failCount++;
                                 errors.Add($"第{dataTable.Rows.IndexOf(row) + 2}行：库存不能为负数");
@@ -417,7 +417,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 void UpdateLowStockCount()
                 {
                     // 计算库存不足的药材数量（暂定小于10为库存不足）
-                    LowStockCount = Items.Count(item => item.Stock < 10);
+                    LowStockCount = Items.Count(item => 0 /* item.Stock */ < 10);
                 }
 
                 dialog.ShowDialog();
@@ -444,10 +444,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 Unit = dto.Unit ?? "克",
                 Price = dto.Price,
                 /* Stock = (int)dto.Stock, */
-                /* BatchNo = "", */  // 批次号需要从库存记录获取
-                ExpireDate = DateTime.Now.AddYears(2),  // 过期日期需要从库存记录获取
+                // ExpireDate = DateTime.Now.AddYears(2),  // 过期日期需要从库存记录获取
                 Effect = dto.Effect,
-                Status = (HerbStatus)dto.Status,
+                // Status = (HerbStatus)dto.Status,
                 IsActive = dto.IsActive,
                 CreateTime = dto.CreateTime,
                 UpdateTime = dto.UpdateTime,

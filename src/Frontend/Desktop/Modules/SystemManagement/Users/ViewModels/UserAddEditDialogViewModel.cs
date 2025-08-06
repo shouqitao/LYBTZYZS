@@ -169,12 +169,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 if (IsNewUser)
                 {
                     // 新增用户
-                    var createRequest = new UserCreateDto
-                    {
-                        Username = UserName.Trim(),
-                        Password = "Admin@123456", // 默认密码，实际应该让用户输入
-                        ConfirmPassword = "Admin@123456",
-                        Name = RealName.Trim(),
+                    var createRequest = new UserCreateDto { RealName = RealName.Trim(),
                         Role = SelectedRole!.Value,
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
@@ -199,11 +194,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                         return;
                     }
 
-                    var updateRequest = new UserUpdateDto
-                    {
-                        Id = _originalUser.Id,
-                        Username = UserName.Trim(),
-                        Name = RealName.Trim(),
+                    var updateRequest = new UserUpdateDto { RealName = RealName.Trim(),
                         Role = SelectedRole!.Value,
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),

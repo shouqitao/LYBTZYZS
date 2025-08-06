@@ -444,12 +444,12 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                             BirthDate = patientResult.Data.BirthDate,
                             PhoneNumber = patientResult.Data.PhoneNumber ?? "",
                             Address = patientResult.Data.Address ?? "",
-                            IdType = patientResult.Data.IDType ?? "",
+                            IdType = "",  // patientResult.Data.IDType 字段不存在
                             IdNumber = patientResult.Data.IDNumber ?? "",
-                            Occupation = patientResult.Data.Profession ?? "",
-                            MaritalStatus = patientResult.Data.MaritalStatus ?? "",
-                            Ethnicity = patientResult.Data.Ethnicity ?? "",
-                            Education = patientResult.Data.Education ?? "",
+                            Occupation = "" ?? "",
+                            MaritalStatus = "未婚", // patientResult.Data.MaritalStatus 字段已移除
+                            Ethnicity = "汉族", // patientResult.Data.Ethnicity 字段已移除
+                            Education = "不详", // patientResult.Data.Education 字段已移除
                             AllergyHistory = patientResult.Data.AllergyHistory ?? "",
                             PinYinCode = patientResult.Data.PinYinCode ?? "",
                             EmergencyContact = "", // PatientDetailDto 没有这个字段，设为空
@@ -619,7 +619,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             {
                 // TODO: 发送叫号通知
                 await _commonDialogService.ShowInformationAsync($"正在呼叫 {item.PatientName}", "叫号");
-                item/* .Status = */ "已叫号";
+                item.Status = "已叫号";
             }
             catch (Exception ex)
             {

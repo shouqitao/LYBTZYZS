@@ -122,7 +122,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         public void SetHerb(HerbInfo herb)
         {
             Herb = herb;
-            CurrentStock = 0 /* herb.Stock */;
+            // Stock = herb.Stock; // 字段已移除
             AdjustmentQuantity = 0;
             AdjustmentReason = string.Empty;
         }
@@ -154,10 +154,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     Spec = Herb.Spec,
                     Unit = Herb.Unit ?? string.Empty,
                     Price = Herb.Price,
-                    /* Stock = NewStock, */ // 更新后的库存
-                    /* BatchNo = Herb.BatchNo, */
+                    // Stock = NewStock, // 字段已移除
+                    // BatchNo = Herb.BatchNo, // 字段已移除
                     PinYinCode = Herb.PinYinCode,
-                    WuBiCode = Herb.WuBiCode,
+                    WuBiCode = string.Empty, // Herb.WuBiCode 字段已移除
                     Remark = $"{Herb.StatusDescription}\n[库存调整] {DateTime.Now:yyyy-MM-dd HH:mm} {AdjustmentType} {Math.Abs(AdjustmentQuantity)} {Herb.Unit}，原因：{AdjustmentReason}"
                 };
 

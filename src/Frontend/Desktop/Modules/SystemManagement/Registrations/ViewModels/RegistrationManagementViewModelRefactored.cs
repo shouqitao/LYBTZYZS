@@ -132,7 +132,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                     StartDate = SearchDate,
                     EndDate = SearchDate,
                     Status = status,
-                    Department = department
+                    // Department = _selectedDepartment, // 字段已移除
                 };
 
                 var response = await Service.GetPagedRegistrationsAsync(query);
@@ -196,7 +196,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
         protected override bool CanExecuteDelete(RegistrationInfo item)
         {
             // 只有已预约状态的挂号可以删除
-            return item != null && item = RegistrationStatus.Scheduled /* .Status = RegistrationStatus.Scheduled */;
+            return item != null && item.Status == RegistrationStatus.Scheduled;
         }
 
         protected override void ExecuteAdd()

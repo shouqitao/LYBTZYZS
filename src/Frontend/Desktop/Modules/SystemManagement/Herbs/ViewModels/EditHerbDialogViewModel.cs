@@ -147,13 +147,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             
             HerbName = herb.Name ?? string.Empty;
             PinYinCode = herb.PinYinCode ?? string.Empty;
-            WuBiCode = /* herb.WuBiCode */ "" ?? string.Empty;
+            // Stock = herb.Stock; // 字段已移除
             Origin = herb.Origin ?? string.Empty;
             Spec = herb.Spec ?? string.Empty;
             Unit = herb.Unit ?? "克";
             Price = herb.Price;
-            Stock = 0 /* herb.Stock */;
-            Status = (int)/* herb.Status */ 0;
+            // BatchNo = herb.BatchNo; // 字段已移除
+            Status = 0; // herb.Status 字段已移除
             Effect = herb.Effect ?? string.Empty;
             Usage = herb.Usage ?? string.Empty;
             Remark = herb.Remark ?? string.Empty;

@@ -403,7 +403,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 // ExpireDate = herbDto.ExpireDate, // HerbDto中没有ExpireDate属性
                 Effect = herbDto.Effect,
                 Remark = herbDto.Remark,
-                Status = (HerbStatus)herbDto.Status, // 需要转换为枚举
+                // Status = (HerbStatus)herbDto.Status, // HerbDto中没有Status属性
                 IsActive = herbDto.IsActive,
                 CreateTime = herbDto.CreateTime,
                 UpdateTime = herbDto.UpdateTime

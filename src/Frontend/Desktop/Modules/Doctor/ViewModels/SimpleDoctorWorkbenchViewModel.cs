@@ -3,6 +3,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Contracts.FormulaTemplates;
 using LYBT.Shared.Models.Enums;
+using System.Collections.Generic;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
 using Prism.Commands;
@@ -24,7 +25,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
         private readonly IPatientService _patientService;
         private readonly IHerbService _herbService;
         private readonly IFormulaTemplateService _formulaTemplateService;
-        private readonly IPrescriptionService _prescriptionService;
+        // private readonly IPrescriptionService _prescriptionService; // 暂时注释，接口未定义
         private readonly ICommonDialogService _dialogService;
         private readonly IPrescriptionPrintService _printService;
 
@@ -54,7 +55,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             IPatientService patientService,
             IHerbService herbService,
             IFormulaTemplateService formulaTemplateService,
-            IPrescriptionService prescriptionService,
+            // IPrescriptionService prescriptionService, // 暂时注释，接口未定义
             ICommonDialogService dialogService,
             IPrescriptionPrintService printService)
         {
@@ -62,7 +63,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             _patientService = patientService;
             _herbService = herbService;
             _formulaTemplateService = formulaTemplateService;
-            _prescriptionService = prescriptionService;
+            // _prescriptionService = prescriptionService; // 暂时注释，接口未定义
             _dialogService = dialogService;
             _printService = printService;
 
@@ -253,20 +254,41 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             try
             {
                 IsLoading = true;
-                var registrations = await _registrationService.GetTodayRegistrationsAsync();
+                var registrations = await _registrationService.GetPagedAsync(1, 100);
                 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     WaitingPatients.Clear();
-                    foreach (var reg in registrations.Where(r => r.Status == "待看诊"))
+                    foreach (var reg in registrations.Items.Where(r => r.Status == RegistrationStatus.Scheduled))
                     {
-                        WaitingPatients.Add(reg);
+                        // 将 RegistrationInfo 转换为 RegistrationDetailDto
+                        var dto = new RegistrationDetailDto
+                        {
+                            Id = reg.Id,
+                            RegistrationNumber = reg.RegistrationNumber,
+                            PatientId = reg.PatientId,
+                            PatientName = reg.PatientName,
+                            PatientPhone = reg.PatientPhone,
+                            DoctorId = reg.DoctorId,
+                            DoctorName = reg.DoctorName,
+                            RegistrationType = reg.RegistrationType.ToString(),
+                            RegistrationFee = reg.RegistrationFee,
+                            Status = reg.Status.ToString(),
+                            AppointmentDate = reg.AppointmentDate,
+                            AppointmentTimeSlot = reg.AppointmentTimeSlot,
+                            QueueNumber = reg.QueueNumber,
+                            IsPaid = reg.IsPaid,
+                            CreateTime = reg.CreateTime,
+                            UpdateTime = reg.UpdateTime,
+                            Remark = reg.Remark
+                        };
+                        WaitingPatients.Add(dto);
                     }
                 });
             }
             catch (Exception ex)
             {
-                _dialogService.ShowError($"加载患者列表失败：{ex.Message}");
+                _dialogService.ShowErrorAsync($"加载患者列表失败：{ex.Message}");
             }
             finally
             {
@@ -279,12 +301,12 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
         {
             try
             {
-                var patient = await _patientService.GetPatientByIdAsync(patientId);
-                CurrentPatient = patient;
+                var patientResult = await _patientService.GetByIdAsync(patientId);
+                CurrentPatient = patientResult.Data;
             }
             catch (Exception ex)
             {
-                _dialogService.ShowError($"加载患者信息失败：{ex.Message}");
+                _dialogService.ShowErrorAsync($"加载患者信息失败：{ex.Message}");
             }
         }
 
@@ -300,13 +322,13 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                     AvailableHerbs.Clear();
                     foreach (var herb in herbs)
                     {
-                        AvailableHerbs.Add(herb);
+                        AvailableHerbs.Add(new HerbDto { Id = herb.Id, Name = herb.Name, Price = herb.Price, Unit = herb.Unit ?? "克" });
                     }
                 });
             }
             catch (Exception ex)
             {
-                _dialogService.ShowError($"加载药材列表失败：{ex.Message}");
+                _dialogService.ShowErrorAsync($"加载药材列表失败：{ex.Message}");
             }
         }
 
@@ -315,20 +337,27 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
         {
             try
             {
-                var templates = await _formulaTemplateService.GetAllActiveFormulasAsync();
+                var templates = await _formulaTemplateService.GetListAsync();
                 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     FormulaTemplates.Clear();
-                    foreach (var template in templates)
+                    foreach (var templateInfo in templates.Data)
                     {
-                        FormulaTemplates.Add(template);
+                        // 转换为 FormulaTemplateDetailDto
+                        var dto = new FormulaTemplateDetailDto 
+                        {
+                            Id = templateInfo.Id,
+                            Name = templateInfo.Name,
+                            Herbs = new List<FormulaTemplateHerbDto>()
+                        };
+                        FormulaTemplates.Add(dto);
                     }
                 });
             }
             catch (Exception ex)
             {
-                _dialogService.ShowError($"加载验方模板失败：{ex.Message}");
+                _dialogService.ShowErrorAsync($"加载验方模板失败：{ex.Message}");
             }
         }
 
@@ -362,7 +391,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
         {
             if (SelectedHerb == null)
             {
-                _dialogService.ShowMessage("请先选择药材");
+                _dialogService.ShowInformationAsync("请先选择药材");
                 return;
             }
 
@@ -414,25 +443,25 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             // 验证必填项
             if (string.IsNullOrWhiteSpace(ChiefComplaint))
             {
-                _dialogService.ShowMessage("请填写主诉");
+                _dialogService.ShowInformationAsync("请填写主诉");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(PresentIllness))
             {
-                _dialogService.ShowMessage("请填写现病史");
+                _dialogService.ShowInformationAsync("请填写现病史");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(TcmDiagnosis))
             {
-                _dialogService.ShowMessage("请填写中医辨证");
+                _dialogService.ShowInformationAsync("请填写中医辨证");
                 return;
             }
 
             if (!PrescriptionItems.Any())
             {
-                _dialogService.ShowMessage("请开具处方");
+                _dialogService.ShowInformationAsync("请开具处方");
                 return;
             }
 
@@ -443,7 +472,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 // TODO: 调用服务保存看诊记录
                 // await _consultationService.SaveConsultation(...);
 
-                _dialogService.ShowMessage("看诊记录保存成功！");
+                _dialogService.ShowInformationAsync("看诊记录保存成功！");
                 
                 // 清空表单，准备下一个患者
                 ClearForm();
@@ -451,7 +480,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             }
             catch (Exception ex)
             {
-                _dialogService.ShowError($"保存失败：{ex.Message}");
+                _dialogService.ShowErrorAsync($"保存失败：{ex.Message}");
             }
             finally
             {
@@ -464,13 +493,13 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
         {
             if (!PrescriptionItems.Any())
             {
-                _dialogService.ShowMessage("处方为空，无法打印");
+                _dialogService.ShowInformationAsync("处方为空，无法打印");
                 return;
             }
 
             if (CurrentPatient == null || CurrentRegistration == null)
             {
-                _dialogService.ShowMessage("请先选择患者");
+                _dialogService.ShowInformationAsync("请先选择患者");
                 return;
             }
 
@@ -481,7 +510,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 {
                     PatientName = CurrentPatient.Name,
                     PatientGender = CurrentPatient.Gender.ToString(),
-                    PatientAge = CurrentPatient.Age ?? 0,
+                    PatientAge = 0 /* CurrentPatient.Age ?? 0 */,
                     PatientPhone = CurrentPatient.PhoneNumber ?? string.Empty,
                     DoctorName = "当前医生", // TODO: 从登录信息获取
                     PrescriptionDate = DateTime.Now,
@@ -501,16 +530,16 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 var success = await _printService.PrintPrescriptionAsync(prescriptionModel);
                 if (success)
                 {
-                    _dialogService.ShowMessage("处方已发送到打印机");
+                    _dialogService.ShowInformationAsync("处方已发送到打印机");
                 }
                 else
                 {
-                    _dialogService.ShowError("打印失败，请检查打印机设置");
+                    _dialogService.ShowErrorAsync("打印失败，请检查打印机设置");
                 }
             }
             catch (Exception ex)
             {
-                _dialogService.ShowError($"打印失败：{ex.Message}");
+                _dialogService.ShowErrorAsync($"打印失败：{ex.Message}");
             }
         }
 

@@ -65,8 +65,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                         (d.Department?.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
                         (d.Code?.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
                         (d.Phone?.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (d.PinYinCode != null && d.PinYinCode.Contains(keyword)) ||
-                        (d.WuBiCode != null && d.WuBiCode.Contains(keyword))
+                        (d.PinYinCode != null && d.PinYinCode.Contains(keyword))
+                        // (d.WuBiCode != null && d.WuBiCode.Contains(keyword)) // 字段已移除
                     ).ToList();
                 }
 

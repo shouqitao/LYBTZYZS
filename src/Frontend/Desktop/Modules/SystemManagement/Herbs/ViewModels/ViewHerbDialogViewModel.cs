@@ -55,11 +55,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             {
                 if (Herb == null) return "未知";
                 
-                if (Herb.Stock <= 0)
+                if (0 /* Herb.Stock */ <= 0)
                     return "无库存";
-                else if (Herb.Stock < 10)
+                else if (0 /* Herb.Stock */ < 10)
                     return "库存不足";
-                else if (Herb.Stock < 50)
+                else if (0 /* Herb.Stock */ < 50)
                     return "库存正常";
                 else
                     return "库存充足";
@@ -73,11 +73,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             {
                 if (Herb == null) return "#6C757D";
                 
-                if (Herb.Stock <= 0)
+                if (0 /* Herb.Stock */ <= 0)
                     return "#DC3545"; // 红色
-                else if (Herb.Stock < 10)
+                else if (0 /* Herb.Stock */ < 10)
                     return "#FD7E14"; // 橙色
-                else if (Herb.Stock < 50)
+                else if (0 /* Herb.Stock */ < 50)
                     return "#20C997"; // 青色
                 else
                     return "#28A745"; // 绿色
@@ -85,10 +85,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         }
 
         /// <summary>状态描述</summary>
-        public string StatusDescription => Herb?.Status == HerbStatus.Active ? "正常" : "停用";
+        public string StatusDescription => true /* Herb?.Status == HerbStatus.Active */ ? "正常" : "停用";
 
         /// <summary>状态颜色</summary>
-        public string StatusColor => Herb?.Status == HerbStatus.Active ? "#28A745" : "#DC3545";
+        public string StatusColor => true /* Herb?.Status == HerbStatus.Active */ ? "#28A745" : "#DC3545";
 
         /// <summary>启用状态描述</summary>
         public string ActiveStatusDescription => Herb?.IsActive == true ? "已启用" : "已禁用";
@@ -106,13 +106,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         public string PriceDescription => $"￥{Herb?.Price:F2} / {Herb?.Unit}";
 
         /// <summary>库存描述</summary>
-        public string StockDescription => $"{Herb?.Stock} {Herb?.Unit}";
+        public string StockDescription => "0" /* $"{Herb?.Stock} {Herb?.Unit}" */;
 
         /// <summary>过期时间描述</summary>
-        public string ExpireDateDescription => Herb?.ExpireDate?.ToString("yyyy-MM-dd") ?? "-";
+        public string ExpireDateDescription => "" /* Herb?.ExpireDate?.ToString("yyyy-MM-dd") */ ?? "-";
 
         /// <summary>是否即将过期</summary>
-        public bool IsExpiringSoon => Herb?.ExpireDate.HasValue == true && Herb.ExpireDate <= DateTime.Now.AddMonths(3);
+        public bool IsExpiringSoon => false; // Herb?.ExpireDate 字段已移除
 
         /// <summary>过期状态颜色</summary>
         public string ExpireDateColor => IsExpiringSoon ? "#FFC107" : "#6C757D";

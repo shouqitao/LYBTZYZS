@@ -102,7 +102,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             {
                 var dialog = new Views.AddPatientDialog();
                 dialog.Owner = System.Windows.Application.Current.MainWindow;
-                dialog/* .Title = */ "新增患者";
+                dialog.Title = "新增患者";
                 
                 // 创建 ViewModel 并设置为添加模式
                 var viewModel = new AddPatientDialogViewModel(Service, _commonDialogService);
@@ -144,7 +144,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             {
                 var dialog = new Views.AddPatientDialog();
                 dialog.Owner = System.Windows.Application.Current.MainWindow;
-                dialog/* .Title = */ "编辑患者";
+                dialog.Title = "编辑患者";
                 
                 // 创建 ViewModel 并设置为编辑模式
                 var viewModel = new AddPatientDialogViewModel(Service, _commonDialogService);

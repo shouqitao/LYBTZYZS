@@ -3,13 +3,11 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace LYBT.WPF.Client.Core.Behaviors
-{
+namespace LYBT.WPF.Client.Core.Behaviors {
     /// <summary>
     /// 动画行为附加属性
     /// </summary>
-    public static class AnimationBehaviors
-    {
+    public static class AnimationBehaviors {
         #region 淡入动画
 
         public static readonly DependencyProperty EnableFadeInProperty =
@@ -19,24 +17,18 @@ namespace LYBT.WPF.Client.Core.Behaviors
                 typeof(AnimationBehaviors),
                 new PropertyMetadata(false, OnEnableFadeInChanged));
 
-        public static bool GetEnableFadeIn(DependencyObject obj)
-        {
+        public static bool GetEnableFadeIn(DependencyObject obj) {
             return (bool)obj.GetValue(EnableFadeInProperty);
         }
 
-        public static void SetEnableFadeIn(DependencyObject obj, bool value)
-        {
+        public static void SetEnableFadeIn(DependencyObject obj, bool value) {
             obj.SetValue(EnableFadeInProperty, value);
         }
 
-        private static void OnEnableFadeInChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is FrameworkElement element && (bool)e.NewValue)
-            {
-                element.Loaded += (s, args) =>
-                {
-                    var animation = new DoubleAnimation
-                    {
+        private static void OnEnableFadeInChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is FrameworkElement element && (bool)e.NewValue) {
+                element.Loaded += (s, args) => {
+                    var animation = new DoubleAnimation {
                         From = 0,
                         To = 1,
                         Duration = TimeSpan.FromMilliseconds(300),
@@ -58,35 +50,28 @@ namespace LYBT.WPF.Client.Core.Behaviors
                 typeof(AnimationBehaviors),
                 new PropertyMetadata(false, OnEnableSlideInChanged));
 
-        public static bool GetEnableSlideIn(DependencyObject obj)
-        {
+        public static bool GetEnableSlideIn(DependencyObject obj) {
             return (bool)obj.GetValue(EnableSlideInProperty);
         }
 
-        public static void SetEnableSlideIn(DependencyObject obj, bool value)
-        {
+        public static void SetEnableSlideIn(DependencyObject obj, bool value) {
             obj.SetValue(EnableSlideInProperty, value);
         }
 
-        private static void OnEnableSlideInChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is FrameworkElement element && (bool)e.NewValue)
-            {
-                element.Loaded += (s, args) =>
-                {
+        private static void OnEnableSlideInChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is FrameworkElement element && (bool)e.NewValue) {
+                element.Loaded += (s, args) => {
                     var transform = new TranslateTransform();
                     element.RenderTransform = transform;
 
-                    var animation = new DoubleAnimation
-                    {
+                    var animation = new DoubleAnimation {
                         From = 30,
                         To = 0,
                         Duration = TimeSpan.FromMilliseconds(400),
                         EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
                     };
 
-                    var opacityAnimation = new DoubleAnimation
-                    {
+                    var opacityAnimation = new DoubleAnimation {
                         From = 0,
                         To = 1,
                         Duration = TimeSpan.FromMilliseconds(400)
@@ -109,28 +94,22 @@ namespace LYBT.WPF.Client.Core.Behaviors
                 typeof(AnimationBehaviors),
                 new PropertyMetadata(false, OnEnableHoverScaleChanged));
 
-        public static bool GetEnableHoverScale(DependencyObject obj)
-        {
+        public static bool GetEnableHoverScale(DependencyObject obj) {
             return (bool)obj.GetValue(EnableHoverScaleProperty);
         }
 
-        public static void SetEnableHoverScale(DependencyObject obj, bool value)
-        {
+        public static void SetEnableHoverScale(DependencyObject obj, bool value) {
             obj.SetValue(EnableHoverScaleProperty, value);
         }
 
-        private static void OnEnableHoverScaleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is FrameworkElement element && (bool)e.NewValue)
-            {
+        private static void OnEnableHoverScaleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is FrameworkElement element && (bool)e.NewValue) {
                 var transform = new ScaleTransform(1, 1);
                 element.RenderTransformOrigin = new Point(0.5, 0.5);
                 element.RenderTransform = transform;
 
-                element.MouseEnter += (s, args) =>
-                {
-                    var scaleAnimation = new DoubleAnimation
-                    {
+                element.MouseEnter += (s, args) => {
+                    var scaleAnimation = new DoubleAnimation {
                         To = 1.05,
                         Duration = TimeSpan.FromMilliseconds(200),
                         EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
@@ -139,10 +118,8 @@ namespace LYBT.WPF.Client.Core.Behaviors
                     transform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
                 };
 
-                element.MouseLeave += (s, args) =>
-                {
-                    var scaleAnimation = new DoubleAnimation
-                    {
+                element.MouseLeave += (s, args) => {
+                    var scaleAnimation = new DoubleAnimation {
                         To = 1,
                         Duration = TimeSpan.FromMilliseconds(200),
                         EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
@@ -164,39 +141,31 @@ namespace LYBT.WPF.Client.Core.Behaviors
                 typeof(AnimationBehaviors),
                 new PropertyMetadata(false, OnEnableRippleEffectChanged));
 
-        public static bool GetEnableRippleEffect(DependencyObject obj)
-        {
+        public static bool GetEnableRippleEffect(DependencyObject obj) {
             return (bool)obj.GetValue(EnableRippleEffectProperty);
         }
 
-        public static void SetEnableRippleEffect(DependencyObject obj, bool value)
-        {
+        public static void SetEnableRippleEffect(DependencyObject obj, bool value) {
             obj.SetValue(EnableRippleEffectProperty, value);
         }
 
-        private static void OnEnableRippleEffectChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is FrameworkElement element && (bool)e.NewValue)
-            {
+        private static void OnEnableRippleEffectChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is FrameworkElement element && (bool)e.NewValue) {
                 element.PreviewMouseLeftButtonDown += CreateRippleEffect;
             }
         }
 
-        private static void CreateRippleEffect(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
+        private static void CreateRippleEffect(object sender, System.Windows.Input.MouseButtonEventArgs e) {
             // 波纹效果实现（简化版）
-            if (sender is FrameworkElement element)
-            {
+            if (sender is FrameworkElement element) {
                 var transform = element.RenderTransform as ScaleTransform;
-                if (transform == null)
-                {
+                if (transform == null) {
                     transform = new ScaleTransform(1, 1);
                     element.RenderTransformOrigin = new Point(0.5, 0.5);
                     element.RenderTransform = transform;
                 }
 
-                var animation = new DoubleAnimation
-                {
+                var animation = new DoubleAnimation {
                     From = 0.95,
                     To = 1,
                     Duration = TimeSpan.FromMilliseconds(300),
@@ -219,13 +188,11 @@ namespace LYBT.WPF.Client.Core.Behaviors
                 typeof(AnimationBehaviors),
                 new PropertyMetadata(0));
 
-        public static int GetLoadDelay(DependencyObject obj)
-        {
+        public static int GetLoadDelay(DependencyObject obj) {
             return (int)obj.GetValue(LoadDelayProperty);
         }
 
-        public static void SetLoadDelay(DependencyObject obj, int value)
-        {
+        public static void SetLoadDelay(DependencyObject obj, int value) {
             obj.SetValue(LoadDelayProperty, value);
         }
 
@@ -236,42 +203,34 @@ namespace LYBT.WPF.Client.Core.Behaviors
                 typeof(AnimationBehaviors),
                 new PropertyMetadata(false, OnEnableStaggeredLoadChanged));
 
-        public static bool GetEnableStaggeredLoad(DependencyObject obj)
-        {
+        public static bool GetEnableStaggeredLoad(DependencyObject obj) {
             return (bool)obj.GetValue(EnableStaggeredLoadProperty);
         }
 
-        public static void SetEnableStaggeredLoad(DependencyObject obj, bool value)
-        {
+        public static void SetEnableStaggeredLoad(DependencyObject obj, bool value) {
             obj.SetValue(EnableStaggeredLoadProperty, value);
         }
 
-        private static void OnEnableStaggeredLoadChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is FrameworkElement element && (bool)e.NewValue)
-            {
+        private static void OnEnableStaggeredLoadChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is FrameworkElement element && (bool)e.NewValue) {
                 element.Opacity = 0;
-                element.Loaded += async (s, args) =>
-                {
+                element.Loaded += async (s, args) => {
                     var delay = GetLoadDelay(element);
-                    if (delay > 0)
-                    {
+                    if (delay > 0) {
                         await System.Threading.Tasks.Task.Delay(delay);
                     }
 
                     var transform = new TranslateTransform();
                     element.RenderTransform = transform;
 
-                    var slideAnimation = new DoubleAnimation
-                    {
+                    var slideAnimation = new DoubleAnimation {
                         From = 20,
                         To = 0,
                         Duration = TimeSpan.FromMilliseconds(300),
                         EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
                     };
 
-                    var fadeAnimation = new DoubleAnimation
-                    {
+                    var fadeAnimation = new DoubleAnimation {
                         From = 0,
                         To = 1,
                         Duration = TimeSpan.FromMilliseconds(300)

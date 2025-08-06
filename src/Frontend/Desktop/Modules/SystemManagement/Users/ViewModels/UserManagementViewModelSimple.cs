@@ -53,11 +53,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                     var paginatedResult = response.Content;
                     
                     // 转换为前端模型
-                    var userInfos = paginatedResult.Items.Select(dto => new UserInfo
-                    {
-                        Id = dto.Id,
-                        Username = dto.Username ?? string.Empty,
-                        Name = dto.Name ?? string.Empty,
+                    var userInfos = paginatedResult.Items.Select(dto => new UserInfo { RealName = dto.RealName ?? string.Empty,
                         Email = dto.Email,
                         PhoneNumber = dto.PhoneNumber,
                         Role = dto.Role,
@@ -130,7 +126,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             {
                 var dialog = new Views.UserAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
-                dialog/* .Title = */ "新增用户";
+                dialog.Title = "新增用户";
                 
                 // 创建ViewModel并设置为添加模式
                 var viewModel = new UserAddEditDialogViewModel(Service, null); // null表示新增
@@ -166,7 +162,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             {
                 var dialog = new Views.UserAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
-                dialog/* .Title = */ "编辑用户";
+                dialog.Title = "编辑用户";
                 
                 // 创建ViewModel并设置为编辑模式
                 var viewModel = new UserAddEditDialogViewModel(Service, item);

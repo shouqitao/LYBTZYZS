@@ -108,7 +108,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             : "暂无药材";
 
         /// <summary>是否可以编辑</summary>
-        public bool CanEdit => Prescription?/* .Status = */= PrescriptionStatus.Draft;
+        public bool CanEdit => Prescription?.Status == PrescriptionStatus.Draft;
 
         /// <summary>是否可以作废</summary>
         public bool CanVoid => Prescription?.Status != PrescriptionStatus.Voided && 

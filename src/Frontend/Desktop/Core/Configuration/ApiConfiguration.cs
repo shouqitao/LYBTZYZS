@@ -57,7 +57,7 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// </summary>
         private static void LoadSettings() {
             const int defaultTimeout = 60;
-            
+
             try {
                 var configuration = new ConfigurationBuilder()
                     .AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"), optional: false, reloadOnChange: true)
@@ -65,20 +65,18 @@ namespace LYBT.WPF.Client.Core.Configuration {
 
                 var apiSection = configuration.GetSection("ApiSettings");
                 var configuredUrl = apiSection["BaseUrl"];
-                
+
                 // 从配置文件读取URL，如果为空则抛出异常
-                if (string.IsNullOrWhiteSpace(configuredUrl))
-                {
+                if (string.IsNullOrWhiteSpace(configuredUrl)) {
                     throw new InvalidOperationException("API BaseUrl 未在 appsettings.json 中配置");
                 }
-                
+
                 string baseUrl = configuredUrl.Trim();
                 // 确保URL以斜杠结尾
-                if (!baseUrl.EndsWith("/"))
-                {
+                if (!baseUrl.EndsWith("/")) {
                     baseUrl += "/";
                 }
-                
+
                 _settings = new ApiSettings {
                     BaseUrl = baseUrl,
                     TimeoutSeconds = int.TryParse(apiSection["TimeoutSeconds"], out var timeout) ? timeout : defaultTimeout

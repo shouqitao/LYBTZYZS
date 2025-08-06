@@ -48,19 +48,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
         #region 计算属性
 
         /// <summary>年龄描述</summary>
-        public string AgeDescription => Doctor != null ? $"{Doctor.Age} 岁" : "-";
+        public string AgeDescription => $"{"暂无"}岁";
 
         /// <summary>性别描述</summary>
-        public string GenderDescription => Doctor?.GenderText ?? "-";
+        public string GenderDescription => "暂无";
 
         /// <summary>职称描述</summary>
-        public string TitleDescription => Doctor?.TitleDisplayName ?? "-";
+        public string TitleDescription => "暂无";
 
         /// <summary>状态描述</summary>
         public string StatusDescription => Doctor?.StatusDisplayName ?? "-";
 
         /// <summary>工作状态描述</summary>
-        public string WorkStatusDescription => Doctor?.WorkStatusDisplayName ?? "-";
+        public string WorkStatusDescription => _doctor?.IsActive == true ? "在岗" : "离岗";
 
         /// <summary>启用状态描述</summary>
         public string ActiveStatusDescription => Doctor?.IsActive == true ? "已启用" : "已禁用";

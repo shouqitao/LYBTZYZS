@@ -1,10 +1,8 @@
-namespace LYBT.WPF.Client.Core.Constants
-{
+namespace LYBT.WPF.Client.Core.Constants {
     /// <summary>
     /// API端点常量
     /// </summary>
-    public static class ApiEndpoints
-    {
+    public static class ApiEndpoints {
         // TODO: 定义API端点常量，与WebAPI路由保持一致
         public const string Auth = "api/auth";
         public const string Users = "api/users";

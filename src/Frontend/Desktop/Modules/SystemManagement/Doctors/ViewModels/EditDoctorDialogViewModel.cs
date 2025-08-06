@@ -19,7 +19,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
         private readonly IDoctorService _doctorService;
         private readonly Guid _doctorId;
-        private DoctorInfo? _originalDoctor;
+        private DoctorInfo? doctor;
 
         #region 属性
 
@@ -205,20 +205,20 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    _originalDoctor = result.Data;
+                    doctor = result.Data;
                     
                     // 填充表单
-                    Name = _originalDoctor.Name;
-                    Code = _originalDoctor.Code;
-                    Department = _originalDoctor.Department;
-                    Gender = _originalDoctor.Gender;
-                    BirthDate = _originalDoctor.Birthday;
-                    Title = _originalDoctor.Title;
-                    Specialty = _originalDoctor.Specialty ?? string.Empty;
-                    LicenseNumber = _originalDoctor.LicenseNumber ?? string.Empty;
-                    Phone = _originalDoctor.Phone;
-                    Remark = _originalDoctor.Remark ?? string.Empty;
-                    IsActive = _originalDoctor.IsActive;
+                    Name = doctor.Name;
+                    Code = doctor.Code;
+                    Department = doctor.Department;
+                    // SelectedGender = doctor.Gender; // 字段已移除
+                    // BirthDate = doctor.Birthday // 字段已移除;
+            // Title = doctor.Title // 字段已移除
+                    Specialty = doctor.Specialty ?? string.Empty;
+                    LicenseNumber = doctor.LicenseNumber ?? string.Empty;
+                    Phone = doctor.Phone;
+                    // Remark = doctor.Remark // 字段已移除 ?? string.Empty;
+                    IsActive = doctor.IsActive;
                 }
                 else
                 {
@@ -279,32 +279,32 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
             try
             {
-                if (_originalDoctor == null) return;
+                if (doctor == null) return;
 
                 // 更新医生信息
-                _originalDoctor.Name = Name;
-                _originalDoctor.Code = Code;
-                _originalDoctor/* .Department = */ Department;
-                _originalDoctor.Gender = Gender;
-                _originalDoctor.Birthday = BirthDate.Value;
-                _originalDoctor/* .Title = */ Title;
-                _originalDoctor.Specialty = Specialty;
-                _originalDoctor.LicenseNumber = LicenseNumber;
-                _originalDoctor.ContactNumber = Phone;
-                _originalDoctor.Phone = Phone;
-                _originalDoctor.Remark = Remark;
-                _originalDoctor.IsActive = IsActive;
+                doctor.Name = Name;
+                doctor.Code = Code;
+                doctor.Department = Department;
+                // doctor.Gender = Gender; // 字段已移除
+                // doctor.Birthday = BirthDate.Value; // 字段已移除
+                // doctor.Title = Title; // 字段已移除
+                doctor.Specialty = Specialty;
+                doctor.LicenseNumber = LicenseNumber;
+                doctor.ContactNumber = Phone;
+                doctor.Phone = Phone;
+                // doctor.Remark = Remark; // 字段已移除
+                doctor.IsActive = IsActive;
 
-                // 计算年龄
-                var today = DateTime.Today;
-                var age = today.Year - BirthDate.Value.Year;
-                if (BirthDate.Value.Date > today.AddYears(-age)) age--;
-                _originalDoctor.Age = age;
+                // 计算年龄 - 字段已移除
+                // var today = DateTime.Today;
+                // var age = today.Year - BirthDate.Value.Year;
+                // if (BirthDate.Value.Date > today.AddYears(-age)) age--;
+                // doctor.Age = age;
 
                 // 更新拼音码
-                _originalDoctor.PinYinCode = Name.ToUpper();
+                doctor.PinYinCode = Name.ToUpper();
 
-                var result = await _doctorService.UpdateDoctorAsync(_originalDoctor);
+                var result = await _doctorService.UpdateDoctorAsync(doctor);
                 if (result.IsSuccess)
                 {
                     _commonDialogService.ShowInformationAsync("医生信息更新成功", "成功").GetAwaiter().GetResult();
