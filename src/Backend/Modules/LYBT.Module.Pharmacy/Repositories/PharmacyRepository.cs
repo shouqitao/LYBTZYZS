@@ -62,7 +62,7 @@ namespace LYBT.Module.Pharmacy.Repositories {
         /// <summary>
         /// 根据状态获取药房记录列表
         /// </summary>
-        public async Task<List<PharmacyModel>> GetByStatusAsync(PharmacyStatus status) {
+        public async Task<List<PharmacyModel>> GetByStatusAsync(Models.Pharmacy.PharmacyStatus status) {
             return await Task.FromResult(_context.Pharmacies
                 .Where(p => p.Status == status)
                 .ToList());

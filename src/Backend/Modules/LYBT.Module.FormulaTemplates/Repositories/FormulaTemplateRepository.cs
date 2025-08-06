@@ -108,7 +108,7 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
                     Herbs = dto.Herbs.Select(h => new FormulaTemplateHerbItem {
                         HerbId = h.HerbId,
                         HerbName = h.Name,
-                        Quantity = h.Dosage,
+                        Quantity = h.Quantity,
                         Unit = h.Unit ?? "g"
                     }).ToList(),
                     Remark = dto.Remark,
@@ -137,7 +137,7 @@ namespace LYBT.Module.FormulaTemplates.Repositories {
                 Herbs = m.Herbs.Select(h => new FormulaTemplateHerbDto {
                     HerbId = h.HerbId,
                     HerbName = h.HerbName,
-                    Dosage = h.Quantity,
+                    Quantity = h.Quantity,
                     Unit = h.Unit,
                     Remark = h.Remark
                 }).ToList(),

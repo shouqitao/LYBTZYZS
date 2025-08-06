@@ -105,8 +105,8 @@ namespace LYBT.WPF.Client.Core.Models.Records
         /// <summary>药材信息</summary>
         public HerbInfo Herb { get; set; } = new HerbInfo();
 
-        /// <summary>剂量</summary>
-        public decimal Dosage { get; set; }
+        /// <summary>数量</summary>
+        public decimal Quantity { get; set; }
 
         /// <summary>单位</summary>
         public string Unit { get; set; } = "g";
@@ -118,9 +118,9 @@ namespace LYBT.WPF.Client.Core.Models.Records
         public string Usage { get; set; } = string.Empty;
 
         /// <summary>小计</summary>
-        public decimal SubTotal => Dosage * UnitPrice;
+        public decimal SubTotal => Quantity * UnitPrice;
 
         /// <summary>显示文本</summary>
-        public string DisplayText => $"{Herb.Name} {Dosage}{Unit}";
+        public string DisplayText => $"{Herb.Name} {Quantity}{Unit}";
     }
 }

@@ -46,7 +46,7 @@ namespace LYBT.Module.Prescriptions.Services {
                 foreach (var herb in template.Herbs) {
                     var formulaItem = new FormulaIngredientDto {
                         Name = herb.HerbName,
-                        Dosage = herb.Dosage,
+                        Quantity = herb.Quantity,
                         Unit = herb.Unit,
                         Price = 0 // 价格在后续查询时获取
                     };

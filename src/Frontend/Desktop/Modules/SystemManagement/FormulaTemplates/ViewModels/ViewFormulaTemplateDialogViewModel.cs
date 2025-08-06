@@ -118,12 +118,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
         public void OnDialogOpened(IDialogParameters parameters)
         {
-            if (parameters.ContainsKey("templateId"))
+            // 支持两种参数名称，确保兼容性
+            if (parameters.ContainsKey("formulaTemplateId"))
+            {
+                var id = parameters.GetValue<Guid>("formulaTemplateId");
+                _ = LoadFormulaTemplateAsync(id);
+            }
+            else if (parameters.ContainsKey("templateId"))
             {
                 var id = parameters.GetValue<Guid>("templateId");
                 _ = LoadFormulaTemplateAsync(id);
             }
-
         }
         
         private async System.Threading.Tasks.Task LoadFormulaTemplateAsync(Guid templateId)
@@ -176,7 +181,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                             {
                                 HerbId = herb.HerbId,
                                 HerbName = herb.HerbName,
-                                Dosage = herb.Dosage,
+                                Quantity = herb.Quantity,
                                 Unit = herb.Unit,
                                 Remark = herb.Remark,
                                 SortOrder = herb.SortOrder

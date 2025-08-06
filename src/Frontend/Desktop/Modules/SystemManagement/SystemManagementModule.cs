@@ -34,7 +34,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             // 注册自定义的ViewModel映射
             ViewModelLocationProvider.Register<UserManagementView, UserManagementViewModelSimple>();
             ViewModelLocationProvider.Register<RegistrationManagementView, RegistrationManagementViewModelRefactored>();
-            ViewModelLocationProvider.Register<FormulaTemplateManagementView, FormulaTemplateManagementViewModelRefactored>();
+            ViewModelLocationProvider.Register<FormulaTemplateManagementView, FormulaTemplateManagementViewModel>();
             ViewModelLocationProvider.Register<HerbManagementView, Herbs.ViewModels.HerbManagementViewModelRefactored>();
             ViewModelLocationProvider.Register<DoctorManagementView, Doctors.ViewModels.DoctorManagementViewModelRefactored>();
             ViewModelLocationProvider.Register<PatientManagementView, Patients.ViewModels.PatientManagementViewModelRefactored>();

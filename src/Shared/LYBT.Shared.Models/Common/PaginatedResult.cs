@@ -45,7 +45,7 @@ namespace LYBT.Shared.Models.Common {
         /// <summary>
         /// 数据项集合
         /// </summary>
-        public IList<T> Items { get; set; } = new List<T>();
+        public IList<T> Items { get; set; } = [];
 
         /// <summary>
         /// 总记录数
@@ -104,7 +104,7 @@ namespace LYBT.Shared.Models.Common {
         /// <param name="pageSize">每页大小</param>
         /// <returns>空分页结果</returns>
         public static PaginatedResult<T> Empty(int currentPage = 1, int pageSize = 10) {
-            return new PaginatedResult<T>(new List<T>(), 0, currentPage, pageSize);
+            return new PaginatedResult<T>([], 0, currentPage, pageSize);
         }
     }
 }

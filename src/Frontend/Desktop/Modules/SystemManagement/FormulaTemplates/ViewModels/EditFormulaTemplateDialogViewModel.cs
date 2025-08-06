@@ -88,11 +88,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             set => SetProperty(ref _searchHerbText, value);
         }
 
-        private decimal _herbDosage = 10;
-        public decimal HerbDosage
+        private decimal _herbQuantity = 10;
+        public decimal HerbQuantity
         {
-            get => _herbDosage;
-            set => SetProperty(ref _herbDosage, value);
+            get => _herbQuantity;
+            set => SetProperty(ref _herbQuantity, value);
         }
 
         private string _herbUnit = "g";
@@ -136,7 +136,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             CancelCommand = new DelegateCommand(ExecuteCancel);
             AddHerbCommand = new DelegateCommand(ExecuteAddHerb, CanExecuteAddHerb)
                 .ObservesProperty(() => SelectedHerb)
-                .ObservesProperty(() => HerbDosage);
+                .ObservesProperty(() => HerbQuantity);
             
             RemoveHerbCommand = new DelegateCommand<FormulaTemplateHerbItem>(ExecuteRemoveHerb);
 
@@ -178,7 +178,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                             {
                                 HerbId = herb.HerbId,
                                 HerbName = herb.HerbName,
-                                Dosage = herb.Dosage,
+                                Quantity = herb.Quantity,
                                 Unit = herb.Unit,
                                 Remark = herb.Remark,
                                 SortOrder = herb.SortOrder
@@ -241,7 +241,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                     {
                         HerbId = h.HerbId,
                         HerbName = h.HerbName,
-                        Dosage = h.Dosage,
+                        Quantity = h.Quantity,
                         Unit = h.Unit,
                         Remark = h.Remark,
                         SortOrder = index
@@ -252,7 +252,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
                 if (response.IsSuccess)
                 {
                     _commonDialogService.ShowInformationAsync("验方模板更新成功", "成功").GetAwaiter().GetResult();
-                    _window.DialogResult = true;
+                    
+                    // 安全设置DialogResult
+                    try
+                    {
+                        if (_window.IsVisible)
+                        {
+                            _window.DialogResult = true;
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // 如果无法设置DialogResult，继续关闭窗口
+                    }
                     _window.Close();
                 }
                 else
@@ -268,13 +280,24 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
         private void ExecuteCancel()
         {
-            _window.DialogResult = false;
+            // 安全设置DialogResult
+            try
+            {
+                if (_window.IsVisible)
+                {
+                    _window.DialogResult = false;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // 如果无法设置DialogResult，继续关闭窗口
+            }
             _window.Close();
         }
 
         private bool CanExecuteAddHerb()
         {
-            return SelectedHerb != null && HerbDosage > 0;
+            return SelectedHerb != null && HerbQuantity > 0;
         }
 
         private void ExecuteAddHerb()
@@ -292,7 +315,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
             {
                 HerbId = SelectedHerb.Id,
                 HerbName = SelectedHerb.Name,
-                Dosage = HerbDosage,
+                Quantity = HerbQuantity,
                 Unit = HerbUnit,
                 SortOrder = TemplateHerbs.Count
             };
@@ -301,7 +324,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
             // 重置输入
             SelectedHerb = null;
-            HerbDosage = 10;
+            HerbQuantity = 10;
             HerbUnit = "g";
             SearchHerbText = string.Empty;
         }

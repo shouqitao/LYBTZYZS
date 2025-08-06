@@ -122,7 +122,7 @@
                                     </DataGridTextColumn.Binding>
                                 </DataGridTextColumn>
                                 <DataGridTextColumn Header="药材名称" Binding="{Binding HerbName}" Width="*"/>
-                                <DataGridTextColumn Header="用量" Binding="{Binding Dosage}" Width="60"/>
+                                <DataGridTextColumn Header="数量" Binding="{Binding Quantity}" Width="60"/>
                                 <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="50"/>
                                 <DataGridTextColumn Header="备注" Binding="{Binding Remark}" Width="100"/>
                             </DataGrid.Columns>

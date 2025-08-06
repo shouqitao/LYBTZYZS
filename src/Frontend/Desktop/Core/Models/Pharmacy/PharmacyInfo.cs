@@ -98,9 +98,9 @@ namespace LYBT.WPF.Client.Core.Models.Pharmacy {
         public string HerbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 剂量
+        /// 数量
         /// </summary>
-        public decimal Dosage { get; set; }
+        public decimal Quantity { get; set; }
 
         /// <summary>
         /// 单位
@@ -115,7 +115,7 @@ namespace LYBT.WPF.Client.Core.Models.Pharmacy {
         /// <summary>
         /// 小计
         /// </summary>
-        public decimal SubTotal => Dosage * UnitPrice;
+        public decimal SubTotal => Quantity * UnitPrice;
 
         /// <summary>
         /// 特殊煎法

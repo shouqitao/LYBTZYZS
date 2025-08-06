@@ -7,8 +7,12 @@ using System.Windows;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models.Doctors;
+using LYBT.WPF.Client.Core.Models.Registration;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Records;
+using LYBT.Shared.Models.Contracts.Registration;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
 {
@@ -21,24 +25,46 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
 
         private readonly IPatientService _patientService;
         private readonly IRecordService _recordService;
+        private readonly IRegistrationService _registrationService;
+        private readonly IDoctorService _doctorService;
 
         public FrontDeskMainViewModel(IPatientService patientService, IRecordService recordService,
+            IRegistrationService registrationService, IDoctorService doctorService,
             ICommonDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             _patientService = patientService;
             _recordService = recordService;
+            _registrationService = registrationService;
+            _doctorService = doctorService;
             InitializeCommands();
-            _ = LoadTodayRegistrations();
+            _ = LoadInitialData();
         }
 
         #region Properties
 
-        private ObservableCollection<PatientDetailDto> _todayRegistrations = new();
-        public ObservableCollection<PatientDetailDto> TodayRegistrations
+        // 患者搜索结果列表
+        private ObservableCollection<PatientDetailDto> _searchResults = new();
+        public ObservableCollection<PatientDetailDto> SearchResults
+        {
+            get => _searchResults;
+            set => SetProperty(ref _searchResults, value);
+        }
+
+        // 今日挂号列表
+        private ObservableCollection<LYBT.WPF.Client.Core.Models.Registration.RegistrationInfo> _todayRegistrations = new();
+        public ObservableCollection<LYBT.WPF.Client.Core.Models.Registration.RegistrationInfo> TodayRegistrations
         {
             get => _todayRegistrations;
             set => SetProperty(ref _todayRegistrations, value);
+        }
+
+        // 可用医生列表
+        private ObservableCollection<DoctorInfo> _availableDoctors = new();
+        public ObservableCollection<DoctorInfo> AvailableDoctors
+        {
+            get => _availableDoctors;
+            set => SetProperty(ref _availableDoctors, value);
         }
 
         private ObservableCollection<PatientDetailDto> _waitingQueue = new();
@@ -52,7 +78,18 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
         public PatientDetailDto SelectedPatient
         {
             get => _selectedPatient;
-            set => SetProperty(ref _selectedPatient, value);
+            set
+            {
+                if (SetProperty(ref _selectedPatient, value))
+                {
+                    // 选中患者后自动填充挂号信息
+                    if (value != null)
+                    {
+                        RegistrationPatientName = value.Name;
+                        RegistrationPatientId = value.Id;
+                    }
+                }
+            }
         }
 
         private string _searchKeyword = string.Empty;
@@ -105,6 +142,49 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
             set => SetProperty(ref _newPatientIDNumber, value);
         }
 
+        // 挂号相关属性
+        private Guid _registrationPatientId;
+        public Guid RegistrationPatientId
+        {
+            get => _registrationPatientId;
+            set => SetProperty(ref _registrationPatientId, value);
+        }
+
+        private string _registrationPatientName = string.Empty;
+        public string RegistrationPatientName
+        {
+            get => _registrationPatientName;
+            set => SetProperty(ref _registrationPatientName, value);
+        }
+
+        private DoctorInfo _selectedDoctor;
+        public DoctorInfo SelectedDoctor
+        {
+            get => _selectedDoctor;
+            set => SetProperty(ref _selectedDoctor, value);
+        }
+
+        private string _registrationRemark = string.Empty;
+        public string RegistrationRemark
+        {
+            get => _registrationRemark;
+            set => SetProperty(ref _registrationRemark, value);
+        }
+
+        private bool _showCreatePatientPanel;
+        public bool ShowCreatePatientPanel
+        {
+            get => _showCreatePatientPanel;
+            set => SetProperty(ref _showCreatePatientPanel, value);
+        }
+
+        private bool _showRegistrationPanel;
+        public bool ShowRegistrationPanel
+        {
+            get => _showRegistrationPanel;
+            set => SetProperty(ref _showRegistrationPanel, value);
+        }
+
         private bool _isLoading;
         public bool IsLoading
         {
@@ -112,8 +192,9 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public string TodayRegistrationCount => $"今日挂号: {TodayRegistrations.Count}人";
-        public string WaitingQueueCount => $"等待就诊: {WaitingQueue.Count}人";
+        public string TodayRegistrationCount => $"今日挂号: {TodayRegistrations?.Count ?? 0}人";
+        public string WaitingQueueCount => $"等待就诊: {WaitingQueue?.Count ?? 0}人";
+        public string SearchResultsCount => $"搜索结果: {SearchResults?.Count ?? 0}人";
 
         #endregion
 
@@ -121,6 +202,10 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
 
         public DelegateCommand SearchPatientCommand { get; private set; }
         public DelegateCommand RegisterNewPatientCommand { get; private set; }
+        public DelegateCommand<PatientDetailDto> SelectPatientForRegistrationCommand { get; private set; }
+        public DelegateCommand CreateRegistrationCommand { get; private set; }
+        public DelegateCommand ShowCreatePatientCommand { get; private set; }
+        public DelegateCommand CancelCreatePatientCommand { get; private set; }
         public DelegateCommand<PatientDetailDto> AddToQueueCommand { get; private set; }
         public DelegateCommand<PatientDetailDto> RemoveFromQueueCommand { get; private set; }
         public DelegateCommand<PatientDetailDto> ViewPatientInfoCommand { get; private set; }
@@ -136,6 +221,10 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
         {
             SearchPatientCommand = new DelegateCommand(async () => await SearchPatient());
             RegisterNewPatientCommand = new DelegateCommand(async () => await RegisterNewPatient());
+            SelectPatientForRegistrationCommand = new DelegateCommand<PatientDetailDto>(SelectPatientForRegistration);
+            CreateRegistrationCommand = new DelegateCommand(async () => await CreateRegistration());
+            ShowCreatePatientCommand = new DelegateCommand(() => ShowCreatePatientPanel = true);
+            CancelCreatePatientCommand = new DelegateCommand(() => { ShowCreatePatientPanel = false; ClearNewPatientForm(); });
             AddToQueueCommand = new DelegateCommand<PatientDetailDto>(async (patient) => await AddToQueue(patient));
             RemoveFromQueueCommand = new DelegateCommand<PatientDetailDto>(async (patient) => await RemoveFromQueue(patient));
             ViewPatientInfoCommand = new DelegateCommand<PatientDetailDto>(ViewPatientInfo);
@@ -148,25 +237,53 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
 
         #region Command Implementations
 
+        private async Task LoadInitialData()
+        {
+            await LoadAvailableDoctors();
+            await LoadTodayRegistrations();
+        }
+
+        private async Task LoadAvailableDoctors()
+        {
+            try
+            {
+                var result = await _doctorService.GetDoctorsAsync();
+                if (result.IsSuccess && result.Data != null)
+                {
+                    AvailableDoctors.Clear();
+                    foreach (var doctor in result.Data.Where(d => d.IsActive))
+                    {
+                        AvailableDoctors.Add(doctor);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _commonDialogService.ShowErrorAsync($"加载医生列表失败：{ex.Message}", "错误").GetAwaiter().GetResult();
+            }
+        }
+
         private async Task LoadTodayRegistrations()
         {
             try
             {
                 IsLoading = true;
-                var result = await _patientService.GetActivePatientsAsync();
-                if (result.IsSuccess && result.Data != null)
+                // 获取今日的挂号记录
+                var today = DateTime.Today;
+                var result = await _registrationService.GetPagedAsync(1, 100, null, today, today.AddDays(1));
+                if (result != null && result.Items != null)
                 {
                     TodayRegistrations.Clear();
-                    foreach (var patient in result.Data.Take(10)) // 显示最近的10个患者
+                    foreach (var registration in result.Items)
                     {
-                        TodayRegistrations.Add(patient);
+                        TodayRegistrations.Add(registration);
                     }
                 }
                 RaisePropertyChanged(nameof(TodayRegistrationCount));
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"加载今日挂号信息失败：{ex.Message}", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync($"加载今日挂号信息失败：{ex.Message}", "错误");
             }
             finally
             {
@@ -178,7 +295,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
         {
             if (string.IsNullOrWhiteSpace(SearchKeyword))
             {
-                await _commonDialogService.ShowWarningAsync("请输入搜索关键词", "提示");
+                await _commonDialogService.ShowWarningAsync("请输入搜索关键词（姓名、电话或身份证）", "提示");
                 return;
             }
 
@@ -188,12 +305,26 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 var result = await _patientService.QuickSearchAsync(SearchKeyword);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    TodayRegistrations.Clear();
+                    SearchResults.Clear();
                     foreach (var patient in result.Data)
                     {
-                        TodayRegistrations.Add(patient);
+                        SearchResults.Add(patient);
                     }
-                    _commonDialogService.ShowInformationAsync($"找到 {result.Data.Count} 个患者", "搜索结果").GetAwaiter().GetResult();
+                    
+                    if (result.Data.Count == 0)
+                    {
+                        var createNew = await _commonDialogService.ShowConfirmationAsync(
+                            "未找到匹配的患者，是否创建新患者？", "提示");
+                        if (createNew)
+                        {
+                            ShowCreatePatientPanel = true;
+                            NewPatientName = SearchKeyword; // 预填充搜索的名字
+                        }
+                    }
+                    else
+                    {
+                        _commonDialogService.ShowInformationAsync($"找到 {result.Data.Count} 个患者，请选择或创建新患者", "搜索结果").GetAwaiter().GetResult();
+                    }
                 }
                 else
                 {
@@ -239,9 +370,13 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 {
                     _commonDialogService.ShowInformationAsync("患者注册成功！", "成功").GetAwaiter().GetResult();
                     
-                    TodayRegistrations.Insert(0, newPatient);
+                    // 自动选中新创建的患者准备挂号
+                    SelectedPatient = newPatient;
+                    SearchResults.Insert(0, newPatient);
+                    ShowCreatePatientPanel = false;
+                    ShowRegistrationPanel = true;
                     ClearNewPatientForm();
-                    RaisePropertyChanged(nameof(TodayRegistrationCount));
+                    RaisePropertyChanged(nameof(SearchResultsCount));
                 }
                 else
                 {
@@ -346,7 +481,77 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
 
         private async Task RefreshData()
         {
-            await LoadTodayRegistrations();
+            await LoadInitialData();
+        }
+
+        // 选择患者进行挂号
+        private void SelectPatientForRegistration(PatientDetailDto patient)
+        {
+            if (patient == null) return;
+            
+            SelectedPatient = patient;
+            ShowRegistrationPanel = true;
+        }
+
+        // 创建挂号
+        private async Task CreateRegistration()
+        {
+            if (SelectedPatient == null)
+            {
+                await _commonDialogService.ShowWarningAsync("请先选择患者", "提示");
+                return;
+            }
+
+            if (SelectedDoctor == null)
+            {
+                await _commonDialogService.ShowWarningAsync("请选择就诊医生", "提示");
+                return;
+            }
+
+            try
+            {
+                IsLoading = true;
+                
+                var registration = new RegistrationCreateDto
+                {
+                    PatientId = SelectedPatient.Id,
+                    DoctorId = SelectedDoctor.Id,
+                    Department = SelectedDoctor.Department ?? "中医科",
+                    RegistrationType = RegistrationType.Regular,
+                    RegistrationFee = 20.00m, // 默认挂号费
+                    AppointmentDate = DateTime.Today,
+                    AppointmentTimeSlot = DateTime.Now.ToString("HH:mm") + "-" + DateTime.Now.AddMinutes(30).ToString("HH:mm"),
+                    IsPaid = false,
+                    Remark = RegistrationRemark
+                };
+
+                var result = await _registrationService.CreateAsync(registration);
+                if (result.IsSuccess)
+                {
+                    _commonDialogService.ShowInformationAsync($"挂号成功！\n患者：{SelectedPatient.Name}\n医生：{SelectedDoctor.Name}", "成功").GetAwaiter().GetResult();
+                    
+                    // 清空选择并刷新列表
+                    SelectedPatient = null;
+                    SelectedDoctor = null;
+                    RegistrationRemark = string.Empty;
+                    ShowRegistrationPanel = false;
+                    
+                    await LoadTodayRegistrations();
+                    RaisePropertyChanged(nameof(TodayRegistrationCount));
+                }
+                else
+                {
+                    _commonDialogService.ShowErrorAsync($"挂号失败：{result.ErrorMessage}", "错误").GetAwaiter().GetResult();
+                }
+            }
+            catch (Exception ex)
+            {
+                _commonDialogService.ShowErrorAsync($"挂号时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private void ClearNewPatientForm()

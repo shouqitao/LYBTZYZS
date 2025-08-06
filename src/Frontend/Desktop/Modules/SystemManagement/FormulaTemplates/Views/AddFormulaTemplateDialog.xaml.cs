@@ -227,12 +227,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
                     }
                 }
                 
-                txtDosage.Focus();
-                txtDosage.SelectAll();
+                txtQuantity.Focus();
+                txtQuantity.SelectAll();
             }
         }
         
-        private void txtDosage_KeyDown(object sender, KeyEventArgs e)
+        private void txtQuantity_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
@@ -249,7 +249,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
         private void AddHerb()
         {
             var herbName = cboHerbName.Text?.Trim();
-            var dosageText = txtDosage.Text?.Trim();
+            var quantityText = txtQuantity.Text?.Trim();
             
             if (string.IsNullOrWhiteSpace(herbName))
             {
@@ -270,11 +270,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
                 return;
             }
             
-            if (string.IsNullOrWhiteSpace(dosageText) || !decimal.TryParse(dosageText, out decimal dosage) || dosage <= 0)
+            if (string.IsNullOrWhiteSpace(quantityText) || !decimal.TryParse(quantityText, out decimal quantity) || quantity <= 0)
             {
                 _commonDialogService.ShowWarningAsync("请输入有效的剂量", "提示").GetAwaiter().GetResult();
-                txtDosage.Focus();
-                txtDosage.SelectAll();
+                txtQuantity.Focus();
+                txtQuantity.SelectAll();
                 return;
             }
             
@@ -283,7 +283,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
             { 
                 HerbId = herb.Id,
                 HerbName = herb.Name, 
-                Dosage = dosage,
+                Quantity = quantity,
                 Unit = herb.Unit ?? "g"
             };
             _selectedHerbs.Add(selectedHerb);
@@ -294,7 +294,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
             
             // 清空输入
             cboHerbName.Text = "";
-            txtDosage.Text = "";
+            txtQuantity.Text = "";
             txtUnit.Text = "g";
             cboHerbName.Focus();
         }
@@ -314,7 +314,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
             
             var textBlock = new TextBlock
             {
-                Text = $"{herb.HerbName} {herb.Dosage}{herb.Unit}",
+                Text = $"{herb.HerbName} {herb.Quantity}{herb.Unit}",
                 FontSize = 14,
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0, 0, 10, 0)
@@ -386,7 +386,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
                     {
                         HerbId = h.HerbId,
                         HerbName = h.HerbName,
-                        Dosage = h.Dosage,
+                        Quantity = h.Quantity,
                         Unit = h.Unit,
                         SortOrder = index
                     }).ToList()
@@ -411,7 +411,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
                 else
                 {
                     // 演示模式：只显示要保存的数据
-                    var herbList = string.Join("、", createDto.Herbs.Select(h => $"{h.HerbName}{h.Dosage}{h.Unit}"));
+                    var herbList = string.Join("、", createDto.Herbs.Select(h => $"{h.HerbName}{h.Quantity}{h.Unit}"));
                     _commonDialogService.ShowInformationAsync($"验方模板数据（演示模式）：\n\n" +
                                   $"名称：{createDto.Name}\n" +
                                   $"分类：{createDto.Category}\n" +
@@ -440,7 +440,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
         {
             public Guid HerbId { get; set; }
             public string HerbName { get; set; } = string.Empty;
-            public decimal Dosage { get; set; }
+            public decimal Quantity { get; set; }
             public string Unit { get; set; } = "g";
         }
         
@@ -449,7 +449,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
         {
             if (e.Key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
-                if (cboHerbName.IsFocused || txtDosage.IsFocused)
+                if (cboHerbName.IsFocused || txtQuantity.IsFocused)
                 {
                     e.Handled = true;
                     HandlePaste();
@@ -470,17 +470,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
             
             if (matches.Count > 0)
             {
-                var validHerbs = new List<(string name, decimal dosage, HerbInfo herb)>();
+                var validHerbs = new List<(string name, decimal quantity, HerbInfo herb)>();
                 var invalidHerbs = new List<string>();
                 
                 foreach (Match match in matches)
                 {
                     var herbName = match.Groups[1].Value;
-                    if (decimal.TryParse(match.Groups[2].Value, out decimal dosage))
+                    if (decimal.TryParse(match.Groups[2].Value, out decimal quantity))
                     {
                         if (_herbDict.TryGetValue(herbName, out var herb))
                         {
-                            validHerbs.Add((herbName, dosage, herb));
+                            validHerbs.Add((herbName, quantity, herb));
                         }
                         else
                         {
@@ -500,13 +500,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
                     
                     if (result)
                     {
-                        foreach (var (name, dosage, herb) in validHerbs)
+                        foreach (var (name, quantity, herb) in validHerbs)
                         {
                             var selectedHerb = new SelectedHerbItem 
                             { 
                                 HerbId = herb.Id,
                                 HerbName = name, 
-                                Dosage = dosage,
+                                Quantity = quantity,
                                 Unit = herb.Unit ?? "g"
                             };
                             _selectedHerbs.Add(selectedHerb);
@@ -516,7 +516,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views
                         
                         // 清空输入框
                         cboHerbName.Text = "";
-                        txtDosage.Text = "";
+                        txtQuantity.Text = "";
                         txtUnit.Text = "g";
                     }
                 }

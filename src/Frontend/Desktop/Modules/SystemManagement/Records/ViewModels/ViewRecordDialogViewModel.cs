@@ -77,7 +77,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Records.ViewModels
                 if (Record?.HerbalFormula == null || Record.HerbalFormula.Count == 0)
                     return "无";
 
-                var herbsInfo = Record.HerbalFormula.Select(h => $"{h.Name} {h.Dosage}{h.Unit}");
+                var herbsInfo = Record.HerbalFormula.Select(h => $"{h.Name} {h.Quantity}{h.Unit}");
                 return string.Join("，", herbsInfo);
             }
         }

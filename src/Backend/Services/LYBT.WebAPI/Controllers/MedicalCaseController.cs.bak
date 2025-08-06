@@ -1,0 +1,155 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Models.MedicalCase;
+
+namespace LYBT.WebAPI.Controllers
+{
+    /// <summary>
+    /// 医疗案例控制器 - 管理整个就诊流程
+    /// </summary>
+    [Route("api/v1/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class MedicalCaseController : BaseController
+    {
+        private readonly IMedicalCaseService _medicalCaseService;
+
+        public MedicalCaseController(IMedicalCaseService medicalCaseService)
+        {
+            _medicalCaseService = medicalCaseService;
+        }
+
+        /// <summary>
+        /// 获取医疗案例列表
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetList()
+        {
+            var result = await _medicalCaseService.GetListAsync();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 分页获取医疗案例列表
+        /// </summary>
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] PaginationRequest request)
+        {
+            var result = await _medicalCaseService.GetPagedAsync(request);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 获取医疗案例详情
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _medicalCaseService.GetByIdAsync(id);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 创建医疗案例
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] MedicalCaseCreateDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _medicalCaseService.CreateAsync(dto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 更新医疗案例
+        /// </summary>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] MedicalCaseUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _medicalCaseService.UpdateAsync(id, dto);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "医疗案例更新成功" });
+        }
+
+        /// <summary>
+        /// 更新医疗案例状态
+        /// </summary>
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] MedicalCaseStatus status)
+        {
+            var result = await _medicalCaseService.UpdateStatusAsync(id, status);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "状态更新成功" });
+        }
+
+        /// <summary>
+        /// 删除医疗案例
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var result = await _medicalCaseService.DeleteAsync(id);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "医疗案例删除成功" });
+        }
+
+        /// <summary>
+        /// 根据患者ID获取医疗案例列表
+        /// </summary>
+        [HttpGet("patient/{patientId}")]
+        public async Task<IActionResult> GetByPatientId(Guid patientId)
+        {
+            var result = await _medicalCaseService.GetByPatientIdAsync(patientId);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 根据医生ID获取医疗案例列表
+        /// </summary>
+        [HttpGet("doctor/{doctorId}")]
+        public async Task<IActionResult> GetByDoctorId(Guid doctorId)
+        {
+            var result = await _medicalCaseService.GetByDoctorIdAsync(doctorId);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 获取今日医疗案例列表
+        /// </summary>
+        [HttpGet("today")]
+        public async Task<IActionResult> GetTodayCases()
+        {
+            var result = await _medicalCaseService.GetTodayCasesAsync();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 完成医疗案例
+        /// </summary>
+        [HttpPost("{id}/complete")]
+        public async Task<IActionResult> CompleteCase(Guid id)
+        {
+            var result = await _medicalCaseService.CompleteCaseAsync(id);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "医疗案例已完成" });
+        }
+    }
+}

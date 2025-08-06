@@ -1,0 +1,153 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using LYBT.Module.Consultation.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
+
+namespace LYBT.WebAPI.Controllers
+{
+    /// <summary>
+    /// 看诊控制器（替代DiagnosisTreatmentController）
+    /// </summary>
+    [Route("api/v1/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class ConsultationController : BaseController
+    {
+        private readonly IConsultationService _consultationService;
+
+        public ConsultationController(IConsultationService consultationService)
+        {
+            _consultationService = consultationService;
+        }
+
+        /// <summary>
+        /// 获取看诊列表
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetList()
+        {
+            var result = await _consultationService.GetListAsync();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 分页获取看诊列表
+        /// </summary>
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] PaginationRequest request)
+        {
+            var result = await _consultationService.GetPagedAsync(request);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 获取看诊详情
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _consultationService.GetByIdAsync(id);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 创建看诊记录
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] ConsultationCreateDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _consultationService.CreateAsync(dto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 更新看诊记录
+        /// </summary>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] ConsultationUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _consultationService.UpdateAsync(id, dto);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "看诊记录更新成功" });
+        }
+
+        /// <summary>
+        /// 删除看诊记录
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var result = await _consultationService.DeleteAsync(id);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "看诊记录删除成功" });
+        }
+
+        /// <summary>
+        /// 根据医疗案例ID获取看诊记录
+        /// </summary>
+        [HttpGet("medical-case/{medicalCaseId}")]
+        public async Task<IActionResult> GetByMedicalCaseId(Guid medicalCaseId)
+        {
+            var result = await _consultationService.GetByMedicalCaseIdAsync(medicalCaseId);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 根据患者ID获取看诊历史
+        /// </summary>
+        [HttpGet("patient/{patientId}")]
+        public async Task<IActionResult> GetByPatientId(Guid patientId)
+        {
+            var result = await _consultationService.GetByPatientIdAsync(patientId);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 根据医生ID获取看诊记录
+        /// </summary>
+        [HttpGet("doctor/{doctorId}")]
+        public async Task<IActionResult> GetByDoctorId(Guid doctorId)
+        {
+            var result = await _consultationService.GetByDoctorIdAsync(doctorId);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 获取今日看诊列表
+        /// </summary>
+        [HttpGet("today")]
+        public async Task<IActionResult> GetTodayConsultations()
+        {
+            var result = await _consultationService.GetTodayConsultationsAsync();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 完成看诊
+        /// </summary>
+        [HttpPost("{id}/complete")]
+        public async Task<IActionResult> CompleteConsultation(Guid id)
+        {
+            var result = await _consultationService.CompleteConsultationAsync(id);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "看诊已完成" });
+        }
+    }
+}

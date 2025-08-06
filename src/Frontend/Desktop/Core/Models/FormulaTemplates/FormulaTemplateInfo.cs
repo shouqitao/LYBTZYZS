@@ -15,8 +15,8 @@ namespace LYBT.WPF.Client.Core.Models.FormulaTemplates {
         /// <summary>适应症</summary>
         public string? Indications { get; set; }
 
-        /// <summary>剂量</summary>
-        public string? Dosage { get; set; }
+        /// <summary>用法用量说明</summary>
+        public string? DosageInstruction { get; set; }
 
         /// <summary>禁忌</summary>
         public string? Contraindications { get; set; }
@@ -62,11 +62,11 @@ namespace LYBT.WPF.Client.Core.Models.FormulaTemplates {
     public class FormulaHerbItem {
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
-        public decimal Dosage { get; set; }
+        public decimal Quantity { get; set; }
         public string Unit { get; set; } = "g";
         public decimal UnitPrice { get; set; }
         public string? ProcessingMethod { get; set; }
         public string? SpecialInstructions { get; set; }
-        public decimal SubTotal => Dosage * UnitPrice;
+        public decimal SubTotal => Quantity * UnitPrice;
     }
 }

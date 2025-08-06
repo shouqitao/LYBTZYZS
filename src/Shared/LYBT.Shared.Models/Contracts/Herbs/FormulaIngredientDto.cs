@@ -26,15 +26,15 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [DisplayName("单价")]
         public decimal Price { get; set; }
 
-        /// <summary>用量</summary>
-        [Required(ErrorMessage = "用量不能为空")]
-        [Range(0.1, 999999, ErrorMessage = "用量必须大于0")]
-        [DisplayName("用量")]
-        public decimal Dosage { get; set; }
+        /// <summary>数量</summary>
+        [Required(ErrorMessage = "数量不能为空")]
+        [Range(0.1, 999999, ErrorMessage = "数量必须大于0")]
+        [DisplayName("数量")]
+        public decimal Quantity { get; set; }
 
         /// <summary>小计（自动计算）</summary>
         [DisplayName("小计")]
-        public decimal TotalPrice => Price * Dosage;
+        public decimal TotalPrice => Price * Quantity;
 
         /// <summary>备注</summary>
         [StringLength(200, ErrorMessage = "备注长度不能超过200个字符")]

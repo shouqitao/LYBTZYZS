@@ -5,7 +5,7 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Module.Pharmacy.Interfaces {
 
     /// <summary>
-    /// 药房业务服务接口
+    /// 药房业务服务接口（增强版）
     /// </summary>
     public interface IPharmacyService {
 
@@ -48,5 +48,60 @@ namespace LYBT.Module.Pharmacy.Interfaces {
         /// 将指定处方标记为已抓药
         /// </summary>
         Task<bool> MarkAsPreparedAsync(Guid id);
+
+        /// <summary>
+        /// 获取待配药列表
+        /// </summary>
+        Task<List<PharmacyQueueDto>> GetPendingListAsync();
+
+        /// <summary>
+        /// 开始配药
+        /// </summary>
+        Task<bool> StartDispensingAsync(Guid id);
+
+        /// <summary>
+        /// 完成配药
+        /// </summary>
+        Task<bool> CompleteDispensingAsync(Guid id);
+
+        /// <summary>
+        /// 取消配药
+        /// </summary>
+        Task<bool> CancelDispensingAsync(Guid id, string reason);
+
+        /// <summary>
+        /// 根据医疗案例ID获取配药记录
+        /// </summary>
+        Task<PharmacyDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 根据处方ID获取配药记录
+        /// </summary>
+        Task<PharmacyDetailDto?> GetByPrescriptionIdAsync(Guid prescriptionId);
+
+        /// <summary>
+        /// 根据患者ID获取配药历史
+        /// </summary>
+        Task<List<PharmacyDto>> GetByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 获取今日配药记录
+        /// </summary>
+        Task<List<PharmacyDto>> GetTodayRecordsAsync();
+
+        /// <summary>
+        /// 发药确认
+        /// </summary>
+        Task<bool> ConfirmDispenseAsync(Guid id, string receiverName, string receiverPhone);
+
+        /// <summary>
+        /// 药品库存检查
+        /// </summary>
+        Task<StockCheckResultDto> CheckStockAsync(Guid prescriptionId);
+
+        /// <summary>
+        /// 获取配药统计
+        /// </summary>
+        Task<PharmacyStatisticsDto> GetStatisticsAsync(DateTime startDate, DateTime endDate);
     }
 }

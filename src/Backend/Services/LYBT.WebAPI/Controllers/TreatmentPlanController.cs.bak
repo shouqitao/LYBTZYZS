@@ -1,0 +1,181 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using LYBT.Module.TreatmentPlan.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.TreatmentPlan;
+
+namespace LYBT.WebAPI.Controllers
+{
+    /// <summary>
+    /// 治疗方案控制器
+    /// </summary>
+    [Route("api/v1/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class TreatmentPlanController : BaseController
+    {
+        private readonly ITreatmentPlanService _treatmentPlanService;
+
+        public TreatmentPlanController(ITreatmentPlanService treatmentPlanService)
+        {
+            _treatmentPlanService = treatmentPlanService;
+        }
+
+        /// <summary>
+        /// 获取治疗方案列表
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetList()
+        {
+            var result = await _treatmentPlanService.GetListAsync();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 分页获取治疗方案列表
+        /// </summary>
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] PaginationRequest request)
+        {
+            var result = await _treatmentPlanService.GetPagedAsync(request);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 获取治疗方案详情
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _treatmentPlanService.GetByIdAsync(id);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 创建治疗方案
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] TreatmentPlanCreateDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _treatmentPlanService.CreateAsync(dto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 更新治疗方案
+        /// </summary>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] TreatmentPlanUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _treatmentPlanService.UpdateAsync(id, dto);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "治疗方案更新成功" });
+        }
+
+        /// <summary>
+        /// 删除治疗方案
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var result = await _treatmentPlanService.DeleteAsync(id);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "治疗方案删除成功" });
+        }
+
+        /// <summary>
+        /// 根据医疗案例ID获取治疗方案
+        /// </summary>
+        [HttpGet("medical-case/{medicalCaseId}")]
+        public async Task<IActionResult> GetByMedicalCaseId(Guid medicalCaseId)
+        {
+            var result = await _treatmentPlanService.GetByMedicalCaseIdAsync(medicalCaseId);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// 添加处方到治疗方案
+        /// </summary>
+        [HttpPost("{id}/prescription")]
+        public async Task<IActionResult> AddPrescription(Guid id, [FromBody] PrescriptionDto prescription)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _treatmentPlanService.AddPrescriptionAsync(id, prescription);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "处方添加成功" });
+        }
+
+        /// <summary>
+        /// 添加理疗项目到治疗方案
+        /// </summary>
+        [HttpPost("{id}/physiotherapy")]
+        public async Task<IActionResult> AddPhysiotherapyItem(Guid id, [FromBody] PhysiotherapyItemDto item)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _treatmentPlanService.AddPhysiotherapyItemAsync(id, item);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "理疗项目添加成功" });
+        }
+
+        /// <summary>
+        /// 移除处方
+        /// </summary>
+        [HttpDelete("{id}/prescription")]
+        public async Task<IActionResult> RemovePrescription(Guid id)
+        {
+            var result = await _treatmentPlanService.RemovePrescriptionAsync(id);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "处方移除成功" });
+        }
+
+        /// <summary>
+        /// 移除理疗项目
+        /// </summary>
+        [HttpDelete("{id}/physiotherapy/{itemId}")]
+        public async Task<IActionResult> RemovePhysiotherapyItem(Guid id, Guid itemId)
+        {
+            var result = await _treatmentPlanService.RemovePhysiotherapyItemAsync(id, itemId);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "理疗项目移除成功" });
+        }
+
+        /// <summary>
+        /// 确认治疗方案
+        /// </summary>
+        [HttpPost("{id}/confirm")]
+        public async Task<IActionResult> ConfirmPlan(Guid id)
+        {
+            var result = await _treatmentPlanService.ConfirmPlanAsync(id);
+            if (!result)
+                return NotFound();
+            
+            return Ok(new { message = "治疗方案已确认" });
+        }
+    }
+}

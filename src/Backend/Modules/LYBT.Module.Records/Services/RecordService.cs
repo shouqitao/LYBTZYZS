@@ -34,7 +34,14 @@ namespace LYBT.Module.Records.Services {
         /// </summary>
         public async Task<RecordDetailDto?> GetByIdAsync(Guid id) {
             var model = await _recordRepository.GetByIdAsync(id);
-            return model == null ? null : _mapper.Map<RecordDetailDto>(model);
+            if (model == null) return null;
+            
+            var dto = _mapper.Map<RecordDetailDto>(model);
+            // 暂时设置PatientName和RegistrationId，实际应该从相关表获取
+            dto.PatientName = "患者"; // TODO: 从Patient表获取实际姓名
+            dto.RegistrationId = Guid.Empty; // TODO: 从Registration表获取
+            
+            return dto;
         }
 
         /// <summary>
@@ -42,7 +49,14 @@ namespace LYBT.Module.Records.Services {
         /// </summary>
         public async Task<List<RecordDto>> GetListAsync() {
             var list = await _recordRepository.GetListAsync();
-            return _mapper.Map<List<RecordDto>>(list);
+            var dtoList = _mapper.Map<List<RecordDto>>(list);
+            
+            // 暂时设置PatientName为空，实际应该从Patient表获取
+            foreach (var dto in dtoList) {
+                dto.PatientName = "患者"; // TODO: 从Patient表获取实际姓名
+            }
+            
+            return dtoList;
         }
 
         /// <summary>
@@ -51,6 +65,12 @@ namespace LYBT.Module.Records.Services {
         public async Task<PaginatedResult<RecordDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
             var (list, total) = await _recordRepository.GetPagedAsync(query, operatorRole);
             var dtoList = _mapper.Map<List<RecordDto>>(list);
+            
+            // 暂时设置PatientName为空，实际应该从Patient表获取
+            foreach (var dto in dtoList) {
+                dto.PatientName = "患者"; // TODO: 从Patient表获取实际姓名
+            }
+            
             return new PaginatedResult<RecordDto>(dtoList, total, query.CurrentPage, query.PageSize);
         }
 
@@ -155,7 +175,14 @@ namespace LYBT.Module.Records.Services {
         /// <returns>返回值</returns>
         public async Task<List<RecordDto>> GetByPatientIdAsync(Guid patientId) {
             var list = await _recordRepository.GetListByPatientIdAsync(patientId);
-            return _mapper.Map<List<RecordDto>>(list);
+            var dtoList = _mapper.Map<List<RecordDto>>(list);
+            
+            // 暂时设置PatientName为空，实际应该从Patient表获取
+            foreach (var dto in dtoList) {
+                dto.PatientName = "患者"; // TODO: 从Patient表获取实际姓名
+            }
+            
+            return dtoList;
         }
 
         /// <summary>
@@ -194,7 +221,14 @@ namespace LYBT.Module.Records.Services {
         /// <returns>返回值</returns>
         public async Task<List<RecordDto>> GetSharedRecordsAsync(Guid doctorId) {
             var list = await _recordRepository.GetSharedRecordsAsync(doctorId);
-            return _mapper.Map<List<RecordDto>>(list);
+            var dtoList = _mapper.Map<List<RecordDto>>(list);
+            
+            // 暂时设置PatientName为空，实际应该从Patient表获取
+            foreach (var dto in dtoList) {
+                dto.PatientName = "患者"; // TODO: 从Patient表获取实际姓名
+            }
+            
+            return dtoList;
         }
     }
 }

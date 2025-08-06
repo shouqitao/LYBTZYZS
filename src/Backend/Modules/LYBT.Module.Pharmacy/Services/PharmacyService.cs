@@ -85,10 +85,13 @@ namespace LYBT.Module.Pharmacy.Services {
             var model = await _pharmacyRepository.GetByIdAsync(pharmacyEditDto.Id);
             if (model == null)
                 return false;
-            model.OperatorId = pharmacyEditDto.OperatorId;
-            model.DispenseTime = pharmacyEditDto.DispenseTime;
-            model.Status = pharmacyEditDto.Status;
+            // 转换 Status 字符串到枚举
+            if (Enum.TryParse<Models.Pharmacy.PharmacyStatus>(pharmacyEditDto.Status, out var status))
+            {
+                model.Status = status;
+            }
             model.Remark = pharmacyEditDto.Remark;
+            model.UpdateTime = DateTime.Now;
             return await _pharmacyRepository.UpdateAsync(model);
         }
 
@@ -103,7 +106,7 @@ namespace LYBT.Module.Pharmacy.Services {
         /// 获取待抓药处方列表
         /// </summary>
         public async Task<List<PharmacyDto>> GetWaitingListAsync() {
-            var list = await _pharmacyRepository.GetByStatusAsync(PharmacyStatus.Pending);
+            var list = await _pharmacyRepository.GetByStatusAsync(Models.Pharmacy.PharmacyStatus.Pending);
             return _mapper.Map<List<PharmacyDto>>(list);
         }
 
@@ -114,8 +117,130 @@ namespace LYBT.Module.Pharmacy.Services {
             var model = await _pharmacyRepository.GetByIdAsync(id);
             if (model == null)
                 return false;
-            model.Status = PharmacyStatus.Completed;
+            model.Status = Models.Pharmacy.PharmacyStatus.Dispensed;
             return await _pharmacyRepository.UpdateAsync(model);
+        }
+
+        /// <summary>
+        /// 获取待配药列表
+        /// </summary>
+        public async Task<List<PharmacyQueueDto>> GetPendingListAsync() {
+            var list = await _pharmacyRepository.GetByStatusAsync(Models.Pharmacy.PharmacyStatus.Pending);
+            return _mapper.Map<List<PharmacyQueueDto>>(list);
+        }
+
+        /// <summary>
+        /// 开始配药
+        /// </summary>
+        public async Task<bool> StartDispensingAsync(Guid id) {
+            var model = await _pharmacyRepository.GetByIdAsync(id);
+            if (model == null)
+                return false;
+            model.Status = Models.Pharmacy.PharmacyStatus.Dispensing;
+            model.DispensingTime = DateTime.Now;
+            return await _pharmacyRepository.UpdateAsync(model);
+        }
+
+        /// <summary>
+        /// 完成配药
+        /// </summary>
+        public async Task<bool> CompleteDispensingAsync(Guid id) {
+            var model = await _pharmacyRepository.GetByIdAsync(id);
+            if (model == null)
+                return false;
+            model.Status = Models.Pharmacy.PharmacyStatus.Dispensed;
+            return await _pharmacyRepository.UpdateAsync(model);
+        }
+
+        /// <summary>
+        /// 取消配药
+        /// </summary>
+        public async Task<bool> CancelDispensingAsync(Guid id, string reason) {
+            var model = await _pharmacyRepository.GetByIdAsync(id);
+            if (model == null)
+                return false;
+            model.Status = Models.Pharmacy.PharmacyStatus.Cancelled;
+            model.Remark = reason;
+            return await _pharmacyRepository.UpdateAsync(model);
+        }
+
+        /// <summary>
+        /// 根据医疗案例ID获取配药记录
+        /// </summary>
+        public async Task<PharmacyDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId) {
+            var list = await _pharmacyRepository.GetListAsync();
+            var model = list.FirstOrDefault(p => p.MedicalCaseId == medicalCaseId);
+            return model == null ? null : _mapper.Map<PharmacyDetailDto>(model);
+        }
+
+        /// <summary>
+        /// 根据处方ID获取配药记录
+        /// </summary>
+        public async Task<PharmacyDetailDto?> GetByPrescriptionIdAsync(Guid prescriptionId) {
+            var list = await _pharmacyRepository.GetListAsync();
+            var model = list.FirstOrDefault(p => p.PrescriptionId == prescriptionId);
+            return model == null ? null : _mapper.Map<PharmacyDetailDto>(model);
+        }
+
+        /// <summary>
+        /// 根据患者ID获取配药历史
+        /// </summary>
+        public async Task<List<PharmacyDto>> GetByPatientIdAsync(Guid patientId) {
+            var list = await _pharmacyRepository.GetListAsync();
+            var filtered = list.Where(p => p.PatientId == patientId).ToList();
+            return _mapper.Map<List<PharmacyDto>>(filtered);
+        }
+
+        /// <summary>
+        /// 获取今日配药记录
+        /// </summary>
+        public async Task<List<PharmacyDto>> GetTodayRecordsAsync() {
+            var list = await _pharmacyRepository.GetListAsync();
+            var today = DateTime.Today;
+            var filtered = list.Where(p => p.CreateTime.Date == today).ToList();
+            return _mapper.Map<List<PharmacyDto>>(filtered);
+        }
+
+        /// <summary>
+        /// 发药确认
+        /// </summary>
+        public async Task<bool> ConfirmDispenseAsync(Guid id, string receiverName, string receiverPhone) {
+            var model = await _pharmacyRepository.GetByIdAsync(id);
+            if (model == null)
+                return false;
+            model.Status = Models.Pharmacy.PharmacyStatus.Issued;
+            model.ReceiverName = receiverName;
+            model.ReceiverPhone = receiverPhone;
+            model.DispenseTime = DateTime.Now;
+            return await _pharmacyRepository.UpdateAsync(model);
+        }
+
+        /// <summary>
+        /// 药品库存检查
+        /// </summary>
+        public async Task<StockCheckResultDto> CheckStockAsync(Guid prescriptionId) {
+            // 这里简化实现，实际需要检查处方中每个药材的库存
+            return await Task.FromResult(new StockCheckResultDto {
+                HasSufficientStock = true,
+                ShortageItems = []
+            });
+        }
+
+        /// <summary>
+        /// 获取配药统计
+        /// </summary>
+        public async Task<PharmacyStatisticsDto> GetStatisticsAsync(DateTime startDate, DateTime endDate) {
+            var list = await _pharmacyRepository.GetListAsync();
+            var filtered = list.Where(p => p.CreateTime >= startDate && p.CreateTime <= endDate).ToList();
+            
+            return new PharmacyStatisticsDto {
+                TotalPrescriptions = filtered.Count,
+                PendingCount = filtered.Count(p => p.Status == Models.Pharmacy.PharmacyStatus.Pending),
+                DispensedCount = filtered.Count(p => p.Status == Models.Pharmacy.PharmacyStatus.Dispensed || p.Status == Models.Pharmacy.PharmacyStatus.Issued),
+                CancelledCount = filtered.Count(p => p.Status == Models.Pharmacy.PharmacyStatus.Cancelled),
+                StartDate = startDate,
+                EndDate = endDate
+            };
         }
     }
 }

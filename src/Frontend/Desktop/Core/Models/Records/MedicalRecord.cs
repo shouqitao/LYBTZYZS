@@ -68,8 +68,8 @@ namespace LYBT.WPF.Client.Core.Models.Records
         /// <summary>药材名称</summary>
         public string HerbName { get; set; } = string.Empty;
 
-        /// <summary>剂量</summary>
-        public decimal Dosage { get; set; }
+        /// <summary>数量</summary>
+        public decimal Quantity { get; set; }
 
         /// <summary>单位</summary>
         public string Unit { get; set; } = string.Empty;

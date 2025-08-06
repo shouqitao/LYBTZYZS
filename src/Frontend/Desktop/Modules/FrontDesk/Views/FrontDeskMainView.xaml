@@ -5,6 +5,11 @@
              xmlns:converters="clr-namespace:LYBT.WPF.Client.Modules.FrontDesk.Converters"
              prism:ViewModelLocator.AutoWireViewModel="True">
     
+    <UserControl.Resources>
+        <converters:GenderToTextConverter x:Key="GenderConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+    </UserControl.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -13,139 +18,271 @@
 
         <!-- 标题栏 -->
         <Border Grid.Row="0" Background="#2196F3" Padding="15,10">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🏥" FontSize="18" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBlock Text="前台接待工作台" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                <TextBlock Text="Front Desk Reception" FontSize="14" Foreground="#B3D9F2" VerticalAlignment="Center" Margin="10,0,0,0"/>
-            </StackPanel>
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <TextBlock Text="🏥" FontSize="18" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="前台接待工作台" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    <TextBlock Text="Front Desk Reception" FontSize="14" Foreground="#B3D9F2" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="{Binding TodayRegistrationCount}" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                    <TextBlock Text="{Binding WaitingQueueCount}" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                    <Button Content="刷新" Command="{Binding RefreshCommand}" 
+                            Background="White" Foreground="#2196F3" 
+                            BorderThickness="0" Padding="10,5" Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- 主内容区 -->
         <Grid Grid.Row="1" Background="#F8F9FA">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="1"/>
                 <ColumnDefinition Width="1.5*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 左侧：患者管理和挂号 -->
+            <!-- 左侧：患者搜索、创建和挂号 -->
             <Grid Grid.Column="0" Margin="15">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- 步骤1：患者搜索 -->
+                <GroupBox Grid.Row="0" Header="步骤1：查找或创建患者" Margin="0,0,0,10">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 搜索栏 -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox Grid.Column="0" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" 
+                                     Height="35" VerticalContentAlignment="Center" FontSize="14">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SearchPatientCommand}"/>
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <TextBlock Grid.Column="0" Text="输入患者姓名、手机号或身份证号进行搜索..." 
+                                       Foreground="Gray" VerticalAlignment="Center" Margin="10,0,0,0"
+                                       IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SearchKeyword}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            
+                            <Button Grid.Column="1" Content="搜索患者" Command="{Binding SearchPatientCommand}" 
+                                    Background="#4CAF50" Foreground="White" BorderThickness="0" 
+                                    Padding="15,8" Margin="5,0" Cursor="Hand" FontSize="14"/>
+                            <Button Grid.Column="2" Content="新建患者" Command="{Binding ShowCreatePatientCommand}" 
+                                    Background="#FF9800" Foreground="White" BorderThickness="0" 
+                                    Padding="15,8" Cursor="Hand" FontSize="14"/>
+                        </Grid>
+
+                        <!-- 搜索结果统计 -->
+                        <TextBlock Grid.Row="1" Text="{Binding SearchResultsCount}" 
+                                   Foreground="#666" Margin="0,10,0,5" FontSize="12"/>
+
+                        <!-- 创建患者面板 -->
+                        <Border Grid.Row="2" Background="#FFF3E0" Padding="10" Margin="0,10,0,0"
+                                Visibility="{Binding ShowCreatePatientPanel, Converter={StaticResource BoolToVisibility}}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Text="快速创建新患者" FontWeight="Bold" Margin="0,0,0,10"/>
+                                
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <TextBox Grid.Column="0" Grid.Row="0" Text="{Binding NewPatientName}" 
+                                             Tag="姓名*" Margin="0,0,5,5"/>
+                                    <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding NewPatientPhone}" 
+                                             Tag="手机号*" Margin="0,0,5,5"/>
+                                    <TextBox Grid.Column="2" Grid.Row="0" Text="{Binding NewPatientAge}" 
+                                             Tag="年龄" Margin="0,0,5,5"/>
+                                    <ComboBox Grid.Column="3" Grid.Row="0" SelectedIndex="{Binding NewPatientGender}" 
+                                              Margin="0,0,0,5">
+                                        <ComboBoxItem>未知</ComboBoxItem>
+                                        <ComboBoxItem>男</ComboBoxItem>
+                                        <ComboBoxItem>女</ComboBoxItem>
+                                    </ComboBox>
+                                    
+                                    <TextBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
+                                             Text="{Binding NewPatientIDNumber}" 
+                                             Tag="身份证号" Margin="0,0,5,5"/>
+                                    <TextBox Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="1" 
+                                             Text="{Binding NewPatientAddress}" 
+                                             Tag="地址" Margin="0,0,0,5"/>
+                                </Grid>
+                                
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                    <Button Content="保存并选中" Command="{Binding RegisterNewPatientCommand}" 
+                                            Background="#4CAF50" Foreground="White" BorderThickness="0" 
+                                            Padding="10,5" Margin="0,0,5,0" Cursor="Hand"/>
+                                    <Button Content="取消" Command="{Binding CancelCreatePatientCommand}" 
+                                            Background="#F44336" Foreground="White" BorderThickness="0" 
+                                            Padding="10,5" Cursor="Hand"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </GroupBox>
+
+                <!-- 步骤2：患者列表（搜索结果） -->
+                <GroupBox Grid.Row="1" Header="搜索结果 - 点击选择患者">
+                    <DataGrid ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedPatient}"
+                              AutoGenerateColumns="False" CanUserAddRows="False" 
+                              SelectionMode="Single" GridLinesVisibility="None"
+                              HeadersVisibility="Column" Background="White">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="姓名" Binding="{Binding Name}" Width="80"/>
+                            <DataGridTextColumn Header="性别" Binding="{Binding Gender, Converter={StaticResource GenderConverter}}" Width="50"/>
+                            <DataGridTextColumn Header="年龄" Binding="{Binding Age}" Width="50"/>
+                            <DataGridTextColumn Header="电话" Binding="{Binding PhoneNumber}" Width="120"/>
+                            <DataGridTextColumn Header="身份证" Binding="{Binding IDNumber}" Width="180"/>
+                            <DataGridTemplateColumn Header="操作" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="选择挂号" 
+                                                Command="{Binding DataContext.SelectPatientForRegistrationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Background="#2196F3" Foreground="White" 
+                                                BorderThickness="0" Padding="8,3" Cursor="Hand"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <!-- 步骤3：创建挂号 -->
+                <GroupBox Grid.Row="2" Header="步骤2：创建挂号" 
+                          Visibility="{Binding ShowRegistrationPanel, Converter={StaticResource BoolToVisibility}}">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="选中患者：" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding RegistrationPatientName}" 
+                                       FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                        </Grid>
+                        
+                        <Grid Grid.Row="1" Margin="0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="选择医生：" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableDoctors}" 
+                                      SelectedItem="{Binding SelectedDoctor}"
+                                      DisplayMemberPath="Name"/>
+                        </Grid>
+                        
+                        <Grid Grid.Row="2" Margin="0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="备注信息：" VerticalAlignment="Top" Margin="0,0,10,0"/>
+                            <TextBox Grid.Column="1" Text="{Binding RegistrationRemark}" 
+                                     TextWrapping="Wrap" AcceptsReturn="True" Height="60"/>
+                        </Grid>
+                        
+                        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                            <Button Content="确认挂号" Command="{Binding CreateRegistrationCommand}" 
+                                    Background="#4CAF50" Foreground="White" BorderThickness="0" 
+                                    Padding="15,8" Margin="0,0,5,0" Cursor="Hand" FontSize="14" FontWeight="Bold"/>
+                            <Button Content="取消" 
+                                    Command="{Binding CancelCreatePatientCommand}"
+                                    Background="#F44336" Foreground="White" BorderThickness="0" 
+                                    Padding="15,8" Cursor="Hand" FontSize="14"/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+            </Grid>
+
+            <!-- 分隔线 -->
+            <GridSplitter Grid.Column="1" Width="1" Background="#E0E0E0" 
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+
+            <!-- 右侧：今日挂号列表和等待队列 -->
+            <Grid Grid.Column="2" Margin="15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- 患者搜索和快速操作 -->
-                <GroupBox Grid.Row="0" Header="患者搜索" Margin="0,0,0,15">
-                    <Grid Margin="10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                            <TextBox Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" 
-                                     Width="200" Height="25" Margin="0,0,10,0"
-                                     VerticalContentAlignment="Center"
-                                     ToolTip="输入患者姓名、电话或身份证号"/>
-                            <Button Content="搜索患者" Command="{Binding SearchPatientCommand}" 
-                                   Width="80" Height="25" Background="#2196F3" Foreground="White" Margin="0,0,10,0"/>
-                            <Button Content="刷新" Command="{Binding RefreshCommand}" 
-                                   Width="60" Height="25" Background="#607D8B" Foreground="White"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="1" Orientation="Horizontal">
-                            <TextBlock Text="{Binding TodayRegistrationCount}" 
-                                     FontWeight="Bold" Foreground="#2196F3" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                            <TextBlock Text="{Binding WaitingQueueCount}" 
-                                     FontWeight="Bold" Foreground="#FF9800" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Grid>
-                </GroupBox>
-
-                <!-- 新患者注册 -->
-                <GroupBox Grid.Row="1" Header="新患者注册" Margin="0,0,0,15">
-                    <Grid Margin="10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="姓名：" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding NewPatientName}" 
-                                Height="25" Margin="0,0,10,5" VerticalContentAlignment="Center"/>
-                        
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="性别：" VerticalAlignment="Center"/>
-                        <ComboBox Grid.Row="0" Grid.Column="3" SelectedValue="{Binding NewPatientGender}" 
-                                 SelectedValuePath="Tag" Height="25" Margin="0,0,0,5">
-                            <ComboBoxItem Content="未知" Tag="0"/>
-                            <ComboBoxItem Content="男" Tag="1"/>
-                            <ComboBoxItem Content="女" Tag="2"/>
-                        </ComboBox>
-
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="电话：" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding NewPatientPhone}" 
-                                Height="25" Margin="0,0,10,5" VerticalContentAlignment="Center"/>
-                        
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="年龄：" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding NewPatientAge}" 
-                                Height="25" Margin="0,0,0,5" VerticalContentAlignment="Center"/>
-
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="地址：" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NewPatientAddress}" 
-                                Height="25" Margin="0,0,10,10" VerticalContentAlignment="Center"/>
-                        
-                        <StackPanel Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Orientation="Horizontal" 
-                                   HorizontalAlignment="Right" Margin="0,10,0,0">
-                            <Button Content="清空" Command="{Binding ClearNewPatientFormCommand}" 
-                                   Width="60" Height="25" Background="#757575" Foreground="White" Margin="0,0,10,0"/>
-                            <Button Content="注册患者" Command="{Binding RegisterNewPatientCommand}" 
-                                   Width="80" Height="25" Background="#4CAF50" Foreground="White"/>
-                        </StackPanel>
-                    </Grid>
-                </GroupBox>
-
-                <!-- 今日挂号患者列表 -->
-                <GroupBox Grid.Row="2" Header="今日患者列表">
-                    <DataGrid ItemsSource="{Binding TodayRegistrations}" SelectedItem="{Binding SelectedPatient}"
-                             AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                             GridLinesVisibility="Horizontal" AlternatingRowBackground="#F9F9F9"
-                             SelectionMode="Single" IsReadOnly="True">
+                <!-- 今日挂号列表 -->
+                <GroupBox Grid.Row="0" Header="今日挂号列表" Margin="0,0,0,10">
+                    <DataGrid ItemsSource="{Binding TodayRegistrations}" 
+                              AutoGenerateColumns="False" CanUserAddRows="False"
+                              GridLinesVisibility="None" HeadersVisibility="Column">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="姓名" Binding="{Binding Name}" Width="80"/>
-                            <DataGridTextColumn Header="性别" Width="50">
-                                <DataGridTextColumn.Binding>
-                                    <Binding Path="Gender">
-                                        <Binding.Converter>
-                                            <converters:GenderToTextConverter/>
-                                        </Binding.Converter>
-                                    </Binding>
-                                </DataGridTextColumn.Binding>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="年龄" Binding="{Binding Age}" Width="50"/>
-                            <DataGridTextColumn Header="电话" Binding="{Binding PhoneNumber}" Width="100"/>
-                            <DataGridTemplateColumn Header="操作" Width="180">
+                            <DataGridTextColumn Header="时间" Binding="{Binding RegistrationTime, StringFormat='{}{0:HH:mm}'}" Width="60"/>
+                            <DataGridTextColumn Header="患者" Binding="{Binding PatientName}" Width="80"/>
+                            <DataGridTextColumn Header="医生" Binding="{Binding DoctorName}" Width="80"/>
+                            <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="60"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <!-- 等待队列 -->
+                <GroupBox Grid.Row="1" Header="等待就诊队列">
+                    <DataGrid ItemsSource="{Binding WaitingQueue}" 
+                              AutoGenerateColumns="False" CanUserAddRows="False"
+                              GridLinesVisibility="None" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="序号" Binding="{Binding QueueNumber}" Width="50"/>
+                            <DataGridTextColumn Header="患者" Binding="{Binding Name}" Width="80"/>
+                            <DataGridTextColumn Header="等待时间" Binding="{Binding WaitingTime}" Width="80"/>
+                            <DataGridTemplateColumn Header="操作" Width="60">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Button Content="加入队列" CommandParameter="{Binding}" 
-                                                   Command="{Binding DataContext.AddToQueueCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                   Width="60" Height="20" Background="#4CAF50" Foreground="White" Margin="2"/>
-                                            <Button Content="详情" CommandParameter="{Binding}" 
-                                                   Command="{Binding DataContext.ViewPatientInfoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                   Width="40" Height="20" Background="#2196F3" Foreground="White" Margin="2"/>
-                                            <Button Content="病历" CommandParameter="{Binding}" 
-                                                   Command="{Binding DataContext.ViewPatientHistoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                   Width="40" Height="20" Background="#FF9800" Foreground="White" Margin="2"/>
-                                        </StackPanel>
+                                        <Button Content="移除" 
+                                                Command="{Binding DataContext.RemoveFromQueueCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Background="#F44336" Foreground="White" 
+                                                BorderThickness="0" Padding="5,2" Cursor="Hand" FontSize="12"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -153,85 +290,15 @@
                     </DataGrid>
                 </GroupBox>
             </Grid>
-
-            <!-- 右侧：等待队列和快速操作 -->
-            <Grid Grid.Column="2" Margin="15">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- 等待队列 -->
-                <GroupBox Grid.Row="0" Header="等待就诊队列" Margin="0,0,0,15">
-                    <StackPanel Margin="10">
-                        <TextBlock Text="{Binding WaitingQueueCount}" 
-                                 FontSize="16" FontWeight="Bold" Foreground="#FF9800" 
-                                 HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                        
-                        <ItemsControl ItemsSource="{Binding WaitingQueue}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="White" CornerRadius="5" Margin="0,2" Padding="10,5"
-                                           BorderBrush="#E0E0E0" BorderThickness="1">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="1" 
-                                                             Opacity="0.1" BlurRadius="3"/>
-                                        </Border.Effect>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            
-                                            <StackPanel Grid.Column="0">
-                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"/>
-                                                <TextBlock Text="{Binding PhoneNumber}" FontSize="12" Foreground="#666"/>
-                                            </StackPanel>
-                                            
-                                            <Button Grid.Column="1" Content="×" CommandParameter="{Binding}"
-                                                   Command="{Binding DataContext.RemoveFromQueueCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                   Width="20" Height="20" Background="#F44336" Foreground="White"
-                                                   ToolTip="从队列中移除"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </GroupBox>
-
-                <!-- 快速操作面板 -->
-                <GroupBox Grid.Row="2" Header="快速操作">
-                    <StackPanel Margin="10">
-                        <Button Content="🔄 刷新数据" Command="{Binding RefreshCommand}" 
-                               Height="35" Background="#607D8B" Foreground="White" Margin="0,5"/>
-                        <Button Content="📋 今日统计" 
-                               Height="35" Background="#9C27B0" Foreground="White" Margin="0,5"
-                               ToolTip="查看今日挂号统计"/>
-                        <Button Content="📞 呼叫下一位" 
-                               Height="35" Background="#FF9800" Foreground="White" Margin="0,5"
-                               ToolTip="呼叫队列中的下一位患者"/>
-                    </StackPanel>
-                </GroupBox>
-            </Grid>
-
-            <!-- 加载指示器 -->
-            <Grid Grid.Column="0" Grid.ColumnSpan="3" 
-                  Background="#80000000" 
-                  Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ProgressBar IsIndeterminate="True" Width="200" Height="4" Margin="0,0,0,10"/>
-                    <TextBlock Text="正在处理..." Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Grid>
         </Grid>
-    </Grid>
 
-    <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        
-        <!-- 性别转换器 -->
-        <converters:GenderToTextConverter x:Key="GenderToTextConverter"/>
-    </UserControl.Resources>
+        <!-- 加载指示器 -->
+        <Border Grid.Row="1" Background="#80000000" 
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="100" Height="4"/>
+                <TextBlock Text="处理中..." Foreground="White" Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 </UserControl>

@@ -11,53 +11,42 @@ using LYBT.WPF.Client.Core.Models.Registration;
 using LYBT.WPF.Client.Services.Interfaces;
 using PagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.Registration.RegistrationInfo>;
 
-namespace LYBT.WPF.Client.Services
-{
+namespace LYBT.WPF.Client.Services {
     /// <summary>
     /// 挂号服务实现类
     /// </summary>
-    public class RegistrationService : IRegistrationService
-    {
+    public class RegistrationService : IRegistrationService {
         private readonly IRegistrationApiService _registrationApiService;
 
-        public RegistrationService(IRegistrationApiService registrationApiService)
-        {
+        public RegistrationService(IRegistrationApiService registrationApiService) {
             _registrationApiService = registrationApiService;
         }
 
         /// <summary>
         /// 分页查询挂号记录
         /// </summary>
-        public async Task<PagedResult> SearchRegistrationsAsync(RegistrationPagedQueryDto query)
-        {
-            try
-            {
+        public async Task<PagedResult> SearchRegistrationsAsync(RegistrationPagedQueryDto query) {
+            try {
                 var response = await _registrationApiService.GetPagedRegistrationsAsync(query);
-                if (response.IsSuccessStatusCode && response.Content != null)
-                {
+                if (response.IsSuccessStatusCode && response.Content != null) {
                     var registrationInfos = response.Content.Items.Select(ConvertToRegistrationInfo).ToList();
-                    return new PagedResult
-                    {
+                    return new PagedResult {
                         Items = registrationInfos,
                         TotalCount = response.Content.TotalCount,
                         CurrentPage = response.Content.CurrentPage,
                         PageSize = response.Content.PageSize
                     };
                 }
-                return new PagedResult 
-                { 
-                    Items = new List<RegistrationInfo>(), 
+                return new PagedResult {
+                    Items = [],
                     TotalCount = 0,
                     CurrentPage = query.CurrentPage,
                     PageSize = query.PageSize,
                     ErrorMessage = "获取挂号记录失败"
                 };
-            }
-            catch (Exception ex)
-            {
-                return new PagedResult
-                {
-                    Items = new List<RegistrationInfo>(),
+            } catch (Exception ex) {
+                return new PagedResult {
+                    Items = [],
                     TotalCount = 0,
                     CurrentPage = query.CurrentPage,
                     PageSize = query.PageSize,
@@ -69,19 +58,14 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取挂号列表
         /// </summary>
-        public async Task<List<RegistrationInfo>> GetRegistrationsAsync()
-        {
-            try
-            {
+        public async Task<List<RegistrationInfo>> GetRegistrationsAsync() {
+            try {
                 var response = await _registrationApiService.GetRegistrationsAsync();
-                if (response.IsSuccessStatusCode && response.Content != null)
-                {
+                if (response.IsSuccessStatusCode && response.Content != null) {
                     return response.Content.Select(ConvertToRegistrationInfo).ToList();
                 }
-                return new List<RegistrationInfo>();
-            }
-            catch (Exception ex)
-            {
+                return [];
+            } catch (Exception ex) {
                 throw new Exception($"获取挂号列表失败: {ex.Message}", ex);
             }
         }
@@ -89,19 +73,14 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取挂号详情
         /// </summary>
-        public async Task<RegistrationInfo?> GetByIdAsync(Guid id)
-        {
-            try
-            {
+        public async Task<RegistrationInfo?> GetByIdAsync(Guid id) {
+            try {
                 var response = await _registrationApiService.GetRegistrationByIdAsync(id);
-                if (response.IsSuccessStatusCode && response.Content != null)
-                {
+                if (response.IsSuccessStatusCode && response.Content != null) {
                     return ConvertDetailToRegistrationInfo(response.Content);
                 }
                 return null;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 throw new Exception($"获取挂号详情失败: {ex.Message}", ex);
             }
         }
@@ -109,9 +88,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 新增挂号
         /// </summary>
-        public async Task<ServiceResult> CreateRegistrationAsync(RegistrationCreateDto dto)
-        {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+        public async Task<ServiceResult> CreateRegistrationAsync(RegistrationCreateDto dto) {
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _registrationApiService.CreateRegistrationAsync(dto)
             );
         }
@@ -119,9 +97,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 编辑挂号
         /// </summary>
-        public async Task<ServiceResult> UpdateRegistrationAsync(RegistrationEditDto dto)
-        {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+        public async Task<ServiceResult> UpdateRegistrationAsync(RegistrationEditDto dto) {
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _registrationApiService.UpdateRegistrationAsync(dto.Id, dto)
             );
         }
@@ -129,9 +106,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 删除挂号
         /// </summary>
-        public async Task<ServiceResult> DeleteRegistrationAsync(Guid id)
-        {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+        public async Task<ServiceResult> DeleteRegistrationAsync(Guid id) {
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _registrationApiService.DeleteRegistrationAsync(id)
             );
         }
@@ -139,9 +115,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 取消挂号
         /// </summary>
-        public async Task<ServiceResult> CancelRegistrationAsync(Guid id)
-        {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+        public async Task<ServiceResult> CancelRegistrationAsync(Guid id) {
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _registrationApiService.CancelRegistrationAsync(id)
             );
         }
@@ -150,19 +125,14 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取医生可预约时间段
         /// </summary>
-        public async Task<List<TimeSlotInfo>> GetAvailableSlotsAsync(Guid doctorId, DateTime date)
-        {
-            try
-            {
+        public async Task<List<TimeSlotInfo>> GetAvailableSlotsAsync(Guid doctorId, DateTime date) {
+            try {
                 var response = await _registrationApiService.GetAvailableSlotsAsync(doctorId, date);
-                if (response.IsSuccessStatusCode && response.Content != null)
-                {
+                if (response.IsSuccessStatusCode && response.Content != null) {
                     return response.Content.Select(ConvertToTimeSlotInfo).ToList();
                 }
-                return new List<TimeSlotInfo>();
-            }
-            catch (Exception ex)
-            {
+                return [];
+            } catch (Exception ex) {
                 throw new Exception($"获取可预约时间段失败: {ex.Message}", ex);
             }
         }
@@ -170,10 +140,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 转换RegistrationDto到RegistrationInfo
         /// </summary>
-        private RegistrationInfo ConvertToRegistrationInfo(RegistrationDto dto)
-        {
-            return new RegistrationInfo
-            {
+        private static RegistrationInfo ConvertToRegistrationInfo(RegistrationDto dto) {
+            return new RegistrationInfo {
                 Id = dto.Id,
                 RegistrationNumber = dto.RegistrationNumber ?? "",
                 PatientId = dto.PatientId,
@@ -199,10 +167,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 转换RegistrationDetailDto到RegistrationInfo
         /// </summary>
-        private RegistrationInfo ConvertDetailToRegistrationInfo(RegistrationDetailDto dto)
-        {
-            return new RegistrationInfo
-            {
+        private static RegistrationInfo ConvertDetailToRegistrationInfo(RegistrationDetailDto dto) {
+            return new RegistrationInfo {
                 Id = dto.Id,
                 RegistrationNumber = dto.RegistrationNumber ?? "",
                 PatientId = dto.PatientId,
@@ -229,10 +195,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 转换TimeSlotDto到TimeSlotInfo
         /// </summary>
-        private TimeSlotInfo ConvertToTimeSlotInfo(TimeSlotDto dto)
-        {
-            return new TimeSlotInfo
-            {
+        private static TimeSlotInfo ConvertToTimeSlotInfo(TimeSlotDto dto) {
+            return new TimeSlotInfo {
                 Id = dto.Id,
                 StartTime = TimeSpan.TryParse(dto.StartTime, out var startTime) ? startTime : TimeSpan.Zero,
                 EndTime = TimeSpan.TryParse(dto.EndTime, out var endTime) ? endTime : TimeSpan.Zero,
@@ -244,10 +208,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 解析挂号类型
         /// </summary>
-        private RegistrationType ParseRegistrationType(string typeStr)
-        {
-            return typeStr switch
-            {
+        private static RegistrationType ParseRegistrationType(string typeStr) {
+            return typeStr switch {
                 "1" or "Regular" or "普通号" => RegistrationType.Regular,
                 "2" or "Expert" or "专家号" => RegistrationType.Expert,
                 "3" or "Emergency" or "急诊号" => RegistrationType.Emergency,
@@ -259,10 +221,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 解析挂号状态
         /// </summary>
-        private RegistrationStatus ParseRegistrationStatus(string statusStr)
-        {
-            return statusStr switch
-            {
+        private static RegistrationStatus ParseRegistrationStatus(string statusStr) {
+            return statusStr switch {
                 "0" or "Scheduled" or "已预约" => RegistrationStatus.Scheduled,
                 "1" or "Arrived" or "已到达" => RegistrationStatus.Arrived,
                 "2" or "InConsultation" or "就诊中" => RegistrationStatus.InConsultation,
@@ -277,10 +237,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页获取挂号记录
         /// </summary>
-        public async Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<RegistrationInfo>> GetPagedAsync(int page, int pageSize, string? searchKeyword = null, DateTime? startDate = null, DateTime? endDate = null, string? status = null, string? registrationType = null)
-        {
-            var query = new RegistrationPagedQueryDto
-            {
+        public async Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<RegistrationInfo>> GetPagedAsync(int page, int pageSize, string? searchKeyword = null, DateTime? startDate = null, DateTime? endDate = null, string? status = null, string? registrationType = null) {
+            var query = new RegistrationPagedQueryDto {
                 CurrentPage = page,
                 PageSize = pageSize,
                 SearchKeyword = searchKeyword,
@@ -289,7 +247,7 @@ namespace LYBT.WPF.Client.Services
                 Status = status != null ? Enum.TryParse<RegistrationStatus>(status, out var s) ? s : (RegistrationStatus?)null : null,
                 RegistrationType = registrationType != null ? Enum.TryParse<RegistrationType>(registrationType, out var rt) ? rt : (RegistrationType?)null : null
             };
-            
+
             var result = await SearchRegistrationsAsync(query);
             return result;
         }
@@ -297,40 +255,33 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 创建挂号
         /// </summary>
-        public async Task<ServiceResult> CreateAsync(RegistrationCreateDto dto)
-        {
+        public async Task<ServiceResult> CreateAsync(RegistrationCreateDto dto) {
             return await CreateRegistrationAsync(dto);
         }
 
         /// <summary>
         /// 更新挂号
         /// </summary>
-        public async Task<ServiceResult> UpdateAsync(RegistrationEditDto dto)
-        {
+        public async Task<ServiceResult> UpdateAsync(RegistrationEditDto dto) {
             return await UpdateRegistrationAsync(dto);
         }
 
         /// <summary>
         /// 取消挂号
         /// </summary>
-        public async Task<ServiceResult> CancelAsync(Guid id)
-        {
+        public async Task<ServiceResult> CancelAsync(Guid id) {
             return await CancelRegistrationAsync(id);
         }
 
         /// <summary>
         /// 批量取消挂号
         /// </summary>
-        public async Task<ServiceResult> BatchCancelAsync(List<Guid> ids)
-        {
-            try
-            {
+        public async Task<ServiceResult> BatchCancelAsync(List<Guid> ids) {
+            try {
                 // 模拟批量取消
                 await Task.Delay(300);
                 return ServiceResult.Success();
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return ServiceResult.Failure($"批量取消失败: {ex.Message}", ex);
             }
         }

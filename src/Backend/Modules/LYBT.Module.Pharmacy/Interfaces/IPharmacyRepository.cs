@@ -36,6 +36,6 @@ namespace LYBT.Module.Pharmacy.Interfaces {
         /// <summary>
         /// 根据状态获取药房记录列表
         /// </summary>
-        Task<List<PharmacyModel>> GetByStatusAsync(PharmacyStatus status);
+        Task<List<PharmacyModel>> GetByStatusAsync(Models.Pharmacy.PharmacyStatus status);
     }
 }

@@ -69,24 +69,24 @@
                 
                 <!-- 适应症 -->
                 <DataGridTextColumn Header="适应症" 
-                                    Binding="{Binding Indication}" 
+                                    Binding="{Binding Indications}" 
                                     Width="250">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                            <Setter Property="ToolTip" Value="{Binding Indication}"/>
+                            <Setter Property="ToolTip" Value="{Binding Indications}"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 
                 <!-- 组成 -->
                 <DataGridTextColumn Header="药材组成" 
-                                    Binding="{Binding CompositionSummary}" 
+                                    Binding="{Binding HerbNames}" 
                                     Width="300">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                            <Setter Property="ToolTip" Value="{Binding CompositionSummary}"/>
+                            <Setter Property="ToolTip" Value="{Binding HerbNames}"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>

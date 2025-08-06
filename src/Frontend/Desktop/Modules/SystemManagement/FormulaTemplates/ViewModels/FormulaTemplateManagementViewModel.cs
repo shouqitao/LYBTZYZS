@@ -21,12 +21,14 @@ using Prism.Dialogs;
 namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 {
     /// <summary>
-    /// 验方模板管理视图模型（重构版）
+    /// 验方模板管理视图模型
     /// </summary>
-    public class FormulaTemplateManagementViewModelRefactored : BaseManagementViewModel<FormulaTemplateInfo, IFormulaTemplateApiService>
+    public class FormulaTemplateManagementViewModel : BaseManagementViewModel<FormulaTemplateInfo, IFormulaTemplateApiService>
     {
         private readonly ICommonDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
+        private readonly IHerbService _herbService;
+        private readonly IFormulaTemplateService _formulaTemplateService;
 
         protected override string ModuleName => "验方模板管理";
 
@@ -55,13 +57,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
         #endregion
 
-        public FormulaTemplateManagementViewModelRefactored(IFormulaTemplateApiService service,
+        public FormulaTemplateManagementViewModel(IFormulaTemplateApiService service,
             ICommonDialogService commonDialogService,
-            IDialogService dialogService)
+            IDialogService dialogService,
+            IHerbService herbService,
+            IFormulaTemplateService formulaTemplateService)
             : base(service)
         {
             _commonDialogService = commonDialogService;
             _dialogService = dialogService;
+            _herbService = herbService;
+            _formulaTemplateService = formulaTemplateService;
             // 初始化额外的命令
             ImportTemplatesCommand = new DelegateCommand(ImportTemplates);
             CopyTemplateCommand = new DelegateCommand<FormulaTemplateInfo>(async (template) => await CopyTemplate(template));
@@ -158,49 +164,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
         {
             try
             {
-                // 获取应用程序实例
-                var app = Application.Current as Prism.PrismApplicationBase;
-                if (app != null && app.Container != null)
+                // 直接使用注入的服务
+                var dialog = new Views.AddFormulaTemplateDialog(_herbService, _formulaTemplateService, _commonDialogService);
+                dialog.Owner = Application.Current.MainWindow;
+                
+                if (dialog.ShowDialog() == true)
                 {
-                    try
-                    {
-                        // 尝试从容器获取服务
-                        var herbService = app.Container.Resolve<IHerbService>();
-                        var formulaService = app.Container.Resolve<IFormulaTemplateService>();
-                        
-                        var dialog = new Views.AddFormulaTemplateDialog(herbService, formulaService, _commonDialogService);
-                        dialog.Owner = Application.Current.MainWindow;
-                        
-                        if (dialog.ShowDialog() == true)
-                        {
-                            RefreshCommand.Execute();
-                        }
-                    }
-                    catch (Exception resolveEx)
-                    {
-                        // 如果容器解析失败，使用备用方案
-                        _commonDialogService.ShowInformationAsync($"服务解析失败，将使用演示模式：{resolveEx.Message}", "提示").GetAwaiter().GetResult();
-                        
-                        // 使用演示模式
-                        var dialog = new Views.AddFormulaTemplateDialog(null!, null!, _commonDialogService);
-                        dialog.Owner = Application.Current.MainWindow;
-                        
-                        if (dialog.ShowDialog() == true)
-                        {
-                            RefreshCommand.Execute();
-                        }
-                    }
-                }
-                else
-                {
-                    // 无法获取容器，使用演示模式
-                    var dialog = new Views.AddFormulaTemplateDialog(null!, null!, _commonDialogService);
-                    dialog.Owner = Application.Current.MainWindow;
-                    
-                    if (dialog.ShowDialog() == true)
-                    {
-                        RefreshCommand.Execute();
-                    }
+                    RefreshCommand.Execute();
                 }
             }
             catch (Exception ex)
@@ -215,15 +185,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
             try
             {
-                // 通过容器解析ViewModel
-                var containerProvider = (Application.Current as Prism.PrismApplicationBase)?.Container;
-                if (containerProvider == null)
-                {
-                    _commonDialogService.ShowErrorAsync("无法获取依赖注入容器", "错误").GetAwaiter().GetResult();
-                    return;
-                }
-
-                var viewModel = containerProvider.Resolve<EditFormulaTemplateDialogViewModel>();
+                // 创建编辑对话框的ViewModel
+                var viewModel = new EditFormulaTemplateDialogViewModel(_formulaTemplateService, _herbService, _commonDialogService);
                 var dialog = new Views.EditFormulaTemplateDialog(viewModel);
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Initialize(item.Id);
@@ -245,15 +208,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels
 
             try
             {
-                var parameters = new DialogParameters
+                // 创建查看对话框的ViewModel
+                var viewModel = new ViewFormulaTemplateDialogViewModel(_formulaTemplateService, _commonDialogService);
+                var dialog = new Views.ViewFormulaTemplateDialog(viewModel)
                 {
-                    { "formulaTemplateId", item.Id }
+                    Owner = Application.Current.MainWindow
                 };
-
-                _dialogService.ShowDialog("ViewFormulaTemplateDialog", parameters, result =>
-                {
-                    // 对话框关闭后的处理（如果需要）
-                });
+                
+                dialog.Initialize(item.Id);
+                dialog.ShowDialog();
             }
             catch (Exception ex)
             {

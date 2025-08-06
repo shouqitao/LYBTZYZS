@@ -194,7 +194,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             var prescriptionItem = new PrescriptionItem
             {
                 Herb = SelectedHerb,
-                Dosage = 10, // 默认剂量
+                Quantity = 10, // 默认数量
                 Unit = "g",
                 UnitPrice = SelectedHerb.Price,
                 Usage = "水煎服"
@@ -250,7 +250,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                     HerbalFormula = medicalRecord.HerbalFormula?.Select(h => new FormulaIngredientDto
                     {
                         HerbId = h.HerbId,
-                        Dosage = h.Dosage,
+                        Quantity = h.Quantity,
                         Unit = h.Unit
                     }).ToList(),
                     IsShared = false,
@@ -434,7 +434,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 {
                     HerbId = p.Herb.Id,
                     HerbName = p.Herb.Name,
-                    Dosage = p.Dosage,
+                    Quantity = p.Quantity,
                     Unit = p.Unit,
                     Usage = p.Usage
                 }).ToList(),

@@ -240,8 +240,8 @@ namespace LYBT.WPF.Client.Modules.Common.ViewModels
             {
                 Id = Guid.NewGuid(),
                 PatientName = "钱十",
-                Status = 1, // 配药中
-                DispenseTime = DateTime.Now.AddMinutes(-15)
+                Status = "Dispensing", // 配药中
+                CreateTime = DateTime.Now.AddMinutes(-15)
             };
         }
     }

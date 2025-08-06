@@ -152,6 +152,7 @@ namespace LYBT.Infrastructure.Data {
             ConfigureHerbs(modelBuilder);
             ConfigureFormulaTemplates(modelBuilder);
             ConfigurePharmacies(modelBuilder);
+            ConfigurePharmacyHerbs(modelBuilder);
             ConfigureBillings(modelBuilder);
             ConfigureRecords(modelBuilder);
             ConfigureTreatmentRooms(modelBuilder);
@@ -301,20 +302,24 @@ namespace LYBT.Infrastructure.Data {
             entity.ToTable("Pharmacies");
             entity.HasKey(p => p.Id);
 
-            // 配置药房与药材的多对多关系
+            // 配置药房与药材的一对多关系
             entity.HasMany(p => p.Herbs)
+                  .WithOne(ph => ph.Pharmacy)
+                  .HasForeignKey(ph => ph.PharmacyId);
+        }
+
+        private static void ConfigurePharmacyHerbs(ModelBuilder modelBuilder) {
+            var entity = modelBuilder.Entity<PharmacyHerbModel>();
+            entity.ToTable("PharmacyHerbs");
+            entity.HasKey(ph => new { ph.PharmacyId, ph.HerbId });
+            
+            entity.HasOne(ph => ph.Pharmacy)
+                  .WithMany(p => p.Herbs)
+                  .HasForeignKey(ph => ph.PharmacyId);
+                  
+            entity.HasOne(ph => ph.Herb)
                   .WithMany()
-                  .UsingEntity<PharmacyHerbModel>(
-                        j => j.HasOne<HerbModel>()
-                              .WithMany()
-                              .HasForeignKey(ph => ph.HerbId),
-                        j => j.HasOne<PharmacyModel>()
-                              .WithMany()
-                              .HasForeignKey(ph => ph.PharmacyId),
-                        j => {
-                            j.ToTable("PharmacyHerbs");
-                            j.HasKey(ph => new { ph.PharmacyId, ph.HerbId });
-                        });
+                  .HasForeignKey(ph => ph.HerbId);
         }
 
         private static void ConfigureBillings(ModelBuilder modelBuilder) {

@@ -1,59 +1,98 @@
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Contracts.Consultation
 {
     /// <summary>
     /// 看诊详情DTO
     /// </summary>
-    public class ConsultationDetailDto : ConsultationDto
+    public class ConsultationDetailDto
     {
+        /// <summary>看诊ID</summary>
+        [DisplayName("看诊ID")]
+        public Guid Id { get; set; }
+
+        /// <summary>医疗案例ID</summary>
+        [DisplayName("医疗案例ID")]
+        public Guid MedicalCaseId { get; set; }
+
+        /// <summary>患者ID</summary>
+        [DisplayName("患者ID")]
+        public Guid PatientId { get; set; }
+
+        /// <summary>患者姓名</summary>
+        [DisplayName("患者姓名")]
+        public string PatientName { get; set; } = string.Empty;
+
+        /// <summary>医生ID</summary>
+        [DisplayName("医生ID")]
+        public Guid DoctorId { get; set; }
+
+        /// <summary>医生姓名</summary>
+        [DisplayName("医生姓名")]
+        public string DoctorName { get; set; } = string.Empty;
+
+        /// <summary>主诉</summary>
+        [DisplayName("主诉")]
+        public string? ChiefComplaint { get; set; }
+
         /// <summary>现病史</summary>
-        public string PresentIllness { get; set; } = string.Empty;
+        [DisplayName("现病史")]
+        public string? PresentIllness { get; set; }
+
+        /// <summary>既往史</summary>
+        [DisplayName("既往史")]
+        public string? PastHistory { get; set; }
+
+        /// <summary>过敏史</summary>
+        [DisplayName("过敏史")]
+        public string? AllergyHistory { get; set; }
 
         /// <summary>体格检查</summary>
-        public string PhysicalExamination { get; set; } = string.Empty;
+        [DisplayName("体格检查")]
+        public string? PhysicalExamination { get; set; }
 
-        /// <summary>治疗建议</summary>
-        public string TreatmentAdvice { get; set; } = string.Empty;
+        /// <summary>舌诊</summary>
+        [DisplayName("舌诊")]
+        public string? TongueInspection { get; set; }
 
-        /// <summary>用药医嘱</summary>
-        public string MedicationInstructions { get; set; } = string.Empty;
+        /// <summary>脉诊</summary>
+        [DisplayName("脉诊")]
+        public string? PulseCondition { get; set; }
 
-        /// <summary>生活医嘱</summary>
-        public string LifestyleInstructions { get; set; } = string.Empty;
+        /// <summary>中医辨证</summary>
+        [DisplayName("中医辨证")]
+        public string? TCMDiagnosis { get; set; }
 
-        /// <summary>复诊建议</summary>
-        public string FollowUpAdvice { get; set; } = string.Empty;
+        /// <summary>西医诊断</summary>
+        [DisplayName("西医诊断")]
+        public string? WesternDiagnosis { get; set; }
 
-        /// <summary>处方明细</summary>
-        public List<PrescriptionItemDto> PrescriptionItems { get; set; } = new();
-    }
+        /// <summary>诊断（综合）</summary>
+        [DisplayName("诊断")]
+        public string Diagnosis { get; set; } = string.Empty;
 
-    /// <summary>
-    /// 处方项DTO
-    /// </summary>
-    public class PrescriptionItemDto
-    {
-        /// <summary>药材ID</summary>
-        public Guid HerbId { get; set; }
+        /// <summary>治疗原则</summary>
+        [DisplayName("治疗原则")]
+        public string? TreatmentPrinciple { get; set; }
 
-        /// <summary>药材名称</summary>
-        public string HerbName { get; set; } = string.Empty;
+        /// <summary>治疗方案ID</summary>
+        [DisplayName("治疗方案ID")]
+        public Guid? TreatmentPlanId { get; set; }
 
-        /// <summary>用量</summary>
-        public decimal Dosage { get; set; }
+        /// <summary>医嘱</summary>
+        [DisplayName("医嘱")]
+        public string? MedicalAdvice { get; set; }
 
-        /// <summary>单位</summary>
-        public string Unit { get; set; } = string.Empty;
+        /// <summary>看诊时间</summary>
+        [DisplayName("看诊时间")]
+        public DateTime ConsultationTime { get; set; }
 
-        /// <summary>用法</summary>
-        public string Usage { get; set; } = string.Empty;
+        /// <summary>创建时间</summary>
+        [DisplayName("创建时间")]
+        public DateTime CreateTime { get; set; }
 
-        /// <summary>单价</summary>
-        public decimal UnitPrice { get; set; }
-
-        /// <summary>小计</summary>
-        public decimal SubTotal { get; set; }
+        /// <summary>更新时间</summary>
+        [DisplayName("更新时间")]
+        public DateTime? UpdateTime { get; set; }
     }
 }
