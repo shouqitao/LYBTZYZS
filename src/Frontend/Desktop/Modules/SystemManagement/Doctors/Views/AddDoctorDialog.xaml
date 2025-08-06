@@ -68,7 +68,7 @@
                     <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold">
                         <Run Text="姓名："/>
                     </TextBlock>
-                    <TextBox Grid.Column="1" Text="{Binding Name}" Height="32" VerticalContentAlignment="Center" Padding="8,0" IsReadOnly="True" Background="#F5F5F5"/>
+                    <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Padding="8,0" IsReadOnly="True" Background="#F5F5F5"/>
                 </Grid>
 
                 <!-- 工号 -->
@@ -173,7 +173,7 @@
                         <Run Text="手机号："/>
                         <Run Text="*" Foreground="Red"/>
                     </TextBlock>
-                    <TextBox Grid.Column="1" Text="{Binding Phone}" Height="32" VerticalContentAlignment="Center" Padding="8,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Height="32" VerticalContentAlignment="Center" Padding="8,0"/>
                 </Grid>
 
                 <!-- 执业证书编号 -->
@@ -211,7 +211,8 @@
                         Foreground="White"
                         BorderThickness="0"
                         Cursor="Hand"
-                        Margin="0,0,10,0">
+                        Margin="0,0,10,0"
+                        Click="SaveButton_Click">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="4"/>

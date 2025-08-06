@@ -250,8 +250,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
         {
             if (SelectedUser != null)
             {
+                System.Diagnostics.Debug.WriteLine($"用户选择改变: {SelectedUser.Username} - {SelectedUser.RealName}");
+                
+                // 自动填充姓名
                 Name = SelectedUser.RealName ?? SelectedUser.Username;
+                System.Diagnostics.Debug.WriteLine($"设置姓名为: {Name}");
+                
+                // 自动填充电话
                 Phone = SelectedUser.PhoneNumber ?? string.Empty;
+                System.Diagnostics.Debug.WriteLine($"设置电话为: {Phone}");
+                
+                // 触发属性更改通知
+                RaisePropertyChanged(nameof(Name));
+                RaisePropertyChanged(nameof(Phone));
                 
                 // BaseUserModel 没有 Gender 属性，保持默认性别设置
             }
@@ -259,13 +270,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
         private async void ExecuteSave()
         {
+            System.Diagnostics.Debug.WriteLine("==== ExecuteSave 开始执行 ====");
+            
             try
             {
                 System.Diagnostics.Debug.WriteLine("ExecuteSave 方法被调用");
+                System.Diagnostics.Debug.WriteLine($"SelectedUser: {SelectedUser?.Username ?? "null"}");
+                System.Diagnostics.Debug.WriteLine($"Name: {Name}");
+                System.Diagnostics.Debug.WriteLine($"Code: {Code}");
+                System.Diagnostics.Debug.WriteLine($"Department: {Department}");
+                System.Diagnostics.Debug.WriteLine($"Phone: {Phone}");
                 
                 // 验证必须选择用户
                 if (SelectedUser == null)
                 {
+                    System.Diagnostics.Debug.WriteLine("错误: 未选择用户");
                     await _commonDialogService.ShowWarningAsync("请选择一个具有医生角色的用户", "提示");
                     return;
                 }
