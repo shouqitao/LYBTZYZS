@@ -125,6 +125,10 @@ src/
 - **API端口**: https://localhost:7001
 - **默认登录**: sysadmin / Admin@123456
 - **JWT过期**: 8小时（Remember Me: 30天）
+- **默认密码配置**:
+  - 普通用户: `ChangeMe123` (UserOptions.DefaultUserPassword)
+  - 管理员: `Admin@123456` (SysAdminOptions.DefaultPassword)
+  - 详见: [默认密码文档](docs/development/DEFAULT_PASSWORDS.md)
 
 ### 开发流程
 
