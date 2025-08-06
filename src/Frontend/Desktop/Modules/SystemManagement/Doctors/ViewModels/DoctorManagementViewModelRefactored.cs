@@ -148,8 +148,20 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
                 viewModel.CloseDialogCallback = (success) =>
                 {
-                    dialog.DialogResult = success;
-                    dialog.Close();
+                    // 只有在ShowDialog模式下才能设置DialogResult
+                    if (dialog.IsVisible)
+                    {
+                        try
+                        {
+                            dialog.DialogResult = success;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // 如果无法设置DialogResult，直接关闭窗口
+                            dialog.Close();
+                        }
+                    }
+                    
                     if (success)
                     {
                         RefreshCommand.Execute();
@@ -182,8 +194,20 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
 
                 viewModel.CloseDialogCallback = (success) =>
                 {
-                    dialog.DialogResult = success;
-                    dialog.Close();
+                    // 只有在ShowDialog模式下才能设置DialogResult
+                    if (dialog.IsVisible)
+                    {
+                        try
+                        {
+                            dialog.DialogResult = success;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // 如果无法设置DialogResult，直接关闭窗口
+                            dialog.Close();
+                        }
+                    }
+                    
                     if (success)
                     {
                         RefreshCommand.Execute();

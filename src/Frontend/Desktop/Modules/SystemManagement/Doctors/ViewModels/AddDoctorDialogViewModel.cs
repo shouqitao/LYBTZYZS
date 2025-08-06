@@ -322,6 +322,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 }
 
                 System.Diagnostics.Debug.WriteLine($"开始创建医生对象，关联用户: {SelectedUser.Username}");
+                System.Diagnostics.Debug.WriteLine($"Specialty字段值: '{Specialty}'");
+                System.Diagnostics.Debug.WriteLine($"Department字段值: '{Department}'");
+                
+                // 确保Specialty和Department都不为空
+                var specialtyValue = !string.IsNullOrWhiteSpace(Specialty) ? Specialty : (!string.IsNullOrWhiteSpace(Department) ? Department : "中医科");
+                
+                System.Diagnostics.Debug.WriteLine($"最终Specialty值: '{specialtyValue}'");
                 
                 var doctor = new DoctorInfo
                 {
@@ -333,7 +340,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                     Gender = Gender,
                     Birthday = BirthDate.Value,
                     Title = Title,
-                    Specialty = Specialty ?? string.Empty,
+                    Specialty = specialtyValue,  // 确保不为空
                     LicenseNumber = LicenseNumber ?? string.Empty,
                     ContactNumber = Phone,
                     Phone = Phone,
@@ -342,7 +349,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                     IsActive = true,
                     CreateTime = DateTime.Now,
                     Remark = Remark ?? string.Empty,
-                    Specialties = Specialty ?? string.Empty  // 添加 Specialties 属性
+                    Specialties = specialtyValue  // 确保不为空
                 };
 
                 // 计算年龄
