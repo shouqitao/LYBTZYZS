@@ -33,19 +33,17 @@
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Billing\LYBT.Module.Billing.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.DiagnosisTreatment\LYBT.Module.DiagnosisTreatment.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Doctors\LYBT.Module.Doctors.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.FormulaTemplates\LYBT.Module.FormulaTemplates.csproj" />
+		<!-- FormulaTemplates已重命名为Formula -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Pharmacy\LYBT.Module.Pharmacy.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Queueing\LYBT.Module.Queueing.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Records\LYBT.Module.Records.csproj" />
+		<!-- Records已删除，使用MedicalCase替代 -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Sync\LYBT.Module.Sync.csproj" />
+		<!-- Sync模块MVP阶段暂不需要 -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.TreatmentRoom\LYBT.Module.TreatmentRoom.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />

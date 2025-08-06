@@ -1,20 +1,14 @@
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
-using LYBT.Module.Billing.Interfaces;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Services;
-using LYBT.Module.Billing.Repositories;
-using LYBT.Module.Billing.Services;
-using LYBT.Module.DiagnosisTreatment.Interfaces;
-using LYBT.Module.DiagnosisTreatment.Repositories;
-using LYBT.Module.DiagnosisTreatment.Services;
 using LYBT.Module.Doctors.Interfaces;
 using LYBT.Module.Doctors.Repositories;
 using LYBT.Module.Doctors.Services;
-using LYBT.Module.FormulaTemplates.Interfaces;
-using LYBT.Module.FormulaTemplates.Repositories;
-using LYBT.Module.FormulaTemplates.Services;
+// using LYBT.Module.Formula.Interfaces;
+// using LYBT.Module.Formula.Repositories;
+// using LYBT.Module.Formula.Services;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
@@ -30,15 +24,11 @@ using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Queueing.Interfaces;
 using LYBT.Module.Queueing.Repositories;
 using LYBT.Module.Queueing.Services;
-using LYBT.Module.Records.Interfaces;
-using LYBT.Module.Records.Repositories;
-using LYBT.Module.Records.Services;
+// Records模块已删除，使用MedicalCase替代
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Repositories;
 using LYBT.Module.Registration.Services;
-using LYBT.Module.Sync.Interfaces;
-using LYBT.Module.Sync.Repositories;
-using LYBT.Module.Sync.Services;
+// Sync模块MVP阶段暂不需要
 using LYBT.Module.TreatmentRoom.Interfaces;
 using LYBT.Module.TreatmentRoom.Repositories;
 using LYBT.Module.TreatmentRoom.Services;
@@ -61,6 +51,7 @@ public static class ServiceCollectionExtension {
         // 认证模块
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<SysAdminHandler>();
+        services.AddSingleton<ILoginAttemptService, LoginAttemptService>();  // 单例，跨请求共享
         services.AddScoped<IAuthService, AuthService>();
 
         // 用户模块
@@ -85,31 +76,26 @@ public static class ServiceCollectionExtension {
 
         // 看诊模块
         services.AddScoped<IConsultationService, ConsultationService>();
-
-        // 诊疗模块
-        services.AddScoped<IDiagnosisTreatmentService, DiagnosisTreatmentService>();
-        services.AddScoped<IDiagnosisTreatmentRepository, DiagnosisTreatmentRepository>();
+        // DiagnosisTreatment模块已删除，使用Consultation替代
 
         // 药材模块
         services.AddScoped<IHerbService, HerbService>();
         services.AddScoped<IHerbRepository, HerbRepository>();
 
-        // 经验方模板模块
-        services.AddScoped<IFormulaTemplateService, FormulaTemplateService>();
-        services.AddScoped<IFormulaTemplateRepository, FormulaTemplateRepository>();
+        // 验方模块（原FormulaTemplates）
+        // services.AddScoped<IFormulaService, FormulaService>();
+        // services.AddScoped<IFormulaRepository, FormulaRepository>();
 
-        // 病历模块
-        services.AddScoped<IRecordService, RecordService>();
-        services.AddScoped<IRecordRepository, RecordRepository>();
+        // Records模块已删除，使用MedicalCase替代
 
         // 处方模块
         services.AddScoped<IPrescriptionService, PrescriptionService>();
         services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
         services.AddScoped<IIntelligentPrescriptionService, IntelligentPrescriptionService>();
 
-        // 收费模块
-        services.AddScoped<IBillingService, BillingService>();
-        services.AddScoped<IBillingRepository, BillingRepository>();
+        // 收银模块（原Billing）
+        // services.AddScoped<ICashierService, CashierService>();
+        // services.AddScoped<ICashierRepository, CashierRepository>();
 
         // 药房模块
         services.AddScoped<IPharmacyService, PharmacyService>();
@@ -119,9 +105,7 @@ public static class ServiceCollectionExtension {
         services.AddScoped<ITreatmentRoomService, TreatmentRoomService>();
         services.AddScoped<ITreatmentRoomRepository, TreatmentRoomRepository>();
 
-        // 同步模块
-        services.AddScoped<ISyncService, SyncService>();
-        services.AddScoped<ISyncRepository, SyncRepository>();
+        // Sync模块MVP阶段暂不需要
 
         return services;
     }
@@ -137,7 +121,7 @@ public static class ServiceCollectionExtension {
             .Where(a => a.GetName().Name?.StartsWith("LYBT.Module.") == true)
             .ToArray();
 
-        services.AddAutoMapper(config => { }, assemblies);
+        services.AddAutoMapper(assemblies);
 
         return services;
     }

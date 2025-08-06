@@ -64,5 +64,89 @@ namespace LYBT.Module.Patients.Interfaces {
         /// 根据身份证号查找患者
         /// </summary>
         Task<PatientDetailDto?> GetByIDNumberAsync(string idNumber);
+
+        // ==================== 患者档案管理功能 ====================
+
+        /// <summary>
+        /// 获取患者就诊历史
+        /// </summary>
+        Task<PatientVisitHistoryDto> GetVisitHistoryAsync(Guid patientId);
+
+        /// <summary>
+        /// 更新患者过敏史
+        /// </summary>
+        Task<bool> UpdateAllergyHistoryAsync(Guid patientId, string allergyHistory, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 批量导入患者档案
+        /// </summary>
+        Task<PatientImportResultDto> ImportPatientsAsync(List<PatientImportDto> patients, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 导出患者档案
+        /// </summary>
+        Task<List<PatientExportDto>> ExportPatientsAsync(PatientExportQueryDto query);
+
+        /// <summary>
+        /// 合并重复患者档案
+        /// </summary>
+        Task<bool> MergeDuplicatePatientsAsync(Guid primaryId, Guid duplicateId, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 获取患者标签
+        /// </summary>
+        Task<List<PatientTagDto>> GetPatientTagsAsync(Guid patientId);
+
+        /// <summary>
+        /// 设置患者标签
+        /// </summary>
+        Task<bool> SetPatientTagsAsync(Guid patientId, List<string> tags, Guid operatorId, string operatorName);
+
+        // ==================== 患者查询和统计功能 ====================
+
+        /// <summary>
+        /// 高级搜索患者（支持多条件组合）
+        /// </summary>
+        Task<PaginatedResult<PatientDetailDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query, UserRole currentUserRole);
+
+        /// <summary>
+        /// 获取患者统计信息
+        /// </summary>
+        Task<PatientStatisticsDto> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null);
+
+        /// <summary>
+        /// 获取患者年龄分布统计
+        /// </summary>
+        Task<List<AgeDistributionDto>> GetAgeDistributionAsync();
+
+        /// <summary>
+        /// 获取患者性别分布统计
+        /// </summary>
+        Task<GenderDistributionDto> GetGenderDistributionAsync();
+
+        /// <summary>
+        /// 获取新增患者趋势（按月统计）
+        /// </summary>
+        Task<List<PatientTrendDto>> GetNewPatientTrendAsync(int months = 12);
+
+        /// <summary>
+        /// 获取活跃患者列表（最近就诊）
+        /// </summary>
+        Task<List<PatientDetailDto>> GetRecentActivePatientsAsync(int days = 30);
+
+        /// <summary>
+        /// 获取流失患者列表（长期未就诊）
+        /// </summary>
+        Task<List<PatientDetailDto>> GetInactivePatientsAsync(int days = 180);
+
+        /// <summary>
+        /// 获取今日新增患者
+        /// </summary>
+        Task<List<PatientDetailDto>> GetTodayNewPatientsAsync();
+
+        /// <summary>
+        /// 检查患者是否重复（根据身份证号或手机号）
+        /// </summary>
+        Task<List<PatientDetailDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber);
     }
 }

@@ -1,3 +1,6 @@
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 using AutoMapper;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Interfaces;
@@ -9,7 +12,7 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Module.Doctors.Services {
 
     /// <summary>
-    /// 医生业务服务实现类（简化版）
+    /// 医生业务服务实现类（简化版 - 仅基础功能）
     /// </summary>
     public class DoctorService : IDoctorService {
         private readonly IDoctorRepository _doctorRepository;
@@ -231,5 +234,86 @@ namespace LYBT.Module.Doctors.Services {
             var availableDoctors = models.Where(m => m.Status == DoctorStatus.Active).ToList();
             return _mapper.Map<List<DoctorDto>>(availableDoctors);
         }
+
+        #region 休息时间管理
+
+        /// <summary>
+        /// 设置医生休息状态（某天不出诊）
+        /// </summary>
+        public async Task<bool> SetDoctorRestAsync(Guid doctorId, DateTime date, bool isRest, Guid operatorId, string operatorName) {
+            var doctor = await _doctorRepository.GetByIdAsync(doctorId, true);
+            if (doctor == null) {
+                return false;
+            }
+            
+            // TODO: 保存到休息记录表
+            // 暂时使用内存存储或缓存
+            await Task.CompletedTask;
+            return true;
+        }
+
+        /// <summary>
+        /// 获取医生休息记录
+        /// </summary>
+        public async Task<List<DoctorRestRecordDto>> GetDoctorRestRecordsAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null) {
+            // TODO: 从休息记录表获取数据
+            var records = new List<DoctorRestRecordDto>();
+            await Task.CompletedTask;
+            return records;
+        }
+
+        /// <summary>
+        /// 检查医生是否在某天休息
+        /// </summary>
+        public async Task<bool> IsDoctorRestingAsync(Guid doctorId, DateTime date) {
+            // TODO: 从休息记录表查询
+            await Task.CompletedTask;
+            return false; // 默认不休息
+        }
+
+        /// <summary>
+        /// 获取某天出诊的医生列表
+        /// </summary>
+        public async Task<List<DoctorDto>> GetAvailableDoctorsByDateAsync(DateTime date) {
+            var allDoctors = await GetAvailableDoctorsAsync();
+            var availableDoctors = new List<DoctorDto>();
+            
+            foreach (var doctor in allDoctors) {
+                var isResting = await IsDoctorRestingAsync(doctor.Id, date);
+                if (!isResting) {
+                    availableDoctors.Add(doctor);
+                }
+            }
+            
+            return availableDoctors;
+        }
+
+        #endregion
+
+        #region 简化的专长信息
+
+        /// <summary>
+        /// 更新医生基本信息（包含专长）
+        /// </summary>
+        public async Task<bool> UpdateDoctorInfoAsync(Guid doctorId, DoctorInfoUpdateDto info, Guid operatorId, string operatorName) {
+            var doctor = await _doctorRepository.GetByIdAsync(doctorId, true);
+            if (doctor == null) {
+                return false;
+            }
+            
+            doctor.Specialty = info.Specialty;
+            doctor.Title = info.Title;
+            doctor.Introduction = info.Introduction;
+            doctor.UpdateTime = DateTime.Now;
+            doctor.LastOperatorId = operatorId;
+            doctor.LastOperatorName = operatorName;
+            
+            await _doctorRepository.UpdateAsync(doctor);
+            return true;
+        }
+
+
+
+        #endregion
     }
 }

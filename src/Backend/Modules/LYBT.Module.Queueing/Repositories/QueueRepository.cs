@@ -98,5 +98,14 @@ namespace LYBT.Module.Queueing.Repositories {
             _context.Queueings.Update(model);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<bool> UpdateStatusAsync(Guid id, QueueStatus status)
+        {
+            var entity = await _context.Queueings.FindAsync(id);
+            if (entity == null) return false;
+            entity.Status = status;
+            entity.UpdateTime = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

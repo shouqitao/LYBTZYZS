@@ -28,7 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Models\LYBT.Models.csproj" />
-    <ProjectReference Include="..\LYBT.Module.FormulaTemplates\LYBT.Module.FormulaTemplates.csproj" />
+    <!-- FormulaTemplates已重命名为Formula -->
     <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
   </ItemGroup>
 

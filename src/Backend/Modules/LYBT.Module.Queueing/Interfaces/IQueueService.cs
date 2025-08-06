@@ -53,5 +53,47 @@ namespace LYBT.Module.Queueing.Interfaces {
         /// 挂起排队
         /// </summary>
         Task<bool> HoldAsync(Guid id);
+
+        // ==================== 现场叫号特有功能 ====================
+
+        /// <summary>
+        /// 获取今日排队列表
+        /// </summary>
+        Task<List<QueueingDto>> GetTodayQueuesAsync(Guid? doctorId = null);
+
+        /// <summary>
+        /// 获取当前正在就诊的排队
+        /// </summary>
+        Task<QueueingDto?> GetCurrentQueueAsync(Guid doctorId);
+
+        /// <summary>
+        /// 获取下一个等待的排队
+        /// </summary>
+        Task<QueueingDto?> GetNextWaitingQueueAsync(Guid doctorId);
+
+        /// <summary>
+        /// 叫号（开始就诊）
+        /// </summary>
+        Task<bool> CallNextAsync(Guid doctorId, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 重新排队（过号重排）
+        /// </summary>
+        Task<bool> RequeueAsync(Guid queueId, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 过号处理
+        /// </summary>
+        Task<bool> MarkAsMissedAsync(Guid queueId, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 获取排队统计
+        /// </summary>
+        Task<QueueStatisticsDto> GetStatisticsAsync(Guid? doctorId = null);
+
+        /// <summary>
+        /// 插队（VIP或加急）
+        /// </summary>
+        Task<bool> InsertQueueAsync(Guid queueId, int position, Guid operatorId, string operatorName);
     }
 }

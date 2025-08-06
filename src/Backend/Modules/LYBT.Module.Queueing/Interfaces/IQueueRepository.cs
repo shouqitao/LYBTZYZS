@@ -1,4 +1,5 @@
 ﻿using LYBT.Models.Queueing;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Queueing.Interfaces {
 
@@ -46,5 +47,10 @@ namespace LYBT.Module.Queueing.Interfaces {
         /// 将排队信息标记为挂起
         /// </summary>
         Task<bool> HoldAsync(Guid id);
+
+        /// <summary>
+        /// 更新排队状态
+        /// </summary>
+        Task<bool> UpdateStatusAsync(Guid registrationId, QueueStatus status);
     }
 }

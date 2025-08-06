@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Common;
 using LYBT.Models.MedicalCase;
 using LYBT.Shared.Models.Contracts.Common;
 

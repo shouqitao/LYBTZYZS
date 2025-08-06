@@ -1,3 +1,6 @@
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Models.Consultation;
@@ -17,7 +20,7 @@ namespace LYBT.Module.Consultation.Services
     /// </summary>
     public class ConsultationService : IConsultationService
     {
-        private readonly AppDbContext _context;
+        private readonly LYBT.Infrastructure.Data.AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<ConsultationService> _logger;
 

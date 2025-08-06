@@ -191,5 +191,98 @@ namespace LYBT.WebAPI.Controllers {
             
             return Ok(doctor);
         }
+
+        #region 休息时间管理
+
+        /// <summary>
+        /// 设置医生休息日期
+        /// </summary>
+        [HttpPost("{id}/rest")]
+        [Authorize]
+        public async Task<ActionResult> SetRest(Guid id, [FromBody] SetDoctorRestDto dto) {
+            var (operatorId, operatorName, operatorRole) = GetOperator();
+            
+            // 只允许医生本人或管理员设置
+            if (operatorRole != UserRole.Admin) {
+                var doctor = await _doctorService.GetByUserIdAsync(operatorId, operatorRole);
+                if (doctor == null || doctor.Id != id) {
+                    return Forbid();
+                }
+            }
+            
+            var success = await _doctorService.SetDoctorRestAsync(id, dto.Date, dto.IsRest, operatorId, operatorName);
+            
+            if (!success) {
+                return NotFound(new ProblemDetails {
+                    Title = "医生不存在",
+                    Detail = $"未找到ID为 {id} 的医生",
+                    Status = 404
+                });
+            }
+            
+            return Ok(new { message = dto.IsRest ? "已设置休息" : "已取消休息" });
+        }
+
+        /// <summary>
+        /// 获取医生休息记录
+        /// </summary>
+        [HttpGet("{id}/rest-records")]
+        public async Task<ActionResult<List<DoctorRestRecordDto>>> GetRestRecords(
+            Guid id, 
+            [FromQuery] DateTime? startDate = null, 
+            [FromQuery] DateTime? endDate = null) {
+            
+            var records = await _doctorService.GetDoctorRestRecordsAsync(id, startDate, endDate);
+            return Ok(records);
+        }
+
+        /// <summary>
+        /// 获取某天出诊的医生列表
+        /// </summary>
+        [HttpGet("available/{date}")]
+        public async Task<ActionResult<List<DoctorDto>>> GetAvailableByDate(DateTime date) {
+            var doctors = await _doctorService.GetAvailableDoctorsByDateAsync(date);
+            return Ok(doctors);
+        }
+
+        /// <summary>
+        /// 检查医生是否在某天休息
+        /// </summary>
+        [HttpGet("{id}/is-resting/{date}")]
+        public async Task<ActionResult<bool>> IsResting(Guid id, DateTime date) {
+            var isResting = await _doctorService.IsDoctorRestingAsync(id, date);
+            return Ok(new { isResting });
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 更新医生基本信息（简化版）
+        /// </summary>
+        [HttpPut("{id}/info")]
+        [Authorize]
+        public async Task<ActionResult> UpdateInfo(Guid id, [FromBody] DoctorInfoUpdateDto dto) {
+            var (operatorId, operatorName, operatorRole) = GetOperator();
+            
+            // 只允许医生本人或管理员更新
+            if (operatorRole != UserRole.Admin) {
+                var doctor = await _doctorService.GetByUserIdAsync(operatorId, operatorRole);
+                if (doctor == null || doctor.Id != id) {
+                    return Forbid();
+                }
+            }
+            
+            var success = await _doctorService.UpdateDoctorInfoAsync(id, dto, operatorId, operatorName);
+            
+            if (!success) {
+                return NotFound(new ProblemDetails {
+                    Title = "医生不存在",
+                    Detail = $"未找到ID为 {id} 的医生",
+                    Status = 404
+                });
+            }
+            
+            return Ok(new { message = "信息更新成功" });
+        }
     }
 }

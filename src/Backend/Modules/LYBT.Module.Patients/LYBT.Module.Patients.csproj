@@ -20,7 +20,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Models\LYBT.Models.csproj" />
-		<ProjectReference Include="..\LYBT.Module.Records\LYBT.Module.Records.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -5,7 +5,7 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Module.Doctors.Interfaces {
 
     /// <summary>
-    /// 医生业务服务接口（简化版）
+    /// 医生业务服务接口（简化版 - 仅基础功能）
     /// </summary>
     public interface IDoctorService {
 
@@ -58,5 +58,34 @@ namespace LYBT.Module.Doctors.Interfaces {
         /// 获取可用医生列表（用于挂号选择）
         /// </summary>
         Task<List<DoctorDto>> GetAvailableDoctorsAsync();
+
+        // ==================== 休息时间管理 ====================
+
+        /// <summary>
+        /// 设置医生休息状态（某天不出诊）
+        /// </summary>
+        Task<bool> SetDoctorRestAsync(Guid doctorId, DateTime date, bool isRest, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 获取医生休息记录
+        /// </summary>
+        Task<List<DoctorRestRecordDto>> GetDoctorRestRecordsAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null);
+
+        /// <summary>
+        /// 检查医生是否在某天休息
+        /// </summary>
+        Task<bool> IsDoctorRestingAsync(Guid doctorId, DateTime date);
+
+        /// <summary>
+        /// 获取某天出诊的医生列表
+        /// </summary>
+        Task<List<DoctorDto>> GetAvailableDoctorsByDateAsync(DateTime date);
+
+        // ==================== 简化的信息管理 ====================
+
+        /// <summary>
+        /// 更新医生基本信息（包含专长）
+        /// </summary>
+        Task<bool> UpdateDoctorInfoAsync(Guid doctorId, DoctorInfoUpdateDto info, Guid operatorId, string operatorName);
     }
 }

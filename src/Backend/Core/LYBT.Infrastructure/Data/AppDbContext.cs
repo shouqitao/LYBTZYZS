@@ -1,19 +1,16 @@
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Logging;
-using LYBT.Models.Billing;
+using LYBT.Models.Cashier;
 using LYBT.Models.Consultation;
-using LYBT.Models.DiagnosisTreatment;
 using LYBT.Models.Doctors;
-using LYBT.Models.FormulaTemplates;
+using LYBT.Models.Formula;
 using LYBT.Models.Herbs;
 using LYBT.Models.MedicalCase;
 using LYBT.Models.Patients;
 using LYBT.Models.Pharmacy;
 using LYBT.Models.Prescriptions;
 using LYBT.Models.Queueing;
-using LYBT.Models.Records;
 using LYBT.Models.Registration;
-using LYBT.Models.Sync;
 using LYBT.Models.TreatmentPlan;
 using LYBT.Models.TreatmentRoom;
 using LYBT.Models.Users;
@@ -59,8 +56,8 @@ namespace LYBT.Infrastructure.Data {
         // 治疗方案
         public DbSet<TreatmentPlanModel> TreatmentPlans { get; set; }
 
-        // 诊断治疗（保留兼容）
-        public DbSet<DiagnosisTreatmentModel> DiagnosisTreatments { get; set; }
+        // 诊断治疗（已删除，使用Consultation替代）
+        // public DbSet<DiagnosisTreatmentModel> DiagnosisTreatments { get; set; }
 
         // 处方管理
         public DbSet<PrescriptionModel> Prescriptions { get; set; }
@@ -70,30 +67,31 @@ namespace LYBT.Infrastructure.Data {
         // 药材管理
         public DbSet<HerbModel> Herbs { get; set; }
 
-        // 经验方模板
-        public DbSet<FormulaTemplateModel> FormulaTemplates { get; set; }
+        // 验方管理
+        public DbSet<FormulaModel> Formulas { get; set; }
 
         // 药房管理
         public DbSet<PharmacyModel> Pharmacies { get; set; }
 
         public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; }
 
-        // 计费管理
-        public DbSet<BillingModel> Billings { get; set; }
+        // 收银管理
+        public DbSet<CashierRecord> CashierRecords { get; set; }
+        public DbSet<CashierItem> CashierItems { get; set; }
+        public DbSet<CashierPayment> CashierPayments { get; set; }
+        public DbSet<DailySettlement> DailySettlements { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
 
-        public DbSet<BillingItemModel> BillingItems { get; set; }
-
-        // 病历管理
-        public DbSet<RecordModel> Records { get; set; }
+        // 病历管理（已删除，使用MedicalCase和Consultation替代）
+        // public DbSet<RecordModel> Records { get; set; }
 
         // 治疗室管理
         public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; }
         public DbSet<TreatmentTaskModel> TreatmentTasks { get; set; }
 
-        // 同步管理
-        public DbSet<SyncTaskModel> SyncTasks { get; set; }
-
-        public DbSet<SyncLogModel> SyncLogs { get; set; }
+        // 同步管理（MVP阶段暂不需要）
+        // public DbSet<SyncTaskModel> SyncTasks { get; set; }
+        // public DbSet<SyncLogModel> SyncLogs { get; set; }
 
         // ==================== 日志相关实体 ====================
 
@@ -162,17 +160,17 @@ namespace LYBT.Infrastructure.Data {
             ConfigureMedicalCases(modelBuilder);
             ConfigureConsultations(modelBuilder);
             ConfigureTreatmentPlans(modelBuilder);
-            ConfigureDiagnosisTreatments(modelBuilder);
+            // ConfigureDiagnosisTreatments(modelBuilder); // 已删除，使用Consultation替代
             ConfigurePrescriptions(modelBuilder);
             ConfigureHerbs(modelBuilder);
-            ConfigureFormulaTemplates(modelBuilder);
+            ConfigureFormulas(modelBuilder);
             ConfigurePharmacies(modelBuilder);
             ConfigurePharmacyHerbs(modelBuilder);
-            ConfigureBillings(modelBuilder);
-            ConfigureRecords(modelBuilder);
+            ConfigureCashiers(modelBuilder);
+            // ConfigureRecords(modelBuilder); // 已删除，使用MedicalCase替代
             ConfigureTreatmentRooms(modelBuilder);
             ConfigureTreatmentTasks(modelBuilder);
-            ConfigureSyncs(modelBuilder);
+            // ConfigureSyncs(modelBuilder); // MVP阶段暂不需要
             ConfigureLogModels(modelBuilder);
             ConfigureConfigurationModels(modelBuilder);
         }
@@ -331,17 +329,7 @@ namespace LYBT.Infrastructure.Data {
             entity.HasIndex(t => t.ConsultationId);
         }
 
-        private static void ConfigureDiagnosisTreatments(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<DiagnosisTreatmentModel>();
-            entity.ToTable("DiagnosisTreatments");
-            entity.HasKey(d => d.Id);
-
-            entity.OwnsOne(d => d.Formula, f => {
-                f.OwnsMany(x => x.Herbs);
-            });
-
-            entity.OwnsMany(d => d.Treatments);
-        }
+        // DiagnosisTreatments已删除，使用Consultation替代
 
         private static void ConfigurePrescriptions(ModelBuilder modelBuilder) {
             var prescriptionEntity = modelBuilder.Entity<PrescriptionModel>();
@@ -370,9 +358,9 @@ namespace LYBT.Infrastructure.Data {
             entity.HasIndex(h => h.PinYinCode);
         }
 
-        private static void ConfigureFormulaTemplates(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<FormulaTemplateModel>();
-            entity.ToTable("FormulaTemplates");
+        private static void ConfigureFormulas(ModelBuilder modelBuilder) {
+            var entity = modelBuilder.Entity<FormulaModel>();
+            entity.ToTable("Formulas");
             entity.HasKey(f => f.Id);
             entity.Property(f => f.Name).HasMaxLength(200);
 
@@ -405,56 +393,44 @@ namespace LYBT.Infrastructure.Data {
                   .HasForeignKey(ph => ph.HerbId);
         }
 
-        private static void ConfigureBillings(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<BillingModel>();
-            entity.ToTable("Billings");
-            entity.HasKey(b => b.Id);
-            entity.HasMany(b => b.Items).WithOne().HasForeignKey(i => i.BillingId);
-
-            // 配置 BillingItemModel 实体
-            var itemEntity = modelBuilder.Entity<BillingItemModel>();
-            itemEntity.ToTable("BillingItems");
-            itemEntity.HasKey(i => i.ItemId);
-            itemEntity.Property(i => i.ItemName).HasMaxLength(200).IsRequired();
-            itemEntity.Property(i => i.UnitPrice).HasColumnType("decimal(18,2)");
-            itemEntity.Property(i => i.Quantity).HasColumnType("decimal(18,2)");
+        private static void ConfigureCashiers(ModelBuilder modelBuilder) {
+            // CashierRecord 配置
+            var cashierEntity = modelBuilder.Entity<CashierRecord>();
+            cashierEntity.ToTable("CashierRecords");
+            cashierEntity.HasKey(c => c.Id);
+            cashierEntity.Property(c => c.TotalAmount).HasColumnType("decimal(18,2)");
+            cashierEntity.Property(c => c.PaidAmount).HasColumnType("decimal(18,2)");
+            cashierEntity.Property(c => c.RefundAmount).HasColumnType("decimal(18,2)");
+            
+            // CashierItem 配置
+            var itemEntity = modelBuilder.Entity<CashierItem>();
+            itemEntity.ToTable("CashierItems");
+            itemEntity.HasKey(ci => ci.Id);
+            itemEntity.Property(ci => ci.UnitPrice).HasColumnType("decimal(18,2)");
+            itemEntity.Property(ci => ci.Amount).HasColumnType("decimal(18,2)");
+            
+            // CashierPayment 配置
+            var paymentEntity = modelBuilder.Entity<CashierPayment>();
+            paymentEntity.ToTable("CashierPayments");
+            paymentEntity.HasKey(cp => cp.Id);
+            paymentEntity.Property(cp => cp.Amount).HasColumnType("decimal(18,2)");
+            
+            // DailySettlement 配置
+            var settlementEntity = modelBuilder.Entity<DailySettlement>();
+            settlementEntity.ToTable("DailySettlements");
+            settlementEntity.HasKey(ds => ds.Id);
+            settlementEntity.Property(ds => ds.TotalAmount).HasColumnType("decimal(18,2)");
+            settlementEntity.Property(ds => ds.RefundAmount).HasColumnType("decimal(18,2)");
+            settlementEntity.Property(ds => ds.NetAmount).HasColumnType("decimal(18,2)");
+            
+            // Invoice 配置
+            var invoiceEntity = modelBuilder.Entity<Invoice>();
+            invoiceEntity.ToTable("Invoices");
+            invoiceEntity.HasKey(i => i.Id);
+            invoiceEntity.Property(i => i.TotalAmount).HasColumnType("decimal(18,2)");
         }
 
-        private static void ConfigureRecords(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<RecordModel>();
-            entity.ToTable("Records");
-            entity.HasKey(r => r.Id);
-            var stringListConverter = new ValueConverter<List<string>, string>(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => string.IsNullOrWhiteSpace(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions()) ?? new List<string>());
-
-            var stringListComparer = new ValueComparer<List<string>>(
-                (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
-                c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v != null ? v.GetHashCode() : 0)),
-                c => c == null ? new List<string>() : c.ToList());
-            var diagnosisProperty = entity.Property(r => r.DiagnosisResults)
-                  .HasConversion(stringListConverter)
-                  .HasColumnType("nvarchar(max)");
-            diagnosisProperty.Metadata.SetValueComparer(stringListComparer);
-            var sharedProperty = entity.Property(r => r.SharedToDoctorIds)
-                  .HasConversion(stringListConverter)
-                  .HasColumnType("nvarchar(max)");
-            sharedProperty.Metadata.SetValueComparer(stringListComparer);
-
-            entity.OwnsMany(r => r.HerbalFormula, b => {
-                b.ToTable("RecordHerbalFormulas");
-                b.WithOwner().HasForeignKey("RecordId");
-                b.Property<Guid>("Id");
-                b.HasKey("Id");
-            });
-
-            entity.OwnsMany(r => r.TreatmentPlans, b => {
-                b.ToTable("RecordTreatmentPlans");
-                b.WithOwner().HasForeignKey("RecordId");
-                b.Property<Guid>("Id");
-                b.HasKey("Id");
-            });
-        }
+        // Records已删除，使用MedicalCase和Consultation替代
 
         private static void ConfigureTreatmentRooms(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<TreatmentRoomModel>();
@@ -468,17 +444,7 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(t => t.Id);
         }
 
-        private static void ConfigureSyncs(ModelBuilder modelBuilder) {
-            // 配置同步任务
-            var syncTaskEntity = modelBuilder.Entity<SyncTaskModel>();
-            syncTaskEntity.ToTable("SyncTasks");
-            syncTaskEntity.HasKey(s => s.Id);
-
-            // 配置同步日志
-            var syncLogEntity = modelBuilder.Entity<SyncLogModel>();
-            syncLogEntity.ToTable("SyncLogs");
-            syncLogEntity.HasKey(s => s.Id);
-        }
+        // Sync模块MVP阶段暂不需要
 
         /// <summary>
         /// 配置日志相关实体

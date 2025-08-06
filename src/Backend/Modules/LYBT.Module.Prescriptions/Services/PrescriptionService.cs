@@ -1,3 +1,6 @@
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
@@ -11,7 +14,7 @@ using System.Text.Json;
 namespace LYBT.Module.Prescriptions.Services {
 
     /// <summary>
-    /// 处方业务逻辑实现
+    /// 处方业务逻辑实现（现场开处方模式）
     /// </summary>
     public class PrescriptionService : IPrescriptionService {
         private readonly IPrescriptionRepository _repository;
@@ -160,12 +163,8 @@ namespace LYBT.Module.Prescriptions.Services {
         }
 
         /// <summary>
-        /// 执行CancelAsync操作。
+        /// 作废处方
         /// </summary>
-        /// <param name="id">参数id</param>
-        /// <param name="operatorId">参数operatorId</param>
-        /// <param name="operatorName">参数operatorName</param>
-        /// <returns>返回值</returns>
         public async Task<bool> CancelAsync(string id, Guid operatorId, string operatorName) {
             if (!Guid.TryParse(id, out var gid))
                 return false;
@@ -185,5 +184,172 @@ namespace LYBT.Module.Prescriptions.Services {
             });
             return success;
         }
+
+        #region 现场开处方功能
+
+        /// <summary>
+        /// 获取患者历史处方
+        /// </summary>
+        public async Task<List<PrescriptionDto>> GetPatientHistoryAsync(Guid patientId, int limit = 10) {
+            var allPrescriptions = await _repository.GetListAsync();
+            var patientPrescriptions = allPrescriptions
+                .Where(p => p.PatientId == patientId && p.Status != PrescriptionStatus.Cancelled)
+                .OrderByDescending(p => p.CreateTime)
+                .Take(limit)
+                .ToList();
+            return _mapper.Map<List<PrescriptionDto>>(patientPrescriptions);
+        }
+
+        /// <summary>
+        /// 获取医生今日处方
+        /// </summary>
+        public async Task<List<PrescriptionDto>> GetDoctorTodayPrescriptionsAsync(Guid doctorId) {
+            var today = DateTime.Today;
+            var allPrescriptions = await _repository.GetListAsync();
+            var todayPrescriptions = allPrescriptions
+                .Where(p => p.DoctorId == doctorId && p.CreateTime.Date == today)
+                .OrderByDescending(p => p.CreateTime)
+                .ToList();
+            return _mapper.Map<List<PrescriptionDto>>(todayPrescriptions);
+        }
+
+        /// <summary>
+        /// 复制上次处方
+        /// </summary>
+        public async Task<PrescriptionDto?> CopyLastPrescriptionAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
+            var lastPrescription = await GetPatientHistoryAsync(patientId, 1);
+            if (!lastPrescription.Any()) {
+                return null;
+            }
+
+            var lastOne = lastPrescription.First();
+            var copyDto = new PrescriptionCreateDto {
+                PatientId = patientId,
+                DoctorId = doctorId,
+                Diagnosis = lastOne.Diagnosis,
+                DosageCount = lastOne.DosageCount,
+                Advice = lastOne.Advice,
+                Items = lastOne.Items.Select(item => new PrescriptionItemCreateDto {
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName,
+                    Quantity = item.Quantity,
+                    Unit = item.Unit,
+                    UnitPrice = item.UnitPrice,
+                    Remark = item.Remark
+                }).ToList()
+            };
+
+            return await CreateAsync(copyDto, operatorId, operatorName);
+        }
+
+        /// <summary>
+        /// 从验方模板创建处方
+        /// </summary>
+        public async Task<PrescriptionDto?> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
+            // TODO: 从 FormulaTemplate 模块获取模板数据
+            // 这里简化实现，返回 null 表示功能暂未实现
+            await Task.CompletedTask;
+            return null;
+        }
+
+        /// <summary>
+        /// 快速保存处方（草稿状态）
+        /// </summary>
+        public async Task<bool> QuickSaveAsync(Guid prescriptionId, QuickPrescriptionDto dto, Guid operatorId, string operatorName) {
+            var prescription = await _repository.GetByIdAsync(prescriptionId);
+            if (prescription == null) {
+                return false;
+            }
+
+            prescription.Diagnosis = dto.Diagnosis;
+            prescription.Advice = dto.Advice;
+            prescription.Status = PrescriptionStatus.Draft; // 草稿状态
+            prescription.UpdateTime = DateTime.Now;
+
+            var success = await _repository.UpdateAsync(prescription);
+            if (success) {
+                await _logService.CreateLogAsync(new LogCreateDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Prescription,
+                    ObjectId = prescriptionId,
+                    ActionType = ActionType.Edit,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    Content = "快速保存处方"
+                });
+            }
+
+            return success;
+        }
+
+        /// <summary>
+        /// 提交处方（从草稿变为有效）
+        /// </summary>
+        public async Task<bool> SubmitPrescriptionAsync(Guid prescriptionId, Guid operatorId, string operatorName) {
+            var prescription = await _repository.GetByIdAsync(prescriptionId);
+            if (prescription == null || prescription.Status != PrescriptionStatus.Draft) {
+                return false;
+            }
+
+            // 验证处方完整性
+            if (string.IsNullOrEmpty(prescription.Diagnosis) || !prescription.Items.Any()) {
+                return false;
+            }
+
+            // 计算总价 - 字段已删除
+            // prescription.TotalPrice = prescription.Items.Sum(i => i.TotalPrice); // TotalPrice字段已删除
+            // prescription.TotalWeight = prescription.Items.Sum(i => i.TotalWeight); // TotalWeight字段已删除
+            prescription.SingleDosePrice = prescription.DosageCount > 0 ? 0m / prescription.DosageCount : 0;
+            prescription.Status = PrescriptionStatus.Draft;
+            prescription.UpdateTime = DateTime.Now;
+
+            var success = await _repository.UpdateAsync(prescription);
+            if (success) {
+                await _logService.CreateLogAsync(new LogCreateDto {
+                    LogType = LogType.Operation,
+                    ObjectType = ObjectType.Prescription,
+                    ObjectId = prescriptionId,
+                    ActionType = ActionType.Edit,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    Content = "提交处方"
+                });
+            }
+
+            return success;
+        }
+
+        /// <summary>
+        /// 获取处方统计
+        /// </summary>
+        public async Task<PrescriptionStatisticsDto> GetStatisticsAsync(Guid? doctorId = null, DateTime? startDate = null, DateTime? endDate = null) {
+            var allPrescriptions = await _repository.GetListAsync();
+            
+            // 按条件筛选
+            var filtered = allPrescriptions.AsQueryable();
+            if (doctorId.HasValue) {
+                filtered = filtered.Where(p => p.DoctorId == doctorId.Value);
+            }
+            if (startDate.HasValue) {
+                filtered = filtered.Where(p => p.CreateTime >= startDate.Value);
+            }
+            if (endDate.HasValue) {
+                filtered = filtered.Where(p => p.CreateTime <= endDate.Value);
+            }
+
+            var prescriptions = filtered.ToList();
+            
+            return new PrescriptionStatisticsDto {
+                TotalCount = prescriptions.Count,
+                DraftCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Draft),
+                PendingCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Draft),
+                CompletedCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Completed),
+                CancelledCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Cancelled),
+                TotalAmount = prescriptions.Sum(p => (0m) /* p.TotalPrice 已删除 */ ),
+                AverageAmount = prescriptions.Any() ? prescriptions.Average(p => (0m) /* p.TotalPrice 已删除 */ ) : 0
+            };
+        }
+
+        #endregion
     }
 }

@@ -1,7 +1,10 @@
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 using LYBT.Shared.Models.Contracts.FormulaTemplates;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Models.Prescriptions;
-using LYBT.Module.FormulaTemplates.Interfaces;
+// using LYBT.Module.FormulaTemplates.Interfaces; // FormulaTemplates已重命名为Formula
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
 
@@ -11,13 +14,13 @@ namespace LYBT.Module.Prescriptions.Services {
     /// 智能处方服务 - 处理验方组合、重复药材检测、缺药提醒等功能
     /// </summary>
     public class IntelligentPrescriptionService : IIntelligentPrescriptionService {
-        private readonly IFormulaTemplateService _formulaTemplateService;
+        // private readonly IFormulaTemplateService _formulaTemplateService; // 暂时注释，等待Formula模块重构
         private readonly IHerbService _herbService;
 
         public IntelligentPrescriptionService(
-            IFormulaTemplateService formulaTemplateService,
+            // IFormulaTemplateService formulaTemplateService,
             IHerbService herbService) {
-            _formulaTemplateService = formulaTemplateService;
+            // _formulaTemplateService = formulaTemplateService;
             _herbService = herbService;
         }
 
@@ -31,15 +34,15 @@ namespace LYBT.Module.Prescriptions.Services {
             var formulaNames = new List<string>();
             var duplicateWarnings = new List<string>();
 
-            // 1. 获取所有验方模板
+            // 1. 获取所有验方模板 - 暂时禁用，等待Formula模块重构
             var formulaTemplates = new List<FormulaTemplateDetailDto>();
-            foreach (var templateId in formulaTemplateIds) {
-                var template = await _formulaTemplateService.GetByIdAsync(templateId);
-                if (template != null) {
-                    formulaTemplates.Add(template);
-                    formulaNames.Add(template.Name);
-                }
-            }
+            // foreach (var templateId in formulaTemplateIds) {
+            //     var template = await _formulaTemplateService.GetByIdAsync(templateId);
+            //     if (template != null) {
+            //         formulaTemplates.Add(template);
+            //         formulaNames.Add(template.Name);
+            //     }
+            // }
 
             // 2. 处理每个验方模板的药材
             foreach (var template in formulaTemplates) {
@@ -201,15 +204,15 @@ namespace LYBT.Module.Prescriptions.Services {
             string diagnosis, List<string> symptoms, Guid? doctorId = null) {
             var result = new PrescriptionSuggestionResult();
 
-            // 根据医生权限获取可见的验方模板
-            List<FormulaTemplateDetailDto> allFormulas;
-            if (doctorId.HasValue) {
-                // 获取该医生可见的验方（包括共享验方和自己创建的验方）
-                allFormulas = await _formulaTemplateService.GetVisibleFormulasForDoctorAsync(doctorId.Value);
-            } else {
-                // 获取所有活动状态的验方模板（管理员权限）
-                allFormulas = await _formulaTemplateService.GetAllActiveFormulasAsync();
-            }
+            // 根据医生权限获取可见的验方模板 - 暂时禁用，等待Formula模块重构
+            List<FormulaTemplateDetailDto> allFormulas = new List<FormulaTemplateDetailDto>();
+            // if (doctorId.HasValue) {
+            //     // 获取该医生可见的验方（包括共享验方和自己创建的验方）
+            //     allFormulas = await _formulaTemplateService.GetVisibleFormulasForDoctorAsync(doctorId.Value);
+            // } else {
+            //     // 获取所有活动状态的验方模板（管理员权限）
+            //     allFormulas = await _formulaTemplateService.GetAllActiveFormulasAsync();
+            // }
 
             foreach (var formula in allFormulas) {
                 // 基于验方名称和备注进行关键词匹配

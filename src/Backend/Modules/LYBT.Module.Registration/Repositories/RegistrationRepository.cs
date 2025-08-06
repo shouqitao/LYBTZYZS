@@ -97,5 +97,19 @@ namespace LYBT.Module.Registration.Repositories {
             _context.Registrations.Update(model);
             return await _context.SaveChangesAsync() > 0;
         }
+    
+        public async Task<List<RegistrationModel>> GetTodayRegistrationsAsync(Guid? doctorId)
+        {
+            var today = DateTime.Today;
+            var query = _context.Registrations.Where(r => r.RegistrationTime.Date == today);
+            
+            if (doctorId.HasValue)
+            {
+                query = query.Where(r => r.DoctorId == doctorId.Value);
+            }
+            
+            return await query.ToListAsync();
+        }
+
     }
 }

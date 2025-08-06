@@ -63,5 +63,74 @@ namespace LYBT.Module.Herbs.Interfaces {
         /// 导出药材数据
         /// </summary>
         Task<List<HerbDetailDto>> ExportAsync();
+
+        // ==================== 库存管理功能 ====================
+
+        /// <summary>
+        /// 获取库存预警药材列表（库存量低于预警值的药材）
+        /// </summary>
+        Task<List<HerbStockWarningDto>> GetStockWarningListAsync();
+
+        /// <summary>
+        /// 获取库存统计信息
+        /// </summary>
+        Task<HerbStockStatisticsDto> GetStockStatisticsAsync();
+
+        /// <summary>
+        /// 更新药材库存量（用于Pharmacy模块调用）
+        /// </summary>
+        Task<bool> UpdateStockAsync(Guid id, decimal quantity, bool isIncrease);
+
+        /// <summary>
+        /// 批量更新库存量（用于盘点）
+        /// </summary>
+        Task<int> BatchUpdateStockAsync(List<HerbStockUpdateDto> updates);
+
+        /// <summary>
+        /// 设置库存预警值
+        /// </summary>
+        Task<bool> SetStockWarningLevelAsync(Guid id, decimal warningLevel, decimal maxStock);
+
+        /// <summary>
+        /// 获取即将过期的药材（30天内）
+        /// </summary>
+        Task<List<HerbExpiryWarningDto>> GetExpiryWarningListAsync(int days = 30);
+
+        // ==================== 价格管理功能 ====================
+
+        /// <summary>
+        /// 更新药材价格（包括成本价、零售价、会员价）
+        /// </summary>
+        Task<bool> UpdatePriceAsync(HerbPriceUpdateDto dto);
+
+        /// <summary>
+        /// 批量更新价格
+        /// </summary>
+        Task<int> BatchUpdatePriceAsync(List<HerbPriceUpdateDto> updates);
+
+        /// <summary>
+        /// 设置特价促销
+        /// </summary>
+        Task<bool> SetSpecialPriceAsync(Guid id, decimal specialPrice, DateTime startTime, DateTime endTime);
+
+        /// <summary>
+        /// 取消特价促销
+        /// </summary>
+        Task<bool> CancelSpecialPriceAsync(Guid id);
+
+        /// <summary>
+        /// 获取当前特价药材列表
+        /// </summary>
+        Task<List<HerbDto>> GetSpecialPriceHerbsAsync();
+
+        /// <summary>
+        /// 获取价格历史记录
+        /// </summary>
+        Task<List<HerbPriceHistoryDto>> GetPriceHistoryAsync(Guid id);
+
+        /// <summary>
+        /// 按价格区间查询药材
+        /// </summary>
+        Task<List<HerbDto>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice);
     }
 }

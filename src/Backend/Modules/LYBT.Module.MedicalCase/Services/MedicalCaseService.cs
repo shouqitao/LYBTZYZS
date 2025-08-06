@@ -1,3 +1,6 @@
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using LYBT.Module.MedicalCase.Interfaces;
@@ -121,7 +124,7 @@ namespace LYBT.Module.MedicalCase.Services
                 var model = _mapper.Map<MedicalCaseModel>(dto);
                 model.Id = Guid.NewGuid();
                 model.CreateTime = DateTime.Now;
-                model.Status = MedicalCaseStatus.Registered;
+                model.Status = LYBT.Models.MedicalCase.MedicalCaseStatus.Registered;
                 model.IsActive = true;
 
                 var created = await _repository.CreateAsync(model);
@@ -184,7 +187,7 @@ namespace LYBT.Module.MedicalCase.Services
                 model.Status = status;
                 model.UpdateTime = DateTime.Now;
 
-                if (status == MedicalCaseStatus.Completed)
+                if (status == LYBT.Models.MedicalCase.MedicalCaseStatus.Completed)
                 {
                     model.CompleteTime = DateTime.Now;
                 }
@@ -281,7 +284,8 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         public async Task<bool> CompleteCaseAsync(Guid id)
         {
-            return await UpdateStatusAsync(id, MedicalCaseStatus.Completed);
+            return await UpdateStatusAsync(id, LYBT.Models.MedicalCase.MedicalCaseStatus.Completed);
         }
     }
+}
 }

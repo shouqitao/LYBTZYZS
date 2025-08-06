@@ -1,3 +1,6 @@
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Enums;
@@ -22,6 +25,7 @@ namespace LYBT.Module.Auth.Services {
         private readonly SysAdminHandler _sysAdminHandler;
         private readonly AuthOptions _authOptions;
         private readonly ILogger<AuthService> _logger;
+        private readonly ILoginAttemptService _loginAttemptService;
 
         public AuthService(
             IAuthRepository authRepository,
@@ -29,13 +33,15 @@ namespace LYBT.Module.Auth.Services {
             IUnifiedLogService logService,
             SysAdminHandler sysAdminHandler,
             IOptions<AuthOptions> authOptions,
-            ILogger<AuthService> logger) {
+            ILogger<AuthService> logger,
+            ILoginAttemptService loginAttemptService) {
             _authRepository = authRepository;
             _mapper = mapper;
             _logService = logService;
             _sysAdminHandler = sysAdminHandler;
             _authOptions = authOptions.Value;
             _logger = logger;
+            _loginAttemptService = loginAttemptService;
         }
 
         /// <summary>
@@ -43,35 +49,46 @@ namespace LYBT.Module.Auth.Services {
         /// </summary>
         public async Task<UserDto?> LoginAsync(LoginRequestDto dto) {
             try {
-                // 1. 验证登录类型
+                // 1. 检查账户是否被锁定（防暴力破解）
+                if (_loginAttemptService.IsAccountLocked(dto.Username)) {
+                    var remainingSeconds = _loginAttemptService.GetRemainingLockTime(dto.Username);
+                    var remainingMinutes = Math.Ceiling(remainingSeconds / 60.0);
+                    await LogFailedLogin(Guid.Empty, dto.Username, $"账户已被锁定，请{remainingMinutes}分钟后再试", dto);
+                    return null;
+                }
+
+                // 2. 验证登录类型
                 var loginTypeValidation = ValidateLoginType(dto);
                 if (!loginTypeValidation.IsValid) {
                     await LogFailedLogin(Guid.Empty, dto.Username, loginTypeValidation.ErrorMessage, dto);
                     return null;
                 }
 
-                // 2. 获取用户信息
+                // 3. 获取用户信息
                 var user = await GetUserForAuthentication(dto.Username);
                 if (user == null) {
+                    _loginAttemptService.RecordFailedAttempt(dto.Username);
                     await LogFailedLogin(Guid.Empty, dto.Username, "用户不存在或未启用", dto);
                     return null;
                 }
 
-                // 3. 检查账户锁定状态
+                // 4. 检查账户状态
                 var lockoutCheck = CheckAccountLockout(user);
                 if (lockoutCheck.IsLocked) {
                     await LogFailedLogin(user.Id, user.RealName, lockoutCheck.ErrorMessage, dto);
                     return null;
                 }
 
-                // 4. 验证密码
+                // 5. 验证密码
                 var passwordValidation = await ValidatePasswordAsync(user, dto.Password);
                 if (!passwordValidation.IsValid) {
+                    _loginAttemptService.RecordFailedAttempt(dto.Username);
                     await HandleFailedLoginAsync(user, dto, passwordValidation.ErrorMessage);
                     return null;
                 }
 
-                // 5. 处理登录成功
+                // 6. 登录成功，清除失败尝试记录
+                _loginAttemptService.ClearAttempts(dto.Username);
                 return await HandleSuccessfulLoginAsync(user, dto);
             } catch (Exception ex) {
                 await LogLoginException(dto.Username, ex, dto);

@@ -18,6 +18,10 @@ namespace LYBT.Shared.Models.Enums {
 
         /// <summary>就诊中 - 患者正在就诊</summary>
         [Description("就诊中")]
+        InProgress = 2,
+        
+        /// <summary>同InProgress的别名，保持兼容</summary>
+        [Description("就诊中")]
         InService = 2,
 
         /// <summary>已完成 - 就诊已完成</summary>
@@ -27,6 +31,10 @@ namespace LYBT.Shared.Models.Enums {
         /// <summary>已跳过 - 患者未到跳过</summary>
         [Description("已跳过")]
         Skipped = 4,
+        
+        /// <summary>过号 - 叫号时患者未到</summary>
+        [Description("过号")]
+        Missed = 4,
 
         /// <summary>已取消 - 排队被取消</summary>
         [Description("已取消")]

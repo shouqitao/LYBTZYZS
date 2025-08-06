@@ -43,5 +43,10 @@ namespace LYBT.Module.Registration.Interfaces {
         /// 取消挂号，更新状态为已取消
         /// </summary>
         Task<bool> CancelAsync(Guid id);
+
+        /// <summary>
+        /// 获取今日挂号列表
+        /// </summary>
+        Task<List<RegistrationModel>> GetTodayRegistrationsAsync(Guid? doctorId = null);
     }
 }

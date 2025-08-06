@@ -1,447 +1,327 @@
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Cashier.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Cashier;
 using LYBT.Models.Cashier;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace LYBT.Module.Cashier.Services
 {
     /// <summary>
-    /// 收银服务实现（替代BillingService）
+    /// 收银服务实现 - 核心业务方法
     /// </summary>
-    public class CashierService : ICashierService
+    public partial class CashierService : ICashierService
     {
-        private readonly ICashierRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<CashierService> _logger;
-
-        public CashierService(
-            ICashierRepository repository,
-            IMapper mapper,
-            ILogger<CashierService> logger)
+        public async Task<CashierRecordDetailDto?> CreateAsync(CashierRecordCreateDto dto, Guid operatorId, string operatorName)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 获取收费记录列表
-        /// </summary>
-        public async Task<List<CashierDto>> GetListAsync()
-        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var models = await _repository.GetListAsync();
-                return _mapper.Map<List<CashierDto>>(models);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取收费记录列表失败");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 分页获取收费记录列表
-        /// </summary>
-        public async Task<PaginatedResult<CashierDto>> GetPagedAsync(PaginationRequest request)
-        {
-            try
-            {
-                var models = await _repository.GetListAsync();
-                var dtos = _mapper.Map<List<CashierDto>>(models);
-
-                // 搜索过滤
-                if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+                // 创建收银记录
+                var cashierRecord = new CashierRecord
                 {
-                    dtos = dtos.Where(x =>
-                        x.PatientName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        x.InvoiceNumber.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase)
-                    ).ToList();
-                }
-
-                // 排序
-                dtos = request.SortBy?.ToLower() switch
-                {
-                    "patientname" => request.SortDesc ? dtos.OrderByDescending(x => x.PatientName).ToList() : dtos.OrderBy(x => x.PatientName).ToList(),
-                    "totalamount" => request.SortDesc ? dtos.OrderByDescending(x => x.TotalAmount).ToList() : dtos.OrderBy(x => x.TotalAmount).ToList(),
-                    "paymenttime" => request.SortDesc ? dtos.OrderByDescending(x => x.PaymentTime).ToList() : dtos.OrderBy(x => x.PaymentTime).ToList(),
-                    _ => dtos.OrderByDescending(x => x.CreateTime).ToList()
+                    Id = Guid.NewGuid(),
+                    MedicalCaseId = dto.MedicalCaseId,
+                    PatientId = dto.PatientId,
+                    CashierId = operatorId,
+                    TotalAmount = dto.Items.Sum(i => i.UnitPrice * i.Quantity),
+                    PaidAmount = dto.Payments.Sum(p => p.Amount),
+                    ChangeAmount = dto.Payments.Sum(p => p.Amount) - dto.Items.Sum(i => i.UnitPrice * i.Quantity),
+                    PaymentMethod = dto.Payments.Count == 1 ? dto.Payments[0].PaymentMethod : "混合支付",
+                    Status = "已支付",
+                    CreateTime = DateTime.Now,
+                    InvoiceNumber = dto.PrintInvoice ? GenerateInvoiceNumber() : null,
+                    Remark = dto.Remark
                 };
 
-                // 分页
-                var total = dtos.Count;
-                var items = dtos
-                    .Skip((request.PageNumber - 1) * request.PageSize)
-                    .Take(request.PageSize)
-                    .ToList();
+                _context.CashierRecords.Add(cashierRecord);
 
-                return new PaginatedResult<CashierDto>
+                // 添加收银项目
+                foreach (var itemDto in dto.Items)
                 {
-                    Items = items,
-                    TotalCount = total,
-                    PageNumber = request.PageNumber,
-                    PageSize = request.PageSize
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "分页获取收费记录列表失败");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 获取收费详情
-        /// </summary>
-        public async Task<CashierDetailDto?> GetByIdAsync(Guid id)
-        {
-            try
-            {
-                var model = await _repository.GetByIdAsync(id);
-                return model == null ? null : _mapper.Map<CashierDetailDto>(model);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取收费详情失败，ID: {Id}", id);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 创建收费记录
-        /// </summary>
-        public async Task<CashierDetailDto> CreateAsync(CashierCreateDto dto)
-        {
-            try
-            {
-                var model = _mapper.Map<CashierModel>(dto);
-                model.Id = Guid.NewGuid();
-                model.InvoiceNumber = GenerateInvoiceNumber();
-                model.CreateTime = DateTime.Now;
-                model.PaymentStatus = PaymentStatus.Unpaid;
-                model.IsActive = true;
-
-                var created = await _repository.CreateAsync(model);
-                return _mapper.Map<CashierDetailDto>(created);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建收费记录失败");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 更新收费记录
-        /// </summary>
-        public async Task<bool> UpdateAsync(Guid id, CashierUpdateDto dto)
-        {
-            try
-            {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                {
-                    _logger.LogWarning("收费记录不存在，ID: {Id}", id);
-                    return false;
-                }
-
-                // 更新字段
-                if (dto.DiscountAmount.HasValue)
-                    model.DiscountAmount = dto.DiscountAmount.Value;
-                if (!string.IsNullOrWhiteSpace(dto.Remark))
-                    model.Remark = dto.Remark;
-
-                model.UpdateTime = DateTime.Now;
-                model.ActualAmount = model.TotalAmount - model.DiscountAmount;
-
-                return await _repository.UpdateAsync(model);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新收费记录失败，ID: {Id}", id);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 作废收费记录
-        /// </summary>
-        public async Task<bool> VoidAsync(Guid id, string reason)
-        {
-            try
-            {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                {
-                    _logger.LogWarning("收费记录不存在，ID: {Id}", id);
-                    return false;
-                }
-
-                model.PaymentStatus = PaymentStatus.Voided;
-                model.Remark = $"作废原因: {reason}";
-                model.UpdateTime = DateTime.Now;
-
-                return await _repository.UpdateAsync(model);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "作废收费记录失败，ID: {Id}", id);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 根据医疗案例ID获取收费记录
-        /// </summary>
-        public async Task<CashierDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
-        {
-            try
-            {
-                var model = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
-                return model == null ? null : _mapper.Map<CashierDetailDto>(model);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据医疗案例ID获取收费记录失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 根据患者ID获取收费记录
-        /// </summary>
-        public async Task<List<CashierDto>> GetByPatientIdAsync(Guid patientId)
-        {
-            try
-            {
-                var models = await _repository.GetByPatientIdAsync(patientId);
-                return _mapper.Map<List<CashierDto>>(models);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据患者ID获取收费记录失败，PatientId: {PatientId}", patientId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 获取今日收费记录
-        /// </summary>
-        public async Task<List<CashierDto>> GetTodayBillsAsync()
-        {
-            try
-            {
-                var today = DateTime.Today;
-                var models = await _repository.GetByDateRangeAsync(today, today.AddDays(1));
-                return _mapper.Map<List<CashierDto>>(models);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取今日收费记录失败");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 获取日期范围内的收费记录
-        /// </summary>
-        public async Task<List<CashierDto>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
-        {
-            try
-            {
-                var models = await _repository.GetByDateRangeAsync(startDate, endDate);
-                return _mapper.Map<List<CashierDto>>(models);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取日期范围内的收费记录失败");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 计算收费金额
-        /// </summary>
-        public async Task<decimal> CalculateAmountAsync(Guid medicalCaseId)
-        {
-            try
-            {
-                // TODO: 从医疗案例中获取治疗方案，计算总金额
-                return await Task.FromResult(0m);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "计算收费金额失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 执行付款
-        /// </summary>
-        public async Task<PaymentResultDto> ProcessPaymentAsync(Guid id, PaymentDto payment)
-        {
-            try
-            {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                {
-                    return new PaymentResultDto
+                    var item = new CashierItem
                     {
-                        Success = false,
-                        Message = "收费记录不存在"
+                        Id = Guid.NewGuid(),
+                        CashierRecordId = cashierRecord.Id,
+                        ItemType = itemDto.ItemType,
+                        ItemName = itemDto.ItemName,
+                        UnitPrice = itemDto.UnitPrice,
+                        Quantity = itemDto.Quantity,
+                        Amount = itemDto.UnitPrice * itemDto.Quantity,
+                        SourceId = itemDto.SourceId,
+                        SourceType = itemDto.SourceType,
+                        Description = itemDto.Description
                     };
+                    _context.CashierItems.Add(item);
                 }
 
-                if (model.PaymentStatus == PaymentStatus.Paid)
+                // 添加支付记录
+                foreach (var paymentDto in dto.Payments)
                 {
-                    return new PaymentResultDto
+                    var payment = new CashierPayment
                     {
-                        Success = false,
-                        Message = "该账单已支付"
+                        Id = Guid.NewGuid(),
+                        CashierRecordId = cashierRecord.Id,
+                        PaymentMethod = paymentDto.PaymentMethod,
+                        Amount = paymentDto.Amount,
+                        TransactionId = paymentDto.TransactionId,
+                        PaymentAccount = paymentDto.PaymentAccount,
+                        PaymentTime = DateTime.Now,
+                        Status = "成功"
                     };
+                    _context.CashierPayments.Add(payment);
                 }
 
-                model.PaymentMethod = payment.PaymentMethod;
-                model.PaymentTime = DateTime.Now;
-                model.PaymentStatus = PaymentStatus.Paid;
-                model.UpdateTime = DateTime.Now;
+                await _context.SaveChangesAsync();
 
-                var result = await _repository.UpdateAsync(model);
-
-                if (result)
+                // 更新医疗案例状态为已缴费
+                var medicalCase = await _context.MedicalCases.FirstOrDefaultAsync(mc => mc.Id == dto.MedicalCaseId);
+                if (medicalCase != null)
                 {
-                    // TODO: 更新医疗案例状态
-
-                    return new PaymentResultDto
-                    {
-                        Success = true,
-                        Message = "支付成功",
-                        InvoiceNumber = model.InvoiceNumber,
-                        PaymentTime = model.PaymentTime.Value
-                    };
+                    medicalCase.Status = "Paid";
+                    await _context.SaveChangesAsync();
                 }
 
-                return new PaymentResultDto
+                // 如果需要打印发票
+                if (dto.PrintInvoice && !string.IsNullOrEmpty(cashierRecord.InvoiceNumber))
                 {
-                    Success = false,
-                    Message = "支付失败"
-                };
+                    await CreateInvoiceAsync(cashierRecord.Id, operatorId, operatorName);
+                }
+
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("创建收银记录成功 - 记录ID: {RecordId}, 患者ID: {PatientId}, 总金额: {TotalAmount}, 操作员: {Operator}",
+                    cashierRecord.Id, dto.PatientId, cashierRecord.TotalAmount, operatorName);
+
+                return await GetByIdAsync(cashierRecord.Id);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "执行付款失败，ID: {Id}", id);
+                await transaction.RollbackAsync();
                 throw;
             }
         }
 
-        /// <summary>
-        /// 打印收费单据
-        /// </summary>
-        public async Task<byte[]> PrintReceiptAsync(Guid id)
+        public async Task<bool> RefundAsync(RefundRequestDto dto, Guid operatorId, string operatorName)
         {
+            var cashierRecord = await _context.CashierRecords
+                .Include(cr => cr.Payments)
+                .FirstOrDefaultAsync(cr => cr.Id == dto.CashierRecordId);
+
+            if (cashierRecord == null)
+                return false;
+
+            if (cashierRecord.Status == "已退费" || cashierRecord.RefundAmount > 0)
+                throw new InvalidOperationException("该收银记录已经退费");
+
+            if (dto.RefundAmount > cashierRecord.PaidAmount)
+                throw new InvalidOperationException("退费金额不能超过实付金额");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // TODO: 实现打印逻辑
-                return await Task.FromResult(new byte[0]);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "打印收费单据失败，ID: {Id}", id);
-                throw;
-            }
-        }
+                // 更新收银记录
+                cashierRecord.Status = dto.RefundAmount >= cashierRecord.PaidAmount ? "已退费" : "部分退费";
+                cashierRecord.RefundAmount = dto.RefundAmount;
+                cashierRecord.RefundReason = dto.RefundReason;
+                cashierRecord.RefundTime = DateTime.Now;
+                cashierRecord.RefundOperator = operatorName;
+                cashierRecord.UpdateTime = DateTime.Now;
 
-        /// <summary>
-        /// 退费处理
-        /// </summary>
-        public async Task<RefundResultDto> ProcessRefundAsync(Guid id, RefundDto refund)
-        {
-            try
-            {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
+                // 更新支付记录状态
+                foreach (var payment in cashierRecord.Payments)
                 {
-                    return new RefundResultDto
-                    {
-                        Success = false,
-                        Message = "收费记录不存在"
-                    };
+                    payment.Status = "退款";
                 }
 
-                if (model.PaymentStatus != PaymentStatus.Paid)
-                {
-                    return new RefundResultDto
-                    {
-                        Success = false,
-                        Message = "该账单未支付，无法退费"
-                    };
-                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                model.PaymentStatus = PaymentStatus.Refunded;
-                model.RefundAmount = refund.RefundAmount;
-                model.RefundReason = refund.RefundReason;
-                model.RefundTime = DateTime.Now;
-                model.UpdateTime = DateTime.Now;
+                _logger.LogInformation("退费处理成功 - 记录ID: {RecordId}, 退费金额: {RefundAmount}, 操作员: {Operator}",
+                    dto.CashierRecordId, dto.RefundAmount, operatorName);
 
-                var result = await _repository.UpdateAsync(model);
-
-                return new RefundResultDto
-                {
-                    Success = result,
-                    Message = result ? "退费成功" : "退费失败",
-                    RefundAmount = refund.RefundAmount,
-                    RefundTime = model.RefundTime.Value
-                };
+                return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "退费处理失败，ID: {Id}", id);
+                await transaction.RollbackAsync();
                 throw;
             }
         }
 
-        /// <summary>
-        /// 获取收费统计
-        /// </summary>
-        public async Task<CashierStatisticsDto> GetStatisticsAsync(DateTime startDate, DateTime endDate)
+        public async Task<CashierRecordDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
-            try
-            {
-                var models = await _repository.GetByDateRangeAsync(startDate, endDate);
-                
-                var statistics = new CashierStatisticsDto
-                {
-                    StartDate = startDate,
-                    EndDate = endDate,
-                    TotalCount = models.Count,
-                    TotalAmount = models.Where(x => x.PaymentStatus == PaymentStatus.Paid).Sum(x => x.ActualAmount),
-                    CashAmount = models.Where(x => x.PaymentStatus == PaymentStatus.Paid && x.PaymentMethod == PaymentMethod.Cash).Sum(x => x.ActualAmount),
-                    AlipayAmount = models.Where(x => x.PaymentStatus == PaymentStatus.Paid && x.PaymentMethod == PaymentMethod.Alipay).Sum(x => x.ActualAmount),
-                    WeChatAmount = models.Where(x => x.PaymentStatus == PaymentStatus.Paid && x.PaymentMethod == PaymentMethod.WeChat).Sum(x => x.ActualAmount),
-                    BankCardAmount = models.Where(x => x.PaymentStatus == PaymentStatus.Paid && x.PaymentMethod == PaymentMethod.BankCard).Sum(x => x.ActualAmount),
-                    MedicalInsuranceAmount = models.Where(x => x.PaymentStatus == PaymentStatus.Paid && x.PaymentMethod == PaymentMethod.MedicalInsurance).Sum(x => x.ActualAmount),
-                    RefundAmount = models.Where(x => x.PaymentStatus == PaymentStatus.Refunded).Sum(x => x.RefundAmount ?? 0)
-                };
+            var cashierRecord = await _context.CashierRecords
+                .Include(cr => cr.Items)
+                .Include(cr => cr.Payments)
+                .FirstOrDefaultAsync(cr => cr.MedicalCaseId == medicalCaseId);
 
-                return statistics;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取收费统计失败");
-                throw;
-            }
+            if (cashierRecord == null)
+                return null;
+
+            return await GetByIdAsync(cashierRecord.Id);
         }
 
-        /// <summary>
-        /// 生成发票号
-        /// </summary>
+        public async Task<List<CashierRecordDto>> GetByPatientIdAsync(Guid patientId)
+        {
+            var cashierRecords = await _context.CashierRecords
+                .Include(cr => cr.Items)
+                .Include(cr => cr.Payments)
+                .Where(cr => cr.PatientId == patientId)
+                .OrderByDescending(cr => cr.CreateTime)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<CashierRecordDto>>(cashierRecords);
+
+            // 获取患者和收银员信息
+            var cashierIds = cashierRecords.Select(cr => cr.CashierId).Distinct().ToList();
+            var cashiers = await _context.Users
+                .Where(u => cashierIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u);
+
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == patientId);
+
+            foreach (var dto in dtos)
+            {
+                var record = cashierRecords.First(cr => cr.Id == dto.Id);
+                dto.PatientName = patient?.Name ?? "未知患者";
+                dto.CashierName = cashiers.GetValueOrDefault(record.CashierId)?.RealName ?? "未知收银员";
+            }
+
+            return dtos;
+        }
+
+        public async Task<List<CashierRecordDto>> GetByCashierIdAsync(Guid cashierId, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var queryable = _context.CashierRecords
+                .Include(cr => cr.Items)
+                .Include(cr => cr.Payments)
+                .Where(cr => cr.CashierId == cashierId);
+
+            if (startDate.HasValue)
+                queryable = queryable.Where(cr => cr.CreateTime >= startDate.Value);
+
+            if (endDate.HasValue)
+                queryable = queryable.Where(cr => cr.CreateTime <= endDate.Value);
+
+            var cashierRecords = await queryable
+                .OrderByDescending(cr => cr.CreateTime)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<CashierRecordDto>>(cashierRecords);
+
+            // 批量获取患者信息
+            var patientIds = cashierRecords.Select(cr => cr.PatientId).Distinct().ToList();
+            var patients = await _context.Patients
+                .Where(p => patientIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id, p => p);
+
+            var cashier = await _context.Users.FirstOrDefaultAsync(u => u.Id == cashierId);
+
+            foreach (var dto in dtos)
+            {
+                var record = cashierRecords.First(cr => cr.Id == dto.Id);
+                dto.PatientName = patients.GetValueOrDefault(record.PatientId)?.Name ?? "未知患者";
+                dto.CashierName = cashier?.RealName ?? "未知收银员";
+            }
+
+            return dtos;
+        }
+
+        public async Task<CashierStatisticsDto> GetStatisticsAsync(DateTime startDate, DateTime endDate, Guid? cashierId = null)
+        {
+            var queryable = _context.CashierRecords
+                .Include(cr => cr.Items)
+                .Include(cr => cr.Payments)
+                .Where(cr => cr.CreateTime >= startDate && cr.CreateTime <= endDate);
+
+            if (cashierId.HasValue)
+                queryable = queryable.Where(cr => cr.CashierId == cashierId.Value);
+
+            var records = await queryable.ToListAsync();
+
+            var statistics = new CashierStatisticsDto
+            {
+                StartDate = startDate,
+                EndDate = endDate,
+                TotalRecords = records.Count,
+                TotalAmount = records.Where(r => r.Status == "已支付" || r.Status == "部分退费").Sum(r => r.TotalAmount),
+                RefundAmount = records.Sum(r => r.RefundAmount),
+                NetAmount = records.Where(r => r.Status == "已支付" || r.Status == "部分退费").Sum(r => r.TotalAmount) - records.Sum(r => r.RefundAmount)
+            };
+
+            // 支付方式统计
+            statistics.PaymentMethodStats = records
+                .Where(r => r.Status == "已支付" || r.Status == "部分退费")
+                .GroupBy(r => r.PaymentMethod)
+                .ToDictionary(g => g.Key, g => g.Sum(r => r.PaidAmount));
+
+            // 项目类型统计
+            var allItems = records.SelectMany(r => r.Items).ToList();
+            statistics.ItemTypeStats = allItems
+                .GroupBy(i => i.ItemType)
+                .ToDictionary(g => g.Key, g => g.Sum(i => i.Amount));
+
+            // 日期统计
+            statistics.DailyStats = records
+                .Where(r => r.Status == "已支付" || r.Status == "部分退费")
+                .GroupBy(r => r.CreateTime.Date.ToString("yyyy-MM-dd"))
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            return statistics;
+        }
+
+        // 私有辅助方法
         private string GenerateInvoiceNumber()
         {
-            return $"INV{DateTime.Now:yyyyMMddHHmmss}{new Random().Next(1000, 9999)}";
+            return $"FP{DateTime.Now:yyyyMMddHHmmss}{new Random().Next(1000, 9999)}";
+        }
+
+        private async Task<Invoice?> CreateInvoiceAsync(Guid cashierRecordId, Guid operatorId, string operatorName)
+        {
+            var cashierRecord = await _context.CashierRecords
+                .Include(cr => cr.Items)
+                .FirstOrDefaultAsync(cr => cr.Id == cashierRecordId);
+
+            if (cashierRecord == null || string.IsNullOrEmpty(cashierRecord.InvoiceNumber))
+                return null;
+
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == cashierRecord.PatientId);
+
+            var invoice = new Invoice
+            {
+                Id = Guid.NewGuid(),
+                CashierRecordId = cashierRecordId,
+                InvoiceNumber = cashierRecord.InvoiceNumber,
+                InvoiceType = "普通发票",
+                BuyerInfo = patient?.Name ?? "患者",
+                SellerInfo = "凌隐宝堂中医诊所",
+                TotalAmount = cashierRecord.TotalAmount,
+                TaxAmount = 0, // 医疗服务通常免税
+                IssueTime = DateTime.Now,
+                Status = "正常",
+                ItemsJson = JsonSerializer.Serialize(cashierRecord.Items.Select(i => new InvoiceItemDto
+                {
+                    ItemName = i.ItemName,
+                    Specification = i.Description ?? "",
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    Amount = i.Amount,
+                    TaxRate = 0,
+                    TaxAmount = 0
+                }).ToList())
+            };
+
+            _context.Invoices.Add(invoice);
+            await _context.SaveChangesAsync();
+
+            return invoice;
         }
     }
 }

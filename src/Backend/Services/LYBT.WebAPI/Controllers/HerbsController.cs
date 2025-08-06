@@ -360,9 +360,204 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(list ?? new List<HerbDto>());
         }
 
-        // 库存管理功能已移除，系统专注于基础药材信息管理
+        // ======================== 库存管理接口 ========================
 
-        // 过期检查和状态统计功能已移除
+        /// <summary>
+        /// 获取库存预警药材列表
+        /// </summary>
+        [HttpGet("stock-warning")]
+        public async Task<ActionResult<List<HerbStockWarningDto>>> GetStockWarning() {
+            var list = await _herbService.GetStockWarningListAsync();
+            return Ok(list);
+        }
+
+        /// <summary>
+        /// 获取库存统计信息
+        /// </summary>
+        [HttpGet("stock-statistics")]
+        public async Task<ActionResult<HerbStockStatisticsDto>> GetStockStatistics() {
+            var statistics = await _herbService.GetStockStatisticsAsync();
+            return Ok(statistics);
+        }
+
+        /// <summary>
+        /// 更新药材库存（供Pharmacy模块调用）
+        /// </summary>
+        [HttpPatch("{id}/stock")]
+        public async Task<IActionResult> UpdateStock(Guid id, [FromBody] StockUpdateRequest request) {
+            var result = await _herbService.UpdateStockAsync(id, request.Quantity, request.IsIncrease);
+            if (!result) {
+                return BadRequest(new ProblemDetails {
+                    Title = "操作失败",
+                    Detail = request.IsIncrease ? "入库失败" : "库存不足",
+                    Status = 400
+                });
+            }
+
+            // 清除缓存
+            _cache.Remove($"herb_detail_{id}");
+            
+            var message = request.IsIncrease ? $"入库 {request.Quantity}" : $"出库 {request.Quantity}";
+            LogOperation(message, request, id);
+            return Ok(new { message = "库存更新成功" });
+        }
+
+        /// <summary>
+        /// 批量更新库存（用于盘点）
+        /// </summary>
+        [HttpPatch("batch-stock")]
+        public async Task<IActionResult> BatchUpdateStock([FromBody] List<HerbStockUpdateDto> updates) {
+            var count = await _herbService.BatchUpdateStockAsync(updates);
+            
+            // 清除缓存
+            _cache.Remove("herbs_list");
+            _cache.Remove("active_herbs");
+            
+            LogOperation($"批量更新库存成功，更新 {count} 个药材", updates, null);
+            return Ok(new { message = $"成功更新 {count} 个药材库存", count });
+        }
+
+        /// <summary>
+        /// 设置库存预警值
+        /// </summary>
+        [HttpPatch("{id}/warning-level")]
+        public async Task<IActionResult> SetWarningLevel(Guid id, [FromBody] WarningLevelRequest request) {
+            var result = await _herbService.SetStockWarningLevelAsync(id, request.WarningLevel, request.MaxStock);
+            if (!result) {
+                return NotFound(new ProblemDetails {
+                    Title = "资源未找到",
+                    Detail = "药材不存在",
+                    Status = 404
+                });
+            }
+
+            LogOperation("设置库存预警值", request, id);
+            return Ok(new { message = "预警值设置成功" });
+        }
+
+        /// <summary>
+        /// 获取即将过期的药材
+        /// </summary>
+        [HttpGet("expiry-warning")]
+        public async Task<ActionResult<List<HerbExpiryWarningDto>>> GetExpiryWarning([FromQuery] int days = 30) {
+            var list = await _herbService.GetExpiryWarningListAsync(days);
+            return Ok(list);
+        }
+
+        // ======================== 价格管理接口 ========================
+
+        /// <summary>
+        /// 更新药材价格
+        /// </summary>
+        [HttpPatch("{id}/price")]
+        public async Task<IActionResult> UpdatePrice(Guid id, [FromBody] HerbPriceUpdateDto dto) {
+            dto.Id = id;
+            var result = await _herbService.UpdatePriceAsync(dto);
+            if (!result) {
+                return NotFound(new ProblemDetails {
+                    Title = "资源未找到",
+                    Detail = "药材不存在",
+                    Status = 404
+                });
+            }
+
+            // 清除缓存
+            _cache.Remove($"herb_detail_{id}");
+            _cache.Remove("herbs_list");
+            
+            LogOperation("更新药材价格", dto, id);
+            return Ok(new { message = "价格更新成功" });
+        }
+
+        /// <summary>
+        /// 批量更新价格
+        /// </summary>
+        [HttpPatch("batch-price")]
+        public async Task<IActionResult> BatchUpdatePrice([FromBody] List<HerbPriceUpdateDto> updates) {
+            var count = await _herbService.BatchUpdatePriceAsync(updates);
+            
+            // 清除缓存
+            _cache.Remove("herbs_list");
+            _cache.Remove("active_herbs");
+            
+            LogOperation($"批量更新价格成功，更新 {count} 个药材", updates, null);
+            return Ok(new { message = $"成功更新 {count} 个药材价格", count });
+        }
+
+        /// <summary>
+        /// 设置特价促销
+        /// </summary>
+        [HttpPost("{id}/special-price")]
+        public async Task<IActionResult> SetSpecialPrice(Guid id, [FromBody] SpecialPriceRequest request) {
+            var result = await _herbService.SetSpecialPriceAsync(id, request.SpecialPrice, request.StartTime, request.EndTime);
+            if (!result) {
+                return NotFound(new ProblemDetails {
+                    Title = "资源未找到",
+                    Detail = "药材不存在",
+                    Status = 404
+                });
+            }
+
+            // 清除缓存
+            _cache.Remove($"herb_detail_{id}");
+            _cache.Remove("special_price_herbs");
+            
+            LogOperation("设置特价促销", request, id);
+            return Ok(new { message = "特价设置成功" });
+        }
+
+        /// <summary>
+        /// 取消特价促销
+        /// </summary>
+        [HttpDelete("{id}/special-price")]
+        public async Task<IActionResult> CancelSpecialPrice(Guid id) {
+            var result = await _herbService.CancelSpecialPriceAsync(id);
+            if (!result) {
+                return NotFound(new ProblemDetails {
+                    Title = "资源未找到",
+                    Detail = "药材不存在",
+                    Status = 404
+                });
+            }
+
+            // 清除缓存
+            _cache.Remove($"herb_detail_{id}");
+            _cache.Remove("special_price_herbs");
+            
+            LogOperation("取消特价促销", null, id);
+            return Ok(new { message = "特价已取消" });
+        }
+
+        /// <summary>
+        /// 获取当前特价药材列表
+        /// </summary>
+        [HttpGet("special-price")]
+        public async Task<ActionResult<List<HerbDto>>> GetSpecialPriceHerbs() {
+            const string cacheKey = "special_price_herbs";
+            if (!_cache.TryGetValue(cacheKey, out List<HerbDto>? list)) {
+                list = await _herbService.GetSpecialPriceHerbsAsync();
+                _cache.Set(cacheKey, list, TimeSpan.FromMinutes(5));
+            }
+            return Ok(list ?? new List<HerbDto>());
+        }
+
+        /// <summary>
+        /// 获取价格历史记录
+        /// </summary>
+        [HttpGet("{id}/price-history")]
+        public async Task<ActionResult<List<HerbPriceHistoryDto>>> GetPriceHistory(Guid id) {
+            var history = await _herbService.GetPriceHistoryAsync(id);
+            return Ok(history);
+        }
+
+        /// <summary>
+        /// 按价格区间查询药材
+        /// </summary>
+        [HttpGet("by-price-range")]
+        public async Task<ActionResult<List<HerbDto>>> GetByPriceRange([FromQuery] decimal minPrice, [FromQuery] decimal maxPrice) {
+            var herbs = await _herbService.GetByPriceRangeAsync(minPrice, maxPrice);
+            return Ok(herbs);
+        }
 
         // ======================== RESTful 标准接口 ========================
 

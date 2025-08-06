@@ -210,5 +210,208 @@ namespace LYBT.WebAPI.Controllers {
                 return HandleException(ex, "标记处方为已抓药", new { PharmacyId = id });
             }
         }
+
+        // ==================== 现场取药功能 API ====================
+
+        /// <summary>
+        /// 从处方创建药房单
+        /// </summary>
+        [HttpPost("from-prescription/{prescriptionId}")]
+        public async Task<ActionResult<PharmacyDto>> CreateFromPrescription(Guid prescriptionId) {
+            try {
+                var validationResult = ValidateGuid(prescriptionId, "处方ID");
+                if (validationResult != null) return validationResult;
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _pharmacyService.CreateFromPrescriptionAsync(prescriptionId, operatorId, operatorName);
+                if (result == null) {
+                    return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "从处方创建药房单失败" });
+                }
+
+                LogOperation("从处方创建药房单成功", result, result.Id);
+                return Ok(result);
+            } catch (Exception ex) {
+                return HandleException(ex, "从处方创建药房单", new { PrescriptionId = prescriptionId });
+            }
+        }
+
+        /// <summary>
+        /// 开始配药
+        /// </summary>
+        [HttpPost("{id}/start-dispensing")]
+        public async Task<ActionResult<object>> StartDispensing(Guid id) {
+            try {
+                var validationResult = ValidateGuid(id, "药房单ID");
+                if (validationResult != null) return validationResult;
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _pharmacyService.StartDispensingAsync(id);
+                if (!result) {
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "药房单不存在或状态不允许开始配药" });
+                }
+
+                LogOperation("开始配药成功", null, id);
+                return Ok(new { message = "开始配药成功" });
+            } catch (Exception ex) {
+                return HandleException(ex, "开始配药", new { PharmacyId = id });
+            }
+        }
+
+        /// <summary>
+        /// 完成配药
+        /// </summary>
+        [HttpPost("{id}/complete-dispensing")]
+        public async Task<ActionResult<object>> CompleteDispensing(Guid id) {
+            try {
+                var validationResult = ValidateGuid(id, "药房单ID");
+                if (validationResult != null) return validationResult;
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _pharmacyService.CompleteDispensingAsync(id);
+                if (!result) {
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "药房单不存在或状态不允许完成配药" });
+                }
+
+                LogOperation("完成配药成功", null, id);
+                return Ok(new { message = "完成配药成功" });
+            } catch (Exception ex) {
+                return HandleException(ex, "完成配药", new { PharmacyId = id });
+            }
+        }
+
+        /// <summary>
+        /// 发药确认
+        /// </summary>
+        [HttpPost("{id}/confirm-dispense")]
+        public async Task<ActionResult<object>> ConfirmDispense(Guid id, [FromBody] DispenseConfirmDto confirmDto) {
+            try {
+                var validationResult = ValidateGuid(id, "药房单ID");
+                if (validationResult != null) return validationResult;
+                
+                if (confirmDto == null || string.IsNullOrEmpty(confirmDto.ReceiverName)) {
+                    return BadRequest(new ProblemDetails { Title = "请求参数错误", Detail = "接收人姓名不能为空" });
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _pharmacyService.ConfirmDispenseAsync(id, confirmDto.ReceiverName, confirmDto.ReceiverPhone ?? "");
+                if (!result) {
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "药房单不存在或状态不允许发药" });
+                }
+
+                LogOperation("发药确认成功", confirmDto, id);
+                return Ok(new { message = "发药确认成功" });
+            } catch (Exception ex) {
+                return HandleException(ex, "发药确认", new { PharmacyId = id });
+            }
+        }
+
+        /// <summary>
+        /// 批量配药
+        /// </summary>
+        [HttpPost("batch-dispense")]
+        public async Task<ActionResult<object>> BatchDispense([FromBody] BatchDispenseDto batchDto) {
+            try {
+                var validationResult = ValidateModel();
+                if (validationResult != null) return validationResult;
+
+                if (batchDto?.PharmacyIds == null || !batchDto.PharmacyIds.Any()) {
+                    return BadRequest(new ProblemDetails { Title = "请求参数错误", Detail = "药房单ID列表不能为空" });
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _pharmacyService.BatchDispenseAsync(batchDto.PharmacyIds, operatorId, operatorName);
+                if (!result) {
+                    return BadRequest(new ProblemDetails { Title = "操作失败", Detail = "批量配药处理失败" });
+                }
+
+                LogOperation("批量配药成功", batchDto, null);
+                return Ok(new { message = $"批量配药成功，处理了 {batchDto.PharmacyIds.Count} 个药房单" });
+            } catch (Exception ex) {
+                return HandleException(ex, "批量配药");
+            }
+        }
+
+        /// <summary>
+        /// 获取今日统计
+        /// </summary>
+        [HttpGet("today-statistics")]
+        public async Task<ActionResult<PharmacyTodayStatDto>> GetTodayStatistics() {
+            try {
+                var result = await _pharmacyService.GetTodayStatisticsAsync();
+                return Ok(result);
+            } catch (Exception ex) {
+                return HandleException(ex, "获取今日统计");
+            }
+        }
+
+        /// <summary>
+        /// 获取药材配置明细
+        /// </summary>
+        [HttpGet("{id}/herb-details")]
+        public async Task<ActionResult<List<HerbDispenseDetailDto>>> GetHerbDispenseDetails(Guid id) {
+            try {
+                var validationResult = ValidateGuid(id, "药房单ID");
+                if (validationResult != null) return validationResult;
+
+                var result = await _pharmacyService.GetHerbDispenseDetailsAsync(id);
+                return Ok(result);
+            } catch (Exception ex) {
+                return HandleException(ex, "获取药材配置明细", new { PharmacyId = id });
+            }
+        }
+
+        /// <summary>
+        /// 提交配药结果
+        /// </summary>
+        [HttpPost("{id}/submit-dispense-result")]
+        public async Task<ActionResult<object>> SubmitDispenseResult(Guid id, [FromBody] List<HerbDispenseResultDto> results) {
+            try {
+                var validationResult = ValidateGuid(id, "药房单ID");
+                if (validationResult != null) return validationResult;
+
+                if (results == null || !results.Any()) {
+                    return BadRequest(new ProblemDetails { Title = "请求参数错误", Detail = "配药结果不能为空" });
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _pharmacyService.SubmitDispenseResultAsync(id, results, operatorId, operatorName);
+                if (!result) {
+                    return NotFound(new ProblemDetails { Title = "资源未找到", Detail = "药房单不存在或提交失败" });
+                }
+
+                LogOperation("提交配药结果成功", results, id);
+                return Ok(new { message = "提交配药结果成功" });
+            } catch (Exception ex) {
+                return HandleException(ex, "提交配药结果", new { PharmacyId = id });
+            }
+        }
+
+        /// <summary>
+        /// 获取待配药列表
+        /// </summary>
+        [HttpGet("pending")]
+        public async Task<ActionResult<List<PharmacyQueueDto>>> GetPendingList() {
+            try {
+                var result = await _pharmacyService.GetPendingListAsync();
+                return Ok(result);
+            } catch (Exception ex) {
+                return HandleException(ex, "获取待配药列表");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 发药确认DTO
+    /// </summary>
+    public class DispenseConfirmDto {
+        public string ReceiverName { get; set; } = string.Empty;
+        public string? ReceiverPhone { get; set; }
+    }
+
+    /// <summary>
+    /// 批量配药DTO
+    /// </summary>
+    public class BatchDispenseDto {
+        public List<Guid> PharmacyIds { get; set; } = new();
     }
 }

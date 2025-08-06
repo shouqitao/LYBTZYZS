@@ -103,5 +103,32 @@ namespace LYBT.Module.Pharmacy.Interfaces {
         /// 获取配药统计
         /// </summary>
         Task<PharmacyStatisticsDto> GetStatisticsAsync(DateTime startDate, DateTime endDate);
+
+        // ==================== 现场取药增强功能 ====================
+
+        /// <summary>
+        /// 从处方创建药房单
+        /// </summary>
+        Task<PharmacyDto?> CreateFromPrescriptionAsync(Guid prescriptionId, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 批量配药（对多个处方同时处理）
+        /// </summary>
+        Task<bool> BatchDispenseAsync(List<Guid> pharmacyIds, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 获取今日待取药统计
+        /// </summary>
+        Task<PharmacyTodayStatDto> GetTodayStatisticsAsync();
+
+        /// <summary>
+        /// 获取药材配置明细（供配药师使用）
+        /// </summary>
+        Task<List<HerbDispenseDetailDto>> GetHerbDispenseDetailsAsync(Guid pharmacyId);
+
+        /// <summary>
+        /// 提交配药结果（包含实际配置量）
+        /// </summary>
+        Task<bool> SubmitDispenseResultAsync(Guid pharmacyId, List<HerbDispenseResultDto> results, Guid operatorId, string operatorName);
     }
 }

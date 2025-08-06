@@ -5,7 +5,7 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Module.Registration.Interfaces {
 
     /// <summary>
-    /// 挂号业务服务接口
+    /// 挂号业务服务接口（现场挂号模式）
     /// </summary>
     public interface IRegistrationService {
 
@@ -43,5 +43,37 @@ namespace LYBT.Module.Registration.Interfaces {
         /// 取消挂号，更新状态为已取消
         /// </summary>
         Task<bool> CancelAsync(Guid id);
+
+        // ==================== 现场挂号特有功能 ====================
+
+        /// <summary>
+        /// 获取今日挂号列表
+        /// </summary>
+        Task<List<RegistrationDto>> GetTodayRegistrationsAsync(Guid? doctorId = null);
+
+        /// <summary>
+        /// 获取医生今日挂号统计
+        /// </summary>
+        Task<DoctorRegistrationStatDto> GetDoctorTodayStatAsync(Guid doctorId);
+
+        /// <summary>
+        /// 开始就诊
+        /// </summary>
+        Task<bool> StartConsultationAsync(Guid registrationId, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 完成就诊
+        /// </summary>
+        Task<bool> CompleteConsultationAsync(Guid registrationId, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 获取当前正在就诊的挂号
+        /// </summary>
+        Task<RegistrationDto?> GetCurrentConsultationAsync(Guid doctorId);
+
+        /// <summary>
+        /// 获取下一个等待就诊的挂号
+        /// </summary>
+        Task<RegistrationDto?> GetNextWaitingAsync(Guid doctorId);
     }
 }

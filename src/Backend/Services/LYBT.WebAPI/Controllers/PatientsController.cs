@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Records;
+// using LYBT.Shared.Models.Contracts.Records; // Records模块已删除
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -236,8 +236,8 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取患者档案历史病历
         /// </summary>
         [HttpGet("{id}/records")]
-        public async Task<ActionResult<List<RecordDto>>> GetHistory(Guid id) {
-            var data = new List<RecordDto>(); // TODO: 实现获取历史记录功能
+        public async Task<ActionResult<List<object>>> GetHistory(Guid id) {
+            var data = new List<object>(); // TODO: 实现获取历史记录功能，RecordDto已删除
             return Ok(data);
         }
 
