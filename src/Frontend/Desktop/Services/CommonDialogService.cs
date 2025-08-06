@@ -83,7 +83,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     var inputDialog = new System.Windows.Window
                     {
-                        Title = title,
+                        /* Title = title, */
                         Width = 400,
                         Height = 200,
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -195,7 +195,7 @@ namespace LYBT.WPF.Client.Services
                     var dialog = new SaveFileDialog
                     {
                         Filter = filter,
-                        Title = title,
+                        /* Title = title, */
                         FileName = defaultFileName
                     };
 

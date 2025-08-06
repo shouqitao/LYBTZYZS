@@ -176,7 +176,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     Spec = Spec?.Trim(),
                     Unit = Unit,
                     Price = Price,
-                    Stock = Stock,
+                    /* Stock = Stock, */
                     Effect = Effect?.Trim(),
                     Usage = Usage?.Trim(),
                     Remark = Remark?.Trim(),

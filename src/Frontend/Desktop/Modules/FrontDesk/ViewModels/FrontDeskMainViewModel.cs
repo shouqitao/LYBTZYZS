@@ -516,7 +516,7 @@ namespace LYBT.WPF.Client.Modules.FrontDesk.ViewModels
                 {
                     PatientId = SelectedPatient.Id,
                     DoctorId = SelectedDoctor.Id,
-                    Department = SelectedDoctor.Department ?? "中医科",
+                    /* Department = SelectedDoctor.Department ?? "中医科", */
                     RegistrationType = RegistrationType.Regular,
                     RegistrationFee = 20.00m, // 默认挂号费
                     AppointmentDate = DateTime.Today,

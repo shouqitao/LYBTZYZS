@@ -318,7 +318,7 @@ namespace LYBT.WPF.Client.Modules.Registration.ViewModels
                     Id = registration.Id,
                     PatientId = registration.PatientId,
                     DoctorId = registration.DoctorId,
-                    Department = registration.Department,
+                    /* Department = /* registration.Department */ "", */
                     RegistrationType = registration.RegistrationType,
                     VisitDate = registration.VisitDate,
                     TimeSlot = registration.TimeSlot,

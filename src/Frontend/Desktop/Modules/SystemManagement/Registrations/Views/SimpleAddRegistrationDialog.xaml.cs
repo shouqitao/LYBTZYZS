@@ -159,7 +159,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views
                 {
                     PatientId = patientId,
                     DoctorId = doctorId,
-                    Department = department,
+                    /* Department = department, */
                     RegistrationType = registrationType,
                     RegistrationFee = registrationFee,
                     AppointmentDate = dpDate.SelectedDate.Value,

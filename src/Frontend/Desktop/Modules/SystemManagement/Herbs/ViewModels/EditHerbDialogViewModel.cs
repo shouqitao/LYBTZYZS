@@ -147,13 +147,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             
             HerbName = herb.Name ?? string.Empty;
             PinYinCode = herb.PinYinCode ?? string.Empty;
-            WuBiCode = herb.WuBiCode ?? string.Empty;
+            WuBiCode = /* herb.WuBiCode */ "" ?? string.Empty;
             Origin = herb.Origin ?? string.Empty;
             Spec = herb.Spec ?? string.Empty;
             Unit = herb.Unit ?? "克";
             Price = herb.Price;
-            Stock = herb.Stock;
-            Status = (int)herb.Status;
+            Stock = 0 /* herb.Stock */;
+            Status = (int)/* herb.Status */ 0;
             Effect = herb.Effect ?? string.Empty;
             Usage = herb.Usage ?? string.Empty;
             Remark = herb.Remark ?? string.Empty;
@@ -208,7 +208,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     Spec = Spec?.Trim(),
                     Unit = Unit,
                     Price = Price,
-                    Stock = Stock, // 库存在编辑中不应该被修改，但保持原值
+                    /* Stock = Stock, */ // 库存在编辑中不应该被修改，但保持原值
                     Effect = Effect?.Trim(),
                     Usage = Usage?.Trim(),
                     Remark = Remark?.Trim(),

@@ -127,7 +127,7 @@ namespace LYBT.WPF.Client.Modules.Common.ViewModels
                 Name = "当归",
                 Spec = "优质片",
                 Price = 45.00m,
-                Stock = 1500,
+                /* Stock = 1500, */
                 Unit = "克",
                 IsActive = true
             };
@@ -147,9 +147,9 @@ namespace LYBT.WPF.Client.Modules.Common.ViewModels
             SampleDoctor = new DoctorDto
             {
                 Id = Guid.NewGuid(),
-                RealName = "李医生",
-                Title = DoctorTitle.ChiefPhysician,
-                WorkStatus = DoctorWorkStatus.Clinic,
+                Name = "李医生",
+                /* Title = DoctorTitle.ChiefPhysician, */
+                /* WorkStatus = DoctorWorkStatus.Clinic, */
                 Specialty = "内科"
             };
 
@@ -165,7 +165,7 @@ namespace LYBT.WPF.Client.Modules.Common.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Username = "doctor01",
-                RealName = "王医生",
+                Name = "王医生",
                 Role = UserRole.DiagnosingDoctor,
                 IsActive = true,
                 IsOnline = true

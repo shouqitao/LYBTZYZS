@@ -47,7 +47,7 @@ namespace LYBT.WPF.Client.Services
         {
             var dialog = new OpenFileDialog
             {
-                Title = title,
+                /* Title = title, */
                 Filter = filter
             };
             
@@ -63,7 +63,7 @@ namespace LYBT.WPF.Client.Services
         {
             var dialog = new SaveFileDialog
             {
-                Title = title,
+                /* Title = title, */
                 Filter = filter,
                 FileName = defaultFileName
             };

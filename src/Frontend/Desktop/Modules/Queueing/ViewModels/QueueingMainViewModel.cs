@@ -147,7 +147,7 @@ namespace LYBT.WPF.Client.Modules.Queueing.ViewModels
                         Id = i,
                         QueueNumber = $"A{i:D3}",
                         PatientName = $"患者{i}",
-                        Department = "内科",
+                        /* Department = "内科", */
                         DoctorName = $"医生{i}",
                         WaitTime = $"{i * 10}分钟",
                         Status = "等待中"
@@ -160,7 +160,7 @@ namespace LYBT.WPF.Client.Modules.Queueing.ViewModels
                     Id = 6,
                     QueueNumber = "A006",
                     PatientName = "患者6",
-                    Department = "内科",
+                    /* Department = "内科", */
                     DoctorName = "医生6",
                     WaitTime = "0分钟",
                     Status = "就诊中"
@@ -174,7 +174,7 @@ namespace LYBT.WPF.Client.Modules.Queueing.ViewModels
                         Id = i,
                         QueueNumber = $"A{i:D3}",
                         PatientName = $"患者{i}",
-                        Department = "内科",
+                        /* Department = "内科", */
                         DoctorName = $"医生{i}",
                         WaitTime = "已完成",
                         Status = "已完成"

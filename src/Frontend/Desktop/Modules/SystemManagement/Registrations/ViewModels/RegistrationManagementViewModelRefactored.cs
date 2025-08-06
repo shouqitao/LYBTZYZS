@@ -196,7 +196,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
         protected override bool CanExecuteDelete(RegistrationInfo item)
         {
             // 只有已预约状态的挂号可以删除
-            return item != null && item.Status == RegistrationStatus.Scheduled;
+            return item != null && item/* .Status = */= RegistrationStatus.Scheduled;
         }
 
         protected override void ExecuteAdd()
@@ -442,7 +442,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
                 PatientPhone = dto.PatientPhone ?? string.Empty,
                 DoctorId = dto.DoctorId,
                 DoctorName = dto.DoctorName ?? string.Empty,
-                Department = dto.Department ?? string.Empty,
+                /* Department = dto.Department ?? string.Empty, */
                 RegistrationType = ConvertToRegistrationType(dto.RegistrationType) ?? RegistrationType.Regular,
                 RegistrationFee = dto.RegistrationFee,
                 Status = ConvertToRegistrationStatus(dto.Status) ?? RegistrationStatus.Scheduled,

@@ -142,9 +142,9 @@ namespace LYBT.WPF.Client.Modules.Payment.ViewModels
                         StatusText = GetStatusText(payment.Status),
                         StatusColor = GetStatusColor(payment.Status),
                         CreateTime = payment.CreateTime,
-                        CanCharge = payment.Status == "待收费",
-                        CanRefund = payment.Status == "已收费",
-                        CanPrint = payment.Status == "已收费" || payment.Status == "已退费"
+                        CanCharge = payment/* .Status = */= "待收费",
+                        CanRefund = payment/* .Status = */= "已收费",
+                        CanPrint = payment/* .Status = */= "已收费" || payment/* .Status = */= "已退费"
                     });
                 }
             }
@@ -192,9 +192,9 @@ namespace LYBT.WPF.Client.Modules.Payment.ViewModels
                         StatusText = GetStatusText(payment.Status),
                         StatusColor = GetStatusColor(payment.Status),
                         CreateTime = payment.CreateTime,
-                        CanCharge = payment.Status == "待收费",
-                        CanRefund = payment.Status == "已收费",
-                        CanPrint = payment.Status == "已收费" || payment.Status == "已退费"
+                        CanCharge = payment/* .Status = */= "待收费",
+                        CanRefund = payment/* .Status = */= "已收费",
+                        CanPrint = payment/* .Status = */= "已收费" || payment/* .Status = */= "已退费"
                     });
                 }
             }

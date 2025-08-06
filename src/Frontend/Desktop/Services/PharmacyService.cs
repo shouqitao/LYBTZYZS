@@ -96,8 +96,8 @@ namespace LYBT.WPF.Client.Services
                         HerbName = "当归",
                         Specification = "统片",
                         Unit = "g",
-                        CurrentStock = 1250,
-                        SafeStock = 500,
+                        /* CurrentStock = 1250, */
+                        /* SafeStock = 500, */
                         UnitPrice = 0.12m,
                         LastStockInDate = DateTime.Now.AddDays(-5)
                     },
@@ -107,8 +107,8 @@ namespace LYBT.WPF.Client.Services
                         HerbName = "白芍",
                         Specification = "统片",
                         Unit = "g",
-                        CurrentStock = 180,
-                        SafeStock = 300,
+                        /* CurrentStock = 180, */
+                        /* SafeStock = 300, */
                         UnitPrice = 0.08m,
                         LastStockInDate = DateTime.Now.AddDays(-10)
                     },
@@ -118,8 +118,8 @@ namespace LYBT.WPF.Client.Services
                         HerbName = "川芎",
                         Specification = "统片",
                         Unit = "g",
-                        CurrentStock = 0,
-                        SafeStock = 200,
+                        /* CurrentStock = 0, */
+                        /* SafeStock = 200, */
                         UnitPrice = 0.15m,
                         LastStockInDate = DateTime.Now.AddDays(-20)
                     }

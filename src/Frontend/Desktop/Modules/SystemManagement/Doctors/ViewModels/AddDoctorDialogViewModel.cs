@@ -336,16 +336,16 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                     UserId = SelectedUser.Id,  // 使用选中用户的ID
                     Name = SelectedUser.RealName ?? SelectedUser.Username,  // 使用用户的真实姓名
                     Code = Code,
-                    Department = Department,
+                    /* Department = Department, */
                     Gender = Gender,
                     Birthday = BirthDate.Value,
-                    Title = Title,
+                    /* Title = Title, */
                     Specialty = specialtyValue,  // 确保不为空
                     LicenseNumber = LicenseNumber ?? string.Empty,
                     ContactNumber = Phone,
                     Phone = Phone,
                     Status = DoctorStatus.Active,
-                    WorkStatus = DoctorWorkStatus.Clinic,
+                    /* WorkStatus = DoctorWorkStatus.Clinic, */
                     IsActive = true,
                     CreateTime = DateTime.Now,
                     Remark = Remark ?? string.Empty,
@@ -356,7 +356,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 var today = DateTime.Today;
                 var age = today.Year - BirthDate.Value.Year;
                 if (BirthDate.Value.Date > today.AddYears(-age)) age--;
-                doctor.Age = age;
+                /* doctor.Age */" = age;
 
                 // 生成拼音码（简单示例，实际应使用拼音库）
                 doctor.PinYinCode = Name.ToUpper();

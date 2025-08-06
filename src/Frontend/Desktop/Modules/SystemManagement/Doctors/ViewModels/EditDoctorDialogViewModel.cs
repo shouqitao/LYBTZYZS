@@ -284,10 +284,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Doctors.ViewModels
                 // 更新医生信息
                 _originalDoctor.Name = Name;
                 _originalDoctor.Code = Code;
-                _originalDoctor.Department = Department;
+                _originalDoctor/* .Department = */ Department;
                 _originalDoctor.Gender = Gender;
                 _originalDoctor.Birthday = BirthDate.Value;
-                _originalDoctor.Title = Title;
+                _originalDoctor/* .Title = */ Title;
                 _originalDoctor.Specialty = Specialty;
                 _originalDoctor.LicenseNumber = LicenseNumber;
                 _originalDoctor.ContactNumber = Phone;

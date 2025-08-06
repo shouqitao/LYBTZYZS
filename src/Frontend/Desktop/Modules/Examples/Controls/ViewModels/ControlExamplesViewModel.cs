@@ -132,7 +132,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Username = "zhangsan",
-                RealName = "张三",
+                Name = "张三",
                 Role = UserRole.Admin,
                 Email = "zhangsan@example.com",
                 IsActive = true,
@@ -143,7 +143,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Username = "lisi",
-                RealName = "李四",
+                Name = "李四",
                 Role = UserRole.DiagnosingDoctor,
                 Email = "lisi@example.com",
                 IsActive = false,
@@ -154,7 +154,7 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
             {
                 Id = Guid.NewGuid(),
                 Username = "wangwu",
-                RealName = "王五",
+                Name = "王五",
                 Role = UserRole.PharmacyStaff,
                 Email = "wangwu@example.com",
                 IsActive = true,
@@ -176,8 +176,8 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
                 Spec = "优质",
                 Unit = "克",
                 Price = 12.5m,
-                Stock = 100,
-                BatchNo = "20240101",
+                /* Stock = 100, */
+                /* BatchNo = "20240101", */
                 IsActive = true,
                 CreateTime = DateTime.Now.AddDays(-30)
             });
@@ -191,8 +191,8 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
                 Spec = "标准",
                 Unit = "克",
                 Price = 15.0m,
-                Stock = 8,
-                BatchNo = "20240102",
+                /* Stock = 8, */
+                /* BatchNo = "20240102", */
                 IsActive = true,
                 CreateTime = DateTime.Now.AddDays(-20)
             });
@@ -206,8 +206,8 @@ namespace LYBT.WPF.Client.Modules.Examples.Controls.ViewModels
                 Spec = "优质",
                 Unit = "克",
                 Price = 8.0m,
-                Stock = 0,
-                BatchNo = "20240103",
+                /* Stock = 0, */
+                /* BatchNo = "20240103", */
                 IsActive = false,
                 CreateTime = DateTime.Now.AddDays(-10)
             });

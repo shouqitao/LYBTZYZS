@@ -144,9 +144,9 @@ namespace LYBT.WPF.Client.Modules.Pharmacy.ViewModels
                         StatusText = GetStatusText(prescription.Status),
                         StatusColor = GetStatusColor(prescription.Status),
                         CreateTime = prescription.CreateTime,
-                        CanStartDispensing = prescription.Status == "待配药",
-                        CanCompleteDispensing = prescription.Status == "配药中",
-                        CanDispense = prescription.Status == "已配药"
+                        CanStartDispensing = prescription/* .Status = */= "待配药",
+                        CanCompleteDispensing = prescription/* .Status = */= "配药中",
+                        CanDispense = prescription/* .Status = */= "已配药"
                     });
                 }
             }
@@ -191,9 +191,9 @@ namespace LYBT.WPF.Client.Modules.Pharmacy.ViewModels
                         StatusText = GetStatusText(prescription.Status),
                         StatusColor = GetStatusColor(prescription.Status),
                         CreateTime = prescription.CreateTime,
-                        CanStartDispensing = prescription.Status == "待配药",
-                        CanCompleteDispensing = prescription.Status == "配药中",
-                        CanDispense = prescription.Status == "已配药"
+                        CanStartDispensing = prescription/* .Status = */= "待配药",
+                        CanCompleteDispensing = prescription/* .Status = */= "配药中",
+                        CanDispense = prescription/* .Status = */= "已配药"
                     });
                 }
             }
@@ -222,12 +222,12 @@ namespace LYBT.WPF.Client.Modules.Pharmacy.ViewModels
                         HerbName = stock.HerbName,
                         Specification = stock.Specification,
                         Unit = stock.Unit,
-                        CurrentStock = stock.CurrentStock,
-                        SafeStock = stock.SafeStock,
+                        Current/* Stock = stock.CurrentStock, */
+                        Safe/* Stock = stock.SafeStock, */
                         UnitPrice = stock.UnitPrice,
                         StockValue = stock.CurrentStock * stock.UnitPrice,
                         LastStockInDate = stock.LastStockInDate,
-                        IsLowStock = stock.CurrentStock <= stock.SafeStock,
+                        IsLow/* Stock = stock.CurrentStock <= stock.SafeStock, */
                         StockStatusText = GetStockStatusText(stock.CurrentStock, stock.SafeStock),
                         StockStatusColor = GetStockStatusColor(stock.CurrentStock, stock.SafeStock)
                     });
@@ -266,7 +266,7 @@ namespace LYBT.WPF.Client.Modules.Pharmacy.ViewModels
             {
                 if (result.Result == ButtonResult.OK)
                 {
-                    prescription.Status = "配药中";
+                    prescription/* .Status = */ "配药中";
                     prescription.StatusText = GetStatusText(prescription.Status);
                     prescription.StatusColor = GetStatusColor(prescription.Status);
                     prescription.CanStartDispensing = false;
@@ -291,7 +291,7 @@ namespace LYBT.WPF.Client.Modules.Pharmacy.ViewModels
                 var success = await _pharmacyService.CompleteDispensingAsync(prescription.Id);
                 if (success)
                 {
-                    prescription.Status = "已配药";
+                    prescription/* .Status = */ "已配药";
                     prescription.StatusText = GetStatusText(prescription.Status);
                     prescription.StatusColor = GetStatusColor(prescription.Status);
                     prescription.CanCompleteDispensing = false;
@@ -329,7 +329,7 @@ namespace LYBT.WPF.Client.Modules.Pharmacy.ViewModels
                 var success = await _pharmacyService.DispenseDrugAsync(prescription.Id);
                 if (success)
                 {
-                    prescription.Status = "已发药";
+                    prescription/* .Status = */ "已发药";
                     prescription.StatusText = GetStatusText(prescription.Status);
                     prescription.StatusColor = GetStatusColor(prescription.Status);
                     prescription.CanDispense = false;

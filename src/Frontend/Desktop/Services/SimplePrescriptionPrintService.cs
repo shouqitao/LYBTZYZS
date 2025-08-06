@@ -9,7 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Modules.Doctor.ViewModels;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -264,7 +263,7 @@ namespace LYBT.WPF.Client.Services
         {
             var html = new StringBuilder();
             
-            html.AppendLine(@"<!DOCTYPE html>
+            html.AppendLine(string.Format(@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset='UTF-8'>
@@ -316,7 +315,7 @@ namespace LYBT.WPF.Client.Services
                 model.PatientPhone,
                 model.DoctorName,
                 model.PrescriptionDate
-            );
+            ));
 
             // 诊断
             if (!string.IsNullOrWhiteSpace(model.Diagnosis))

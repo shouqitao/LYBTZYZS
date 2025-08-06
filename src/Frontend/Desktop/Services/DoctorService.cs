@@ -117,11 +117,11 @@ namespace LYBT.WPF.Client.Services
             {
                 Id = dto.Id,
                 Code = dto.PinYinCode ?? "",
-                Name = dto.RealName ?? "",
-                Gender = dto.Gender,
-                Department = dto.Specialty ?? "",
-                Title = dto.Title,
-                Phone = dto.PhoneNumber ?? "",
+                Name = dto.Name ?? "",
+                // Gender = dto.Gender // TODO: 字段已移除,
+                /* Department = dto.Specialty ?? "", */
+                // /* Title = dto.Title // TODO: 字段已移除, */
+                Phone = dto.ContactNumber ?? "",
                 Specialties = dto.Specialty ?? "",
                 IsActive = dto.Status == DoctorStatus.Active,
                 CreateTime = DateTime.Now // DoctorDto 不包含 CreateTime
@@ -137,11 +137,11 @@ namespace LYBT.WPF.Client.Services
             {
                 Id = dto.Id,
                 Code = dto.PinYinCode ?? "",
-                Name = dto.RealName ?? "",
-                Gender = dto.Gender,
-                Department = dto.Specialty ?? "",
-                Title = dto.Title,
-                Phone = dto.PhoneNumber ?? "",
+                Name = dto.Name ?? "",
+                // Gender = dto.Gender // TODO: 字段已移除,
+                /* Department = dto.Specialty ?? "", */
+                // /* Title = dto.Title // TODO: 字段已移除, */
+                Phone = dto.ContactNumber ?? "",
                 Specialties = dto.Specialty ?? "",
                 IsActive = dto.Status == DoctorStatus.Active,
                 CreateTime = DateTime.Now // DoctorDetailDto 不包含 CreateTime
@@ -158,18 +158,19 @@ namespace LYBT.WPF.Client.Services
                 Id = info.Id,
                 UserId = info.UserId != Guid.Empty ? info.UserId : Guid.NewGuid(), // 如果没有UserId，生成一个新的
                 PinYinCode = info.PinYinCode ?? info.Code ?? string.Empty,
-                RealName = info.Name,
-                Gender = info.Gender,
-                Birthday = info.Birthday,
-                Title = info.Title,
+                Name = info.Name,
+                // Gender = info.Gender, // 字段已移除
+                // Birthday = info.Birthday, // 字段已移除
+                // /* Title = info.Title, */ // 字段已移除
                 LicenseNumber = info.LicenseNumber,
-                PhoneNumber = info.Phone,
+                // PhoneNumber = info.Phone, // 字段已移除
                 ContactNumber = info.ContactNumber ?? info.Phone,
                 Specialty = info.Specialties ?? info.Specialty ?? string.Empty,
                 Status = info.IsActive ? DoctorStatus.Active : DoctorStatus.Inactive,
-                WorkStatus = info.WorkStatus,
-                Remark = info.Remark,
-                Age = info.Age
+                // /* WorkStatus = info.WorkStatus, */ // 字段已移除
+                // Remark = info.Remark, // 字段已移除
+                // Age = info.Age // 字段已移除
+                RegistrationFee = 50 // 默认挂号费
             };
         }
     }

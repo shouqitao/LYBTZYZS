@@ -176,7 +176,7 @@ namespace LYBT.WPF.Client.Services
         {
             var window = new Window
             {
-                Title = "API功能测试结果",
+                /* Title = "API功能测试结果", */
                 Width = 600,
                 Height = 500,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen

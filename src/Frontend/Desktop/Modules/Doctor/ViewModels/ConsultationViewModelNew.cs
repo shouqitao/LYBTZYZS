@@ -619,7 +619,7 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
             {
                 // TODO: 发送叫号通知
                 await _commonDialogService.ShowInformationAsync($"正在呼叫 {item.PatientName}", "叫号");
-                item.Status = "已叫号";
+                item/* .Status = */ "已叫号";
             }
             catch (Exception ex)
             {

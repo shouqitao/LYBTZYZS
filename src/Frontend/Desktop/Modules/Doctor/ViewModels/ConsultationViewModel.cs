@@ -398,8 +398,8 @@ namespace LYBT.WPF.Client.Modules.Doctor.ViewModels
                 Spec = herbDto.Spec,
                 Unit = herbDto.Unit,
                 Price = herbDto.Price,
-                Stock = (int)herbDto.Stock, // 需要转换为int
-                // BatchNo = herbDto.BatchNo, // HerbDto中没有BatchNo属性
+                /* Stock = (int)herbDto.Stock, */ // 需要转换为int
+                // /* BatchNo = herbDto.BatchNo, */ // HerbDto中没有BatchNo属性
                 // ExpireDate = herbDto.ExpireDate, // HerbDto中没有ExpireDate属性
                 Effect = herbDto.Effect,
                 Remark = herbDto.Remark,

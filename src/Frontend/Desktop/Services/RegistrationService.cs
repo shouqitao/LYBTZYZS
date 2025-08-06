@@ -145,7 +145,7 @@ namespace LYBT.WPF.Client.Services {
                 PatientPhone = dto.PatientPhone ?? "",
                 DoctorId = dto.DoctorId,
                 DoctorName = dto.DoctorName,
-                Department = dto.Department ?? "",
+                // /* Department = dto.Department // TODO: 字段已移除 ?? "", */
                 RegistrationType = ParseRegistrationType(dto.RegistrationType),
                 RegistrationFee = dto.RegistrationFee,
                 RegistrationTime = dto.RegistrationTime,
@@ -172,7 +172,7 @@ namespace LYBT.WPF.Client.Services {
                 PatientPhone = dto.PatientPhone ?? "",
                 DoctorId = dto.DoctorId,
                 DoctorName = dto.DoctorName ?? "",
-                Department = dto.Department ?? "",
+                // /* Department = dto.Department // TODO: 字段已移除 ?? "", */
                 RegistrationType = ParseRegistrationType(dto.RegistrationType),
                 RegistrationFee = dto.RegistrationFee,
                 RegistrationTime = dto.RegistrationTime,

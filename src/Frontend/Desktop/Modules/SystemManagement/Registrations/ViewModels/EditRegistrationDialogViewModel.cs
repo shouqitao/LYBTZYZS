@@ -271,7 +271,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels
             };
 
             // 如果选择了专家，增加额外费用
-            if (SelectedDoctor != null && (SelectedDoctor.Title == DoctorTitle.ChiefPhysician || SelectedDoctor.Title == DoctorTitle.AssociateChiefPhysician))
+            if (SelectedDoctor != null && (SelectedDoctor/* .Title = */= DoctorTitle.ChiefPhysician || SelectedDoctor/* .Title = */= DoctorTitle.AssociateChiefPhysician))
             {
                 RegistrationFee += 30;
             }
