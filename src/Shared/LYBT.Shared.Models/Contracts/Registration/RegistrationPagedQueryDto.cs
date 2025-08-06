@@ -30,11 +30,6 @@ namespace LYBT.Shared.Models.Contracts.Registration
         public string? RegistrationNumber { get; set; }
 
         /// <summary>
-        /// 科室
-        /// </summary>
-        public string? Department { get; set; }
-
-        /// <summary>
         /// 挂号类型
         /// </summary>
         public RegistrationType? RegistrationType { get; set; }

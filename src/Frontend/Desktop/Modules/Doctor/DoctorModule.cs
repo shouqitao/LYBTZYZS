@@ -24,6 +24,9 @@ namespace LYBT.WPF.Client.Modules.Doctor
             
             // 注册看诊管理视图
             containerRegistry.RegisterForNavigation<ConsultationManagementView>();
+            
+            // 注册简化医生工作台视图
+            containerRegistry.RegisterForNavigation<SimpleDoctorWorkbenchView>();
         }
     }
 }

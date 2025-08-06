@@ -143,9 +143,9 @@ namespace LYBT.WebAPI.Controllers {
                             h.Id,
                             h.Name,
                             h.CreateTime,
-                            h.Status,
+                            h.IsActive,
                             h.Price,
-                            h.Stock
+                            h.Unit
                         })
                         .ToListAsync();
                 } else {

@@ -261,7 +261,6 @@ namespace LYBT.Infrastructure.Data {
             var entity = modelBuilder.Entity<MedicalCaseModel>();
             entity.ToTable("MedicalCases");
             entity.HasKey(m => m.Id);
-            entity.Property(m => m.Department).HasMaxLength(50);
             entity.Property(m => m.Status).HasConversion<string>();
             entity.Property(m => m.Remark).HasMaxLength(500);
             entity.HasIndex(m => m.PatientId);
@@ -360,21 +359,15 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(h => h.Id);
             entity.Property(h => h.Name).HasMaxLength(100);
             entity.Property(h => h.PinYinCode).HasMaxLength(20);
-            entity.Property(h => h.WuBiCode).HasMaxLength(20);
-            entity.Property(h => h.BatchNo).HasMaxLength(32);
             entity.Property(h => h.CreateTime).HasColumnName("CreatedAt");
             entity.Property(h => h.Origin).HasMaxLength(50);
             entity.Property(h => h.Spec).HasMaxLength(50);
             entity.Property(h => h.Unit).HasMaxLength(10);
             entity.Property(h => h.Effect).HasMaxLength(256);
+            entity.Property(h => h.Usage).HasMaxLength(256);
             entity.Property(h => h.Price).HasColumnType("decimal(18,2)");
-            entity.Property(h => h.Specification).HasColumnType("decimal(18,2)");
             entity.HasIndex(h => h.Name);
             entity.HasIndex(h => h.PinYinCode);
-            entity.HasIndex(h => h.WuBiCode);
-            entity.HasIndex(h => h.ExpireDate);
-            // 忽略IsActive字段，使用Status字段替代
-            entity.Ignore(h => h.IsActive);
         }
 
         private static void ConfigureFormulaTemplates(ModelBuilder modelBuilder) {

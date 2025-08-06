@@ -5,32 +5,37 @@ using LYBT.Shared.Models.Contracts.Doctors;
 namespace LYBT.Module.Doctors.Mapping {
 
     /// <summary>
-    /// 医生实体与DTO的AutoMapper映射配置
+    /// 医生实体与DTO的AutoMapper映射配置（简化版）
     /// </summary>
     public class DoctorMappingProfile : Profile {
 
         public DoctorMappingProfile() {
             // DoctorModel -> DoctorDto 映射 (用于列表)
-            CreateMap<DoctorModel, DoctorDto>()
-                .ForMember(d => d.Username, opt => opt.MapFrom(s => s.User.Username))
-                .ForMember(d => d.RealName, opt => opt.MapFrom(s => s.User.RealName))
-                .ForMember(d => d.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
-                .ForMember(d => d.Email, opt => opt.MapFrom(s => s.User.Email))
-                .ForMember(d => d.Age, opt => opt.Ignore()); // 通过属性计算
+            CreateMap<DoctorModel, DoctorDto>();
 
             // DoctorModel -> DoctorDetailDto 映射 (用于详情)
             CreateMap<DoctorModel, DoctorDetailDto>()
-                .ForMember(d => d.Username, opt => opt.MapFrom(s => s.User.Username))
-                .ForMember(d => d.RealName, opt => opt.MapFrom(s => s.User.RealName))
-                .ForMember(d => d.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
-                .ForMember(d => d.Email, opt => opt.MapFrom(s => s.User.Email))
-                .ForMember(d => d.Age, opt => opt.Ignore()); // 通过属性计算
+                .ForMember(d => d.Username, opt => opt.MapFrom(s => s.User != null ? s.User.Username : null))
+                .ForMember(d => d.TodayPatientCount, opt => opt.Ignore())
+                .ForMember(d => d.TotalPatientCount, opt => opt.Ignore());
 
-            // DoctorDetailDto -> DoctorModel 映射 (新增/编辑)
-            CreateMap<DoctorDetailDto, DoctorModel>()
-                .ForMember(d => d.User, opt => opt.Ignore()) // 不自动映射User对象
-                .ForMember(d => d.CreateTime, opt => opt.Ignore()) // 在Service中设置
-                .ForMember(d => d.Age, opt => opt.Ignore()); // 计算属性不映射
+            // DoctorCreateDto -> DoctorModel 映射
+            CreateMap<DoctorCreateDto, DoctorModel>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.User, opt => opt.Ignore())
+                .ForMember(d => d.PinYinCode, opt => opt.Ignore())
+                .ForMember(d => d.Status, opt => opt.Ignore())
+                .ForMember(d => d.CreateTime, opt => opt.Ignore())
+                .ForMember(d => d.UpdateTime, opt => opt.Ignore());
+
+            // DoctorUpdateDto -> DoctorModel 映射
+            CreateMap<DoctorUpdateDto, DoctorModel>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.UserId, opt => opt.Ignore())
+                .ForMember(d => d.User, opt => opt.Ignore())
+                .ForMember(d => d.PinYinCode, opt => opt.Ignore())
+                .ForMember(d => d.CreateTime, opt => opt.Ignore())
+                .ForMember(d => d.UpdateTime, opt => opt.Ignore());
         }
     }
 }

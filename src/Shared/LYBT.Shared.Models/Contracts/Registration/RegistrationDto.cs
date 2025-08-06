@@ -35,10 +35,6 @@ namespace LYBT.Shared.Models.Contracts.Registration {
         [DisplayName("医生姓名")]
         public string DoctorName { get; set; } = string.Empty;
 
-        /// <summary>科室</summary>
-        [DisplayName("科室")]
-        public string? Department { get; set; }
-
         /// <summary>挂号类型</summary>
         [DisplayName("挂号类型")]
         public string RegistrationType { get; set; } = string.Empty;

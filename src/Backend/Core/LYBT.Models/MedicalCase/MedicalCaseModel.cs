@@ -29,11 +29,6 @@ namespace LYBT.Models.MedicalCase
         [DisplayName("主治医生ID")]
         public Guid DoctorId { get; set; }
 
-        /// <summary>科室</summary>
-        [StringLength(50)]
-        [DisplayName("科室")]
-        public string Department { get; set; } = "中医内科";
-
         /// <summary>挂号信息</summary>
         [DisplayName("挂号信息")]
         public virtual RegistrationModel? Registration { get; set; }

@@ -195,8 +195,7 @@ namespace LYBT.WebAPI.Controllers {
             if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
-            var dto = new HerbStatusUpdateDto { Id = id, Status = LYBT.Shared.Models.Enums.HerbStatus.Active, IsEnabled = true };
-            var result = await _herbService.UpdateStatusAsync(dto);
+            var result = await _herbService.SetStatusAsync(id, true);
             if (!result) {
                 return NotFound(new ProblemDetails {
                     Title = "资源未找到",
@@ -210,7 +209,7 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove("active_herbs");
             _cache.Remove($"herb_detail_{id}");
 
-            LogOperation("启用药材成功", dto, id);
+            LogOperation("启用药材成功", new { Id = id, IsEnabled = true }, id);
             return Ok(new { message = "启用药材成功" });
         }
 
@@ -223,8 +222,7 @@ namespace LYBT.WebAPI.Controllers {
             if (validationResult != null) return validationResult;
 
             var (operatorId, operatorName, _) = GetOperator();
-            var dto = new HerbStatusUpdateDto { Id = id, Status = LYBT.Shared.Models.Enums.HerbStatus.Inactive, IsEnabled = false };
-            var result = await _herbService.UpdateStatusAsync(dto);
+            var result = await _herbService.SetStatusAsync(id, false);
             if (!result) {
                 return NotFound(new ProblemDetails {
                     Title = "资源未找到",
@@ -238,7 +236,7 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove("active_herbs");
             _cache.Remove($"herb_detail_{id}");
 
-            LogOperation("禁用药材成功", dto, id);
+            LogOperation("禁用药材成功", new { Id = id, IsEnabled = false }, id);
             return Ok(new { message = "禁用药材成功" });
         }
 
@@ -263,13 +261,8 @@ namespace LYBT.WebAPI.Controllers {
             }
 
             // 根据当前状态切换
-            var dto = new HerbStatusUpdateDto { 
-                Id = id, 
-                Status = herb.IsActive ? LYBT.Shared.Models.Enums.HerbStatus.Inactive : LYBT.Shared.Models.Enums.HerbStatus.Active,
-                IsEnabled = !herb.IsActive 
-            };
-            
-            var result = await _herbService.UpdateStatusAsync(dto);
+            var newStatus = !herb.IsActive;
+            var result = await _herbService.SetStatusAsync(id, newStatus);
             if (!result) {
                 return BadRequest(new ProblemDetails {
                     Title = "操作失败",
@@ -284,7 +277,7 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove($"herb_detail_{id}");
 
             var message = herb.IsActive ? "药材已禁用" : "药材已启用";
-            LogOperation(message, dto, id);
+            LogOperation(message, new { Id = id, IsActive = newStatus }, id);
             return Ok(new { message });
         }
 
@@ -333,7 +326,7 @@ namespace LYBT.WebAPI.Controllers {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var result = await _herbService.UpdateStatusAsync(dto);
+                var result = await _herbService.SetStatusAsync(dto.Id, dto.Status == LYBT.Shared.Models.Enums.HerbStatus.Active);
                 if (!result)
                     return NotFound("药材不存在");
 
@@ -349,47 +342,9 @@ namespace LYBT.WebAPI.Controllers {
             }
         }
 
-        /// <summary>
-        /// 批量更新药材状态
-        /// </summary>
-        [HttpPatch("batch-status")]
-        public async Task<ActionResult> BatchUpdateStatus([FromBody] BatchIdsDto dto) {
-            try {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+        // 批量更新功能已移除，请使用单个药材的启用/禁用接口
 
-                if (dto.Ids == null || dto.Ids.Count == 0) {
-                    return BadRequest("请选择要更新的药材");
-                }
-
-                var count = await _herbService.BatchUpdateStatusAsync(dto.Ids, dto.Reason ?? "");
-
-                // 清除缓存
-                _cache.Remove("herbs_list");
-                _cache.Remove("active_herbs");
-                foreach (var id in dto.Ids) {
-                    _cache.Remove($"herb_detail_{id}");
-                }
-
-                LogOperation("批量更新药材状态成功", new { Count = count, Ids = dto.Ids }, null);
-                return Ok(new { UpdatedCount = count, Message = $"成功更新 {count} 个药材状态" });
-            } catch (Exception ex) {
-                return HandleException(ex, "批量更新药材状态");
-            }
-        }
-
-        /// <summary>
-        /// 根据状态获取药材列表
-        /// </summary>
-        [HttpGet("status/{status}")]
-        public async Task<ActionResult<List<HerbDto>>> GetByStatus(HerbStatus status) {
-            try {
-                var list = await _herbService.GetByStatusAsync(status);
-                return Ok(list);
-            } catch (Exception ex) {
-                return HandleException(ex, "根据状态获取药材列表", new { Status = status });
-            }
-        }
+        // 根据状态获取药材功能已简化，请使用 GetAvailable 接口
 
         /// <summary>
         /// 获取可用药材列表
@@ -405,65 +360,9 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(list ?? new List<HerbDto>());
         }
 
-        /// <summary>
-        /// 获取缺货药材列表
-        /// </summary>
-        [HttpGet("out-of-stock")]
-        public async Task<ActionResult<List<HerbDto>>> GetOutOfStock() {
-            try {
-                var list = await _herbService.GetOutOfStockHerbsAsync();
-                return Ok(list);
-            } catch (Exception ex) {
-                return HandleException(ex, "获取缺货药材列表");
-            }
-        }
+        // 库存管理功能已移除，系统专注于基础药材信息管理
 
-        /// <summary>
-        /// 获取即将过期药材列表
-        /// </summary>
-        [HttpGet("expiring")]
-        public async Task<ActionResult<List<HerbDto>>> GetExpiring([FromQuery] int days = 30) {
-            try {
-                if (days <= 0)
-                    days = 30;
-                var list = await _herbService.GetExpiringHerbsAsync(days);
-                return Ok(list);
-            } catch (Exception ex) {
-                return HandleException(ex, "获取即将过期药材列表");
-            }
-        }
-
-        /// <summary>
-        /// 检查并更新过期药材
-        /// </summary>
-        [HttpPost("check-expired")]
-        public async Task<ActionResult> CheckExpired() {
-            try {
-                var count = await _herbService.CheckAndUpdateExpiredHerbsAsync();
-
-                // 清除缓存
-                _cache.Remove("herbs_list");
-                _cache.Remove("active_herbs");
-
-                LogOperation("检查过期药材成功", new { Count = count }, null);
-                return Ok(new { UpdatedCount = count, Message = $"检查完成，更新了 {count} 个过期药材" });
-            } catch (Exception ex) {
-                return HandleException(ex, "检查过期药材");
-            }
-        }
-
-        /// <summary>
-        /// 获取药材状态统计
-        /// </summary>
-        [HttpGet("statistics")]
-        public async Task<ActionResult<Dictionary<HerbStatus, int>>> GetStatistics() {
-            try {
-                var statistics = await _herbService.GetStatusStatisticsAsync();
-                return Ok(statistics);
-            } catch (Exception ex) {
-                return HandleException(ex, "获取药材状态统计");
-            }
-        }
+        // 过期检查和状态统计功能已移除
 
         // ======================== RESTful 标准接口 ========================
 

@@ -18,10 +18,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [Required(ErrorMessage = "医生ID不能为空")]
         public Guid DoctorId { get; set; }
 
-        /// <summary>科室</summary>
-        [StringLength(50, ErrorMessage = "科室名称长度不能超过50个字符")]
-        public string Department { get; set; } = "中医内科";
-
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }

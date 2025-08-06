@@ -17,7 +17,7 @@ namespace LYBT.Module.Patients.Mapping {
             CreateMap<PatientModel, PatientDetailDto>()
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreateTime))
                 .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdateTime))
-                .ForMember(dest => dest.IDType, opt => opt.MapFrom(src => src.IdType ?? "身份证"))
+                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
                 .ForMember(dest => dest.IDNumber, opt => opt.MapFrom(src => src.IdNumber));
 
             // 共享PatientCreateDto转患者实体
@@ -53,7 +53,7 @@ namespace LYBT.Module.Patients.Mapping {
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.IdType, opt => opt.MapFrom(src => src.IDType ?? "身份证"))
+                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
                 .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IDNumber));
 
             // 患者实体转共享PatientDto（列表显示）

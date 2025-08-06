@@ -17,11 +17,6 @@ namespace LYBT.Shared.Models.Contracts.Registration
         [Required(ErrorMessage = "医生ID不能为空")]
         public Guid DoctorId { get; set; }
 
-        /// <summary>科室</summary>
-        [Required(ErrorMessage = "科室不能为空")]
-        [StringLength(50, ErrorMessage = "科室名称长度不能超过50个字符")]
-        public string Department { get; set; } = string.Empty;
-
         /// <summary>挂号类型</summary>
         [Required(ErrorMessage = "挂号类型不能为空")]
         public RegistrationType RegistrationType { get; set; }

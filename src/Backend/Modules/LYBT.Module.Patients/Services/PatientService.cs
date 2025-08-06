@@ -4,10 +4,8 @@ using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Infrastructure.Logging.Enums;
 using LYBT.Models.Patients;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Records.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Contracts.Records;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using System.Text.Json;
@@ -22,38 +20,41 @@ namespace LYBT.Module.Patients.Services {
         private readonly IPatientRepository _patientRepository;
         private readonly IMapper _mapper;
         private readonly IUnifiedLogService _logService;
-        private readonly IRecordService _recordService;
 
         public PatientService(IPatientRepository patientRepository,
             IMapper mapper,
-            IUnifiedLogService logService,
-            IRecordService recordService) {
+            IUnifiedLogService logService) {
             _patientRepository = patientRepository;
             _mapper = mapper;
             _logService = logService;
-            _recordService = recordService;
         }
 
         /// <summary>
-        /// 新增患者档案档案，并记录操作日志
+        /// 新增患者档案，并记录操作日志
         /// </summary>
-        public async Task<PatientDto?> AddAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
-            // 三要素匹配验证，防止重复患者档案
-            var duplicateCheck = await CheckPatientDuplicateAsync(dto.Name, dto.PhoneNumber, dto.IDNumber);
-            if (duplicateCheck.HasDuplicate) {
-                throw new ArgumentException($"发现疑似重复患者档案：{duplicateCheck.Message}。如确需创建新患者档案，请联系管理员。");
+        public async Task<PatientDetailDto?> CreateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
+            // 基础验证
+            if (string.IsNullOrWhiteSpace(dto.Name)) {
+                throw new ArgumentException("患者姓名不能为空");
             }
 
-            // 数据验证
-            var validation = await ValidatePatientAsync(dto, false);
-            if (!validation.IsValid) {
-                throw new ArgumentException(string.Join(", ", validation.Errors));
+            // 检查身份证号重复
+            if (!string.IsNullOrEmpty(dto.IDNumber)) {
+                if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber)) {
+                    throw new ArgumentException("身份证号已存在");
+                }
+            }
+
+            // 检查手机号重复
+            if (!string.IsNullOrEmpty(dto.PhoneNumber)) {
+                if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber)) {
+                    throw new ArgumentException("手机号已存在");
+                }
             }
 
             var model = _mapper.Map<PatientModel>(dto);
             model.Id = Guid.NewGuid();
             model.PinYinCode = CommonHelper.GetPinyinCode(model.Name);
-            model.WuBiCode = CommonHelper.GetWuBiCode(model.Name);
             model.CreateTime = DateTime.Now;
             model.UpdateTime = DateTime.Now;
 
@@ -72,26 +73,43 @@ namespace LYBT.Module.Patients.Services {
                     $"新增患者档案：{model.Name}", JsonSerializer.Serialize(model));
                     
                 // 返回创建的对象
-                return _mapper.Map<PatientDto>(model);
+                return _mapper.Map<PatientDetailDto>(model);
             }
 
             return null;
         }
 
-        public async Task<bool> UpdateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
-            var model = await _patientRepository.GetByIdAsync(dto.Id, true); // 管理员更新时包含禁用患者档案
+        /// <summary>
+        /// 更新患者信息
+        /// </summary>
+        public async Task<PatientDetailDto?> UpdateAsync(Guid id, PatientDetailDto dto, Guid operatorId, string operatorName) {
+            var model = await _patientRepository.GetByIdAsync(id, true); // 管理员更新时包含禁用患者档案
             if (model == null)
-                throw new ArgumentException("病人不存在");
+                throw new ArgumentException("患者不存在");
 
-            // 数据验证
-            var validation = await ValidatePatientAsync(dto, true);
-            if (!validation.IsValid) {
-                throw new ArgumentException(string.Join(", ", validation.Errors));
+            // 基础验证
+            if (string.IsNullOrWhiteSpace(dto.Name)) {
+                throw new ArgumentException("患者姓名不能为空");
+            }
+
+            // 检查身份证号重复（排除当前患者）
+            if (!string.IsNullOrEmpty(dto.IDNumber)) {
+                if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber, id)) {
+                    throw new ArgumentException("身份证号已存在");
+                }
+            }
+
+            // 检查手机号重复（排除当前患者）
+            if (!string.IsNullOrEmpty(dto.PhoneNumber)) {
+                if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber, id)) {
+                    throw new ArgumentException("手机号已存在");
+                }
             }
 
             var oldJson = JsonSerializer.Serialize(model);
             _mapper.Map(dto, model);
             model.PinYinCode = CommonHelper.GetPinyinCode(model.Name);
+            model.UpdateTime = DateTime.Now;
 
             // 如果身份证号变了，重新解析出生日期和年龄
             if (!string.IsNullOrEmpty(model.IdNumber) && CommonHelper.CheckIdNumber(model.IdNumber)) {
@@ -115,14 +133,16 @@ namespace LYBT.Module.Patients.Services {
                     OldValue = oldJson,
                     NewValue = JsonSerializer.Serialize(dto)
                 });
+                
+                return _mapper.Map<PatientDetailDto>(model);
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
-        /// 根据患者档案Id获取患者档案详情
-        /// 权限控制：禁用的患者档案仅管理员可查询
+        /// 根据患者ID获取患者详情
+        /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
         public async Task<PatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
@@ -131,8 +151,8 @@ namespace LYBT.Module.Patients.Services {
         }
 
         /// <summary>
-        /// 获取所有患者档案列表
-        /// 权限控制：禁用的患者档案仅管理员可查询
+        /// 获取所有患者列表
+        /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
         public async Task<List<PatientDetailDto>> GetAllAsync(UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
@@ -141,8 +161,8 @@ namespace LYBT.Module.Patients.Services {
         }
 
         /// <summary>
-        /// 按条件分页查询患者档案信息
-        /// 权限控制：禁用的患者档案仅管理员可查询
+        /// 分页查询患者
+        /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
         public async Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query, UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
@@ -156,23 +176,10 @@ namespace LYBT.Module.Patients.Services {
             };
         }
 
-        public async Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName) {
-            var result = await _patientRepository.EnableAsync(id);
-            if (result) {
-                await _logService.CreateLogAsync(new LogCreateDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = id,
-                    ActionType = ActionType.Enable,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    Content = $"启用患者档案：{id}"
-                });
-            }
-            return result;
-        }
-
-        public async Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName) {
+        /// <summary>
+        /// 删除患者（软删除）
+        /// </summary>
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
             var result = await _patientRepository.DisableAsync(id);
             if (result) {
                 await _logService.CreateLogAsync(new LogCreateDto {
@@ -182,44 +189,45 @@ namespace LYBT.Module.Patients.Services {
                     ActionType = ActionType.Disable,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    Content = $"禁用患者档案：{id}"
+                    Content = $"删除患者：{id}"
                 });
             }
             return result;
         }
 
-        public async Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
-            var count = await _patientRepository.BatchDisableAsync(ids);
-            if (count > 0) {
+        /// <summary>
+        /// 设置患者状态（启用/禁用）
+        /// </summary>
+        public async Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName) {
+            bool result;
+            string action;
+            
+            if (isActive) {
+                result = await _patientRepository.EnableAsync(id);
+                action = "启用";
+            } else {
+                result = await _patientRepository.DisableAsync(id);
+                action = "禁用";
+            }
+            
+            if (result) {
                 await _logService.CreateLogAsync(new LogCreateDto {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
-                    ObjectId = Guid.Empty,
-                    ActionType = ActionType.Disable,
+                    ObjectId = id,
+                    ActionType = isActive ? ActionType.Enable : ActionType.Disable,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    Content = $"批量禁用患者档案：{count}人"
+                    Content = $"{action}患者：{id}"
                 });
             }
-            return count;
+            return result;
         }
 
-        public async Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
-            var count = await _patientRepository.BatchEnableAsync(ids);
-            if (count > 0) {
-                await _logService.CreateLogAsync(new LogCreateDto {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = Guid.Empty,
-                    ActionType = ActionType.Enable,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    Content = $"批量启用患者档案：{count}人"
-                });
-            }
-            return count;
-        }
-
+        /// <summary>
+        /// 搜索患者（根据姓名、手机号、身份证号）
+        /// 权限控制：禁用的患者仅管理员可查询
+        /// </summary>
         public async Task<List<PatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole) {
             bool includeDisabled = currentUserRole == UserRole.Admin;
             var list = await _patientRepository.SearchAsync(keyword, includeDisabled);
@@ -227,152 +235,29 @@ namespace LYBT.Module.Patients.Services {
         }
 
         /// <summary>
-        /// 智能搜索患者档案（精确匹配优先，然后模糊搜索）
-        /// 权限控制：禁用的患者档案仅管理员可查询
+        /// 获取可用患者列表（用于挂号选择）
         /// </summary>
-        public async Task<List<PatientDetailDto>> SmartSearchAsync(string keyword, UserRole currentUserRole) {
-            bool includeDisabled = currentUserRole == UserRole.Admin;
-            var results = new List<PatientModel>();
-
-            // 先进行精确匹配
-            var exactResults = await _patientRepository.ExactSearchAsync(keyword, includeDisabled);
-            results.AddRange(exactResults);
-
-            // 如果精确匹配没有结果，进行模糊搜索
-            if (!results.Any()) {
-                var fuzzyResults = await _patientRepository.SearchAsync(keyword, includeDisabled);
-                results.AddRange(fuzzyResults);
-            } else {
-                // 如果有精确匹配，再补充一些模糊搜索结果
-                var fuzzyResults = await _patientRepository.SearchAsync(keyword, includeDisabled);
-                results.AddRange(fuzzyResults.Where(f => !results.Any(r => r.Id == f.Id)).Take(10));
-            }
-
-            return results.Take(20).Select(_mapper.Map<PatientDetailDto>).ToList();
-        }
-
-        public async Task<int> ImportAsync(List<PatientDetailDto> dtos, Guid operatorId, string operatorName) {
-            int count = 0;
-            foreach (var dto in dtos) {
-                try {
-                    var result = await AddAsync(dto, operatorId, operatorName);
-                    if (result != null)
-                        count++;
-                } catch (Exception) {
-                    // 导入失败的记录跳过，继续处理下一条
-                    continue;
-                }
-            }
-            return count;
-        }
-
-        public async Task<List<PatientDetailDto>> ExportAsync(UserRole currentUserRole) {
-            bool includeDisabled = currentUserRole == UserRole.Admin;
-            var list = await _patientRepository.GetListAsync(null, 1, 5000, includeDisabled);
-            return list.Select(_mapper.Map<PatientDetailDto>).ToList();
-        }
-
-        public async Task<List<RecordDto>> GetHistoryRecordsAsync(Guid patientId) {
-            var records = await _recordService.GetByPatientIdAsync(patientId);
-            return records;
-        }
-
-        /// <summary>
-        /// 查询或创建患者档案（用于挂号/看诊场景）
-        /// 根据姓名和身份证号查询患者档案，如果不存在则创建新档案
-        /// </summary>
-        public async Task<PatientDetailDto> FindOrCreateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
-            // 先尝试查询现有患者档案
-            PatientModel? existingPatient = null;
-
-            // 如果有身份证号，优先按身份证号查询
-            if (!string.IsNullOrEmpty(dto.IDNumber)) {
-                existingPatient = await _patientRepository.GetByIdNumberAsync(dto.IDNumber);
-            }
-
-            // 如果没找到，再按姓名+电话查询
-            if (existingPatient == null && !string.IsNullOrEmpty(dto.PhoneNumber)) {
-                var patientsByName = await _patientRepository.GetByNameAsync(dto.Name);
-                existingPatient = patientsByName.FirstOrDefault(p => p.PhoneNumber == dto.PhoneNumber);
-            }
-
-            if (existingPatient != null) {
-                // 找到现有患者档案，返回现有档案
-                return _mapper.Map<PatientDetailDto>(existingPatient);
-            }
-
-            // 没有找到现有档案，创建新档案
-            var model = new PatientModel {
-                Id = Guid.NewGuid(),
-                Name = dto.Name,
-                Gender = dto.Gender,
-                PhoneNumber = dto.PhoneNumber ?? "",
-                IdNumber = dto.IDNumber ?? "",
-                Address = dto.Address ?? "",
-                PinYinCode = CommonHelper.GetPinyinCode(dto.Name),
-                WuBiCode = CommonHelper.GetWuBiCode(dto.Name),
-                CreateTime = DateTime.Now,
-                UpdateTime = DateTime.Now
-            };
-
-            // 如果提供了身份证，尝试解析年龄和出生日期
-            if (!string.IsNullOrEmpty(dto.IDNumber) && CommonHelper.CheckIdNumber(dto.IDNumber)) {
-                model.BirthDate = ExtractBirthDateFromIdNumber(dto.IDNumber);
-                if (model.BirthDate.HasValue) {
-                    model.Age = CalculateAge(model.BirthDate.Value);
-                }
-            } else if (dto.Age > 0) {
-                model.Age = dto.Age;
-            }
-
-            await _patientRepository.AddAsync(model);
-
-            // 记录日志
-            await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
-                $"查询或创建患者档案：{model.Name}", JsonSerializer.Serialize(model));
-
-            return _mapper.Map<PatientDetailDto>(model);
-        }
-
-        /// <summary>
-        /// 验证患者档案数据
-        /// </summary>
-        public async Task<ValidationResult> ValidatePatientAsync(PatientDetailDto dto, bool isUpdate = false) {
-            var result = new ValidationResult();
-
-            // 基础验证
-            if (string.IsNullOrWhiteSpace(dto.Name)) {
-                result.AddError("患者档案姓名不能为空");
-            }
-
-            // 身份证号码验证
-            if (!string.IsNullOrEmpty(dto.IDNumber)) {
-                if (!CommonHelper.CheckIdNumber(dto.IDNumber)) {
-                    result.AddError("身份证号码格式不正确");
-                } else {
-                    // 检查重复性
-                    var excludeId = isUpdate ? dto.Id : (Guid?)null;
-                    if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber, excludeId)) {
-                        result.AddError("身份证号码已存在");
-                    }
-                }
-            }
-
-            // 手机号验证
-            if (!string.IsNullOrEmpty(dto.PhoneNumber)) {
-                var excludeId = isUpdate ? dto.Id : (Guid?)null;
-                if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber, excludeId)) {
-                    result.AddError("手机号码已存在");
-                }
-            }
-
-            return result;
-        }
-
         public async Task<List<PatientDetailDto>> GetActivePatientsAsync() {
             var patients = await _patientRepository.GetActivePatientsAsync();
             return patients.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
+
+        /// <summary>
+        /// 根据手机号查找患者
+        /// </summary>
+        public async Task<PatientDetailDto?> GetByPhoneNumberAsync(string phoneNumber) {
+            var model = await _patientRepository.GetByPhoneNumberAsync(phoneNumber);
+            return model == null ? null : _mapper.Map<PatientDetailDto>(model);
+        }
+
+        /// <summary>
+        /// 根据身份证号查找患者
+        /// </summary>
+        public async Task<PatientDetailDto?> GetByIDNumberAsync(string idNumber) {
+            var model = await _patientRepository.GetByIdNumberAsync(idNumber);
+            return model == null ? null : _mapper.Map<PatientDetailDto>(model);
+        }
+
 
         /// <summary>
         /// 从身份证号码中提取出生日期
@@ -405,49 +290,7 @@ namespace LYBT.Module.Patients.Services {
         }
 
         /// <summary>
-        /// 三要素匹配检查，防止重复患者档案
-        /// </summary>
-        private async Task<PatientDuplicateCheckResult> CheckPatientDuplicateAsync(string name, string phoneNumber, string idNumber) {
-            var result = new PatientDuplicateCheckResult { HasDuplicate = false };
-            var duplicateMessages = new List<string>();
-
-            // 1. 身份证号完全匹配检查
-            if (!string.IsNullOrEmpty(idNumber)) {
-                var idMatches = await _patientRepository.GetPatientsByIdNumberAsync(idNumber);
-                if (idMatches.Any()) {
-                    duplicateMessages.Add($"身份证号 {idNumber} 已存在");
-                    result.HasDuplicate = true;
-                    result.MatchType |= PatientMatchType.IdNumber;
-                    result.ExistingPatients.AddRange(idMatches);
-                }
-            }
-
-            // 2. 姓名+手机号匹配检查
-            if (!string.IsNullOrEmpty(phoneNumber)) {
-                var namePhoneMatches = await _patientRepository.GetPatientsByNameAndPhoneAsync(name, phoneNumber);
-                if (namePhoneMatches.Any()) {
-                    duplicateMessages.Add($"姓名 {name} + 手机号 {phoneNumber} 组合已存在");
-                    result.HasDuplicate = true;
-                    result.MatchType |= PatientMatchType.NameAndPhone;
-                    result.ExistingPatients.AddRange(namePhoneMatches.Where(p => !result.ExistingPatients.Any(ep => ep.Id == p.Id)));
-                }
-            }
-
-            // 3. 高相似度姓名检查（考虑同音字、形近字等情况）
-            var similarNameMatches = await _patientRepository.GetPatientsBySimilarNameAsync(name);
-            if (similarNameMatches.Any()) {
-                duplicateMessages.Add($"发现相似姓名患者档案：{string.Join(", ", similarNameMatches.Select(p => p.Name))}");
-                result.HasSimilar = true;
-                result.MatchType |= PatientMatchType.SimilarName;
-                result.SimilarPatients.AddRange(similarNameMatches.Where(p => !result.ExistingPatients.Any(ep => ep.Id == p.Id)));
-            }
-
-            result.Message = string.Join("；", duplicateMessages);
-            return result;
-        }
-
-        /// <summary>
-        /// 统一的患者档案操作日志记录
+        /// 统一的患者操作日志记录
         /// </summary>
         private async Task LogPatientOperationAsync(Guid operatorId, string operatorName,
             LogActionType actionType, string content, string? parameters = null) {
@@ -461,68 +304,5 @@ namespace LYBT.Module.Patients.Services {
                 parameters: parameters
             );
         }
-    }
-
-    /// <summary>
-    /// 患者档案重复检查结果
-    /// </summary>
-    public class PatientDuplicateCheckResult {
-
-        /// <summary>
-        /// 是否有重复
-        /// </summary>
-        public bool HasDuplicate { get; set; }
-
-        /// <summary>
-        /// 是否有相似
-        /// </summary>
-        public bool HasSimilar { get; set; }
-
-        /// <summary>
-        /// 匹配类型
-        /// </summary>
-        public PatientMatchType MatchType { get; set; }
-
-        /// <summary>
-        /// 提示消息
-        /// </summary>
-        public string Message { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 已存在的患者档案（强匹配）
-        /// </summary>
-        public List<PatientModel> ExistingPatients { get; set; } = new();
-
-        /// <summary>
-        /// 相似的患者档案（弱匹配）
-        /// </summary>
-        public List<PatientModel> SimilarPatients { get; set; } = new();
-    }
-
-    /// <summary>
-    /// 患者档案匹配类型
-    /// </summary>
-    [Flags]
-    public enum PatientMatchType {
-
-        /// <summary>
-        /// 无匹配
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// 身份证号匹配
-        /// </summary>
-        IdNumber = 1,
-
-        /// <summary>
-        /// 姓名+手机号匹配
-        /// </summary>
-        NameAndPhone = 2,
-
-        /// <summary>
-        /// 相似姓名匹配
-        /// </summary>
-        SimilarName = 4
     }
 }

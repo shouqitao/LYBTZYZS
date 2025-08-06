@@ -222,7 +222,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IBillingService, BillingService>();
             containerRegistry.RegisterSingleton<IPharmacyService, PharmacyService>();
             containerRegistry.RegisterSingleton<IPhysiotherapyService, PhysiotherapyService>();
-            containerRegistry.RegisterSingleton<IPrescriptionPrintService, PrescriptionPrintService>();
+            containerRegistry.RegisterSingleton<IPrescriptionPrintService, SimplePrescriptionPrintService>();
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
         }
 

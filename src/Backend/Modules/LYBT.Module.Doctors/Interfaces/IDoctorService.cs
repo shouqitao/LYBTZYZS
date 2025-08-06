@@ -5,73 +5,58 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Module.Doctors.Interfaces {
 
     /// <summary>
-    /// 医生业务服务接口
-    /// 实现软删除策略：医生只能禁用/启用，不能物理删除
+    /// 医生业务服务接口（简化版）
     /// </summary>
     public interface IDoctorService {
 
         /// <summary>
         /// 根据ID获取医生详情
-        /// 根据当前操作者角色决定是否包含禁用医生
         /// </summary>
         Task<DoctorDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
 
         /// <summary>
         /// 根据用户ID获取医生详情
-        /// 根据当前操作者角色决定是否包含禁用医生
         /// </summary>
         Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId, UserRole currentUserRole);
 
         /// <summary>
+        /// 获取所有医生列表
+        /// </summary>
+        Task<List<DoctorDto>> GetAllAsync(UserRole currentUserRole);
+
+        /// <summary>
         /// 搜索医生
-        /// 根据当前操作者角色决定是否包含禁用医生
         /// </summary>
         Task<List<DoctorDto>> SearchAsync(string keyword, UserRole currentUserRole);
 
         /// <summary>
         /// 分页获取医生列表
-        /// 根据当前操作者角色决定是否包含禁用医生
         /// </summary>
         Task<PaginatedResult<DoctorDto>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole);
 
         /// <summary>
-        /// 新增医生档案（仅管理员可操作，且用户必须具有医生角色）
+        /// 新增医生
         /// </summary>
-        Task<DoctorDto?> AddAsync(DoctorDetailDto dto, UserRole operatorRole);
+        Task<DoctorDetailDto?> CreateAsync(DoctorCreateDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 更新医生信息（管理员可操作，医生可修改自己的档案）
+        /// 更新医生信息
         /// </summary>
-        Task<bool> UpdateAsync(DoctorDetailDto dto, UserRole operatorRole, Guid operatorUserId);
+        Task<DoctorDetailDto?> UpdateAsync(Guid id, DoctorUpdateDto dto, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 禁用医生（软删除）
+        /// 删除医生（软删除）
         /// </summary>
-        Task<bool> DisableAsync(Guid id);
+        Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 启用医生
+        /// 设置医生状态
         /// </summary>
-        Task<bool> EnableAsync(Guid id);
+        Task<bool> SetStatusAsync(Guid id, DoctorStatus status, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 批量禁用医生
+        /// 获取可用医生列表（用于挂号选择）
         /// </summary>
-        Task<int> BatchDisableAsync(List<Guid> ids);
-
-        /// <summary>
-        /// 批量启用医生
-        /// </summary>
-        Task<int> BatchEnableAsync(List<Guid> ids);
-
-        /// <summary>
-        /// 获取所有在职医生列表（不分页）
-        /// </summary>
-        Task<List<DoctorDto>> GetActiveDoctorsAsync();
-
-        /// <summary>
-        /// 检查用户是否已关联医生档案
-        /// </summary>
-        Task<bool> IsUserLinkedToDoctorAsync(Guid userId);
+        Task<List<DoctorDto>> GetAvailableDoctorsAsync();
     }
 }

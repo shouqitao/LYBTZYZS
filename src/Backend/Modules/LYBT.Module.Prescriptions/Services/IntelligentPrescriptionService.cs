@@ -146,7 +146,7 @@ namespace LYBT.Module.Prescriptions.Services {
         /// </summary>
         public async Task<HerbAvailabilityCheckResult> CheckHerbAvailabilityAsync(List<PrescriptionItemModel> items) {
             var result = new HerbAvailabilityCheckResult();
-            var allHerbs = await _herbService.GetAllActiveHerbsAsync();
+            var allHerbs = await _herbService.GetAvailableHerbsAsync();
             var availableHerbNames = allHerbs.Select(h => h.Name?.Trim().ToUpper()).ToHashSet();
 
             foreach (var item in items) {

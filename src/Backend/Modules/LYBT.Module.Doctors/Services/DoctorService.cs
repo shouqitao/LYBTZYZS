@@ -1,17 +1,15 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Models.Doctors;
 using LYBT.Module.Doctors.Interfaces;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Doctors;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Helpers;
-using System.Text.RegularExpressions;
 
 namespace LYBT.Module.Doctors.Services {
 
     /// <summary>
-    /// 医生业务服务实现类
+    /// 医生业务服务实现类（简化版）
     /// </summary>
     public class DoctorService : IDoctorService {
         private readonly IDoctorRepository _doctorRepository;
@@ -45,7 +43,136 @@ namespace LYBT.Module.Doctors.Services {
                 return null;
             }
 
+            var dto = _mapper.Map<DoctorDetailDto>(model);
+            
+            // 获取统计信息（可选）
+            // TODO: 实现统计逻辑
+            dto.TodayPatientCount = 0;
+            dto.TotalPatientCount = 0;
+            
+            return dto;
+        }
+
+        public async Task<List<DoctorDto>> GetAllAsync(UserRole currentUserRole) {
+            var includeDisabled = CanViewDisabledDoctors(currentUserRole);
+            var models = await _doctorRepository.GetAllAsync(includeDisabled);
+            return _mapper.Map<List<DoctorDto>>(models);
+        }
+
+        public async Task<PaginatedResult<DoctorDto>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole) {
+            query ??= new DoctorQueryDto();
+            
+            var includeDisabled = CanViewDisabledDoctors(currentUserRole);
+            var models = await _doctorRepository.GetAllAsync(includeDisabled);
+            
+            // 应用搜索过滤
+            if (!string.IsNullOrWhiteSpace(query.SearchKeyword)) {
+                var keyword = query.SearchKeyword.ToLower();
+                models = models.Where(m =>
+                    m.Name.ToLower().Contains(keyword) ||
+                    m.Specialty.ToLower().Contains(keyword) ||
+                    m.LicenseNumber.ToLower().Contains(keyword) ||
+                    (m.PinYinCode != null && m.PinYinCode.ToLower().Contains(keyword))
+                ).ToList();
+            }
+
+            // 按状态过滤
+            if (query.Status.HasValue) {
+                models = models.Where(m => m.Status == query.Status.Value).ToList();
+            }
+
+            // 排序
+            models = query.OrderBy?.ToLower() switch {
+                "name" => query.IsAscending ? models.OrderBy(m => m.Name).ToList() : models.OrderByDescending(m => m.Name).ToList(),
+                "registrationfee" => query.IsAscending ? models.OrderBy(m => m.RegistrationFee).ToList() : models.OrderByDescending(m => m.RegistrationFee).ToList(),
+                "createtime" => query.IsAscending ? models.OrderBy(m => m.CreateTime).ToList() : models.OrderByDescending(m => m.CreateTime).ToList(),
+                _ => models.OrderByDescending(m => m.CreateTime).ToList()
+            };
+
+            // 分页
+            var total = models.Count;
+            var pagedModels = models
+                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToList();
+
+            var dtos = _mapper.Map<List<DoctorDto>>(pagedModels);
+            return new PaginatedResult<DoctorDto>(dtos, total, query.CurrentPage, query.PageSize);
+        }
+
+        public async Task<DoctorDetailDto?> CreateAsync(DoctorCreateDto dto, Guid operatorId, string operatorName) {
+            if (dto == null) {
+                throw new ArgumentNullException(nameof(dto));
+            }
+
+            // 验证用户是否存在
+            var user = await _userRepository.GetByIdAsync(dto.UserId);
+            if (user == null) {
+                throw new InvalidOperationException($"用户ID {dto.UserId} 不存在");
+            }
+
+            // 检查该用户是否已经是医生
+            var existingDoctor = await _doctorRepository.GetByUserIdAsync(dto.UserId);
+            if (existingDoctor != null) {
+                throw new InvalidOperationException($"用户 {user.RealName} 已经是医生");
+            }
+
+            // 创建医生实体
+            var model = new DoctorModel {
+                Id = Guid.NewGuid(),
+                UserId = dto.UserId,
+                User = user,
+                Name = dto.Name,
+                Specialty = dto.Specialty,
+                RegistrationFee = dto.RegistrationFee,
+                LicenseNumber = dto.LicenseNumber,
+                ContactNumber = dto.ContactNumber,
+                Introduction = dto.Introduction,
+                PinYinCode = null, // TODO: 实现拼音码生成
+                Status = DoctorStatus.Active,
+                CreateTime = DateTime.Now
+            };
+
+            await _doctorRepository.AddAsync(model);
             return _mapper.Map<DoctorDetailDto>(model);
+        }
+
+        public async Task<DoctorDetailDto?> UpdateAsync(Guid id, DoctorUpdateDto dto, Guid operatorId, string operatorName) {
+            if (dto == null) {
+                throw new ArgumentNullException(nameof(dto));
+            }
+
+            var model = await _doctorRepository.GetByIdAsync(id, true);
+            if (model == null) {
+                return null;
+            }
+
+            // 更新字段
+            model.Name = dto.Name;
+            model.Specialty = dto.Specialty;
+            model.RegistrationFee = dto.RegistrationFee;
+            model.LicenseNumber = dto.LicenseNumber;
+            model.ContactNumber = dto.ContactNumber;
+            model.Introduction = dto.Introduction;
+            model.Status = dto.Status;
+            model.PinYinCode = null; // TODO: 实现拼音码生成
+            model.UpdateTime = DateTime.Now;
+
+            await _doctorRepository.UpdateAsync(model);
+            return _mapper.Map<DoctorDetailDto>(model);
+        }
+
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
+            var model = await _doctorRepository.GetByIdAsync(id, true);
+            if (model == null) {
+                return false;
+            }
+
+            // 软删除：将状态设置为已删除
+            model.Status = DoctorStatus.Deleted;
+            model.UpdateTime = DateTime.Now;
+            await _doctorRepository.UpdateAsync(model);
+            return true;
         }
 
         public async Task<DoctorDetailDto?> GetByUserIdAsync(Guid userId, UserRole currentUserRole) {
@@ -54,226 +181,55 @@ namespace LYBT.Module.Doctors.Services {
             }
 
             var includeDisabled = CanViewDisabledDoctors(currentUserRole);
-            var model = await _doctorRepository.GetByUserIdAsync(userId, includeDisabled);
+            var model = await _doctorRepository.GetByUserIdAsync(userId);
+            
             if (model == null) {
+                return null;
+            }
+
+            // 如果不能查看禁用医生，检查状态
+            if (!includeDisabled && model.Status != DoctorStatus.Active) {
                 return null;
             }
 
             return _mapper.Map<DoctorDetailDto>(model);
         }
 
-        public async Task<List<DoctorDto>> SearchAsync(string keyword, UserRole currentUserRole) {
-            var includeDisabled = CanViewDisabledDoctors(currentUserRole);
-            var models = await _doctorRepository.SearchAsync(keyword ?? string.Empty, includeDisabled);
-            return _mapper.Map<List<DoctorDto>>(models);
-        }
-
-        public async Task<PaginatedResult<DoctorDto>> GetPagedAsync(DoctorQueryDto query, UserRole currentUserRole) {
-            // 参数验证
-            if (query.Page < 1)
-                query.Page = 1;
-            if (query.PageSize < 1 || query.PageSize > 100)
-                query.PageSize = 20;
-
-            var includeDisabled = CanViewDisabledDoctors(currentUserRole);
-            var (models, total) = await _doctorRepository.GetPagedAsync(query, includeDisabled);
-            var dtos = _mapper.Map<List<DoctorDto>>(models);
-
-            return new PaginatedResult<DoctorDto>(dtos, total, query.Page, query.PageSize);
-        }
-
-        public async Task<DoctorDto?> AddAsync(DoctorDetailDto dto, UserRole operatorRole) {
-            // 权限验证：只有管理员可以创建医生档案
-            if (operatorRole != UserRole.Admin) {
-                throw new UnauthorizedAccessException("只有管理员可以创建医生档案");
-            }
-
-            // 参数验证
-            if (dto.UserId == Guid.Empty) {
-                throw new ArgumentException("关联用户ID不能为空");
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.Specialty)) {
-                throw new ArgumentException("专科不能为空");
-            }
-
-            // 1. 检查用户是否存在
-            var user = await _userRepository.GetByIdAsync(dto.UserId, true);
-            if (user == null) {
-                throw new InvalidOperationException("选择的用户不存在，请重新选择");
-            }
-
-            // 2. 判断用户角色是否是医生
-            if (user.Role != UserRole.DiagnosingDoctor) {
-                throw new InvalidOperationException($"该用户不是医生账户，当前角色：{user.Role}，无法创建医生档案");
-            }
-
-            // 3. 检查该医生用户是否已创建过医生档案
-            var existingDoctor = await _doctorRepository.GetByUserIdAsync(dto.UserId, true);
-            if (existingDoctor != null) {
-                throw new InvalidOperationException($"该医生用户（{user.RealName}）已存在医生档案，请勿重复创建");
-            }
-
-            // 4. 检查身份证号码是否已存在
-            if (!string.IsNullOrWhiteSpace(dto.IdNumber)) {
-                // 验证身份证格式
-                if (!IsValidIdNumber(dto.IdNumber)) {
-                    throw new ArgumentException("身份证号码格式不正确");
-                }
-
-                // 检查身份证号码重复
-                if (await _doctorRepository.IsIdNumberExistsAsync(dto.IdNumber)) {
-                    throw new InvalidOperationException($"身份证号码 {dto.IdNumber} 已存在，无法创建重复的医生档案");
-                }
-            }
-
-            // 创建医生实体
-            var model = _mapper.Map<DoctorModel>(dto);
-            model.Id = Guid.NewGuid();
-            model.User = user;
-            model.CreateTime = DateTime.Now;
-
-            // 生成拼音码
-            model.PinYinCode = CommonHelper.GetPinyinCode(user.RealName);
-
-            var success = await _doctorRepository.AddAsync(model);
-            if (!success) {
-                return null;
-            }
-            
-            // 返回创建的对象
-            return _mapper.Map<DoctorDto>(model);
-        }
-
-        public async Task<bool> UpdateAsync(DoctorDetailDto dto, UserRole operatorRole, Guid operatorUserId) {
-            // 参数验证
-            if (dto.Id == Guid.Empty) {
-                throw new ArgumentException("医生ID不能为空");
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.Specialty)) {
-                throw new ArgumentException("专科不能为空");
-            }
-
-            // 获取现有医生信息
-            var model = await _doctorRepository.GetByIdAsync(dto.Id, true);
+        public async Task<bool> SetStatusAsync(Guid id, DoctorStatus status, Guid operatorId, string operatorName) {
+            var model = await _doctorRepository.GetByIdAsync(id, true);
             if (model == null) {
-                throw new InvalidOperationException("医生不存在");
-            }
-
-            // 权限验证：管理员可以修改任何医生档案，医生只能修改自己的档案
-            if (operatorRole != UserRole.Admin && operatorRole != UserRole.DiagnosingDoctor) {
-                throw new UnauthorizedAccessException("权限不足，无法修改医生档案");
-            }
-
-            if (operatorRole == UserRole.DiagnosingDoctor && model.UserId != operatorUserId) {
-                throw new UnauthorizedAccessException("医生只能修改自己的档案");
-            }
-
-            // 检查身份证号码（如果要更新）
-            if (!string.IsNullOrWhiteSpace(dto.IdNumber) && dto.IdNumber != model.IdNumber) {
-                // 验证身份证格式
-                if (!IsValidIdNumber(dto.IdNumber)) {
-                    throw new ArgumentException("身份证号码格式不正确");
-                }
-
-                // 检查身份证号码重复（排除当前医生）
-                if (await _doctorRepository.IsIdNumberExistsAsync(dto.IdNumber, dto.Id)) {
-                    throw new InvalidOperationException($"身份证号码 {dto.IdNumber} 已存在，无法更新");
-                }
-            }
-
-            // 更新医生字段（不更新UserId、User等关键字段）
-            model.Gender = dto.Gender;
-            model.Birthday = dto.Birthday;
-            model.Title = dto.Title;
-            model.LicenseNumber = dto.LicenseNumber;
-            model.IdNumber = dto.IdNumber;
-            model.Specialty = dto.Specialty;
-            model.Status = dto.Status;
-            model.WorkStatus = dto.WorkStatus;
-            model.Remark = dto.Remark;
-            model.ContactNumber = dto.ContactNumber;
-
-            // 更新拼音码
-            model.PinYinCode = CommonHelper.GetPinyinCode(model.User.RealName);
-
-            return await _doctorRepository.UpdateAsync(model);
-        }
-
-        public async Task<bool> DisableAsync(Guid id) {
-            if (id == Guid.Empty) {
-                throw new ArgumentException("医生ID不能为空");
-            }
-
-            return await _doctorRepository.DisableAsync(id);
-        }
-
-        public async Task<bool> EnableAsync(Guid id) {
-            if (id == Guid.Empty) {
-                throw new ArgumentException("医生ID不能为空");
-            }
-
-            return await _doctorRepository.EnableAsync(id);
-        }
-
-        public async Task<int> BatchDisableAsync(List<Guid> ids) {
-            if (ids == null || ids.Count == 0) {
-                throw new ArgumentException("请选择要禁用的医生");
-            }
-
-            return await _doctorRepository.BatchDisableAsync(ids);
-        }
-
-        public async Task<int> BatchEnableAsync(List<Guid> ids) {
-            if (ids == null || ids.Count == 0) {
-                throw new ArgumentException("请选择要启用的医生");
-            }
-
-            return await _doctorRepository.BatchEnableAsync(ids);
-        }
-
-        public async Task<List<DoctorDto>> GetActiveDoctorsAsync() {
-            var models = await _doctorRepository.GetActiveDoctorsAsync();
-            return _mapper.Map<List<DoctorDto>>(models);
-        }
-
-        public async Task<bool> IsUserLinkedToDoctorAsync(Guid userId) {
-            if (userId == Guid.Empty) {
-                throw new ArgumentException("用户ID不能为空");
-            }
-
-            var doctor = await _doctorRepository.GetByUserIdAsync(userId, true);
-            return doctor != null;
-        }
-
-        /// <summary>
-        /// 验证身份证号码格式
-        /// </summary>
-        /// <param name="idNumber">身份证号码</param>
-        /// <returns>是否有效</returns>
-        private static bool IsValidIdNumber(string idNumber) {
-            if (string.IsNullOrWhiteSpace(idNumber)) {
                 return false;
             }
 
-            // 18位身份证号码正则表达式
-            var regex = new Regex(@"^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$");
-            if (!regex.IsMatch(idNumber)) {
-                return false;
+            model.Status = status;
+            model.UpdateTime = DateTime.Now;
+            await _doctorRepository.UpdateAsync(model);
+            return true;
+        }
+
+        public async Task<List<DoctorDto>> SearchAsync(string keyword, UserRole currentUserRole) {
+            if (string.IsNullOrWhiteSpace(keyword)) {
+                return new List<DoctorDto>();
             }
 
-            // 验证校验位
-            var weightFactors = new int[] { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
-            var checkCodes = new char[] { '1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2' };
+            var includeDisabled = CanViewDisabledDoctors(currentUserRole);
+            var models = await _doctorRepository.GetAllAsync(includeDisabled);
+            
+            keyword = keyword.ToLower();
+            var filtered = models.Where(m =>
+                m.Name.ToLower().Contains(keyword) ||
+                m.Specialty.ToLower().Contains(keyword) ||
+                m.LicenseNumber.ToLower().Contains(keyword) ||
+                (m.PinYinCode != null && m.PinYinCode.ToLower().Contains(keyword))
+            ).Take(20).ToList();
 
-            var sum = 0;
-            for (int i = 0; i < 17; i++) {
-                sum += int.Parse(idNumber[i].ToString()) * weightFactors[i];
-            }
+            return _mapper.Map<List<DoctorDto>>(filtered);
+        }
 
-            var checkCode = checkCodes[sum % 11];
-            return char.ToUpper(idNumber[17]) == checkCode;
+        public async Task<List<DoctorDto>> GetAvailableDoctorsAsync() {
+            var models = await _doctorRepository.GetAllAsync(false);
+            var availableDoctors = models.Where(m => m.Status == DoctorStatus.Active).ToList();
+            return _mapper.Map<List<DoctorDto>>(availableDoctors);
         }
     }
 }

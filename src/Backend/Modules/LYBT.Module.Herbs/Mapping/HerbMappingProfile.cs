@@ -47,8 +47,7 @@ namespace LYBT.Module.Herbs.Mapping {
                 .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
                 .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore())
                 .ForMember(dest => dest.Specification, opt => opt.MapFrom(src => 1))
-                .ForMember(dest => dest.Usage, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => LYBT.Shared.Models.Enums.HerbStatus.Active));
+                .ForMember(dest => dest.Usage, opt => opt.Ignore());
 
             // ==================== 基础模型映射 ====================
 

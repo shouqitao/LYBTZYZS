@@ -4,75 +4,51 @@ using System.ComponentModel;
 namespace LYBT.Shared.Models.Contracts.Doctors {
 
     /// <summary>
-    /// 医生列表 DTO（仅包含医生专属字段和UserId，姓名等通过User获取）
+    /// 医生列表 DTO（简化版 - 只包含核心字段）
     /// </summary>
     public class DoctorDto {
 
-        [DisplayName("Id")]
+        [DisplayName("医生ID")]
         public Guid Id { get; set; }
 
-        [DisplayName("UserId")]
+        [DisplayName("用户ID")]
         public Guid UserId { get; set; }
 
-        [DisplayName("Birthday")]
-        public DateTime? Birthday { get; set; }
+        [DisplayName("医生姓名")]
+        public string Name { get; set; } = string.Empty;
 
-        [DisplayName("Title")]
-        public DoctorTitle Title { get; set; } = DoctorTitle.Junior;
-
-        [DisplayName("LicenseNumber")]
-        public string? LicenseNumber { get; set; }
-
-        /// <summary>
-        /// 身份证号码
-        /// </summary>
-        [DisplayName("身份证号码")]
-        public string? IdNumber { get; set; }
-
-        [DisplayName("Specialty")]
+        [DisplayName("专长")]
         public string Specialty { get; set; } = string.Empty;
 
-        [DisplayName("Status")]
+        [DisplayName("挂号费")]
+        public decimal RegistrationFee { get; set; }
+
+        [DisplayName("执业证书号")]
+        public string LicenseNumber { get; set; } = string.Empty;
+
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
+
+        [DisplayName("联系电话")]
+        public string? ContactNumber { get; set; }
+
+        [DisplayName("简介")]
+        public string? Introduction { get; set; }
+
+        [DisplayName("状态")]
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
 
-        [DisplayName("WorkStatus")]
-        public DoctorWorkStatus WorkStatus { get; set; } = DoctorWorkStatus.Clinic;
+        [DisplayName("创建时间")]
+        public DateTime CreateTime { get; set; }
 
-        [DisplayName("PinyinCode")]
-        public string PinYinCode { get; set; } = string.Empty;
+        [DisplayName("更新时间")]
+        public DateTime? UpdateTime { get; set; }
 
-        [DisplayName("Remark")]
-        public string? Remark { get; set; }
+        // 计算属性
+        [DisplayName("是否可用")]
+        public bool IsActive => Status == DoctorStatus.Active;
 
-        [DisplayName("ContactNumber")]
-        public string? ContactNumber { get; set; } // 医生对外联系方式
-
-        // 用户信息（只读）
-        [DisplayName("Username")]
-        public string? Username { get; set; }
-
-        [DisplayName("RealName")]
-        public string? RealName { get; set; }
-
-        [DisplayName("PhoneNumber")]
-        public string? PhoneNumber { get; set; }
-
-        /// <summary>
-        /// 性别
-        /// </summary>
-        [DisplayName("性别")]
-        public Gender Gender { get; set; }
-
-        /// <summary>
-        /// 邮箱
-        /// </summary>
-        [DisplayName("邮箱")]
-        public string? Email { get; set; }
-
-        /// <summary>
-        /// 年龄
-        /// </summary>
-        [DisplayName("年龄")]
-        public int? Age { get; set; }
+        [DisplayName("显示信息")]
+        public string DisplayInfo => $"{Name} - {Specialty} (挂号费: ¥{RegistrationFee})";
     }
 }
