@@ -71,22 +71,7 @@ namespace LYBT.WebAPI.Controllers {
             }
         }
 
-        /// <summary>
-        /// 分页获取处方列表
-        /// </summary>
-        [HttpGet("paged")]
-        public async Task<ActionResult<PaginatedResult<PrescriptionDto>>> GetPagedList([FromQuery] PaginationRequest query) {
-            try {
-                var validationResult = ValidateModel();
-                if (validationResult != null) return validationResult;
-
-                var (_, _, operatorRole) = GetOperator();
-                var result = await _service.GetPagedAsync(query);
-                return Ok(result);
-            } catch (Exception ex) {
-                return HandleException(ex, "分页获取处方列表");
-            }
-        }
+        // 移除重复的分页查询接口，统一使用RESTful GET接口
 
         /// <summary>
         /// 获取处方详情
@@ -132,12 +117,14 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 编辑处方
         /// </summary>
-        [HttpPut]
-        public async Task<ActionResult<PrescriptionDto>> Update([FromBody] PrescriptionEditDto dto) {
+        [HttpPut("{id}")]
+        public async Task<ActionResult<PrescriptionDto>> Update(Guid id, [FromBody] PrescriptionEditDto dto) {
             try {
                 var validationResult = ValidateModel();
                 if (validationResult != null) return validationResult;
 
+                // 确保DTO的ID与路由参数一致
+                dto.Id = id;
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.UpdateAsync(dto, operatorId, operatorName);
                 if (!result) {

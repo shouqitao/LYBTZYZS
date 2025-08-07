@@ -36,8 +36,8 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 更新医疗案例
         /// </summary>
-        [Put("/api/v1/MedicalCase")]
-        Task<Refit.ApiResponse<bool>> UpdateAsync([Body] MedicalCaseEditDto editDto);
+        [Put("/api/v1/MedicalCase/{id}")]
+        Task<Refit.ApiResponse<bool>> UpdateAsync(Guid id, [Body] MedicalCaseEditDto editDto);
 
         /// <summary>
         /// 获取患者的医疗案例列表

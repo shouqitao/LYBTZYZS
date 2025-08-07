@@ -12,17 +12,24 @@ namespace LYBT.WPF.Client.Services.Interfaces
     /// </summary>
     public interface IHerbApiService
     {
-        /// <summary>
-        /// 分页查询药材
-        /// </summary>
-        [Post("/api/v1/herbs/paged")]
-        Task<Refit.ApiResponse<PaginatedResult<HerbDto>>> GetPagedHerbsAsync([Body] HerbPagedQueryDto query);
+        // 移除重复的分页查询接口，统一使用RESTful GET接口
 
         /// <summary>
-        /// 获取药材列表
+        /// 获取药材列表（支持分页和查询）
         /// </summary>
         [Get("/api/v1/herbs")]
-        Task<Refit.ApiResponse<List<HerbDto>>> GetHerbsAsync();
+        Task<Refit.ApiResponse<PaginatedResult<HerbDto>>> GetHerbsAsync(
+            [Query] int page = 1,
+            [Query] int pageSize = 20,
+            [Query] string? keyword = null,
+            [Query] string? name = null,
+            [Query] string? origin = null,
+            [Query] string? effect = null,
+            [Query] string? usage = null,
+            [Query] int? status = null,
+            [Query] decimal? minPrice = null,
+            [Query] decimal? maxPrice = null,
+            [Query] bool? hasStock = null);
 
         /// <summary>
         /// 获取药材详情
@@ -39,21 +46,24 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 更新药材
         /// </summary>
-        [Put("/api/v1/herbs")]
-        Task<Refit.ApiResponse<object>> UpdateHerbAsync([Body] HerbUpdateDto dto);
+        [Put("/api/v1/herbs/{id}")]
+        Task<Refit.ApiResponse<HerbDto>> UpdateHerbAsync(Guid id, [Body] HerbUpdateDto dto);
 
-        /// <summary>
-        /// 删除药材
-        /// </summary>
-        [Delete("/api/v1/herbs/{id}")]
-        Task<Refit.ApiResponse<object>> DeleteHerbAsync(Guid id);
+        // 本系统采用软删除策略，不提供DELETE接口
+        // 请使用ToggleStatus或UpdateStatus禁用药材
 
 
         /// <summary>
         /// 更新药材状态
         /// </summary>
-        [Put("/api/v1/herbs/{id}/status")]
-        Task<Refit.ApiResponse<object>> UpdateStatusAsync(Guid id, [Body] CommonStatusUpdateDto dto);
+        [Patch("/api/v1/herbs/status")]
+        Task<Refit.ApiResponse<object>> UpdateStatusAsync([Body] CommonStatusUpdateDto dto);
+
+        /// <summary>
+        /// 切换药材状态
+        /// </summary>
+        [Patch("/api/v1/herbs/{id}/toggle-status")]
+        Task<Refit.ApiResponse<object>> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 获取可用药材列表

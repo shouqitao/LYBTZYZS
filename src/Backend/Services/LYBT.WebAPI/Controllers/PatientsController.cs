@@ -31,24 +31,7 @@ namespace LYBT.WebAPI.Controllers {
             _patientService = patientService;
         }
 
-        /// <summary>
-        /// 新增病人
-        /// </summary>
-        [HttpPost("add")]
-        public async Task<IActionResult> Add([FromBody] PatientDetailDto dto) {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var result = await _patientService.CreateAsync(dto, operatorId, operatorName);
-            if (result != null) {
-                LogOperation("患者档案创建成功", result, result.Id);
-                return Ok(result);
-            } else {
-                return BadRequest(new ProblemDetails {
-                    Title = "操作失败",
-                    Detail = "患者档案创建失败，必填项不完整或已存在",
-                    Status = 400
-                });
-            }
-        }
+        // 移除重复的新增患者接口，统一使用RESTful POST接口
 
         /// <summary>
         /// 快速创建患者档案（简化版本）
@@ -79,41 +62,7 @@ namespace LYBT.WebAPI.Controllers {
             }
         }
 
-        /// <summary>
-        /// 启用患者档案
-        /// </summary>
-        [HttpPatch("{id}/enable")]
-        public async Task<IActionResult> Enable(Guid id) {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var result = await _patientService.SetStatusAsync(id, true, operatorId, operatorName);
-            if (result) {
-                return Ok(new { message = "患者档案已启用" });
-            } else {
-                return NotFound(new ProblemDetails {
-                    Title = "资源未找到",
-                    Detail = "患者档案不存在",
-                    Status = 404
-                });
-            }
-        }
-
-        /// <summary>
-        /// 禁用患者档案（软删除）
-        /// </summary>
-        [HttpPatch("{id}/disable")]
-        public async Task<IActionResult> Disable(Guid id) {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var result = await _patientService.SetStatusAsync(id, false, operatorId, operatorName);
-            if (result) {
-                return Ok(new { message = "患者档案已禁用" });
-            } else {
-                return NotFound(new ProblemDetails {
-                    Title = "资源未找到",
-                    Detail = "患者档案不存在",
-                    Status = 404
-                });
-            }
-        }
+        // 移除单独的Enable/Disable接口，统一使用ToggleStatus接口
 
         /// <summary>
         /// 切换患者档案状态（启用/禁用）
@@ -177,25 +126,7 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(result);
         }
 
-        /// <summary>
-        /// 批量禁用患者档案
-        /// </summary>
-        [HttpPatch("batch-disable")]
-        public async Task<IActionResult> BatchDisable([FromBody] BatchOperationDto dto) {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var count = 0;             await Task.CompletedTask; // 暂时占位，等待实现
-            return Ok(new { disabledCount = count, message = $"成功禁用 {count} 名患者档案" });
-        }
-
-        /// <summary>
-        /// 批量启用患者档案
-        /// </summary>
-        [HttpPatch("batch-enable")]
-        public async Task<IActionResult> BatchEnable([FromBody] BatchOperationDto dto) {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var count = 0;             await Task.CompletedTask; // 暂时占位，等待实现
-            return Ok(new { enabledCount = count, message = $"成功启用 {count} 名患者档案" });
-        }
+        // 移除未实现的批量操作接口，避免误导用户
 
         /// <summary>
         /// 搜索患者档案
@@ -209,16 +140,6 @@ namespace LYBT.WebAPI.Controllers {
         }
 
         /// <summary>
-        /// 导入患者档案数据
-        /// </summary>
-        [HttpPost("import")]
-        public async Task<IActionResult> Import([FromBody] List<PatientDetailDto> dtos) {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var count = 0;             await Task.CompletedTask; // 暂时占位，等待实现
-            return Ok(new { imported = count, message = $"成功导入 {count} 名患者档案" });
-        }
-
-        /// <summary>
         /// 导出患者档案数据
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
@@ -229,15 +150,8 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(data);
         }
 
-        /// <summary>
-        /// 获取患者档案历史病历
-        /// </summary>
-        [HttpGet("{id}/records")]
-        public async Task<ActionResult<List<object>>> GetHistory(Guid id) {
-            var data = new List<object>(); // TODO: 实现获取历史记录功能，RecordDto已删除
-            await Task.CompletedTask; // 暂时占位，等待实现
-            return Ok(data);
-        }
+        // 移除未实现的导入和历史病历功能，避免误导用户
+        // 这些功能可以在后续版本中根据实际需求添加
 
         /// <summary>
         /// 获取启用的患者档案列表

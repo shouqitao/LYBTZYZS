@@ -26,95 +26,11 @@ public class UsersController : BaseController {
         _userService = userService;
     }
 
-    /// <summary>
-    /// 分页查找用户（关键词、角色、状态筛选）
-    /// 权限控制：禁用的用户仅管理员可查询
-    /// </summary>
-    [HttpPost("paged")]
-    public async Task<ActionResult<PaginatedResult<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetPaged([FromBody] LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto query) {
-        var (_, _, operatorRole) = GetOperator();
-        var result = await _userService.GetPagedAsync(query);
-        return Ok(result);
-    }
+    // 移除重复的分页查询接口，统一使用RESTful GET接口
+    // 移除重复的新增用户接口，统一使用RESTful POST接口
+    // 移除重复的编辑用户接口，统一使用RESTful PUT接口
 
-    /// <summary>
-    /// 新增用户，密码将设为配置的默认值
-    /// </summary>
-    [HttpPost("add")]
-    public async Task<IActionResult> Add([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
-        var (operatorId, operatorName, _) = GetOperator();
-        var result = await _userService.AddAsync(dto, operatorId, operatorName);
-        if (result != null) {
-            LogOperation("新增用户成功", result, result.Id);
-            return Ok(result);
-        } else {
-            return BadRequest(new ProblemDetails {
-                Title = "操作失败",
-                Detail = "用户创建失败",
-                Status = 400
-            });
-        }
-    }
-
-    /// <summary>
-    /// 编辑用户
-    /// </summary>
-    [HttpPut("update")]
-    public async Task<IActionResult> Update([FromBody] LYBT.Shared.Models.Contracts.Users.UserUpdateDto dto) {
-        var (operatorId, operatorName, _) = GetOperator();
-        var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
-        if (result) {
-            // 获取更新后的资源
-                var (_, _, operatorRole) = GetOperator();
-                var updated = await _userService.GetByIdAsync(dto.Id);
-                LogOperation("用户信息更新成功", updated, dto.Id);
-                return Ok(updated);
-        } else {
-            return BadRequest(new ProblemDetails {
-                Title = "操作失败",
-                Detail = "用户信息更新失败",
-                Status = 400
-            });
-        }
-    }
-
-    /// <summary>
-    /// 禁用用户（软删除）
-    /// </summary>
-    [HttpPatch("{id}/disable")]
-    public async Task<IActionResult> Disable(Guid id) {
-        var (operatorId, operatorName, _) = GetOperator();
-        var result = await _userService.DisableAsync(id, operatorId, operatorName);
-        if (result) {
-            LogOperation("禁用用户成功", null, id);
-            return Ok(new { message = "用户已禁用" });
-        } else {
-            return BadRequest(new ProblemDetails {
-                Title = "操作失败",
-                Detail = "禁用用户失败",
-                Status = 400
-            });
-        }
-    }
-
-    /// <summary>
-    /// 启用用户
-    /// </summary>
-    [HttpPatch("{id}/enable")]
-    public async Task<IActionResult> Enable(Guid id) {
-        var (operatorId, operatorName, _) = GetOperator();
-        var result = await _userService.EnableAsync(id, operatorId, operatorName);
-        if (result) {
-            LogOperation("启用用户成功", null, id);
-            return Ok(new { message = "用户已启用" });
-        } else {
-            return BadRequest(new ProblemDetails {
-                Title = "操作失败",
-                Detail = "启用用户失败",
-                Status = 400
-            });
-        }
-    }
+    // 移除单独的Enable/Disable接口，统一使用ToggleStatus或Status接口
 
     /// <summary>
     /// 切换用户状态（启用/禁用）
@@ -256,21 +172,7 @@ public class UsersController : BaseController {
         return Ok(roles);
     }
 
-    /// <summary>
-    /// 根据Id获取用户详情
-    /// 权限控制：禁用的用户仅管理员可查询
-    /// </summary>
-    [HttpGet("getById/{id}")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Users.UserDto>> GetById(Guid id) {
-        var (_, _, operatorRole) = GetOperator();
-        var user = await _userService.GetByIdAsync(id);
-        if (user == null) {
-            return NotFound(new ProblemDetails {
-                Title = "资源未找到"
-            });
-        }
-        return Ok(user);
-    }
+    // 移除重复的GetById接口，统一使用RESTful GET /{id}接口
 
     /// <summary>
     /// 获取启用的用户列表
@@ -372,6 +274,5 @@ public class UsersController : BaseController {
     }
 
     // 注意：本系统采用软删除策略，不提供DELETE接口
-    // 请使用 PATCH /Users/{id}/disable 来禁用用户
-    // 请使用 PATCH /Users/{id}/enable 来启用用户
+    // 请使用 PATCH /Users/{id}/toggle-status 来切换用户状态
 }

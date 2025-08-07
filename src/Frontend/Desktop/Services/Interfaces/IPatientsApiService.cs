@@ -13,11 +13,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
     /// </summary>
     public interface IPatientsApiService
     {
-        /// <summary>
-        /// 新增患者
-        /// </summary>
-        [Post("/api/v1/patients/add")]
-        Task<Refit.ApiResponse<object>> AddAsync([Body] PatientDetailDto dto);
+        // 移除重复的新增患者接口，统一使用RESTful POST接口
 
         /// <summary>
         /// 快速创建患者档案
@@ -25,17 +21,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         [Post("/api/v1/patients/quick")]
         Task<Refit.ApiResponse<object>> QuickCreateAsync([Body] QuickPatientCreateDto dto);
 
-        /// <summary>
-        /// 启用患者档案
-        /// </summary>
-        [Patch("/api/v1/patients/{id}/enable")]
-        Task<Refit.ApiResponse<object>> EnableAsync(Guid id);
-
-        /// <summary>
-        /// 禁用患者档案
-        /// </summary>
-        [Patch("/api/v1/patients/{id}/disable")]
-        Task<Refit.ApiResponse<object>> DisableAsync(Guid id);
+        // 移除单独的Enable/Disable接口，统一使用ToggleStatus
 
         /// <summary>
         /// 切换患者档案状态
@@ -49,23 +35,9 @@ namespace LYBT.WPF.Client.Services.Interfaces
         [Get("/api/v1/patients/all")]
         Task<Refit.ApiResponse<List<PatientDetailDto>>> GetAllAsync();
 
-        /// <summary>
-        /// 分页条件查询
-        /// </summary>
-        [Post("/api/v1/patients/paged")]
-        Task<Refit.ApiResponse<PaginatedResult<PatientDetailDto>>> GetPagedAsync([Body] PatientPagedQueryDto query);
+        // 移除重复的分页查询接口，统一使用RESTful GET接口
 
-        /// <summary>
-        /// 批量禁用患者档案
-        /// </summary>
-        [Patch("/api/v1/patients/batch-disable")]
-        Task<Refit.ApiResponse<object>> BatchDisableAsync([Body] BatchOperationDto dto);
-
-        /// <summary>
-        /// 批量启用患者档案
-        /// </summary>
-        [Patch("/api/v1/patients/batch-enable")]
-        Task<Refit.ApiResponse<object>> BatchEnableAsync([Body] BatchOperationDto dto);
+        // 移除未实现的批量操作接口
 
         /// <summary>
         /// 搜索患者档案
@@ -73,11 +45,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         [Get("/api/v1/patients/search")]
         Task<Refit.ApiResponse<List<PatientDetailDto>>> SearchAsync([Query] string keyword = "");
 
-        /// <summary>
-        /// 导入患者档案数据
-        /// </summary>
-        [Post("/api/v1/patients/import")]
-        Task<Refit.ApiResponse<object>> ImportAsync([Body] List<PatientDetailDto> dtos);
+        // 移除未实现的导入功能
 
         /// <summary>
         /// 导出患者档案数据
@@ -85,11 +53,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         [Get("/api/v1/patients/export")]
         Task<Refit.ApiResponse<List<PatientDetailDto>>> ExportAsync();
 
-        /// <summary>
-        /// 获取患者档案历史病历
-        /// </summary>
-        [Get("/api/v1/patients/{id}/records")]
-        Task<Refit.ApiResponse<List<object>>> GetHistoryAsync(Guid id);
+        // 移除未实现的历史病历功能
 
         /// <summary>
         /// 获取启用的患者档案列表

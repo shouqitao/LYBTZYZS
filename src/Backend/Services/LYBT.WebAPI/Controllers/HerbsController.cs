@@ -82,34 +82,9 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(pagedResult);
         }
 
-        /// <summary>
-        /// 分页查询药材
-        /// </summary>
-        [HttpPost("paged")]
-        public async Task<ActionResult<PaginatedResult<HerbDto>>> GetPaged([FromBody] HerbPagedQueryDto query) {
-            if (query.CurrentPage <= 0)
-                query.CurrentPage = 1;
-            if (query.PageSize <= 0 || query.PageSize > 100)
-                query.PageSize = 20;
+        // 移除重复的分页查询接口，统一使用RESTful GET接口
 
-            // 直接使用共享DTO调用服务
-            var result = await _herbService.GetPagedAsync(query);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// 获取活跃药材列表（RESTful接口）
-        /// </summary>
-        [HttpGet("active")]
-        public async Task<ActionResult<List<HerbDto>>> GetActive() {
-            // 缓存活跃药材列表
-            const string cacheKey = "active_herbs";
-            if (!_cache.TryGetValue(cacheKey, out List<HerbDto>? list)) {
-                list = await _herbService.GetAvailableHerbsAsync();
-                _cache.Set(cacheKey, list, TimeSpan.FromMinutes(15));
-            }
-            return Ok(list ?? new List<HerbDto>());
-        }
+        // 移除重复的GetActive接口，统一使用available接口
 
         /// <summary>
         /// 获取药材详情
@@ -130,31 +105,7 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(detail);
         }
 
-        /// <summary>
-        /// 新增药材
-        /// </summary>
-        [HttpPost("add")]
-        public async Task<IActionResult> Add([FromBody] HerbCreateDto dto) {
-            var validationResult = ValidateModel();
-            if (validationResult != null) return validationResult;
-
-            var (operatorId, operatorName, _) = GetOperator();
-            var result = await _herbService.AddAsync(dto);
-            if (result == null) {
-                return BadRequest(new ProblemDetails {
-                    Title = "操作失败",
-                    Detail = "新增药材失败",
-                    Status = 400
-                });
-            }
-
-            // 清除缓存
-            _cache.Remove("herbs_list");
-            _cache.Remove("active_herbs");
-
-            LogOperation("新增药材成功", result, result.Id);
-            return Ok(result);
-        }
+        // 移除重复的新增药材接口，统一使用RESTful POST接口
 
         /// <summary>
         /// 编辑药材
@@ -186,59 +137,7 @@ namespace LYBT.WebAPI.Controllers {
             return Ok(updated);
         }
 
-        /// <summary>
-        /// 启用药材
-        /// </summary>
-        [HttpPatch("{id}/enable")]
-        public async Task<IActionResult> Enable(Guid id) {
-            var validationResult = ValidateGuid(id, "药材ID");
-            if (validationResult != null) return validationResult;
-
-            var (operatorId, operatorName, _) = GetOperator();
-            var result = await _herbService.SetStatusAsync(id, true);
-            if (!result) {
-                return NotFound(new ProblemDetails {
-                    Title = "资源未找到",
-                    Detail = "药材不存在",
-                    Status = 404
-                });
-            }
-
-            // 清除缓存
-            _cache.Remove("herbs_list");
-            _cache.Remove("active_herbs");
-            _cache.Remove($"herb_detail_{id}");
-
-            LogOperation("启用药材成功", new { Id = id, IsEnabled = true }, id);
-            return Ok(new { message = "启用药材成功" });
-        }
-
-        /// <summary>
-        /// 禁用药材（软删除）
-        /// </summary>
-        [HttpPatch("{id}/disable")]
-        public async Task<IActionResult> Disable(Guid id) {
-            var validationResult = ValidateGuid(id, "药材ID");
-            if (validationResult != null) return validationResult;
-
-            var (operatorId, operatorName, _) = GetOperator();
-            var result = await _herbService.SetStatusAsync(id, false);
-            if (!result) {
-                return NotFound(new ProblemDetails {
-                    Title = "资源未找到",
-                    Detail = "药材不存在",
-                    Status = 404
-                });
-            }
-
-            // 清除缓存
-            _cache.Remove("herbs_list");
-            _cache.Remove("active_herbs");
-            _cache.Remove($"herb_detail_{id}");
-
-            LogOperation("禁用药材成功", new { Id = id, IsEnabled = false }, id);
-            return Ok(new { message = "禁用药材成功" });
-        }
+        // 移除单独的Enable/Disable接口，统一使用ToggleStatus或UpdateStatus接口
 
         /// <summary>
         /// 切换药材状态（启用/禁用）

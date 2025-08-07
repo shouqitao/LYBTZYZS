@@ -92,8 +92,8 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 更新医疗案例
         /// </summary>
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] MedicalCaseEditDto dto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] MedicalCaseEditDto dto)
         {
             try
             {
@@ -102,6 +102,8 @@ namespace LYBT.WebAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
+                // 确保DTO的ID与路由参数一致
+                dto.Id = id;
                 var result = await _medicalCaseService.UpdateAsync(dto);
                 if (!result)
                 {

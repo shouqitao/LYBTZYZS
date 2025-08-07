@@ -36,8 +36,17 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 使用Refit调用分页API
-                var response = await _userApiService.GetPagedUsersAsync(request);
+                // 使用更新后的RESTful GET接口
+                var response = await _userApiService.GetUsersAsync(
+                    page: request.CurrentPage,
+                    pageSize: request.PageSize,
+                    keyword: request.SearchKeyword,
+                    username: request.Username,
+                    realName: request.RealName,
+                    email: request.Email,
+                    phoneNumber: request.PhoneNumber,
+                    isActive: request.Status == CommonStatus.Enabled ? true : (request.Status == CommonStatus.Disabled ? false : null)
+                );
                 
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
@@ -82,7 +91,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> UpdateUserAsync(UserUpdateDto request)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _userApiService.UpdateUserAsync(request)
+                await _userApiService.UpdateUserAsync(request.Id, request)
             );
         }
 
@@ -92,7 +101,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> DisableUserAsync(Guid userId)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _userApiService.DisableUserAsync(userId)
+                await _userApiService.ToggleStatusAsync(userId)
             );
         }
 
@@ -102,7 +111,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> EnableUserAsync(Guid userId)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _userApiService.EnableUserAsync(userId)
+                await _userApiService.ToggleStatusAsync(userId)
             );
         }
 

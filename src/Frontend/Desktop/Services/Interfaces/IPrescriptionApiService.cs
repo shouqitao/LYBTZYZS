@@ -30,11 +30,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
             [Query] int? minDosageCount = null,
             [Query] int? maxDosageCount = null);
 
-        /// <summary>
-        /// 分页获取处方列表
-        /// </summary>
-        [Get("/api/v1/Prescriptions/paged")]
-        Task<ApiResponse<PaginatedResult<PrescriptionDto>>> GetPagedListAsync([Query] PaginationRequest query);
+        // 移除重复的分页查询接口，统一使用RESTful GET接口
 
         /// <summary>
         /// 获取处方详情
@@ -51,8 +47,8 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 更新处方
         /// </summary>
-        [Put("/api/v1/Prescriptions")]
-        Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync([Body] PrescriptionEditDto dto);
+        [Put("/api/v1/Prescriptions/{id}")]
+        Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(Guid id, [Body] PrescriptionEditDto dto);
 
         /// <summary>
         /// 删除处方

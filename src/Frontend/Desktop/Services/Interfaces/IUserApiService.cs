@@ -13,10 +13,19 @@ namespace LYBT.WPF.Client.Services.Interfaces
     public interface IUserApiService
     {
         /// <summary>
-        /// 分页查询用户
+        /// 获取用户列表（支持分页和查询）
         /// </summary>
-        [Post("/api/v1/users/paged")]
-        Task<Refit.ApiResponse<PaginatedResult<UserDto>>> GetPagedUsersAsync([Body] UserPagedQueryDto query);
+        [Get("/api/v1/users")]
+        Task<Refit.ApiResponse<PaginatedResult<UserDto>>> GetUsersAsync(
+            [Query] int page = 1, 
+            [Query] int pageSize = 20,
+            [Query] string? keyword = null,
+            [Query] string? username = null,
+            [Query] string? realName = null,
+            [Query] string? email = null,
+            [Query] string? phoneNumber = null,
+            [Query] string? role = null,
+            [Query] bool? isActive = null);
 
         /// <summary>
         /// 获取用户详情
@@ -24,35 +33,21 @@ namespace LYBT.WPF.Client.Services.Interfaces
         [Get("/api/v1/users/{id}")]
         Task<Refit.ApiResponse<UserDto>> GetUserByIdAsync(Guid id);
 
-        /// <summary>
-        /// 根据ID获取用户详情
-        /// </summary>
-        [Get("/api/v1/users/getById/{id}")]
-        Task<Refit.ApiResponse<UserDto>> GetByIdAsync(Guid id);
+        // 移除重复的GetById接口，统一使用GetUserByIdAsync
 
         /// <summary>
         /// 创建用户
         /// </summary>
-        [Post("/api/v1/users/add")]
-        Task<Refit.ApiResponse<object>> CreateUserAsync([Body] UserCreateDto dto);
+        [Post("/api/v1/users")]
+        Task<Refit.ApiResponse<UserDto>> CreateUserAsync([Body] UserCreateDto dto);
 
         /// <summary>
         /// 更新用户
         /// </summary>
-        [Put("/api/v1/users/update")]
-        Task<Refit.ApiResponse<object>> UpdateUserAsync([Body] UserUpdateDto dto);
+        [Put("/api/v1/users/{id}")]
+        Task<Refit.ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Body] UserUpdateDto dto);
 
-        /// <summary>
-        /// 禁用用户
-        /// </summary>
-        [Patch("/api/v1/users/{id}/disable")]
-        Task<Refit.ApiResponse<object>> DisableUserAsync(Guid id);
-
-        /// <summary>
-        /// 启用用户
-        /// </summary>
-        [Patch("/api/v1/users/{id}/enable")]
-        Task<Refit.ApiResponse<object>> EnableUserAsync(Guid id);
+        // 移除单独的Enable/Disable接口，统一使用ToggleStatus
 
         /// <summary>
         /// 切换用户状态

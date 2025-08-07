@@ -55,7 +55,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> EnableAsync(Guid id)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _patientsApiService.EnableAsync(id)
+                await _patientsApiService.ToggleStatusAsync(id)
             );
         }
 
@@ -65,7 +65,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> DisableAsync(Guid id)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _patientsApiService.DisableAsync(id)
+                await _patientsApiService.ToggleStatusAsync(id)
             );
         }
 
@@ -96,7 +96,20 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var response = await _patientsApiService.GetPagedAsync(query);
+                // 使用更新后的RESTful GET接口
+                var response = await _patientsApiService.GetPatientsAsync(
+                    page: query.CurrentPage,
+                    pageSize: query.PageSize,
+                    keyword: query.SearchKeyword,
+                    name: query.Name,
+                    phoneNumber: query.PhoneNumber,
+                    idNumber: query.IDNumber,
+                    address: query.Address,
+                    gender: query.Gender,
+                    minAge: query.MinAge,
+                    maxAge: query.MaxAge,
+                    status: query.Status
+                );
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     var patientInfos = response.Content.Items.Select(ConvertToPatientInfo).ToList();
@@ -132,25 +145,21 @@ namespace LYBT.WPF.Client.Services
         }
 
         /// <summary>
-        /// 批量禁用患者
+        /// 批量禁用患者 - 功能已移除
         /// </summary>
         public async Task<ServiceResult> BatchDisableAsync(List<Guid> ids)
         {
-            var dto = new BatchOperationDto { Ids = ids };
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _patientsApiService.BatchDisableAsync(dto)
-            );
+            // 批量操作接口已移除，返回失败
+            return ServiceResult.Failure("批量操作功能已禁用");
         }
 
         /// <summary>
-        /// 批量启用患者
+        /// 批量启用患者 - 功能已移除
         /// </summary>
         public async Task<ServiceResult> BatchEnableAsync(List<Guid> ids)
         {
-            var dto = new BatchOperationDto { Ids = ids };
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _patientsApiService.BatchEnableAsync(dto)
-            );
+            // 批量操作接口已移除，返回失败
+            return ServiceResult.Failure("批量操作功能已禁用");
         }
 
         /// <summary>
@@ -164,13 +173,12 @@ namespace LYBT.WPF.Client.Services
         }
 
         /// <summary>
-        /// 导入患者数据
+        /// 导入患者数据 - 功能已移除
         /// </summary>
         public async Task<ServiceResult> ImportAsync(List<PatientDetailDto> patients)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _patientsApiService.ImportAsync(patients)
-            );
+            // 导入功能已移除，返回失败
+            return ServiceResult.Failure("导入功能已禁用");
         }
 
         /// <summary>
