@@ -1,15 +1,9 @@
-using System;
-using LYBT.Shared.Models.Frontend.Registration;
 using LYBT.Shared.Models.Frontend.Consultation;
-using LYBT.Shared.Models.Frontend.TreatmentPlan;
-using LYBT.Shared.Models.Frontend.Cashier;
-using LYBT.Shared.Models.Frontend.Pharmacy;
-using LYBT.Shared.Models.Frontend.TreatmentRoom;
 
 namespace LYBT.Shared.Models.Frontend.MedicalCase
 {
     /// <summary>
-    /// 医疗案例前端模型
+    /// 医疗案例前端模型 - 简化中医诊所版本
     /// </summary>
     public class MedicalCaseInfo
     {
@@ -17,11 +11,6 @@ namespace LYBT.Shared.Models.Frontend.MedicalCase
         /// ID
         /// </summary>
         public Guid Id { get; set; }
-
-        /// <summary>
-        /// 挂号ID
-        /// </summary>
-        public Guid RegistrationId { get; set; }
 
         /// <summary>
         /// 患者ID
@@ -34,14 +23,14 @@ namespace LYBT.Shared.Models.Frontend.MedicalCase
         public string PatientName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 医生ID
+        /// 中医师用户ID
         /// </summary>
-        public Guid DoctorId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
-        /// 医生姓名
+        /// 中医师姓名
         /// </summary>
-        public string DoctorName { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
 
         /// <summary>
         /// 状态
@@ -54,19 +43,19 @@ namespace LYBT.Shared.Models.Frontend.MedicalCase
         public string StatusName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 诊断摘要
+        /// 中医诊断摘要
         /// </summary>
         public string DiagnosisSummary { get; set; } = string.Empty;
 
         /// <summary>
-        /// 总金额
+        /// 主要症状
         /// </summary>
-        public decimal TotalAmount { get; set; }
+        public string MainSymptoms { get; set; } = string.Empty;
 
         /// <summary>
-        /// 支付状态
+        /// 治疗效果
         /// </summary>
-        public string PaymentStatus { get; set; } = string.Empty;
+        public string TreatmentEffect { get; set; } = string.Empty;
 
         /// <summary>
         /// 备注
@@ -84,44 +73,39 @@ namespace LYBT.Shared.Models.Frontend.MedicalCase
         public DateTime? CompleteTime { get; set; }
 
         /// <summary>
+        /// 最后更新时间
+        /// </summary>
+        public DateTime? UpdateTime { get; set; }
+
+        /// <summary>
         /// 是否有效
         /// </summary>
         public bool IsActive { get; set; } = true;
     }
 
     /// <summary>
-    /// 医疗案例详情前端模型
+    /// 医疗案例详情前端模型 - 简化中医诊所版本
     /// </summary>
     public class MedicalCaseDetailInfo : MedicalCaseInfo
     {
-        /// <summary>
-        /// 挂号信息
-        /// </summary>
-        public RegistrationInfo? Registration { get; set; }
-
         /// <summary>
         /// 看诊信息
         /// </summary>
         public ConsultationInfo? Consultation { get; set; }
 
         /// <summary>
-        /// 治疗方案
+        /// 相关处方数量
         /// </summary>
-        public TreatmentPlanInfo? TreatmentPlan { get; set; }
+        public int PrescriptionCount { get; set; }
 
         /// <summary>
-        /// 收费信息
+        /// 复诊次数
         /// </summary>
-        public CashierInfo? Cashier { get; set; }
+        public int FollowUpCount { get; set; }
 
         /// <summary>
-        /// 药房信息
+        /// 病程记录
         /// </summary>
-        public PharmacyInfo? Pharmacy { get; set; }
-
-        /// <summary>
-        /// 理疗室信息
-        /// </summary>
-        public TreatmentRoomInfo? TreatmentRoom { get; set; }
+        public List<string> ProgressNotes { get; set; } = new();
     }
 }

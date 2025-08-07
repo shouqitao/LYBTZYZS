@@ -82,5 +82,15 @@ namespace LYBT.WPF.Client.Services.Interfaces
             string? patientName = null,
             string? doctorName = null,
             string? diagnosis = null) => GetListAsync(page, pageSize, keyword, patientName, doctorName, diagnosis);
+
+        /// <summary>
+        /// 删除处方（别名方法）
+        /// </summary>
+        Task<ApiResponse<bool>> DeleteAsync(Guid id) => DeletePrescriptionAsync(id);
+
+        /// <summary>
+        /// 作废处方（别名方法）
+        /// </summary>
+        Task<ApiResponse<PrescriptionDto>> CancelAsync(Guid id) => CancelPrescriptionAsync(id);
     }
 }

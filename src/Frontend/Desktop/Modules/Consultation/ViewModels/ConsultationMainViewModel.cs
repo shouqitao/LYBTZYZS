@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Enums;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -391,16 +392,34 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                 IsLoading = true;
                 
                 // 获取验方列表
-                var formulaResult = await _formulaApiService.GetListAsync();
-                if (formulaResult.Success && formulaResult.Data != null)
+                var formulaResult = await _formulaApiService.GetFormulasAsync();
+                if (formulaResult.IsSuccessStatusCode && formulaResult.Content != null)
                 {
                     AvailableFormulas.Clear();
                     
                     // 限制显示数量，避免UI性能问题
-                    var formulas = formulaResult.Data.Take(MAX_FORMULA_DISPLAY_COUNT);
-                    foreach (var formula in formulas)
+                    var formulas = formulaResult.Content.Items.Take(MAX_FORMULA_DISPLAY_COUNT);
+                    foreach (var formulaDto in formulas)
                     {
-                        AvailableFormulas.Add(formula);
+                        // 转换DTO为前端模型
+                        var formulaInfo = new FormulaInfo
+                        {
+                            Id = formulaDto.Id,
+                            Name = formulaDto.Name,
+                            Category = formulaDto.Category ?? "",
+                            Indications = formulaDto.Indications,
+                            Status = formulaDto.Status,
+                            CreateTime = formulaDto.CreateTime,
+                            UpdateTime = formulaDto.UpdateTime,
+                            // 设置默认值
+                            Effect = formulaDto.Indications ?? "",
+                            Usage = "水煎服，一日一剂，分早晚温服",
+                            IsShared = false,
+                            CreatedById = null,
+                            CreatedBy = null,
+                            Remark = null
+                        };
+                        AvailableFormulas.Add(formulaInfo);
                     }
                     
                     // 更新缓存时间戳
@@ -458,12 +477,11 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             }
             else
             {
-                // 根据关键词过滤 - 支持名称、拼音码、别名搜索
+                // 根据关键词过滤 - 支持名称、拼音码搜索
                 var keyword = HerbSearchKeyword.Trim();
                 filteredHerbs = _allHerbs.Where(h => 
                     h.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                    (!string.IsNullOrEmpty(h.PinyinCode) && h.PinyinCode.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(h.Alias) && h.Alias.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                    (!string.IsNullOrEmpty(h.PinYinCode) && h.PinYinCode.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                 ).ToList();
             }
             
@@ -682,60 +700,6 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             }
         }
 
-        /// <summary>
-        /// 加载可用验方列表
-        /// </summary>
-        private async Task LoadAvailableFormulasAsync()
-        {
-            try
-            {
-                IsLoading = true;
-                
-                // 获取验方列表，显示前20个最常用的
-                var response = await _formulaApiService.GetFormulasAsync(null, null);
-                if (response.IsSuccessStatusCode && response.Content != null)
-                {
-                    AvailableFormulas.Clear();
-                    
-                    // 转换DTO为UI模型（取前20个）
-                    foreach (var formulaDto in response.Content.Items.Take(MAX_FORMULA_DISPLAY_COUNT))
-                    {
-                        var formulaInfo = new FormulaInfo
-                        {
-                            Id = formulaDto.Id,
-                            Name = formulaDto.Name,
-                            // 使用来自 Formulas 命名空间的 FormulaDto，根据实际字段映射
-                            Category = formulaDto.Category ?? "",
-                            Indications = formulaDto.Indications,
-                            CreateTime = formulaDto.CreateTime,
-                            UpdateTime = formulaDto.UpdateTime
-                        };
-                        AvailableFormulas.Add(formulaInfo);
-                    }
-                    
-                    _logger.LogInformation($"成功加载 {AvailableFormulas.Count} 个验方模板");
-                }
-                else
-                {
-                    _logger.LogWarning($"加载验方列表失败: {response.Error?.Content}");
-                    ShowErrorMessage("加载验方列表失败，请检查网络连接");
-                }
-            }
-            catch (System.Net.Http.HttpRequestException ex)
-            {
-                _logger.LogError(ex, "加载验方列表时网络请求失败");
-                ShowErrorMessage("网络连接失败，无法加载验方列表");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "加载验方列表时发生未知异常");
-                ShowErrorMessage("加载验方列表失败，请重试");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
 
         /// <summary>
         /// 应用验方到处方
@@ -932,7 +896,6 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 
                 // 获取当前医生ID (暂时使用固定值，实际应从当前用户会话获取)
                 var currentDoctorId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // TODO: 从用户会话获取真实的医生ID
-                var currentDoctorName = "当前医生"; // TODO: 从用户会话获取真实的医生姓名
 
                 if (CurrentPrescriptionId == Guid.Empty)
                 {
@@ -1056,10 +1019,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                     HerbName = herb.Name,
                     Quantity = DEFAULT_HERB_QUANTITY,
                     Unit = !string.IsNullOrWhiteSpace(herb.Unit) ? herb.Unit : "g",
-                    UnitPrice = herb.RetailPrice > 0 ? herb.RetailPrice : 0,
+                    UnitPrice = herb.Price > 0 ? herb.Price : 0,
                     Origin = herb.Origin,
-                    Specification = herb.Specification,
-                    IsOutOfStock = herb.StockQuantity <= 0
+                    Specification = herb.Spec,
+                    IsOutOfStock = false // 简化版本不管理库存
                 };
 
                 PrescriptionItems.Add(newItem);
