@@ -31,7 +31,20 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var response = await _herbApiService.GetPagedHerbsAsync(query);
+                // 使用更新后的RESTful GET接口
+                var response = await _herbApiService.GetHerbsAsync(
+                    page: query.CurrentPage,
+                    pageSize: query.PageSize,
+                    keyword: query.SearchKeyword,
+                    name: query.Name,
+                    origin: query.Origin,
+                    effect: query.Effect,
+                    usage: query.Usage,
+                    status: query.Status.HasValue ? (int?)query.Status.Value : null,
+                    minPrice: query.MinPrice,
+                    maxPrice: query.MaxPrice,
+                    hasStock: query.HasStock
+                );
                 
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
@@ -87,10 +100,11 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var response = await _herbApiService.GetHerbsAsync();
+                // 获取所有药材（大页面）
+                var response = await _herbApiService.GetHerbsAsync(page: 1, pageSize: 1000);
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    return response.Content.Select(ConvertToHerbInfo).ToList();
+                    return response.Content.Items.Select(ConvertToHerbInfo).ToList();
                 }
                 return new List<HerbInfo>();
             }
@@ -137,17 +151,18 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> UpdateHerbAsync(HerbUpdateDto dto)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _herbApiService.UpdateHerbAsync(dto)
+                await _herbApiService.UpdateHerbAsync(dto.Id, dto)
             );
         }
 
         /// <summary>
-        /// 删除药材
+        /// 删除药材（软删除）
         /// </summary>
         public async Task<ServiceResult> DeleteHerbAsync(Guid id)
         {
+            // 本系统采用软删除策略，使用状态切换
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _herbApiService.DeleteHerbAsync(id)
+                await _herbApiService.ToggleStatusAsync(id)
             );
         }
 
@@ -157,7 +172,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> UpdateStatusAsync(Guid id, CommonStatusUpdateDto dto)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
-                await _herbApiService.UpdateStatusAsync(id, dto)
+                await _herbApiService.UpdateStatusAsync(dto)
             );
         }
 

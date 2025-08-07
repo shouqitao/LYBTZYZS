@@ -54,7 +54,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         private readonly IFormulaApiService _formulaApiService;
         private readonly IHerbService _herbService;
         private readonly IPrescriptionPrintService _prescriptionPrintService;
-        private readonly IPrescriptionApiService _prescriptionApiService;
+        private readonly IPrescriptionService _prescriptionService;
         private readonly ILogger<ConsultationMainViewModel> _logger;
         private readonly IMapper _mapper;
 
@@ -185,7 +185,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             IFormulaApiService formulaApiService,
             IHerbService herbService,
             IPrescriptionPrintService prescriptionPrintService,
-            IPrescriptionApiService prescriptionApiService,
+            IPrescriptionService prescriptionService,
             ILogger<ConsultationMainViewModel> logger,
             IMapper mapper)
         {
@@ -194,7 +194,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             _formulaApiService = formulaApiService;
             _herbService = herbService;
             _prescriptionPrintService = prescriptionPrintService;
-            _prescriptionApiService = prescriptionApiService;
+            _prescriptionService = prescriptionService;
             _logger = logger;
             _mapper = mapper;
 
@@ -919,10 +919,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         }).ToList()
                     };
 
-                    var createResponse = await _prescriptionApiService.CreatePrescriptionAsync(createDto);
-                    if (createResponse.IsSuccessStatusCode && createResponse.Content != null)
+                    var createResult = await _prescriptionService.CreateAsync(createDto);
+                    if (createResult.IsSuccess && createResult.Data != null)
                     {
-                        CurrentPrescriptionId = createResponse.Content.Id;
+                        CurrentPrescriptionId = createResult.Data.Id;
                         _logger.LogInformation($"成功创建处方: {CurrentPrescriptionId}");
                         return true;
                     }
@@ -953,8 +953,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         }).ToList()
                     };
 
-                    var updateResponse = await _prescriptionApiService.UpdatePrescriptionAsync(editDto);
-                    if (updateResponse.IsSuccessStatusCode)
+                    var updateResult = await _prescriptionService.UpdateAsync(editDto);
+                    if (updateResult.IsSuccess)
                     {
                         _logger.LogInformation($"成功更新处方: {CurrentPrescriptionId}");
                         return true;

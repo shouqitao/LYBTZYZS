@@ -19,7 +19,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     /// <summary>
     /// 处方管理视图模型
     /// </summary>
-    public class PrescriptionManagementViewModel : BaseManagementViewModel<PrescriptionInfo, IPrescriptionApiService>
+    public class PrescriptionManagementViewModel : BaseManagementViewModel<PrescriptionInfo, IPrescriptionService>
     {
         private readonly ICommonDialogService _commonDialogService;
 
@@ -91,7 +91,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         protected override string ModuleName => "处方";
 
-        public PrescriptionManagementViewModel(IPrescriptionApiService service,
+        public PrescriptionManagementViewModel(IPrescriptionService service,
             ICommonDialogService commonDialogService)
             : base(service)
         {
@@ -122,40 +122,26 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             try
             {
 
-                var response = await Service.GetListAsync(
-                    page: request.CurrentPage,
-                    pageSize: request.PageSize,
-                    keyword: SearchKeyword,
-                    patientName: PatientName,
-                    doctorName: DoctorName,
-                    diagnosis: Diagnosis,
-                    status: SelectedStatus,
-                    startDate: StartDate,
-                    endDate: EndDate
-                );
+                // 使用服务层的分页查询方法
+                var pagedResult = await Service.GetPagedAsync(request);
 
-                if (response.IsSuccessStatusCode && response.Content != null)
+                if (!string.IsNullOrEmpty(pagedResult.ErrorMessage))
                 {
-                    var paginatedResult = response.Content;
-                    
-                    // 转换为前端模型
-                    var prescriptionInfos = paginatedResult.Items.Select(ConvertToPrescriptionInfo).ToList();
-
-                    var result = new PagedResult<PrescriptionInfo>
-                    {
-                        Items = prescriptionInfos,
-                        TotalCount = paginatedResult.TotalCount,
-                        CurrentPage = paginatedResult.CurrentPage,
-                        PageSize = paginatedResult.PageSize
-                    };
-
-                    return ServiceResult<PagedResult<PrescriptionInfo>>.Success(result);
+                    return ServiceResult<PagedResult<PrescriptionInfo>>.Failure(pagedResult.ErrorMessage);
                 }
-                else
+
+                // 转换为前端模型
+                var prescriptionInfos = pagedResult.Items.Select(ConvertToPrescriptionInfo).ToList();
+
+                var result = new PagedResult<PrescriptionInfo>
                 {
-                    var error = response.Error?.Content ?? "获取处方列表失败";
-                    return ServiceResult<PagedResult<PrescriptionInfo>>.Failure(error);
-                }
+                    Items = prescriptionInfos,
+                    TotalCount = pagedResult.TotalCount,
+                    CurrentPage = pagedResult.CurrentPage,
+                    PageSize = pagedResult.PageSize
+                };
+
+                return ServiceResult<PagedResult<PrescriptionInfo>>.Success(result);
             }
             catch (Exception ex)
             {
@@ -167,17 +153,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             try
             {
-                var response = await Service.DeleteAsync(item.Id);
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    return ServiceResult<bool>.Success(true);
-                }
-                else
-                {
-                    var error = response.Error?.Content ?? "删除处方失败";
-                    return ServiceResult<bool>.Failure(error);
-                }
+                var result = await Service.DeleteAsync(item.Id);
+                return result.IsSuccess 
+                    ? ServiceResult<bool>.Success(true) 
+                    : ServiceResult<bool>.Failure(result.ErrorMessage ?? "删除失败");
             }
             catch (Exception ex)
             {

@@ -101,7 +101,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult<bool>> UpdateAsync(MedicalCaseEditDto editDto)
         {
             return await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.UpdateAsync(editDto)
+                await _apiService.UpdateAsync(editDto.Id, editDto)
             );
         }
 

@@ -20,7 +20,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     {
         private readonly ICommonDialogService _commonDialogService;
 
-        private readonly IPrescriptionApiService _prescriptionService;
+        private readonly IPrescriptionService _prescriptionService;
         // private readonly IHerbsApiService _herbService; // TODO: 等待IHerbsApiService实现
 
         #region 属性
@@ -144,7 +144,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public Action? CloseDialogCallback { get; set; }
         public Action<object>? SaveSuccessCallback { get; set; } // TODO: 替换为实际的CreatePrescriptionRequest类型
 
-        public AddPrescriptionDialogViewModel(IPrescriptionApiService prescriptionService,
+        public AddPrescriptionDialogViewModel(IPrescriptionService prescriptionService,
             ICommonDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
