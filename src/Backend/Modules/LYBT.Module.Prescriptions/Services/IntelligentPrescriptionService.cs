@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using System.Linq;
 using System;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Models.Prescriptions;
 using LYBT.Shared.Models.Enums;

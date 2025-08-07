@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Common;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {
     /// <summary>
-    /// 验方模板API服务接口 - Refit定义
+    /// 验方API服务接口 - Refit定义
     /// </summary>
-    public interface IFormulaTemplateApiService
+    public interface IFormulaApiService
     {
         /// <summary>
         /// 分页查询验方模板

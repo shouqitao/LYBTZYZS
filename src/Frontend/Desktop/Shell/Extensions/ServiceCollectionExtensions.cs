@@ -160,12 +160,12 @@ namespace LYBT.WPF.Client.Shell.Extensions
 
 
             // 注册验方模板API服务
-            containerRegistry.Register<IFormulaTemplateApiService>(container =>
+            containerRegistry.Register<IFormulaApiService>(container =>
             {
                 var httpClient = CreateAuthenticatedHttpClient(container);
                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IFormulaTemplateApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+                return RestService.For<IFormulaApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
 

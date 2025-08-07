@@ -11,7 +11,7 @@ using LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Commands;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
@@ -23,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
     /// <summary>
     /// 验方模板管理视图模型
     /// </summary>
-    public class FormulaManagementViewModel : BaseManagementViewModel<FormulaInfo, IFormulaTemplateApiService>
+    public class FormulaManagementViewModel : BaseManagementViewModel<FormulaInfo, IFormulaApiService>
     {
         private readonly ICommonDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
@@ -57,7 +57,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 
         #endregion
 
-        public FormulaManagementViewModel(IFormulaTemplateApiService service,
+        public FormulaManagementViewModel(IFormulaApiService service,
             ICommonDialogService commonDialogService,
             IDialogService dialogService,
             IHerbService herbService,
@@ -327,8 +327,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
             {
                 Id = dto.Id,
                 Name = dto.Name ?? string.Empty,
-                Category = dto.Category ?? string.Empty,
-                Indications = dto.Indications,
+                Category = "其他", // FormulaDto没有Category属性，使用默认值
+                Indications = dto.Effect ?? string.Empty, // 使用Effect字段
                 CreateTime = dto.CreateTime,
                 UpdateTime = dto.UpdateTime,
                 // 药材信息需要从详情接口获取

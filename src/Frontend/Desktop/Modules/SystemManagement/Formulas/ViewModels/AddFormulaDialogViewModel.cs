@@ -7,7 +7,7 @@ using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Herbs;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 {
@@ -178,17 +178,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                 var dto = new FormulaCreateDto
                 {
                     Name = TemplateName.Trim(),
-                    Category = Category.Trim(),
                     Indications = Indications.Trim(),
-                    Efficacy = Efficacy?.Trim(),
-                    Usage = Usage?.Trim(),
+                    Effect = Efficacy?.Trim() ?? "",
+                    Usage = Usage?.Trim() ?? "",
                     Remark = Remark?.Trim(),
-                    Herbs = TemplateHerbs.Select((h, index) => new FormulaHerbDto
+                    Herbs = TemplateHerbs.Select((h, index) => new FormulaHerbItemCreateDto
                     {
                         HerbId = h.HerbId,
-                        HerbName = h.HerbName,
                         Quantity = h.Quantity,
-                        Unit = h.Unit,
                         SortOrder = index + 1
                     }).ToList()
                 };

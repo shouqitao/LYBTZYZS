@@ -17,7 +17,6 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Common;
 using Microsoft.Extensions.Logging;
@@ -52,7 +51,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         
         private readonly IPatientsApiService _patientsApiService;
         private readonly IConsultationApiService _consultationApiService;
-        private readonly IFormulaTemplateApiService _formulaApiService;
+        private readonly IFormulaApiService _formulaApiService;
         private readonly IHerbService _herbService;
         private readonly IPrescriptionPrintService _prescriptionPrintService;
         private readonly IPrescriptionApiService _prescriptionApiService;
@@ -183,7 +182,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         public ConsultationMainViewModel(
             IPatientsApiService patientsApiService,
             IConsultationApiService consultationApiService,
-            IFormulaTemplateApiService formulaApiService,
+            IFormulaApiService formulaApiService,
             IHerbService herbService,
             IPrescriptionPrintService prescriptionPrintService,
             IPrescriptionApiService prescriptionApiService,
@@ -406,13 +405,13 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         {
                             Id = formulaDto.Id,
                             Name = formulaDto.Name,
-                            Category = formulaDto.Category ?? "",
-                            Indications = formulaDto.Indications,
-                            Status = formulaDto.Status,
+                            Category = "其他", // FormulaDto没有Category属性，使用默认值
+                            Indications = formulaDto.Effect ?? "", // FormulaDto使用Effect字段
+                            Status = CommonStatus.Enabled, // FormulaDto没有Status属性，使用默认值
                             CreateTime = formulaDto.CreateTime,
                             UpdateTime = formulaDto.UpdateTime,
                             // 设置默认值
-                            Effect = formulaDto.Indications ?? "",
+                            Effect = formulaDto.Effect ?? "",
                             Usage = "水煎服，一日一剂，分早晚温服",
                             IsShared = false,
                             CreatedById = null,

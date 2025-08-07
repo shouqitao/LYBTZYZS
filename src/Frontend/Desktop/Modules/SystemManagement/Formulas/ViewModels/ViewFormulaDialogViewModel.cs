@@ -164,9 +164,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                 {
                     var template = response.Data;
                     TemplateName = template.Name;
-                    Category = template.Category;
+                    Category = "其他"; // FormulaDetailDto没有Category属性，使用默认值
                     Indications = template.Indications ?? "无";
-                    Efficacy = template.Efficacy ?? "无";
+                    Efficacy = template.Effect ?? "无"; // 使用Effect属性
                     Usage = template.Usage ?? "无";
                     Remark = template.Remark ?? "无";
                     CreateTime = template.CreateTime;

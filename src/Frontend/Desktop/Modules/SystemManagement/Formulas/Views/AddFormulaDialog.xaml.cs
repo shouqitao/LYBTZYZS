@@ -9,7 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Herbs;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
 {
@@ -377,17 +377,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 var createDto = new FormulaCreateDto
                 {
                     Name = txtFormulaName.Text.Trim(),
-                    Category = category,
-                    Indications = txtEffect.Text?.Trim() ?? "",  // 适应症
-                    Efficacy = txtEffect.Text?.Trim(),           // 功效
-                    Usage = txtUsage.Text?.Trim(),
+                    Indications = txtEffect.Text?.Trim() ?? "",  // 适应症，使用txtEffect控件
+                    Effect = txtEffect.Text?.Trim() ?? "",           // 功效
+                    Usage = txtUsage.Text?.Trim() ?? "",
                     Remark = txtRemark.Text?.Trim(),
-                    Herbs = _selectedHerbs.Select((h, index) => new FormulaHerbDto
+                    Herbs = _selectedHerbs.Select((h, index) => new FormulaHerbItemCreateDto
                     {
                         HerbId = h.HerbId,
-                        HerbName = h.HerbName,
                         Quantity = h.Quantity,
-                        Unit = h.Unit,
                         SortOrder = index
                     }).ToList()
                 };
@@ -411,12 +408,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 else
                 {
                     // 演示模式：只显示要保存的数据
-                    var herbList = string.Join("、", createDto.Herbs.Select(h => $"{h.HerbName}{h.Quantity}{h.Unit}"));
+                    var herbList = string.Join("、", _selectedHerbs.Select(h => $"{h.HerbName}{h.Quantity}{h.Unit}"));
                     _commonDialogService.ShowInformationAsync($"验方模板数据（演示模式）：\n\n" +
                                   $"名称：{createDto.Name}\n" +
-                                  $"分类：{createDto.Category}\n" +
                                   $"药材组成：{herbList}\n" +
-                                  $"功效说明：{createDto.Efficacy}\n" +
+                                  $"功效说明：{createDto.Effect}\n" +
                                   $"用法用量：{createDto.Usage}", "保存成功（演示）").GetAwaiter().GetResult();
                     
                     DialogResult = true;

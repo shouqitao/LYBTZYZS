@@ -184,7 +184,9 @@
       "Bash(git pull:*)",
       "Bash(dotnet test:*)",
       "Bash(pip install:*)",
-      "Bash(move \"FormulaTemplateService.cs\" \"FormulaService.cs\")"
+      "Bash(move \"FormulaTemplateService.cs\" \"FormulaService.cs\")",
+      "Bash(rg:*)",
+      "Bash(move:*)"
     ],
     "deny": []
   }

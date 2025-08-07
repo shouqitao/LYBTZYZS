@@ -7,7 +7,7 @@ using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Herbs;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 {
@@ -162,9 +162,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                 {
                     var template = response.Data;
                     TemplateName = template.Name;
-                    Category = template.Category;
+                    Category = "其他"; // FormulaDetailDto没有Category属性，使用默认值
                     Indications = template.Indications ?? string.Empty;
-                    Efficacy = template.Efficacy ?? string.Empty;
+                    Efficacy = template.Effect ?? string.Empty; // 使用Effect属性
                     Usage = template.Usage ?? string.Empty;
                     Remark = template.Remark ?? string.Empty;
 
@@ -230,17 +230,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                 {
                     Id = _templateId,
                     Name = TemplateName.Trim(),
-                    Category = Category.Trim(),
                     Indications = Indications.Trim(),
-                    Efficacy = Efficacy?.Trim(),
-                    Usage = Usage?.Trim(),
+                    Effect = Efficacy?.Trim() ?? "",
+                    Usage = Usage?.Trim() ?? "",
                     Remark = Remark?.Trim(),
-                    Herbs = TemplateHerbs.Select((h, index) => new FormulaHerbDto
+                    Herbs = TemplateHerbs.Select((h, index) => new FormulaHerbItemUpdateDto
                     {
                         HerbId = h.HerbId,
-                        HerbName = h.HerbName,
                         Quantity = h.Quantity,
-                        Unit = h.Unit,
                         SortOrder = index
                     }).ToList()
                 };

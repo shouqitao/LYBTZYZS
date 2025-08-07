@@ -8,7 +8,7 @@ using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Services.Interfaces;
 using FormulaPagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.Formulas.FormulaInfo>;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
@@ -20,9 +20,9 @@ namespace LYBT.WPF.Client.Services
     /// </summary>
     public class FormulaService : IFormulaService
     {
-        private readonly IFormulaTemplateApiService _apiService;
+        private readonly IFormulaApiService _apiService;
 
-        public FormulaService(IFormulaTemplateApiService apiService)
+        public FormulaService(IFormulaApiService apiService)
         {
             _apiService = apiService;
         }
@@ -200,9 +200,12 @@ namespace LYBT.WPF.Client.Services
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                Category = dto.Category ?? "其他",
-                Indications = dto.Indications ?? "",
-                Status = dto.Status, // 直接使用Status枚举
+                Category = "其他", // FormulaDto没有Category属性
+                Indications = dto.Effect ?? "", // 使用Effect代替Indications
+                Effect = dto.Effect ?? "",
+                Usage = dto.Usage ?? "",
+                IsShared = dto.IsShared,
+                Remark = dto.Remark,
                 CreatedTime = dto.CreateTime,
                 UpdatedTime = dto.UpdateTime
             };
@@ -214,13 +217,20 @@ namespace LYBT.WPF.Client.Services
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                Category = dto.Category,
+                Category = "其他", // FormulaDetailDto没有Category属性，使用默认值
                 Indications = dto.Indications ?? "",
-                Usage = dto.Usage,
+                Effect = dto.Effect ?? "",
+                Usage = dto.Usage ?? "",
+                DosageInstruction = dto.Instructions ?? "",
+                Contraindications = dto.Contraindications ?? "",
                 Remark = dto.Remark,
                 Status = CommonStatus.Enabled,
+                IsShared = dto.IsShared,
                 CreatedTime = dto.CreateTime,
-                UpdatedTime = dto.UpdateTime
+                UpdatedTime = dto.UpdateTime,
+                CreatedBy = dto.CreatedByName,
+                // Herbs集合需要单独处理，这里初始化为空
+                Herbs = new List<FormulaHerbItem>()
             };
         }
 
