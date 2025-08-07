@@ -19,11 +19,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("中医辨证")]
         public string? TCMDiagnosis { get; set; }
 
-        /// <summary>西医诊断</summary>
-        [StringLength(500, ErrorMessage = "西医诊断长度不能超过500个字符")]
-        [DisplayName("西医诊断")]
-        public string? WesternDiagnosis { get; set; }
-
         /// <summary>治疗原则</summary>
         [StringLength(200, ErrorMessage = "治疗原则长度不能超过200个字符")]
         [DisplayName("治疗原则")]

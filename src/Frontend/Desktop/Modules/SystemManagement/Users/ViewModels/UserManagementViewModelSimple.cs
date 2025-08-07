@@ -84,7 +84,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载用户列表异常: {ex.Message}");
                 return ServiceResult<PagedResult<UserInfo>>.Failure($"加载用户列表失败: {ex.Message}");
             }
         }

@@ -28,8 +28,8 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> GetPaged([FromQuery] ConsultationPagedQueryDto query)
+        [HttpPost("paged")]
+        public async Task<IActionResult> GetPaged([FromBody] ConsultationPagedQueryDto query)
         {
             try
             {

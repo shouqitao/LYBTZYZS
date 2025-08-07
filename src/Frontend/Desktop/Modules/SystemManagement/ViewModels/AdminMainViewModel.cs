@@ -14,6 +14,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
 
         public DelegateCommand NavigateToUserManagementCommand { get; }
         public DelegateCommand NavigateToPatientManagementCommand { get; }
+        public DelegateCommand NavigateToConsultationManagementCommand { get; }
         public DelegateCommand NavigateToRegistrationManagementCommand { get; }
         public DelegateCommand NavigateToRecordManagementCommand { get; }
         public DelegateCommand NavigateToRoleManagementCommand { get; }
@@ -33,6 +34,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             // 初始化导航命令
             NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserManagementView"));
             NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
+            NavigateToConsultationManagementCommand = new DelegateCommand(() => NavigateTo("ConsultationManagementView"));
             NavigateToRegistrationManagementCommand = new DelegateCommand(() => NavigateTo("RegistrationManagementView"));
             NavigateToRecordManagementCommand = new DelegateCommand(() => NavigateTo("RecordManagementView"));
             NavigateToRoleManagementCommand = new DelegateCommand(() => NavigateTo("RoleManagementView"));
@@ -58,7 +60,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             catch (Exception ex)
             {
                 // 如果视图不存在，显示占位界面
-                System.Diagnostics.Debug.WriteLine($"导航到 {viewName} 失败: {ex.Message}");
             }
         }
     }

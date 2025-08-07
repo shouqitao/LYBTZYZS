@@ -33,7 +33,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 开始看诊
         /// </summary>
-        [Post("/api/v1/consultation")]
+        [Post("/api/v1/consultation/start")]
         Task<Refit.ApiResponse<ConsultationDetailDto>> StartConsultationAsync([Body] ConsultationStartDto dto);
 
         /// <summary>

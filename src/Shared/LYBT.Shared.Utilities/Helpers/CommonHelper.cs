@@ -82,7 +82,6 @@ namespace LYBT.Shared.Utilities.Helpers
 
         /// <summary>
         /// 根据中文名称生成拼音码（带缓存）
-        /// TODO: 实现拼音转换功能
         /// </summary>
         /// <param name="text">中文文本</param>
         /// <returns>拼音首字母缩写</returns>
@@ -98,7 +97,6 @@ namespace LYBT.Shared.Utilities.Helpers
 
         /// <summary>
         /// 根据中文名称生成五笔码（带缓存）
-        /// TODO: 实现五笔转换功能
         /// </summary>
         /// <param name="text">中文文本</param>
         /// <returns>五笔码</returns>

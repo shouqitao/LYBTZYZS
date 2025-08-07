@@ -282,20 +282,12 @@ namespace LYBT.WPF.Client.Services
                 Id = dto.Id,
                 Name = dto.Name,
                 PinYinCode = dto.PinYinCode ?? "",
-                // WuBiCode = dto.WuBiCode , // TODO: 字段已移除 ?? ""
                 Origin = dto.Origin,
                 Spec = dto.Spec,
                 Unit = dto.Unit,
                 Price = dto.Price,
-                // /* Stock = (int)dto.Stock // TODO: 字段已移除, */
-                // /* BatchNo = dto.BatchNo // TODO: 字段已移除 ?? "", */
-                // ExpireDate = dto.ExpireDate , // TODO: 字段已移除
                 Effect = dto.Effect,
                 Usage = dto.Usage,
-                // Status = dto.Status , // TODO: 字段已移除
-                // IsActive = dto.Status == CommonStatus.Enabled, // TODO: 需要更新为使用 Status 字段
-                // CreateTime = dto.CreateTime, // TODO: 字段已移除
-                // UpdateTime = dto.UpdateTime, // TODO: 字段已移除
                 Remark = dto.Remark
             };
         }
@@ -310,20 +302,12 @@ namespace LYBT.WPF.Client.Services
                 Id = dto.Id,
                 Name = dto.Name,
                 PinYinCode = dto.PinYinCode ?? "",
-                // WuBiCode = dto.WuBiCode , // TODO: 字段已移除 ?? ""
                 Origin = dto.Origin,
                 Spec = dto.Spec,
                 Unit = dto.Unit,
                 Price = dto.Price,
-                // /* Stock = (int)dto.Stock // TODO: 字段已移除, */
-                // /* BatchNo = dto.BatchNo // TODO: 字段已移除 ?? "", */
-                // ExpireDate = dto.ExpireDate , // TODO: 字段已移除
                 Effect = dto.Effect,
                 Usage = dto.Usage,
-                // Status = dto.Status , // TODO: 字段已移除
-                // IsActive = dto.Status == CommonStatus.Enabled, // TODO: 需要更新为使用 Status 字段
-                // CreateTime = dto.CreateTime, // TODO: 字段已移除
-                // UpdateTime = dto.UpdateTime, // TODO: 字段已移除
                 Remark = dto.Remark
             };
         }

@@ -7,7 +7,7 @@ using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Services.Interfaces;
-using PagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.Formulas.FormulaInfo>;
+using FormulaPagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.Formulas.FormulaInfo>;
 using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Common;
@@ -20,9 +20,9 @@ namespace LYBT.WPF.Client.Services
     /// </summary>
     public class FormulaService : IFormulaService
     {
-        private readonly IFormulaApiService _apiService;
+        private readonly IFormulaTemplateApiService _apiService;
 
-        public FormulaService(IFormulaApiService apiService)
+        public FormulaService(IFormulaTemplateApiService apiService)
         {
             _apiService = apiService;
         }
@@ -30,7 +30,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询验方模板
         /// </summary>
-        public async Task<PagedResult<FormulaInfo>> SearchFormulasAsync(PaginationRequest query)
+        public async Task<FormulaPagedResult> SearchFormulasAsync(PaginationRequest query)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace LYBT.WPF.Client.Services
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     var templateInfos = response.Content.Items.Select(ConvertToFormulaInfo).ToList();
-                    return new PagedResult<FormulaInfo>
+                    return new FormulaPagedResult
                     {
                         Items = templateInfos,
                         TotalCount = response.Content.TotalCount,
@@ -47,7 +47,7 @@ namespace LYBT.WPF.Client.Services
                     };
                 }
 
-                return new PagedResult<FormulaInfo>
+                return new FormulaPagedResult
                 {
                     Items = new List<FormulaInfo>(),
                     TotalCount = 0,
@@ -58,7 +58,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new PagedResult<FormulaInfo>
+                return new FormulaPagedResult
                 {
                     Items = new List<FormulaInfo>(),
                     TotalCount = 0,

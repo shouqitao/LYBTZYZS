@@ -55,8 +55,6 @@ namespace LYBT.Shared.Models.Core {
         public string? Address { get; set; }
 
 
-
-
         /// <summary>过敏史</summary>
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }

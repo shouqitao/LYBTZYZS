@@ -37,9 +37,7 @@ namespace LYBT.Module.Prescriptions.Services {
 
             // 1. 获取所有验方模板 - 暂时禁用，等待Formula模块重构
             var formulas = new List<FormulaDetailDto>();
-            // foreach (var templateId in formulaIds) {
             //     var template = await _formulaService.GetByIdAsync(templateId);
-            //     if (template != null) {
             //         formulas.Add(template);
             //         formulaNames.Add(template.Name);
             //     }
@@ -203,7 +201,6 @@ namespace LYBT.Module.Prescriptions.Services {
 
             // 根据医生权限获取可见的验方模板 - 暂时禁用，等待Formula模块重构
             List<FormulaDetailDto> allFormulas = new List<FormulaDetailDto>();
-            // if (doctorId.HasValue) {
             //     // 获取该医生可见的验方（包括共享验方和自己创建的验方）
             //     allFormulas = await _formulaService.GetVisibleFormulasForDoctorAsync(doctorId.Value);
             // } else {

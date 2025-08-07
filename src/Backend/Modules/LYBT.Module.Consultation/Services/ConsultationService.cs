@@ -62,13 +62,11 @@ namespace LYBT.Module.Consultation.Services {
                 if (!string.IsNullOrWhiteSpace(query.DiagnosisKeyword)) {
                     consultationsQuery = consultationsQuery.Where(c =>
                         c.Diagnosis.Contains(query.DiagnosisKeyword) ||
-                        c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(query.DiagnosisKeyword) ||
-                        c.WesternDiagnosis != null && c.WesternDiagnosis.Contains(query.DiagnosisKeyword));
+                        c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(query.DiagnosisKeyword));
                 }
 
                 if (!string.IsNullOrWhiteSpace(query.SearchKeyword)) {
                     consultationsQuery = consultationsQuery.Where(c =>
-                        c.ChiefComplaint != null && c.ChiefComplaint.Contains(query.SearchKeyword) ||
                         c.Diagnosis.Contains(query.SearchKeyword));
                 }
 
@@ -215,17 +213,7 @@ namespace LYBT.Module.Consultation.Services {
                     throw new InvalidOperationException("看诊记录不存在");
                 }
 
-                // 更新病史信息
-                if (dto.ChiefComplaint != null)
-                    consultation.ChiefComplaint = dto.ChiefComplaint;
-                if (dto.PresentIllness != null)
-                    consultation.PresentIllness = dto.PresentIllness;
-                if (dto.PastHistory != null)
-                    consultation.PastHistory = dto.PastHistory;
-                if (dto.AllergyHistory != null)
-                    consultation.AllergyHistory = dto.AllergyHistory;
-                if (dto.PhysicalExamination != null)
-                    consultation.PhysicalExamination = dto.PhysicalExamination;
+                // 病史信息字段已移除，跳过
 
                 // 更新中医四诊
                 if (dto.Inspection != null)
@@ -241,29 +229,19 @@ namespace LYBT.Module.Consultation.Services {
                 if (dto.PulseCondition != null)
                     consultation.PulseCondition = dto.PulseCondition;
 
-                // 更新生命体征
-                if (dto.Temperature.HasValue)
-                    consultation.Temperature = dto.Temperature.Value;
-                if (dto.SystolicPressure.HasValue)
-                    consultation.SystolicPressure = dto.SystolicPressure.Value;
-                if (dto.DiastolicPressure.HasValue)
-                    consultation.DiastolicPressure = dto.DiastolicPressure.Value;
-                if (dto.HeartRate.HasValue)
-                    consultation.HeartRate = dto.HeartRate.Value;
-                if (dto.RespiratoryRate.HasValue)
-                    consultation.RespiratoryRate = dto.RespiratoryRate.Value;
+                // 生命体征字段已移除，跳过
 
                 // 更新诊断信息
                 if (dto.TCMDiagnosis != null)
                     consultation.TCMDiagnosis = dto.TCMDiagnosis;
-                if (dto.WesternDiagnosis != null)
-                    consultation.WesternDiagnosis = dto.WesternDiagnosis;
                 if (!string.IsNullOrEmpty(dto.Diagnosis))
                     consultation.Diagnosis = dto.Diagnosis;
                 if (dto.TreatmentPrinciple != null)
                     consultation.TreatmentPrinciple = dto.TreatmentPrinciple;
                 if (dto.MedicalAdvice != null)
                     consultation.MedicalAdvice = dto.MedicalAdvice;
+                if (dto.Remark != null)
+                    consultation.Remark = dto.Remark;
 
                 consultation.UpdateTime = DateTime.Now;
 
@@ -292,7 +270,6 @@ namespace LYBT.Module.Consultation.Services {
                 // 更新诊断信息
                 consultation.Diagnosis = dto.Diagnosis;
                 consultation.TCMDiagnosis = dto.TCMDiagnosis;
-                consultation.WesternDiagnosis = dto.WesternDiagnosis;
                 consultation.TreatmentPrinciple = dto.TreatmentPrinciple;
                 consultation.MedicalAdvice = dto.MedicalAdvice;
                 consultation.Duration = (int)(DateTime.Now - consultation.ConsultationTime).TotalMinutes;
@@ -303,15 +280,9 @@ namespace LYBT.Module.Consultation.Services {
                     .FirstOrDefaultAsync(m => m.ConsultationId == consultation.Id);
 
                 if (medicalCase != null) {
-                    medicalCase.Status = dto.TreatmentPlanId.HasValue
-                        ? MedicalCaseStatus.Completed
-                        : MedicalCaseStatus.Completed;
-
+                    medicalCase.Status = MedicalCaseStatus.Completed;
                     medicalCase.UpdateTime = DateTime.Now;
-
-                    if (!dto.TreatmentPlanId.HasValue) {
-                        medicalCase.CompleteTime = DateTime.Now;
-                    }
+                    medicalCase.CompleteTime = DateTime.Now;
                 }
 
                 await _context.SaveChangesAsync();
@@ -458,31 +429,20 @@ namespace LYBT.Module.Consultation.Services {
                 PatientName = patient?.Name ?? "",
                 UserId = consultation.UserId,
                 DoctorName = doctor?.RealName ?? "",
-                ChiefComplaint = consultation.ChiefComplaint,
-                PresentIllness = consultation.PresentIllness,
-                PastHistory = consultation.PastHistory,
-                AllergyHistory = consultation.AllergyHistory,
-                PhysicalExamination = consultation.PhysicalExamination,
                 Inspection = consultation.Inspection,
                 AuscultationOlfaction = consultation.AuscultationOlfaction,
                 Inquiry = consultation.Inquiry,
                 Palpation = consultation.Palpation,
                 TongueInspection = consultation.TongueInspection,
                 PulseCondition = consultation.PulseCondition,
-                Temperature = consultation.Temperature,
-                SystolicPressure = consultation.SystolicPressure,
-                DiastolicPressure = consultation.DiastolicPressure,
-                HeartRate = consultation.HeartRate,
-                RespiratoryRate = consultation.RespiratoryRate,
                 TCMDiagnosis = consultation.TCMDiagnosis,
-                WesternDiagnosis = consultation.WesternDiagnosis,
                 Diagnosis = consultation.Diagnosis,
                 TreatmentPrinciple = consultation.TreatmentPrinciple,
-                TreatmentPlanId = null, // 需要从MedicalCase获取
                 MedicalAdvice = consultation.MedicalAdvice,
                 ConsultationTime = consultation.ConsultationTime,
                 CreateTime = consultation.CreateTime,
-                UpdateTime = consultation.UpdateTime
+                UpdateTime = consultation.UpdateTime,
+                Remark = consultation.Remark
             };
         }
 

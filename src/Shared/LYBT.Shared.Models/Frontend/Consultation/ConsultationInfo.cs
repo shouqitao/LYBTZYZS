@@ -43,29 +43,24 @@ namespace LYBT.Shared.Models.Frontend.Consultation
         public DateTime ConsultationTime { get; set; }
 
         /// <summary>
-        /// 主诉
+        /// 望诊（中医四诊之一）
         /// </summary>
-        public string ChiefComplaint { get; set; } = string.Empty;
+        public string Inspection { get; set; } = string.Empty;
 
         /// <summary>
-        /// 现病史
+        /// 闻诊（中医四诊之一）
         /// </summary>
-        public string PresentIllness { get; set; } = string.Empty;
+        public string AuscultationOlfaction { get; set; } = string.Empty;
 
         /// <summary>
-        /// 既往史
+        /// 问诊（中医四诊之一）
         /// </summary>
-        public string PastHistory { get; set; } = string.Empty;
+        public string Inquiry { get; set; } = string.Empty;
 
         /// <summary>
-        /// 过敏史
+        /// 切诊（中医四诊之一）
         /// </summary>
-        public string AllergyHistory { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 体格检查
-        /// </summary>
-        public string PhysicalExamination { get; set; } = string.Empty;
+        public string Palpation { get; set; } = string.Empty;
 
         /// <summary>
         /// 舌诊
@@ -83,16 +78,6 @@ namespace LYBT.Shared.Models.Frontend.Consultation
         public string TCMDiagnosis { get; set; } = string.Empty;
 
         /// <summary>
-        /// 西医诊断
-        /// </summary>
-        public string WesternDiagnosis { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 诊断
-        /// </summary>
-        public string Diagnosis { get; set; } = string.Empty;
-
-        /// <summary>
         /// 治疗原则
         /// </summary>
         public string TreatmentPrinciple { get; set; } = string.Empty;
@@ -101,6 +86,11 @@ namespace LYBT.Shared.Models.Frontend.Consultation
         /// 医嘱
         /// </summary>
         public string MedicalAdvice { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 备注信息
+        /// </summary>
+        public string Remark { get; set; } = string.Empty;
 
         /// <summary>
         /// 创建时间

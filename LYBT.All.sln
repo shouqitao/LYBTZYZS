@@ -64,6 +64,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Shared.Models", "src\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Shared.Utilities", "src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj", "{899B6BAA-0ADF-4417-B6A7-B7A0947FF71A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WPF.Client.Modules.Consultation", "src\Frontend\Desktop\Modules\Consultation\LYBT.WPF.Client.Modules.Consultation.csproj", "{49015F0C-1D02-5249-75A0-8B811D61DDC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -158,6 +160,10 @@ Global
 		{899B6BAA-0ADF-4417-B6A7-B7A0947FF71A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{899B6BAA-0ADF-4417-B6A7-B7A0947FF71A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{899B6BAA-0ADF-4417-B6A7-B7A0947FF71A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49015F0C-1D02-5249-75A0-8B811D61DDC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49015F0C-1D02-5249-75A0-8B811D61DDC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49015F0C-1D02-5249-75A0-8B811D61DDC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49015F0C-1D02-5249-75A0-8B811D61DDC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -191,6 +197,7 @@ Global
 		{70A1C21B-2799-4A98-9559-AE9CE8C24208} = {E9F0A1B2-C3D4-2E3F-6A7B-8C9D0E1F2A3B}
 		{31BCA8A0-E33A-419F-B261-9E72E913F4F6} = {088967DC-D878-4BE2-9A6E-B9A9BF72FC98}
 		{899B6BAA-0ADF-4417-B6A7-B7A0947FF71A} = {088967DC-D878-4BE2-9A6E-B9A9BF72FC98}
+		{49015F0C-1D02-5249-75A0-8B811D61DDC3} = {E9F0A1B2-C3D4-2E3F-6A7B-8C9D0E1F2A3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0E1F2A3-B4C5-4D6E-7F8A-9B0C1D2E3F4A}

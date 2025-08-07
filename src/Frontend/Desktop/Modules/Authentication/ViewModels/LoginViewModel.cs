@@ -222,7 +222,6 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             catch (Exception ex)
             {
                 // 静默处理错误，避免影响用户体验
-                System.Diagnostics.Debug.WriteLine($"加载凭据时出错: {ex.Message}");
                 HasSavedPassword = false;
             }
         }

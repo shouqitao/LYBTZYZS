@@ -156,7 +156,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels
             catch (Exception ex)
             {
                 // 简单的错误处理
-                Console.WriteLine($"加载看诊记录失败：{ex.Message}");
             }
             finally
             {
@@ -174,7 +173,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels
         {
             if (consultation == null) return;
             // 简化版 - 直接显示信息
-            Console.WriteLine($"查看看诊记录：{consultation.Id}");
         }
 
         private async Task DeleteConsultationAsync(ConsultationInfo consultation)
@@ -191,7 +189,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"删除失败：{ex.Message}");
             }
             finally
             {
@@ -201,15 +198,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels
 
         private void ExportConsultations()
         {
-            // TODO: 实现导出功能
-            Console.WriteLine("导出功能待开发...");
         }
 
         private void PrintConsultation(ConsultationInfo consultation)
         {
             if (consultation == null) return;
-            // TODO: 实现打印功能
-            Console.WriteLine("打印功能待开发...");
         }
 
         #endregion

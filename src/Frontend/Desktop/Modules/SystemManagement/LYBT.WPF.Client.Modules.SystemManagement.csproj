@@ -10,6 +10,10 @@
     <AssemblyCompany>凌隐宝堂</AssemblyCompany>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="nul" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Prism.DryIoc" Version="9.0.537" />

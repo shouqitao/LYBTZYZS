@@ -296,7 +296,6 @@ namespace LYBT.Module.Prescriptions.Services {
             }
 
 
-
             prescription.SingleDosePrice = prescription.DosageCount > 0 ? 0m / prescription.DosageCount : 0;
             prescription.Status = PrescriptionStatus.Draft;
             prescription.UpdateTime = DateTime.Now;
@@ -343,8 +342,8 @@ namespace LYBT.Module.Prescriptions.Services {
                 PendingCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Draft),
                 CompletedCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Completed),
                 CancelledCount = 0, // PrescriptionStatus.Cancelled已移除
-                TotalAmount = prescriptions.Sum(p => (0m) /* p.TotalPrice 已删除 */ ),
-                AverageAmount = prescriptions.Any() ? prescriptions.Average(p => (0m) /* p.TotalPrice 已删除 */ ) : 0
+                TotalAmount = 0m, // TotalPrice字段已删除，需要从Items计算
+                AverageAmount = 0m // TotalPrice字段已删除
             };
         }
 

@@ -121,7 +121,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"开始加载处方列表，页码: {request.CurrentPage}");
 
                 var response = await Service.GetListAsync(
                     page: request.CurrentPage,
@@ -160,7 +159,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载处方列表异常: {ex.Message}");
                 return ServiceResult<PagedResult<PrescriptionInfo>>.Failure($"加载处方列表失败: {ex.Message}");
             }
         }
@@ -255,8 +253,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
             try
             {
-                // TODO: 实现处方打印功能
-                _commonDialogService.ShowInformationAsync($"处方打印功能开发中...\n处方编号：{prescription.PrescriptionNumber}", "提示").GetAwaiter().GetResult();
+                                _commonDialogService.ShowInformationAsync($"处方打印功能开发中...\n处方编号：{prescription.PrescriptionNumber}", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -324,8 +321,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             try
             {
-                // TODO: 实现处方导出功能
-                _commonDialogService.ShowInformationAsync("处方导出功能开发中...", "提示").GetAwaiter().GetResult();
+                                _commonDialogService.ShowInformationAsync("处方导出功能开发中...", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {

@@ -98,34 +98,11 @@
                             </Grid>
                         </Border>
 
-                        <!-- 主诉 -->
-                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
-                            <StackPanel>
-                                <TextBlock Text="主诉" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <TextBox Text="{Binding CurrentConsultation.ChiefComplaint}"
-                                        TextWrapping="Wrap"
-                                        AcceptsReturn="True"
-                                        MinHeight="60"
-                                        />
-                            </StackPanel>
-                        </Border>
-
-                        <!-- 现病史 -->
-                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
-                            <StackPanel>
-                                <TextBlock Text="现病史" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <TextBox Text="{Binding CurrentConsultation.PresentIllness}"
-                                        TextWrapping="Wrap"
-                                        AcceptsReturn="True"
-                                        MinHeight="80"
-                                        />
-                            </StackPanel>
-                        </Border>
 
                         <!-- 四诊信息 -->
                         <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
                             <StackPanel>
-                                <TextBlock Text="四诊信息" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+                                <TextBlock Text="中医四诊" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
                                 
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -133,6 +110,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
@@ -143,6 +121,7 @@
                                         <TextBox Text="{Binding CurrentConsultation.Inspection}"
                                                 TextWrapping="Wrap"
                                                 MinHeight="60"
+                                                Tag="观察患者神色体态、舌象等"
                                                 />
                                     </StackPanel>
                                     
@@ -152,24 +131,47 @@
                                         <TextBox Text="{Binding CurrentConsultation.AuscultationOlfaction}"
                                                 TextWrapping="Wrap"
                                                 MinHeight="60"
+                                                Tag="听声音，嗅气味"
                                                 />
                                     </StackPanel>
                                     
                                     <!-- 问诊 -->
-                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,5,0">
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,5,10">
                                         <TextBlock Text="问诊" Opacity="0.7" Margin="0,0,0,5"/>
                                         <TextBox Text="{Binding CurrentConsultation.Inquiry}"
                                                 TextWrapping="Wrap"
                                                 MinHeight="60"
+                                                Tag="询问症状、病史、生活习惯等"
                                                 />
                                     </StackPanel>
                                     
                                     <!-- 切诊 -->
-                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="5,0,0,0">
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="5,0,0,10">
                                         <TextBlock Text="切诊" Opacity="0.7" Margin="0,0,0,5"/>
                                         <TextBox Text="{Binding CurrentConsultation.Palpation}"
                                                 TextWrapping="Wrap"
                                                 MinHeight="60"
+                                                Tag="脉诊、按诊等"
+                                                />
+                                    </StackPanel>
+                                    
+                                    <!-- 舌诊 -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,5,0">
+                                        <TextBlock Text="舌诊" Opacity="0.7" Margin="0,0,0,5"/>
+                                        <TextBox Text="{Binding CurrentConsultation.TongueInspection}"
+                                                TextWrapping="Wrap"
+                                                MinHeight="60"
+                                                Tag="舌质、舌苔等"
+                                                />
+                                    </StackPanel>
+                                    
+                                    <!-- 脉诊 -->
+                                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="5,0,0,0">
+                                        <TextBlock Text="脉诊" Opacity="0.7" Margin="0,0,0,5"/>
+                                        <TextBox Text="{Binding CurrentConsultation.PulseCondition}"
+                                                TextWrapping="Wrap"
+                                                MinHeight="60"
+                                                Tag="脉象特点描述"
                                                 />
                                     </StackPanel>
                                 </Grid>
@@ -196,10 +198,10 @@
                                                 />
                                     </StackPanel>
                                     
-                                    <!-- 西医诊断 -->
+                                    <!-- 治疗原则 -->
                                     <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                                        <TextBlock Text="西医诊断" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.WesternDiagnosis}"
+                                        <TextBlock Text="治疗原则" Opacity="0.7" Margin="0,0,0,5"/>
+                                        <TextBox Text="{Binding CurrentConsultation.TreatmentPrinciple}"
                                                 TextWrapping="Wrap"
                                                 MinHeight="60"
                                                 />
@@ -208,14 +210,28 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- 治疗方案 -->
+                        <!-- 医嘱建议 -->
                         <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
                             <StackPanel>
-                                <TextBlock Text="治疗方案" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <TextBox Text="{Binding CurrentConsultation.Treatment}"
+                                <TextBlock Text="医嘱建议" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+                                <TextBox Text="{Binding CurrentConsultation.MedicalAdvice}"
                                         TextWrapping="Wrap"
                                         AcceptsReturn="True"
                                         MinHeight="80"
+                                        Tag="饮食起居、情志调节、复诊时间等"
+                                        />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 备注信息 -->
+                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="备注信息" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+                                <TextBox Text="{Binding CurrentConsultation.Remark}"
+                                        TextWrapping="Wrap"
+                                        AcceptsReturn="True"
+                                        MinHeight="60"
+                                        Tag="其他需要记录的补充信息"
                                         />
                             </StackPanel>
                         </Border>
@@ -253,35 +269,78 @@
                          CanUserAddRows="False"
                          Background="White">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="药材" Binding="{Binding HerbName}" Width="*"/>
-                        <DataGridTextColumn Header="数量" Binding="{Binding Quantity}" Width="60"/>
-                        <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="50"/>
-                        <DataGridTemplateColumn Header="操作" Width="60">
+                        <DataGridTextColumn Header="药材" Binding="{Binding HerbName}" Width="*" IsReadOnly="True"/>
+                        <DataGridTemplateColumn Header="数量" Width="80">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="删除"
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="-" Width="20" Height="20" 
+                                               Command="{Binding DataContext.DecreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"/>
+                                        <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" 
+                                                Width="30" Height="20" TextAlignment="Center"
+                                                Margin="2,0"/>
+                                        <Button Content="+" Width="20" Height="20" 
+                                               Command="{Binding DataContext.IncreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="40" IsReadOnly="True"/>
+                        <DataGridTemplateColumn Header="操作" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="删" 
                                            Command="{Binding DataContext.RemovePrescriptionItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                            CommandParameter="{Binding}"
-                                           Padding="5,2"
-                                           Margin="2"/>
+                                           Width="30" Height="20"
+                                           Padding="2"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- 药材选择 -->
+                <!-- 处方组成操作 -->
                 <Border Grid.Row="2" Background="White" Padding="10">
-                    <ComboBox ItemsSource="{Binding AvailableHerbs}"
-                             DisplayMemberPath="Name"
-                             Tag="选择药材添加到处方..."
-                             >
-                        <ComboBox.ItemContainerStyle>
-                            <Style TargetType="ComboBoxItem">
-                                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnHerbSelected"/>
-                            </Style>
-                        </ComboBox.ItemContainerStyle>
-                    </ComboBox>
+                    <StackPanel>
+                        <!-- 验方快速应用 -->
+                        <TextBlock Text="验方快速应用" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding AvailableFormulas}"
+                                 DisplayMemberPath="Name"
+                                 Tag="选择验方一键应用..."
+                                 Margin="0,0,0,10">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem">
+                                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnFormulaSelected"/>
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+                        
+                        <!-- 分割线 -->
+                        <Separator Margin="0,5"/>
+                        
+                        <!-- 手动添加药材 -->
+                        <TextBlock Text="手动添加药材" FontWeight="Bold" Margin="0,5,0,5"/>
+                        <!-- 药材搜索框 -->
+                        <TextBox x:Name="HerbSearchBox" 
+                                Tag="搜索药材名称..." 
+                                Text="{Binding HerbSearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                                Margin="0,0,0,5"/>
+                        <!-- 药材选择列表 -->
+                        <ComboBox x:Name="HerbComboBox"
+                                 ItemsSource="{Binding AvailableHerbs}"
+                                 DisplayMemberPath="Name"
+                                 Tag="选择药材添加到处方..."
+                                 MaxDropDownHeight="150">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem">
+                                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnHerbSelected"/>
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+                    </StackPanel>
                 </Border>
             </Grid>
         </Grid>

@@ -289,6 +289,7 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(c => c.Diagnosis).HasMaxLength(500);
             entity.Property(c => c.TreatmentPrinciple).HasMaxLength(200);
             entity.Property(c => c.MedicalAdvice).HasMaxLength(500);
+            entity.Property(c => c.Remark).HasMaxLength(1000);
             entity.HasIndex(c => c.MedicalCaseId);
             entity.HasIndex(c => c.PatientId);
             entity.HasIndex(c => c.UserId);

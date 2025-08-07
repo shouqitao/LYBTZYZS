@@ -10,7 +10,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
     /// <summary>
     /// 验方模板API服务接口 - Refit定义
     /// </summary>
-    public interface IFormulaApiService
+    public interface IFormulaTemplateApiService
     {
         /// <summary>
         /// 分页查询验方模板

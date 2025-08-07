@@ -204,7 +204,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
         {
             try
             {
-                // TODO: 实现复制功能
                 _commonDialogService.ShowInformationAsync("验方模板复制功能待实现", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
@@ -220,30 +219,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
         // 临时占位方法 - 等待IDialogAware问题解决
         private void RaiseRequestClose(IDialogResult dialogResult)
         {
-            // TODO: 实现对话框关闭逻辑
+            // 等待IDialogAware接口实现
         }
-
-
-
-        /* #region IDialogAware Implementation
-
-        event Action<IDialogResult> IDialogAware.RequestClose
-        {
-            add { _requestClose += value; }
-            remove { _requestClose -= value; }
-        }
-        
-        private Action<IDialogResult>? _requestClose;
-
-        private void RaiseRequestClose(IDialogResult dialogResult)
-        {
-            _requestClose?.Invoke(dialogResult);
-        }
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        #endregion */
-        }
+    }
 }

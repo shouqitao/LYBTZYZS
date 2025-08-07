@@ -1,0 +1,67 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using LYBT.WPF.Client.Core.Models;
+using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.WPF.Client.Core.Models.Consultation;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
+
+namespace LYBT.WPF.Client.Core.Interfaces.Services
+{
+    /// <summary>
+    /// 看诊服务接口
+    /// </summary>
+    public interface IConsultationService
+    {
+        /// <summary>
+        /// 分页查询看诊记录
+        /// </summary>
+        Task<PagedResult<ConsultationInfo>> SearchConsultationsAsync(PaginationRequest query);
+
+        /// <summary>
+        /// 获取看诊详情
+        /// </summary>
+        Task<ServiceResult<ConsultationInfo>> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// 根据医疗案例ID获取看诊信息
+        /// </summary>
+        Task<ServiceResult<ConsultationInfo>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 开始看诊
+        /// </summary>
+        Task<ServiceResult<ConsultationInfo>> StartConsultationAsync(ConsultationStartDto dto);
+
+        /// <summary>
+        /// 更新看诊信息
+        /// </summary>
+        Task<ServiceResult<ConsultationInfo>> UpdateConsultationAsync(Guid id, ConsultationUpdateDto dto);
+
+        /// <summary>
+        /// 完成看诊
+        /// </summary>
+        Task<ServiceResult<bool>> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto);
+
+        /// <summary>
+        /// 获取医生今日看诊列表
+        /// </summary>
+        Task<ServiceResult<List<ConsultationInfo>>> GetTodayConsultationsByDoctorAsync(Guid doctorId);
+
+        /// <summary>
+        /// 获取患者历史看诊记录
+        /// </summary>
+        Task<ServiceResult<List<ConsultationInfo>>> GetPatientHistoryAsync(Guid patientId);
+
+        /// <summary>
+        /// 统计医生看诊数量
+        /// </summary>
+        Task<ServiceResult<int>> GetDoctorConsultationCountAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null);
+
+        /// <summary>
+        /// 删除看诊记录（软删除）
+        /// </summary>
+        Task<ServiceResult<bool>> DeleteAsync(Guid id);
+    }
+}

@@ -249,30 +249,13 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 模拟获取患者列表
-                await Task.Delay(300);
-                var patientInfos = new List<PatientInfo>
+                // 使用现有的GetActivePatientsAsync方法获取启用的患者列表
+                var response = await _patientsApiService.GetActivePatientsAsync();
+                if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    new PatientInfo
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "张三",
-                        Gender = Gender.Male,
-                        Age = 35,
-                        PhoneNumber = "13800138001",
-                        IdNumber = "110101198801010001"
-                    },
-                    new PatientInfo
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "李四",
-                        Gender = Gender.Female,
-                        Age = 28,
-                        PhoneNumber = "13800138002",
-                        IdNumber = "110101199502020002"
-                    }
-                };
-                return patientInfos;
+                    return response.Content.Select(ConvertToPatientInfo).ToList();
+                }
+                return new List<PatientInfo>();
             }
             catch (Exception ex)
             {

@@ -132,5 +132,9 @@ namespace LYBT.Shared.Models.Core
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+
+        /// <summary>备注信息</summary>
+        [DisplayName("备注")]
+        public string? Remark { get; set; }
     }
 }

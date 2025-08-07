@@ -183,8 +183,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPatch("batch-disable")]
         public async Task<IActionResult> BatchDisable([FromBody] BatchOperationDto dto) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
-            var count = 0; // TODO: 实现批量禁用功能
-            await Task.CompletedTask; // 暂时占位，等待实现
+            var count = 0;             await Task.CompletedTask; // 暂时占位，等待实现
             return Ok(new { disabledCount = count, message = $"成功禁用 {count} 名患者档案" });
         }
 
@@ -194,8 +193,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPatch("batch-enable")]
         public async Task<IActionResult> BatchEnable([FromBody] BatchOperationDto dto) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
-            var count = 0; // TODO: 实现批量启用功能
-            await Task.CompletedTask; // 暂时占位，等待实现
+            var count = 0;             await Task.CompletedTask; // 暂时占位，等待实现
             return Ok(new { enabledCount = count, message = $"成功启用 {count} 名患者档案" });
         }
 
@@ -216,8 +214,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("import")]
         public async Task<IActionResult> Import([FromBody] List<PatientDetailDto> dtos) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
-            var count = 0; // TODO: 实现导入功能
-            await Task.CompletedTask; // 暂时占位，等待实现
+            var count = 0;             await Task.CompletedTask; // 暂时占位，等待实现
             return Ok(new { imported = count, message = $"成功导入 {count} 名患者档案" });
         }
 

@@ -98,6 +98,9 @@ builder.Services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthRepository, LYBT.Mod
 builder.Services.AddScoped<LYBT.Module.Auth.Services.SysAdminHandler>();
 builder.Services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthService, LYBT.Module.Auth.Services.AuthService>();
 
+// 注册验方模块服务
+builder.Services.AddScoped<LYBT.Module.Formula.Interfaces.IFormulaService, LYBT.Module.Formula.Services.FormulaService>();
+
 // =========== 4. 添加API版本控制 ===========
 builder.Services.AddApiVersioning(opt => {
     opt.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
@@ -176,7 +179,6 @@ var app = builder.Build();
 // =========== 9. 数据库和应用初始化 ===========
 using (var scope = app.Services.CreateScope()) {
     try {
-        Console.WriteLine("🔄 正在初始化应用程序...");
 
         // 使用超时取消令牌防止初始化卡死
         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
@@ -188,16 +190,7 @@ using (var scope = app.Services.CreateScope()) {
 
             // 显示数据库信息
             var dbInfo = await dbInitService.GetDatabaseInfoAsync();
-            Console.WriteLine($"📊 数据库信息:");
-            Console.WriteLine($"   ├─ 数据库名: {dbInfo.DatabaseName}");
-            Console.WriteLine($"   ├─ 连接状态: {(dbInfo.IsConnected ? "✅ 已连接" : "❌ 连接失败")}");
-            Console.WriteLine($"   ├─ 已应用迁移: {dbInfo.AppliedMigrationsCount} 个");
-            Console.WriteLine($"   ├─ 待处理迁移: {dbInfo.PendingMigrationsCount} 个");
-            Console.WriteLine($"   └─ 最新迁移: {dbInfo.LastMigration ?? "无"}");
         } catch (Exception dbEx) {
-            Console.WriteLine($"❌ 数据库初始化失败: {dbEx.Message}");
-            Console.WriteLine("⚠️  程序将尝试继续启动，但数据库相关功能可能不可用");
-            Console.WriteLine($"💡 建议检查数据库连接字符串和SQL Server服务状态");
 
             // 记录详细错误信息到日志
             var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
@@ -209,9 +202,7 @@ using (var scope = app.Services.CreateScope()) {
         if (configService != null) {
             try {
                 await configService.InitializeDefaultGlobalSettingsAsync();
-                Console.WriteLine("✅ 配置服务初始化成功");
-            } catch (Exception configEx) {
-                Console.WriteLine($"⚠️  配置服务初始化失败，将跳过: {configEx.Message}");
+            } catch (Exception) {
             }
         }
 
@@ -220,22 +211,16 @@ using (var scope = app.Services.CreateScope()) {
         if (logService != null) {
             try {
                 await logService.LogInfoAsync("System", "应用程序启动成功", null, "WebAPI-Startup");
-                Console.WriteLine("✅ 日志服务初始化成功");
-            } catch (Exception logEx) {
-                Console.WriteLine($"⚠️  日志服务初始化失败，将跳过: {logEx.Message}");
+            } catch (Exception) {
             }
         }
 
-        Console.WriteLine("✅ 应用程序初始化完成");
     } catch (Exception ex) {
         var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
         logger?.LogError(ex, "❌ 应用程序初始化失败");
-        Console.WriteLine($"❌ 初始化失败: {ex.Message}");
-        Console.WriteLine("⚠️  程序将继续启动，但某些功能可能不可用");
 
         // 在开发环境中显示更详细的错误信息
         if (app.Environment.IsDevelopment()) {
-            Console.WriteLine($"详细错误: {ex}");
         }
     }
 }
@@ -249,7 +234,6 @@ app.UseSwaggerUI(c => {
     c.RoutePrefix = "swagger";
     c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
 });
-Console.WriteLine("📖 Swagger UI 已启用 - /swagger");
 
 // 使用新的异常处理中间件
 app.UseExceptionHandler();
@@ -265,10 +249,6 @@ app.MapControllers();
 
 // =========== 11. 启动应用 ===========
 var urls = app.Urls.Count > 0 ? string.Join(", ", app.Urls) : "默认端口";
-Console.WriteLine($"");
-Console.WriteLine($"🚀 LYBT中医诊所管理系统启动成功!");
-Console.WriteLine($"📍 访问地址: {urls}");
-Console.WriteLine($"📖 Swagger文档: {urls.Replace("http://", "").Replace("https://", "").Split(',')[0]}/swagger");
 
 // 获取数据库状态信息
 using (var scope = app.Services.CreateScope()) {
@@ -276,29 +256,20 @@ using (var scope = app.Services.CreateScope()) {
         var dbInitService = scope.ServiceProvider.GetService<LYBT.Infrastructure.Database.DatabaseInitializationService>();
         if (dbInitService != null) {
             var dbInfo = await dbInitService.GetDatabaseInfoAsync();
-            Console.WriteLine($"📊 数据库状态: {(dbInfo.IsConnected ? "✅ 已连接" : "❌ 未连接")} ({dbInfo.DatabaseName})");
         } else {
-            Console.WriteLine($"📊 数据库状态: {(string.IsNullOrEmpty(connectionString) ? "❌ 未配置" : "⚠️ 状态未知")}");
         }
     } catch {
-        Console.WriteLine($"📊 数据库状态: ⚠️ 检查失败");
     }
 }
 
-Console.WriteLine($"🔐 JWT认证: {(jwtOptions != null ? "✅ 已启用" : "❌ 未配置")}");
-Console.WriteLine($"⚡ 服务状态: 所有核心模块已加载");
-Console.WriteLine($"💡 按 Ctrl+C 停止程序");
-Console.WriteLine($"");
 
 // 添加优雅关闭支持
 var cancellationTokenSource = new CancellationTokenSource();
 Console.CancelKeyPress += (sender, e) => {
-    Console.WriteLine("\n⚠️  正在关闭程序...");
     e.Cancel = true; // 取消默认的强制终止
     cancellationTokenSource.Cancel(); // 触发取消令牌
 };
 AppDomain.CurrentDomain.ProcessExit += (_, __) => {
-    Console.WriteLine("\n⚠️  正在关闭程序...");
     cancellationTokenSource.Cancel();
     // 等待应用优雅关闭并确保资源释放
     app.StopAsync().GetAwaiter().GetResult();
@@ -307,9 +278,7 @@ AppDomain.CurrentDomain.ProcessExit += (_, __) => {
 try {
     await app.RunAsync(cancellationTokenSource.Token);
 } catch (OperationCanceledException) {
-    Console.WriteLine("✅ 程序已正常关闭");
 } finally {
     // 确保释放资源
     await app.DisposeAsync();
-    Console.WriteLine("🔚 资源已释放，程序完全退出");
 }

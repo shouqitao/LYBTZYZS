@@ -23,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
     /// <summary>
     /// 验方模板管理视图模型
     /// </summary>
-    public class FormulaManagementViewModel : BaseManagementViewModel<FormulaInfo, IFormulaApiService>
+    public class FormulaManagementViewModel : BaseManagementViewModel<FormulaInfo, IFormulaTemplateApiService>
     {
         private readonly ICommonDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
@@ -57,7 +57,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 
         #endregion
 
-        public FormulaManagementViewModel(IFormulaApiService service,
+        public FormulaManagementViewModel(IFormulaTemplateApiService service,
             ICommonDialogService commonDialogService,
             IDialogService dialogService,
             IHerbService herbService,
@@ -129,7 +129,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载验方模板列表异常: {ex.Message}");
                 return ServiceResult<PagedResult<FormulaInfo>>.Failure($"加载验方模板列表失败: {ex.Message}");
             }
         }

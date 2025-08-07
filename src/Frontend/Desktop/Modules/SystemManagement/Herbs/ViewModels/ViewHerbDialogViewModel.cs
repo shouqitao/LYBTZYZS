@@ -51,41 +51,17 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         /// <summary>库存状态描述</summary>
         public string StockStatusDescription
         {
-            get
-            {
-                if (Herb == null) return "未知";
-                
-                if (0 /* Herb.Stock */ <= 0)
-                    return "无库存";
-                else if (0 /* Herb.Stock */ < 10)
-                    return "库存不足";
-                else if (0 /* Herb.Stock */ < 50)
-                    return "库存正常";
-                else
-                    return "库存充足";
-            }
+            get => "库存信息不可用"; // Stock字段已删除
         }
 
         /// <summary>库存状态颜色</summary>
         public string StockStatusColor
         {
-            get
-            {
-                if (Herb == null) return "#6C757D";
-                
-                if (0 /* Herb.Stock */ <= 0)
-                    return "#DC3545"; // 红色
-                else if (0 /* Herb.Stock */ < 10)
-                    return "#FD7E14"; // 橙色
-                else if (0 /* Herb.Stock */ < 50)
-                    return "#20C997"; // 青色
-                else
-                    return "#28A745"; // 绿色
-            }
+            get => "#6C757D"; // 灰色 - Stock字段已删除
         }
 
         /// <summary>状态描述</summary>
-        public string StatusDescription => true /* Herb?.Status == CommonStatus.Enabled */ ? "正常" : "停用";
+        public string StatusDescription => Herb?.Status == CommonStatus.Enabled ? "正常" : "停用";
 
         /// <summary>状态颜色</summary>
         public string StatusColor => Herb?.Status == CommonStatus.Enabled ? "#28A745" : "#DC3545";
@@ -102,10 +78,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         public string PriceDescription => $"￥{Herb?.Price:F2} / {Herb?.Unit}";
 
         /// <summary>库存描述</summary>
-        public string StockDescription => "0" /* $"{Herb?.Stock} {Herb?.Unit}" */;
+        public string StockDescription => "-"; // Stock字段已删除
 
         /// <summary>过期时间描述</summary>
-        public string ExpireDateDescription => "" /* Herb?.ExpireDate?.ToString("yyyy-MM-dd") */ ?? "-";
+        public string ExpireDateDescription => "-"; // ExpireDate字段已删除
 
         /// <summary>是否即将过期</summary>
         public bool IsExpiringSoon => false; // Herb?.ExpireDate 字段已移除
@@ -181,7 +157,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         private void ExecutePrint()
         {
-            // TODO: 实现打印功能
             _commonDialogService.ShowInformationAsync("中药材信息打印功能开发中...", "提示").GetAwaiter().GetResult();
         }
 
@@ -216,30 +191,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         // 临时占位方法 - 等待IDialogAware问题解决
         private void RaiseRequestClose(IDialogResult dialogResult)
         {
-            // TODO: 实现对话框关闭逻辑
+            // 等待IDialogAware接口实现
         }
-
-
-
-        /* #region IDialogAware Implementation
-
-        event Action<IDialogResult> IDialogAware.RequestClose
-        {
-            add { _requestClose += value; }
-            remove { _requestClose -= value; }
-        }
-        
-        private Action<IDialogResult>? _requestClose;
-
-        private void RaiseRequestClose(IDialogResult dialogResult)
-        {
-            _requestClose?.Invoke(dialogResult);
-        }
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        #endregion */
-        }
+    }
 }

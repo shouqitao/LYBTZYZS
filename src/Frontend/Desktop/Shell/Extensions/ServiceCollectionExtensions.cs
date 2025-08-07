@@ -2,12 +2,16 @@ using System;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Prism.Ioc;
 using Refit;
+using AutoMapper;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
 using LYBT.WPF.Client.Core.Configuration;
+using LYBT.WPF.Client.Core.Mapping;
 using LYBT.WPF.Client.Infrastructure;
 using LYBT.WPF.Client.Services.Handlers;
 
@@ -23,10 +27,49 @@ namespace LYBT.WPF.Client.Shell.Extensions
         /// </summary>
         public static void RegisterAllServices(this IContainerRegistry containerRegistry)
         {
+            RegisterLogging(containerRegistry);
+            RegisterAutoMapper(containerRegistry);
             RegisterHttpServices(containerRegistry);
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
             RegisterDialogs(containerRegistry);
+        }
+
+        /// <summary>
+        /// 注册日志服务
+        /// </summary>
+        private static void RegisterLogging(IContainerRegistry containerRegistry)
+        {
+            // 创建日志工厂
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddDebug();
+                builder.SetMinimumLevel(LogLevel.Debug);
+            });
+
+            // 注册日志工厂
+            containerRegistry.RegisterSingleton<ILoggerFactory>(() => loggerFactory);
+            
+            // 注册泛型日志器
+            containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
+        }
+
+        /// <summary>
+        /// 注册AutoMapper
+        /// </summary>
+        private static void RegisterAutoMapper(IContainerRegistry containerRegistry)
+        {
+            // 创建AutoMapper配置 - AutoMapper 15需要ILoggerFactory参数
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new MappingProfile());
+                // 可以在这里添加更多的Profile
+            }, NullLoggerFactory.Instance);
+
+            IMapper mapper = mapperConfig.CreateMapper();
+            
+            // 注册IMapper为单例
+            containerRegistry.RegisterSingleton<IMapper>(() => mapper);
         }
 
         /// <summary>
@@ -116,7 +159,6 @@ namespace LYBT.WPF.Client.Shell.Extensions
             });
 
             // 注册病例API服务
-//             containerRegistry.Register<IRecordApiService>(container =>
 //             {
 //                 var httpClient = CreateAuthenticatedHttpClient(container);
 //                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
@@ -125,16 +167,15 @@ namespace LYBT.WPF.Client.Shell.Extensions
 //             });
 
             // 注册验方模板API服务
-            containerRegistry.Register<IFormulaApiService>(container =>
+            containerRegistry.Register<IFormulaTemplateApiService>(container =>
             {
                 var httpClient = CreateAuthenticatedHttpClient(container);
                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IFormulaApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+                return RestService.For<IFormulaTemplateApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册挂号API服务
-//             containerRegistry.Register<IRegistrationApiService>(container =>
 //             {
 //                 var httpClient = CreateAuthenticatedHttpClient(container);
 //                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
@@ -152,7 +193,6 @@ namespace LYBT.WPF.Client.Shell.Extensions
             });
 
             // 注册医生API服务
-//             containerRegistry.Register<IDoctorsApiService>(container =>
 //             {
 //                 var httpClient = CreateAuthenticatedHttpClient(container);
 //                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
@@ -161,7 +201,6 @@ namespace LYBT.WPF.Client.Shell.Extensions
 //             });
 
             // 注册日志API服务
-//             containerRegistry.Register<ILogsApiService>(container =>
 //             {
 //                 var httpClient = CreateAuthenticatedHttpClient(container);
 //                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
@@ -196,6 +235,15 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 return RestService.For<IConsultationApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
+            // 注册处方API服务
+            containerRegistry.Register<IPrescriptionsApiService>(container =>
+            {
+                var httpClient = CreateAuthenticatedHttpClient(container);
+                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+                httpClient.Timeout = TimeSpan.FromSeconds(60);
+                return RestService.For<IPrescriptionsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+            });
+
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();
         }
@@ -214,14 +262,9 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
             containerRegistry.RegisterSingleton<IUserService, UserService>();
             containerRegistry.RegisterSingleton<IPatientService, PatientService>();
-            containerRegistry.RegisterSingleton<IUserService, UserService>();
             containerRegistry.RegisterSingleton<IHerbService, HerbService>();
-//             containerRegistry.RegisterSingleton<IRecordService, RecordService>();
             containerRegistry.RegisterSingleton<IFormulaService, FormulaService>();
-//             containerRegistry.RegisterSingleton<IRegistrationService, RegistrationService>();
-//             containerRegistry.RegisterSingleton<IBillingService, BillingService>();
-//             containerRegistry.RegisterSingleton<IPharmacyService, PharmacyService>();
-//             containerRegistry.RegisterSingleton<IPhysiotherapyService, PhysiotherapyService>();
+            containerRegistry.RegisterSingleton<IConsultationService, ConsultationService>();
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, SimplePrescriptionPrintService>();
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
         }
@@ -232,8 +275,6 @@ namespace LYBT.WPF.Client.Shell.Extensions
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
             // 暂时不注册 Prism 对话框，因为 IDialogAware 接口有兼容性问题
-            // containerRegistry.RegisterDialog<LYBT.WPF.Client.Shell.Dialogs.Views.ConfirmationDialog, LYBT.WPF.Client.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel>("ConfirmationDialog");
-            // containerRegistry.RegisterDialog<LYBT.WPF.Client.Shell.Dialogs.Views.InformationDialog, LYBT.WPF.Client.Shell.Dialogs.ViewModels.InformationDialogViewModel>("InformationDialog");
             
             // 注册简单的对话框服务，使用 MessageBox 实现
             containerRegistry.RegisterSingleton<ICommonDialogService, SimpleDialogService>();
