@@ -71,15 +71,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             // 中药材管理对话框
             // containerRegistry.RegisterDialog<Herbs.Views.ViewHerbDialog, Herbs.ViewModels.ViewHerbDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
             
-            // 医生管理对话框
-            // containerRegistry.RegisterDialog<Doctors.Views.ViewDoctorDialog, Doctors.ViewModels.ViewDoctorDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
-            
-            // 挂号管理对话框
-            // containerRegistry.RegisterDialog<Registrations.Views.ViewRegistrationDialog, Registrations.ViewModels.ViewRegistrationDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
-            
-            // 病历管理对话框
-            // containerRegistry.RegisterDialog<Records.Views.ViewRecordDialog, Records.ViewModels.ViewRecordDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
-            
             // 验方模板管理对话框
             // containerRegistry.RegisterDialog<Formulas.Views.ViewFormulaDialog, Formulas.ViewModels.ViewFormulaDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
             

@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Formulas.Interfaces {
+namespace LYBT.Module.Formula.Interfaces {
 
     /// <summary>
     /// 经验方模板仓储接口，定义模板数据操作

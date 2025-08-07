@@ -1,15 +1,16 @@
 namespace LYBT.WPF.Client.Core.Constants {
     /// <summary>
-    /// API端点常量
+    /// API端点常量 - 与WebAPI路由保持一致
     /// </summary>
     public static class ApiEndpoints {
-        // TODO: 定义API端点常量，与WebAPI路由保持一致
-        public const string Auth = "api/auth";
-        public const string Users = "api/users";
-        public const string Patients = "api/patients";
-        public const string Doctors = "api/doctors";
-        public const string Herbs = "api/herbs";
-        public const string Formulas = "api/formula-templates";
-        // 其他端点...
+        // 核心业务模块API端点
+        public const string Auth = "api/v1/Auth";
+        public const string Users = "api/v1/Users";
+        public const string Patients = "api/v1/Patients";
+        public const string Herbs = "api/v1/Herbs";
+        public const string Formulas = "api/v1/Formulas";
+        public const string Consultation = "api/v1/Consultation";
+        public const string MedicalCase = "api/v1/MedicalCase";
+        public const string Prescriptions = "api/v1/Prescriptions";
     }
 }

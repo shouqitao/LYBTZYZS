@@ -15,8 +15,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         public DelegateCommand NavigateToUserManagementCommand { get; }
         public DelegateCommand NavigateToPatientManagementCommand { get; }
         public DelegateCommand NavigateToConsultationManagementCommand { get; }
-        public DelegateCommand NavigateToRegistrationManagementCommand { get; }
-        public DelegateCommand NavigateToRecordManagementCommand { get; }
         public DelegateCommand NavigateToRoleManagementCommand { get; }
         public DelegateCommand NavigateToSystemSettingsCommand { get; }
         public DelegateCommand NavigateToBackupCommand { get; }
@@ -25,7 +23,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         public DelegateCommand NavigateToPrescriptionTemplatesCommand { get; }
         public DelegateCommand NavigateToFormulaManagementCommand { get; }
         public DelegateCommand NavigateToPrescriptionManagementCommand { get; }
-        public DelegateCommand NavigateToDoctorManagementCommand { get; }
 
         public AdminMainViewModel(IRegionManager regionManager)
         {
@@ -35,8 +32,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserManagementView"));
             NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
             NavigateToConsultationManagementCommand = new DelegateCommand(() => NavigateTo("ConsultationManagementView"));
-            NavigateToRegistrationManagementCommand = new DelegateCommand(() => NavigateTo("RegistrationManagementView"));
-            NavigateToRecordManagementCommand = new DelegateCommand(() => NavigateTo("RecordManagementView"));
             NavigateToRoleManagementCommand = new DelegateCommand(() => NavigateTo("RoleManagementView"));
             NavigateToSystemSettingsCommand = new DelegateCommand(() => NavigateTo("SystemSettingsView"));
             NavigateToBackupCommand = new DelegateCommand(() => NavigateTo("BackupView"));
@@ -45,7 +40,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             NavigateToPrescriptionTemplatesCommand = new DelegateCommand(() => NavigateTo("PrescriptionTemplatesView"));
             NavigateToFormulaManagementCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
             NavigateToPrescriptionManagementCommand = new DelegateCommand(() => NavigateTo("PrescriptionManagementView"));
-            NavigateToDoctorManagementCommand = new DelegateCommand(() => NavigateTo("DoctorManagementView"));
 
             // 默认导航到用户管理
             NavigateTo("UserManagementView");

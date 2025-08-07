@@ -158,13 +158,6 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 return RestService.For<IHerbApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
-            // 注册病例API服务
-//             {
-//                 var httpClient = CreateAuthenticatedHttpClient(container);
-//                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-//                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-//                 return RestService.For<IRecordApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-//             });
 
             // 注册验方模板API服务
             containerRegistry.Register<IFormulaTemplateApiService>(container =>
@@ -175,13 +168,6 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 return RestService.For<IFormulaTemplateApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
-            // 注册挂号API服务
-//             {
-//                 var httpClient = CreateAuthenticatedHttpClient(container);
-//                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-//                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-//                 return RestService.For<IRegistrationApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-//             });
 
             // 注册患者API服务
             containerRegistry.Register<IPatientsApiService>(container =>
@@ -192,13 +178,6 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 return RestService.For<IPatientsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
-            // 注册医生API服务
-//             {
-//                 var httpClient = CreateAuthenticatedHttpClient(container);
-//                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-//                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-//                 return RestService.For<IDoctorsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-//             });
 
             // 注册日志API服务
 //             {
@@ -236,12 +215,12 @@ namespace LYBT.WPF.Client.Shell.Extensions
             });
 
             // 注册处方API服务
-            containerRegistry.Register<IPrescriptionsApiService>(container =>
+            containerRegistry.Register<IPrescriptionApiService>(container =>
             {
                 var httpClient = CreateAuthenticatedHttpClient(container);
                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IPrescriptionsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+                return RestService.For<IPrescriptionApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册通用API服务

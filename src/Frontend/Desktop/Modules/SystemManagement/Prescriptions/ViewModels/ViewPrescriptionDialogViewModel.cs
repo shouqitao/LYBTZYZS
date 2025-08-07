@@ -29,7 +29,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         private readonly ICommonDialogService _commonDialogService;
 
-        private readonly IPrescriptionsApiService _prescriptionService;
+        private readonly IPrescriptionApiService _prescriptionService;
 
         #region 属性
 
@@ -115,7 +115,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         #endregion
 
-        public ViewPrescriptionDialogViewModel(IPrescriptionsApiService prescriptionService,
+        public ViewPrescriptionDialogViewModel(IPrescriptionApiService prescriptionService,
             ICommonDialogService commonDialogService)
         {
             Title = "处方详情";

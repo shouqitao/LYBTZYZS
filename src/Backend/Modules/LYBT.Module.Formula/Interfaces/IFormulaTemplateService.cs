@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Formulas.Interfaces {
+namespace LYBT.Module.Formula.Interfaces {
 
     /// <summary>
     /// 经验方模板业务服务接口

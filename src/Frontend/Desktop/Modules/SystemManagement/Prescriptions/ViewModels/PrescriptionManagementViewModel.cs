@@ -19,7 +19,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     /// <summary>
     /// 处方管理视图模型
     /// </summary>
-    public class PrescriptionManagementViewModel : BaseManagementViewModel<PrescriptionInfo, IPrescriptionsApiService>
+    public class PrescriptionManagementViewModel : BaseManagementViewModel<PrescriptionInfo, IPrescriptionApiService>
     {
         private readonly ICommonDialogService _commonDialogService;
 
@@ -91,7 +91,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         protected override string ModuleName => "处方";
 
-        public PrescriptionManagementViewModel(IPrescriptionsApiService service,
+        public PrescriptionManagementViewModel(IPrescriptionApiService service,
             ICommonDialogService commonDialogService)
             : base(service)
         {

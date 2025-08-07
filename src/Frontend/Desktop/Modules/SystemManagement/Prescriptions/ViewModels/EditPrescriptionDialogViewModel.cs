@@ -20,7 +20,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     {
         private readonly ICommonDialogService _commonDialogService;
 
-        private readonly IPrescriptionsApiService _prescriptionService;
+        private readonly IPrescriptionApiService _prescriptionService;
         // private readonly IHerbsApiService _herbService; // TODO: 等待IHerbsApiService实现
         private readonly Guid _prescriptionId;
 
@@ -174,7 +174,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public Action? CloseDialogCallback { get; set; }
         public Action<object>? SaveSuccessCallback { get; set; } // TODO: 替换为实际的UpdatePrescriptionRequest类型
 
-        public EditPrescriptionDialogViewModel(IPrescriptionsApiService prescriptionService, Guid prescriptionId,
+        public EditPrescriptionDialogViewModel(IPrescriptionApiService prescriptionService, Guid prescriptionId,
             ICommonDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;

@@ -3,7 +3,7 @@ using LYBT.Models.Formula;
 using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Module.Formulas.Mapping {
+namespace LYBT.Module.Formula.Mapping {
 
     /// <summary>
     /// 经验方模板实体与DTO的AutoMapper映射配置
