@@ -74,27 +74,4 @@ namespace LYBT.WPF.Client.Core.Models.Consultation
         public string? PatientPhone { get; set; }
     }
 
-    /// <summary>
-    /// 中医诊断详情（前端扩展模型）
-    /// </summary>
-    public class TCMDiagnosisInfo
-    {
-        public string? Syndrome { get; set; }  // 证型
-        public string? TreatmentMethod { get; set; }  // 治法
-        public string? Prescription { get; set; }  // 方剂
-    }
-
-    /// <summary>
-    /// 生命体征信息（前端扩展模型）
-    /// </summary>
-    public class VitalSignsInfo
-    {
-        public decimal? Temperature { get; set; }
-        public int? SystolicPressure { get; set; }
-        public int? DiastolicPressure { get; set; }
-        public int? HeartRate { get; set; }
-        public int? RespiratoryRate { get; set; }
-        public decimal? BloodOxygen { get; set; }  // 血氧饱和度
-        public decimal? BloodSugar { get; set; }  // 血糖
-    }
 }

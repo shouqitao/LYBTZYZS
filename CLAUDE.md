@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 凌隐宝堂中医诊所诊疗系统 (LYBTZYZS) - 基于 .NET 8 的企业级纯中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构。
 
 ### 开始新对话时必须
+
 - **始终先阅读本文档** 了解项目架构、目标、风格和约束
 - **检查 `docs/TODO-Latest-*.md`** 了解当前任务状态
 - **查看 `CLAUDE.local.md`** 了解用户特定的开发环境配置
@@ -17,10 +18,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 🧱 代码结构与模块化
 
 ### 文件大小限制
+
 - **永远不要创建超过500行的文件**，接近限制时进行重构
 - **组织代码为清晰分离的模块**，按功能或职责分组
 
 ### 模块化原则
+
 - 每个业务模块独立但共享数据上下文 (AppDbContext)
 - 严格分离关注点：Model、Service、Repository、Controller
 - 使用依赖注入：构造函数注入模式
@@ -80,6 +83,7 @@ python api_test_automation.py
 ## 🧪 测试与可靠性
 
 ### 测试要求
+
 - **为新功能创建单元测试**（使用 xUnit）
 - **更新逻辑后检查现有测试是否需要更新**
 - **测试文件位于 `tests/` 文件夹**，镜像主应用结构
@@ -89,6 +93,7 @@ python api_test_automation.py
   - 1个失败情况测试
 
 ### API测试
+
 - 使用 Python 脚本进行 API 自动化测试
 - 测试脚本位于 `tests/api/` 目录
 - 运行命令：`python api_test_automation.py`
@@ -96,6 +101,7 @@ python api_test_automation.py
 ## 高层架构
 
 ### 整体技术栈
+
 - **后端**: .NET 8, ASP.NET Core Web API, Entity Framework Core 8.0.17, SQL Server
 - **前端**: WPF (.NET 8), Prism.DryIoc 9.0.537, Refit
 - **认证**: JWT Bearer Token
@@ -160,11 +166,13 @@ src/
 ## ✅ 任务完成
 
 ### 任务管理
+
 - **立即在 `docs/TODO-Latest-*.md` 中标记完成的任务**
 - **添加发现的新任务到"发现的问题"部分**
 - **每个任务完成后创建详细的 commit**
 
 ### Git 提交规范
+
 ```bash
 # 提交格式
 <type>: <subject>
@@ -181,6 +189,7 @@ src/
 ## 📎 风格与约定
 
 ### C# 编码规范
+
 - **遵循 .NET 编码约定**
 - **使用 PascalCase** 用于类名、方法名、属性
 - **使用 camelCase** 用于参数、局部变量
@@ -188,6 +197,7 @@ src/
 - **接口以 I 开头**
 
 ### 代码注释规范
+
 ```csharp
 /// <summary>
 /// 方法功能简述
@@ -235,6 +245,7 @@ public async Task<Result> MethodName(Type param)
 ## 📚 文档与可解释性
 
 ### 文档更新要求
+
 - **添加新功能时更新 `README.md`**
 - **更改依赖时更新 `docs/开发规范.md`**
 - **修改设置时更新本文档**
@@ -244,12 +255,14 @@ public async Task<Result> MethodName(Type param)
 ## 🧠 AI 行为规则
 
 ### 必须遵守
+
 - **永远不要假设缺失的上下文，不确定时询问**
 - **永远不要虚构库或函数**，只使用已验证的包
 - **始终确认文件路径和模块名存在**再引用
 - **除非明确指示，否则不要删除或覆盖现有代码**
 
 ### 中文支持
+
 - **所有显示和回答使用中文**
 - **注意处理中文字符编码问题**
 - **API 响应消息使用中文**
@@ -283,17 +296,20 @@ public async Task<Result> MethodName(Type param)
 ## 🔧 特殊配置说明
 
 ### AutoMapper 配置（重要）
+
 - 使用 AutoMapper 15.0.1
 - **必须提供 ILoggerFactory 参数**
 - 示例配置：
-```csharp
-var mapperConfig = new MapperConfiguration(cfg =>
-{
+  
+  ```csharp
+  var mapperConfig = new MapperConfiguration(cfg =>
+  {
     cfg.AddProfile(new MappingProfile());
-}, NullLoggerFactory.Instance);  // 关键：需要ILoggerFactory参数
-```
+  }, NullLoggerFactory.Instance);  // 关键：需要ILoggerFactory参数
+  ```
 
 ### 依赖注入配置
+
 - 使用 Prism.DryIoc 9.0.537
 - 服务注册在 ServiceCollectionExtensions.cs
 - 所有服务使用构造函数注入
@@ -305,16 +321,19 @@ var mapperConfig = new MapperConfiguration(cfg =>
 ## 📋 常见问题快速解决
 
 ### 编译错误
+
 1. 检查 NuGet 包版本
 2. 清理解决方案：`dotnet clean`
 3. 重新生成：`dotnet build`
 
 ### 依赖注入错误
+
 1. 检查服务是否已注册
 2. 确认接口和实现匹配
 3. 检查构造函数参数
 
 ### 数据库连接问题
+
 1. 确认 SQL Server 服务运行
 2. 检查连接字符串
 3. 验证数据库权限
@@ -326,3 +345,10 @@ var mapperConfig = new MapperConfiguration(cfg =>
 - 零关键bug
 - 完整的错误处理
 - 用户友好的中文提示
+
+## 中文编码
+
+- 使用 UTF-8 编码处理所有中文字符
+- 建议使用 Unicode 标准处理中文文本
+- 在文件头添加 BOM 头以确保正确识别编码
+- 注意跨平台兼容性和编码一致性
