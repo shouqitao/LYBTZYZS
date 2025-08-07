@@ -14,8 +14,8 @@ import re
 import time
 
 # 服务器配置
-BASE_URL = "http://192.168.190.243:5000"
-API_PREFIX = "/api/v1.0"
+BASE_URL = "https://localhost:7001"
+API_PREFIX = "/api/v1"
 
 # 测试结果存储
 test_results = []
@@ -133,7 +133,7 @@ API_MODULES = {
             {"path": "/DiagnosisTreatment", "method": "POST", "auth": True, "data": {
                 "patientId": 1,
                 "doctorId": 1,
-                "diagnosisDate": datetime.datetime.now().strftime("%Y-%m-%d"),
+                "diagnosisDate": datetime.now().strftime("%Y-%m-%d"),
                 "chiefComplaint": "咳嗽三天",
                 "diagnosis": "风寒感冒",
                 "treatment": "疏风散寒"
@@ -146,6 +146,43 @@ API_MODULES = {
             {"path": "/DiagnosisTreatment/{id}", "method": "DELETE", "auth": True, "params": {"id": 999}}
         ]
     },
+    "Consultation": {
+        "endpoints": [
+            {"path": "/Consultation/paged", "method": "POST", "auth": True, "data": {
+                "pageIndex": 1,
+                "pageSize": 10
+            }},
+            {"path": "/Consultation/{id}", "method": "GET", "auth": True, "params": {"id": "11111111-1111-1111-1111-111111111111"}},
+            {"path": "/Consultation/medical-case/{medicalCaseId}", "method": "GET", "auth": True, "params": {"medicalCaseId": "22222222-2222-2222-2222-222222222222"}},
+            {"path": "/Consultation/start", "method": "POST", "auth": True, "data": {
+                "medicalCaseId": "33333333-3333-3333-3333-333333333333",
+                "patientId": "44444444-4444-4444-4444-444444444444",
+                "userId": "55555555-5555-5555-5555-555555555555"
+            }},
+            {"path": "/Consultation/{id}", "method": "PUT", "auth": True, "params": {"id": "11111111-1111-1111-1111-111111111111"}, "data": {
+                "inspection": "面色偏白，精神欠佳",
+                "auscultationOlfaction": "语声低微，无异常气味",
+                "inquiry": "自诉疲乏无力，食欲不振",
+                "palpation": "脉沉细无力",
+                "tongueInspection": "舌淡苔白",
+                "pulseCondition": "沉细",
+                "tcmDiagnosis": "脾虚气弱证",
+                "diagnosis": "脾虚证",
+                "treatmentPrinciple": "健脾益气",
+                "medicalAdvice": "注意休息，清淡饮食"
+            }},
+            {"path": "/Consultation/{id}/complete", "method": "POST", "auth": True, "params": {"id": "11111111-1111-1111-1111-111111111111"}, "data": {
+                "diagnosis": "脾虚证",
+                "tcmDiagnosis": "脾虚气弱证",
+                "treatmentPrinciple": "健脾益气",
+                "medicalAdvice": "按时服药，注意饮食"
+            }},
+            {"path": "/Consultation/doctor/{doctorId}/today", "method": "GET", "auth": True, "params": {"doctorId": "66666666-6666-6666-6666-666666666666"}},
+            {"path": "/Consultation/patient/{patientId}/history", "method": "GET", "auth": True, "params": {"patientId": "44444444-4444-4444-4444-444444444444"}},
+            {"path": "/Consultation/doctor/{doctorId}/count", "method": "GET", "auth": True, "params": {"doctorId": "66666666-6666-6666-6666-666666666666"}},
+            {"path": "/Consultation/{id}", "method": "DELETE", "auth": True, "params": {"id": "99999999-9999-9999-9999-999999999999"}}
+        ]
+    },
     "Prescriptions": {
         "endpoints": [
             {"path": "/Prescriptions", "method": "GET", "auth": True},
@@ -154,7 +191,7 @@ API_MODULES = {
                 "patientId": 1,
                 "doctorId": 1,
                 "diagnosisId": 1,
-                "prescriptionDate": datetime.datetime.now().strftime("%Y-%m-%d"),
+                "prescriptionDate": datetime.now().strftime("%Y-%m-%d"),
                 "items": [
                     {"herbId": 1, "quantity": 10, "unit": "克"},
                     {"herbId": 2, "quantity": 15, "unit": "克"}
@@ -216,7 +253,7 @@ API_MODULES = {
             {"path": "/Pharmacy/Dispense", "method": "POST", "auth": True, "data": {
                 "prescriptionId": 1,
                 "pharmacistId": 1,
-                "dispensingDate": datetime.datetime.now().strftime("%Y-%m-%d")
+                "dispensingDate": datetime.now().strftime("%Y-%m-%d")
             }},
             {"path": "/Pharmacy/Return", "method": "POST", "auth": True, "data": {
                 "dispensingId": 1,
@@ -232,7 +269,7 @@ API_MODULES = {
                 "patientId": 1,
                 "type": "挂号费",
                 "amount": 30.00,
-                "billingDate": datetime.datetime.now().strftime("%Y-%m-%d")
+                "billingDate": datetime.now().strftime("%Y-%m-%d")
             }},
             {"path": "/Billing/Pay/{id}", "method": "POST", "auth": True, "params": {"id": 1}, "data": {
                 "paymentMethod": "现金",
@@ -251,7 +288,7 @@ API_MODULES = {
             {"path": "/Records", "method": "POST", "auth": True, "data": {
                 "patientId": 1,
                 "doctorId": 1,
-                "visitDate": datetime.datetime.now().strftime("%Y-%m-%d"),
+                "visitDate": datetime.now().strftime("%Y-%m-%d"),
                 "content": "患者主诉咳嗽三天，诊断为风寒感冒"
             }},
             {"path": "/Records/{id}", "method": "DELETE", "auth": True, "params": {"id": 999}}
@@ -442,7 +479,7 @@ def generate_report():
 | 模块名 | 接口路径 | 方法 | 测试结果 | 备注 |
 |--------|----------|------|----------|------|
 """.format(
-        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         BASE_URL
     )
     
