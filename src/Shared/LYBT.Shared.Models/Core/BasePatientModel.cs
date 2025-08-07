@@ -54,30 +54,16 @@ namespace LYBT.Shared.Models.Core {
         [DisplayName("地址")]
         public string? Address { get; set; }
 
-        /// <summary>职业</summary>
-        [DisplayName("职业")]
-        public string? Occupation { get; set; }
 
-        /// <summary>婚姻状况</summary>
-        [DisplayName("婚姻状况")]
-        public string? MaritalStatus { get; set; }
 
-        /// <summary>民族</summary>
-        [DisplayName("民族")]
-        public string? Ethnicity { get; set; }
-
-        /// <summary>学历</summary>
-        [DisplayName("学历")]
-        public string? Education { get; set; }
 
         /// <summary>过敏史</summary>
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }
 
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public bool IsActive { get; set; } = true;
+        /// <summary>患者状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>创建时间（统一命名）</summary>
         [DisplayName("创建时间")]
@@ -88,9 +74,6 @@ namespace LYBT.Shared.Models.Core {
         [DisplayName("更新时间")]
         public DateTime? UpdateTime { get; set; }
 
-        /// <summary>患者状态</summary>
-        [DisplayName("患者状态")]
-        public PatientStatus Status { get; set; } = PatientStatus.Active;
 
         /// <summary>最后就诊时间</summary>
         [DisplayName("最后就诊时间")]

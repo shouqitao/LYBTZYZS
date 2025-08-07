@@ -7,12 +7,7 @@ using LYBT.WPF.Client.Shell.Views;
 using LYBT.WPF.Client.Shell.Extensions;
 using LYBT.WPF.Client.Modules.Authentication;
 using LYBT.WPF.Client.Modules.SystemManagement;
-using LYBT.WPF.Client.Modules.FrontDesk;
-using LYBT.WPF.Client.Modules.Doctor;
-using LYBT.WPF.Client.Modules.Cashier;
-using LYBT.WPF.Client.Modules.Examples;
-using LYBT.WPF.Client.Modules.Pharmacist;
-using LYBT.WPF.Client.Modules.Physiotherapy;
+using LYBT.WPF.Client.Modules.Consultation;
 using Prism.Modularity;
 
 namespace LYBT.WPF.Client.Shell
@@ -52,43 +47,8 @@ namespace LYBT.WPF.Client.Shell
             
             moduleCatalog.AddModule(new ModuleInfo
             {
-                ModuleName = nameof(FrontDeskModule),
-                ModuleType = typeof(FrontDeskModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
-            });
-            
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(DoctorModule),
-                ModuleType = typeof(DoctorModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
-            });
-            
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(CashierModule),
-                ModuleType = typeof(CashierModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
-            });
-            
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(ExamplesModule),
-                ModuleType = typeof(ExamplesModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
-            });
-            
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(PharmacistModule),
-                ModuleType = typeof(PharmacistModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
-            });
-            
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(PhysiotherapyModule),
-                ModuleType = typeof(PhysiotherapyModule).AssemblyQualifiedName,
+                ModuleName = nameof(ConsultationModule),
+                ModuleType = typeof(ConsultationModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
             

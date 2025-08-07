@@ -4,18 +4,11 @@ using LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.PrescriptionTemplates.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Patients.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Records.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Roles.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Settings.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Backup.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Logs.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.FormulaTemplates.ViewModels;
-using LYBT.WPF.Client.Modules.SystemManagement.Registrations.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Registrations.ViewModels;
-using LYBT.WPF.Client.Modules.SystemManagement.Doctors.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Roles.ViewModels;
+using LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels;
+using LYBT.WPF.Client.Modules.SystemManagement.Consultations.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
@@ -33,13 +26,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             
             // 注册自定义的ViewModel映射
             ViewModelLocationProvider.Register<UserManagementView, UserManagementViewModelSimple>();
-            ViewModelLocationProvider.Register<RegistrationManagementView, RegistrationManagementViewModelRefactored>();
-            ViewModelLocationProvider.Register<FormulaTemplateManagementView, FormulaTemplateManagementViewModel>();
+            ViewModelLocationProvider.Register<FormulaManagementView, FormulaManagementViewModel>();
             ViewModelLocationProvider.Register<HerbManagementView, Herbs.ViewModels.HerbManagementViewModelRefactored>();
-            ViewModelLocationProvider.Register<DoctorManagementView, Doctors.ViewModels.DoctorManagementViewModelRefactored>();
             ViewModelLocationProvider.Register<PatientManagementView, Patients.ViewModels.PatientManagementViewModelRefactored>();
-            ViewModelLocationProvider.Register<RecordManagementView, Records.ViewModels.RecordManagementViewModelRefactored>();
-            ViewModelLocationProvider.Register<RoleManagementView, RoleManagementViewModelRefactored>();
+            ViewModelLocationProvider.Register<ConsultationManagementView, ConsultationManagementViewModel>();
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
@@ -53,20 +43,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             // 注册患者管理视图
             containerRegistry.RegisterForNavigation<PatientManagementView>();
             
-            // 注册病历管理视图
-            containerRegistry.RegisterForNavigation<RecordManagementView>();
+            // 注册看诊记录管理视图
+            containerRegistry.RegisterForNavigation<ConsultationManagementView>();
             
-            // 注册角色权限管理视图
-            containerRegistry.RegisterForNavigation<RoleManagementView>();
-            
-            // 注册系统设置视图
-            containerRegistry.RegisterForNavigation<SystemSettingsView>();
-            
-            // 注册数据备份视图
-            containerRegistry.RegisterForNavigation<BackupView>();
-            
-            // 注册系统日志视图
-            containerRegistry.RegisterForNavigation<SystemLogsView>();
             
             // 注册中药材管理视图
             containerRegistry.RegisterForNavigation<HerbManagementView>();
@@ -77,14 +56,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             // 注册处方管理视图
             containerRegistry.RegisterForNavigation<PrescriptionManagementView>();
             
-            // 注册验方模板管理视图
-            containerRegistry.RegisterForNavigation<FormulaTemplateManagementView>();
-            
-            // 注册挂号管理视图
-            containerRegistry.RegisterForNavigation<RegistrationManagementView>();
-            
-            // 注册医生管理视图
-            containerRegistry.RegisterForNavigation<DoctorManagementView>();
+            // 注册验方管理视图
+            containerRegistry.RegisterForNavigation<FormulaManagementView>();
             
             // 注册对话框
             RegisterDialogs(containerRegistry);
@@ -108,7 +81,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             // containerRegistry.RegisterDialog<Records.Views.ViewRecordDialog, Records.ViewModels.ViewRecordDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
             
             // 验方模板管理对话框
-            // containerRegistry.RegisterDialog<FormulaTemplates.Views.ViewFormulaTemplateDialog, FormulaTemplates.ViewModels.ViewFormulaTemplateDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
+            // containerRegistry.RegisterDialog<Formulas.Views.ViewFormulaDialog, Formulas.ViewModels.ViewFormulaDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
             
             // 处方管理对话框
             // containerRegistry.RegisterDialog<Prescriptions.Views.ViewPrescriptionDialog, Prescriptions.ViewModels.ViewPrescriptionDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented

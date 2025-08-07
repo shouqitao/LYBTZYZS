@@ -21,13 +21,7 @@ namespace LYBT.Shared.Models.Contracts.Users {
         [DisplayName("真实姓名")]
         public string RealName { get; set; } = string.Empty;
 
-        /// <summary>用户角色</summary>
-        [DisplayName("用户角色")]
-        public UserRole Role { get; set; } = UserRole.DiagnosingDoctor;
-
-        /// <summary>邮箱</summary>
-        [DisplayName("邮箱")]
-        public string? Email { get; set; }
+        // Role 字段已移除（按照字段标准化要求）
 
         /// <summary>电话号码</summary>
         [DisplayName("电话号码")]
@@ -45,17 +39,9 @@ namespace LYBT.Shared.Models.Contracts.Users {
         [DisplayName("头像")]
         public string? Avatar { get; set; }
 
-        /// <summary>部门/科室</summary>
-        [DisplayName("部门")]
-        public string? Department { get; set; }
-
-        /// <summary>职位</summary>
-        [DisplayName("职位")]
-        public string? Position { get; set; }
-
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool IsActive { get; set; } = true;
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>是否在线</summary>
         [DisplayName("是否在线")]

@@ -1,40 +1,6 @@
+using LYBT.Shared.Models.Enums;
+
 namespace LYBT.Models.Prescriptions {
-
-    /// <summary>
-    /// 药物可用性状态
-    /// </summary>
-    public enum DrugAvailabilityStatus {
-
-        /// <summary>
-        /// 可用
-        /// </summary>
-        Available = 1,
-
-        /// <summary>
-        /// 完全可用
-        /// </summary>
-        FullyAvailable = 1,
-
-        /// <summary>
-        /// 不可用
-        /// </summary>
-        Unavailable = 0,
-
-        /// <summary>
-        /// 完全不可用
-        /// </summary>
-        FullyMissing = 0,
-
-        /// <summary>
-        /// 库存不足
-        /// </summary>
-        InsufficientStock = 2,
-
-        /// <summary>
-        /// 部分缺失
-        /// </summary>
-        PartiallyMissing = 2
-    }
 
     /// <summary>
     /// 处方组成结果
@@ -64,7 +30,7 @@ namespace LYBT.Models.Prescriptions {
         /// <summary>
         /// 经验方模板名称列表
         /// </summary>
-        public List<string> FormulaTemplateNames { get; set; } = new();
+        public List<string> FormulaNames { get; set; } = new();
 
         /// <summary>
         /// 重复药材警告
@@ -72,9 +38,9 @@ namespace LYBT.Models.Prescriptions {
         public string? DuplicateHerbWarning { get; set; }
 
         /// <summary>
-        /// 药物可用性
+        /// 药物可用性(简化为布尔值)
         /// </summary>
-        public DrugAvailabilityStatus DrugAvailability { get; set; }
+        public bool IsAvailable { get; set; } = true;
 
         /// <summary>
         /// 缺失药材列表
@@ -154,9 +120,9 @@ namespace LYBT.Models.Prescriptions {
         public bool IsAvailable { get; set; }
 
         /// <summary>
-        /// 可用性状态
+        /// 可用性状态(简化为布尔值)
         /// </summary>
-        public DrugAvailabilityStatus Status { get; set; }
+        public bool IsFullyAvailable { get; set; } = true;
 
         /// <summary>
         /// 不可用的药材列表

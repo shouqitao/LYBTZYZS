@@ -14,7 +14,7 @@ namespace LYBT.Module.Prescriptions.Services {
 
         Task<List<PrescriptionDto>> GetAllAsync();
 
-        Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
+        Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest query);
 
         Task<PrescriptionDetailDto?> GetByIdAsync(string id);
 

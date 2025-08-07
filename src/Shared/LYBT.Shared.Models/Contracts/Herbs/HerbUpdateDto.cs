@@ -53,20 +53,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [DisplayName("单价")]
         public decimal Price { get; set; }
 
-        /// <summary>库存数量</summary>
-        [Required(ErrorMessage = "库存数量不能为空")]
-        [Range(0, int.MaxValue, ErrorMessage = "库存数量不能为负数")]
-        [DisplayName("库存数量")]
-        public int Stock { get; set; }
-
-        /// <summary>批号</summary>
-        [StringLength(50, ErrorMessage = "批号长度不能超过50个字符")]
-        [DisplayName("批号")]
-        public string? BatchNo { get; set; }
-
-        /// <summary>有效期</summary>
-        [DisplayName("有效期")]
-        public DateTime? ExpireDate { get; set; }
+        // 库存管理字段已移除（按照字段标准化要求）
 
         /// <summary>功效说明</summary>
         [StringLength(1000, ErrorMessage = "功效说明长度不能超过1000个字符")]
@@ -83,12 +70,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        /// <summary>药材状态</summary>
-        [DisplayName("药材状态")]
-        public HerbStatus Status { get; set; } = HerbStatus.Active;
-
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool IsActive { get; set; } = true;
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 }

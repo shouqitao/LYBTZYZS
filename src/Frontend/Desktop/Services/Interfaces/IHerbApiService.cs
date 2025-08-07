@@ -53,7 +53,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 更新药材状态
         /// </summary>
         [Put("/api/v1/herbs/{id}/status")]
-        Task<Refit.ApiResponse<object>> UpdateStatusAsync(Guid id, [Body] HerbStatusUpdateDto dto);
+        Task<Refit.ApiResponse<object>> UpdateStatusAsync(Guid id, [Body] CommonStatusUpdateDto dto);
 
         /// <summary>
         /// 获取可用药材列表

@@ -1,8 +1,10 @@
 using System;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Configuration;
+
+using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -79,9 +81,9 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         /// <param name="role">角色</param>
         /// <returns>是否有该角色</returns>
-        public bool HasRole(UserRole role)
-        {
-            return _currentUser?.Role == role;
+        public bool HasRole(string role) {
+            // 不再有角色概念
+            return false;
         }
 
         /// <summary>
@@ -90,7 +92,7 @@ namespace LYBT.WPF.Client.Services
         /// <returns>是否有管理员权限</returns>
         public bool IsAdmin()
         {
-            return _currentUser?.IsAdmin == true || IsSuperAdmin();
+            return _currentUser?.Username == "sysadmin";
         }
 
         /// <summary>
@@ -99,7 +101,7 @@ namespace LYBT.WPF.Client.Services
         /// <returns>是否有超级管理员权限</returns>
         public bool IsSuperAdmin()
         {
-            return _currentUser?.IsSuperAdmin == true;
+            return _currentUser?.Username == "sysadmin";
         }
 
         /// <summary>
@@ -109,7 +111,7 @@ namespace LYBT.WPF.Client.Services
         public string GetCurrentUserRoleDisplay()
         {
             if (_currentUser == null) return "未登录";
-            return RoleNavigationConfig.GetRoleDisplayName(_currentUser.Role);
+            return _currentUser?.Username == "sysadmin" ? "管理员" : "用户";
         }
 
         /// <summary>

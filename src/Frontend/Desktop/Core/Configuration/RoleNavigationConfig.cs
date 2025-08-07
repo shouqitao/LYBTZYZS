@@ -2,23 +2,19 @@ using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Core.Configuration {
     /// <summary>
-    /// 角色导航配置
+    /// 角色导航配置 - 简化版（只有管理员和普通用户）
     /// </summary>
     public static class RoleNavigationConfig {
         /// <summary>
         /// 获取角色对应的主界面视图名称
         /// </summary>
-        /// <param name="role">用户角色</param>
+        /// <param name="role">用户角色（管理员或用户）</param>
         /// <returns>主界面视图名称</returns>
-        public static string GetMainViewName(UserRole role) {
+        public static string GetMainViewName(string role) {
             return role switch {
-                UserRole.Admin => "AdminMainView",
-                UserRole.DiagnosingDoctor => "DiagnosingDoctorMainView",
-                UserRole.CashierStaff => "CashierStaffMainView",
-                UserRole.PharmacyStaff => "PharmacyStaffMainView",
-                UserRole.PhysiotherapyStaff => "PhysiotherapyStaffMainView",
-                UserRole.RegistrationStaff => "FrontDeskMainView",
-                _ => "DefaultView"
+                "管理员" => "AdminMainView",
+                "用户" => "ConsultationMainView",
+                _ => "ConsultationMainView"  // 默认显示看诊界面
             };
         }
 
@@ -28,16 +24,11 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// <param name="role">用户角色</param>
         /// <param name="userName">用户姓名</param>
         /// <returns>欢迎消息</returns>
-        public static string GetWelcomeMessage(UserRole role, string userName) {
-            var roleDisplay = GetRoleDisplayName(role);
+        public static string GetWelcomeMessage(string role, string userName) {
             return role switch {
-                UserRole.Admin => $"欢迎您，{userName}！\n\n管理员系统管理模块正在加载...",
-                UserRole.DiagnosingDoctor => $"欢迎您，{userName}医生！\n\n诊疗工作台正在准备...",
-                UserRole.CashierStaff => $"欢迎您，{userName}！\n\n收银系统正在启动...",
-                UserRole.PharmacyStaff => $"欢迎您，{userName}！\n\n药房管理系统正在加载...",
-                UserRole.PhysiotherapyStaff => $"欢迎您，{userName}！\n\n理疗工作台正在准备...",
-                UserRole.RegistrationStaff => $"欢迎您，{userName}！\n\n挂号前台正在加载...",
-                _ => $"欢迎您，{userName}！\n\n{roleDisplay}工作台正在加载..."
+                "管理员" => $"欢迎您，{userName}！\n\n系统管理模块正在加载...",
+                "用户" => $"欢迎您，{userName}医生！\n\n诊疗工作台正在准备...",
+                _ => $"欢迎您，{userName}！\n\n工作台正在加载..."
             };
         }
 
@@ -46,15 +37,11 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// </summary>
         /// <param name="role">用户角色</param>
         /// <returns>角色显示名称</returns>
-        public static string GetRoleDisplayName(UserRole role) {
+        public static string GetRoleDisplayName(string role) {
             return role switch {
-                UserRole.Admin => "管理员",
-                UserRole.DiagnosingDoctor => "诊疗医生",
-                UserRole.CashierStaff => "收银员",
-                UserRole.PharmacyStaff => "药房人员",
-                UserRole.PhysiotherapyStaff => "理疗师",
-                UserRole.RegistrationStaff => "挂号员",
-                _ => "未知角色"
+                "管理员" => "系统管理员",
+                "用户" => "医生",
+                _ => "用户"
             };
         }
 
@@ -63,8 +50,8 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// </summary>
         /// <param name="role">用户角色</param>
         /// <returns>是否有管理权限</returns>
-        public static bool HasManagementAccess(UserRole role) {
-            return role == UserRole.Admin;
+        public static bool HasManagementAccess(string role) {
+            return role == "管理员";
         }
 
         /// <summary>
@@ -72,28 +59,8 @@ namespace LYBT.WPF.Client.Core.Configuration {
         /// </summary>
         /// <param name="role">用户角色</param>
         /// <returns>是否有医疗权限</returns>
-        public static bool HasMedicalAccess(UserRole role) {
-            return role == UserRole.DiagnosingDoctor ||
-                   role == UserRole.PharmacyStaff ||
-                   role == UserRole.PhysiotherapyStaff;
-        }
-
-        /// <summary>
-        /// 检查角色是否有前台权限
-        /// </summary>
-        /// <param name="role">用户角色</param>
-        /// <returns>是否有前台权限</returns>
-        public static bool HasFrontDeskAccess(UserRole role) {
-            return role == UserRole.RegistrationStaff || HasManagementAccess(role);
-        }
-
-        /// <summary>
-        /// 检查角色是否有财务权限
-        /// </summary>
-        /// <param name="role">用户角色</param>
-        /// <returns>是否有财务权限</returns>
-        public static bool HasFinanceAccess(UserRole role) {
-            return role == UserRole.CashierStaff || role == UserRole.Admin;
+        public static bool HasMedicalAccess(string role) {
+            return role == "用户" || role == "管理员";  // 管理员也可以看诊
         }
     }
 }

@@ -1,18 +1,12 @@
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Logging;
-using LYBT.Models.Cashier;
 using LYBT.Models.Consultation;
-using LYBT.Models.Doctors;
 using LYBT.Models.Formula;
 using LYBT.Models.Herbs;
 using LYBT.Models.MedicalCase;
 using LYBT.Models.Patients;
-using LYBT.Models.Pharmacy;
 using LYBT.Models.Prescriptions;
-using LYBT.Models.Queueing;
-using LYBT.Models.Registration;
-using LYBT.Models.TreatmentPlan;
-using LYBT.Models.TreatmentRoom;
+using LYBT.Shared.Models.Enums;
 using LYBT.Models.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -39,13 +33,13 @@ namespace LYBT.Infrastructure.Data {
         public DbSet<PatientModel> Patients { get; set; }
 
         // 医生管理
-        public DbSet<DoctorModel> Doctors { get; set; }
+    // public DbSet<DoctorModel> Doctors { get; set; } // 医生功能已整合到Users
 
         // 挂号管理
-        public DbSet<RegistrationModel> Registrations { get; set; }
+    // public DbSet<RegistrationModel> Registrations { get; set; } // 模块已删除
 
         // 排队管理
-        public DbSet<QueueingModel> Queueings { get; set; }
+    // public DbSet<QueueingModel> Queueings { get; set; } // 模块已删除
 
         // 医疗案例
         public DbSet<MedicalCaseModel> MedicalCases { get; set; }
@@ -54,7 +48,7 @@ namespace LYBT.Infrastructure.Data {
         public DbSet<ConsultationModel> Consultations { get; set; }
 
         // 治疗方案
-        public DbSet<TreatmentPlanModel> TreatmentPlans { get; set; }
+    // public DbSet<TreatmentPlanModel> TreatmentPlans { get; set; } // 模块已删除
 
         // 诊断治疗（已删除，使用Consultation替代）
         // public DbSet<DiagnosisTreatmentModel> DiagnosisTreatments { get; set; }
@@ -71,23 +65,23 @@ namespace LYBT.Infrastructure.Data {
         public DbSet<FormulaModel> Formulas { get; set; }
 
         // 药房管理
-        public DbSet<PharmacyModel> Pharmacies { get; set; }
+    // public DbSet<PharmacyModel> Pharmacies { get; set; } // 模块已删除
 
-        public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; }
+    // public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; } // 模块已删除
 
         // 收银管理
-        public DbSet<CashierRecord> CashierRecords { get; set; }
-        public DbSet<CashierItem> CashierItems { get; set; }
-        public DbSet<CashierPayment> CashierPayments { get; set; }
-        public DbSet<DailySettlement> DailySettlements { get; set; }
-        public DbSet<Invoice> Invoices { get; set; }
+    // public DbSet<CashierRecord> CashierRecords { get; set; } // 模块已删除
+    // public DbSet<CashierItem> CashierItems { get; set; } // 模块已删除
+    // public DbSet<CashierPayment> CashierPayments { get; set; } // 模块已删除
+    // public DbSet<DailySettlement> DailySettlements { get; set; } // 模块已删除
+    // public DbSet<Invoice> Invoices { get; set; } // 模块已删除
 
         // 病历管理（已删除，使用MedicalCase和Consultation替代）
         // public DbSet<RecordModel> Records { get; set; }
 
         // 治疗室管理
-        public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; }
-        public DbSet<TreatmentTaskModel> TreatmentTasks { get; set; }
+    // public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; } // 模块已删除
+    // public DbSet<TreatmentTaskModel> TreatmentTasks { get; set; } // 模块已删除
 
         // 同步管理（MVP阶段暂不需要）
         // public DbSet<SyncTaskModel> SyncTasks { get; set; }
@@ -145,7 +139,7 @@ namespace LYBT.Infrastructure.Data {
         /// <summary>
         /// 治疗目录
         /// </summary>
-        public DbSet<LYBT.Models.TreatmentRoom.TreatmentCatalogModel> TreatmentCatalogs { get; set; }
+    // public DbSet<LYBT.Models.TreatmentRoom.TreatmentCatalogModel> TreatmentCatalogs { get; set; } // 模块已删除
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -154,22 +148,20 @@ namespace LYBT.Infrastructure.Data {
             ConfigureUsers(modelBuilder);
             ConfigureAdminSecrets(modelBuilder);
             ConfigurePatients(modelBuilder);
-            ConfigureDoctors(modelBuilder);
-            ConfigureRegistrations(modelBuilder);
-            ConfigureQueueings(modelBuilder);
+            // ConfigureDoctors(modelBuilder); // 功能已整合到Users
+            // ConfigureRegistrations(modelBuilder); // 模块已删除
+            // ConfigureQueueings(modelBuilder); // 模块已删除
             ConfigureMedicalCases(modelBuilder);
             ConfigureConsultations(modelBuilder);
-            ConfigureTreatmentPlans(modelBuilder);
             // ConfigureDiagnosisTreatments(modelBuilder); // 已删除，使用Consultation替代
             ConfigurePrescriptions(modelBuilder);
             ConfigureHerbs(modelBuilder);
             ConfigureFormulas(modelBuilder);
-            ConfigurePharmacies(modelBuilder);
-            ConfigurePharmacyHerbs(modelBuilder);
-            ConfigureCashiers(modelBuilder);
+            // ConfigurePharmacies(modelBuilder); // 模块已删除
+            // ConfigurePharmacyHerbs(modelBuilder); // 模块已删除
+            // ConfigureCashiers(modelBuilder); // 模块已删除
             // ConfigureRecords(modelBuilder); // 已删除，使用MedicalCase替代
-            ConfigureTreatmentRooms(modelBuilder);
-            ConfigureTreatmentTasks(modelBuilder);
+            // ConfigureTreatmentTasks(modelBuilder); // 模块已删除
             // ConfigureSyncs(modelBuilder); // MVP阶段暂不需要
             ConfigureLogModels(modelBuilder);
             ConfigureConfigurationModels(modelBuilder);
@@ -187,12 +179,15 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(u => u.CreateTime).HasColumnName("CreatedTime");
             entity.Property(u => u.PinYinCode).HasMaxLength(20);
             entity.Property(u => u.WuBiCode).HasMaxLength(20);
-            entity.Property(u => u.Email).HasMaxLength(100);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
-            // 配置业务字段
-            entity.Property(u => u.Department).HasMaxLength(100);
-            entity.Property(u => u.Position).HasMaxLength(100);
             entity.Property(u => u.Remark).HasMaxLength(500);
+            // 配置Status枚举字段
+            entity.Property(u => u.Status).HasConversion<int>();
+            // 医生专属字段配置
+            entity.Property(u => u.Specialty).HasMaxLength(200);
+            entity.Property(u => u.RegistrationFee).HasColumnType("decimal(18,2)");
+            entity.Property(u => u.LicenseNumber).HasMaxLength(50);
+            entity.Property(u => u.Introduction).HasMaxLength(1000);
         }
 
         private static void ConfigureAdminSecrets(ModelBuilder modelBuilder) {
@@ -224,16 +219,15 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(p => p.Address).HasMaxLength(256);
             entity.Property(p => p.IdType).HasMaxLength(20);
             entity.Property(p => p.IdNumber).HasMaxLength(50);
-            entity.Property(p => p.Occupation).HasMaxLength(50);
-            entity.Property(p => p.MaritalStatus).HasMaxLength(20);
-            entity.Property(p => p.Ethnicity).HasMaxLength(20);
-            entity.Property(p => p.Education).HasMaxLength(30);
+            // Occupation、MaritalStatus、Ethnicity、Education字段已删除
             entity.Property(p => p.AllergyHistory).HasMaxLength(500);
             entity.Property(p => p.DisableReason).HasMaxLength(128);
-            // 忽略IsActive字段，使用Status字段替代
-            entity.Ignore(p => p.IsActive);
+            // 配置Status枚举字段
+            entity.Property(p => p.Status).HasConversion<int>();
         }
 
+        // 医生功能已整合到Users
+        /*
         private static void ConfigureDoctors(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<DoctorModel>();
             entity.ToTable("Doctors");
@@ -242,18 +236,22 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(d => d.LicenseNumber).HasMaxLength(32);
             entity.Property(d => d.CreateTime).HasColumnName("CreatedTime");
         }
+        */
 
-        private static void ConfigureRegistrations(ModelBuilder modelBuilder) {
+
+        // 挂号模块已删除
+        /*        private static void ConfigureRegistrations(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<RegistrationModel>();
             entity.ToTable("Registrations");
             entity.HasKey(r => r.Id);
-        }
+        }*/
 
-        private static void ConfigureQueueings(ModelBuilder modelBuilder) {
+        // 排队模块已删除
+        /*        private static void ConfigureQueueings(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<QueueingModel>();
             entity.ToTable("Queueings");
             entity.HasKey(q => q.Id);
-        }
+        }*/
 
         private static void ConfigureMedicalCases(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<MedicalCaseModel>();
@@ -262,14 +260,13 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(m => m.Status).HasConversion<string>();
             entity.Property(m => m.Remark).HasMaxLength(500);
             entity.HasIndex(m => m.PatientId);
-            entity.HasIndex(m => m.DoctorId);
+            entity.HasIndex(m => m.UserId);
             entity.HasIndex(m => m.CreateTime);
             entity.HasIndex(m => m.Status);
             
             // 配置关联关系
-            entity.HasOne(m => m.Registration).WithMany().HasForeignKey(m => m.RegistrationId);
+            // entity.HasOne(m => m.Registration).WithMany().HasForeignKey(m => m.RegistrationId); // 模块已删除
             entity.HasOne(m => m.Consultation).WithMany().HasForeignKey(m => m.ConsultationId);
-            entity.HasOne(m => m.TreatmentPlan).WithMany().HasForeignKey(m => m.TreatmentPlanId);
         }
 
         private static void ConfigureConsultations(ModelBuilder modelBuilder) {
@@ -294,39 +291,8 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(c => c.MedicalAdvice).HasMaxLength(500);
             entity.HasIndex(c => c.MedicalCaseId);
             entity.HasIndex(c => c.PatientId);
-            entity.HasIndex(c => c.DoctorId);
+            entity.HasIndex(c => c.UserId);
             entity.HasIndex(c => c.ConsultationTime);
-        }
-
-        private static void ConfigureTreatmentPlans(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<TreatmentPlanModel>();
-            entity.ToTable("TreatmentPlans");
-            entity.HasKey(t => t.Id);
-            
-            // 配置处方为Owned类型
-            entity.OwnsOne(t => t.Prescription, p => {
-                p.OwnsMany(x => x.Herbs, h => {
-                    h.Property(herb => herb.HerbName).HasMaxLength(100);
-                    h.Property(herb => herb.Unit).HasMaxLength(10);
-                    h.Property(herb => herb.SpecialUsage).HasMaxLength(50);
-                });
-                p.Property(x => x.Instructions).HasMaxLength(200);
-                p.Property(x => x.SpecialInstructions).HasMaxLength(100);
-            });
-            
-            // 配置理疗项目为Owned类型
-            entity.OwnsMany(t => t.PhysiotherapyItems, i => {
-                i.Property(x => x.Name).HasMaxLength(50);
-                i.Property(x => x.Type).HasMaxLength(20);
-                i.Property(x => x.TreatmentArea).HasMaxLength(100);
-                i.Property(x => x.Status).HasMaxLength(20);
-                i.Property(x => x.Remark).HasMaxLength(200);
-            });
-            
-            entity.Property(t => t.PrescriptionAmount).HasColumnType("decimal(18,2)");
-            entity.Property(t => t.PhysiotherapyAmount).HasColumnType("decimal(18,2)");
-            entity.Property(t => t.Remark).HasMaxLength(500);
-            entity.HasIndex(t => t.ConsultationId);
         }
 
         // DiagnosisTreatments已删除，使用Consultation替代
@@ -347,13 +313,14 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(h => h.Id);
             entity.Property(h => h.Name).HasMaxLength(100);
             entity.Property(h => h.PinYinCode).HasMaxLength(20);
-            entity.Property(h => h.CreateTime).HasColumnName("CreatedAt");
             entity.Property(h => h.Origin).HasMaxLength(50);
             entity.Property(h => h.Spec).HasMaxLength(50);
             entity.Property(h => h.Unit).HasMaxLength(10);
             entity.Property(h => h.Effect).HasMaxLength(256);
             entity.Property(h => h.Usage).HasMaxLength(256);
             entity.Property(h => h.Price).HasColumnType("decimal(18,2)");
+            // 配置Status枚举字段
+            entity.Property(h => h.Status).HasConversion<int>();
             entity.HasIndex(h => h.Name);
             entity.HasIndex(h => h.PinYinCode);
         }
@@ -363,12 +330,20 @@ namespace LYBT.Infrastructure.Data {
             entity.ToTable("Formulas");
             entity.HasKey(f => f.Id);
             entity.Property(f => f.Name).HasMaxLength(200);
+            entity.Property(f => f.Effect).HasMaxLength(500);
+            entity.Property(f => f.Usage).HasMaxLength(500);
+            entity.Property(f => f.Property).HasMaxLength(300);
+            entity.Property(f => f.Remark).HasMaxLength(500);
+            // 配置Status枚举字段
+            entity.Property(f => f.Status).HasConversion<int>();
+            entity.Property(f => f.IsShared).HasDefaultValue(false);
 
             // 简化配置，忽略子实体以避免复杂的配置问题
             entity.Ignore(f => f.Herbs);
         }
 
-        private static void ConfigurePharmacies(ModelBuilder modelBuilder) {
+        // 药房模块已删除
+        /*        private static void ConfigurePharmacies(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<PharmacyModel>();
             entity.ToTable("Pharmacies");
             entity.HasKey(p => p.Id);
@@ -377,8 +352,10 @@ namespace LYBT.Infrastructure.Data {
             entity.HasMany(p => p.Herbs)
                   .WithOne(ph => ph.Pharmacy)
                   .HasForeignKey(ph => ph.PharmacyId);
-        }
+        }*/
 
+        // 药房模块已删除
+        /*
         private static void ConfigurePharmacyHerbs(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<PharmacyHerbModel>();
             entity.ToTable("PharmacyHerbs");
@@ -392,7 +369,10 @@ namespace LYBT.Infrastructure.Data {
                   .WithMany()
                   .HasForeignKey(ph => ph.HerbId);
         }
+        */
 
+        // 收银模块已删除
+        /*
         private static void ConfigureCashiers(ModelBuilder modelBuilder) {
             // CashierRecord 配置
             var cashierEntity = modelBuilder.Entity<CashierRecord>();
@@ -429,20 +409,17 @@ namespace LYBT.Infrastructure.Data {
             invoiceEntity.HasKey(i => i.Id);
             invoiceEntity.Property(i => i.TotalAmount).HasColumnType("decimal(18,2)");
         }
+        */
+
 
         // Records已删除，使用MedicalCase和Consultation替代
 
-        private static void ConfigureTreatmentRooms(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<TreatmentRoomModel>();
-            entity.ToTable("TreatmentRooms");
-            entity.HasKey(t => t.Id);
-        }
-
-        private static void ConfigureTreatmentTasks(ModelBuilder modelBuilder) {
+        // 治疗室模块已删除
+        /*        private static void ConfigureTreatmentTasks(ModelBuilder modelBuilder) {
             var entity = modelBuilder.Entity<TreatmentTaskModel>();
             entity.ToTable("TreatmentTasks");
             entity.HasKey(t => t.Id);
-        }
+        }*/
 
         // Sync模块MVP阶段暂不需要
 
@@ -609,7 +586,8 @@ namespace LYBT.Infrastructure.Data {
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // 治疗目录配置
+            // 治疗目录配置 - 模块已删除
+            /*
             modelBuilder.Entity<TreatmentCatalogModel>(entity => {
                 entity.ToTable("TreatmentCatalogs");
                 entity.HasKey(e => e.Id);
@@ -628,6 +606,7 @@ namespace LYBT.Infrastructure.Data {
                 entity.HasIndex(e => e.Category);
                 entity.HasIndex(e => e.IsActive);
             });
+            */
         }
     }
 }

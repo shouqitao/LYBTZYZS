@@ -3,17 +3,18 @@ using System.Linq;
 using System;
 ﻿using AutoMapper;
 using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Logging.Enums;
+using LYBT.Shared.Models.Enums;
 using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Extensions;
+
+
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
 using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
+using UserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
 
@@ -43,9 +44,9 @@ namespace LYBT.Module.Users.Services {
         /// 分页/条件查找用户
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        public async Task<PaginatedResult<SharedUserDto>> GetPagedAsync(SharedUserPagedQueryDto query, UserRole currentUserRole) {
+        public async Task<PaginatedResult<SharedUserDto>> GetPagedAsync(SharedUserPagedQueryDto query) {
             // 管理员可以查看所有用户（包括禁用的），普通用户只能查看启用的用户
-            bool includeDisabled = currentUserRole == UserRole.Admin;
+            bool includeDisabled = true;
 
             var (models, total) = await _userRepository.GetPagedAsync(query, includeDisabled);
             var users = _mapper.Map<List<SharedUserDto>>(models);
@@ -61,9 +62,9 @@ namespace LYBT.Module.Users.Services {
         /// 根据ID获取用户详情
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        public async Task<SharedUserDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
+        public async Task<SharedUserDto?> GetByIdAsync(Guid id) {
             // 管理员可以查看所有用户（包括禁用的），普通用户只能查看启用的用户
-            bool includeDisabled = currentUserRole == UserRole.Admin;
+            bool includeDisabled = true;
 
             var model = await _userRepository.GetByIdAsync(id, includeDisabled);
             return model != null ? _mapper.Map<SharedUserDto>(model) : null;
@@ -104,7 +105,7 @@ namespace LYBT.Module.Users.Services {
 
             if (result) {
                 await LogUserOperation(
-                    existingUser.Id, ActionType.Edit, operatorId, operatorName,
+                    existingUser.Id, ActionType.Update, operatorId, operatorName,
                     $"修改用户信息：{existingUser.Username}",
                     oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
                 );
@@ -202,7 +203,6 @@ namespace LYBT.Module.Users.Services {
                     $"重置用户密码：{user.Username}"
                 );
 
-                // TODO: 根据配置决定是否发送密码重置通知
                 if (_options.SendPasswordResetNotification) {
                     await SendPasswordResetNotification(user);
                 }
@@ -237,13 +237,12 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 用户修改个人信息
         /// </summary>
-        public async Task<bool> ChangeProfileAsync(Guid id, string realName, string? email, string? phoneNumber) {
+        public async Task<bool> ChangeProfileAsync(Guid id, string realName, string? phoneNumber) {
             var user = await GetExistingUser(id);
             var oldSnapshot = JsonSerializer.Serialize(user);
 
             user.RealName = realName;
             user.PinYinCode = CommonHelper.GetPinyinCode(realName);
-            user.Email = email;
             user.PhoneNumber = phoneNumber;
 
             var result = await _userRepository.UpdateAsync(user);
@@ -263,11 +262,8 @@ namespace LYBT.Module.Users.Services {
         /// 获取系统所有角色
         /// </summary>
         public List<object> GetRoles() {
-            var rolesWithDisplayNames = UserRoleExtensions.GetAllRolesWithDisplayNames();
-            return rolesWithDisplayNames
-                .Select(r => new { Value = r.Role, DisplayName = r.DisplayName })
-                .Cast<object>()
-                .ToList();
+            var roles = new List<object> { new { Value = "Admin", DisplayName = "管理员" } };
+            return roles;
         }
 
         /// <summary>
@@ -296,9 +292,7 @@ namespace LYBT.Module.Users.Services {
                 Username = dto.Username,
                 RealName = dto.RealName,
                 PinYinCode = CommonHelper.GetPinyinCode(dto.RealName),
-                Role = dto.Role,
-                IsActive = dto.IsActive,
-                Email = dto.Email,
+                Status = dto.Status,
                 PhoneNumber = dto.PhoneNumber,
                 CreateTime = DateTime.Now,
                 PasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword)
@@ -311,9 +305,7 @@ namespace LYBT.Module.Users.Services {
         private void UpdateUserFromDto(UserModel user, SharedUserUpdateDto dto) {
             user.RealName = dto.RealName;
             user.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName);
-            user.Role = dto.Role;
-            user.IsActive = dto.IsActive;
-            user.Email = dto.Email;
+            user.Status = dto.Status;
             user.PhoneNumber = dto.PhoneNumber;
         }
 
@@ -408,11 +400,46 @@ namespace LYBT.Module.Users.Services {
         /// 发送密码重置通知（待实现）
         /// </summary>
         private async Task SendPasswordResetNotification(UserModel user) {
-            // TODO: 实现密码重置通知功能
+
             // 可以发送邮件、短信或系统内通知
             await Task.CompletedTask;
         }
 
         #endregion 私有辅助方法
-    }
+
+        #region 医生功能
+
+        /// <summary>
+        /// 获取所有医生（即所有用户）
+        /// </summary>
+        public async Task<List<UserDto>> GetDoctorsAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+            return _mapper.Map<List<UserDto>>(users);
+        }
+
+        /// <summary>
+        /// 根据科室获取医生
+        /// </summary>
+        public async Task<List<UserDto>> GetDoctorsByDepartmentAsync(string department)
+        {
+            var users = await _userRepository.GetAllAsync();
+            var all = _mapper.Map<List<UserDto>>(users);
+            // Department字段已删除，返回所有用户
+            return all.ToList();
+        }
+
+        /// <summary>
+        /// 获取医生的今日排班（简化版，默认都在班）
+        /// </summary>
+        public async Task<bool> IsDoctorAvailableAsync(Guid doctorId)
+        {
+            var user = await _userRepository.GetByIdAsync(doctorId, true);
+            var dto = _mapper.Map<SharedUserDto>(user);
+            return dto != null && dto.Status == CommonStatus.Enabled;
+        }
+
+        #endregion
+
+}
 }

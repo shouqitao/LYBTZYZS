@@ -46,7 +46,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 更新药材状态
         /// </summary>
-        Task<ServiceResult> UpdateStatusAsync(Guid id, HerbStatusUpdateDto dto);
+        Task<ServiceResult> UpdateStatusAsync(Guid id, CommonStatusUpdateDto dto);
 
 
         /// <summary>

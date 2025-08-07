@@ -85,22 +85,18 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         }
 
         /// <summary>状态描述</summary>
-        public string StatusDescription => true /* Herb?.Status == HerbStatus.Active */ ? "正常" : "停用";
+        public string StatusDescription => true /* Herb?.Status == CommonStatus.Enabled */ ? "正常" : "停用";
 
         /// <summary>状态颜色</summary>
-        public string StatusColor => true /* Herb?.Status == HerbStatus.Active */ ? "#28A745" : "#DC3545";
+        public string StatusColor => Herb?.Status == CommonStatus.Enabled ? "#28A745" : "#DC3545";
 
         /// <summary>启用状态描述</summary>
-        public string ActiveStatusDescription => Herb?.IsActive == true ? "已启用" : "已禁用";
+        public string ActiveStatusDescription => Herb?.Status == CommonStatus.Enabled ? "已启用" : "已禁用";
 
         /// <summary>启用状态颜色</summary>
-        public string ActiveStatusColor => Herb?.IsActive == true ? "#28A745" : "#DC3545";
+        public string ActiveStatusColor => Herb?.Status == CommonStatus.Enabled ? "#28A745" : "#DC3545";
 
-        /// <summary>创建时间描述</summary>
-        public string CreateTimeDescription => Herb?.CreateTime.ToString("yyyy-MM-dd HH:mm:ss") ?? "-";
-
-        /// <summary>更新时间描述</summary>
-        public string UpdateTimeDescription => Herb?.UpdateTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "从未更新";
+        // CreateTime和UpdateTime已按优化标准移除
 
         /// <summary>价格描述</summary>
         public string PriceDescription => $"￥{Herb?.Price:F2} / {Herb?.Unit}";
@@ -210,8 +206,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             RaisePropertyChanged(nameof(StatusColor));
             RaisePropertyChanged(nameof(ActiveStatusDescription));
             RaisePropertyChanged(nameof(ActiveStatusColor));
-            RaisePropertyChanged(nameof(CreateTimeDescription));
-            RaisePropertyChanged(nameof(UpdateTimeDescription));
+            // CreateTimeDescription和UpdateTimeDescription已按优化标准移除
             RaisePropertyChanged(nameof(PriceDescription));
             RaisePropertyChanged(nameof(StockDescription));
             RaisePropertyChanged(nameof(ExpireDateDescription));

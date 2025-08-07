@@ -19,10 +19,6 @@ namespace LYBT.Shared.Models.Contracts.Users {
         [DisplayName("真实姓名")]
         public string RealName { get; set; } = string.Empty;
 
-        /// <summary>邮箱地址</summary>
-        [EmailAddress]
-        [DisplayName("邮箱地址")]
-        public string? Email { get; set; }
 
         /// <summary>联系电话</summary>
         [Phone]

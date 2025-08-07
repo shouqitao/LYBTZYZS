@@ -1,7 +1,6 @@
 using Refit;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using LYBT.WPF.Client.Infrastructure.JsonConverters;
 
 namespace LYBT.WPF.Client.Infrastructure {
     /// <summary>
@@ -20,7 +19,7 @@ namespace LYBT.WPF.Client.Infrastructure {
             };
 
             // 添加自定义转换器
-            options.Converters.Add(new UserRoleJsonConverter());
+// UserRoleJsonConverter removed
             options.Converters.Add(new JsonStringEnumConverter());
 
             return new RefitSettings {

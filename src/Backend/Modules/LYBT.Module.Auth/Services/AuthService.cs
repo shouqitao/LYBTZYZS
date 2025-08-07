@@ -3,7 +3,7 @@ using System.Linq;
 using System;
 using AutoMapper;
 using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Logging.Enums;
+using LYBT.Shared.Models.Enums;
 using LYBT.Infrastructure.Options;
 using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
@@ -167,7 +167,7 @@ namespace LYBT.Module.Auth.Services {
 
             // 获取普通用户
             var user = await _authRepository.GetByUsernameAsync(username);
-            if (user == null || !user.IsActive) {
+            if (user == null || user.Status != CommonStatus.Enabled) {
                 return null;
             }
 
@@ -258,11 +258,9 @@ namespace LYBT.Module.Auth.Services {
                 Id = user.Id,
                 Username = user.Username,
                 RealName = user.RealName,
-                Role = user.Role,
-                IsActive = user.IsActive,
+                Status = user.Status,
                 CreateTime = user.CreateTime,
                 LastLoginTime = user.LastLoginTime,
-                Email = user.Email,
                 PhoneNumber = user.PhoneNumber
             };
         }

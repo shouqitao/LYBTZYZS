@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Refit;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Contracts.Records;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Services.Interfaces
@@ -90,7 +89,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 获取患者档案历史病历
         /// </summary>
         [Get("/api/v1/patients/{id}/records")]
-        Task<Refit.ApiResponse<List<RecordDto>>> GetHistoryAsync(Guid id);
+        Task<Refit.ApiResponse<List<object>>> GetHistoryAsync(Guid id);
 
         /// <summary>
         /// 获取启用的患者档案列表

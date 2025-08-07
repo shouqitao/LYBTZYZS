@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels;
 using LYBT.WPF.Client.Core.Models;
@@ -15,6 +15,8 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models.Users;
+
 namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 {
     /// <summary>
@@ -54,11 +56,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                     
                     // 转换为前端模型
                     var userInfos = paginatedResult.Items.Select(dto => new UserInfo { RealName = dto.RealName ?? string.Empty,
-                        Email = dto.Email,
+                        // Email字段已按优化标准移除,
                         PhoneNumber = dto.PhoneNumber,
-                        Role = dto.Role,
+                        // Role = dto.Username == "sysadmin" ? "管理员" : "用户", // Role字段已移除
                         /* Department = dto.Department, */
-                        IsActive = dto.IsActive,
+                        // IsActive字段已按优化标准移除
                         CreateTime = dto.CreateTime,
                         PinYinCode = dto.PinYinCode,
                         WuBiCode = dto.WuBiCode

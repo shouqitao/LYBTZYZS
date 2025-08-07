@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
-using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Common;
 
 namespace LYBT.WPF.Client.Services.Interfaces
@@ -10,68 +10,68 @@ namespace LYBT.WPF.Client.Services.Interfaces
     /// <summary>
     /// 验方模板API服务接口 - Refit定义
     /// </summary>
-    public interface IFormulaTemplateApiService
+    public interface IFormulaApiService
     {
         /// <summary>
         /// 分页查询验方模板
         /// </summary>
-        [Post("/api/v1/FormulaTemplates/paged")]
-        Task<Refit.ApiResponse<PaginatedResult<FormulaTemplateDto>>> GetPagedFormulaTemplatesAsync([Body] PaginationRequest query);
+        [Post("/api/v1/Formulas/paged")]
+        Task<Refit.ApiResponse<PaginatedResult<FormulaDto>>> GetPagedFormulasAsync([Body] PaginationRequest query);
 
         /// <summary>
         /// 获取验方模板列表
         /// </summary>
-        [Get("/api/v1/FormulaTemplates")]
-        Task<Refit.ApiResponse<PaginatedResult<FormulaTemplateDto>>> GetFormulaTemplatesAsync(
+        [Get("/api/v1/Formulas")]
+        Task<Refit.ApiResponse<PaginatedResult<FormulaDto>>> GetFormulasAsync(
             [Query] string? keyword = null, 
             [Query] string? category = null);
 
         /// <summary>
         /// 根据ID获取验方模板详情
         /// </summary>
-        [Get("/api/v1/FormulaTemplates/{id}")]
-        Task<Refit.ApiResponse<FormulaTemplateDetailDto>> GetFormulaTemplateByIdAsync(Guid id);
+        [Get("/api/v1/Formulas/{id}")]
+        Task<Refit.ApiResponse<FormulaDetailDto>> GetFormulaByIdAsync(Guid id);
 
         /// <summary>
         /// 创建验方模板
         /// </summary>
-        [Post("/api/v1/FormulaTemplates")]
-        Task<Refit.ApiResponse<FormulaTemplateDto>> CreateFormulaTemplateAsync([Body] FormulaTemplateCreateDto createDto);
+        [Post("/api/v1/Formulas")]
+        Task<Refit.ApiResponse<FormulaDto>> CreateFormulaAsync([Body] FormulaCreateDto createDto);
 
         /// <summary>
         /// 更新验方模板
         /// </summary>
-        [Put("/api/v1/FormulaTemplates/{id}")]
-        Task<Refit.ApiResponse<FormulaTemplateDto>> UpdateFormulaTemplateAsync(Guid id, [Body] FormulaTemplateUpdateDto updateDto);
+        [Put("/api/v1/Formulas/{id}")]
+        Task<Refit.ApiResponse<FormulaDto>> UpdateFormulaAsync(Guid id, [Body] FormulaUpdateDto updateDto);
 
         /// <summary>
         /// 删除验方模板
         /// </summary>
-        [Delete("/api/v1/FormulaTemplates/{id}")]
-        Task<Refit.ApiResponse<bool>> DeleteFormulaTemplateAsync(Guid id);
+        [Delete("/api/v1/Formulas/{id}")]
+        Task<Refit.ApiResponse<bool>> DeleteFormulaAsync(Guid id);
 
         /// <summary>
         /// 批量删除验方模板
         /// </summary>
-        [Post("/api/v1/FormulaTemplates/batch-delete")]
-        Task<Refit.ApiResponse<int>> BatchDeleteFormulaTemplatesAsync([Body] List<Guid> ids);
+        [Post("/api/v1/Formulas/batch-delete")]
+        Task<Refit.ApiResponse<int>> BatchDeleteFormulasAsync([Body] List<Guid> ids);
 
         /// <summary>
         /// 复制验方模板
         /// </summary>
-        [Post("/api/v1/FormulaTemplates/{id}/copy")]
-        Task<Refit.ApiResponse<FormulaTemplateDto>> CopyFormulaTemplateAsync(Guid id, [Query] string newName);
+        [Post("/api/v1/Formulas/{id}/copy")]
+        Task<Refit.ApiResponse<FormulaDto>> CopyFormulaAsync(Guid id, [Query] string newName);
 
         /// <summary>
         /// 启用/禁用验方模板
         /// </summary>
-        [Patch("/api/v1/FormulaTemplates/{id}/toggle-status")]
-        Task<Refit.ApiResponse<bool>> ToggleFormulaTemplateStatusAsync(Guid id);
+        [Patch("/api/v1/Formulas/{id}/toggle-status")]
+        Task<Refit.ApiResponse<bool>> ToggleFormulaStatusAsync(Guid id);
 
         /// <summary>
         /// 获取所有分类
         /// </summary>
-        [Get("/api/v1/FormulaTemplates/categories")]
+        [Get("/api/v1/Formulas/categories")]
         Task<Refit.ApiResponse<List<string>>> GetCategoriesAsync();
     }
 }

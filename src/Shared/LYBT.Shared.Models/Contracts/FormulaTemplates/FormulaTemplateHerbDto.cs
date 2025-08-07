@@ -1,11 +1,11 @@
 using System;
 
-namespace LYBT.Shared.Models.Contracts.FormulaTemplates
+namespace LYBT.Shared.Models.Contracts.Formulas
 {
     /// <summary>
     /// 验方模板药材DTO
     /// </summary>
-    public class FormulaTemplateHerbDto
+    public class FormulaHerbDto
     {
         /// <summary>药材ID</summary>
         public Guid HerbId { get; set; }

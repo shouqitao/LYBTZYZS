@@ -2,12 +2,12 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.FormulaTemplates {
+namespace LYBT.Shared.Models.Contracts.Formulas {
 
     /// <summary>
     /// 编辑经验方模板 DTO
     /// </summary>
-    public class FormulaTemplateEditDto {
+    public class FormulaEditDto {
 
         /// <summary>模板ID</summary>
         [Required(ErrorMessage = "模板ID不能为空")]

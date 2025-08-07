@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Auth;
 using LYBT.WPF.Client.Core.Models;
+using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
 {

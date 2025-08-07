@@ -50,19 +50,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [DisplayName("单价")]
         public decimal Price { get; set; }
 
-        /// <summary>库存数量</summary>
-        [Range(0, int.MaxValue, ErrorMessage = "库存数量不能为负数")]
-        [DisplayName("库存数量")]
-        public int Stock { get; set; }
-
-        /// <summary>批号</summary>
-        [StringLength(50, ErrorMessage = "批号长度不能超过50个字符")]
-        [DisplayName("批号")]
-        public string? BatchNo { get; set; }
-
-        /// <summary>有效期</summary>
-        [DisplayName("有效期")]
-        public DateTime? ExpireDate { get; set; }
+        // 库存管理字段已移除（按照字段标准化要求）
 
         /// <summary>功效说明</summary>
         [StringLength(1000, ErrorMessage = "功效说明长度不能超过1000个字符")]
@@ -79,28 +67,12 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        /// <summary>药材状态</summary>
-        [DisplayName("药材状态")]
-        public HerbStatus Status { get; set; } = HerbStatus.Active;
+        // CreateTime 和 UpdateTime 字段已移除（按照字段标准化要求）
 
-        /// <summary>创建时间</summary>
-        [DisplayName("创建时间")]
-        public DateTime CreateTime { get; set; }
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
-        /// <summary>更新时间</summary>
-        [DisplayName("更新时间")]
-        public DateTime? UpdateTime { get; set; }
-
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool IsActive { get; set; } = true;
-
-        /// <summary>库存状态描述（计算属性）</summary>
-        [DisplayName("库存状态")]
-        public string StockStatusDescription => Stock <= 0 ? "缺货" : Stock < 10 ? "库存不足" : "正常";
-
-        /// <summary>是否过期（计算属性）</summary>
-        [DisplayName("是否过期")]
-        public bool IsExpired => ExpireDate.HasValue && ExpireDate.Value < DateTime.Now;
+        // 库存和有效期相关计算属性已移除（按照字段标准化要求）
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Contracts.Records;
 using LYBT.WPF.Client.Core.Models.Patients;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
@@ -76,7 +75,6 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 获取患者历史病历
         /// </summary>
-        Task<ServiceResult<List<RecordDto>>> GetHistoryRecordsAsync(Guid patientId);
 
         /// <summary>
         /// 获取活跃患者列表

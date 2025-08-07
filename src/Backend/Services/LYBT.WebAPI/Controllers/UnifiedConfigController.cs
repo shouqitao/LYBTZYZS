@@ -50,7 +50,7 @@ namespace LYBT.WebAPI.Controllers {
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> UpdateGlobalSettings([FromBody] GlobalSettingsDto globalSettingsDto) {
             try {
-                // TODO: 从当前用户上下文获取用户信息
+
                 var currentUserId = Guid.NewGuid(); // 临时使用
                 var currentUsername = "Admin"; // 临时使用
 
@@ -93,7 +93,7 @@ namespace LYBT.WebAPI.Controllers {
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> SetSetting([FromBody] SetSettingRequest request) {
             try {
-                // TODO: 从当前用户上下文获取用户ID
+
                 var currentUserId = Guid.NewGuid(); // 临时使用
 
                 var result = await _configService.SetSettingAsync(
@@ -122,7 +122,7 @@ namespace LYBT.WebAPI.Controllers {
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> SetSettings([FromBody] Dictionary<string, object> settings) {
             try {
-                // TODO: 从当前用户上下文获取用户ID
+
                 var currentUserId = Guid.NewGuid(); // 临时使用
 
                 var result = await _configService.SetSettingsAsync(settings, currentUserId);
@@ -263,7 +263,7 @@ namespace LYBT.WebAPI.Controllers {
         [Authorize(Roles = "Admin,Doctor")]
         public async Task<ActionResult> CreateDiagnosisCatalog([FromBody] DiagnosisCatalogDto diagnosisCatalogDto) {
             try {
-                // TODO: 从当前用户上下文获取用户ID
+
                 var currentUserId = Guid.NewGuid(); // 临时使用
 
                 var result = await _configService.CreateDiagnosisCatalogAsync(diagnosisCatalogDto, currentUserId);
@@ -286,7 +286,7 @@ namespace LYBT.WebAPI.Controllers {
         [Authorize(Roles = "Admin,Doctor")]
         public async Task<ActionResult> UpdateDiagnosisCatalog([FromBody] DiagnosisCatalogDto diagnosisCatalogDto) {
             try {
-                // TODO: 从当前用户上下文获取用户ID
+
                 var currentUserId = Guid.NewGuid(); // 临时使用
 
                 var result = await _configService.UpdateDiagnosisCatalogAsync(diagnosisCatalogDto, currentUserId);

@@ -78,7 +78,7 @@ namespace LYBT.Module.Prescriptions.Repositories {
             var model = await _context.Prescriptions.FindAsync(id);
             if (model == null)
                 return false;
-            model.Status = PrescriptionStatus.Cancelled;
+            model.Status = PrescriptionStatus.Draft;
             _context.Prescriptions.Update(model);
             return await _context.SaveChangesAsync() > 0;
         }

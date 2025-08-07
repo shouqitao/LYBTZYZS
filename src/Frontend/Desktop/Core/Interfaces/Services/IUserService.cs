@@ -1,9 +1,10 @@
 using System;
+using LYBT.WPF.Client.Core.Models.Users;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
 {
@@ -45,7 +46,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 获取所有角色
         /// </summary>
-        Task<List<LYBT.Shared.Models.Enums.UserRole>> GetRolesAsync();
+        Task<List<string>> GetRolesAsync();
 
         /// <summary>
         /// 获取所有用户

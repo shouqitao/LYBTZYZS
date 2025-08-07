@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -23,17 +22,13 @@ namespace LYBT.Shared.Models.Contracts.Users {
         /// <summary>用户角色（单选）</summary>
         [Required(ErrorMessage = "用户角色不能为空")]
         [DisplayName("用户角色")]
-        public UserRole Role { get; set; } = UserRole.RegistrationStaff;
+        public string Role { get; set; } = "User";
 
         /// <summary>账号启用状态（true=启用，false=禁用，必填）</summary>
         [Required(ErrorMessage = "账号启用状态不能为空")]
         [DisplayName("账号启用状态（true=启用，false=禁用，必填）")]
         public bool IsActive { get; set; }
 
-        /// <summary>邮箱地址</summary>
-        [EmailAddress(ErrorMessage = "邮箱格式不正确")]
-        [DisplayName("邮箱地址")]
-        public string? Email { get; set; }
 
         /// <summary>联系电话</summary>
         [Phone(ErrorMessage = "联系电话格式不正确")]

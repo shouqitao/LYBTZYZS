@@ -1,14 +1,14 @@
 using LYBT.Models.Formula;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.FormulaTemplates.Interfaces {
+namespace LYBT.Module.Formulas.Interfaces {
 
     /// <summary>
     /// 经验方模板仓储接口，定义模板数据操作
     /// </summary>
-    public interface IFormulaTemplateRepository {
+    public interface IFormulaRepository {
 
         /// <summary>
         /// 获取模板详情
@@ -23,7 +23,7 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         /// <summary>
         /// 分页查询验方模板列表
         /// </summary>
-        Task<(List<FormulaModel> list, int total)> GetPagedAsync(PaginationRequest query, UserRole operatorRole);
+        Task<(List<FormulaModel> list, int total)> GetPagedAsync(PaginationRequest query);
 
         /// <summary>
         /// 新增模板
@@ -43,12 +43,12 @@ namespace LYBT.Module.FormulaTemplates.Interfaces {
         /// <summary>
         /// 批量导入模板
         /// </summary>
-        Task<int> ImportAsync(List<FormulaTemplateImportDto> dtos, Guid operatorId, string operatorName);
+        Task<int> ImportAsync(List<FormulaImportDto> dtos, Guid operatorId, string operatorName);
 
         /// <summary>
         /// 导出所有模板数据
         /// </summary>
-        Task<List<FormulaTemplateDetailDto>> ExportAsync();
+        Task<List<FormulaDetailDto>> ExportAsync();
 
         /// <summary>
         /// 获取所有活动状态的验方模板

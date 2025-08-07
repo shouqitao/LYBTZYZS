@@ -4,24 +4,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models;
-using LYBT.WPF.Client.Core.Models.FormulaTemplates;
+using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Services.Interfaces;
-using PagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.FormulaTemplates.FormulaTemplateInfo>;
-using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using PagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.Formulas.FormulaInfo>;
+using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Services
 {
     /// <summary>
     /// 验方模板服务实现
     /// </summary>
-    public class FormulaTemplateService : IFormulaTemplateService
+    public class FormulaService : IFormulaService
     {
-        private readonly IFormulaTemplateApiService _apiService;
+        private readonly IFormulaApiService _apiService;
 
-        public FormulaTemplateService(IFormulaTemplateApiService apiService)
+        public FormulaService(IFormulaApiService apiService)
         {
             _apiService = apiService;
         }
@@ -29,15 +30,15 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询验方模板
         /// </summary>
-        public async Task<PagedResult<FormulaTemplateInfo>> SearchFormulasAsync(PaginationRequest query)
+        public async Task<PagedResult<FormulaInfo>> SearchFormulasAsync(PaginationRequest query)
         {
             try
             {
-                var response = await _apiService.GetPagedFormulaTemplatesAsync(query);
+                var response = await _apiService.GetPagedFormulasAsync(query);
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    var templateInfos = response.Content.Items.Select(ConvertToFormulaTemplateInfo).ToList();
-                    return new PagedResult<FormulaTemplateInfo>
+                    var templateInfos = response.Content.Items.Select(ConvertToFormulaInfo).ToList();
+                    return new PagedResult<FormulaInfo>
                     {
                         Items = templateInfos,
                         TotalCount = response.Content.TotalCount,
@@ -46,9 +47,9 @@ namespace LYBT.WPF.Client.Services
                     };
                 }
 
-                return new PagedResult<FormulaTemplateInfo>
+                return new PagedResult<FormulaInfo>
                 {
-                    Items = new List<FormulaTemplateInfo>(),
+                    Items = new List<FormulaInfo>(),
                     TotalCount = 0,
                     CurrentPage = query.CurrentPage,
                     PageSize = query.PageSize,
@@ -57,9 +58,9 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                return new PagedResult<FormulaTemplateInfo>
+                return new PagedResult<FormulaInfo>
                 {
-                    Items = new List<FormulaTemplateInfo>(),
+                    Items = new List<FormulaInfo>(),
                     TotalCount = 0,
                     CurrentPage = query.CurrentPage,
                     PageSize = query.PageSize,
@@ -68,63 +69,63 @@ namespace LYBT.WPF.Client.Services
             }
         }
 
-        public async Task<ServiceResult<List<FormulaTemplateInfo>>> GetListAsync(string? keyword = null, string? category = null)
+        public async Task<ServiceResult<List<FormulaInfo>>> GetListAsync(string? keyword = null, string? category = null)
         {
             var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.GetFormulaTemplatesAsync(keyword, category)
+                await _apiService.GetFormulasAsync(keyword, category)
             );
             
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
                 // 从 PaginatedResult 中提取 Items
-                var templates = apiResponse.Data.Items.Select(ConvertToFormulaTemplateInfo).ToList();
-                return ServiceResult<List<FormulaTemplateInfo>>.Success(templates);
+                var templates = apiResponse.Data.Items.Select(ConvertToFormulaInfo).ToList();
+                return ServiceResult<List<FormulaInfo>>.Success(templates);
             }
             
-            return ServiceResult<List<FormulaTemplateInfo>>.Failure(apiResponse.ErrorMessage ?? "获取验方模板列表失败", apiResponse.Exception);
+            return ServiceResult<List<FormulaInfo>>.Failure(apiResponse.ErrorMessage ?? "获取验方模板列表失败", apiResponse.Exception);
         }
 
-        public async Task<ServiceResult<FormulaTemplateDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<FormulaDetailDto>> GetByIdAsync(Guid id)
         {
             return await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.GetFormulaTemplateByIdAsync(id)
+                await _apiService.GetFormulaByIdAsync(id)
             );
         }
 
-        public async Task<ServiceResult<FormulaTemplateInfo>> CreateAsync(FormulaTemplateCreateDto createDto)
+        public async Task<ServiceResult<FormulaInfo>> CreateAsync(FormulaCreateDto createDto)
         {
             var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.CreateFormulaTemplateAsync(createDto)
+                await _apiService.CreateFormulaAsync(createDto)
             );
             
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                var createdTemplate = ConvertToFormulaTemplateInfo(apiResponse.Data);
-                return ServiceResult<FormulaTemplateInfo>.Success(createdTemplate);
+                var createdTemplate = ConvertToFormulaInfo(apiResponse.Data);
+                return ServiceResult<FormulaInfo>.Success(createdTemplate);
             }
             
-            return ServiceResult<FormulaTemplateInfo>.Failure(apiResponse.ErrorMessage ?? "创建验方模板失败", apiResponse.Exception);
+            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "创建验方模板失败", apiResponse.Exception);
         }
 
-        public async Task<ServiceResult<FormulaTemplateInfo>> UpdateAsync(FormulaTemplateUpdateDto updateDto)
+        public async Task<ServiceResult<FormulaInfo>> UpdateAsync(FormulaUpdateDto updateDto)
         {
             var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.UpdateFormulaTemplateAsync(updateDto.Id, updateDto)
+                await _apiService.UpdateFormulaAsync(updateDto.Id, updateDto)
             );
             
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                var updatedTemplate = ConvertToFormulaTemplateInfo(apiResponse.Data);
-                return ServiceResult<FormulaTemplateInfo>.Success(updatedTemplate);
+                var updatedTemplate = ConvertToFormulaInfo(apiResponse.Data);
+                return ServiceResult<FormulaInfo>.Success(updatedTemplate);
             }
             
-            return ServiceResult<FormulaTemplateInfo>.Failure(apiResponse.ErrorMessage ?? "更新验方模板失败", apiResponse.Exception);
+            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "更新验方模板失败", apiResponse.Exception);
         }
 
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.DeleteFormulaTemplateAsync(id)
+                await _apiService.DeleteFormulaAsync(id)
             );
             
             if (result.IsSuccess)
@@ -140,7 +141,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult<int>> BatchDeleteAsync(List<Guid> ids)
         {
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.BatchDeleteFormulaTemplatesAsync(ids)
+                await _apiService.BatchDeleteFormulasAsync(ids)
             );
             
             if (result.IsSuccess)
@@ -153,25 +154,25 @@ namespace LYBT.WPF.Client.Services
             }
         }
 
-        public async Task<ServiceResult<FormulaTemplateInfo>> CopyAsync(Guid id, string newName)
+        public async Task<ServiceResult<FormulaInfo>> CopyAsync(Guid id, string newName)
         {
             var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.CopyFormulaTemplateAsync(id, newName)
+                await _apiService.CopyFormulaAsync(id, newName)
             );
             
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
-                var copiedTemplate = ConvertToFormulaTemplateInfo(apiResponse.Data);
-                return ServiceResult<FormulaTemplateInfo>.Success(copiedTemplate);
+                var copiedTemplate = ConvertToFormulaInfo(apiResponse.Data);
+                return ServiceResult<FormulaInfo>.Success(copiedTemplate);
             }
             
-            return ServiceResult<FormulaTemplateInfo>.Failure(apiResponse.ErrorMessage ?? "复制验方模板失败", apiResponse.Exception);
+            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "复制验方模板失败", apiResponse.Exception);
         }
 
         public async Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
         {
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _apiService.ToggleFormulaTemplateStatusAsync(id)
+                await _apiService.ToggleFormulaStatusAsync(id)
             );
             
             if (result.IsSuccess)
@@ -193,23 +194,23 @@ namespace LYBT.WPF.Client.Services
 
         #region Private Methods
 
-        private FormulaTemplateInfo ConvertToFormulaTemplateInfo(FormulaTemplateDto dto)
+        private FormulaInfo ConvertToFormulaInfo(FormulaDto dto)
         {
-            return new FormulaTemplateInfo
+            return new FormulaInfo
             {
                 Id = dto.Id,
                 Name = dto.Name,
                 Category = dto.Category ?? "其他",
                 Indications = dto.Indications ?? "",
-                IsActive = dto.IsActive,
+                Status = dto.Status, // 直接使用Status枚举
                 CreatedTime = dto.CreateTime,
                 UpdatedTime = dto.UpdateTime
             };
         }
 
-        private FormulaTemplateInfo ConvertToFormulaTemplateInfo(FormulaTemplateDetailDto dto)
+        private FormulaInfo ConvertToFormulaInfo(FormulaDetailDto dto)
         {
-            return new FormulaTemplateInfo
+            return new FormulaInfo
             {
                 Id = dto.Id,
                 Name = dto.Name,
@@ -217,7 +218,7 @@ namespace LYBT.WPF.Client.Services
                 Indications = dto.Indications ?? "",
                 Usage = dto.Usage,
                 Remark = dto.Remark,
-                IsActive = true,
+                Status = CommonStatus.Enabled,
                 CreatedTime = dto.CreateTime,
                 UpdatedTime = dto.UpdateTime
             };

@@ -20,19 +20,15 @@ namespace LYBT.Module.Herbs.Mapping {
             // HerbCreateDto转药材实体
             CreateMap<HerbCreateDto, HerbModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
+                                                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
                 .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore())
-                .ForMember(dest => dest.Specification, opt => opt.MapFrom(src => 1))
+                // Specification字段已删除
                 .ForMember(dest => dest.Usage, opt => opt.Ignore());
 
             // HerbUpdateDto转药材实体
             CreateMap<HerbUpdateDto, HerbModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
+                                                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
                 .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore());
 
             // 药材实体转HerbDto（列表显示）
@@ -42,11 +38,9 @@ namespace LYBT.Module.Herbs.Mapping {
             // HerbImportDto转药材实体
             CreateMap<HerbImportDto, HerbModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
+                                                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
                 .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore())
-                .ForMember(dest => dest.Specification, opt => opt.MapFrom(src => 1))
+                // Specification字段已删除
                 .ForMember(dest => dest.Usage, opt => opt.Ignore());
 
             // ==================== 基础模型映射 ====================

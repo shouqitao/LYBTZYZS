@@ -21,14 +21,13 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 获取当前操作者信息
         /// </summary>
-        protected (Guid operatorId, string operatorName, UserRole operatorRole) GetOperator() {
+        protected (Guid operatorId, string operatorName, string operatorRole) GetOperator() {
             var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
+            var roleStr = User?.FindFirst(/* ClaimTypes.Role - 字段已移除 */ "Admin")?.Value;
 
             if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName)) {
-                var role = Enum.TryParse<UserRole>(roleStr, out var parsedRole) ? parsedRole : UserRole.RegistrationStaff;
-                return (opId, userName, role);
+                return (opId, userName, roleStr ?? "User");
             }
             throw new UnauthorizedAccessException("未登录或用户信息无效");
         }

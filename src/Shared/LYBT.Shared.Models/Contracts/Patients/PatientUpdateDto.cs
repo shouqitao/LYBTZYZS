@@ -80,9 +80,9 @@ namespace LYBT.Shared.Models.Contracts.Patients {
         [DisplayName("过敏史")]
         public string AllergyHistory { get; set; } = string.Empty;
 
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool IsActive { get; set; } = true;
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>备注</summary>
         [StringLength(1000, ErrorMessage = "备注长度不能超过1000个字符")]

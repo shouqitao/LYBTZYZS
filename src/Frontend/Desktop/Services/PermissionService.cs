@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Enums;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 using LYBT.WPF.Client.Core.Configuration;
+
+using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -16,67 +18,51 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 检查用户是否有指定权限
         /// </summary>
-        public bool HasPermission(UserInfo user, string permission)
-        {
+        public bool HasPermission(UserInfo user, string permission) {
             if (user == null) return false;
-
-            // 超级管理员拥有所有权限
-            if (user.IsSuperAdmin) return true;
-
-            // 根据角色和权限进行检查
-            return user.Role switch
-            {
-                UserRole.Admin => HasAdminLevelPermission(permission),
-                UserRole.DiagnosingDoctor => HasDoctorLevelPermission(permission),
-                UserRole.RegistrationStaff => HasFrontDeskLevelPermission(permission),
-                UserRole.CashierStaff => HasCashierLevelPermission(permission),
-                UserRole.PharmacyStaff => HasPharmacistLevelPermission(permission),
-                UserRole.PhysiotherapyStaff => HasPhysiotherapistLevelPermission(permission),
-                _ => false
-            };
+            // 只有sysadmin有所有权限
+            return user.Username == "sysadmin";
         }
 
         /// <summary>
         /// 检查用户是否有管理员权限
         /// </summary>
-        public bool HasAdminPermission(UserInfo user)
-        {
-            return user?.IsAdmin == true || user?.IsSuperAdmin == true;
+        public bool HasAdminPermission(UserInfo user) {
+            return user?.Username == "sysadmin";
         }
 
         /// <summary>
         /// 检查用户是否有超级管理员权限
         /// </summary>
-        public bool HasSuperAdminPermission(UserInfo user)
-        {
-            return user?.IsSuperAdmin == true;
+        public bool HasSuperAdminPermission(UserInfo user) {
+            return user?.Username == "sysadmin";
         }
 
         /// <summary>
         /// 获取用户可访问的模块列表
         /// </summary>
-        public List<string> GetAccessibleModules(UserInfo user)
-        {
+        public List<string> GetAccessibleModules(UserInfo user) {
             if (user == null) return new List<string>();
-
-            return user.Role switch
-            {
-                UserRole.Admin => GetAdminModules(),
-                UserRole.DiagnosingDoctor => GetDoctorModules(),
-                UserRole.RegistrationStaff => GetFrontDeskModules(),
-                UserRole.CashierStaff => GetCashierModules(),
-                UserRole.PharmacyStaff => GetPharmacistModules(),
-                UserRole.PhysiotherapyStaff => GetPhysiotherapistModules(),
-                _ => new List<string>()
+            
+            if (user.Username == "sysadmin") {
+                // 管理员有所有模块
+                return new List<string> { 
+                    "患者管理", "药材管理", "处方管理", "看诊管理", 
+                    "系统设置", "用户管理", "日志管理" 
+                };
+            }
+            
+            // 普通用户的基础模块
+            return new List<string> { 
+                "患者管理", "药材管理", "处方管理", "看诊管理" 
             };
         }
 
         /// <summary>
         /// 获取用户角色的显示名称
         /// </summary>
-        public string GetRoleDisplayName(UserRole role)
-        {
-            return RoleNavigationConfig.GetRoleDisplayName(role);
+        public string GetRoleDisplayName(string role) {
+            return "用户";
         }
 
         #region 私有方法 - 权限检查

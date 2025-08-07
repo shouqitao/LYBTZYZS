@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Logging.Enums;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 
 namespace LYBT.Infrastructure.Logging.Dtos {

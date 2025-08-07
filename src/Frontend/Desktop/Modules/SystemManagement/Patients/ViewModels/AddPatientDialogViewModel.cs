@@ -180,7 +180,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                     Address = Address,
                     AllergyHistory = Allergies,
                     Remark = $"紧急联系人：{EmergencyContact}，紧急电话：{EmergencyPhone}\n既往病史：{MedicalHistory}",
-                    IsActive = true
+                    Status = CommonStatus.Enabled
                 };
 
                 if (!_isEditMode)

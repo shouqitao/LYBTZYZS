@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
@@ -28,7 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Models\LYBT.Models.csproj" />
-    <!-- FormulaTemplates已重命名为Formula -->
+    
     <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
   </ItemGroup>
 

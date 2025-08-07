@@ -89,7 +89,7 @@ namespace LYBT.WebAPI.Controllers {
             var token = _jwtService.GenerateToken(
                 user.Id.ToString(),
                 user.Username,
-                new[] { user.Role.ToString() },
+                new[] { "Admin" }, // Role字段已移除，默认Admin
                 dto.RememberMe
             );
 
@@ -99,10 +99,9 @@ namespace LYBT.WebAPI.Controllers {
                     Id = user.Id,
                     Username = user.Username,
                     RealName = user.RealName,
-                    Role = user.Role,
-                    Email = user.Email,
+                    Role = "Admin", // Role字段已移除
                     PhoneNumber = user.PhoneNumber,
-                    IsActive = user.IsActive
+                    IsActive = user.Status == CommonStatus.Enabled
                 }
             };
 
@@ -141,8 +140,8 @@ namespace LYBT.WebAPI.Controllers {
                     Id = Guid.NewGuid(),
                     Username = "sysadmin",
                     RealName = "系统管理员",
-                    Role = UserRole.Admin,
-                    IsActive = true,
+                    // Role = "Admin", // Role字段已移除
+                    Status = CommonStatus.Enabled,
                     CreateTime = DateTime.Now,
                     LastLoginTime = DateTime.Now
                 };
@@ -151,7 +150,7 @@ namespace LYBT.WebAPI.Controllers {
                 var token = _jwtService.GenerateToken(
                     adminUser.Id.ToString(),
                     adminUser.Username,
-                    new[] { adminUser.Role.ToString() },
+                    new[] { "Admin" }, // Role字段已移除，默认Admin
                     dto.RememberMe
                 );
 
@@ -161,10 +160,9 @@ namespace LYBT.WebAPI.Controllers {
                         Id = adminUser.Id,
                         Username = adminUser.Username,
                         RealName = adminUser.RealName,
-                        Role = adminUser.Role,
-                        Email = adminUser.Email,
+                        Role = "Admin", // Role字段已移除
                         PhoneNumber = adminUser.PhoneNumber,
-                        IsActive = adminUser.IsActive
+                        IsActive = adminUser.Status == CommonStatus.Enabled
                     }
                 };
 
@@ -237,10 +235,7 @@ namespace LYBT.WebAPI.Controllers {
                 });
             }
 
-            var userRole = UserRole.RegistrationStaff; // 默认角色
-            if (!string.IsNullOrEmpty(role) && Enum.TryParse<UserRole>(role, true, out var parsedRole)) {
-                userRole = parsedRole;
-            }
+            var userRole = role ?? "User"; // 默认角色
 
             var userInfo = new LYBT.Shared.Models.Auth.UserInfo {
                 Id = Guid.Parse(userId),

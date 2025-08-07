@@ -49,16 +49,8 @@ namespace LYBT.Shared.Models.Core {
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool IsActive { get; set; } = true;
-
-        /// <summary>创建时间</summary>
-        [DisplayName("创建时间")]
-        public DateTime CreateTime { get; set; }
-
-        /// <summary>更新时间</summary>
-        [DisplayName("更新时间")]
-        public DateTime? UpdateTime { get; set; }
+        /// <summary>药材状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 }

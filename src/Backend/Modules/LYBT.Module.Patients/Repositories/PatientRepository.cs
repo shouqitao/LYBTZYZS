@@ -27,7 +27,7 @@ namespace LYBT.Module.Patients.Repositories {
             var query = _dbContext.Patients.AsQueryable();
 
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Normal);
+                query = query.Where(p => p.Status == CommonStatus.Enabled);
             }
 
             return await query.FirstOrDefaultAsync(p => p.Id == id);
@@ -38,7 +38,7 @@ namespace LYBT.Module.Patients.Repositories {
 
             // 权限控制：是否包含禁用患者档案
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Normal);
+                query = query.Where(p => p.Status == CommonStatus.Enabled);
             }
 
             if (!string.IsNullOrWhiteSpace(keyword)) {
@@ -66,7 +66,7 @@ namespace LYBT.Module.Patients.Repositories {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
                 return false;
-            entity.Status = PatientStatus.Normal;
+            entity.Status = CommonStatus.Enabled;
             entity.UpdateTime = DateTime.Now;
             _dbContext.Patients.Update(entity);
             return await _dbContext.SaveChangesAsync() > 0;
@@ -76,7 +76,7 @@ namespace LYBT.Module.Patients.Repositories {
             var entity = await _dbContext.Patients.FindAsync(id);
             if (entity == null)
                 return false;
-            entity.Status = PatientStatus.Inactive;
+            entity.Status = CommonStatus.Disabled;
             entity.UpdateTime = DateTime.Now;
             _dbContext.Patients.Update(entity);
             return await _dbContext.SaveChangesAsync() > 0;
@@ -85,7 +85,7 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<int> BatchDisableAsync(List<Guid> ids) {
             var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
             foreach (var p in list) {
-                p.Status = PatientStatus.Inactive;
+                p.Status = CommonStatus.Disabled;
                 p.UpdateTime = DateTime.Now;
             }
             _dbContext.Patients.UpdateRange(list);
@@ -95,7 +95,7 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<int> BatchEnableAsync(List<Guid> ids) {
             var list = await _dbContext.Patients.Where(p => ids.Contains(p.Id)).ToListAsync();
             foreach (var p in list) {
-                p.Status = PatientStatus.Normal;
+                p.Status = CommonStatus.Enabled;
                 p.UpdateTime = DateTime.Now;
             }
             _dbContext.Patients.UpdateRange(list);
@@ -131,7 +131,7 @@ namespace LYBT.Module.Patients.Repositories {
 
             // 权限控制：是否包含禁用患者档案
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Normal);
+                query = query.Where(p => p.Status == CommonStatus.Enabled);
             }
 
             if (!string.IsNullOrWhiteSpace(keyword)) {
@@ -150,7 +150,7 @@ namespace LYBT.Module.Patients.Repositories {
 
             // 权限控制：是否包含禁用患者档案
             if (!includeDisabled) {
-                query = query.Where(p => p.Status == PatientStatus.Normal);
+                query = query.Where(p => p.Status == CommonStatus.Enabled);
             }
 
             var upper = keyword.ToUpperInvariant();
@@ -170,7 +170,7 @@ namespace LYBT.Module.Patients.Repositories {
             // 基础查询，是否包含禁用患者档案
             var baseQuery = _dbContext.Patients.AsQueryable();
             if (!includeDisabled) {
-                baseQuery = baseQuery.Where(p => p.Status == PatientStatus.Normal);
+                baseQuery = baseQuery.Where(p => p.Status == CommonStatus.Enabled);
             }
 
             // 精确匹配手机号
@@ -192,7 +192,7 @@ namespace LYBT.Module.Patients.Repositories {
 
         public async Task<List<PatientModel>> GetActivePatientsAsync() {
             return await _dbContext.Patients
-                .Where(p => p.Status == PatientStatus.Normal)
+                .Where(p => p.Status == CommonStatus.Enabled)
                 .OrderBy(p => p.Name)
                 .ToListAsync();
         }

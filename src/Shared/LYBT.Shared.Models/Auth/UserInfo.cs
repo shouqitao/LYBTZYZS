@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using LYBT.Shared.Models.Enums;
+// using LYBT.Shared.Models.Enums; // UserRole已删除
 
 namespace LYBT.Shared.Models.Auth {
 
@@ -21,8 +21,8 @@ namespace LYBT.Shared.Models.Auth {
         public string RealName { get; set; } = string.Empty;
 
         /// <summary>角色</summary>
-        [DisplayName("角色")]
-        public UserRole Role { get; set; } = UserRole.RegistrationStaff;
+        [DisplayName("角色")]// 
+public string Role { get; set; } = "User";
 
         /// <summary>邮箱</summary>
         [DisplayName("邮箱")]

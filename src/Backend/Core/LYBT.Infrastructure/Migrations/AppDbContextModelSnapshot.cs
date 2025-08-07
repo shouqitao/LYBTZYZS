@@ -629,187 +629,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("UserActionLogs", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Billing.BillingItemModel", b =>
-                {
-                    b.Property<Guid>("ItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BillingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("BillingId1")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BillingModelId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("DiscountAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("DiscountRate")
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<string>("ItemCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ItemName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("ItemType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid?>("RelatedId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Remark")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Specification")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("SubTotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("ItemId");
-
-                    b.HasIndex("BillingId");
-
-                    b.HasIndex("BillingId1");
-
-                    b.ToTable("BillingItems", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Billing.BillingModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("BillingId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("BillingNumber");
-
-                    b.Property<Guid?>("CashierId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreateTime");
-
-                    b.Property<DateTime?>("DeleteTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("DiscountAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("InvoiceNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsInvoiced")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("PaidTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PaymentMethod")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<Guid?>("PrescriptionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("RecordId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("RefundAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid?>("RefundOperatorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RefundReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("RefundTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("RegistrationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Remark")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CashierId");
-
-                    b.HasIndex("DoctorId");
-
-                    b.HasIndex("PatientId");
-
-                    b.HasIndex("PrescriptionId");
-
-                    b.HasIndex("RecordId");
-
-                    b.HasIndex("RefundOperatorId");
-
-                    b.HasIndex("RegistrationId");
-
-                    b.ToTable("Billings", (string)null);
-                });
-
             modelBuilder.Entity("LYBT.Models.Consultation.ConsultationModel", b =>
                 {
                     b.Property<Guid>("Id")
@@ -845,9 +664,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<int?>("DiastolicPressure")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int?>("Duration")
                         .HasColumnType("int");
 
@@ -861,9 +677,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<string>("Inspection")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<string>("MedicalAdvice")
                         .HasMaxLength(500)
@@ -898,6 +711,9 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<int?>("RespiratoryRate")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<int?>("SystolicPressure")
                         .HasColumnType("int");
 
@@ -919,6 +735,9 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("WesternDiagnosis")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -927,102 +746,16 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasIndex("ConsultationTime");
 
-                    b.HasIndex("DoctorId");
-
                     b.HasIndex("MedicalCaseId");
 
                     b.HasIndex("PatientId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Consultations", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.DiagnosisTreatment.DiagnosisTreatmentModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ChiefComplaint")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Diagnosis")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("DiagnosisCatalogId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PresentIllness")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DiagnosisTreatments", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Doctors.DoctorModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ContactNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreatedTime");
-
-                    b.Property<string>("IdNumber")
-                        .HasMaxLength(18)
-                        .HasColumnType("nvarchar(18)");
-
-                    b.Property<string>("Introduction")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LicenseNumber")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PinYinCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("RegistrationFee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Specialty")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Doctors", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.FormulaTemplates.FormulaTemplateModel", b =>
+            modelBuilder.Entity("LYBT.Models.Formula.FormulaModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1035,13 +768,13 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Effect")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsShared")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1049,26 +782,26 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Property")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-                    b.Property<DateTime?>("SharedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("SharedById")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Usage")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("FormulaTemplates", (string)null);
+                    b.ToTable("Formulas", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Models.Herbs.HerbModel", b =>
@@ -1077,20 +810,12 @@ namespace LYBT.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("BatchNo")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreatedAt");
+                    b.Property<decimal>("CostPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Effect")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
-
-                    b.Property<DateTime?>("ExpireDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("LastOperatorId")
                         .HasColumnType("uniqueidentifier");
@@ -1122,38 +847,23 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<decimal>("Specification")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("Stock")
-                        .HasColumnType("int");
-
                     b.Property<string>("Unit")
+                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Usage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WuBiCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ExpireDate");
 
                     b.HasIndex("Name");
 
                     b.HasIndex("PinYinCode");
-
-                    b.HasIndex("WuBiCode");
 
                     b.ToTable("Herbs", (string)null);
                 });
@@ -1162,9 +872,6 @@ namespace LYBT.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("CashierId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CompleteTime")
@@ -1176,19 +883,10 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("PharmacyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("RegistrationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Remark")
@@ -1199,14 +897,11 @@ namespace LYBT.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid?>("TreatmentPlanId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("TreatmentRoomServiceId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -1214,15 +909,11 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasIndex("CreateTime");
 
-                    b.HasIndex("DoctorId");
-
                     b.HasIndex("PatientId");
-
-                    b.HasIndex("RegistrationId");
 
                     b.HasIndex("Status");
 
-                    b.HasIndex("TreatmentPlanId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("MedicalCases", (string)null);
                 });
@@ -1258,14 +949,6 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("Education")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("Ethnicity")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
@@ -1280,18 +963,10 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<DateTime?>("LastVisitTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("MaritalStatus")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Occupation")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
@@ -1320,87 +995,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Patients", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyHerbModel", b =>
-                {
-                    b.Property<Guid>("PharmacyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("HerbId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Unit")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("PharmacyId", "HerbId");
-
-                    b.HasIndex("HerbId");
-
-                    b.ToTable("PharmacyHerbs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DispenseTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DispensingTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("MedicalCaseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("PharmacistId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PrescriptionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ReceiverName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ReceiverPhone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Remark")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MedicalCaseId");
-
-                    b.HasIndex("PrescriptionId");
-
-                    b.ToTable("Pharmacies", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
@@ -1464,9 +1058,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<string>("Diagnosis")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("DosageCount")
                         .HasColumnType("int");
 
@@ -1500,450 +1091,12 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.ToTable("Prescriptions", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Queueing.QueueingModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DoctorName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PatientName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("QueueTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("QueueType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Queueings", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Records.RecordModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ChiefComplaint")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Diagnosis")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DiagnosisResults")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DiagnosisText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("FormulaTemplateId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsShared")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("PrescriptionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PrescriptionSummary")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PresentIllness")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("RecordId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("RecordTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SharedToDoctorIds")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TreatmentAdvice")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TreatmentRoomIds")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TreatmentSummary")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("VisitTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Records", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Registration.RegistrationModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DoctorName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsFromDoctor")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PatientName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("RegistrationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RegistrationType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Registrations", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Sync.SyncLogModel", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Mode")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SyncTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SyncLogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Sync.SyncTaskModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ExecuteTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TaskType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("TriggerTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SyncTasks", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.TreatmentPlan.TreatmentPlanModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ConsultationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("PhysiotherapyAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PrescriptionAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Remark")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConsultationId");
-
-                    b.ToTable("TreatmentPlans", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.TreatmentRoom.TreatmentCatalogModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Contraindications")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("Duration")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Indications")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Precautions")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Category");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("IsActive");
-
-                    b.HasIndex("Name");
-
-                    b.ToTable("TreatmentCatalogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.TreatmentRoom.TreatmentRoomModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Equipment")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("ResponsibleDoctorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ResponsibleDoctorName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RoomNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RoomType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TreatmentRooms", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.TreatmentRoom.TreatmentTaskModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Count")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ExecutedCount")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ExecutionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Executor")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastExecuteTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("MedicalCaseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PlanId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("RoomId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("TherapistId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("TotalCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TreatmentItem")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TreatmentType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TreatmentTasks", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Models.Users.AdminSecretModel", b =>
@@ -1988,22 +1141,19 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("CreatedTime");
 
-                    b.Property<string>("Department")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<int>("FailedLoginCount")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<string>("Introduction")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime?>("LastLoginTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("LicenseNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("LockoutEnd")
                         .HasColumnType("datetime2");
@@ -2021,20 +1171,23 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Position")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("RealName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<decimal?>("RegistrationFee")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Remark")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("Role")
+                    b.Property<string>("Specialty")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdateTime")
@@ -2066,229 +1219,13 @@ namespace LYBT.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Billing.BillingItemModel", b =>
-                {
-                    b.HasOne("LYBT.Models.Billing.BillingModel", null)
-                        .WithMany("Items")
-                        .HasForeignKey("BillingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LYBT.Models.Billing.BillingModel", "Billing")
-                        .WithMany()
-                        .HasForeignKey("BillingId1");
-
-                    b.Navigation("Billing");
-                });
-
-            modelBuilder.Entity("LYBT.Models.Billing.BillingModel", b =>
-                {
-                    b.HasOne("LYBT.Models.Users.UserModel", "Cashier")
-                        .WithMany()
-                        .HasForeignKey("CashierId");
-
-                    b.HasOne("LYBT.Models.Doctors.DoctorModel", "Doctor")
-                        .WithMany()
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LYBT.Models.Patients.PatientModel", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LYBT.Models.Prescriptions.PrescriptionModel", "Prescription")
-                        .WithMany()
-                        .HasForeignKey("PrescriptionId");
-
-                    b.HasOne("LYBT.Models.Records.RecordModel", "Record")
-                        .WithMany()
-                        .HasForeignKey("RecordId");
-
-                    b.HasOne("LYBT.Models.Users.UserModel", "RefundOperator")
-                        .WithMany()
-                        .HasForeignKey("RefundOperatorId");
-
-                    b.HasOne("LYBT.Models.Registration.RegistrationModel", "Registration")
-                        .WithMany()
-                        .HasForeignKey("RegistrationId");
-
-                    b.Navigation("Cashier");
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("Prescription");
-
-                    b.Navigation("Record");
-
-                    b.Navigation("RefundOperator");
-
-                    b.Navigation("Registration");
-                });
-
-            modelBuilder.Entity("LYBT.Models.DiagnosisTreatment.DiagnosisTreatmentModel", b =>
-                {
-                    b.OwnsMany("LYBT.Models.DiagnosisTreatment.TreatmentItemModel", "Treatments", b1 =>
-                        {
-                            b1.Property<Guid>("DiagnosisTreatmentModelId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
-
-                            b1.Property<int>("Count")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<decimal>("Price")
-                                .HasColumnType("decimal(18,2)");
-
-                            b1.HasKey("DiagnosisTreatmentModelId", "Id");
-
-                            b1.ToTable("DiagnosisTreatments_Treatments");
-
-                            b1.WithOwner()
-                                .HasForeignKey("DiagnosisTreatmentModelId");
-                        });
-
-                    b.OwnsOne("LYBT.Models.DiagnosisTreatment.FormulaModel", "Formula", b1 =>
-                        {
-                            b1.Property<Guid>("DiagnosisTreatmentModelId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("DiagnosisTreatmentModelId");
-
-                            b1.ToTable("DiagnosisTreatments");
-
-                            b1.WithOwner()
-                                .HasForeignKey("DiagnosisTreatmentModelId");
-
-                            b1.OwnsMany("LYBT.Models.DiagnosisTreatment.HerbItemModel", "Herbs", b2 =>
-                                {
-                                    b2.Property<Guid>("FormulaModelDiagnosisTreatmentModelId")
-                                        .HasColumnType("uniqueidentifier");
-
-                                    b2.Property<int>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("int");
-
-                                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
-
-                                    b2.Property<decimal>("Amount")
-                                        .HasColumnType("decimal(18,2)");
-
-                                    b2.Property<Guid>("HerbId")
-                                        .HasColumnType("uniqueidentifier");
-
-                                    b2.Property<string>("HerbName")
-                                        .IsRequired()
-                                        .HasColumnType("nvarchar(max)");
-
-                                    b2.Property<string>("Name")
-                                        .IsRequired()
-                                        .HasColumnType("nvarchar(max)");
-
-                                    b2.Property<decimal>("UnitPrice")
-                                        .HasColumnType("decimal(18,2)");
-
-                                    b2.HasKey("FormulaModelDiagnosisTreatmentModelId", "Id");
-
-                                    b2.ToTable("DiagnosisTreatments_Herbs");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("FormulaModelDiagnosisTreatmentModelId");
-                                });
-
-                            b1.Navigation("Herbs");
-                        });
-
-                    b.Navigation("Formula");
-
-                    b.Navigation("Treatments");
-                });
-
-            modelBuilder.Entity("LYBT.Models.Doctors.DoctorModel", b =>
-                {
-                    b.HasOne("LYBT.Models.Users.UserModel", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("LYBT.Models.MedicalCase.MedicalCaseModel", b =>
                 {
                     b.HasOne("LYBT.Models.Consultation.ConsultationModel", "Consultation")
                         .WithMany()
                         .HasForeignKey("ConsultationId");
 
-                    b.HasOne("LYBT.Models.Registration.RegistrationModel", "Registration")
-                        .WithMany()
-                        .HasForeignKey("RegistrationId");
-
-                    b.HasOne("LYBT.Models.TreatmentPlan.TreatmentPlanModel", "TreatmentPlan")
-                        .WithMany()
-                        .HasForeignKey("TreatmentPlanId");
-
                     b.Navigation("Consultation");
-
-                    b.Navigation("Registration");
-
-                    b.Navigation("TreatmentPlan");
-                });
-
-            modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyHerbModel", b =>
-                {
-                    b.HasOne("LYBT.Models.Herbs.HerbModel", "Herb")
-                        .WithMany()
-                        .HasForeignKey("HerbId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LYBT.Models.Pharmacy.PharmacyModel", "Pharmacy")
-                        .WithMany("Herbs")
-                        .HasForeignKey("PharmacyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Herb");
-
-                    b.Navigation("Pharmacy");
-                });
-
-            modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyModel", b =>
-                {
-                    b.HasOne("LYBT.Models.MedicalCase.MedicalCaseModel", "MedicalCase")
-                        .WithMany()
-                        .HasForeignKey("MedicalCaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LYBT.Models.Prescriptions.PrescriptionModel", "Prescription")
-                        .WithMany()
-                        .HasForeignKey("PrescriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MedicalCase");
-
-                    b.Navigation("Prescription");
                 });
 
             modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
@@ -2296,214 +1233,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.HasOne("LYBT.Models.Prescriptions.PrescriptionModel", null)
                         .WithMany("Items")
                         .HasForeignKey("PrescriptionModelId");
-                });
-
-            modelBuilder.Entity("LYBT.Models.Records.RecordModel", b =>
-                {
-                    b.OwnsMany("LYBT.Models.DiagnosisTreatment.HerbItemModel", "HerbalFormula", b1 =>
-                        {
-                            b1.Property<Guid>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("decimal(18,2)");
-
-                            b1.Property<Guid>("HerbId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("HerbName")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<Guid>("RecordId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<decimal>("UnitPrice")
-                                .HasColumnType("decimal(18,2)");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("RecordId");
-
-                            b1.ToTable("RecordHerbalFormulas", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("RecordId");
-                        });
-
-                    b.OwnsMany("LYBT.Models.DiagnosisTreatment.TreatmentItemModel", "TreatmentPlans", b1 =>
-                        {
-                            b1.Property<Guid>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("Count")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<decimal>("Price")
-                                .HasColumnType("decimal(18,2)");
-
-                            b1.Property<Guid>("RecordId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("RecordId");
-
-                            b1.ToTable("RecordTreatmentPlans", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("RecordId");
-                        });
-
-                    b.Navigation("HerbalFormula");
-
-                    b.Navigation("TreatmentPlans");
-                });
-
-            modelBuilder.Entity("LYBT.Models.TreatmentPlan.TreatmentPlanModel", b =>
-                {
-                    b.OwnsMany("LYBT.Models.TreatmentPlan.PhysiotherapyItemModel", "PhysiotherapyItems", b1 =>
-                        {
-                            b1.Property<Guid>("TreatmentPlanModelId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
-
-                            b1.Property<int>("Count")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasMaxLength(50)
-                                .HasColumnType("nvarchar(50)");
-
-                            b1.Property<string>("Remark")
-                                .HasMaxLength(200)
-                                .HasColumnType("nvarchar(200)");
-
-                            b1.Property<string>("Status")
-                                .IsRequired()
-                                .HasMaxLength(20)
-                                .HasColumnType("nvarchar(20)");
-
-                            b1.Property<string>("TreatmentArea")
-                                .HasMaxLength(100)
-                                .HasColumnType("nvarchar(100)");
-
-                            b1.Property<string>("Type")
-                                .IsRequired()
-                                .HasMaxLength(20)
-                                .HasColumnType("nvarchar(20)");
-
-                            b1.Property<decimal>("UnitPrice")
-                                .HasColumnType("decimal(18,2)");
-
-                            b1.HasKey("TreatmentPlanModelId", "Id");
-
-                            b1.ToTable("PhysiotherapyItemModel");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TreatmentPlanModelId");
-                        });
-
-                    b.OwnsOne("LYBT.Models.TreatmentPlan.TreatmentPrescriptionModel", "Prescription", b1 =>
-                        {
-                            b1.Property<Guid>("TreatmentPlanModelId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("DosageCount")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Instructions")
-                                .HasMaxLength(200)
-                                .HasColumnType("nvarchar(200)");
-
-                            b1.Property<string>("SpecialInstructions")
-                                .HasMaxLength(100)
-                                .HasColumnType("nvarchar(100)");
-
-                            b1.HasKey("TreatmentPlanModelId");
-
-                            b1.ToTable("TreatmentPlans");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TreatmentPlanModelId");
-
-                            b1.OwnsMany("LYBT.Models.TreatmentPlan.TreatmentPrescriptionHerbModel", "Herbs", b2 =>
-                                {
-                                    b2.Property<Guid>("TreatmentPrescriptionModelTreatmentPlanModelId")
-                                        .HasColumnType("uniqueidentifier");
-
-                                    b2.Property<int>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("int");
-
-                                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
-
-                                    b2.Property<Guid>("HerbId")
-                                        .HasColumnType("uniqueidentifier");
-
-                                    b2.Property<string>("HerbName")
-                                        .IsRequired()
-                                        .HasMaxLength(100)
-                                        .HasColumnType("nvarchar(100)");
-
-                                    b2.Property<decimal>("Quantity")
-                                        .HasColumnType("decimal(18,2)");
-
-                                    b2.Property<int>("SortOrder")
-                                        .HasColumnType("int");
-
-                                    b2.Property<string>("SpecialUsage")
-                                        .HasMaxLength(50)
-                                        .HasColumnType("nvarchar(50)");
-
-                                    b2.Property<string>("Unit")
-                                        .IsRequired()
-                                        .HasMaxLength(10)
-                                        .HasColumnType("nvarchar(10)");
-
-                                    b2.Property<decimal>("UnitPrice")
-                                        .HasColumnType("decimal(18,2)");
-
-                                    b2.HasKey("TreatmentPrescriptionModelTreatmentPlanModelId", "Id");
-
-                                    b2.ToTable("TreatmentPrescriptionHerbModel");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("TreatmentPrescriptionModelTreatmentPlanModelId");
-                                });
-
-                            b1.Navigation("Herbs");
-                        });
-
-                    b.Navigation("PhysiotherapyItems");
-
-                    b.Navigation("Prescription");
-                });
-
-            modelBuilder.Entity("LYBT.Models.Billing.BillingModel", b =>
-                {
-                    b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("LYBT.Models.Pharmacy.PharmacyModel", b =>
-                {
-                    b.Navigation("Herbs");
                 });
 
             modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionModel", b =>

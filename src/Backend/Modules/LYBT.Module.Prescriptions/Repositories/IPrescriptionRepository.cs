@@ -1,4 +1,5 @@
 using LYBT.Models.Prescriptions;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Prescriptions.Repositories {
 

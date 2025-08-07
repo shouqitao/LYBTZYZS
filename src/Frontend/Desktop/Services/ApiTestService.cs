@@ -4,7 +4,7 @@ using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.Shared.Models.Auth;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -131,7 +131,7 @@ namespace LYBT.WPF.Client.Services
                     result += "   用户列表:\n";
                     foreach (var user in users.Items)
                     {
-                        result += $"     - {user.RealName} ({user.Username}) - {user.Role} - {(user.IsActive ? "启用" : "禁用")}\n";
+                        result += $"     - {user.RealName} ({user.Username}) - {(user.IsSysAdmin ? "管理员" : "普通用户")} - {user.StatusText}\n";
                     }
                 }
 
@@ -156,7 +156,7 @@ namespace LYBT.WPF.Client.Services
                     return $"✅ Token验证成功\n" +
                            $"   当前用户: {currentUser.RealName}\n" +
                            $"   用户ID: {currentUser.Id}\n" +
-                           $"   角色: {currentUser.Role}";
+                           $"   角色: {(currentUser.IsSysAdmin ? "管理员" : "普通用户")}";
                 }
                 else
                 {

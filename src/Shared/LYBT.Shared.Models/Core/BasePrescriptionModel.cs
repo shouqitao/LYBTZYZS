@@ -17,9 +17,9 @@ namespace LYBT.Shared.Models.Core {
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
-        /// <summary>医生ID</summary>
-        [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
+        /// <summary>关联用户ID（医生）</summary>
+        [DisplayName("关联用户ID")]
+        public Guid UserId { get; set; }
 
         /// <summary>诊断信息</summary>
         [DisplayName("诊断")]

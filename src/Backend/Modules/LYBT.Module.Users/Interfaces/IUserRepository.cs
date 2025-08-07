@@ -69,5 +69,10 @@ namespace LYBT.Module.Users.Interfaces {
         /// 获取启用的用户列表
         /// </summary>
         Task<List<UserModel>> GetActiveUsersAsync();
+        
+        /// <summary>
+        /// 获取所有用户
+        /// </summary>
+        Task<List<UserModel>> GetAllAsync();
     }
 }

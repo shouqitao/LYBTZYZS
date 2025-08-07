@@ -64,7 +64,7 @@ namespace LYBT.WebAPI.Controllers {
                 };
                 
                 var (_, _, operatorRole) = GetOperator();
-                var pagedResult = await _service.GetPagedAsync(query, operatorRole);
+                var pagedResult = await _service.GetPagedAsync(query);
                 return Ok(pagedResult);
             } catch (Exception ex) {
                 return HandleException(ex, "获取处方列表");
@@ -81,7 +81,7 @@ namespace LYBT.WebAPI.Controllers {
                 if (validationResult != null) return validationResult;
 
                 var (_, _, operatorRole) = GetOperator();
-                var result = await _service.GetPagedAsync(query, operatorRole);
+                var result = await _service.GetPagedAsync(query);
                 return Ok(result);
             } catch (Exception ex) {
                 return HandleException(ex, "分页获取处方列表");

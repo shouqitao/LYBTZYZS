@@ -2,12 +2,12 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.FormulaTemplates {
+namespace LYBT.Shared.Models.Contracts.Formulas {
 
     /// <summary>
     /// 批量导入经验方模板 DTO
     /// </summary>
-    public class FormulaTemplateImportDto {
+    public class FormulaImportDto {
 
         /// <summary>模板名称</summary>
         [Required(ErrorMessage = "名称不能为空")]

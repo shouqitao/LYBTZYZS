@@ -1,4 +1,5 @@
 using LYBT.Models.Prescriptions;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Prescriptions.Interfaces {
 
@@ -10,7 +11,7 @@ namespace LYBT.Module.Prescriptions.Interfaces {
         /// <summary>
         /// 智能组合多个验方模板生成处方
         /// </summary>
-        Task<PrescriptionCompositionResult> ComposeFromFormulaTemplatesAsync(List<Guid> formulaTemplateIds, int dosageCount = 7);
+        Task<PrescriptionCompositionResult> ComposeFromFormulasAsync(List<Guid> formulaIds, int dosageCount = 7);
 
         /// <summary>
         /// 智能重复药材检测和处理

@@ -176,7 +176,11 @@
       "Bash(dotnet nuget locals:*)",
       "Bash(node:*)",
       "Bash(start dotnet run --project src/Backend/Services/LYBT.WebAPI --urls \"https://localhost:7001\")",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(dotnet add:*)",
+      "Bash(git checkout:*)",
+      "Bash(start dotnet run --urls \"https://localhost:7001\")",
+      "Bash(ren:*)"
     ],
     "deny": []
   }

@@ -6,20 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
     /// 药材列表DTO（简化版，用于列表显示）
     /// </summary>
     public class HerbDto : BaseHerbModel {
-
-        /// <summary>
-        /// 药材ID
-        /// </summary>
-        public new Guid Id { get; set; }
-
-        /// <summary>
-        /// 创建时间
-        /// </summary>
-        public new DateTime CreateTime { get; set; }
-
-        /// <summary>
-        /// 更新时间
-        /// </summary>
-        public new DateTime? UpdateTime { get; set; }
+        // 继承BaseHerbModel的所有字段，无需额外字段
+        // CreateTime 和 UpdateTime 字段已移除（按照字段标准化要求）
     }
 }

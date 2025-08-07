@@ -1,5 +1,5 @@
 ﻿using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Enums;
+// using LYBT.Shared.Models.Enums; // UserRole已删除
 using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
 using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
@@ -16,13 +16,13 @@ namespace LYBT.Module.Users.Interfaces {
         /// 分页/条件查找用户
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        Task<PaginatedResult<SharedUserDto>> GetPagedAsync(SharedUserPagedQueryDto query, UserRole currentUserRole);
+        Task<PaginatedResult<SharedUserDto>> GetPagedAsync(SharedUserPagedQueryDto query);
 
         /// <summary>
         /// 根据ID获取用户详情
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        Task<SharedUserDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
+        Task<SharedUserDto?> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 新增用户
@@ -67,7 +67,7 @@ namespace LYBT.Module.Users.Interfaces {
         /// <summary>
         /// 用户修改个人信息
         /// </summary>
-        Task<bool> ChangeProfileAsync(Guid id, string realName, string? email, string? phoneNumber);
+        Task<bool> ChangeProfileAsync(Guid id, string realName, string? phoneNumber);
 
         /// <summary>
         /// 获取系统所有角色

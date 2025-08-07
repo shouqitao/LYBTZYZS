@@ -14,8 +14,7 @@ namespace LYBT.Module.Formula {
         /// 注册模板仓储与服务
         /// </summary>
         public static void Register(IServiceCollection services) {
-            services.AddScoped<IFormulaTemplateRepository, FormulaTemplateRepository>();
-            services.AddScoped<IFormulaTemplateService, FormulaTemplateService>();
+            // 注册Formula服务
             services.AddScoped<IFormulaService, FormulaService>();
         }
     }

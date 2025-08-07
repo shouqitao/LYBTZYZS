@@ -23,9 +23,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("患者姓名")]
         public string PatientName { get; set; } = string.Empty;
 
-        /// <summary>医生ID</summary>
-        [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
+        /// <summary>用户ID（医生）</summary>
+        [DisplayName("用户ID")]
+        public Guid UserId { get; set; }
 
         /// <summary>医生姓名</summary>
         [DisplayName("医生姓名")]

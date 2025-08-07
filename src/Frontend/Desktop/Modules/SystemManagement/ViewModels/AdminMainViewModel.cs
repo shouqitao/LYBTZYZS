@@ -22,7 +22,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         public DelegateCommand NavigateToSystemLogsCommand { get; }
         public DelegateCommand NavigateToHerbManagementCommand { get; }
         public DelegateCommand NavigateToPrescriptionTemplatesCommand { get; }
-        public DelegateCommand NavigateToFormulaTemplateManagementCommand { get; }
+        public DelegateCommand NavigateToFormulaManagementCommand { get; }
         public DelegateCommand NavigateToPrescriptionManagementCommand { get; }
         public DelegateCommand NavigateToDoctorManagementCommand { get; }
 
@@ -41,7 +41,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             NavigateToSystemLogsCommand = new DelegateCommand(() => NavigateTo("SystemLogsView"));
             NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
             NavigateToPrescriptionTemplatesCommand = new DelegateCommand(() => NavigateTo("PrescriptionTemplatesView"));
-            NavigateToFormulaTemplateManagementCommand = new DelegateCommand(() => NavigateTo("FormulaTemplateManagementView"));
+            NavigateToFormulaManagementCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
             NavigateToPrescriptionManagementCommand = new DelegateCommand(() => NavigateTo("PrescriptionManagementView"));
             NavigateToDoctorManagementCommand = new DelegateCommand(() => NavigateTo("DoctorManagementView"));
 

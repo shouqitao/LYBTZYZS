@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Logging.Enums;
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
 namespace LYBT.Infrastructure.Logging {

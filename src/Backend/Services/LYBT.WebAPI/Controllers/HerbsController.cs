@@ -40,7 +40,7 @@ namespace LYBT.WebAPI.Controllers {
             [FromQuery] string? origin = null,
             [FromQuery] string? effect = null,
             [FromQuery] string? usage = null,
-            [FromQuery] HerbStatus? status = null,
+            [FromQuery] CommonStatus? status = null,
             [FromQuery] decimal? minPrice = null,
             [FromQuery] decimal? maxPrice = null,
             [FromQuery] bool? hasStock = null) {
@@ -261,8 +261,8 @@ namespace LYBT.WebAPI.Controllers {
             }
 
             // 根据当前状态切换
-            var newStatus = !herb.IsActive;
-            var result = await _herbService.SetStatusAsync(id, newStatus);
+            var newStatus = herb.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
+            var result = await _herbService.SetStatusAsync(id, newStatus == CommonStatus.Enabled);
             if (!result) {
                 return BadRequest(new ProblemDetails {
                     Title = "操作失败",
@@ -276,7 +276,7 @@ namespace LYBT.WebAPI.Controllers {
             _cache.Remove("active_herbs");
             _cache.Remove($"herb_detail_{id}");
 
-            var message = herb.IsActive ? "药材已禁用" : "药材已启用";
+            var message = herb.Status == CommonStatus.Enabled ? "药材已禁用" : "药材已启用";
             LogOperation(message, new { Id = id, IsActive = newStatus }, id);
             return Ok(new { message });
         }
@@ -321,12 +321,12 @@ namespace LYBT.WebAPI.Controllers {
         /// 更新药材状态
         /// </summary>
         [HttpPatch("status")]
-        public async Task<ActionResult> UpdateStatus([FromBody] HerbStatusUpdateDto dto) {
+        public async Task<ActionResult> UpdateStatus([FromBody] CommonStatusUpdateDto dto) {
             try {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var result = await _herbService.SetStatusAsync(dto.Id, dto.Status == LYBT.Shared.Models.Enums.HerbStatus.Active);
+                var result = await _herbService.SetStatusAsync(dto.Id, dto.Status == LYBT.Shared.Models.Enums.CommonStatus.Enabled);
                 if (!result)
                     return NotFound("药材不存在");
 

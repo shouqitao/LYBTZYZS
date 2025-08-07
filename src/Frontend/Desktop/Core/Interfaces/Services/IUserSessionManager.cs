@@ -1,5 +1,6 @@
 using System;
 using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
@@ -53,7 +54,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// </summary>
         /// <param name="role">角色</param>
         /// <returns>是否有该角色</returns>
-        bool HasRole(UserRole role);
+        bool HasRole(string role);
 
         /// <summary>
         /// 检查用户是否有管理员权限

@@ -1,6 +1,7 @@
 ﻿using LYBT.Infrastructure.Data;
 using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 
@@ -41,7 +42,7 @@ namespace LYBT.Module.Users.Repositories {
             if (user == null)
                 return false;
 
-            user.IsActive = false;
+            user.Status = CommonStatus.Disabled;
             _dbContext.Users.Update(user);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -54,7 +55,7 @@ namespace LYBT.Module.Users.Repositories {
             if (user == null)
                 return false;
 
-            user.IsActive = true;
+            user.Status = CommonStatus.Enabled;
             _dbContext.Users.Update(user);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -71,7 +72,7 @@ namespace LYBT.Module.Users.Repositories {
 
             // 权限控制：非管理员只能看到启用的用户
             if (!includeDisabled) {
-                dbSet = dbSet.Where(u => u.IsActive);
+                dbSet = dbSet.Where(u => u.Status == CommonStatus.Enabled);
             }
 
             // 通用搜索关键词（模糊搜索：用户名、真实姓名、拼音码）
@@ -91,9 +92,6 @@ namespace LYBT.Module.Users.Repositories {
                 if (!string.IsNullOrWhiteSpace(query.RealName)) {
                     dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
                 }
-                if (!string.IsNullOrWhiteSpace(query.Email)) {
-                    dbSet = dbSet.Where(u => u.Email != null && u.Email.Contains(query.Email));
-                }
                 if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
                     dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
                 }
@@ -103,14 +101,12 @@ namespace LYBT.Module.Users.Repositories {
                 }
             }
 
-            // 角色筛选
-            if (query.Role.HasValue) {
-                dbSet = dbSet.Where(u => u.Role == query.Role.Value);
-            }
+            // 角色筛选（已移除Role字段）
+            // 角色功能已合并到用户模块中
 
-            // 启用状态筛选
-            if (query.IsActive.HasValue) {
-                dbSet = dbSet.Where(u => u.IsActive == query.IsActive.Value);
+            // 状态筛选
+            if (query.Status.HasValue) {
+                dbSet = dbSet.Where(u => u.Status == query.Status.Value);
             }
 
             // 获取总数
@@ -157,7 +153,7 @@ namespace LYBT.Module.Users.Repositories {
             var query = _dbContext.Users.AsQueryable();
 
             if (!includeDisabled) {
-                query = query.Where(u => u.IsActive);
+                query = query.Where(u => u.Status == CommonStatus.Enabled);
             }
 
             return await query.FirstOrDefaultAsync(u => u.Id == id);
@@ -176,7 +172,7 @@ namespace LYBT.Module.Users.Repositories {
             var idStrings = string.Join("','", ids.Select(id => id.ToString()));
             var sql = includeDisabled
                 ? $"SELECT * FROM Users WHERE Id IN ('{idStrings}')"
-                : $"SELECT * FROM Users WHERE Id IN ('{idStrings}') AND IsActive = 1";
+                : $"SELECT * FROM Users WHERE Id IN ('{idStrings}') AND Status = 0";
 
             return await _dbContext.Users.FromSqlRaw(sql).ToListAsync();
         }
@@ -211,7 +207,7 @@ namespace LYBT.Module.Users.Repositories {
 
             // 使用原生SQL避免EF Core的Contains转换问题
             var idStrings = string.Join("','", ids.Select(id => id.ToString()));
-            var sql = $"UPDATE Users SET IsActive = {(isActive ? 1 : 0)} WHERE Id IN ('{idStrings}')";
+            var sql = $"UPDATE Users SET Status = {(isActive ? 0 : 1)} WHERE Id IN ('{idStrings}')";
 
             return await _dbContext.Database.ExecuteSqlRawAsync(sql);
         }
@@ -221,9 +217,15 @@ namespace LYBT.Module.Users.Repositories {
         /// </summary>
         public async Task<List<UserModel>> GetActiveUsersAsync() {
             return await _dbContext.Users
-                .Where(u => u.IsActive && u.Username != "sysadmin")
+                .Where(u => u.Status == CommonStatus.Enabled && u.Username != "sysadmin")
                 .OrderBy(u => u.RealName)
                 .ToListAsync();
         }
-    }
+    
+
+        public async Task<List<UserModel>> GetAllAsync()
+        {
+            return await _dbContext.Users.ToListAsync();
+        }
+}
 }

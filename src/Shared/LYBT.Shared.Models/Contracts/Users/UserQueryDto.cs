@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Enums;
+// using LYBT.Shared.Models.Enums; // UserRole已删除
 using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Contracts.Users {
@@ -17,8 +17,8 @@ namespace LYBT.Shared.Models.Contracts.Users {
         /// <summary>
         /// 用户角色（单选）
         /// </summary>
-        [DisplayName("用户角色")]
-        public UserRole? Role { get; set; }
+        [DisplayName("用户角色")]////  
+public string Role { get; set; } = "User";
 
         /// <summary>
         /// 启用状态（可选条件）

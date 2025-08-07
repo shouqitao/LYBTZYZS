@@ -161,8 +161,8 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                     }
                     else
                     {
-                        // Role已经是枚举类型，直接使用GetDisplayName
-                        var roleDisplayName = response.Data.User.Role.GetDisplayName();
+                        // 根据用户名判断角色
+                        var roleDisplayName = "用户";
                         StatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
                     }
                     

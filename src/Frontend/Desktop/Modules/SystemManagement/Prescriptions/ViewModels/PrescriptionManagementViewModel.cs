@@ -100,13 +100,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             StatusOptions = new List<PrescriptionStatusOption>
             {
                 new(null, "全部状态"),
-                new(PrescriptionStatus.Draft, "草稿"),
-                new(PrescriptionStatus.Issued, "已开具"),
-                new(PrescriptionStatus.Confirmed, "已确认"),
-                new(PrescriptionStatus.Dispensed, "已调配"),
-                new(PrescriptionStatus.Completed, "已完成"),
-                new(PrescriptionStatus.Cancelled, "已取消"),
-                new(PrescriptionStatus.Voided, "已作废")
+                new(PrescriptionStatus.Draft, "编辑中"),
+                new(PrescriptionStatus.Completed, "已完成")
+                // 其他状态已按优化标准简化
             };
 
             // 初始化扩展命令
@@ -218,7 +214,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             {
                 Id = dto.Id,
                 PatientId = dto.PatientId,
-                DoctorId = dto.DoctorId,
+                UserId = dto.DoctorId, // 医生ID（UserId）
                 CreateTime = dto.CreateTime,
                 Status = dto.Status,
                 // TODO: 从其他服务获取患者和医生姓名
@@ -273,10 +269,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             if (prescription == null) return;
 
             // 检查是否可以作废
-            if (prescription.Status == PrescriptionStatus.Voided || 
-                prescription.Status == PrescriptionStatus.Cancelled)
+            if (prescription.Status == PrescriptionStatus.Completed)
             {
-                await _commonDialogService.ShowWarningAsync("该处方已被作废或取消，无法再次作废", "无法作废");
+                await _commonDialogService.ShowWarningAsync("该处方已完成，无法作废", "无法作废");
                 return;
             }
 

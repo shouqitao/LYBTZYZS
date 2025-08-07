@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Enums {
 
@@ -6,6 +7,7 @@ namespace LYBT.Shared.Models.Enums {
     /// 患者状态枚举 - 前后端共享
     /// </summary>
     [Description("患者状态")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum PatientStatus {
 
         /// <summary>停用</summary>

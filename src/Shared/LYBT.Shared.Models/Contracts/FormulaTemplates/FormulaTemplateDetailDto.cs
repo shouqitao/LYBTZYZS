@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace LYBT.Shared.Models.Contracts.FormulaTemplates
+namespace LYBT.Shared.Models.Contracts.Formulas
 {
     /// <summary>
     /// 验方模板详情DTO
     /// </summary>
-    public class FormulaTemplateDetailDto
+    public class FormulaDetailDto
     {
         /// <summary>模板ID</summary>
         public Guid Id { get; set; }
@@ -30,7 +30,7 @@ namespace LYBT.Shared.Models.Contracts.FormulaTemplates
         public string? Remark { get; set; }
 
         /// <summary>药材列表</summary>
-        public List<FormulaTemplateHerbDto> Herbs { get; set; } = new();
+        public List<FormulaHerbDto> Herbs { get; set; } = new();
 
         /// <summary>创建时间</summary>
         public DateTime CreateTime { get; set; }

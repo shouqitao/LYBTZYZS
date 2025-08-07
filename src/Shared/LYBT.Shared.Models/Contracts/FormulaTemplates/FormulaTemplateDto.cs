@@ -1,11 +1,12 @@
 using System;
+using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.FormulaTemplates
+namespace LYBT.Shared.Models.Contracts.Formulas
 {
     /// <summary>
     /// 验方模板列表DTO
     /// </summary>
-    public class FormulaTemplateDto
+    public class FormulaDto
     {
         /// <summary>模板ID</summary>
         public Guid Id { get; set; }
@@ -25,8 +26,8 @@ namespace LYBT.Shared.Models.Contracts.FormulaTemplates
         /// <summary>药材名称列表（逗号分隔）</summary>
         public string? HerbNames { get; set; }
 
-        /// <summary>是否启用</summary>
-        public bool IsActive { get; set; } = true;
+        /// <summary>状态</summary>
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>创建时间</summary>
         public DateTime CreateTime { get; set; }

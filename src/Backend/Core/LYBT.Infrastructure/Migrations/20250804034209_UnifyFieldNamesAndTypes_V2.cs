@@ -13,7 +13,7 @@ namespace LYBT.Infrastructure.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "CreatedAt",
-                table: "FormulaTemplates");
+                table: "Formulas");
 
             migrationBuilder.RenameColumn(
                 name: "UpdatedAt",
@@ -32,7 +32,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.RenameColumn(
                 name: "UpdatedAt",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 newName: "CreateTime");
 
             migrationBuilder.RenameColumn(
@@ -149,7 +149,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Usage",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "nvarchar(max)",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -159,7 +159,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Remark",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "nvarchar(max)",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -169,7 +169,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Property",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "nvarchar(max)",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -179,7 +179,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Effect",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "nvarchar(max)",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -189,7 +189,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "UpdateTime",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "datetime2",
                 nullable: true);
 
@@ -300,7 +300,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.DropColumn(
                 name: "UpdateTime",
-                table: "FormulaTemplates");
+                table: "Formulas");
 
             migrationBuilder.DropColumn(
                 name: "Name",
@@ -323,7 +323,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.RenameColumn(
                 name: "CreateTime",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 newName: "UpdatedAt");
 
             migrationBuilder.RenameColumn(
@@ -431,7 +431,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Usage",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "nvarchar(500)",
                 maxLength: 500,
                 nullable: true,
@@ -441,7 +441,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Remark",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "nvarchar(1000)",
                 maxLength: 1000,
                 nullable: true,
@@ -451,7 +451,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Property",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "nvarchar(200)",
                 maxLength: 200,
                 nullable: true,
@@ -461,7 +461,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Effect",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "nvarchar(500)",
                 maxLength: 500,
                 nullable: true,
@@ -471,7 +471,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "CreatedAt",
-                table: "FormulaTemplates",
+                table: "Formulas",
                 type: "datetime2",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));

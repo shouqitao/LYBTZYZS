@@ -1,4 +1,4 @@
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 
 namespace LYBT.WPF.Client.Core.Models.Authentication {
     /// <summary>
@@ -9,6 +9,6 @@ namespace LYBT.WPF.Client.Core.Models.Authentication {
         public string Token { get; set; } = string.Empty;
 
         /// <summary>用户信息</summary>
-        public UserInfo User { get; set; } = new();
+        public BaseUserModel User { get; set; } = new();
     }
 }

@@ -273,7 +273,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                                 Effect = row.Table.Columns.Contains("功效说明") ? row["功效说明"]?.ToString()?.Trim() : null,
                                 Usage = row.Table.Columns.Contains("用法") ? row["用法"]?.ToString()?.Trim() : null,
                                 Remark = row.Table.Columns.Contains("备注") ? row["备注"]?.ToString()?.Trim() : null,
-                                Status = HerbStatus.Active
+                                Status = CommonStatus.Enabled
                             };
                             
                             // 验证数据
@@ -446,10 +446,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                 /* Stock = (int)dto.Stock, */
                 // ExpireDate = DateTime.Now.AddYears(2),  // 过期日期需要从库存记录获取
                 Effect = dto.Effect,
-                // Status = (HerbStatus)dto.Status,
-                IsActive = dto.IsActive,
-                CreateTime = dto.CreateTime,
-                UpdateTime = dto.UpdateTime,
+                Status = dto.Status, // 直接使用Status
+                // IsActive、CreateTime、UpdateTime 已按优化标准移除
                 Remark = dto.Remark
             };
         }

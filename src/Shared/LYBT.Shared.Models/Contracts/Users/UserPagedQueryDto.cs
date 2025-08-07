@@ -19,8 +19,8 @@ namespace LYBT.Shared.Models.Contracts.Users {
         public string? RealName { get; set; }
 
         /// <summary>角色筛选</summary>
-        [DisplayName("用户角色")]
-        public UserRole? Role { get; set; }
+        [DisplayName("用户角色")]////  
+public string Role { get; set; } = "User";
 
         /// <summary>邮箱关键词</summary>
         [DisplayName("邮箱")]
@@ -38,13 +38,9 @@ namespace LYBT.Shared.Models.Contracts.Users {
         [DisplayName("职位")]
         public string? Position { get; set; }
 
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool? IsActive { get; set; }
-
-        /// <summary>是否在线</summary>
-        [DisplayName("是否在线")]
-        public bool? IsOnline { get; set; }
+        /// <summary>状态筛选</summary>
+        [DisplayName("状态")]
+        public CommonStatus? Status { get; set; }
 
         /// <summary>创建日期范围-开始日期</summary>
         [DisplayName("创建开始日期")]

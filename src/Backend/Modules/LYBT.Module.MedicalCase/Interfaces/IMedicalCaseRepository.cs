@@ -1,4 +1,5 @@
 using LYBT.Models.MedicalCase;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.MedicalCase.Interfaces
 {
@@ -38,9 +39,9 @@ namespace LYBT.Module.MedicalCase.Interfaces
         Task<List<MedicalCaseModel>> GetByPatientIdAsync(Guid patientId);
 
         /// <summary>
-        /// 根据医生ID获取医疗案例列表
+        /// 根据用户ID获取医疗案例列表
         /// </summary>
-        Task<List<MedicalCaseModel>> GetByDoctorIdAsync(Guid doctorId);
+        Task<List<MedicalCaseModel>> GetByUserIdAsync(Guid userId);
 
         /// <summary>
         /// 根据日期范围获取医疗案例列表

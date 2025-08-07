@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -61,7 +62,7 @@ namespace LYBT.WebAPI.Controllers {
                         u.Username,
                         u.RealName,
                         u.CreateTime,
-                        u.IsActive
+                        Status = u.Status == CommonStatus.Enabled
                     })
                     .ToListAsync();
 
@@ -142,8 +143,7 @@ namespace LYBT.WebAPI.Controllers {
                         .Select(h => new {
                             h.Id,
                             h.Name,
-                            h.CreateTime,
-                            h.IsActive,
+                            Status = h.Status == CommonStatus.Enabled,
                             h.Price,
                             h.Unit
                         })

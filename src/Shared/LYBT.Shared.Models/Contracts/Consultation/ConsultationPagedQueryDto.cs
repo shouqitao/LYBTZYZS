@@ -12,9 +12,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("患者ID")]
         public Guid? PatientId { get; set; }
 
-        /// <summary>医生ID</summary>
-        [DisplayName("医生ID")]
-        public Guid? DoctorId { get; set; }
+        /// <summary>用户ID（医生）</summary>
+        [DisplayName("用户ID")]
+        public Guid? UserId { get; set; }
 
         /// <summary>开始日期</summary>
         [DisplayName("开始日期")]

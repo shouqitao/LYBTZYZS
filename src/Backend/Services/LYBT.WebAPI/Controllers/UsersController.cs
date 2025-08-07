@@ -33,7 +33,7 @@ public class UsersController : BaseController {
     [HttpPost("paged")]
     public async Task<ActionResult<PaginatedResult<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetPaged([FromBody] LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto query) {
         var (_, _, operatorRole) = GetOperator();
-        var result = await _userService.GetPagedAsync(query, operatorRole);
+        var result = await _userService.GetPagedAsync(query);
         return Ok(result);
     }
 
@@ -66,7 +66,7 @@ public class UsersController : BaseController {
         if (result) {
             // 获取更新后的资源
                 var (_, _, operatorRole) = GetOperator();
-                var updated = await _userService.GetByIdAsync(dto.Id, operatorRole);
+                var updated = await _userService.GetByIdAsync(dto.Id);
                 LogOperation("用户信息更新成功", updated, dto.Id);
                 return Ok(updated);
         } else {
@@ -124,19 +124,17 @@ public class UsersController : BaseController {
         var (operatorId, operatorName, operatorRole) = GetOperator();
         
         // 先获取用户当前状态
-        var user = await _userService.GetByIdAsync(id, operatorRole);
+        var user = await _userService.GetByIdAsync(id);
         if (user == null) {
             return NotFound(new ProblemDetails {
-                Title = "资源未找到",
-                Detail = "用户不存在",
-                Status = 404
+                Title = "资源未找到"
             });
         }
 
         // 根据当前状态切换
         bool result;
         string message;
-        if (user.IsActive) {
+        if (user.Status == CommonStatus.Enabled) {
             result = await _userService.DisableAsync(id, operatorId, operatorName);
             message = "用户已禁用";
         } else {
@@ -236,7 +234,7 @@ public class UsersController : BaseController {
                 Status = 401
             });
 
-        var result = await _userService.ChangeProfileAsync(id, dto.RealName, dto.Email, dto.PhoneNumber);
+        var result = await _userService.ChangeProfileAsync(id, dto.RealName, dto.PhoneNumber);
         if (result) {
             LogOperation("修改个人信息成功", dto, id);
             return Ok(new { message = "个人信息修改成功" });
@@ -265,12 +263,10 @@ public class UsersController : BaseController {
     [HttpGet("getById/{id}")]
     public async Task<ActionResult<LYBT.Shared.Models.Contracts.Users.UserDto>> GetById(Guid id) {
         var (_, _, operatorRole) = GetOperator();
-        var user = await _userService.GetByIdAsync(id, operatorRole);
+        var user = await _userService.GetByIdAsync(id);
         if (user == null) {
             return NotFound(new ProblemDetails {
-                Title = "资源未找到",
-                Detail = "用户不存在",
-                Status = 404
+                Title = "资源未找到"
             });
         }
         return Ok(user);
@@ -299,7 +295,7 @@ public class UsersController : BaseController {
         [FromQuery] string? realName = null,
         [FromQuery] string? email = null,
         [FromQuery] string? phoneNumber = null,
-        [FromQuery] UserRole? role = null,
+        [FromQuery] string? role = null,
         [FromQuery] bool? isActive = null) {
         var (_, _, operatorRole) = GetOperator();
         var query = new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto {
@@ -310,10 +306,10 @@ public class UsersController : BaseController {
             RealName = realName,
             Email = email,
             PhoneNumber = phoneNumber,
-            Role = role,
-            IsActive = isActive
+            // Role = role ?? string.Empty, // Role字段已移除
+            Status = isActive.HasValue ? (isActive.Value ? CommonStatus.Enabled : CommonStatus.Disabled) : (CommonStatus?)null
         };
-        var result = await _userService.GetPagedAsync(query, operatorRole);
+        var result = await _userService.GetPagedAsync(query);
         return Ok(result);
     }
 
@@ -323,12 +319,10 @@ public class UsersController : BaseController {
     [HttpGet("{id}")]
     public async Task<ActionResult<LYBT.Shared.Models.Contracts.Users.UserDto>> GetUser(Guid id) {
         var (_, _, operatorRole) = GetOperator();
-        var user = await _userService.GetByIdAsync(id, operatorRole);
+        var user = await _userService.GetByIdAsync(id);
         if (user == null) {
             return NotFound(new ProblemDetails {
-                Title = "资源未找到",
-                Detail = "用户不存在",
-                Status = 404
+                Title = "资源未找到"
             });
         }
         return Ok(user);
@@ -365,7 +359,7 @@ public class UsersController : BaseController {
         if (result) {
             // 获取更新后的资源
                 var (_, _, operatorRole) = GetOperator();
-                var updated = await _userService.GetByIdAsync(dto.Id, operatorRole);
+                var updated = await _userService.GetByIdAsync(dto.Id);
                 LogOperation("用户信息更新成功", updated, dto.Id);
                 return Ok(updated);
         } else {

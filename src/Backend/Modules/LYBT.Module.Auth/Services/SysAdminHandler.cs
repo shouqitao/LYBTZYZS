@@ -60,18 +60,17 @@ namespace LYBT.Module.Auth.Services {
                 Username = SYSADMIN_USERNAME,
                 RealName = "系统管理员",
                 PinYinCode = "XTGLY",
-                Role = UserRole.Admin,
-                IsActive = true,
+                Status = CommonStatus.Enabled,
                 CreateTime = DateTime.Now,
                 PasswordHash = string.Empty // 密码从AdminSecrets表获取
             };
         }
 
         /// <summary>
-        /// 确保用户具有管理员角色
+        /// 确保用户具有管理员角色（已移除Role字段）
         /// </summary>
         private void EnsureAdminRole(UserModel user) {
-            user.Role = UserRole.Admin;
+            // Role字段已移除，管理员权限通过其他机制实现
         }
     }
 }

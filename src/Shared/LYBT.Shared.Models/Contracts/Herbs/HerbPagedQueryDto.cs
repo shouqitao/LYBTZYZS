@@ -18,9 +18,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
-        /// <summary>五笔码关键词</summary>
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
+        // 五笔码字段已移除（按照字段标准化要求）
 
         /// <summary>产地关键词</summary>
         [DisplayName("产地")]
@@ -30,21 +28,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [DisplayName("规格")]
         public string? Spec { get; set; }
 
-        /// <summary>药材状态筛选</summary>
-        [DisplayName("药材状态")]
-        public HerbStatus? Status { get; set; }
+        /// <summary>状态筛选</summary>
+        [DisplayName("状态")]
+        public CommonStatus? Status { get; set; }
 
-        /// <summary>批号关键词</summary>
-        [DisplayName("批号")]
-        public string? BatchNo { get; set; }
-
-        /// <summary>最小库存数量</summary>
-        [DisplayName("最小库存")]
-        public int? MinStock { get; set; }
-
-        /// <summary>最大库存数量</summary>
-        [DisplayName("最大库存")]
-        public int? MaxStock { get; set; }
+        // 库存管理字段已移除（按照字段标准化要求）
 
         /// <summary>最小单价</summary>
         [DisplayName("最小单价")]
@@ -54,36 +42,12 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
         [DisplayName("最大单价")]
         public decimal? MaxPrice { get; set; }
 
-        /// <summary>有效期范围-开始日期</summary>
-        [DisplayName("有效期开始")]
-        public DateTime? ExpireStartDate { get; set; }
-
-        /// <summary>有效期范围-结束日期</summary>
-        [DisplayName("有效期结束")]
-        public DateTime? ExpireEndDate { get; set; }
-
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool? IsActive { get; set; }
+        // 有效期和 IsActive 字段已移除（按照字段标准化要求）
 
         /// <summary>是否包含已删除的药材</summary>
         [DisplayName("包含已删除")]
         public bool IncludeInactive { get; set; } = false;
 
-        /// <summary>仅显示库存不足的药材</summary>
-        [DisplayName("仅库存不足")]
-        public bool OnlyLowStock { get; set; } = false;
-
-        /// <summary>仅显示即将过期的药材（30天内）</summary>
-        [DisplayName("仅即将过期")]
-        public bool OnlyExpiring { get; set; } = false;
-
-        /// <summary>库存不足的阈值（默认10）</summary>
-        [DisplayName("库存阈值")]
-        public int LowStockThreshold { get; set; } = 10;
-
-        /// <summary>即将过期的天数阈值（默认30天）</summary>
-        [DisplayName("过期阈值天数")]
-        public int ExpiringDaysThreshold { get; set; } = 30;
+        // 库存相关查询字段已移除（按照字段标准化要求）
     }
 }

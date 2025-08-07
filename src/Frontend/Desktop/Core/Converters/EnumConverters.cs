@@ -19,11 +19,9 @@ namespace LYBT.WPF.Client.Core.Converters
             return value switch
             {
                 Gender gender => gender.GetDescription(),
-                UserRole userRole => userRole.GetDescription(),
                 PatientStatus patientStatus => patientStatus.GetDescription(),
-                HerbStatus herbStatus => herbStatus.GetDescription(),
-                BillingStatus billingStatus => billingStatus.GetDescription(),
-                PharmacyStatus pharmacyStatus => pharmacyStatus.GetDescription(),
+                CommonStatus commonStatus => commonStatus.GetDescription(),
+                PrescriptionStatus prescriptionStatus => prescriptionStatus.GetDescription(),
                 Enum enumValue => enumValue.GetDescription(),
                 _ => value.ToString() ?? string.Empty
             };
@@ -32,26 +30,6 @@ namespace LYBT.WPF.Client.Core.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("EnumToDisplayNameConverter 不支持反向转换");
-        }
-    }
-
-    /// <summary>
-    /// 用户角色转显示文本转换器
-    /// </summary>
-    public class UserRoleToDisplayNameConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is UserRole role)
-            {
-                return role.GetDescription();
-            }
-            return "未知角色";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
         }
     }
 
@@ -78,11 +56,11 @@ namespace LYBT.WPF.Client.Core.Converters
     /// <summary>
     /// 药材状态转显示文本转换器
     /// </summary>
-    public class HerbStatusToDisplayNameConverter : IValueConverter
+    public class CommonStatusToDisplayNameConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is HerbStatus status)
+            if (value is CommonStatus status)
             {
                 return status.GetDescription();
             }

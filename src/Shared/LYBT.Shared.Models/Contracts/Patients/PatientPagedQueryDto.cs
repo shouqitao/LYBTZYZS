@@ -34,13 +34,9 @@ namespace LYBT.Shared.Models.Contracts.Patients {
         [DisplayName("最大年龄")]
         public int? MaxAge { get; set; }
 
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool? IsActive { get; set; }
-
-        /// <summary>创建日期范围-开始日期</summary>
-        [DisplayName("创建开始日期")]
-        public DateTime? CreateStartDate { get; set; }
+        /// <summary>状态筛选</summary>
+        [DisplayName("状态")]
+        public CommonStatus? Status { get; set; }
 
         /// <summary>创建日期范围-结束日期</summary>
         [DisplayName("创建结束日期")]

@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Events;
 using LYBT.WPF.Client.Core.Configuration;
@@ -14,6 +14,8 @@ using Prism.Navigation.Regions;
 using Prism.Dialogs;
 using Prism.Events;
 using Prism.Commands;
+
+using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Shell.ViewModels
 {
@@ -183,11 +185,11 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             }
 
             // 使用配置类统一处理角色导航
-            var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(CurrentUser.Role);
+            var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(CurrentUser.Username == "sysadmin" ? "管理员" : "用户");
             Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
 
             // 获取对应的主界面视图名称
-            var mainViewName = RoleNavigationConfig.GetMainViewName(CurrentUser.Role);
+            var mainViewName = RoleNavigationConfig.GetMainViewName(CurrentUser.Username == "sysadmin" ? "管理员" : "用户");
             
             if (_regionManager != null)
             {
@@ -211,14 +213,14 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                 catch (Exception ex)
                 {
                     // 如果视图不存在，显示欢迎消息
-                    var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Role, CurrentUser.RealName);
+                    var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Username == "sysadmin" ? "管理员" : "用户", CurrentUser.RealName);
                     _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：{mainViewName} 模块尚未实现。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
                 }
             }
             else
             {
                 // 显示欢迎消息
-                var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Role, CurrentUser.RealName);
+                var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Username == "sysadmin" ? "管理员" : "用户", CurrentUser.RealName);
                 _commonDialogService.ShowWarningAsync($"RegionManager为空\n{welcomeMessage}", "登录成功").GetAwaiter().GetResult();
             }
         }

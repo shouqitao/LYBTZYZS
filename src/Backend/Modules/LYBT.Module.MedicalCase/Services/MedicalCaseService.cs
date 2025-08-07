@@ -7,6 +7,8 @@ using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Models.MedicalCase;
+using LYBT.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.MedicalCase.Services
 {
@@ -16,14 +18,17 @@ namespace LYBT.Module.MedicalCase.Services
     public class MedicalCaseService : IMedicalCaseService
     {
         private readonly IMedicalCaseRepository _repository;
+        private readonly LYBT.Infrastructure.Data.AppDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<MedicalCaseService> _logger;
 
         public MedicalCaseService(
+            LYBT.Infrastructure.Data.AppDbContext dbContext,
             IMedicalCaseRepository repository,
             IMapper mapper,
             ILogger<MedicalCaseService> logger)
         {
+            _dbContext = dbContext;
             _repository = repository;
             _mapper = mapper;
             _logger = logger;
@@ -49,6 +54,16 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 分页获取医疗案例列表
         /// </summary>
+        
+        /// <summary>
+        /// 获取所有医疗案例
+        /// </summary>
+        public async Task<List<MedicalCaseDto>> GetAllAsync()
+        {
+            var models = await _repository.GetListAsync();
+            return _mapper.Map<List<MedicalCaseDto>>(models);
+        }
+
         public async Task<PaginatedResult<MedicalCaseDto>> GetPagedAsync(PaginationRequest request)
         {
             try
@@ -57,28 +72,22 @@ namespace LYBT.Module.MedicalCase.Services
                 var dtos = _mapper.Map<List<MedicalCaseDto>>(models);
 
                 // 搜索过滤
-                if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+                if (!string.IsNullOrWhiteSpace(request.SearchKeyword))
                 {
                     dtos = dtos.Where(x => 
-                        x.PatientName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        x.DoctorName.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        x.DiagnosisSummary.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase)
+                        x.PatientName.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                        x.DoctorName.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ||
+                        x.DiagnosisSummary.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase)
                     ).ToList();
                 }
 
-                // 排序
-                dtos = request.SortBy?.ToLower() switch
-                {
-                    "patientname" => request.SortDesc ? dtos.OrderByDescending(x => x.PatientName).ToList() : dtos.OrderBy(x => x.PatientName).ToList(),
-                    "doctorname" => request.SortDesc ? dtos.OrderByDescending(x => x.DoctorName).ToList() : dtos.OrderBy(x => x.DoctorName).ToList(),
-                    "createtime" => request.SortDesc ? dtos.OrderByDescending(x => x.CreateTime).ToList() : dtos.OrderBy(x => x.CreateTime).ToList(),
-                    _ => dtos.OrderByDescending(x => x.CreateTime).ToList()
-                };
+                // 排序 - 默认按创建时间降序
+                dtos = dtos.OrderByDescending(x => x.CreateTime).ToList();
 
                 // 分页
                 var total = dtos.Count;
                 var items = dtos
-                    .Skip((request.PageNumber - 1) * request.PageSize)
+                    .Skip((request.CurrentPage - 1) * request.PageSize)
                     .Take(request.PageSize)
                     .ToList();
 
@@ -86,7 +95,7 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     Items = items,
                     TotalCount = total,
-                    PageNumber = request.PageNumber,
+                    CurrentPage = request.CurrentPage,
                     PageSize = request.PageSize
                 };
             }
@@ -124,7 +133,7 @@ namespace LYBT.Module.MedicalCase.Services
                 var model = _mapper.Map<MedicalCaseModel>(dto);
                 model.Id = Guid.NewGuid();
                 model.CreateTime = DateTime.Now;
-                model.Status = LYBT.Models.MedicalCase.MedicalCaseStatus.Registered;
+                model.Status = LYBT.Shared.Models.Enums.MedicalCaseStatus.Registered;
                 model.IsActive = true;
 
                 var created = await _repository.CreateAsync(model);
@@ -153,7 +162,7 @@ namespace LYBT.Module.MedicalCase.Services
 
                 // 更新字段
                 if (dto.Status.HasValue)
-                    model.Status = dto.Status.Value;
+                    model.Status = (LYBT.Shared.Models.Enums.MedicalCaseStatus)dto.Status.Value;
                 if (!string.IsNullOrWhiteSpace(dto.Remark))
                     model.Remark = dto.Remark;
                 if (dto.CompleteTime.HasValue)
@@ -173,7 +182,16 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 更新医疗案例状态
         /// </summary>
-        public async Task<bool> UpdateStatusAsync(Guid id, MedicalCaseStatus status)
+        
+        /// <summary>
+        /// 更新医疗案例（使用EditDto）
+        /// </summary>
+        public async Task<bool> UpdateAsync(MedicalCaseEditDto dto)
+        {
+            return await UpdateAsync(dto.Id, dto);
+        }
+
+        public async Task<bool> UpdateStatusAsync(Guid id, LYBT.Shared.Models.Enums.MedicalCaseStatus status)
         {
             try
             {
@@ -184,10 +202,10 @@ namespace LYBT.Module.MedicalCase.Services
                     return false;
                 }
 
-                model.Status = status;
+                model.Status = (LYBT.Shared.Models.Enums.MedicalCaseStatus)status;
                 model.UpdateTime = DateTime.Now;
 
-                if (status == LYBT.Models.MedicalCase.MedicalCaseStatus.Completed)
+                if (status == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed)
                 {
                     model.CompleteTime = DateTime.Now;
                 }
@@ -247,16 +265,16 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 根据医生ID获取医疗案例列表
         /// </summary>
-        public async Task<List<MedicalCaseDto>> GetByDoctorIdAsync(Guid doctorId)
+        public async Task<List<MedicalCaseDto>> GetByUserIdAsync(Guid userId)
         {
             try
             {
-                var models = await _repository.GetByDoctorIdAsync(doctorId);
+                var models = await _repository.GetByUserIdAsync(userId);
                 return _mapper.Map<List<MedicalCaseDto>>(models);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "根据医生ID获取医疗案例列表失败，DoctorId: {DoctorId}", doctorId);
+                _logger.LogError(ex, "根据用户ID获取医疗案例列表失败，UserId: {UserId}", userId);
                 throw;
             }
         }
@@ -284,8 +302,124 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         public async Task<bool> CompleteCaseAsync(Guid id)
         {
-            return await UpdateStatusAsync(id, LYBT.Models.MedicalCase.MedicalCaseStatus.Completed);
+            return await UpdateStatusAsync(id, LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
+        }
+
+        /// <summary>
+        /// 获取今日医生的案例
+        /// </summary>
+        public async Task<List<MedicalCaseModel>> GetTodayByUserIdAsync(Guid userId)
+        {
+            var today = DateTime.Today;
+            return await _dbContext.MedicalCases
+                .Where(m => m.UserId == userId && 
+                           m.CreateTime >= today && 
+                           m.CreateTime < today.AddDays(1))
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 开始看诊
+        /// </summary>
+        public async Task<bool> StartConsultationAsync(Guid caseId, Guid consultationId)
+        {
+            var medicalCase = await _dbContext.MedicalCases.FindAsync(caseId);
+            if (medicalCase == null) return false;
+
+            medicalCase.ConsultationId = consultationId;
+            medicalCase.Status = LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation;
+            medicalCase.UpdateTime = DateTime.Now;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// 完成看诊
+        /// </summary>
+        public async Task<bool> CompleteConsultationAsync(Guid caseId, Guid? prescriptionId)
+        {
+            var medicalCase = await _dbContext.MedicalCases.FindAsync(caseId);
+            if (medicalCase == null) return false;
+
+            medicalCase.Status = LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed;
+            medicalCase.UpdateTime = DateTime.Now;
+            medicalCase.CompleteTime = DateTime.Now;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// 完成医疗案例
+        /// </summary>
+        public async Task<bool> CompleteMedicalCaseAsync(Guid id)
+        {
+            return await UpdateStatusAsync(id, LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
+        }
+
+        /// <summary>
+        /// 取消医疗案例
+        /// </summary>
+        public async Task<bool> CancelMedicalCaseAsync(Guid id, string reason)
+        {
+            var medicalCase = await _dbContext.MedicalCases.FindAsync(id);
+            if (medicalCase == null) return false;
+
+            medicalCase.Status = LYBT.Shared.Models.Enums.MedicalCaseStatus.Cancelled;
+            medicalCase.UpdateTime = DateTime.Now;
+            medicalCase.Remark = reason;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// 根据状态获取待处理案例
+        /// </summary>
+        public async Task<List<MedicalCaseModel>> GetPendingCasesByStatusAsync(LYBT.Shared.Models.Enums.MedicalCaseStatus status)
+        {
+            return await _dbContext.MedicalCases
+                .Where(m => m.Status == status && m.IsActive)
+                .OrderBy(m => m.CreateTime)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 分页查询
+        /// </summary>
+        public async Task<(List<MedicalCaseModel> Items, int Total)> GetPagedAsync(
+            int pageIndex, 
+            int pageSize, 
+            LYBT.Shared.Models.Enums.MedicalCaseStatus? status = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            var query = _dbContext.MedicalCases.AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(m => m.Status == status.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(m => m.CreateTime >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(m => m.CreateTime <= endDate.Value);
+            }
+
+            var total = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(m => m.CreateTime)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, total);
         }
     }
-}
 }

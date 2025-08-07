@@ -66,12 +66,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public string StatusDescription => Prescription?.Status switch
         {
             PrescriptionStatus.Draft => "草稿",
-            PrescriptionStatus.Issued => "已开具",
-            PrescriptionStatus.Confirmed => "已确认",
-            PrescriptionStatus.Dispensed => "已调配",
             PrescriptionStatus.Completed => "已完成",
-            PrescriptionStatus.Cancelled => "已取消",
-            PrescriptionStatus.Voided => "已作废",
             _ => "未知状态"
         };
 
@@ -79,11 +74,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public string StatusColor => Prescription?.Status switch
         {
             PrescriptionStatus.Draft => "#FFC107",
-            PrescriptionStatus.Issued => "#17A2B8",
-            PrescriptionStatus.Confirmed => "#007BFF",
-            PrescriptionStatus.Dispensed => "#28A745",
-            PrescriptionStatus.Completed => "#6F42C1",
-            PrescriptionStatus.Cancelled or PrescriptionStatus.Voided => "#DC3545",
+            PrescriptionStatus.Completed => "#28A745",
             _ => "#6C757D"
         };
 
@@ -111,8 +102,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public bool CanEdit => Prescription?.Status == PrescriptionStatus.Draft;
 
         /// <summary>是否可以作废</summary>
-        public bool CanVoid => Prescription?.Status != PrescriptionStatus.Voided && 
-                               Prescription?.Status != PrescriptionStatus.Cancelled;
+        public bool CanVoid => Prescription?.Status == PrescriptionStatus.Draft;
 
         #endregion
 

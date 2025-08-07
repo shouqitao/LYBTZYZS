@@ -1,9 +1,5 @@
-using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.TreatmentPlan;
-using LYBT.Shared.Models.Contracts.Cashier;
-using LYBT.Shared.Models.Contracts.Pharmacy;
-using LYBT.Shared.Models.Contracts.TreatmentRoom;
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Contracts.MedicalCase
@@ -25,29 +21,20 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("患者姓名")]
         public string PatientName { get; set; } = string.Empty;
 
-        /// <summary>挂号信息</summary>
-        [DisplayName("挂号信息")]
-        public RegistrationDto? Registration { get; set; }
 
         /// <summary>看诊信息</summary>
         [DisplayName("看诊信息")]
         public ConsultationDetailDto? Consultation { get; set; }
 
-        /// <summary>治疗方案</summary>
-        [DisplayName("治疗方案")]
-        public TreatmentPlanDto? TreatmentPlan { get; set; }
 
-        /// <summary>收银信息</summary>
-        [DisplayName("收银信息")]
-        public CashierDto? Cashier { get; set; }
+        // /// <summary>收银信息</summary> // 模块已删除
+        // [DisplayName("收银信息")] // 模块已删除
+        // public CashierDto? Cashier { get; set; } // 模块已删除
 
-        /// <summary>药房信息</summary>
-        [DisplayName("药房信息")]
-        public PharmacyDto? Pharmacy { get; set; }
+        // /// <summary>药房信息</summary> // 模块已删除
+        // [DisplayName("药房信息")] // 模块已删除
+        // public PharmacyDto? Pharmacy { get; set; } // 模块已删除
 
-        /// <summary>治疗室信息</summary>
-        [DisplayName("治疗室信息")]
-        public TreatmentRoomDto? TreatmentRoom { get; set; }
 
         /// <summary>状态</summary>
         [DisplayName("状态")]
@@ -70,33 +57,4 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public string? Remark { get; set; }
     }
 
-    /// <summary>
-    /// 医疗案例状态枚举
-    /// </summary>
-    public enum MedicalCaseStatus
-    {
-        /// <summary>已挂号</summary>
-        Registered = 0,
-
-        /// <summary>看诊中</summary>
-        InConsultation = 1,
-
-        /// <summary>待付费</summary>
-        WaitingPayment = 2,
-
-        /// <summary>已付费</summary>
-        Paid = 3,
-
-        /// <summary>取药中</summary>
-        InPharmacy = 4,
-
-        /// <summary>理疗中</summary>
-        InTreatment = 5,
-
-        /// <summary>已完成</summary>
-        Completed = 6,
-
-        /// <summary>已取消</summary>
-        Cancelled = 7
-    }
 }

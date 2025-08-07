@@ -1,5 +1,4 @@
 using LYBT.Infrastructure.Authentication;
-using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
@@ -121,48 +120,7 @@ namespace LYBT.Infrastructure.Extensions {
         /// <param name="configuration">配置</param>
         /// <returns>服务集合</returns>
         public static IServiceCollection AddCachingServices(this IServiceCollection services, IConfiguration configuration) {
-            services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
-
-            var cacheOptions = configuration.GetSection("CacheOptions").Get<CacheOptions>() ?? new CacheOptions();
-
-            switch (cacheOptions.CacheType.ToLower()) {
-                case "memory":
-                    services.AddMemoryCache(options => {
-                        options.SizeLimit = cacheOptions.MemoryCache.SizeLimit * 1024 * 1024; // 转换为字节
-                        options.CompactionPercentage = cacheOptions.MemoryCache.CompactionPercentage;
-                    });
-                    services.AddScoped<ICacheService, MemoryCacheService>();
-                    break;
-
-                case "distributed":
-                case "sqlserver":
-                    if (!string.IsNullOrEmpty(cacheOptions.SqlServerConnectionString)) {
-                        services.AddDistributedSqlServerCache(options => {
-                            options.ConnectionString = cacheOptions.SqlServerConnectionString;
-                            options.SchemaName = "dbo";
-                            options.TableName = "CacheEntries";
-                        });
-                    }
-                    services.AddScoped<ICacheService, DistributedCacheService>();
-                    break;
-
-                case "redis":
-                    if (!string.IsNullOrEmpty(cacheOptions.RedisConnectionString)) {
-                        services.AddStackExchangeRedisCache(options => {
-                            options.Configuration = cacheOptions.RedisConnectionString;
-                            options.InstanceName = cacheOptions.DistributedCache.InstanceName;
-                        });
-                    }
-                    services.AddScoped<ICacheService, DistributedCacheService>();
-                    break;
-
-                default:
-                    // 默认使用内存缓存
-                    services.AddMemoryCache();
-                    services.AddScoped<ICacheService, MemoryCacheService>();
-                    break;
-            }
-
+            // 缓存服务已移除，保留空方法以维持接口兼容性
             return services;
         }
 
@@ -221,7 +179,7 @@ namespace LYBT.Infrastructure.Extensions {
         /// <param name="services">服务集合</param>
         /// <returns>服务集合</returns>
         public static IServiceCollection AddUnifiedConfiguration(this IServiceCollection services) {
-            services.AddScoped<IUnifiedConfigService, UnifiedConfigService>();
+            // 统一配置服务已移除，保留空方法以维持接口兼容性
             return services;
         }
 

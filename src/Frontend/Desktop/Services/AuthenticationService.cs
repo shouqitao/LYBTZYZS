@@ -74,18 +74,18 @@ namespace LYBT.WPF.Client.Services {
             return ServiceResult.Success();
         }
 
-        public Task<UserInfo?> GetCurrentUserAsync() {
+        public Task<LYBT.WPF.Client.Core.Models.Users.UserInfo?> GetCurrentUserAsync() {
             if (!_isLoggedIn || _currentUser == null)
-                return Task.FromResult<UserInfo?>(null);
+                return Task.FromResult<LYBT.WPF.Client.Core.Models.Users.UserInfo?>(null);
 
             // 可以考虑从API刷新用户信息
-            // var response = await _apiService.GetAsync<UserInfo>("users/current");
+            // var response = await _apiService.GetAsync<BaseUserModel>("users/current");
             // if (response.Success && response.Data != null)
             // {
             //     _currentUser = response.Data;
             // }
 
-            return Task.FromResult<UserInfo?>(_currentUser);
+            return Task.FromResult<LYBT.WPF.Client.Core.Models.Users.UserInfo?>(_currentUser);
         }
 
         public string? GetToken() {
@@ -137,13 +137,10 @@ namespace LYBT.WPF.Client.Services {
                 Id = baseUser.Id,
                 Username = baseUser.Username,
                 RealName = baseUser.RealName,
-                Role = baseUser.Role,
-                IsActive = baseUser.IsActive,
+                Status = baseUser.Status,
                 CreateTime = baseUser.CreateTime,
                 LastLoginTime = baseUser.LastLoginTime,
-                Email = baseUser.Email,
                 PhoneNumber = baseUser.PhoneNumber,
-                IsSuperAdmin = baseUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
             };
         }
 
@@ -158,9 +155,6 @@ namespace LYBT.WPF.Client.Services {
                 Id = baseUser.Id,
                 Username = baseUser.Username,
                 RealName = baseUser.RealName,
-                Role = baseUser.Role,
-                IsActive = baseUser.IsActive,
-                Email = baseUser.Email,
                 PhoneNumber = baseUser.PhoneNumber
             };
         }
@@ -190,15 +184,12 @@ namespace LYBT.WPF.Client.Services {
                     Id = root.TryGetProperty("id", out var idProp) ? idProp.GetGuid() : Guid.Empty,
                     Username = userName,
                     RealName = root.TryGetProperty("realName", out var realNameProp) ? realNameProp.GetString() ?? "" : "",
-                    Role = root.TryGetProperty("role", out var roleProp) ? ParseUserRole(roleProp.GetString()) : UserRole.RegistrationStaff,
-                    IsActive = root.TryGetProperty("isActive", out var isActiveProp) && isActiveProp.GetBoolean(),
+                    Status = root.TryGetProperty("status", out var statusProp) && statusProp.TryGetInt32(out var statusValue) 
+                        ? (CommonStatus)statusValue 
+                        : CommonStatus.Enabled,
                     CreateTime = root.TryGetProperty("createdTime", out var createdTimeProp) ? createdTimeProp.GetDateTime() : DateTime.Now,
                     LastLoginTime = root.TryGetProperty("lastLoginTime", out var lastLoginTimeProp) ? lastLoginTimeProp.GetDateTime() : null,
-                    Email = root.TryGetProperty("email", out var emailProp) ? emailProp.GetString() : null,
-                    PhoneNumber = root.TryGetProperty("phoneNumber", out var phoneProp) ? phoneProp.GetString() : null,
-                    // 检查isSuperAdmin字段，如果没有则根据用户名判断
-                    IsSuperAdmin = root.TryGetProperty("isSuperAdmin", out var isSuperAdminProp) && isSuperAdminProp.GetBoolean()
-                                   || userName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
+                    PhoneNumber = root.TryGetProperty("phoneNumber", out var phoneProp) ? phoneProp.GetString() : null
                 };
             } catch (Exception) {
                 return null;
@@ -208,34 +199,8 @@ namespace LYBT.WPF.Client.Services {
         /// <summary>
         /// 解析用户角色字符串
         /// </summary>
-        private UserRole ParseUserRole(string? roleString) {
-            if (string.IsNullOrEmpty(roleString))
-                return UserRole.RegistrationStaff;
-
-            // 添加调试信息
-            System.Diagnostics.Debug.WriteLine($"ParseUserRole: 输入角色字符串 = '{roleString}'");
-
-            // 尝试直接解析枚举
-            if (Enum.TryParse<UserRole>(roleString, true, out var role))
-            {
-                System.Diagnostics.Debug.WriteLine($"ParseUserRole: 枚举解析成功 = {role}");
-                return role;
-            }
-
-            // 兼容性处理 - 处理可能的不同命名格式
-            var result = roleString.ToLower() switch {
-                "staff" => UserRole.RegistrationStaff,
-                "registrationstaff" => UserRole.RegistrationStaff,
-                "diagnosingdoctor" => UserRole.DiagnosingDoctor,
-                "cashierstaff" => UserRole.CashierStaff,
-                "pharmacystaff" => UserRole.PharmacyStaff,
-                "physiotherapystaff" => UserRole.PhysiotherapyStaff,
-                "admin" => UserRole.Admin,
-                _ => UserRole.RegistrationStaff
-            };
-            
-            System.Diagnostics.Debug.WriteLine($"ParseUserRole: 兼容性处理结果 = {result}");
-            return result;
+        private string ParseUserRole(string? roleString) {
+            return "";
         }
 
 

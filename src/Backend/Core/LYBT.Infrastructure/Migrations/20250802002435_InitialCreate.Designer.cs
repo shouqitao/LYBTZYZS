@@ -898,7 +898,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Doctors", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.FormulaTemplates.FormulaTemplateModel", b =>
+            modelBuilder.Entity("LYBT.Models.Formulas.FormulaModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -948,7 +948,7 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FormulaTemplates", (string)null);
+                    b.ToTable("Formulas", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Models.Herbs.HerbModel", b =>

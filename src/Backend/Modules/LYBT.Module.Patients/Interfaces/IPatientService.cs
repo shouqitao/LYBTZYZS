@@ -23,22 +23,22 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 根据ID获取患者信息
         /// </summary>
-        Task<PatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole);
+        Task<PatientDetailDto?> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 获取所有患者列表
         /// </summary>
-        Task<List<PatientDetailDto>> GetAllAsync(UserRole currentUserRole);
+        Task<List<PatientDetailDto>> GetAllAsync();
 
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query, UserRole currentUserRole);
+        Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query);
 
         /// <summary>
         /// 搜索患者（根据姓名、手机号、身份证号）
         /// </summary>
-        Task<List<PatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole);
+        Task<List<PatientDetailDto>> SearchAsync(string keyword);
 
         /// <summary>
         /// 删除患者（软删除）
@@ -107,7 +107,7 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 高级搜索患者（支持多条件组合）
         /// </summary>
-        Task<PaginatedResult<PatientDetailDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query, UserRole currentUserRole);
+        Task<PaginatedResult<PatientDetailDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query);
 
         /// <summary>
         /// 获取患者统计信息

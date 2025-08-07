@@ -1,6 +1,5 @@
 using LYBT.Shared.Models.Core;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Models.Formula {
 

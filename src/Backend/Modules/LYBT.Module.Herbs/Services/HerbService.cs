@@ -7,6 +7,7 @@ using LYBT.Models.Herbs;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Herbs.Services {
@@ -99,12 +100,12 @@ namespace LYBT.Module.Herbs.Services {
                 dbQuery = dbQuery.Where(h => h.Price <= query.MaxPrice.Value);
             }
 
-            // 是否启用筛选
-            if (query.IsActive.HasValue) {
-                dbQuery = dbQuery.Where(h => h.IsActive == query.IsActive.Value);
-            } else if (!query.IncludeInactive) {
+            // 状态筛选
+            if (query.Status.HasValue) {
+                dbQuery = dbQuery.Where(h => h.Status == query.Status.Value);
+            } else {
                 // 默认只显示启用的药材
-                dbQuery = dbQuery.Where(h => h.IsActive);
+                dbQuery = dbQuery.Where(h => h.Status == CommonStatus.Enabled);
             }
 
             // 获取总数
@@ -112,7 +113,7 @@ namespace LYBT.Module.Herbs.Services {
 
             // 分页查询
             var models = await dbQuery
-                .OrderByDescending(h => h.CreateTime)
+                .OrderBy(h => h.Name)
                 .Skip((query.CurrentPage - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
@@ -136,8 +137,7 @@ namespace LYBT.Module.Herbs.Services {
             model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
                 ? GetSimplePinyinCode(model.Name)
                 : dto.PinYinCode;
-            model.CreateTime = DateTime.UtcNow;
-            model.IsActive = true; // 新增药材默认启用
+            model.Status = CommonStatus.Enabled; // 新增药材默认启用
             
             var success = await _repository.AddAsync(model);
             if (!success) {
@@ -167,8 +167,7 @@ namespace LYBT.Module.Herbs.Services {
             model.Effect = dto.Effect;
             model.Usage = dto.Usage;
             model.Remark = dto.Remark;
-            model.IsActive = dto.IsActive;
-            model.UpdateTime = DateTime.UtcNow;
+            model.Status = dto.Status;
 
             return await _repository.UpdateAsync(model);
         }
@@ -181,9 +180,8 @@ namespace LYBT.Module.Herbs.Services {
             if (model == null)
                 return false;
 
-            model.IsActive = false;
-            model.UpdateTime = DateTime.UtcNow;
-            
+            model.Status = CommonStatus.Disabled;
+                        
             return await _repository.UpdateAsync(model);
         }
 
@@ -197,7 +195,7 @@ namespace LYBT.Module.Herbs.Services {
 
             keyword = keyword.ToLower();
             var models = await _context.Herbs
-                .Where(h => h.IsActive && (
+                .Where(h => h.Status == CommonStatus.Enabled && (
                     h.Name.ToLower().Contains(keyword) ||
                     (h.PinYinCode != null && h.PinYinCode.ToLower().Contains(keyword))
                 ))
@@ -213,7 +211,7 @@ namespace LYBT.Module.Herbs.Services {
         /// </summary>
         public async Task<List<HerbDto>> GetAvailableHerbsAsync() {
             var models = await _context.Herbs
-                .Where(h => h.IsActive)
+                .Where(h => h.Status == CommonStatus.Enabled)
                 .OrderBy(h => h.Name)
                 .ToListAsync();
 
@@ -229,9 +227,8 @@ namespace LYBT.Module.Herbs.Services {
                 return false;
             }
 
-            model.IsActive = isActive;
-            model.UpdateTime = DateTime.UtcNow;
-
+            model.Status = isActive ? CommonStatus.Enabled : CommonStatus.Disabled;
+            
             return await _repository.UpdateAsync(model);
         }
 
@@ -244,8 +241,7 @@ namespace LYBT.Module.Herbs.Services {
                 var model = _mapper.Map<HerbModel>(dto);
                 model.Id = Guid.NewGuid();
                 model.PinYinCode = GetSimplePinyinCode(model.Name);
-                model.CreateTime = DateTime.UtcNow;
-                model.IsActive = true; // 导入的药材默认启用
+                                model.Status = CommonStatus.Enabled; // 导入的药材默认启用
                 models.Add(model);
             }
 
@@ -265,78 +261,55 @@ namespace LYBT.Module.Herbs.Services {
         #region 库存管理功能
 
         /// <summary>
-        /// 获取库存预警药材列表
+        /// 获取库存预警药材列表（已禁用 - 不再支持库存管理）
         /// </summary>
         public async Task<List<HerbStockWarningDto>> GetStockWarningListAsync() {
-            var herbs = await _context.Herbs
-                .Where(h => h.IsActive && h.Stock < h.StockWarningLevel)
-                .OrderBy(h => h.Stock / h.StockWarningLevel) // 按缺货程度排序
-                .ToListAsync();
-
-            return herbs.Select(h => new HerbStockWarningDto {
-                Id = h.Id,
-                Name = h.Name,
-                PinYinCode = h.PinYinCode,
-                Stock = h.Stock,
-                StockWarningLevel = h.StockWarningLevel,
-                Unit = h.Unit,
-                Supplier = h.Supplier
-            }).ToList();
+            // 库存字段已删除，返回空列表
+            await Task.CompletedTask;
+            return new List<HerbStockWarningDto>();
         }
 
         /// <summary>
-        /// 获取库存统计信息
+        /// 获取库存统计信息（已禁用 - 不再支持库存管理）
         /// </summary>
         public async Task<HerbStockStatisticsDto> GetStockStatisticsAsync() {
-            var herbs = await _context.Herbs.Where(h => h.IsActive).ToListAsync();
-            var now = DateTime.Now;
+            var herbs = await _context.Herbs.Where(h => h.Status == CommonStatus.Enabled).ToListAsync();
 
             return new HerbStockStatisticsDto {
                 TotalCount = herbs.Count,
-                OutOfStockCount = herbs.Count(h => h.Stock == 0),
-                WarningCount = herbs.Count(h => h.Stock > 0 && h.Stock < h.StockWarningLevel),
-                SufficientCount = herbs.Count(h => h.Stock >= h.StockWarningLevel),
-                TotalStockValue = herbs.Sum(h => h.Stock * h.CostPrice),
-                ExpiringCount = herbs.Count(h => h.ExpiryDate.HasValue && 
-                    h.ExpiryDate.Value > now && 
-                    h.ExpiryDate.Value <= now.AddDays(30)),
-                ExpiredCount = herbs.Count(h => h.ExpiryDate.HasValue && h.ExpiryDate.Value <= now)
+                OutOfStockCount = 0, // 库存字段已删除
+                WarningCount = 0, // 库存字段已删除
+                SufficientCount = herbs.Count, // 默认所有药材都充足
+                TotalStockValue = 0, // 库存字段已删除，无法计算
+                ExpiringCount = 0, // 过期日期字段已删除
+                ExpiredCount = 0 // 过期日期字段已删除
             };
         }
 
         /// <summary>
-        /// 更新药材库存量（供Pharmacy模块调用）
+        /// 更新药材库存量（已禁用 - 不再支持库存管理）
         /// </summary>
         public async Task<bool> UpdateStockAsync(Guid id, decimal quantity, bool isIncrease) {
+            // 库存字段已删除，直接返回成功（向后兼容）
             var herb = await _repository.GetByIdAsync(id);
             if (herb == null) {
                 return false;
             }
 
-            if (isIncrease) {
-                herb.Stock += quantity;
-            } else {
-                if (herb.Stock < quantity) {
-                    return false; // 库存不足
-                }
-                herb.Stock -= quantity;
-            }
-
-            herb.UpdateTime = DateTime.UtcNow;
-            return await _repository.UpdateAsync(herb);
+            // 仅更新时间戳，不再处理库存
+                        return await _repository.UpdateAsync(herb);
         }
 
         /// <summary>
-        /// 批量更新库存量（用于盘点）
+        /// 批量更新库存量（已禁用 - 不再支持库存管理）
         /// </summary>
         public async Task<int> BatchUpdateStockAsync(List<HerbStockUpdateDto> updates) {
             var successCount = 0;
             foreach (var update in updates) {
                 var herb = await _repository.GetByIdAsync(update.Id);
                 if (herb != null) {
-                    herb.Stock = update.NewStock;
-                    herb.UpdateTime = DateTime.UtcNow;
-                    if (await _repository.UpdateAsync(herb)) {
+                    // 仅更新时间戳，不再处理库存
+                                        if (await _repository.UpdateAsync(herb)) {
                         successCount++;
                     }
                 }
@@ -345,7 +318,7 @@ namespace LYBT.Module.Herbs.Services {
         }
 
         /// <summary>
-        /// 设置库存预警值
+        /// 设置库存预警值（已禁用 - 不再支持库存管理）
         /// </summary>
         public async Task<bool> SetStockWarningLevelAsync(Guid id, decimal warningLevel, decimal maxStock) {
             var herb = await _repository.GetByIdAsync(id);
@@ -353,31 +326,17 @@ namespace LYBT.Module.Herbs.Services {
                 return false;
             }
 
-            herb.StockWarningLevel = warningLevel;
-            herb.MaxStock = maxStock;
-            herb.UpdateTime = DateTime.UtcNow;
-
-            return await _repository.UpdateAsync(herb);
+            // 库存预警字段已删除，仅更新时间戳（向后兼容）
+                        return await _repository.UpdateAsync(herb);
         }
 
         /// <summary>
-        /// 获取即将过期的药材
+        /// 获取即将过期的药材（已禁用 - 不再支持过期日期管理）
         /// </summary>
         public async Task<List<HerbExpiryWarningDto>> GetExpiryWarningListAsync(int days = 30) {
-            var expiryDate = DateTime.Now.AddDays(days);
-            var herbs = await _context.Herbs
-                .Where(h => h.IsActive && h.ExpiryDate.HasValue && h.ExpiryDate.Value <= expiryDate)
-                .OrderBy(h => h.ExpiryDate)
-                .ToListAsync();
-
-            return herbs.Select(h => new HerbExpiryWarningDto {
-                Id = h.Id,
-                Name = h.Name,
-                BatchNumber = h.BatchNumber,
-                Stock = h.Stock,
-                Unit = h.Unit,
-                ExpiryDate = h.ExpiryDate
-            }).ToList();
+            // 过期日期字段已删除，返回空列表
+            await Task.CompletedTask;
+            return new List<HerbExpiryWarningDto>();
         }
 
         #endregion
@@ -400,12 +359,12 @@ namespace LYBT.Module.Herbs.Services {
             if (dto.Price.HasValue) {
                 herb.Price = dto.Price.Value;
             }
-            if (dto.MemberPrice.HasValue) {
-                herb.MemberPrice = dto.MemberPrice.Value;
-            }
+            // MemberPrice 字段已删除，跳过会员价格设置
+            // if (dto.MemberPrice.HasValue) {
+            //     herb.MemberPrice = dto.MemberPrice.Value;
+            // }
 
-            herb.UpdateTime = DateTime.UtcNow;
-            return await _repository.UpdateAsync(herb);
+                        return await _repository.UpdateAsync(herb);
         }
 
         /// <summary>
@@ -422,7 +381,7 @@ namespace LYBT.Module.Herbs.Services {
         }
 
         /// <summary>
-        /// 设置特价促销
+        /// 设置特价促销（已禁用 - 不再支持特价功能）
         /// </summary>
         public async Task<bool> SetSpecialPriceAsync(Guid id, decimal specialPrice, DateTime startTime, DateTime endTime) {
             var herb = await _repository.GetByIdAsync(id);
@@ -430,16 +389,12 @@ namespace LYBT.Module.Herbs.Services {
                 return false;
             }
 
-            herb.SpecialPrice = specialPrice;
-            herb.SpecialPriceStartTime = startTime;
-            herb.SpecialPriceEndTime = endTime;
-            herb.UpdateTime = DateTime.UtcNow;
-
-            return await _repository.UpdateAsync(herb);
+            // 特价字段已删除，仅更新时间戳（向后兼容）
+                        return await _repository.UpdateAsync(herb);
         }
 
         /// <summary>
-        /// 取消特价促销
+        /// 取消特价促销（已禁用 - 不再支持特价功能）
         /// </summary>
         public async Task<bool> CancelSpecialPriceAsync(Guid id) {
             var herb = await _repository.GetByIdAsync(id);
@@ -447,28 +402,17 @@ namespace LYBT.Module.Herbs.Services {
                 return false;
             }
 
-            herb.SpecialPrice = null;
-            herb.SpecialPriceStartTime = null;
-            herb.SpecialPriceEndTime = null;
-            herb.UpdateTime = DateTime.UtcNow;
-
-            return await _repository.UpdateAsync(herb);
+            // 特价字段已删除，仅更新时间戳（向后兼容）
+                        return await _repository.UpdateAsync(herb);
         }
 
         /// <summary>
-        /// 获取当前特价药材列表
+        /// 获取当前特价药材列表（已禁用 - 不再支持特价功能）
         /// </summary>
         public async Task<List<HerbDto>> GetSpecialPriceHerbsAsync() {
-            var now = DateTime.Now;
-            var herbs = await _context.Herbs
-                .Where(h => h.IsActive && 
-                    h.SpecialPrice.HasValue &&
-                    h.SpecialPriceStartTime.HasValue && h.SpecialPriceStartTime.Value <= now &&
-                    h.SpecialPriceEndTime.HasValue && h.SpecialPriceEndTime.Value >= now)
-                .OrderBy(h => h.Name)
-                .ToListAsync();
-
-            return _mapper.Map<List<HerbDto>>(herbs);
+            // 特价字段已删除，返回空列表
+            await Task.CompletedTask;
+            return new List<HerbDto>();
         }
 
         /// <summary>
@@ -485,7 +429,7 @@ namespace LYBT.Module.Herbs.Services {
         /// </summary>
         public async Task<List<HerbDto>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice) {
             var herbs = await _context.Herbs
-                .Where(h => h.IsActive && h.Price >= minPrice && h.Price <= maxPrice)
+                .Where(h => h.Status == CommonStatus.Enabled && h.Price >= minPrice && h.Price <= maxPrice)
                 .OrderBy(h => h.Price)
                 .ToListAsync();
 

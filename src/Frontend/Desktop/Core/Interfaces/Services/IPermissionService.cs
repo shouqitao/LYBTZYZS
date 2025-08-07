@@ -1,7 +1,8 @@
 using System;
+using LYBT.WPF.Client.Core.Models.Users;
 using System.Collections.Generic;
 using LYBT.Shared.Models.Enums;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
 {
@@ -44,6 +45,6 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// </summary>
         /// <param name="role">用户角色</param>
         /// <returns>角色显示名称</returns>
-        string GetRoleDisplayName(UserRole role);
+        string GetRoleDisplayName(string role);
     }
 }

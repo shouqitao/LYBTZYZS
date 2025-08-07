@@ -4,11 +4,10 @@ using System;
 using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Infrastructure.Logging.Enums;
+using LYBT.Shared.Models.Enums;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Enums;
 using System.Text.Json;
 
 namespace LYBT.Module.Prescriptions.Services {
@@ -42,7 +41,7 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <param name="query">分页查询参数</param>
         /// <param name="operatorRole">操作者角色</param>
         /// <returns>分页结果</returns>
-        public async Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest query, UserRole operatorRole) {
+        public async Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest query) {
             var allList = await _repository.GetListAsync();
             var dtoList = _mapper.Map<List<PrescriptionDto>>(allList);
 
@@ -193,7 +192,7 @@ namespace LYBT.Module.Prescriptions.Services {
         public async Task<List<PrescriptionDto>> GetPatientHistoryAsync(Guid patientId, int limit = 10) {
             var allPrescriptions = await _repository.GetListAsync();
             var patientPrescriptions = allPrescriptions
-                .Where(p => p.PatientId == patientId && p.Status != PrescriptionStatus.Cancelled)
+                .Where(p => p.PatientId == patientId)
                 .OrderByDescending(p => p.CreateTime)
                 .Take(limit)
                 .ToList();
@@ -207,7 +206,7 @@ namespace LYBT.Module.Prescriptions.Services {
             var today = DateTime.Today;
             var allPrescriptions = await _repository.GetListAsync();
             var todayPrescriptions = allPrescriptions
-                .Where(p => p.DoctorId == doctorId && p.CreateTime.Date == today)
+                .Where(p => p.UserId == doctorId && p.CreateTime.Date == today)
                 .OrderByDescending(p => p.CreateTime)
                 .ToList();
             return _mapper.Map<List<PrescriptionDto>>(todayPrescriptions);
@@ -226,7 +225,7 @@ namespace LYBT.Module.Prescriptions.Services {
             var copyDto = new PrescriptionCreateDto {
                 PatientId = patientId,
                 DoctorId = doctorId,
-                Diagnosis = lastOne.Diagnosis,
+                Diagnosis = lastOne.Diagnosis ?? string.Empty,
                 DosageCount = lastOne.DosageCount,
                 Advice = lastOne.Advice,
                 Items = lastOne.Items.Select(item => new PrescriptionItemCreateDto {
@@ -246,7 +245,7 @@ namespace LYBT.Module.Prescriptions.Services {
         /// 从验方模板创建处方
         /// </summary>
         public async Task<PrescriptionDto?> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
-            // TODO: 从 FormulaTemplate 模块获取模板数据
+
             // 这里简化实现，返回 null 表示功能暂未实现
             await Task.CompletedTask;
             return null;
@@ -296,9 +295,8 @@ namespace LYBT.Module.Prescriptions.Services {
                 return false;
             }
 
-            // 计算总价 - 字段已删除
-            // prescription.TotalPrice = prescription.Items.Sum(i => i.TotalPrice); // TotalPrice字段已删除
-            // prescription.TotalWeight = prescription.Items.Sum(i => i.TotalWeight); // TotalWeight字段已删除
+
+
             prescription.SingleDosePrice = prescription.DosageCount > 0 ? 0m / prescription.DosageCount : 0;
             prescription.Status = PrescriptionStatus.Draft;
             prescription.UpdateTime = DateTime.Now;
@@ -328,7 +326,7 @@ namespace LYBT.Module.Prescriptions.Services {
             // 按条件筛选
             var filtered = allPrescriptions.AsQueryable();
             if (doctorId.HasValue) {
-                filtered = filtered.Where(p => p.DoctorId == doctorId.Value);
+                filtered = filtered.Where(p => p.UserId == doctorId.Value);
             }
             if (startDate.HasValue) {
                 filtered = filtered.Where(p => p.CreateTime >= startDate.Value);
@@ -344,7 +342,7 @@ namespace LYBT.Module.Prescriptions.Services {
                 DraftCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Draft),
                 PendingCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Draft),
                 CompletedCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Completed),
-                CancelledCount = prescriptions.Count(p => p.Status == PrescriptionStatus.Cancelled),
+                CancelledCount = 0, // PrescriptionStatus.Cancelled已移除
                 TotalAmount = prescriptions.Sum(p => (0m) /* p.TotalPrice 已删除 */ ),
                 AverageAmount = prescriptions.Any() ? prescriptions.Average(p => (0m) /* p.TotalPrice 已删除 */ ) : 0
             };

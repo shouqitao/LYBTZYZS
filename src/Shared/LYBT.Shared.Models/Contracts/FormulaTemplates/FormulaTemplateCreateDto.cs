@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.FormulaTemplates
+namespace LYBT.Shared.Models.Contracts.Formulas
 {
     /// <summary>
     /// 创建验方模板DTO
     /// </summary>
-    public class FormulaTemplateCreateDto
+    public class FormulaCreateDto
     {
         /// <summary>模板名称</summary>
         [Required(ErrorMessage = "模板名称不能为空")]
@@ -37,6 +37,6 @@ namespace LYBT.Shared.Models.Contracts.FormulaTemplates
 
         /// <summary>药材列表</summary>
         [Required(ErrorMessage = "药材列表不能为空")]
-        public List<FormulaTemplateHerbDto> Herbs { get; set; } = new();
+        public List<FormulaHerbDto> Herbs { get; set; } = new();
     }
 }

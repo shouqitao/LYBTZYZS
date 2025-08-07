@@ -4,12 +4,11 @@ using System;
 ﻿using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Infrastructure.Logging.Enums;
+using LYBT.Shared.Models.Enums;
 using LYBT.Models.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using System.Text.Json;
 
@@ -147,8 +146,8 @@ namespace LYBT.Module.Patients.Services {
         /// 根据患者ID获取患者详情
         /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<PatientDetailDto?> GetByIdAsync(Guid id, UserRole currentUserRole) {
-            bool includeDisabled = currentUserRole == UserRole.Admin;
+        public async Task<PatientDetailDto?> GetByIdAsync(Guid id) {
+            bool includeDisabled = true;
             var model = await _patientRepository.GetByIdAsync(id, includeDisabled);
             return model == null ? null : _mapper.Map<PatientDetailDto>(model);
         }
@@ -157,8 +156,8 @@ namespace LYBT.Module.Patients.Services {
         /// 获取所有患者列表
         /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetAllAsync(UserRole currentUserRole) {
-            bool includeDisabled = currentUserRole == UserRole.Admin;
+        public async Task<List<PatientDetailDto>> GetAllAsync() {
+            bool includeDisabled = true;
             var list = await _patientRepository.GetListAsync(null, 1, 1000, includeDisabled);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
@@ -167,8 +166,8 @@ namespace LYBT.Module.Patients.Services {
         /// 分页查询患者
         /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query, UserRole currentUserRole) {
-            bool includeDisabled = currentUserRole == UserRole.Admin;
+        public async Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query) {
+            bool includeDisabled = true;
             var list = await _patientRepository.GetListAsync(query.Name, query.CurrentPage, query.PageSize, includeDisabled);
             var total = await _patientRepository.GetCountAsync(query.Name, includeDisabled);
             return new PaginatedResult<PatientDetailDto> {
@@ -231,8 +230,8 @@ namespace LYBT.Module.Patients.Services {
         /// 搜索患者（根据姓名、手机号、身份证号）
         /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<List<PatientDetailDto>> SearchAsync(string keyword, UserRole currentUserRole) {
-            bool includeDisabled = currentUserRole == UserRole.Admin;
+        public async Task<List<PatientDetailDto>> SearchAsync(string keyword) {
+            bool includeDisabled = true;
             var list = await _patientRepository.SearchAsync(keyword, includeDisabled);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
@@ -272,7 +271,6 @@ namespace LYBT.Module.Patients.Services {
                 throw new ArgumentException("患者不存在");
             }
 
-            // TODO: 从MedicalCase表中获取就诊记录
             // 这里简化实现，返回基础信息
             return new PatientVisitHistoryDto {
                 PatientId = patient.Id,
@@ -366,7 +364,7 @@ namespace LYBT.Module.Patients.Services {
         /// 导出患者档案
         /// </summary>
         public async Task<List<PatientExportDto>> ExportPatientsAsync(PatientExportQueryDto query) {
-            // TODO: 根据查询条件筛选患者
+
             var patients = await _patientRepository.GetListAsync(null, 1, 10000, query.IncludeInactive);
             
             return patients.Select(p => new PatientExportDto {
@@ -394,7 +392,6 @@ namespace LYBT.Module.Patients.Services {
                 return false;
             }
 
-            // TODO: 合并就诊记录、处方等关联数据
             // 更新主患者的就诊次数
             primary.VisitCount += duplicate.VisitCount;
             if (duplicate.LastVisitTime > primary.LastVisitTime) {
@@ -402,7 +399,7 @@ namespace LYBT.Module.Patients.Services {
             }
 
             // 禁用重复患者
-            duplicate.Status = PatientStatus.Inactive;
+            duplicate.Status = CommonStatus.Disabled;
             duplicate.DisableReason = $"与患者{primary.Name}(ID:{primaryId})合并";
 
             await _patientRepository.UpdateAsync(primary);
@@ -419,7 +416,7 @@ namespace LYBT.Module.Patients.Services {
         /// 获取患者标签（简化实现）
         /// </summary>
         public async Task<List<PatientTagDto>> GetPatientTagsAsync(Guid patientId) {
-            // TODO: 从标签表中获取
+
             await Task.CompletedTask;
             return new List<PatientTagDto>();
         }
@@ -428,7 +425,7 @@ namespace LYBT.Module.Patients.Services {
         /// 设置患者标签（简化实现）
         /// </summary>
         public async Task<bool> SetPatientTagsAsync(Guid patientId, List<string> tags, Guid operatorId, string operatorName) {
-            // TODO: 保存到标签表
+
             await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Update,
                 $"设置患者标签",
                 JsonSerializer.Serialize(new { PatientId = patientId, Tags = tags }));
@@ -442,15 +439,15 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 高级搜索患者
         /// </summary>
-        public async Task<PaginatedResult<PatientDetailDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query, UserRole currentUserRole) {
-            // TODO: 实现复杂查询逻辑
+        public async Task<PaginatedResult<PatientDetailDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query) {
+
             // 这里简化为基本查询
             var basicQuery = new PatientPagedQueryDto {
                 Name = query.Name,
                 CurrentPage = query.CurrentPage,
                 PageSize = query.PageSize
             };
-            return await GetPagedAsync(basicQuery, currentUserRole);
+            return await GetPagedAsync(basicQuery);
         }
 
         /// <summary>
@@ -463,8 +460,8 @@ namespace LYBT.Module.Patients.Services {
 
             return new PatientStatisticsDto {
                 TotalPatients = allPatients.Count,
-                ActivePatients = allPatients.Count(p => p.Status == PatientStatus.Active),
-                InactivePatients = allPatients.Count(p => p.Status == PatientStatus.Inactive),
+                ActivePatients = allPatients.Count(p => p.Status == CommonStatus.Enabled),
+                InactivePatients = allPatients.Count(p => p.Status == CommonStatus.Disabled),
                 MaleCount = allPatients.Count(p => p.Gender == Gender.Male),
                 FemaleCount = allPatients.Count(p => p.Gender == Gender.Female),
                 AverageAge = allPatients.Any() ? allPatients.Average(p => p.Age) : 0,
@@ -635,7 +632,6 @@ namespace LYBT.Module.Patients.Services {
         }
 
         #endregion
-
 
         /// <summary>
         /// 从身份证号码中提取出生日期

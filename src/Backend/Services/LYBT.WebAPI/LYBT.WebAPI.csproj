@@ -18,35 +18,29 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="15.0.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.17" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.17">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.17" />
-                <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
-                <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
-                <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
-        </ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
+		<PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Doctors\LYBT.Module.Doctors.csproj" />
-		<!-- FormulaTemplates已重命名为Formula -->
+		<ProjectReference Include="..\..\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+		<ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Pharmacy\LYBT.Module.Pharmacy.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Queueing\LYBT.Module.Queueing.csproj" />
-		<!-- Records已删除，使用MedicalCase替代 -->
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
-		<!-- Sync模块MVP阶段暂不需要 -->
-		<ProjectReference Include="..\..\Modules\LYBT.Module.TreatmentRoom\LYBT.Module.TreatmentRoom.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
-		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 	</ItemGroup>
 
 </Project>

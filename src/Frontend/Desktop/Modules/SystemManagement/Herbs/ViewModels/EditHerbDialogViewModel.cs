@@ -212,8 +212,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     Effect = Effect?.Trim(),
                     Usage = Usage?.Trim(),
                     Remark = Remark?.Trim(),
-                    Status = (HerbStatus)Status,
-                    IsActive = Status == 1
+                    Status = (CommonStatus)Status // 使用CommonStatus枚举
+                    // IsActive已按优化标准移除
                 };
 
                 var response = await _herbService.UpdateHerbAsync(dto);

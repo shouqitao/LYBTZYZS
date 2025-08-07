@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
-// using LYBT.Shared.Models.Contracts.Records; // Records模块已删除
+
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -79,7 +79,6 @@ namespace LYBT.WebAPI.Controllers {
             }
         }
 
-
         /// <summary>
         /// 启用患者档案
         /// </summary>
@@ -123,19 +122,17 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> ToggleStatus(Guid id) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             // 先获取患者当前状态
-            var patient = await _patientService.GetByIdAsync(id, operatorRole);
+            var patient = await _patientService.GetByIdAsync(id);
             if (patient == null) {
                 return NotFound(new ProblemDetails {
-                    Title = "资源未找到",
-                    Detail = "患者档案不存在",
-                    Status = 404
+                    Title = "资源未找到"
                 });
             }
 
             // 根据当前状态切换
             bool result;
             string message;
-            if (patient.IsActive) {
+            if (patient.Status == CommonStatus.Enabled) {
                 result = await _patientService.SetStatusAsync(id, false, operatorId, operatorName);
                 message = "患者档案已禁用";
             } else {
@@ -163,7 +160,7 @@ namespace LYBT.WebAPI.Controllers {
             var (_, _, operatorRole) = GetOperator();
 
             if (!_cache.TryGetValue($"patients:all:{operatorRole}", out List<PatientDetailDto>? data)) {
-                data = await _patientService.GetAllAsync(operatorRole);
+                data = await _patientService.GetAllAsync();
                 _cache.Set($"patients:all:{operatorRole}", data, TimeSpan.FromMinutes(5));
             }
             return Ok(data ?? new List<PatientDetailDto>());
@@ -176,7 +173,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpPost("paged")]
         public async Task<ActionResult<PaginatedResult<PatientDetailDto>>> GetPaged([FromBody] PatientPagedQueryDto query) {
             var (_, _, operatorRole) = GetOperator();
-            var result = await _patientService.GetPagedAsync(query, operatorRole);
+            var result = await _patientService.GetPagedAsync(query);
             return Ok(result);
         }
 
@@ -187,6 +184,7 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> BatchDisable([FromBody] BatchOperationDto dto) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var count = 0; // TODO: 实现批量禁用功能
+            await Task.CompletedTask; // 暂时占位，等待实现
             return Ok(new { disabledCount = count, message = $"成功禁用 {count} 名患者档案" });
         }
 
@@ -197,6 +195,7 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> BatchEnable([FromBody] BatchOperationDto dto) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var count = 0; // TODO: 实现批量启用功能
+            await Task.CompletedTask; // 暂时占位，等待实现
             return Ok(new { enabledCount = count, message = $"成功启用 {count} 名患者档案" });
         }
 
@@ -207,7 +206,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("search")]
         public async Task<ActionResult<List<PatientDetailDto>>> Search([FromQuery] string keyword = "") {
             var (_, _, operatorRole) = GetOperator();
-            var list = await _patientService.SearchAsync(keyword, operatorRole);
+            var list = await _patientService.SearchAsync(keyword);
             return Ok(list);
         }
 
@@ -218,6 +217,7 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<IActionResult> Import([FromBody] List<PatientDetailDto> dtos) {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var count = 0; // TODO: 实现导入功能
+            await Task.CompletedTask; // 暂时占位，等待实现
             return Ok(new { imported = count, message = $"成功导入 {count} 名患者档案" });
         }
 
@@ -228,7 +228,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("export")]
         public async Task<ActionResult<List<PatientDetailDto>>> Export() {
             var (_, _, operatorRole) = GetOperator();
-            var data = await _patientService.GetAllAsync(operatorRole);
+            var data = await _patientService.GetAllAsync();
             return Ok(data);
         }
 
@@ -238,6 +238,7 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("{id}/records")]
         public async Task<ActionResult<List<object>>> GetHistory(Guid id) {
             var data = new List<object>(); // TODO: 实现获取历史记录功能，RecordDto已删除
+            await Task.CompletedTask; // 暂时占位，等待实现
             return Ok(data);
         }
 
@@ -292,7 +293,7 @@ namespace LYBT.WebAPI.Controllers {
                 MinAge = minAge,
                 MaxAge = maxAge
             };
-            var result = await _patientService.GetPagedAsync(query, operatorRole);
+            var result = await _patientService.GetPagedAsync(query);
             return Ok(result);
         }
 
@@ -321,12 +322,10 @@ namespace LYBT.WebAPI.Controllers {
         [HttpGet("{id}")]
         public async Task<ActionResult<PatientDetailDto>> GetPatient(Guid id) {
             var (_, _, operatorRole) = GetOperator();
-            var patient = await _patientService.GetByIdAsync(id, operatorRole);
+            var patient = await _patientService.GetByIdAsync(id);
             if (patient == null) {
                 return NotFound(new ProblemDetails {
-                    Title = "资源未找到",
-                    Detail = "患者不存在",
-                    Status = 404
+                    Title = "资源未找到"
                 });
             }
             return Ok(patient);
@@ -343,8 +342,8 @@ namespace LYBT.WebAPI.Controllers {
             var result = await _patientService.UpdateAsync(id, dto, operatorId, operatorName);
             if (result != null) {
                 // 获取更新后的资源
-                var updated = await _patientService.GetByIdAsync(id, operatorRole);
-                LogOperation("更新患者信息成功", updated, id);
+                var updated = await _patientService.GetByIdAsync(id);
+                LogOperation("更新患者信息成功");
                 return Ok(updated);
             } else {
                 return BadRequest(new ProblemDetails {

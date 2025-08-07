@@ -201,7 +201,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 var requestData = new
                 {
                     PatientId = Guid.NewGuid(), // TODO: 实际应从患者选择获取
-                    DoctorId = Guid.NewGuid(),  // TODO: 实际应从医生选择获取
+                    UserId = Guid.NewGuid(),  // TODO: 实际应从医生选择获取
                     Diagnosis = Diagnosis,
                     DosageCount = DosageCount,
                     Usage = Usage,

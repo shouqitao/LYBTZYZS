@@ -253,7 +253,7 @@ namespace LYBT.Infrastructure.Migrations
                 nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
-                name: "FormulaTemplateId",
+                name: "FormulaId",
                 table: "Records",
                 type: "uniqueidentifier",
                 nullable: true);
@@ -1046,7 +1046,7 @@ namespace LYBT.Infrastructure.Migrations
                 table: "TreatmentCatalogs");
 
             migrationBuilder.DropColumn(
-                name: "FormulaTemplateId",
+                name: "FormulaId",
                 table: "Records");
 
             migrationBuilder.DropColumn(

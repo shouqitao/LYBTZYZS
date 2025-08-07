@@ -1,29 +1,29 @@
 using System.Windows;
 using System.Windows.Controls;
-using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.Formulas;
 
-namespace LYBT.WPF.Client.Controls.FormulaTemplates
+namespace LYBT.WPF.Client.Controls.Formulas
 {
     /// <summary>
-    /// FormulaTemplateListItemControl.xaml 的交互逻辑
+    /// FormulaListItemControl.xaml 的交互逻辑
     /// 验方模板列表项控件
     /// </summary>
-    public partial class FormulaTemplateListItemControl : UserControl
+    public partial class FormulaListItemControl : UserControl
     {
         public static readonly DependencyProperty DataProperty =
             DependencyProperty.Register(
                 nameof(Data),
-                typeof(FormulaTemplateDto),
-                typeof(FormulaTemplateListItemControl),
+                typeof(FormulaDto),
+                typeof(FormulaListItemControl),
                 new PropertyMetadata(null));
 
-        public FormulaTemplateDto Data
+        public FormulaDto Data
         {
-            get => (FormulaTemplateDto)GetValue(DataProperty);
+            get => (FormulaDto)GetValue(DataProperty);
             set => SetValue(DataProperty, value);
         }
 
-        public FormulaTemplateListItemControl()
+        public FormulaListItemControl()
         {
             InitializeComponent();
         }

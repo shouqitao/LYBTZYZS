@@ -1,5 +1,5 @@
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Infrastructure.Logging.Enums;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
 
 namespace LYBT.Infrastructure.Logging {

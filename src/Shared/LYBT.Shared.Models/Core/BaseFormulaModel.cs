@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Core {
@@ -32,9 +33,9 @@ namespace LYBT.Shared.Models.Core {
         [DisplayName("性味归经")]
         public string? Property { get; set; }
 
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool IsActive { get; set; } = true;
+        /// <summary>验方状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>是否共享</summary>
         [DisplayName("是否共享")]
@@ -52,12 +53,5 @@ namespace LYBT.Shared.Models.Core {
         [DisplayName("更新时间")]
         public DateTime? UpdateTime { get; set; }
 
-        /// <summary>共享时间</summary>
-        [DisplayName("共享时间")]
-        public DateTime? SharedAt { get; set; }
-
-        /// <summary>共享者ID</summary>
-        [DisplayName("共享者ID")]
-        public Guid? SharedById { get; set; }
     }
 }

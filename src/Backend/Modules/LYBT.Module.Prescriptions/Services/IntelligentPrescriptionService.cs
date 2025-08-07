@@ -1,10 +1,11 @@
 using System.Threading.Tasks;
 using System.Linq;
 using System;
-using LYBT.Shared.Models.Contracts.FormulaTemplates;
+using LYBT.Shared.Models.Contracts.Formulas;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Models.Prescriptions;
-// using LYBT.Module.FormulaTemplates.Interfaces; // FormulaTemplates已重命名为Formula
+using LYBT.Shared.Models.Enums;
+// using LYBT.Module.Formulas.Interfaces; // Formulas已重命名为Formula
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
 
@@ -14,38 +15,38 @@ namespace LYBT.Module.Prescriptions.Services {
     /// 智能处方服务 - 处理验方组合、重复药材检测、缺药提醒等功能
     /// </summary>
     public class IntelligentPrescriptionService : IIntelligentPrescriptionService {
-        // private readonly IFormulaTemplateService _formulaTemplateService; // 暂时注释，等待Formula模块重构
+        // private readonly IFormulaService _formulaService; // 暂时注释，等待Formula模块重构
         private readonly IHerbService _herbService;
 
         public IntelligentPrescriptionService(
-            // IFormulaTemplateService formulaTemplateService,
+            // IFormulaService formulaService,
             IHerbService herbService) {
-            // _formulaTemplateService = formulaTemplateService;
+            // _formulaService = formulaService;
             _herbService = herbService;
         }
 
         /// <summary>
         /// 智能组合多个验方模板生成处方
         /// </summary>
-        public async Task<PrescriptionCompositionResult> ComposeFromFormulaTemplatesAsync(
-            List<Guid> formulaTemplateIds, int dosageCount = 7) {
+        public async Task<PrescriptionCompositionResult> ComposeFromFormulasAsync(
+            List<Guid> formulaIds, int dosageCount = 7) {
             var result = new PrescriptionCompositionResult();
             var allHerbs = new Dictionary<string, PrescriptionItemModel>();
             var formulaNames = new List<string>();
             var duplicateWarnings = new List<string>();
 
             // 1. 获取所有验方模板 - 暂时禁用，等待Formula模块重构
-            var formulaTemplates = new List<FormulaTemplateDetailDto>();
-            // foreach (var templateId in formulaTemplateIds) {
-            //     var template = await _formulaTemplateService.GetByIdAsync(templateId);
+            var formulas = new List<FormulaDetailDto>();
+            // foreach (var templateId in formulaIds) {
+            //     var template = await _formulaService.GetByIdAsync(templateId);
             //     if (template != null) {
-            //         formulaTemplates.Add(template);
+            //         formulas.Add(template);
             //         formulaNames.Add(template.Name);
             //     }
             // }
 
             // 2. 处理每个验方模板的药材
-            foreach (var template in formulaTemplates) {
+            foreach (var template in formulas) {
                 foreach (var herb in template.Herbs) {
                     var formulaItem = new FormulaIngredientDto {
                         Name = herb.HerbName,
@@ -65,9 +66,9 @@ namespace LYBT.Module.Prescriptions.Services {
 
             // 5. 组装结果
             result.Items = allHerbs.Values.Cast<object>().ToList();
-            result.FormulaTemplateNames = formulaNames;
+            result.FormulaNames = formulaNames;
             result.DuplicateHerbWarning = string.Join("；", duplicateWarnings);
-            result.DrugAvailability = availabilityCheck.Status;
+            result.IsAvailable = availabilityCheck.IsFullyAvailable;
             result.MissingHerbs = availabilityCheck.MissingHerbs;
             result.SingleDosePrice = priceCalculation.SingleDosePrice;
             result.TotalPrice = priceCalculation.TotalPrice;
@@ -159,14 +160,9 @@ namespace LYBT.Module.Prescriptions.Services {
                 }
             }
 
-            // 确定整体供应状态
-            if (!result.MissingHerbs.Any()) {
-                result.Status = DrugAvailabilityStatus.FullyAvailable;
-            } else if (result.MissingHerbs.Count == items.Count) {
-                result.Status = DrugAvailabilityStatus.FullyMissing;
-            } else {
-                result.Status = DrugAvailabilityStatus.PartiallyMissing;
-            }
+            // 确定整体供应状态(简化为布尔值)
+            result.IsFullyAvailable = !result.MissingHerbs.Any();
+            result.IsAvailable = result.MissingHerbs.Count < items.Count;
 
             return result;
         }
@@ -202,16 +198,17 @@ namespace LYBT.Module.Prescriptions.Services {
         /// </summary>
         public async Task<PrescriptionSuggestionResult> GeneratePrescriptionSuggestionsAsync(
             string diagnosis, List<string> symptoms, Guid? doctorId = null) {
+            await Task.CompletedTask; // 异步占位
             var result = new PrescriptionSuggestionResult();
 
             // 根据医生权限获取可见的验方模板 - 暂时禁用，等待Formula模块重构
-            List<FormulaTemplateDetailDto> allFormulas = new List<FormulaTemplateDetailDto>();
+            List<FormulaDetailDto> allFormulas = new List<FormulaDetailDto>();
             // if (doctorId.HasValue) {
             //     // 获取该医生可见的验方（包括共享验方和自己创建的验方）
-            //     allFormulas = await _formulaTemplateService.GetVisibleFormulasForDoctorAsync(doctorId.Value);
+            //     allFormulas = await _formulaService.GetVisibleFormulasForDoctorAsync(doctorId.Value);
             // } else {
             //     // 获取所有活动状态的验方模板（管理员权限）
-            //     allFormulas = await _formulaTemplateService.GetAllActiveFormulasAsync();
+            //     allFormulas = await _formulaService.GetAllActiveFormulasAsync();
             // }
 
             foreach (var formula in allFormulas) {
@@ -243,7 +240,7 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <summary>
         /// 检查验方是否包含相关关键词
         /// </summary>
-        private bool ContainsRelevantKeywords(FormulaTemplateDetailDto formula, string diagnosis, List<string> symptoms) {
+        private bool ContainsRelevantKeywords(FormulaDetailDto formula, string diagnosis, List<string> symptoms) {
             var searchText = $"{formula.Name} {formula.Remark}".ToLower();
 
             // 诊断关键词匹配

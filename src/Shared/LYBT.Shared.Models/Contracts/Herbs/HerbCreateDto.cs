@@ -80,6 +80,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs {
 
         /// <summary>药材状态</summary>
         [DisplayName("药材状态")]
-        public HerbStatus Status { get; set; } = HerbStatus.Active;
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 }

@@ -180,7 +180,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     Effect = Effect?.Trim(),
                     Usage = Usage?.Trim(),
                     Remark = Remark?.Trim(),
-                    Status = HerbStatus.Active
+                    Status = CommonStatus.Enabled
                 };
 
                 var response = await _herbService.CreateHerbAsync(dto);

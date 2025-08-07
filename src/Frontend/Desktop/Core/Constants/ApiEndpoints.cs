@@ -9,7 +9,7 @@ namespace LYBT.WPF.Client.Core.Constants {
         public const string Patients = "api/patients";
         public const string Doctors = "api/doctors";
         public const string Herbs = "api/herbs";
-        public const string FormulaTemplates = "api/formula-templates";
+        public const string Formulas = "api/formula-templates";
         // 其他端点...
     }
 }

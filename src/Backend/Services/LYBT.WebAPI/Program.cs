@@ -2,7 +2,6 @@
 /// 极简版WebAPI程序入口 - 确保基本功能运行
 /// </summary>
 using LYBT.Infrastructure.Authentication;
-using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
@@ -36,7 +35,7 @@ if (!string.IsNullOrEmpty(connectionString)) {
 
 // 缓存服务
 builder.Services.AddMemoryCache();
-builder.Services.AddScoped<ICacheService, MemoryCacheService>();
+// ICacheService已删除
 
 // JWT认证
 var jwtSection = builder.Configuration.GetSection("JwtOptions");
@@ -67,7 +66,7 @@ builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 
 // 统一服务
 builder.Services.AddScoped<IUnifiedLogService, UnifiedLogService>();
-builder.Services.AddScoped<IUnifiedConfigService, UnifiedConfigService>();
+// IUnifiedConfigService已删除
 
 // 数据库初始化服务
 builder.Services.AddScoped<LYBT.Infrastructure.Database.DatabaseInitializationService>();
@@ -91,8 +90,8 @@ builder.Services.AddUsersModuleServices();
 // 注册所有LYBT业务模块服务
 builder.Services.AddAllModules();
 
-// 添加AutoMapper配置 - 使用扩展方法
-builder.Services.AddLybtAutoMapperProfiles();
+// 添加AutoMapper配置 - 使用新的 AutoMapper 15.0.1 配置方法
+builder.Services.AddAutoMapperConfiguration();
 
 // 注册认证模块服务
 builder.Services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthRepository, LYBT.Module.Auth.Repositories.AuthRepository>();

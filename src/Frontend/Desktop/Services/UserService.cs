@@ -9,6 +9,8 @@ using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Core;
+
 using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Services
@@ -117,17 +119,10 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 获取所有角色
         /// </summary>
-        public Task<List<UserRole>> GetRolesAsync()
+        public Task<List<string>> GetRolesAsync()
         {
-            try
-            {
-                // 直接返回枚举值列表
-                return Task.FromResult(Enum.GetValues<UserRole>().ToList());
-            }
-            catch (Exception)
-            {
-                return Task.FromResult(new List<UserRole>());
-            }
+            // 系统只有两种用户类型
+            return Task.FromResult(new List<string> { "系统管理员", "普通用户" });
         }
 
         /// <summary>
@@ -201,9 +196,13 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 修改个人信息
         /// </summary>
-        public async Task<ServiceResult> ChangeProfileAsync(string realName, string? email, string? phoneNumber)
+        public async Task<ServiceResult> ChangeProfileAsync(string realName, string? phoneNumber)
         {
-            var dto = new ChangeProfileDto { RealName = realName, Email = email, PhoneNumber = phoneNumber };
+            var dto = new ChangeProfileDto 
+            { 
+                RealName = realName, 
+                PhoneNumber = phoneNumber 
+            };
             return await ApiErrorHandler.HandleApiCallAsync(async () => 
                 await _userApiService.ChangeProfileAsync(dto)
             );
@@ -219,11 +218,7 @@ namespace LYBT.WPF.Client.Services
             if (!string.IsNullOrEmpty(request.SearchKeyword))
                 parameters.Add($"keyword={Uri.EscapeDataString(request.SearchKeyword)}");
 
-            if (request.Role.HasValue)
-                parameters.Add($"role={request.Role}");
-
-            if (request.IsActive.HasValue)
-                parameters.Add($"isActive={request.IsActive.Value}");
+            // Role和IsActive已经被移除，不再需要这些参数
 
             parameters.Add($"page={request.CurrentPage}");
             parameters.Add($"pageSize={request.PageSize}");
@@ -241,13 +236,10 @@ namespace LYBT.WPF.Client.Services
                 Id = dto.Id,
                 Username = dto.Username,
                 RealName = dto.RealName,
-                Role = dto.Role,
-                IsActive = dto.IsActive,
+                Status = dto.Status,
                 CreateTime = dto.CreateTime,
                 LastLoginTime = dto.LastLoginTime,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                IsSuperAdmin = dto.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true
+                PhoneNumber = dto.PhoneNumber
             };
         }
 

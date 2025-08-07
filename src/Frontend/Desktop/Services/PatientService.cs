@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Contracts.Records;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Interfaces.Services;
@@ -185,13 +184,12 @@ namespace LYBT.WPF.Client.Services
         }
 
         /// <summary>
-        /// 获取患者历史病历
+        /// 获取患者历史病历 - 功能已移除
         /// </summary>
-        public async Task<ServiceResult<List<RecordDto>>> GetHistoryRecordsAsync(Guid patientId)
+        public async Task<ServiceResult<List<object>>> GetHistoryRecordsAsync(Guid patientId)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
-                await _patientsApiService.GetHistoryAsync(patientId)
-            );
+            // Records模块已移除，返回空列表
+            return ServiceResult<List<object>>.Success(new List<object>());
         }
 
         /// <summary>
@@ -240,7 +238,7 @@ namespace LYBT.WPF.Client.Services
                 BirthDate = dto.BirthDate,
                 CreateTime = dto.CreateTime,
                 UpdateTime = dto.UpdateTime,
-                Status = dto.IsActive ? PatientStatus.Active : PatientStatus.Inactive  // 根据IsActive设置状态
+                Status = dto.Status  // 直接使用CommonStatus
             };
         }
 

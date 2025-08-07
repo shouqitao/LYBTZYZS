@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services.Interfaces;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
+
+using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 {
@@ -31,8 +33,16 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         private RoleItem? _selectedRole;
         private string _validationMessage = string.Empty;
         private bool _isNewUser;
+        private bool _isRoleSelectionEnabled;
         
         public List<RoleItem> Roles { get; }
+        
+        /// <summary>角色选择是否启用（新建用户时禁用，固定为普通用户）</summary>
+        public bool IsRoleSelectionEnabled
+        {
+            get => _isRoleSelectionEnabled;
+            set => SetProperty(ref _isRoleSelectionEnabled, value);
+        }
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
@@ -110,11 +120,16 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             _originalUser = user;
             _isNewUser = user == null;
 
-            // 初始化角色列表 - 使用共享扩展方法
-            var rolesWithDisplayNames = UserRoleExtensions.GetAllRolesWithDisplayNames();
-            Roles = rolesWithDisplayNames
-                .Select(r => new RoleItem { Value = r.Role, DisplayName = r.DisplayName })
-                .ToList();
+            // 角色列表 - 只允许创建普通用户
+            // 管理员只限sysadmin，不能通过用户管理创建
+            Roles = new List<RoleItem>
+            {
+                new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" }
+            };
+
+            // 新建用户时角色选择禁用（固定为普通用户）
+            // 编辑用户时也禁用（不允许修改角色）
+            IsRoleSelectionEnabled = false;
 
             // 如果是编辑模式，加载用户数据
             if (user != null)
@@ -123,8 +138,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             }
             else
             {
-                // 新增模式默认选择第一个角色
-                SelectedRole = Roles.FirstOrDefault() ?? new RoleItem { Value = UserRole.RegistrationStaff, DisplayName = "挂号人员" };
+                // 新增模式固定为普通用户角色
+                SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
             }
 
             SaveCommand = new DelegateCommand(ExecuteSave, CanExecuteSave);
@@ -144,10 +159,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         {
             UserName = user.Username;
             RealName = user.RealName;
-            Email = user.Email ?? string.Empty;
+            Email = string.Empty; // Email字段已按优化标准移除
             PhoneNumber = user.PhoneNumber ?? string.Empty;
-            IsActive = user.IsActive;
-            SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role) ?? Roles.FirstOrDefault();
+            IsActive = user.Status == CommonStatus.Enabled; // 使用Status属性
+            
+            // 角色固定：sysadmin是管理员（但不能修改），其他都是普通用户
+            // 编辑时角色不可更改，固定显示为普通用户
+            SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
         }
 
         private bool CanExecuteSave()
@@ -169,11 +187,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 if (IsNewUser)
                 {
                     // 新增用户
-                    var createRequest = new UserCreateDto { RealName = RealName.Trim(),
-                        Role = SelectedRole!.Value,
-                        Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
+                    var createRequest = new UserCreateDto 
+                    { 
+                        Username = UserName.Trim(), // 需要提供用户名
+                        Password = "ChangeMe123", // 默认密码
+                        ConfirmPassword = "ChangeMe123", // 确认密码
+                        RealName = RealName.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        IsActive = IsActive
+                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
+                        // Role和Email已按优化标准移除
                     };
 
                     var response = await _userService.CreateUserAsync(createRequest);
@@ -194,11 +216,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                         return;
                     }
 
-                    var updateRequest = new UserUpdateDto { RealName = RealName.Trim(),
+                    var updateRequest = new UserUpdateDto 
+                    { 
+                        Id = _originalUser.Id, // 需要提供用户ID
+                        Username = UserName.Trim(),
+                        RealName = RealName.Trim(),
                         Role = SelectedRole!.Value,
-                        Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        IsActive = IsActive
+                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
+                        // Email已按优化标准移除
                     };
 
                     var response = await _userService.UpdateUserAsync(updateRequest);
@@ -301,7 +327,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
     /// </summary>
     public class RoleItem
     {
-        public UserRole Value { get; set; }
+        public string Value { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
     }
 }

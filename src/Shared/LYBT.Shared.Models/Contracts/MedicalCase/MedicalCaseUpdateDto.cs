@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Shared.Models.Contracts.MedicalCase

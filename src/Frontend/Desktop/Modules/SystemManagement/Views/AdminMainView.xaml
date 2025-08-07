@@ -85,59 +85,6 @@
                             </StackPanel>
                         </Button>
 
-                        <!-- 挂号管理 -->
-                        <Button Command="{Binding NavigateToRegistrationManagementCommand}" 
-                                Style="{x:Null}"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Padding="20,15"
-                                HorizontalContentAlignment="Left"
-                                Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" 
-                                            Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#E9ECEF"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="📅" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBlock Text="挂号管理" FontSize="14" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-
-                        <!-- 病历管理 -->
-                        <Button Command="{Binding NavigateToRecordManagementCommand}" 
-                                Style="{x:Null}"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Padding="20,15"
-                                HorizontalContentAlignment="Left"
-                                Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" 
-                                            Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#E9ECEF"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="📋" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBlock Text="病历管理" FontSize="14" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
 
                         <!-- 中医药材管理 -->
                         <Button Command="{Binding NavigateToHerbManagementCommand}" 
@@ -167,7 +114,7 @@
                         </Button>
 
                         <!-- 验方模板管理 -->
-                        <Button Command="{Binding NavigateToFormulaTemplateManagementCommand}" 
+                        <Button Command="{Binding NavigateToFormulaManagementCommand}" 
                                 Style="{x:Null}"
                                 Background="Transparent"
                                 BorderThickness="0"
@@ -193,8 +140,8 @@
                             </StackPanel>
                         </Button>
 
-                        <!-- 医生管理 -->
-                        <Button Command="{Binding NavigateToDoctorManagementCommand}" 
+                        <!-- 处方管理 -->
+                        <Button Command="{Binding NavigateToPrescriptionManagementCommand}" 
                                 Style="{x:Null}"
                                 Background="Transparent"
                                 BorderThickness="0"
@@ -215,8 +162,35 @@
                                 </ControlTemplate>
                             </Button.Template>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="👨‍⚕️" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBlock Text="医生管理" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="📝" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="处方管理" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 看诊记录管理 -->
+                        <Button Command="{Binding NavigateToConsultationManagementCommand}" 
+                                Style="{x:Null}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,15"
+                                HorizontalContentAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E9ECEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📋" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="看诊记录" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 

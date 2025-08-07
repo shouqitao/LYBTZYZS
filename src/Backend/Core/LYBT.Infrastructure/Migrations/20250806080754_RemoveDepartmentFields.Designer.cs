@@ -1025,7 +1025,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Doctors", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.FormulaTemplates.FormulaTemplateModel", b =>
+            modelBuilder.Entity("LYBT.Models.Formulas.FormulaModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1071,7 +1071,7 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FormulaTemplates", (string)null);
+                    b.ToTable("Formulas", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Models.Herbs.HerbModel", b =>
@@ -1577,7 +1577,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("FormulaTemplateId")
+                    b.Property<Guid?>("FormulaId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsShared")

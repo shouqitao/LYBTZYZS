@@ -116,31 +116,31 @@ namespace LYBT.WPF.Client.Shell.Extensions
             });
 
             // 注册病例API服务
-            containerRegistry.Register<IRecordApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IRecordApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
+//             containerRegistry.Register<IRecordApiService>(container =>
+//             {
+//                 var httpClient = CreateAuthenticatedHttpClient(container);
+//                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+//                 httpClient.Timeout = TimeSpan.FromSeconds(60);
+//                 return RestService.For<IRecordApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+//             });
 
             // 注册验方模板API服务
-            containerRegistry.Register<IFormulaTemplateApiService>(container =>
+            containerRegistry.Register<IFormulaApiService>(container =>
             {
                 var httpClient = CreateAuthenticatedHttpClient(container);
                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IFormulaTemplateApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+                return RestService.For<IFormulaApiService>(httpClient, RefitConfiguration.GetRefitSettings());
             });
 
             // 注册挂号API服务
-            containerRegistry.Register<IRegistrationApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IRegistrationApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
+//             containerRegistry.Register<IRegistrationApiService>(container =>
+//             {
+//                 var httpClient = CreateAuthenticatedHttpClient(container);
+//                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+//                 httpClient.Timeout = TimeSpan.FromSeconds(60);
+//                 return RestService.For<IRegistrationApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+//             });
 
             // 注册患者API服务
             containerRegistry.Register<IPatientsApiService>(container =>
@@ -152,22 +152,22 @@ namespace LYBT.WPF.Client.Shell.Extensions
             });
 
             // 注册医生API服务
-            containerRegistry.Register<IDoctorsApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IDoctorsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
+//             containerRegistry.Register<IDoctorsApiService>(container =>
+//             {
+//                 var httpClient = CreateAuthenticatedHttpClient(container);
+//                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+//                 httpClient.Timeout = TimeSpan.FromSeconds(60);
+//                 return RestService.For<IDoctorsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+//             });
 
             // 注册日志API服务
-            containerRegistry.Register<ILogsApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<ILogsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
+//             containerRegistry.Register<ILogsApiService>(container =>
+//             {
+//                 var httpClient = CreateAuthenticatedHttpClient(container);
+//                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+//                 httpClient.Timeout = TimeSpan.FromSeconds(60);
+//                 return RestService.For<ILogsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+//             });
 
             // 注册系统设置API服务
             containerRegistry.Register<ISystemSettingsApiService>(container =>
@@ -214,14 +214,14 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
             containerRegistry.RegisterSingleton<IUserService, UserService>();
             containerRegistry.RegisterSingleton<IPatientService, PatientService>();
-            containerRegistry.RegisterSingleton<IDoctorService, DoctorService>();
+            containerRegistry.RegisterSingleton<IUserService, UserService>();
             containerRegistry.RegisterSingleton<IHerbService, HerbService>();
-            containerRegistry.RegisterSingleton<IRecordService, RecordService>();
-            containerRegistry.RegisterSingleton<IFormulaTemplateService, FormulaTemplateService>();
-            containerRegistry.RegisterSingleton<IRegistrationService, RegistrationService>();
-            containerRegistry.RegisterSingleton<IBillingService, BillingService>();
-            containerRegistry.RegisterSingleton<IPharmacyService, PharmacyService>();
-            containerRegistry.RegisterSingleton<IPhysiotherapyService, PhysiotherapyService>();
+//             containerRegistry.RegisterSingleton<IRecordService, RecordService>();
+            containerRegistry.RegisterSingleton<IFormulaService, FormulaService>();
+//             containerRegistry.RegisterSingleton<IRegistrationService, RegistrationService>();
+//             containerRegistry.RegisterSingleton<IBillingService, BillingService>();
+//             containerRegistry.RegisterSingleton<IPharmacyService, PharmacyService>();
+//             containerRegistry.RegisterSingleton<IPhysiotherapyService, PhysiotherapyService>();
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, SimplePrescriptionPrintService>();
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
         }

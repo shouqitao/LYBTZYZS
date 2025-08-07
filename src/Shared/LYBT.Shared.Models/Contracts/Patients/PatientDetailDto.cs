@@ -67,9 +67,9 @@ namespace LYBT.Shared.Models.Contracts.Patients {
         [DisplayName("更新时间")]
         public DateTime? UpdateTime { get; set; }
 
-        /// <summary>是否启用</summary>
-        [DisplayName("是否启用")]
-        public bool IsActive { get; set; } = true;
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]

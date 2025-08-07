@@ -141,7 +141,7 @@ namespace LYBT.Infrastructure.Migrations {
                 });
 
             migrationBuilder.CreateTable(
-                name: "FormulaTemplates",
+                name: "Formulas",
                 columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
@@ -158,7 +158,7 @@ namespace LYBT.Infrastructure.Migrations {
                     SharedById = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table => {
-                    table.PrimaryKey("PK_FormulaTemplates", x => x.Id);
+                    table.PrimaryKey("PK_Formulas", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -996,7 +996,7 @@ namespace LYBT.Infrastructure.Migrations {
                 name: "ErrorLogs");
 
             migrationBuilder.DropTable(
-                name: "FormulaTemplates");
+                name: "Formulas");
 
             migrationBuilder.DropTable(
                 name: "GlobalSettings");
