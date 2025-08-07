@@ -180,7 +180,10 @@
       "Bash(dotnet add:*)",
       "Bash(git checkout:*)",
       "Bash(start dotnet run --urls \"https://localhost:7001\")",
-      "Bash(ren:*)"
+      "Bash(ren:*)",
+      "Bash(git pull:*)",
+      "Bash(dotnet test:*)",
+      "Bash(pip install:*)"
     ],
     "deny": []
   }
