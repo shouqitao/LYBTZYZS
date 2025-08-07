@@ -1,10 +1,30 @@
-# CLAUDE.md
+# CLAUDE.md - 凌隐宝堂中医诊所系统开发指南
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 项目概述
+## 🔄 项目感知与上下文
 
-凌隐宝堂中医诊所诊疗系统 (LYBTZYZS) - 基于 .NET 8 的企业级中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构。
+### 项目概述
+
+凌隐宝堂中医诊所诊疗系统 (LYBTZYZS) - 基于 .NET 8 的企业级纯中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构。
+
+### 开始新对话时必须
+- **始终先阅读本文档** 了解项目架构、目标、风格和约束
+- **检查 `docs/TODO-Latest-*.md`** 了解当前任务状态
+- **查看 `CLAUDE.local.md`** 了解用户特定的开发环境配置
+- **使用一致的命名约定、文件结构和架构模式**
+
+## 🧱 代码结构与模块化
+
+### 文件大小限制
+- **永远不要创建超过500行的文件**，接近限制时进行重构
+- **组织代码为清晰分离的模块**，按功能或职责分组
+
+### 模块化原则
+- 每个业务模块独立但共享数据上下文 (AppDbContext)
+- 严格分离关注点：Model、Service、Repository、Controller
+- 使用依赖注入：构造函数注入模式
+- 异步优先：所有数据库操作使用 async/await
 
 ## 常用开发命令
 
@@ -56,6 +76,22 @@ dotnet test
 cd tests/api
 python api_test_automation.py
 ```
+
+## 🧪 测试与可靠性
+
+### 测试要求
+- **为新功能创建单元测试**（使用 xUnit）
+- **更新逻辑后检查现有测试是否需要更新**
+- **测试文件位于 `tests/` 文件夹**，镜像主应用结构
+- 每个功能至少包含：
+  - 1个正常使用测试
+  - 1个边缘情况测试  
+  - 1个失败情况测试
+
+### API测试
+- 使用 Python 脚本进行 API 自动化测试
+- 测试脚本位于 `tests/api/` 目录
+- 运行命令：`python api_test_automation.py`
 
 ## 高层架构
 
@@ -121,6 +157,50 @@ src/
 - **Queueing** 作为工作流协调器，管理各环节的排队叫号
 - **Consultation** 是核心，支持中医四诊（望闻问切）和现代医学检查
 
+## ✅ 任务完成
+
+### 任务管理
+- **立即在 `docs/TODO-Latest-*.md` 中标记完成的任务**
+- **添加发现的新任务到"发现的问题"部分**
+- **每个任务完成后创建详细的 commit**
+
+### Git 提交规范
+```bash
+# 提交格式
+<type>: <subject>
+
+# type 类型：
+- feat: 新功能
+- fix: 修复bug
+- docs: 文档更新
+- refactor: 重构
+- test: 测试相关
+- chore: 构建/工具相关
+```
+
+## 📎 风格与约定
+
+### C# 编码规范
+- **遵循 .NET 编码约定**
+- **使用 PascalCase** 用于类名、方法名、属性
+- **使用 camelCase** 用于参数、局部变量
+- **私有字段使用 _camelCase**
+- **接口以 I 开头**
+
+### 代码注释规范
+```csharp
+/// <summary>
+/// 方法功能简述
+/// </summary>
+/// <param name="参数名">参数说明</param>
+/// <returns>返回值说明</returns>
+public async Task<Result> MethodName(Type param)
+{
+    // 关键逻辑注释
+    // Reason: 解释为什么这样做
+}
+```
+
 ## 开发约定
 
 ### 必须遵循的规则
@@ -152,11 +232,37 @@ src/
 3. 使用 scripts/ 目录的批处理文件执行常见任务
 4. 数据库在首次运行时自动初始化
 
+## 📚 文档与可解释性
+
+### 文档更新要求
+- **添加新功能时更新 `README.md`**
+- **更改依赖时更新 `docs/开发规范.md`**
+- **修改设置时更新本文档**
+- **注释非显而易见的代码**，确保中级开发者能理解
+- **编写复杂逻辑时，添加 `# Reason:` 注释**解释原因
+
+## 🧠 AI 行为规则
+
+### 必须遵守
+- **永远不要假设缺失的上下文，不确定时询问**
+- **永远不要虚构库或函数**，只使用已验证的包
+- **始终确认文件路径和模块名存在**再引用
+- **除非明确指示，否则不要删除或覆盖现有代码**
+
+### 中文支持
+- **所有显示和回答使用中文**
+- **注意处理中文字符编码问题**
+- **API 响应消息使用中文**
+- **错误提示使用中文**
+
 ## 术语说明
 
 - **Pharmacy**: 药房
-- **Prescriptions**: 处方
+- **Prescriptions**: 处方  
 - **FormulaTemplate**: 验方
+- **Consultation**: 看诊
+- **Herbs**: 中药材
+- **TCM**: 中医（Traditional Chinese Medicine）
 
 ## 项目特定指令
 
@@ -174,6 +280,49 @@ src/
 - [前后端契约规范](docs/前后端契约规范.md) - 前后端接口约定
 - [API响应标准](docs/API响应标准.md) - API 响应格式规范
 
+## 🔧 特殊配置说明
+
+### AutoMapper 配置（重要）
+- 使用 AutoMapper 15.0.1
+- **必须提供 ILoggerFactory 参数**
+- 示例配置：
+```csharp
+var mapperConfig = new MapperConfiguration(cfg =>
+{
+    cfg.AddProfile(new MappingProfile());
+}, NullLoggerFactory.Instance);  // 关键：需要ILoggerFactory参数
+```
+
+### 依赖注入配置
+- 使用 Prism.DryIoc 9.0.537
+- 服务注册在 ServiceCollectionExtensions.cs
+- 所有服务使用构造函数注入
+
 ## 脚本管理
 
 - 脚本都用Python脚本
+
+## 📋 常见问题快速解决
+
+### 编译错误
+1. 检查 NuGet 包版本
+2. 清理解决方案：`dotnet clean`
+3. 重新生成：`dotnet build`
+
+### 依赖注入错误
+1. 检查服务是否已注册
+2. 确认接口和实现匹配
+3. 检查构造函数参数
+
+### 数据库连接问题
+1. 确认 SQL Server 服务运行
+2. 检查连接字符串
+3. 验证数据库权限
+
+## 🎯 项目质量目标
+
+- 代码覆盖率 > 70%
+- 响应时间 < 2秒
+- 零关键bug
+- 完整的错误处理
+- 用户友好的中文提示
