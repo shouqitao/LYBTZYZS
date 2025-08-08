@@ -18,11 +18,8 @@ namespace LYBT.WebAPI.Examples
     [Authorize]
     public class ExampleController : BaseController
     {
-        private readonly ILogger<ExampleController> _logger;
-
         public ExampleController(ILogger<ExampleController> logger, IMemoryCache cache) : base(logger, cache)
         {
-            _logger = logger;
         }
 
         #region Version 1.0 APIs
@@ -152,8 +149,8 @@ namespace LYBT.WebAPI.Examples
         [Obsolete("此版本已弃用，请使用v2.0")]
         public IActionResult GetV3()
         {
-            Response.Headers.Add("X-API-Deprecation-Warning", "API v3.0 is deprecated and will be removed in future releases. Please migrate to v2.0.");
-            Response.Headers.Add("X-API-Deprecation-Date", "2024-12-31");
+            Response.Headers.Append("X-API-Deprecation-Warning", "API v3.0 is deprecated and will be removed in future releases. Please migrate to v2.0.");
+            Response.Headers.Append("X-API-Deprecation-Date", "2024-12-31");
             
             return Ok(new
             {
