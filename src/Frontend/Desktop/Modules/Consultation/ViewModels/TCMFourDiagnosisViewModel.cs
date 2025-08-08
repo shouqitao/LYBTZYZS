@@ -309,7 +309,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         public TCMFourDiagnosisViewModel(
             IConsultationApiService consultationApiService,
             ICommonDialogService dialogService,
-            ITCMDiagnosisAnalyzer diagnosisAnalyzer = null)
+            ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null)
         {
             _consultationApiService = consultationApiService;
             _dialogService = dialogService;

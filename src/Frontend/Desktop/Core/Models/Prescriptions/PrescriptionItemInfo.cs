@@ -98,7 +98,6 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions
             set => SetProperty(ref _remark, value);
         }
 
-        private string? _note;
         /// <summary>备注（Note别名，与Remark相同）</summary>
         public string? Note
         {

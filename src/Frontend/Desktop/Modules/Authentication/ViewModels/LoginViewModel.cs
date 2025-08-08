@@ -219,7 +219,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                     HasSavedPassword = false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // 静默处理错误，避免影响用户体验
                 HasSavedPassword = false;

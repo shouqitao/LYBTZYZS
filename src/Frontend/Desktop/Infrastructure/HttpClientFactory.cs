@@ -18,7 +18,6 @@ namespace LYBT.WPF.Client.Infrastructure
     {
         // 共享配置常量
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
-        private static readonly int DefaultRetryCount = 3;
         
         /// <summary>
         /// 创建基础 HttpClient（无认证）

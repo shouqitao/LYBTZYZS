@@ -127,7 +127,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             }
 
             // 验证症状
-            var symptomsValidation = ValidateSymptoms(consultation.Symptoms);
+            var symptomsValidation = ValidateSymptoms(consultation.Symptoms ?? string.Empty);
             if (!symptomsValidation.IsValid)
             {
                 foreach (var error in symptomsValidation.Errors)
@@ -304,7 +304,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             }
             else
             {
-                var diagnosisValidation = ValidateDiagnosis(prescription.Diagnosis);
+                var diagnosisValidation = ValidateDiagnosis(prescription.Diagnosis ?? string.Empty);
                 if (!diagnosisValidation.IsValid)
                 {
                     foreach (var error in diagnosisValidation.Errors)

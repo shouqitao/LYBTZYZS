@@ -53,7 +53,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             {
                 _regionManager.RequestNavigate("SystemManagementContentRegion", viewName);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // 如果视图不存在，显示占位界面
             }

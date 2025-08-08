@@ -150,6 +150,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> BatchDisableAsync(List<Guid> ids)
         {
             // 批量操作接口已移除，返回失败
+            await Task.CompletedTask;
             return ServiceResult.Failure("批量操作功能已禁用");
         }
 
@@ -159,6 +160,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> BatchEnableAsync(List<Guid> ids)
         {
             // 批量操作接口已移除，返回失败
+            await Task.CompletedTask;
             return ServiceResult.Failure("批量操作功能已禁用");
         }
 
@@ -178,6 +180,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> ImportAsync(List<PatientDetailDto> patients)
         {
             // 导入功能已移除，返回失败
+            await Task.CompletedTask;
             return ServiceResult.Failure("导入功能已禁用");
         }
 
@@ -197,6 +200,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult<List<object>>> GetHistoryRecordsAsync(Guid patientId)
         {
             // Records模块已移除，返回空列表
+            await Task.CompletedTask;
             return ServiceResult<List<object>>.Success(new List<object>());
         }
 

@@ -312,19 +312,23 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
     public class MedicalCaseDisplayItem
     {
         public Guid Id { get; set; }
-        public string CaseNumber { get; set; }
+        public string CaseNumber { get; set; } = string.Empty;
         public Guid PatientId { get; set; }
-        public string PatientName { get; set; }
-        public string PatientGender { get; set; }
+        public string PatientName { get; set; } = string.Empty;
+        public string PatientGender { get; set; } = "未知";
         public int PatientAge { get; set; }
-        public string ChiefComplaint { get; set; }
-        public string DoctorName { get; set; }
+        public string ChiefComplaint { get; set; } = string.Empty;
+        public string DoctorName { get; set; } = string.Empty;
         public MedicalCaseStatus Status { get; set; }
-        public string StatusText { get; set; }
+        public string StatusText { get; set; } = "未知";
         public DateTime CreateTime { get; set; }
-        public string CreateTimeText { get; set; }
+        public string CreateTimeText { get; set; } = string.Empty;
 
-        public MedicalCaseDisplayItem() { }
+        public MedicalCaseDisplayItem() 
+        {
+            CreateTime = DateTime.Now;
+            CreateTimeText = CreateTime.ToString("yyyy-MM-dd HH:mm");
+        }
 
         public MedicalCaseDisplayItem(MedicalCaseDto dto)
         {
@@ -374,7 +378,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
     {
         public Guid MedicalCaseId { get; set; }
         public Guid PatientId { get; set; }
-        public string PatientName { get; set; }
+        public string PatientName { get; set; } = string.Empty;
     }
 
     /// <summary>

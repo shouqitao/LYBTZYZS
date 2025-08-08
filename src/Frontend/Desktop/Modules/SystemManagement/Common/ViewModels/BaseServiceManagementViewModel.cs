@@ -60,7 +60,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading
+        public new bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
@@ -123,7 +123,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
         /// <summary>
         /// 刷新命令
         /// </summary>
-        public DelegateCommand RefreshCommand { get; }
+        public new DelegateCommand RefreshCommand { get; }
 
         /// <summary>
         /// 添加命令

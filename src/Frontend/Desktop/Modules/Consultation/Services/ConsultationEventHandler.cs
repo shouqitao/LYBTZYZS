@@ -39,6 +39,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布患者选择事件: {patient?.Name} (ID: {patient?.Id})");
+                if (patient == null) return;
                 var eventArgs = new PatientSelectedEventArgs(patient.Id, patient.Name);
                 _eventAggregator.GetEvent<PatientSelectedEvent>().Publish(eventArgs);
             }
@@ -79,6 +80,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布看诊开始事件: 患者ID {consultation?.PatientId}, 看诊ID {consultation?.Id}");
+                if (consultation == null) return;
                 var eventArgs = new ConsultationStartedEventArgs(consultation.Id, consultation.PatientId, consultation.PatientName);
                 _eventAggregator.GetEvent<ConsultationStartedEvent>().Publish(eventArgs);
                 
@@ -118,6 +120,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布看诊完成事件: 看诊ID {consultation?.Id}");
+                if (consultation == null) return;
                 var eventArgs = new ConsultationCompletedEventArgs(consultation.Id, consultation.PatientId, consultation.PatientName);
                 _eventAggregator.GetEvent<ConsultationCompletedEvent>().Publish(eventArgs);
                 
@@ -163,6 +166,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             {
                 _logger.LogInformation($"发布处方保存事件: 处方ID {prescription?.Id}, 包含 {prescription?.Items?.Count ?? 0} 味药材");
                 
+                if (prescription == null) return;
                 var eventArgs = new PrescriptionSavedEventArgs(
                     prescription.Id,
                     prescription.PatientId,

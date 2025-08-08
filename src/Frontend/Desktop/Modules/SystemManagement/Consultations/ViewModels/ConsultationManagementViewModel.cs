@@ -19,21 +19,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels
     {
         #region 属性
 
-        private ObservableCollection<ConsultationInfo> _consultations;
+        private ObservableCollection<ConsultationInfo> _consultations = new();
         public ObservableCollection<ConsultationInfo> Consultations
         {
             get => _consultations;
             set => SetProperty(ref _consultations, value);
         }
 
-        private ConsultationInfo _selectedConsultation;
-        public ConsultationInfo SelectedConsultation
+        private ConsultationInfo? _selectedConsultation;
+        public ConsultationInfo? SelectedConsultation
         {
             get => _selectedConsultation;
             set => SetProperty(ref _selectedConsultation, value);
         }
 
-        private string _searchKeyword;
+        private string _searchKeyword = string.Empty;
         public string SearchKeyword
         {
             get => _searchKeyword;
@@ -153,7 +153,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels
                 Consultations = new ObservableCollection<ConsultationInfo>(sampleData);
                 TotalCount = sampleData.Count;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // 简单的错误处理
             }
@@ -187,7 +187,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels
                 Consultations.Remove(consultation);
                 TotalCount--;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             finally

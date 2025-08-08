@@ -18,21 +18,21 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly ICommonDialogService _dialogService;
 
-        private ObservableCollection<MedicalCaseInfo> _medicalCases;
+        private ObservableCollection<MedicalCaseInfo> _medicalCases = new();
         public ObservableCollection<MedicalCaseInfo> MedicalCases
         {
             get => _medicalCases;
             set => SetProperty(ref _medicalCases, value);
         }
 
-        private MedicalCaseInfo _selectedMedicalCase;
-        public MedicalCaseInfo SelectedMedicalCase
+        private MedicalCaseInfo? _selectedMedicalCase;
+        public MedicalCaseInfo? SelectedMedicalCase
         {
             get => _selectedMedicalCase;
             set => SetProperty(ref _selectedMedicalCase, value);
         }
 
-        private string _searchKeyword;
+        private string _searchKeyword = string.Empty;
         public string SearchKeyword
         {
             get => _searchKeyword;

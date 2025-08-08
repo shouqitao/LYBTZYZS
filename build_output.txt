@@ -1,0 +1,18 @@
+  LYBT.Shared.Models -> D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\bin\Debug\net8.0\LYBT.Shared.Models.dll
+  LYBT.Shared.Utilities -> D:\source\repos\LYBTZYZS\src\BIN\Debug\net8.0\LYBT.Shared.Utilities.dll
+  LYBT.Models -> D:\source\repos\LYBTZYZS\src\Backend\Core\BIN\Debug\net8.0\LYBT.Models.dll
+  LYBT.Infrastructure -> D:\source\repos\LYBTZYZS\src\Backend\Core\BIN\Debug\net8.0\LYBT.Infrastructure.dll
+  LYBT.WPF.Client.Core -> D:\source\repos\LYBTZYZS\src\Frontend\Desktop\Core\bin\Debug\net8.0-windows\LYBT.WPF.Client.Core.dll
+  LYBT.WPF.Client.Infrastructure -> D:\source\repos\LYBTZYZS\src\Frontend\Desktop\Infrastructure\bin\Debug\net8.0-windows\LYBT.WPF.Client.Infrastructure.dll
+  LYBT.WPF.Client.Services -> D:\source\repos\LYBTZYZS\src\Frontend\Desktop\Services\bin\Debug\net8.0-windows\LYBT.WPF.Client.Services.dll
+  LYBT.WPF.Client.Modules.Authentication -> D:\source\repos\LYBTZYZS\src\Frontend\Desktop\Modules\Authentication\bin\Debug\net8.0-windows\LYBT.WPF.Client.Modules.Authentication.dll
+  LYBT.WPF.Client.Modules.SystemManagement -> D:\source\repos\LYBTZYZS\src\Frontend\Desktop\Modules\SystemManagement\bin\Debug\net8.0-windows\LYBT.WPF.Client.Modules.SystemManagement.dll
+  LYBT.WPF.Client.Modules.Consultation -> D:\source\repos\LYBTZYZS\src\Frontend\Desktop\Modules\Consultation\bin\Debug\net8.0-windows\LYBT.WPF.Client.Modules.Consultation.dll
+  LYBT.WPF.Client.Modules.MedicalCase -> D:\source\repos\LYBTZYZS\src\Frontend\Desktop\Modules\MedicalCase\bin\Debug\net8.0-windows\LYBT.WPF.Client.Modules.MedicalCase.dll
+  LYBT.WPF.Client.Shell -> D:\source\repos\LYBTZYZS\src\Frontend\Desktop\Shell\bin\Debug\net8.0-windows\LYBT.WPF.Client.Shell.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:08.19
