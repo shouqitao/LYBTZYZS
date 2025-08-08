@@ -127,13 +127,16 @@ namespace LYBT.WebAPI.Controllers
         public async Task<ActionResult<List<PatientDetailDto>>> GetAll()
         {
             var (_, _, operatorRole) = GetOperator();
+            var cacheKey = $"patients:all:{operatorRole}";
 
-            if (!_cache.TryGetValue($"patients:all:{operatorRole}", out List<PatientDetailDto>? data))
+            if ((_cache?.TryGetValue(cacheKey, out List<PatientDetailDto>? data)) ?? false)
             {
-                data = await _patientService.GetAllAsync();
-                _cache.Set($"patients:all:{operatorRole}", data, TimeSpan.FromMinutes(5));
+                return Ok(data);
             }
-            return Ok(data ?? new List<PatientDetailDto>());
+
+            var result = await _patientService.GetAllAsync();
+            _cache?.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+            return Ok(result);
         }
 
         /// <summary>
