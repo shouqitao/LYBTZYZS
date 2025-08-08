@@ -54,8 +54,8 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             _permissionService = permissionService;
             _userService = userService;
 
-            LogoutCommand = new DelegateCommand(ExecuteLogout);
-            TestApiCommand = new DelegateCommand(ExecuteTestApi, () => _isLoggedIn);
+            LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync());
+            TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync(), () => _isLoggedIn);
             ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples, () => _isLoggedIn);
 
             // 订阅登录成功事件
@@ -64,7 +64,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             // 延迟检查登录状态，等待主窗口完全加载
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                CheckLoginStatus();
+                _ = CheckLoginStatusAsync();
             }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
@@ -99,7 +99,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         /// <summary>
         /// 退出登录命令执行
         /// </summary>
-        private async void ExecuteLogout()
+        private async Task ExecuteLogoutAsync()
         {
             var result = await _commonDialogService.ShowConfirmationAsync("确定要退出登录吗？", "退出确认");
             if (result)
@@ -135,7 +135,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         /// <summary>
         /// 检查登录状态
         /// </summary>
-        private async void CheckLoginStatus()
+        private async Task CheckLoginStatusAsync()
         {
             if (_authService.IsLoggedIn)
             {
@@ -158,7 +158,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         private void OnLoginSuccess()
         {
             // 重新检查登录状态
-            CheckLoginStatus();
+            _ = CheckLoginStatusAsync();
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         /// <summary>
         /// 执行API测试
         /// </summary>
-        private async void ExecuteTestApi()
+        private async Task ExecuteTestApiAsync()
         {
             try
             {

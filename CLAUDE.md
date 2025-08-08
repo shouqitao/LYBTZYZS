@@ -146,42 +146,37 @@ src/
 5. **依赖注入**: 构造函数注入模式
 6. **异步优先**: 数据库操作使用 async/await
 
-### 业务模块列表
+### 业务模块列表（实际存在的8个核心模块）
 
 1. **Auth** - 身份认证和授权
 2. **Users** - 用户管理  
-3. **Patients** - 患者档案
-4. **Doctors** - 医生管理
-5. **Registration** - 挂号预约
-6. **Consultation** - 看诊管理（核心模块，支持中医四诊）
-7. **MedicalCase** - 医疗案例（统一管理整个诊疗流程）
-8. **Prescriptions** - 处方管理
-9. **Herbs** - 中药材管理（仅处方用药，不涉及库存管理）
-10. **Formula** - 验方管理（经典验方模板，支持处方组合）
-11. **Pharmacy** - 药房管理
-12. **Billing** - 收费结算
-13. **Records** - 病历档案
-14. **Queueing** - 排队叫号（工作流协调器）
-15. **TreatmentRoom** - 治疗室管理
-16. **Sync** - 数据同步
-17. **DiagnosisTreatment** - 诊断治疗（保留兼容）
+3. **Patients** - 患者档案（包含基础挂号功能）
+4. **Consultation** - 看诊管理（核心模块，支持中医四诊）
+5. **MedicalCase** - 医疗案例（统一管理整个诊疗流程，包含病历记录）
+6. **Prescriptions** - 处方管理
+7. **Herbs** - 中药材管理（仅处方用药，不涉及库存管理）
+8. **Formula** - 验方管理（经典验方模板，支持处方组合）
 
 **重要说明**：
 - **Herbs模块**：只负责管理诊所可用药材信息和单价，供医生开处方时选择使用，不涉及药品库存管理
 - **Formula模块**：管理验方模板，支持经典验方库和医生个人验方，可被Prescriptions引用组合
+- **MedicalCase模块**：作为诊疗流程的聚合根，包含了原Records（病历档案）的功能
+- **Patients模块**：整合了基础的患者接待功能，简化了原Registration（挂号）流程
 
 ## 核心工作流
 
-### 诊疗流程（以看诊为主线）
+### 诊疗流程（简化版）
 
 ```
-挂号(Registration) → 排队(Queueing) → 看诊(Consultation) → 
-缴费(Billing) → 药房/理疗室(Pharmacy/TreatmentRoom)
+患者接待(Patients) → 看诊(Consultation) → 开方(Prescriptions)
+         ↑                    ↓
+      医疗案例(MedicalCase)贯穿全程
 ```
 
-- **MedicalCase** 贯穿整个流程，统一管理患者的诊疗案例
-- **Queueing** 作为工作流协调器，管理各环节的排队叫号
-- **Consultation** 是核心，支持中医四诊（望闻问切）和现代医学检查
+- **MedicalCase** 贯穿整个流程，统一管理患者的诊疗案例和病历记录
+- **Consultation** 是核心，支持中医四诊（望闻问切）
+- **Patients** 模块处理患者信息管理和基础接待功能
+- **Prescriptions** 结合Formula（验方）和Herbs（中药材）完成处方开具
 
 ## ✅ 任务完成
 
@@ -290,13 +285,13 @@ public async Task<Result> MethodName(Type param)
 
 ## 术语说明
 
-- **Pharmacy**: 药房
-- **Prescriptions**: 处方  
-- **Formula**: 验方（验方模板）
-- **Consultation**: 看诊
+- **Prescriptions**: 处方（医生开具的用药指导）
+- **Formula**: 验方（经典处方模板）
+- **Consultation**: 看诊（中医四诊过程）
 - **Herbs**: 中药材（仅用于处方，不含库存管理）
 - **TCM**: 中医（Traditional Chinese Medicine）
-- **MedicalCase**: 医疗案例（就诊流程聚合根）
+- **MedicalCase**: 医疗案例（诊疗流程聚合根，包含完整病历）
+- **Patients**: 患者（包含档案和基础接待功能）
 
 ## 项目特定指令
 

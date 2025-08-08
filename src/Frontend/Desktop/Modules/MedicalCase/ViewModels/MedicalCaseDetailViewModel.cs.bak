@@ -1,0 +1,338 @@
+using System;
+using System.Threading.Tasks;
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Models.MedicalCase;
+using LYBT.WPF.Client.Core.Models.Consultation;
+using LYBT.WPF.Client.Core.Models.Prescriptions;
+using LYBT.WPF.Client.Core.ViewModels;
+using Prism.Commands;
+using Prism.Regions;
+using System.Collections.ObjectModel;
+
+namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
+{
+    /// <summary>
+    /// 医疗案例详情视图模型
+    /// </summary>
+    public class MedicalCaseDetailViewModel : BaseViewModel, INavigationAware
+    {
+        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly IConsultationService _consultationService;
+        private readonly IPrescriptionService _prescriptionService;
+        private readonly ICommonDialogService _dialogService;
+        private readonly IRegionManager _regionManager;
+
+        #region 属性
+
+        private Guid _medicalCaseId;
+        public Guid MedicalCaseId
+        {
+            get => _medicalCaseId;
+            set => SetProperty(ref _medicalCaseId, value);
+        }
+
+        private MedicalCaseInfo _medicalCase;
+        public MedicalCaseInfo MedicalCase
+        {
+            get => _medicalCase;
+            set => SetProperty(ref _medicalCase, value);
+        }
+
+        private ObservableCollection<ConsultationInfo> _consultationHistory;
+        public ObservableCollection<ConsultationInfo> ConsultationHistory
+        {
+            get => _consultationHistory;
+            set => SetProperty(ref _consultationHistory, value);
+        }
+
+        private ObservableCollection<PrescriptionInfo> _prescriptionHistory;
+        public ObservableCollection<PrescriptionInfo> PrescriptionHistory
+        {
+            get => _prescriptionHistory;
+            set => SetProperty(ref _prescriptionHistory, value);
+        }
+
+        private ConsultationInfo _selectedConsultation;
+        public ConsultationInfo SelectedConsultation
+        {
+            get => _selectedConsultation;
+            set => SetProperty(ref _selectedConsultation, value);
+        }
+
+        private PrescriptionInfo _selectedPrescription;
+        public PrescriptionInfo SelectedPrescription
+        {
+            get => _selectedPrescription;
+            set => SetProperty(ref _selectedPrescription, value);
+        }
+
+        private bool _isLoading;
+        public new bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
+        private string _patientName;
+        public string PatientName
+        {
+            get => _patientName;
+            set => SetProperty(ref _patientName, value);
+        }
+
+        private string _patientGender;
+        public string PatientGender
+        {
+            get => _patientGender;
+            set => SetProperty(ref _patientGender, value);
+        }
+
+        private int? _patientAge;
+        public int? PatientAge
+        {
+            get => _patientAge;
+            set => SetProperty(ref _patientAge, value);
+        }
+
+        #endregion
+
+        #region 命令
+
+        public DelegateCommand LoadDataCommand { get; }
+        public DelegateCommand BackCommand { get; }
+        public DelegateCommand StartConsultationCommand { get; }
+        public DelegateCommand<ConsultationInfo> ViewConsultationCommand { get; }
+        public DelegateCommand<PrescriptionInfo> ViewPrescriptionCommand { get; }
+        public DelegateCommand AddNoteCommand { get; }
+        public DelegateCommand CompleteCaseCommand { get; }
+        public DelegateCommand PrintCommand { get; }
+
+        #endregion
+
+        public MedicalCaseDetailViewModel(
+            IMedicalCaseService medicalCaseService,
+            IConsultationService consultationService,
+            IPrescriptionService prescriptionService,
+            ICommonDialogService dialogService,
+            IRegionManager regionManager)
+        {
+            _medicalCaseService = medicalCaseService;
+            _consultationService = consultationService;
+            _prescriptionService = prescriptionService;
+            _dialogService = dialogService;
+            _regionManager = regionManager;
+
+            // 初始化集合
+            ConsultationHistory = new ObservableCollection<ConsultationInfo>();
+            PrescriptionHistory = new ObservableCollection<PrescriptionInfo>();
+
+            // 初始化命令
+            LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
+            BackCommand = new DelegateCommand(NavigateBack);
+            StartConsultationCommand = new DelegateCommand(async () => await StartConsultationAsync());
+            ViewConsultationCommand = new DelegateCommand<ConsultationInfo>(ViewConsultation);
+            ViewPrescriptionCommand = new DelegateCommand<PrescriptionInfo>(ViewPrescription);
+            AddNoteCommand = new DelegateCommand(async () => await AddNoteAsync());
+            CompleteCaseCommand = new DelegateCommand(async () => await CompleteCaseAsync());
+            PrintCommand = new DelegateCommand(async () => await PrintCaseAsync());
+        }
+
+        #region 导航实现
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
+            {
+                MedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
+                LoadDataCommand.Execute();
+            }
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
+            {
+                var id = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
+                return MedicalCaseId == id;
+            }
+            return false;
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            // 清理资源
+        }
+
+        #endregion
+
+        #region 私有方法
+
+        private async Task LoadDataAsync()
+        {
+            try
+            {
+                IsLoading = true;
+
+                // 加载医疗案例详情
+                var caseResult = await _medicalCaseService.GetByIdAsync(MedicalCaseId);
+                if (caseResult.IsSuccess && caseResult.Data != null)
+                {
+                    MedicalCase = caseResult.Data;
+                    PatientName = MedicalCase.PatientName;
+                    PatientGender = MedicalCase.PatientGender;
+                    PatientAge = MedicalCase.PatientAge;
+
+                    // 加载看诊历史
+                    await LoadConsultationHistoryAsync();
+
+                    // 加载处方历史
+                    await LoadPrescriptionHistoryAsync();
+                }
+                else
+                {
+                    await _dialogService.ShowErrorAsync($"加载医疗案例失败: {caseResult.ErrorMessage}", "错误");
+                }
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowErrorAsync($"加载数据时发生错误: {ex.Message}", "错误");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task LoadConsultationHistoryAsync()
+        {
+            try
+            {
+                var result = await _consultationService.GetByMedicalCaseIdAsync(MedicalCaseId);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    ConsultationHistory.Clear();
+                    foreach (var item in result.Data)
+                    {
+                        ConsultationHistory.Add(item);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowErrorAsync($"加载看诊历史失败: {ex.Message}", "错误");
+            }
+        }
+
+        private async Task LoadPrescriptionHistoryAsync()
+        {
+            try
+            {
+                var result = await _prescriptionService.GetByMedicalCaseIdAsync(MedicalCaseId);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    PrescriptionHistory.Clear();
+                    foreach (var item in result.Data)
+                    {
+                        PrescriptionHistory.Add(item);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowErrorAsync($"加载处方历史失败: {ex.Message}", "错误");
+            }
+        }
+
+        private void NavigateBack()
+        {
+            _regionManager.RequestNavigate("ContentRegion", "MedicalCaseListView");
+        }
+
+        private async Task StartConsultationAsync()
+        {
+            if (MedicalCase == null) return;
+
+            if (MedicalCase.Status != LYBT.Shared.Models.Enums.MedicalCaseStatus.Registered)
+            {
+                await _dialogService.ShowInformationAsync("该案例不是待诊状态，无法开始看诊", "提示");
+                return;
+            }
+
+            var parameters = new NavigationParameters
+            {
+                { "MedicalCaseId", MedicalCase.Id },
+                { "PatientId", MedicalCase.PatientId }
+            };
+
+            _regionManager.RequestNavigate("ContentRegion", "ConsultationMainView", parameters);
+        }
+
+        private void ViewConsultation(ConsultationInfo consultation)
+        {
+            if (consultation == null) return;
+
+            var parameters = new NavigationParameters
+            {
+                { "ConsultationId", consultation.Id }
+            };
+
+            _regionManager.RequestNavigate("ContentRegion", "ConsultationDetailView", parameters);
+        }
+
+        private void ViewPrescription(PrescriptionInfo prescription)
+        {
+            if (prescription == null) return;
+
+            var dialogParams = new Prism.Dialogs.DialogParameters
+            {
+                { "PrescriptionId", prescription.Id }
+            };
+
+            _dialogService.ShowDialog("ViewPrescriptionDialog", dialogParams, result => { });
+        }
+
+        private async Task AddNoteAsync()
+        {
+            // TODO: 实现添加备注功能
+            await _dialogService.ShowInformationAsync("添加备注功能待实现", "提示");
+        }
+
+        private async Task CompleteCaseAsync()
+        {
+            if (MedicalCase == null) return;
+
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                "确定要完成该医疗案例吗？完成后将无法继续编辑。",
+                "确认完成");
+
+            if (confirm)
+            {
+                try
+                {
+                    var result = await _medicalCaseService.CompleteCaseAsync(MedicalCase.Id);
+                    if (result.IsSuccess)
+                    {
+                        await _dialogService.ShowInformationAsync("医疗案例已完成", "提示");
+                        await LoadDataAsync();
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync($"完成失败: {result.ErrorMessage}", "错误");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await _dialogService.ShowErrorAsync($"操作失败: {ex.Message}", "错误");
+                }
+            }
+        }
+
+        private async Task PrintCaseAsync()
+        {
+            // TODO: 实现打印功能
+            await _dialogService.ShowInformationAsync("打印功能待实现", "提示");
+        }
+
+        #endregion
+    }
+}

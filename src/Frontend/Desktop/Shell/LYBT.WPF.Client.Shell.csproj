@@ -39,6 +39,7 @@
     <ProjectReference Include="..\Modules\Authentication\LYBT.WPF.Client.Modules.Authentication.csproj" />
     <ProjectReference Include="..\Modules\SystemManagement\LYBT.WPF.Client.Modules.SystemManagement.csproj" />
     <ProjectReference Include="..\Modules\Consultation\LYBT.WPF.Client.Modules.Consultation.csproj" />
+    <ProjectReference Include="..\Modules\MedicalCase\LYBT.WPF.Client.Modules.MedicalCase.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 

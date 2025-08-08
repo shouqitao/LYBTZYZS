@@ -1,0 +1,93 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using LYBT.WPF.Client.Core.Models.Formulas;
+using LYBT.WPF.Client.Core.Models.Prescriptions;
+
+namespace LYBT.WPF.Client.Modules.Consultation.Services.Interfaces
+{
+    /// <summary>
+    /// 验方管理器接口
+    /// </summary>
+    public interface IFormulaManager
+    {
+        /// <summary>
+        /// 应用验方模板到处方
+        /// </summary>
+        /// <param name="formula">验方模板</param>
+        /// <returns>生成的处方项目列表</returns>
+        List<PrescriptionItemInfo> ApplyFormulaTemplate(FormulaInfo formula);
+
+        /// <summary>
+        /// 合并验方到现有处方
+        /// </summary>
+        /// <param name="formula">验方模板</param>
+        /// <param name="existingItems">现有处方项目</param>
+        /// <param name="mergeMode">合并模式：Replace替换，Append追加，Merge合并同药材</param>
+        /// <returns>合并后的处方项目列表</returns>
+        List<PrescriptionItemInfo> MergeFormulaToPrescription(
+            FormulaInfo formula, 
+            IEnumerable<PrescriptionItemInfo> existingItems,
+            FormulaMergeMode mergeMode = FormulaMergeMode.Merge);
+
+        /// <summary>
+        /// 创建自定义验方
+        /// </summary>
+        /// <param name="name">验方名称</param>
+        /// <param name="items">处方项目列表</param>
+        /// <param name="description">验方描述</param>
+        /// <returns>创建的验方信息</returns>
+        Task<FormulaInfo?> CreateCustomFormulaAsync(
+            string name, 
+            IEnumerable<PrescriptionItemInfo> items,
+            string? description = null);
+
+        /// <summary>
+        /// 验证验方是否可用
+        /// </summary>
+        /// <param name="formula">验方模板</param>
+        /// <returns>验证结果和错误信息</returns>
+        (bool IsValid, string? ErrorMessage) ValidateFormula(FormulaInfo formula);
+
+        /// <summary>
+        /// 计算验方价格
+        /// </summary>
+        /// <param name="formula">验方模板</param>
+        /// <returns>总价格</returns>
+        decimal CalculateFormulaPrice(FormulaInfo formula);
+
+        /// <summary>
+        /// 获取常用验方列表
+        /// </summary>
+        /// <param name="count">数量限制</param>
+        Task<List<FormulaInfo>> GetFrequentlyUsedFormulasAsync(int count = 10);
+
+        /// <summary>
+        /// 按症状推荐验方
+        /// </summary>
+        /// <param name="symptoms">症状关键词列表</param>
+        /// <returns>推荐的验方列表</returns>
+        Task<List<FormulaInfo>> RecommendFormulasBySymptoms(IEnumerable<string> symptoms);
+    }
+
+    /// <summary>
+    /// 验方合并模式
+    /// </summary>
+    public enum FormulaMergeMode
+    {
+        /// <summary>
+        /// 替换 - 清空现有处方，使用验方
+        /// </summary>
+        Replace,
+
+        /// <summary>
+        /// 追加 - 保留现有处方，添加验方中的所有药材
+        /// </summary>
+        Append,
+
+        /// <summary>
+        /// 合并 - 相同药材累加数量，不同药材添加
+        /// </summary>
+        Merge
+    }
+}

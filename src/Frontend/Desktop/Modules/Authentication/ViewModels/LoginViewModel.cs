@@ -95,7 +95,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _credentialService = credentialService ?? throw new ArgumentNullException(nameof(credentialService));
 
-            LoginCommand = new DelegateCommand(ExecuteLoginAsync, CanExecuteLogin);
+            LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
 
             // 监听登出事件以清除登录状态消息
             EventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
@@ -118,7 +118,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             return !IsLoading && !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && IsApiOnline;
         }
 
-        private async void ExecuteLoginAsync()
+        private async Task ExecuteLoginAsync()
         {
             if (string.IsNullOrWhiteSpace(Username))
             {

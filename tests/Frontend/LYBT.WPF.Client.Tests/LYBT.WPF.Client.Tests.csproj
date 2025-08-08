@@ -18,12 +18,20 @@
     </PackageReference>
     <PackageReference Include="Moq" Version="4.20.69" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Refit" Version="8.0.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Frontend\Desktop\LYBT.WPF.Client\LYBT.WPF.Client.csproj" />
-    <ProjectReference Include="..\..\..\src\Frontend\Desktop\Services\LYBT.WPF.Client.Services\LYBT.WPF.Client.Services.csproj" />
-    <ProjectReference Include="..\..\..\src\Frontend\Desktop\Core\LYBT.WPF.Client.Core\LYBT.WPF.Client.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Frontend\Desktop\Core\LYBT.WPF.Client.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Frontend\Desktop\Services\LYBT.WPF.Client.Services.csproj" />
+    <ProjectReference Include="..\..\..\src\Frontend\Desktop\Shell\LYBT.WPF.Client.Shell.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

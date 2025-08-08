@@ -97,7 +97,7 @@ namespace LYBT.WPF.Client.Services
         {
             var frontDeskPermissions = new[]
             {
-                "PatientRegistration", "AppointmentManagement", "QueueManagement",
+                "AppointmentManagement", "QueueManagement",
                 "PatientInfo", "BasicReports"
             };
             return frontDeskPermissions.Contains(permission);
@@ -180,7 +180,7 @@ namespace LYBT.WPF.Client.Services
         {
             return new List<string>
             {
-                "FrontDeskModule", "PatientRegistration", "AppointmentModule",
+                "FrontDeskModule", "AppointmentModule",
                 "QueueManagement", "BasicReports"
             };
         }

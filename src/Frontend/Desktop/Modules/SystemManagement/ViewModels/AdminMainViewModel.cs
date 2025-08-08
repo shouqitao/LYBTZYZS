@@ -14,6 +14,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
 
         public DelegateCommand NavigateToUserManagementCommand { get; }
         public DelegateCommand NavigateToPatientManagementCommand { get; }
+        public DelegateCommand NavigateToMedicalCaseManagementCommand { get; }
         public DelegateCommand NavigateToConsultationManagementCommand { get; }
         public DelegateCommand NavigateToRoleManagementCommand { get; }
         public DelegateCommand NavigateToSystemSettingsCommand { get; }
@@ -31,6 +32,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
             // 初始化导航命令
             NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserManagementView"));
             NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
+            NavigateToMedicalCaseManagementCommand = new DelegateCommand(() => NavigateTo("MedicalCaseManagementView"));
             NavigateToConsultationManagementCommand = new DelegateCommand(() => NavigateTo("ConsultationManagementView"));
             NavigateToRoleManagementCommand = new DelegateCommand(() => NavigateTo("RoleManagementView"));
             NavigateToSystemSettingsCommand = new DelegateCommand(() => NavigateTo("SystemSettingsView"));

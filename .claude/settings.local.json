@@ -195,7 +195,8 @@
       "Bash(reportgenerator:*)",
       "Bash(dotnet tool install:*)",
       "Bash(dotnet list:*)",
-      "Bash(echo)"
+      "Bash(echo)",
+      "Bash(start \"\" \"D:\\source\\repos\\LYBTZYZS\\src\\Frontend\\Desktop\\Shell\\bin\\Debug\\net8.0-windows\\LYBT.WPF.Client.Shell.exe\")"
     ],
     "deny": []
   }

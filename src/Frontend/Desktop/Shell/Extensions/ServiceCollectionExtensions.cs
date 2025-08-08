@@ -247,6 +247,9 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IPrescriptionService, PrescriptionService>();
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, SimplePrescriptionPrintService>();
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
+            
+            // 智能服务
+            containerRegistry.RegisterSingleton<IPrescriptionValidationService, PrescriptionValidationService>();
         }
 
         /// <summary>

@@ -22,6 +22,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     public class PrescriptionManagementViewModel : BaseManagementViewModel<PrescriptionInfo, IPrescriptionService>
     {
         private readonly ICommonDialogService _commonDialogService;
+        private readonly IPrescriptionValidationService _validationService;
 
         #region 搜索条件
 
@@ -91,11 +92,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         protected override string ModuleName => "处方";
 
-        public PrescriptionManagementViewModel(IPrescriptionService service,
-            ICommonDialogService commonDialogService)
+        public PrescriptionManagementViewModel(
+            IPrescriptionService service,
+            ICommonDialogService commonDialogService,
+            IPrescriptionValidationService validationService)
             : base(service)
         {
             _commonDialogService = commonDialogService;
+            _validationService = validationService;
             // 初始化状态选项
             StatusOptions = new List<PrescriptionStatusOption>
             {
@@ -317,7 +321,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 dialog.Title = "新增处方";
 
                 // 创建 ViewModel
-                var viewModel = new AddPrescriptionDialogViewModel(Service, _commonDialogService);
+                var viewModel = new AddPrescriptionDialogViewModel(Service, _commonDialogService, _validationService);
                 dialog.DataContext = viewModel;
 
                 // 设置回调已移除

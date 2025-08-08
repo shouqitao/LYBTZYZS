@@ -3,13 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../Styles/ManagementViewStyles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!-- 使用应用程序统一样式 -->
     
     <Grid>
         <Grid.RowDefinitions>
@@ -19,7 +13,7 @@
         </Grid.RowDefinitions>
 
         <!-- 工具栏 -->
-        <Border Grid.Row="0" Style="{StaticResource ToolBarBorder}">
+        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Background="{StaticResource BackgroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -28,8 +22,9 @@
 
                 <!-- 搜索区域 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Text="搜索：" Style="{StaticResource LabelText}"/>
-                    <TextBox Style="{StaticResource SearchTextBox}"
+                    <TextBlock Text="搜索：" Style="{StaticResource SectionTitleStyle}"/>
+                    <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                             Width="250"
                              Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
@@ -37,7 +32,7 @@
                     </TextBox>
                     <Button Content="搜索" 
                             Margin="10,0,0,0"
-                            Style="{StaticResource PrimaryButton}"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             Command="{Binding SearchCommand}"/>
                 </StackPanel>
 
@@ -45,10 +40,12 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Content="+ 新增患者" 
                             Margin="0,0,10,0"
-                            Style="{StaticResource SuccessButton}"
+                            Style="{StaticResource SuccessButtonStyle}"
                             Command="{Binding AddCommand}"/>
                     <Button Content="刷新" 
-                            Style="{StaticResource SecondaryButton}"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="{StaticResource SecondaryBrush}"
+                            Foreground="White"
                             Command="{Binding RefreshCommand}"/>
                 </StackPanel>
             </Grid>
@@ -58,8 +55,7 @@
         <DataGrid Grid.Row="1" 
                   ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem}"
-                  Style="{StaticResource ManagementDataGrid}"
-                  RowStyle="{StaticResource DataGridRowStyle}"
+                  Style="{StaticResource ModernDataGridStyle}"
                   ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
             <DataGrid.Columns>
                 <!-- 患者编号 -->
@@ -108,21 +104,21 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <Button Content="查看" 
-                                        Style="{StaticResource PrimaryButton}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
                                         Padding="8,4"
                                         FontSize="12"
                                         Margin="2"
                                         Command="{Binding DataContext.ViewCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"/>
                                 <Button Content="编辑" 
-                                        Style="{StaticResource SuccessButton}"
+                                        Style="{StaticResource SuccessButtonStyle}"
                                         Padding="8,4"
                                         FontSize="12"
                                         Margin="2"
                                         Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"/>
                                 <Button Content="删除" 
-                                        Style="{StaticResource DangerButton}"
+                                        Style="{StaticResource DangerButtonStyle}"
                                         Padding="8,4"
                                         FontSize="12"
                                         Margin="2"
@@ -136,7 +132,7 @@
         </DataGrid>
 
         <!-- 状态栏和分页 -->
-        <Border Grid.Row="2" Style="{StaticResource StatusBarBorder}">
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Background="{StaticResource BackgroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -145,7 +141,9 @@
 
                 <!-- 统计信息 -->
                 <TextBlock Grid.Column="0" 
-                           Style="{StaticResource StatusText}"
+                           VerticalAlignment="Center"
+                           FontSize="14"
+                           Foreground="{StaticResource TextSecondaryBrush}"
                            Text="{Binding StatusText}"/>
 
                 <!-- 分页控件 -->
@@ -153,14 +151,27 @@
                             Orientation="Horizontal" 
                             VerticalAlignment="Center">
                     <Button Content="首页" 
-                            Style="{StaticResource PaginationButton}"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="{StaticResource SecondaryBrush}"
+                            Foreground="White"
+                            Padding="12,6"
+                            Margin="2"
+                            FontSize="12"
                             Command="{Binding FirstPageCommand}"/>
                     
                     <Button Content="上一页" 
-                            Style="{StaticResource PaginationButton}"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="{StaticResource SecondaryBrush}"
+                            Foreground="White"
+                            Padding="12,6"
+                            Margin="2"
+                            FontSize="12"
                             Command="{Binding PreviousPageCommand}"/>
                     
-                    <Border Style="{StaticResource PageNumberBorder}">
+                    <Border Background="{StaticResource BorderBrush}"
+                            CornerRadius="3"
+                            Padding="16,6"
+                            Margin="8,0">
                         <TextBlock FontWeight="Bold" FontSize="13">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0} / {1}">
@@ -172,11 +183,21 @@
                     </Border>
                     
                     <Button Content="下一页" 
-                            Style="{StaticResource PaginationButton}"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="{StaticResource SecondaryBrush}"
+                            Foreground="White"
+                            Padding="12,6"
+                            Margin="2"
+                            FontSize="12"
                             Command="{Binding NextPageCommand}"/>
                     
                     <Button Content="末页" 
-                            Style="{StaticResource PaginationButton}"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="{StaticResource SecondaryBrush}"
+                            Foreground="White"
+                            Padding="12,6"
+                            Margin="2"
+                            FontSize="12"
                             Command="{Binding LastPageCommand}"/>
                 </StackPanel>
             </Grid>

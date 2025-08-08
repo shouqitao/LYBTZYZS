@@ -122,9 +122,9 @@ namespace LYBT.WPF.Client.Services
                 using var client = new System.Net.Http.HttpClient(handler);
                 client.Timeout = TimeSpan.FromSeconds(3);
 
-                // 从配置获取API基础URL
+                // 从配置获取API基础URL，使用swagger作为健康检查端点
                 var baseUrl = LYBT.WPF.Client.Core.Configuration.ApiConfiguration.BaseUrl.TrimEnd('/');
-                var response = await client.GetAsync($"{baseUrl}/api/health");
+                var response = await client.GetAsync($"{baseUrl}/swagger/index.html");
 
                 return response.IsSuccessStatusCode;
             }

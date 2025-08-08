@@ -1,6 +1,8 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using LYBT.WebAPI.Controllers;
 
 namespace LYBT.WebAPI.Examples
 {
@@ -18,7 +20,7 @@ namespace LYBT.WebAPI.Examples
     {
         private readonly ILogger<ExampleController> _logger;
 
-        public ExampleController(ILogger<ExampleController> logger) : base(logger)
+        public ExampleController(ILogger<ExampleController> logger, IMemoryCache cache) : base(logger, cache)
         {
             _logger = logger;
         }

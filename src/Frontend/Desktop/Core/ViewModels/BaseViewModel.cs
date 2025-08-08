@@ -72,6 +72,11 @@ namespace LYBT.WPF.Client.Core.ViewModels
         public DelegateCommand RefreshCommand { get; protected set; }
 
         /// <summary>
+        /// 异步刷新命令
+        /// </summary>
+        public DelegateCommand RefreshAsyncCommand { get; protected set; }
+
+        /// <summary>
         /// 清除错误命令
         /// </summary>
         public DelegateCommand ClearErrorCommand { get; protected set; }
@@ -81,6 +86,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
 
             RefreshCommand = new DelegateCommand(ExecuteRefresh, CanExecuteRefresh);
+            RefreshAsyncCommand = new DelegateCommand(async () => await ExecuteRefreshAsync(), CanExecuteRefresh);
             ClearErrorCommand = new DelegateCommand(ExecuteClearError, CanExecuteClearError);
         }
 
@@ -196,9 +202,79 @@ namespace LYBT.WPF.Client.Core.ViewModels
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
+        /// <summary>
+        /// 安全执行异步操作，自动处理异常和加载状态
+        /// </summary>
+        protected async Task ExecuteAsync(Func<Task> operation, string? operationName = null)
+        {
+            try
+            {
+                IsLoading = true;
+                ClearError();
+                await operation();
+            }
+            catch (Exception ex)
+            {
+                HandleError(operationName ?? "操作", ex);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 安全执行异步操作并返回结果
+        /// </summary>
+        protected async Task<T?> ExecuteAsync<T>(Func<Task<T>> operation, string? operationName = null)
+        {
+            try
+            {
+                IsLoading = true;
+                ClearError();
+                return await operation();
+            }
+            catch (Exception ex)
+            {
+                HandleError(operationName ?? "操作", ex);
+                return default;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 创建异步命令
+        /// </summary>
+        protected DelegateCommand CreateAsyncCommand(Func<Task> executeMethod, Func<bool>? canExecuteMethod = null)
+        {
+            return new DelegateCommand(
+                async () => await ExecuteAsync(executeMethod),
+                canExecuteMethod ?? (() => true)
+            );
+        }
+
+        /// <summary>
+        /// 创建带参数的异步命令
+        /// </summary>
+        protected DelegateCommand<T> CreateAsyncCommand<T>(Func<T, Task> executeMethod, Func<T, bool>? canExecuteMethod = null)
+        {
+            return new DelegateCommand<T>(
+                async param => await ExecuteAsync(() => executeMethod(param)),
+                canExecuteMethod ?? (param => true)
+            );
+        }
+
         #region 命令实现
 
-        protected virtual async void ExecuteRefresh()
+        protected virtual void ExecuteRefresh()
+        {
+            _ = ExecuteRefreshAsync();
+        }
+
+        protected virtual async Task ExecuteRefreshAsync()
         {
             await InitializeAsync();
         }

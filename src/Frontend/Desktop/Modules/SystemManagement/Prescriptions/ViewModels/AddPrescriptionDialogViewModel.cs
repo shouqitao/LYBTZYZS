@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,8 +20,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     public class AddPrescriptionDialogViewModel : BindableBase
     {
         private readonly ICommonDialogService _commonDialogService;
-
         private readonly IPrescriptionService _prescriptionService;
+        private readonly IPrescriptionValidationService _validationService;
         // private readonly IHerbsApiService _herbService; // TODO: 等待IHerbsApiService实现
 
         #region 属性
@@ -138,17 +139,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public DelegateCommand AddItemCommand { get; }
         public DelegateCommand<PrescriptionItemEditModel> RemoveItemCommand { get; }
         public DelegateCommand<PrescriptionItemEditModel> SelectHerbCommand { get; }
+        public DelegateCommand ValidatePrescriptionCommand { get; }
 
         #endregion
 
         public Action? CloseDialogCallback { get; set; }
         public Action<object>? SaveSuccessCallback { get; set; } // TODO: 替换为实际的CreatePrescriptionRequest类型
 
-        public AddPrescriptionDialogViewModel(IPrescriptionService prescriptionService,
-            ICommonDialogService commonDialogService)
+        public AddPrescriptionDialogViewModel(
+            IPrescriptionService prescriptionService,
+            ICommonDialogService commonDialogService,
+            IPrescriptionValidationService validationService)
         {
             _commonDialogService = commonDialogService;
             _prescriptionService = prescriptionService;
+            _validationService = validationService;
             // _herbService = herbService; // TODO: 等待IHerbsApiService实现
 
             Items = new ObservableCollection<PrescriptionItemEditModel>();
@@ -160,6 +165,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             AddItemCommand = new DelegateCommand(ExecuteAddItem);
             RemoveItemCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteRemoveItem);
             SelectHerbCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteSelectHerb);
+            ValidatePrescriptionCommand = new DelegateCommand(async () => await ExecuteValidatePrescriptionAsync(), () => Items.Any());
 
             // 然后添加事件处理器
             Items.CollectionChanged += (s, e) =>
@@ -168,6 +174,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 RaisePropertyChanged(nameof(CanSave));
                 SaveCommand?.RaiseCanExecuteChanged();
                 SaveAndContinueCommand?.RaiseCanExecuteChanged();
+                ValidatePrescriptionCommand?.RaiseCanExecuteChanged();
             };
 
             // 添加默认的处方项目
@@ -284,6 +291,144 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             {
                 _commonDialogService.ShowErrorAsync($"选择药材失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
+        }
+
+        /// <summary>
+        /// 执行处方质量验证
+        /// </summary>
+        private async Task ExecuteValidatePrescriptionAsync()
+        {
+            if (!Items.Any())
+            {
+                await _commonDialogService.ShowWarningAsync("请先添加处方药材", "无法验证");
+                return;
+            }
+
+            try
+            {
+                IsLoading = true;
+
+                // 将处方项目转换为验证用的模型
+                var prescriptionItems = Items.Where(i => i.IsValid).Select(item => new PrescriptionItemInfo
+                {
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName,
+                    Quantity = item.Quantity,
+                    Unit = item.Unit,
+                    UnitPrice = item.Price
+                }).ToList();
+
+                // 创建患者信息（模拟数据，实际应从患者表单获取）
+                var patientInfo = new PatientValidationInfo
+                {
+                    Age = 35, // 模拟年龄
+                    Gender = "男", // 模拟性别
+                    Weight = 70, // 模拟体重
+                    IsPregnant = false,
+                    IsLactating = false,
+                    Allergies = new List<string>(),
+                    MedicalHistory = new List<string>(),
+                    CurrentMedications = new List<string>()
+                };
+
+                // 执行验证
+                var validationResult = await _validationService.ValidatePrescriptionAsync(
+                    prescriptionItems, 
+                    patientInfo, 
+                    Diagnosis);
+
+                // 显示验证结果
+                await DisplayValidationResult(validationResult);
+            }
+            catch (Exception ex)
+            {
+                await _commonDialogService.ShowErrorAsync($"处方验证失败: {ex.Message}", "验证错误");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 显示验证结果
+        /// </summary>
+        private async Task DisplayValidationResult(PrescriptionValidationResult result)
+        {
+            var resultText = $"处方质量验证结果\n\n";
+            resultText += $"质量等级：{GetQualityLevelText(result.QualityLevel)}\n";
+            resultText += $"质量评分：{result.QualityScore}分\n";
+            resultText += $"是否可开方：{(result.CanPrescribe ? "是" : "否")}\n\n";
+
+            if (result.Errors.Any())
+            {
+                resultText += $"严重错误 ({result.Errors.Count}个)：\n";
+                foreach (var error in result.Errors.Take(3)) // 只显示前3个
+                {
+                    resultText += $"• {error.Message}\n";
+                }
+                if (result.Errors.Count > 3)
+                    resultText += $"... 还有 {result.Errors.Count - 3} 个错误\n";
+                resultText += "\n";
+            }
+
+            if (result.Warnings.Any())
+            {
+                resultText += $"警告 ({result.Warnings.Count}个)：\n";
+                foreach (var warning in result.Warnings.Take(3)) // 只显示前3个
+                {
+                    resultText += $"• {warning.Message}\n";
+                }
+                if (result.Warnings.Count > 3)
+                    resultText += $"... 还有 {result.Warnings.Count - 3} 个警告\n";
+                resultText += "\n";
+            }
+
+            if (result.Suggestions.Any())
+            {
+                resultText += $"改进建议 ({result.Suggestions.Count}个)：\n";
+                foreach (var suggestion in result.Suggestions.Take(2)) // 只显示前2个
+                {
+                    resultText += $"• {suggestion.Content}\n";
+                }
+                if (result.Suggestions.Count > 2)
+                    resultText += $"... 还有 {result.Suggestions.Count - 2} 个建议\n";
+            }
+
+            if (result.Summary != null)
+            {
+                resultText += $"\n总结：{result.Summary}";
+            }
+
+            // 根据结果类型选择不同的对话框
+            if (result.Errors.Any())
+            {
+                await _commonDialogService.ShowErrorAsync(resultText, "处方验证结果");
+            }
+            else if (result.Warnings.Any())
+            {
+                await _commonDialogService.ShowWarningAsync(resultText, "处方验证结果");
+            }
+            else
+            {
+                await _commonDialogService.ShowInformationAsync(resultText, "处方验证结果");
+            }
+        }
+
+        /// <summary>
+        /// 获取质量等级文本
+        /// </summary>
+        private string GetQualityLevelText(PrescriptionQualityLevel level)
+        {
+            return level switch
+            {
+                PrescriptionQualityLevel.Excellent => "优秀",
+                PrescriptionQualityLevel.Good => "良好",
+                PrescriptionQualityLevel.Fair => "一般",
+                PrescriptionQualityLevel.NeedsImprovement => "需改进",
+                PrescriptionQualityLevel.Poor => "不合格",
+                _ => "未知"
+            };
         }
 
         private void ClearForm()

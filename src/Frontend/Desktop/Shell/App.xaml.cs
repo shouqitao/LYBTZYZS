@@ -8,6 +8,7 @@ using LYBT.WPF.Client.Shell.Extensions;
 using LYBT.WPF.Client.Modules.Authentication;
 using LYBT.WPF.Client.Modules.SystemManagement;
 using LYBT.WPF.Client.Modules.Consultation;
+using LYBT.WPF.Client.Modules.MedicalCase;
 using Prism.Modularity;
 
 namespace LYBT.WPF.Client.Shell
@@ -49,6 +50,13 @@ namespace LYBT.WPF.Client.Shell
             {
                 ModuleName = nameof(ConsultationModule),
                 ModuleType = typeof(ConsultationModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(MedicalCaseModule),
+                ModuleType = typeof(MedicalCaseModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
 

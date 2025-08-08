@@ -85,6 +85,32 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- 医疗案例管理 -->
+                        <Button Command="{Binding NavigateToMedicalCaseManagementCommand}" 
+                                Style="{x:Null}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,15"
+                                HorizontalContentAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E9ECEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📂" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="医疗案例" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
 
                         <!-- 中医药材管理 -->
                         <Button Command="{Binding NavigateToHerbManagementCommand}" 

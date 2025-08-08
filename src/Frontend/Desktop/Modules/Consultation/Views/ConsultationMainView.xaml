@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:local="clr-namespace:LYBT.WPF.Client.Modules.Consultation.Views"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              d:DesignHeight="768" d:DesignWidth="1366">
@@ -99,141 +100,9 @@
                         </Border>
 
 
-                        <!-- 四诊信息 -->
-                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
-                            <StackPanel>
-                                <TextBlock Text="中医四诊" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
-                                
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    
-                                    <!-- 望诊 -->
-                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,5,10">
-                                        <TextBlock Text="望诊" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.Inspection}"
-                                                TextWrapping="Wrap"
-                                                MinHeight="60"
-                                                Tag="观察患者神色体态、舌象等"
-                                                />
-                                    </StackPanel>
-                                    
-                                    <!-- 闻诊 -->
-                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="5,0,0,10">
-                                        <TextBlock Text="闻诊" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.AuscultationOlfaction}"
-                                                TextWrapping="Wrap"
-                                                MinHeight="60"
-                                                Tag="听声音，嗅气味"
-                                                />
-                                    </StackPanel>
-                                    
-                                    <!-- 问诊 -->
-                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,5,10">
-                                        <TextBlock Text="问诊" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.Inquiry}"
-                                                TextWrapping="Wrap"
-                                                MinHeight="60"
-                                                Tag="询问症状、病史、生活习惯等"
-                                                />
-                                    </StackPanel>
-                                    
-                                    <!-- 切诊 -->
-                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="5,0,0,10">
-                                        <TextBlock Text="切诊" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.Palpation}"
-                                                TextWrapping="Wrap"
-                                                MinHeight="60"
-                                                Tag="脉诊、按诊等"
-                                                />
-                                    </StackPanel>
-                                    
-                                    <!-- 舌诊 -->
-                                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,5,0">
-                                        <TextBlock Text="舌诊" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.TongueInspection}"
-                                                TextWrapping="Wrap"
-                                                MinHeight="60"
-                                                Tag="舌质、舌苔等"
-                                                />
-                                    </StackPanel>
-                                    
-                                    <!-- 脉诊 -->
-                                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="5,0,0,0">
-                                        <TextBlock Text="脉诊" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.PulseCondition}"
-                                                TextWrapping="Wrap"
-                                                MinHeight="60"
-                                                Tag="脉象特点描述"
-                                                />
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- 诊断 -->
-                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
-                            <StackPanel>
-                                <TextBlock Text="诊断" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
-                                
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <!-- 中医诊断 -->
-                                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
-                                        <TextBlock Text="中医诊断" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.TCMDiagnosis}"
-                                                TextWrapping="Wrap"
-                                                MinHeight="60"
-                                                />
-                                    </StackPanel>
-                                    
-                                    <!-- 治疗原则 -->
-                                    <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                                        <TextBlock Text="治疗原则" Opacity="0.7" Margin="0,0,0,5"/>
-                                        <TextBox Text="{Binding CurrentConsultation.TreatmentPrinciple}"
-                                                TextWrapping="Wrap"
-                                                MinHeight="60"
-                                                />
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- 医嘱建议 -->
-                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
-                            <StackPanel>
-                                <TextBlock Text="医嘱建议" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <TextBox Text="{Binding CurrentConsultation.MedicalAdvice}"
-                                        TextWrapping="Wrap"
-                                        AcceptsReturn="True"
-                                        MinHeight="80"
-                                        Tag="饮食起居、情志调节、复诊时间等"
-                                        />
-                            </StackPanel>
-                        </Border>
-
-                        <!-- 备注信息 -->
-                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
-                            <StackPanel>
-                                <TextBlock Text="备注信息" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <TextBox Text="{Binding CurrentConsultation.Remark}"
-                                        TextWrapping="Wrap"
-                                        AcceptsReturn="True"
-                                        MinHeight="60"
-                                        Tag="其他需要记录的补充信息"
-                                        />
-                            </StackPanel>
+                        <!-- 集成的中医四诊控件 -->
+                        <Border Background="White" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                            <local:TCMFourDiagnosisView DataContext="{Binding}" />
                         </Border>
 
                         <!-- 操作按钮 -->
