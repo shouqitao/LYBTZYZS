@@ -106,53 +106,11 @@ namespace LYBT.WPF.Client.Shell.Extensions
         /// </summary>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry)
         {
-            // 注册HttpClient，配置超时时间
+            // 注册基础HttpClient（使用统一工厂）
             containerRegistry.RegisterSingleton<HttpClient>(() =>
             {
-                var client = CreateHttpClient();
-                client.Timeout = TimeSpan.FromSeconds(60);
-                return client;
+                return HttpClientFactory.CreateBasicClient(ApiConfiguration.BaseUrl);
             });
-        }
-
-        /// <summary>
-        /// 创建配置好的HttpClient（开发环境忽略SSL证书验证）
-        /// </summary>
-        private static HttpClient CreateHttpClient()
-        {
-#if DEBUG
-            // 开发环境忽略SSL证书验证
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-            };
-            return HttpClientFactory.CreateWithRetryPolicy(handler);
-#else
-            // 生产环境使用默认设置
-            return HttpClientFactory.CreateWithRetryPolicy(new HttpClientHandler());
-#endif
-        }
-
-        /// <summary>
-        /// 创建带认证的HttpClient
-        /// </summary>
-        private static HttpClient CreateAuthenticatedHttpClient(IContainerProvider container)
-        {
-            var tokenManager = container.Resolve<ITokenManager>();
-            var authHandler = new AuthHeaderHandler(tokenManager);
-
-#if DEBUG
-            // 开发环境忽略SSL证书验证
-            var innerHandler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-            };
-            authHandler.InnerHandler = innerHandler;
-#else
-            authHandler.InnerHandler = new HttpClientHandler();
-#endif
-
-            return HttpClientFactory.CreateWithRetryPolicy(authHandler);
         }
 
         /// <summary>
@@ -160,100 +118,49 @@ namespace LYBT.WPF.Client.Shell.Extensions
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
-            // 注册Refit API服务
-            containerRegistry.RegisterSingleton<IAuthApiService>(() =>
-            {
-                var httpClient = CreateHttpClient();
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IAuthApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
-
-            // 注册用户API服务（使用Factory以获取容器）
-            containerRegistry.Register<IUserApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IUserApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
-
-            // 注册药材API服务
-            containerRegistry.Register<IHerbApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IHerbApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
-
-
-            // 注册验方模板API服务
-            containerRegistry.Register<IFormulaApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IFormulaApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
-
-
-            // 注册患者API服务
-            containerRegistry.Register<IPatientsApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IPatientsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
-
-
-            // 注册日志API服务
-            //             {
-            //                 var httpClient = CreateAuthenticatedHttpClient(container);
-            //                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-            //                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-            //                 return RestService.For<ILogsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            //             });
-
-            // 注册系统设置API服务
-            containerRegistry.Register<ISystemSettingsApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<ISystemSettingsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
-
-            // 注册备份API服务
-            containerRegistry.Register<IBackupApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IBackupApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
-
-            // 注册看诊API服务
-            containerRegistry.Register<IConsultationApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IConsultationApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
-
-            // 注册处方API服务
-            containerRegistry.Register<IPrescriptionApiService>(container =>
-            {
-                var httpClient = CreateAuthenticatedHttpClient(container);
-                httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-                httpClient.Timeout = TimeSpan.FromSeconds(60);
-                return RestService.For<IPrescriptionApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-            });
+            // 注册基础API服务（无认证）
+            RegisterBasicApiService<IAuthApiService>(containerRegistry);
+            
+            // 注册需要认证的API服务
+            RegisterAuthenticatedApiService<IUserApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<IHerbApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<IFormulaApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<IPatientsApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<ISystemSettingsApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<IBackupApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<IConsultationApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<IPrescriptionApiService>(containerRegistry);
 
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();
+        }
+
+        /// <summary>
+        /// 注册基础API服务（无认证）
+        /// </summary>
+        private static void RegisterBasicApiService<TService>(IContainerRegistry containerRegistry)
+            where TService : class
+        {
+            containerRegistry.RegisterSingleton<TService>(() =>
+            {
+                var httpClient = HttpClientFactory.CreateBasicClient(ApiConfiguration.BaseUrl);
+                return RestService.For<TService>(httpClient, RefitConfiguration.GetRefitSettings());
+            });
+        }
+
+        /// <summary>
+        /// 注册需要认证的API服务
+        /// </summary>
+        private static void RegisterAuthenticatedApiService<TService>(IContainerRegistry containerRegistry)
+            where TService : class
+        {
+            containerRegistry.Register<TService>(container =>
+            {
+                var tokenManager = container.Resolve<ITokenManager>();
+                var authHandler = new AuthHeaderHandler(tokenManager);
+                var httpClient = HttpClientFactory.CreateAuthenticatedClient(authHandler, ApiConfiguration.BaseUrl);
+                return RestService.For<TService>(httpClient, RefitConfiguration.GetRefitSettings());
+            });
         }
 
         /// <summary>
@@ -261,27 +168,53 @@ namespace LYBT.WPF.Client.Shell.Extensions
         /// </summary>
         private static void RegisterBusinessServices(IContainerRegistry containerRegistry)
         {
-            // 核心服务
+            // 按功能组注册服务，提高代码可读性和维护性
+            RegisterCoreServices(containerRegistry);
+            RegisterDomainServices(containerRegistry);
+            RegisterSupportingServices(containerRegistry);
+        }
+
+        /// <summary>
+        /// 注册核心基础服务
+        /// </summary>
+        private static void RegisterCoreServices(IContainerRegistry containerRegistry)
+        {
             containerRegistry.RegisterSingleton<ITokenManager, TokenManager>();
             containerRegistry.RegisterSingleton<IUserSessionManager, UserSessionManager>();
             containerRegistry.RegisterSingleton<IPermissionService, PermissionService>();
+            containerRegistry.RegisterSingleton<IErrorHandlingService, ErrorHandlingService>();
+        }
 
-            // 业务服务
-            containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
-            containerRegistry.RegisterSingleton<IUserService, UserService>();
-            containerRegistry.RegisterSingleton<IPatientService, PatientService>();
-            containerRegistry.RegisterSingleton<IHerbService, HerbService>();
-            containerRegistry.RegisterSingleton<IFormulaService, FormulaService>();
-            containerRegistry.RegisterSingleton<IConsultationService, ConsultationService>();
-            containerRegistry.RegisterSingleton<IPrescriptionService, PrescriptionService>();
+        /// <summary>
+        /// 注册领域业务服务
+        /// </summary>
+        private static void RegisterDomainServices(IContainerRegistry containerRegistry)
+        {
+            var domainServices = new (Type Interface, Type Implementation)[]
+            {
+                (typeof(IAuthenticationService), typeof(AuthenticationService)),
+                (typeof(IUserService), typeof(UserService)),
+                (typeof(IPatientService), typeof(PatientService)),
+                (typeof(IHerbService), typeof(HerbService)),
+                (typeof(IFormulaService), typeof(FormulaService)),
+                (typeof(IConsultationService), typeof(ConsultationService)),
+                (typeof(IPrescriptionService), typeof(PrescriptionService))
+            };
+
+            foreach (var (interfaceType, implementationType) in domainServices)
+            {
+                containerRegistry.RegisterSingleton(interfaceType, implementationType);
+            }
+        }
+
+        /// <summary>
+        /// 注册支持性服务
+        /// </summary>
+        private static void RegisterSupportingServices(IContainerRegistry containerRegistry)
+        {
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, SimplePrescriptionPrintService>();
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
-            
-            // 智能服务
             containerRegistry.RegisterSingleton<IPrescriptionValidationService, PrescriptionValidationService>();
-            
-            // 错误处理服务
-            containerRegistry.RegisterSingleton<IErrorHandlingService, ErrorHandlingService>();
         }
 
         /// <summary>

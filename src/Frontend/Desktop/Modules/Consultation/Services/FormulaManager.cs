@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Prescriptions;
+using LYBT.WPF.Client.Core.Models.Events;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.WPF.Client.Modules.Consultation.Services.Interfaces;
+using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
 
@@ -76,9 +78,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                         Quantity = item.Quantity,
                         Unit = item.Unit,
                         UnitPrice = item.UnitPrice,
-                        Subtotal = item.Quantity * item.UnitPrice,
-                        Usage = item.Usage ?? string.Empty,
-                        Note = item.Note ?? string.Empty
+                        Usage = item.ProcessingMethod ?? string.Empty,
+                        Remark = item.SpecialInstructions ?? string.Empty
                     };
 
                     prescriptionItems.Add(prescriptionItem);
@@ -169,20 +170,17 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 var createDto = new FormulaCreateDto
                 {
                     Name = name,
-                    Description = description ?? string.Empty,
-                    Items = itemsList.Select(item => new FormulaItemCreateDto
+                    Effect = description ?? string.Empty,
+                    Herbs = itemsList.Select((item, index) => new FormulaHerbItemCreateDto
                     {
                         HerbId = item.HerbId,
-                        HerbName = item.HerbName,
                         Quantity = item.Quantity,
-                        Unit = item.Unit,
-                        UnitPrice = item.UnitPrice,
                         Usage = item.Usage,
-                        Note = item.Note
+                        SortOrder = index
                     }).ToList()
                 };
 
-                var result = await _formulaService.CreateFormulaAsync(createDto);
+                var result = await _formulaService.CreateAsync(createDto);
                 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -289,8 +287,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 // 如果没有缓存的验方列表，先加载
                 if (_cachedFormulas == null)
                 {
-                    var formulas = await _formulaService.GetFormulasAsync();
-                    _cachedFormulas = formulas ?? new List<FormulaInfo>();
+                    var formulaResult = await _formulaService.GetFormulasAsync();
+                    _cachedFormulas = formulaResult.IsSuccess ? formulaResult.Data ?? new List<FormulaInfo>() : new List<FormulaInfo>();
                 }
 
                 // 根据使用次数排序
@@ -334,8 +332,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 // 如果没有缓存的验方列表，先加载
                 if (_cachedFormulas == null)
                 {
-                    var formulas = await _formulaService.GetFormulasAsync();
-                    _cachedFormulas = formulas ?? new List<FormulaInfo>();
+                    var formulaResult = await _formulaService.GetFormulasAsync();
+                    _cachedFormulas = formulaResult.IsSuccess ? formulaResult.Data ?? new List<FormulaInfo>() : new List<FormulaInfo>();
                 }
 
                 var symptomKeywords = symptoms
@@ -379,9 +377,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 
                 if (existingItem != null)
                 {
-                    // 相同药材，累加数量
+                    // 相同药材，累加数量（Subtotal会自动重新计算）
                     existingItem.Quantity += newItem.Quantity;
-                    existingItem.Subtotal = existingItem.Quantity * existingItem.UnitPrice;
                     
                     // 合并用法说明
                     if (!string.IsNullOrWhiteSpace(newItem.Usage) && 

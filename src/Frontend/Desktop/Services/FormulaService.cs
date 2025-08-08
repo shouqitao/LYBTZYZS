@@ -85,6 +85,14 @@ namespace LYBT.WPF.Client.Services
             return ServiceResult<List<FormulaInfo>>.Failure(apiResponse.ErrorMessage ?? "获取验方模板列表失败", apiResponse.Exception);
         }
 
+        /// <summary>
+        /// 获取验方模板列表（GetFormulasAsync别名）
+        /// </summary>
+        public async Task<ServiceResult<List<FormulaInfo>>> GetFormulasAsync(string? keyword = null, string? category = null)
+        {
+            return await GetListAsync(keyword, category);
+        }
+
         public async Task<ServiceResult<FormulaDetailDto>> GetByIdAsync(Guid id)
         {
             return await ApiErrorHandler.HandleApiResponseAsync(async () =>

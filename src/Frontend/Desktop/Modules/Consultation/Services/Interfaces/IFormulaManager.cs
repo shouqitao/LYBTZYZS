@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Prescriptions;
+using LYBT.WPF.Client.Core.Models.Events;
 
 namespace LYBT.WPF.Client.Modules.Consultation.Services.Interfaces
 {
@@ -68,26 +69,5 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services.Interfaces
         /// <param name="symptoms">症状关键词列表</param>
         /// <returns>推荐的验方列表</returns>
         Task<List<FormulaInfo>> RecommendFormulasBySymptoms(IEnumerable<string> symptoms);
-    }
-
-    /// <summary>
-    /// 验方合并模式
-    /// </summary>
-    public enum FormulaMergeMode
-    {
-        /// <summary>
-        /// 替换 - 清空现有处方，使用验方
-        /// </summary>
-        Replace,
-
-        /// <summary>
-        /// 追加 - 保留现有处方，添加验方中的所有药材
-        /// </summary>
-        Append,
-
-        /// <summary>
-        /// 合并 - 相同药材累加数量，不同药材添加
-        /// </summary>
-        Merge
     }
 }

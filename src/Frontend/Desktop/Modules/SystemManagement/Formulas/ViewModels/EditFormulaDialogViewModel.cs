@@ -153,6 +153,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
             await LoadTemplateData();
         }
 
+        /// <summary>
+        /// 同步初始化方法，供UI调用
+        /// </summary>
+        public void Initialize(Guid templateId)
+        {
+            InitializeAsync(templateId).GetAwaiter().GetResult();
+        }
+
         private async System.Threading.Tasks.Task LoadTemplateData()
         {
             try

@@ -48,12 +48,31 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [Required]
         public Guid DoctorId { get; set; }
 
+        /// <summary>看诊ID</summary>
+        public Guid? ConsultationId { get; set; }
+
         [Required]
         [StringLength(500)]
         public string Diagnosis { get; set; } = string.Empty;
 
+        /// <summary>剂型</summary>
+        [StringLength(50)]
+        public string? DosageForm { get; set; }
+
         [Range(1, 30)]
         public int DosageCount { get; set; } = 7;
+
+        /// <summary>剂数</summary>
+        [Range(1, 100)]
+        public int Quantity { get; set; } = 7;
+
+        /// <summary>用法说明</summary>
+        [StringLength(200)]
+        public string? Usage { get; set; }
+
+        /// <summary>总金额</summary>
+        [Range(0, double.MaxValue)]
+        public decimal TotalAmount { get; set; }
 
         [StringLength(500)]
         public string? Advice { get; set; }
@@ -128,6 +147,18 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         [Range(0, 10000)]
         public decimal UnitPrice { get; set; }
+
+        /// <summary>小计金额</summary>
+        [Range(0, double.MaxValue)]
+        public decimal Subtotal { get; set; }
+
+        /// <summary>用法说明</summary>
+        [StringLength(200)]
+        public string? Usage { get; set; }
+
+        /// <summary>备注（Note别名）</summary>
+        [StringLength(200)]
+        public string? Note { get; set; }
 
         [StringLength(100)]
         public string? Remark { get; set; }

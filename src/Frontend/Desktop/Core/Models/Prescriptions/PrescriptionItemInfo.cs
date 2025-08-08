@@ -79,6 +79,9 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions
         /// <summary>小计金额</summary>
         public decimal Amount => UnitPrice * Quantity;
 
+        /// <summary>小计金额（Subtotal别名，与Amount相同）</summary>
+        public decimal Subtotal => Amount;
+
         private string? _usage;
         /// <summary>用法说明</summary>
         public string? Usage
@@ -93,6 +96,14 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions
         {
             get => _remark;
             set => SetProperty(ref _remark, value);
+        }
+
+        private string? _note;
+        /// <summary>备注（Note别名，与Remark相同）</summary>
+        public string? Note
+        {
+            get => _remark;
+            set => Remark = value;
         }
 
         private string? _origin;

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Core.Models.Patients;
 using LYBT.WPF.Client.Core.Models.Prescriptions;
+using LYBT.WPF.Client.Core.Models.Validation;
+using LYBT.WPF.Client.Modules.Consultation.Services.Interfaces;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.WPF.Client.Modules.Consultation.Services
@@ -409,20 +412,16 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 result.AddError("Diagnosis", "完成看诊前必须填写诊断");
             }
 
-            // 验证是否有治疗方案
-            if (string.IsNullOrWhiteSpace(consultation.TreatmentPlan))
+            // 验证是否有治疗原则
+            if (string.IsNullOrWhiteSpace(consultation.TreatmentPrinciple))
             {
-                result.AddWarning("未填写治疗方案");
+                result.AddWarning("未填写治疗原则");
             }
 
-            // 验证状态
-            if (consultation.Status == ConsultationStatus.Completed)
+            // 验证状态 - 检查记录是否处于活跃状态
+            if (consultation.Status == CommonStatus.Disabled)
             {
-                result.AddError("Status", "该看诊记录已完成");
-            }
-            else if (consultation.Status == ConsultationStatus.Cancelled)
-            {
-                result.AddError("Status", "已取消的看诊记录无法完成");
+                result.AddError("Status", "该看诊记录已被禁用，无法完成");
             }
 
             return result;

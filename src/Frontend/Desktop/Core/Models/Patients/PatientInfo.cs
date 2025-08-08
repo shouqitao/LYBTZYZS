@@ -14,5 +14,8 @@ namespace LYBT.WPF.Client.Core.Models.Patients
 
         /// <summary>紧急联系电话（前端扩展字段）</summary>
         public string? EmergencyPhone { get; set; }
+
+        /// <summary>是否激活（前端状态字段）</summary>
+        public bool IsActive { get; set; } = true;
     }
 }

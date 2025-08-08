@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Polly;
@@ -10,10 +11,80 @@ using Polly.Timeout;
 namespace LYBT.WPF.Client.Infrastructure
 {
     /// <summary>
-    /// HttpClient 工厂类，配置 Polly 重试策略
+    /// 企业级 HttpClient 工厂类 - 统一创建和配置HttpClient实例
+    /// 解决依赖注入中的重复代码和性能问题
     /// </summary>
     public static class HttpClientFactory
     {
+        // 共享配置常量
+        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
+        private static readonly int DefaultRetryCount = 3;
+        
+        /// <summary>
+        /// 创建基础 HttpClient（无认证）
+        /// </summary>
+        /// <param name="baseUrl">API基础地址</param>
+        /// <param name="timeout">超时时间，默认60秒</param>
+        /// <returns>配置好的 HttpClient</returns>
+        public static HttpClient CreateBasicClient(string baseUrl, TimeSpan? timeout = null)
+        {
+            var handler = CreateHttpClientHandler();
+            var client = CreateWithRetryPolicy(handler);
+            
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                client.BaseAddress = new Uri(baseUrl);
+            }
+            
+            client.Timeout = timeout ?? DefaultTimeout;
+            return client;
+        }
+
+        /// <summary>
+        /// 创建带认证的 HttpClient - 需要在调用方设置认证处理器
+        /// </summary>
+        /// <param name="authHandler">认证处理器</param>
+        /// <param name="baseUrl">API基础地址</param>
+        /// <param name="timeout">超时时间，默认60秒</param>
+        /// <returns>配置好的带认证 HttpClient</returns>
+        public static HttpClient CreateAuthenticatedClient(DelegatingHandler authHandler, string baseUrl, TimeSpan? timeout = null)
+        {
+            if (authHandler == null)
+                throw new ArgumentNullException(nameof(authHandler));
+
+            var innerHandler = CreateHttpClientHandler();
+            authHandler.InnerHandler = innerHandler;
+            
+            var client = CreateWithRetryPolicy(authHandler);
+            
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                client.BaseAddress = new Uri(baseUrl);
+            }
+            
+            client.Timeout = timeout ?? DefaultTimeout;
+            return client;
+        }
+
+        /// <summary>
+        /// 创建标准的 HttpClientHandler
+        /// 开发环境忽略SSL证书验证，生产环境使用默认设置
+        /// </summary>
+        /// <returns>配置好的 HttpClientHandler</returns>
+        private static HttpClientHandler CreateHttpClientHandler()
+        {
+#if DEBUG
+            // 开发环境忽略SSL证书验证
+            return new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+#else
+            // 生产环境使用默认设置
+            return new HttpClientHandler();
+#endif
+        }
+
         /// <summary>
         /// 创建带有重试策略的 HttpClient
         /// </summary>

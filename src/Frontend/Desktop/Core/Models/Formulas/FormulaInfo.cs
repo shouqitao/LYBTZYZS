@@ -29,6 +29,16 @@ namespace LYBT.WPF.Client.Core.Models.Formulas
         /// <summary>药材组成</summary>
         public List<FormulaHerbItem> Herbs { get; set; } = new();
 
+        /// <summary>药材组成（Items别名，与Herbs相同）</summary>
+        public List<FormulaHerbItem> Items => Herbs;
+
+        /// <summary>描述信息（映射到Remark）</summary>
+        public string? Description 
+        { 
+            get => Remark; 
+            set => Remark = value; 
+        }
+
         /// <summary>创建人</summary>
         public string? CreatedBy { get; set; }
 

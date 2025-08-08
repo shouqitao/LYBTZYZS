@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 
@@ -28,6 +31,15 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions
 
         /// <summary>是否选中（用于批量操作）</summary>
         public bool IsSelected { get; set; }
+
+        /// <summary>总金额</summary>
+        public decimal TotalAmount => Items?.Sum(x => x.Amount) ?? 0;
+
+        /// <summary>用法说明</summary>
+        public string? Usage { get; set; }
+
+        /// <summary>剂型</summary>
+        public string? DosageForm { get; set; }
 
         /// <summary>状态名称（前端显示字段）</summary>
         public string StatusName => GetStatusName();

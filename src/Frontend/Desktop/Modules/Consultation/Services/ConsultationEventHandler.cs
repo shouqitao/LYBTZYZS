@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Core.Models.Patients;
 using LYBT.WPF.Client.Core.Models.Prescriptions;
+using LYBT.WPF.Client.Core.Models.Events;
+using LYBT.WPF.Client.Modules.Consultation.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -37,7 +39,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布患者选择事件: {patient?.Name} (ID: {patient?.Id})");
-                _eventAggregator.GetEvent<PatientSelectedEvent>().Publish(patient);
+                var eventArgs = new PatientSelectedEventArgs(patient.Id, patient.Name);
+                _eventAggregator.GetEvent<PatientSelectedEvent>().Publish(eventArgs);
             }
             catch (Exception ex)
             {
@@ -49,7 +52,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         /// <summary>
         /// 订阅患者选择事件
         /// </summary>
-        public void SubscribeToPatientSelection(Action<PatientInfo> handler)
+        public void SubscribeToPatientSelection(Action<PatientSelectedEventArgs> handler)
         {
             try
             {
@@ -76,7 +79,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布看诊开始事件: 患者ID {consultation?.PatientId}, 看诊ID {consultation?.Id}");
-                _eventAggregator.GetEvent<ConsultationStartedEvent>().Publish(consultation);
+                var eventArgs = new ConsultationStartedEventArgs(consultation.Id, consultation.PatientId, consultation.PatientName);
+                _eventAggregator.GetEvent<ConsultationStartedEvent>().Publish(eventArgs);
                 
                 // 同时发布状态消息
                 PublishStatusMessage("看诊已开始", StatusMessageType.Info);
@@ -91,7 +95,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         /// <summary>
         /// 订阅看诊开始事件
         /// </summary>
-        public void SubscribeToConsultationStart(Action<ConsultationInfo> handler)
+        public void SubscribeToConsultationStart(Action<ConsultationStartedEventArgs> handler)
         {
             try
             {
@@ -114,7 +118,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布看诊完成事件: 看诊ID {consultation?.Id}");
-                _eventAggregator.GetEvent<ConsultationCompletedEvent>().Publish(consultation);
+                var eventArgs = new ConsultationCompletedEventArgs(consultation.Id, consultation.PatientId, consultation.PatientName);
+                _eventAggregator.GetEvent<ConsultationCompletedEvent>().Publish(eventArgs);
                 
                 // 同时发布状态消息和数据刷新请求
                 PublishStatusMessage("看诊已完成", StatusMessageType.Success);
@@ -130,7 +135,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         /// <summary>
         /// 订阅看诊完成事件
         /// </summary>
-        public void SubscribeToConsultationCompletion(Action<ConsultationInfo> handler)
+        public void SubscribeToConsultationCompletion(Action<ConsultationCompletedEventArgs> handler)
         {
             try
             {
@@ -157,7 +162,14 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布处方保存事件: 处方ID {prescription?.Id}, 包含 {prescription?.Items?.Count ?? 0} 味药材");
-                _eventAggregator.GetEvent<PrescriptionSavedEvent>().Publish(prescription);
+                
+                var eventArgs = new PrescriptionSavedEventArgs(
+                    prescription.Id,
+                    prescription.PatientId,
+                    prescription.PatientName ?? "未知患者",
+                    prescription.TotalAmount
+                );
+                _eventAggregator.GetEvent<PrescriptionSavedEvent>().Publish(eventArgs);
                 
                 // 同时发布状态消息
                 PublishStatusMessage($"处方已保存，共{prescription?.Items?.Count ?? 0}味药材", StatusMessageType.Success);
@@ -173,7 +185,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         /// <summary>
         /// 订阅处方保存事件
         /// </summary>
-        public void SubscribeToPrescriptionSave(Action<PrescriptionInfo> handler)
+        public void SubscribeToPrescriptionSave(Action<PrescriptionSavedEventArgs> handler)
         {
             try
             {
@@ -200,7 +212,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布数据刷新请求: {refreshType}");
-                _eventAggregator.GetEvent<DataRefreshRequestEvent>().Publish(refreshType);
+                var eventArgs = new DataRefreshRequestEventArgs(refreshType);
+                _eventAggregator.GetEvent<DataRefreshRequestEvent>().Publish(eventArgs);
             }
             catch (Exception ex)
             {
@@ -211,7 +224,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         /// <summary>
         /// 订阅数据刷新请求事件
         /// </summary>
-        public void SubscribeToDataRefreshRequest(Action<DataRefreshType> handler)
+        public void SubscribeToDataRefreshRequest(Action<DataRefreshRequestEventArgs> handler)
         {
             try
             {
@@ -237,14 +250,11 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         {
             try
             {
-                var errorArgs = new ErrorEventArgs
-                {
-                    Module = module,
-                    Message = message,
-                    Exception = exception,
-                    Timestamp = DateTime.Now,
-                    Severity = exception != null ? ErrorSeverity.Error : ErrorSeverity.Warning
-                };
+                var severity = exception != null ? ErrorSeverity.Error : ErrorSeverity.Warning;
+                var errorArgs = exception != null 
+                    ? new ErrorEventArgs(message, exception)
+                    : new ErrorEventArgs(message, module, severity);
+                errorArgs.Module = module;
 
                 _logger.LogError(exception, $"[{module}] {message}");
                 _eventAggregator.GetEvent<ErrorOccurredEvent>().Publish(errorArgs);
@@ -288,12 +298,9 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         {
             try
             {
-                var navArgs = new NavigationEventArgs
-                {
-                    ViewName = viewName,
-                    Parameters = parameters,
-                    IsModal = false
-                };
+                var navArgs = parameters != null 
+                    ? new NavigationEventArgs(viewName, parameters)
+                    : new NavigationEventArgs(viewName);
 
                 _logger.LogInformation($"发布导航请求: {viewName}");
                 _eventAggregator.GetEvent<NavigationRequestEvent>().Publish(navArgs);
@@ -334,13 +341,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         {
             try
             {
-                var statusArgs = new StatusMessageEventArgs
-                {
-                    Message = message,
-                    Type = type,
-                    Timestamp = DateTime.Now,
-                    DisplayDuration = type == StatusMessageType.Error ? 5000 : 3000 // 错误消息显示更久
-                };
+                var duration = type == StatusMessageType.Error ? 5000 : 3000; // 错误消息显示更久
+                var statusArgs = new StatusMessageEventArgs(message, type, duration);
 
                 _logger.LogInformation($"[{type}] {message}");
                 _eventAggregator.GetEvent<StatusMessageEvent>().Publish(statusArgs);

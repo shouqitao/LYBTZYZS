@@ -26,6 +26,11 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         Task<ServiceResult<List<FormulaInfo>>> GetListAsync(string? keyword = null, string? category = null);
 
         /// <summary>
+        /// 获取验方模板列表（GetFormulasAsync别名，与GetListAsync相同）
+        /// </summary>
+        Task<ServiceResult<List<FormulaInfo>>> GetFormulasAsync(string? keyword = null, string? category = null);
+
+        /// <summary>
         /// 根据ID获取验方模板详情
         /// </summary>
         Task<ServiceResult<FormulaDetailDto>> GetByIdAsync(Guid id);

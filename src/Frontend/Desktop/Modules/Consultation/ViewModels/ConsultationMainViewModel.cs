@@ -10,6 +10,7 @@ using LYBT.WPF.Client.Core.Models.Prescriptions;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Core.Models.Formulas;
+using LYBT.WPF.Client.Core.Models.Events;
 using LYBT.WPF.Client.Modules.Consultation.Services;
 using LYBT.WPF.Client.Modules.Consultation.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -260,9 +261,9 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 
         private void SubscribeToEvents()
         {
-            _eventHandler.SubscribeToDataRefreshRequest(async type => 
+            _eventHandler.SubscribeToDataRefreshRequest(async args => 
             {
-                if (type == DataRefreshType.All)
+                if (args.RefreshType == DataRefreshType.All)
                     await RefreshDataAsync();
             });
         }

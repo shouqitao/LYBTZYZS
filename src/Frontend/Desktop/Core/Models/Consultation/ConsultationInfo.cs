@@ -72,6 +72,9 @@ namespace LYBT.WPF.Client.Core.Models.Consultation
 
         /// <summary>患者联系电话（前端显示字段）</summary>
         public string? PatientPhone { get; set; }
+
+        /// <summary>症状描述（前端字段）</summary>
+        public string? Symptoms { get; set; }
     }
 
 }

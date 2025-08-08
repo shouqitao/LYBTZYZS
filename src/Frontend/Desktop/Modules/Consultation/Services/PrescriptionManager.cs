@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models.Prescriptions;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Services.Interfaces;
+using LYBT.WPF.Client.Modules.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
@@ -97,9 +99,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 var existingItem = _prescriptionItems.FirstOrDefault(x => x.HerbId == herb.Id);
                 if (existingItem != null)
                 {
-                    // 更新数量
+                    // 更新数量（Subtotal会自动重新计算）
                     existingItem.Quantity += quantity;
-                    existingItem.Subtotal = existingItem.Quantity * existingItem.UnitPrice;
                     _logger.LogInformation($"更新药材 {herb.Name} 数量至 {existingItem.Quantity}");
                     return true;
                 }
@@ -113,9 +114,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                     Quantity = quantity,
                     Unit = herb.Unit,
                     UnitPrice = herb.Price,
-                    Subtotal = quantity * herb.Price,
                     Usage = herb.Usage,
-                    Note = herb.Remark
+                    Remark = herb.Remark
                 };
 
                 // 验证处方项目
@@ -177,8 +177,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                     }
 
                     item.Quantity = newQuantity;
-                    item.Subtotal = newQuantity * item.UnitPrice;
-                    _logger.LogInformation($"更新药材 {item.HerbName} 数量至 {newQuantity}");
+                    _logger.LogInformation($"更新药材 {item.HerbName} 数量至 {newQuantity} (Subtotal自动更新为 {item.Subtotal})");
                     return true;
                 }
                 
@@ -241,7 +240,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 };
 
                 // 调用服务保存处方
-                var result = await _prescriptionService.CreatePrescriptionAsync(createDto);
+                var result = await _prescriptionService.CreateAsync(createDto);
                 
                 if (result.IsSuccess)
                 {
@@ -300,17 +299,20 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 }
 
                 // 使用验证服务进行验证
-                var prescription = new PrescriptionInfo
+                var patientInfo = new PatientValidationInfo
                 {
-                    Items = _prescriptionItems.ToList(),
-                    TotalAmount = CalculateTotalPrice()
+                    Age = 30, // 默认值，实际应用中需要从当前患者获取
+                    Gender = "未知",
+                    Allergies = new List<string>(),
+                    MedicalHistory = new List<string>(),
+                    CurrentMedications = new List<string>()
                 };
 
-                var validationResult = await _validationService.ValidatePrescriptionAsync(prescription);
+                var validationResult = await _validationService.ValidatePrescriptionAsync(_prescriptionItems, patientInfo, "");
                 
-                if (!validationResult.IsValid)
+                if (!validationResult.CanPrescribe)
                 {
-                    _logger.LogWarning($"处方验证失败: {string.Join(", ", validationResult.Errors)}");
+                    _logger.LogWarning($"处方验证失败: {string.Join(", ", validationResult.Errors.Select(e => e.Message))}");
                     return false;
                 }
 

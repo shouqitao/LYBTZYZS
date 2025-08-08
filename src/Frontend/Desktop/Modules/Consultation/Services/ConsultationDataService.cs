@@ -8,6 +8,7 @@ using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Modules.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
@@ -191,14 +192,15 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         {
             try
             {
-                var createDto = new CreateConsultationDto
+                var startDto = new ConsultationStartDto
                 {
                     PatientId = patientId,
-                    ChiefComplaint = string.Empty,
-                    Symptoms = string.Empty
+                    MedicalCaseId = Guid.NewGuid(), // 应该先创建或获取医疗案例
+                    UserId = Guid.NewGuid(), // 应该从当前登录用户获取
+                    Remark = string.Empty
                 };
 
-                var response = await _consultationApiService.CreateAsync(createDto);
+                var response = await _consultationApiService.StartConsultationAsync(startDto);
                 
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
@@ -224,8 +226,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         {
             try
             {
-                var updateDto = _mapper.Map<UpdateConsultationDto>(consultation);
-                var response = await _consultationApiService.UpdateAsync(consultation.Id, updateDto);
+                var updateDto = _mapper.Map<ConsultationUpdateDto>(consultation);
+                var response = await _consultationApiService.UpdateConsultationAsync(consultation.Id, updateDto);
                 
                 if (response.IsSuccessStatusCode)
                 {
