@@ -250,6 +250,9 @@ namespace LYBT.WPF.Client.Shell.Extensions
             
             // 智能服务
             containerRegistry.RegisterSingleton<IPrescriptionValidationService, PrescriptionValidationService>();
+            
+            // 错误处理服务
+            containerRegistry.RegisterSingleton<IErrorHandlingService, ErrorHandlingService>();
         }
 
         /// <summary>

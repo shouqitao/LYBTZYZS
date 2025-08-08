@@ -7,6 +7,7 @@ using Prism.Mvvm;
 using Prism.Events;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models;
+using LYBT.WPF.Client.Core.Models.Common;
 
 namespace LYBT.WPF.Client.Core.ViewModels
 {
@@ -16,6 +17,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
     public abstract class BaseViewModel : BindableBase, IDisposable
     {
         protected readonly IEventAggregator EventAggregator;
+        protected readonly IErrorHandlingService ErrorHandlingService;
         private bool _isLoading;
         private string _statusMessage = string.Empty;
         private bool _hasError;
@@ -81,9 +83,41 @@ namespace LYBT.WPF.Client.Core.ViewModels
         /// </summary>
         public DelegateCommand ClearErrorCommand { get; protected set; }
 
+        protected BaseViewModel(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
+        {
+            EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+            ErrorHandlingService = errorHandlingService ?? throw new ArgumentNullException(nameof(errorHandlingService));
+
+            RefreshCommand = new DelegateCommand(ExecuteRefresh, CanExecuteRefresh);
+            RefreshAsyncCommand = new DelegateCommand(async () => await ExecuteRefreshAsync(), CanExecuteRefresh);
+            ClearErrorCommand = new DelegateCommand(ExecuteClearError, CanExecuteClearError);
+        }
+
+        /// <summary>
+        /// 兼容性构造函数，用于现有代码
+        /// 注意：推荐使用包含IErrorHandlingService的构造函数以获得完整功能
+        /// </summary>
         protected BaseViewModel(IEventAggregator eventAggregator)
         {
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+            
+            // 尝试从当前应用程序的服务容器获取ErrorHandlingService
+            try
+            {
+                if (Prism.Ioc.ContainerLocator.Container != null)
+                {
+                    ErrorHandlingService = Prism.Ioc.ContainerLocator.Container.Resolve<IErrorHandlingService>();
+                }
+                else
+                {
+                    ErrorHandlingService = null!;
+                }
+            }
+            catch
+            {
+                // 如果无法解析服务，将使用兼容性处理方式
+                ErrorHandlingService = null!;
+            }
 
             RefreshCommand = new DelegateCommand(ExecuteRefresh, CanExecuteRefresh);
             RefreshAsyncCommand = new DelegateCommand(async () => await ExecuteRefreshAsync(), CanExecuteRefresh);
@@ -148,8 +182,47 @@ namespace LYBT.WPF.Client.Core.ViewModels
         /// </summary>
         protected void HandleError(string operation, Exception ex)
         {
-            ErrorMessage = $"{operation}: {ex.Message}";
-            System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] {operation} 异常: {ex}");
+            if (ErrorHandlingService != null)
+            {
+                var context = CreateErrorContext(operation);
+                var handledError = ErrorHandlingService.HandleException(ex, context);
+                ErrorMessage = handledError.UserMessage;
+                
+                // 异步显示详细错误（如果需要）
+                if (handledError.Severity >= ErrorSeverity.Error)
+                {
+                    _ = ErrorHandlingService.ShowErrorAsync(handledError, false); // 不显示对话框，只记录日志
+                }
+            }
+            else
+            {
+                // 兼容性处理
+                ErrorMessage = $"{operation}: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] {operation} 异常: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 异步处理异常
+        /// </summary>
+        protected async Task HandleErrorAsync(string operation, Exception ex, bool showDialog = true)
+        {
+            if (ErrorHandlingService != null)
+            {
+                var context = CreateErrorContext(operation);
+                var handledError = await ErrorHandlingService.HandleExceptionAsync(ex, context);
+                ErrorMessage = handledError.UserMessage;
+                
+                if (showDialog && handledError.RequiresUserAcknowledgment)
+                {
+                    await ErrorHandlingService.ShowErrorAsync(handledError);
+                }
+            }
+            else
+            {
+                // 兼容性处理
+                HandleError(operation, ex);
+            }
         }
 
         /// <summary>
@@ -205,7 +278,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
         /// <summary>
         /// 安全执行异步操作，自动处理异常和加载状态
         /// </summary>
-        protected async Task ExecuteAsync(Func<Task> operation, string? operationName = null)
+        protected async Task ExecuteAsync(Func<Task> operation, string? operationName = null, bool showErrorDialog = true)
         {
             try
             {
@@ -215,7 +288,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
             }
             catch (Exception ex)
             {
-                HandleError(operationName ?? "操作", ex);
+                await HandleErrorAsync(operationName ?? "操作", ex, showErrorDialog);
             }
             finally
             {
@@ -226,7 +299,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
         /// <summary>
         /// 安全执行异步操作并返回结果
         /// </summary>
-        protected async Task<T?> ExecuteAsync<T>(Func<Task<T>> operation, string? operationName = null)
+        protected async Task<T?> ExecuteAsync<T>(Func<Task<T>> operation, string? operationName = null, bool showErrorDialog = true)
         {
             try
             {
@@ -236,12 +309,63 @@ namespace LYBT.WPF.Client.Core.ViewModels
             }
             catch (Exception ex)
             {
-                HandleError(operationName ?? "操作", ex);
+                await HandleErrorAsync(operationName ?? "操作", ex, showErrorDialog);
                 return default;
             }
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 使用错误处理服务安全执行操作
+        /// </summary>
+        protected async Task<bool> ExecuteSafelyAsync(Func<Task> operation, string? operationName = null, bool showErrorDialog = true)
+        {
+            if (ErrorHandlingService != null)
+            {
+                var context = CreateErrorContext(operationName ?? "操作");
+                return await ErrorHandlingService.ExecuteSafelyAsync(operation, context, showErrorDialog);
+            }
+            else
+            {
+                // 兼容性处理
+                try
+                {
+                    await operation();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    HandleError(operationName ?? "操作", ex);
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 使用错误处理服务安全执行操作并返回结果
+        /// </summary>
+        protected async Task<T?> ExecuteSafelyAsync<T>(Func<Task<T>> operation, string? operationName = null, bool showErrorDialog = true)
+        {
+            if (ErrorHandlingService != null)
+            {
+                var context = CreateErrorContext(operationName ?? "操作");
+                return await ErrorHandlingService.ExecuteSafelyAsync(operation, context, showErrorDialog);
+            }
+            else
+            {
+                // 兼容性处理
+                try
+                {
+                    return await operation();
+                }
+                catch (Exception ex)
+                {
+                    HandleError(operationName ?? "操作", ex);
+                    return default;
+                }
             }
         }
 
@@ -265,6 +389,32 @@ namespace LYBT.WPF.Client.Core.ViewModels
                 async param => await ExecuteAsync(() => executeMethod(param)),
                 canExecuteMethod ?? (param => true)
             );
+        }
+
+        /// <summary>
+        /// 创建错误上下文
+        /// </summary>
+        protected virtual ErrorContext CreateErrorContext(string operationName)
+        {
+            var context = new ErrorContext
+            {
+                OperationName = operationName,
+                ModuleName = GetType().Namespace?.Split('.').LastOrDefault() ?? "Unknown",
+                ViewName = GetType().Name.Replace("ViewModel", "")
+            };
+
+            // 可以在子类中重写此方法添加更多上下文信息
+            OnCreateErrorContext(context);
+
+            return context;
+        }
+
+        /// <summary>
+        /// 子类可重写此方法添加特定的错误上下文信息
+        /// </summary>
+        protected virtual void OnCreateErrorContext(ErrorContext context)
+        {
+            // 子类可以重写此方法添加特定信息
         }
 
         #region 命令实现

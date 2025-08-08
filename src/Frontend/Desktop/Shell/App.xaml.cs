@@ -29,6 +29,24 @@ namespace LYBT.WPF.Client.Shell
             containerRegistry.RegisterAllServices();
         }
 
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+            
+            // 初始化错误处理服务并注册全局异常处理器
+            try
+            {
+                var errorHandlingService = Container.Resolve<LYBT.WPF.Client.Core.Interfaces.Services.IErrorHandlingService>();
+                errorHandlingService.RegisterGlobalExceptionHandlers();
+            }
+            catch (Exception ex)
+            {
+                // 如果错误处理服务初始化失败，使用基本的错误处理
+                System.Diagnostics.Debug.WriteLine($"初始化错误处理服务失败: {ex.Message}");
+                MessageBox.Show($"系统初始化失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         protected override void ConfigureModuleCatalog(Prism.Modularity.IModuleCatalog moduleCatalog)
         {
             // 配置模块目录
