@@ -13,7 +13,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.Views
         public LoginWindow()
         {
             InitializeComponent();
-            
+
             // 注意：此窗口已弃用，现在使用单窗口模式的 LoginView
             // 这里保留是为了向后兼容
         }

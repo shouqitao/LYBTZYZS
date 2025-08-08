@@ -18,7 +18,8 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 检查用户是否有指定权限
         /// </summary>
-        public bool HasPermission(UserInfo user, string permission) {
+        public bool HasPermission(UserInfo user, string permission)
+        {
             if (user == null) return false;
             // 只有sysadmin有所有权限
             return user.Username == "sysadmin";
@@ -27,41 +28,46 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 检查用户是否有管理员权限
         /// </summary>
-        public bool HasAdminPermission(UserInfo user) {
+        public bool HasAdminPermission(UserInfo user)
+        {
             return user?.Username == "sysadmin";
         }
 
         /// <summary>
         /// 检查用户是否有超级管理员权限
         /// </summary>
-        public bool HasSuperAdminPermission(UserInfo user) {
+        public bool HasSuperAdminPermission(UserInfo user)
+        {
             return user?.Username == "sysadmin";
         }
 
         /// <summary>
         /// 获取用户可访问的模块列表
         /// </summary>
-        public List<string> GetAccessibleModules(UserInfo user) {
+        public List<string> GetAccessibleModules(UserInfo user)
+        {
             if (user == null) return new List<string>();
-            
-            if (user.Username == "sysadmin") {
+
+            if (user.Username == "sysadmin")
+            {
                 // 管理员有所有模块
-                return new List<string> { 
-                    "患者管理", "药材管理", "处方管理", "看诊管理", 
-                    "系统设置", "用户管理", "日志管理" 
+                return new List<string> {
+                    "患者管理", "药材管理", "处方管理", "看诊管理",
+                    "系统设置", "用户管理", "日志管理"
                 };
             }
-            
+
             // 普通用户的基础模块
-            return new List<string> { 
-                "患者管理", "药材管理", "处方管理", "看诊管理" 
+            return new List<string> {
+                "患者管理", "药材管理", "处方管理", "看诊管理"
             };
         }
 
         /// <summary>
         /// 获取用户角色的显示名称
         /// </summary>
-        public string GetRoleDisplayName(string role) {
+        public string GetRoleDisplayName(string role)
+        {
             return "用户";
         }
 

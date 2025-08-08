@@ -19,14 +19,14 @@ namespace LYBT.WPF.Client.Services
             // 获取应用程序数据目录
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var appDirectory = Path.Combine(appDataPath, "LYBT.WPF.Client");
-            
+
             if (!Directory.Exists(appDirectory))
             {
                 Directory.CreateDirectory(appDirectory);
             }
 
             _credentialFilePath = Path.Combine(appDirectory, "credentials.dat");
-            
+
             // 使用固定的熵值（在实际应用中，这个值应该更复杂）
             _entropy = Encoding.UTF8.GetBytes("LYBT-Credential-Entropy-2024");
         }
@@ -82,7 +82,7 @@ namespace LYBT.WPF.Client.Services
                 }
 
                 var encryptedData = File.ReadAllBytes(_credentialFilePath);
-                
+
                 // 解密数据
                 var data = ProtectedData.Unprotect(encryptedData, _entropy, DataProtectionScope.CurrentUser);
                 var json = Encoding.UTF8.GetString(data);

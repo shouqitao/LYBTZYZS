@@ -45,7 +45,7 @@ namespace LYBT.Module.Formula.Services
         public async Task<PaginatedResult<FormulaDto>> GetPagedAsync(FormulaQueryDto query)
         {
             var formulas = _dbContext.Formulas.Where(f => f.Status == CommonStatus.Enabled);
-            
+
             if (!string.IsNullOrWhiteSpace(query.SearchKeyword))
             {
                 formulas = formulas.Where(f => f.Name.Contains(query.SearchKeyword));
@@ -92,7 +92,7 @@ namespace LYBT.Module.Formula.Services
         {
             var formula = await _dbContext.Formulas
                 .FirstOrDefaultAsync(f => f.Id == id && f.Status == CommonStatus.Enabled);
-            
+
             return formula == null ? null : _mapper.Map<FormulaDetailDto>(formula);
         }
 
@@ -306,7 +306,7 @@ namespace LYBT.Module.Formula.Services
         {
             var template = await _dbContext.Formulas
                 .FirstOrDefaultAsync(f => f.Id == id && f.Status == CommonStatus.Enabled);
-            
+
             return template == null ? null : _mapper.Map<FormulaDto>(template);
         }
 
@@ -498,7 +498,7 @@ namespace LYBT.Module.Formula.Services
 
             if (startDate.HasValue)
                 query = query.Where(f => f.CreateTime >= startDate.Value);
-            
+
             if (endDate.HasValue)
                 query = query.Where(f => f.CreateTime <= endDate.Value);
 
@@ -515,7 +515,7 @@ namespace LYBT.Module.Formula.Services
 
         public async Task<FormulaStatisticsDto> GetStatisticsAsync(DateTime startDate, DateTime endDate, Guid? doctorId = null)
         {
-            return await GetStatisticsAsync(startDate, endDate);
+            return await GetStatisticsAsync((DateTime?)startDate, (DateTime?)endDate);
         }
 
         // 导入导出

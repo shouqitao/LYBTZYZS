@@ -130,7 +130,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                 _ = LoadFormulaAsync(id);
             }
         }
-        
+
         private async System.Threading.Tasks.Task LoadFormulaAsync(Guid templateId)
         {
             try

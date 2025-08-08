@@ -13,7 +13,7 @@ namespace LYBT.WPF.Client.Controls.Authentication
         public LoginControl()
         {
             InitializeComponent();
-            
+
             // 处理密码框的数据绑定
             PasswordBox.PasswordChanged += OnPasswordChanged;
         }
@@ -60,7 +60,7 @@ namespace LYBT.WPF.Client.Controls.Authentication
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
-            
+
             if (e.Property == PasswordProperty && !_isUpdating)
             {
                 _isUpdating = true;

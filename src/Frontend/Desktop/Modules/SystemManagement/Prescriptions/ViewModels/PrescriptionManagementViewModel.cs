@@ -154,8 +154,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             try
             {
                 var result = await Service.DeleteAsync(item.Id);
-                return result.IsSuccess 
-                    ? ServiceResult<bool>.Success(true) 
+                return result.IsSuccess
+                    ? ServiceResult<bool>.Success(true)
                     : ServiceResult<bool>.Failure(result.ErrorMessage ?? "删除失败");
             }
             catch (Exception ex)
@@ -181,8 +181,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             }
 
             var result = _commonDialogService.ShowConfirmationAsync($"确定要删除处方吗？\n患者：{item.PatientName}\n诊断：{item.Diagnosis}\n创建时间：{item.CreateTime:yyyy-MM-dd HH:mm}", "确认删除").GetAwaiter().GetResult();
-            
-            return result ;
+
+            return result;
         }
 
         private PrescriptionInfo ConvertToPrescriptionInfo(PrescriptionDto dto)
@@ -215,7 +215,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             {
                 // 创建处方详情查看对话框的ViewModel
                 var dialogViewModel = new ViewPrescriptionDialogViewModel(Service, _commonDialogService);
-                
+
                 // Callbacks removed - handled through dialog result
                 // TODO: 创建并显示对话框窗口
                 _commonDialogService.ShowInformationAsync($"处方详情对话框功能已准备就绪\n处方编号：{prescription.PrescriptionNumber}\n患者：{prescription.PatientName}", "提示").GetAwaiter().GetResult();
@@ -232,7 +232,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
             try
             {
-                                _commonDialogService.ShowInformationAsync($"处方打印功能开发中...\n处方编号：{prescription.PrescriptionNumber}", "提示").GetAwaiter().GetResult();
+                _commonDialogService.ShowInformationAsync($"处方打印功能开发中...\n处方编号：{prescription.PrescriptionNumber}", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -253,21 +253,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
             var result = await _commonDialogService.ShowConfirmationAsync($"确定要作废该处方吗？\n患者：{prescription.PatientName}\n处方编号：{prescription.PrescriptionNumber}\n\n作废后将无法恢复！", "确认作废");
 
-            if (result )
+            if (result)
             {
                 try
                 {
                     IsLoading = true;
                     var response = await Service.CancelAsync(prescription.Id);
-                    
-                    if (response.IsSuccessStatusCode)
+
+                    if (response.IsSuccess)
                     {
                         _commonDialogService.ShowInformationAsync("处方作废成功", "成功").GetAwaiter().GetResult();
                         RefreshCommand.Execute();
                     }
                     else
                     {
-                        var error = response.Error?.Content ?? "作废处方失败";
+                        var error = response.ErrorMessage ?? "作废处方失败";
                         _commonDialogService.ShowErrorAsync($"作废处方失败: {error}", "错误").GetAwaiter().GetResult();
                     }
                 }
@@ -291,7 +291,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             SelectedStatus = null;
             StartDate = DateTime.Today.AddDays(-30);
             EndDate = DateTime.Today;
-            
+
             CurrentPage = 1;
             RefreshCommand.Execute();
         }
@@ -300,7 +300,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         {
             try
             {
-                                _commonDialogService.ShowInformationAsync("处方导出功能开发中...", "提示").GetAwaiter().GetResult();
+                _commonDialogService.ShowInformationAsync("处方导出功能开发中...", "提示").GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -315,13 +315,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 var dialog = new Views.AddPrescriptionDialog();
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Title = "新增处方";
-                
+
                 // 创建 ViewModel
                 var viewModel = new AddPrescriptionDialogViewModel(Service, _commonDialogService);
                 dialog.DataContext = viewModel;
-                
+
                 // 设置回调已移除
-                
+
                 if (dialog.ShowDialog() == true)
                 {
                     RefreshCommand.Execute();
@@ -350,13 +350,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 var dialog = new Views.EditPrescriptionDialog();
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Title = "编辑处方";
-                
+
                 // 创建 ViewModel
                 var viewModel = new EditPrescriptionDialogViewModel(Service, item.Id, _commonDialogService);
                 dialog.DataContext = viewModel;
-                
+
                 // 设置回调已移除
-                
+
                 if (dialog.ShowDialog() == true)
                 {
                     RefreshCommand.Execute();

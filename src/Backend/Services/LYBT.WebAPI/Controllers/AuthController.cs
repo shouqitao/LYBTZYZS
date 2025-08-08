@@ -10,7 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace LYBT.WebAPI.Controllers {
+namespace LYBT.WebAPI.Controllers
+{
     /// <summary>
     /// 认证相关接口
     /// </summary>
@@ -18,7 +19,8 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize] // 默认需要认证
-    public class AuthController : BaseController {
+    public class AuthController : BaseController
+    {
         private readonly IAuthService _authService;
         private readonly IJwtAuthenticationService _jwtService;
         private readonly SysAdminHandler _sysAdminHandler;
@@ -29,7 +31,8 @@ namespace LYBT.WebAPI.Controllers {
             SysAdminHandler sysAdminHandler,
             ILogger<AuthController> logger,
             IMemoryCache cache)
-            : base(logger, cache) {
+            : base(logger, cache)
+        {
             _authService = authService;
             _jwtService = jwtService;
             _sysAdminHandler = sysAdminHandler;
@@ -38,8 +41,10 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 映射共享LoginRequest到本地LoginRequestDto
         /// </summary>
-        private LoginRequestDto MapToLocalDto(LYBT.Shared.Models.Auth.LoginRequest sharedDto) {
-            return new LoginRequestDto {
+        private LoginRequestDto MapToLocalDto(LYBT.Shared.Models.Auth.LoginRequest sharedDto)
+        {
+            return new LoginRequestDto
+            {
                 Username = sharedDto.Username,
                 Password = sharedDto.Password,
                 RememberMe = sharedDto.RememberMe,
@@ -53,33 +58,39 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<LYBT.Shared.Models.Auth.LoginResponse>> Login([FromBody] LYBT.Shared.Models.Auth.LoginRequest dto) {
+        public async Task<ActionResult<LYBT.Shared.Models.Auth.LoginResponse>> Login([FromBody] LYBT.Shared.Models.Auth.LoginRequest dto)
+        {
             _logger.LogInformation("用户 {Username} 尝试登录", dto.Username);
 
             // 基本参数验证
-            if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password)) {
-                return BadRequest(new ProblemDetails {
+            if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return BadRequest(new ProblemDetails
+                {
                     Title = "参数验证失败",
                     Detail = "用户名和密码不能为空",
                     Status = 400
                 });
             }
 
-                // 设置客户端信息
-                dto.ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
-                dto.UserAgent = Request.Headers["User-Agent"].ToString();
+            // 设置客户端信息
+            dto.ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            dto.UserAgent = Request.Headers["User-Agent"].ToString();
 
             // 简化的sysadmin验证
-            if (dto.Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)) {
+            if (dto.Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
+            {
                 return await HandleSysAdminLogin(dto);
             }
 
             // 普通用户登录
             var localDto = MapToLocalDto(dto);
             var user = await _authService.LoginAsync(localDto);
-            if (user == null) {
+            if (user == null)
+            {
                 _logger.LogWarning("用户 {Username} 登录失败", dto.Username);
-                return Unauthorized(new ProblemDetails {
+                return Unauthorized(new ProblemDetails
+                {
                     Title = "认证失败",
                     Detail = "用户名或密码错误",
                     Status = 401
@@ -93,9 +104,11 @@ namespace LYBT.WebAPI.Controllers {
                 dto.RememberMe
             );
 
-            var response = new LYBT.Shared.Models.Auth.LoginResponse {
+            var response = new LYBT.Shared.Models.Auth.LoginResponse
+            {
                 Token = token,
-                User = new LYBT.Shared.Models.Auth.UserInfo {
+                User = new LYBT.Shared.Models.Auth.UserInfo
+                {
                     Id = user.Id,
                     Username = user.Username,
                     RealName = user.RealName,
@@ -112,13 +125,17 @@ namespace LYBT.WebAPI.Controllers {
         /// <summary>
         /// 专门处理sysadmin登录
         /// </summary>
-        private async Task<ActionResult<LYBT.Shared.Models.Auth.LoginResponse>> HandleSysAdminLogin(LYBT.Shared.Models.Auth.LoginRequest dto) {
-            try {
+        private async Task<ActionResult<LYBT.Shared.Models.Auth.LoginResponse>> HandleSysAdminLogin(LYBT.Shared.Models.Auth.LoginRequest dto)
+        {
+            try
+            {
                 // 获取存储的密码哈希
                 var storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
-                if (string.IsNullOrEmpty(storedHash)) {
+                if (string.IsNullOrEmpty(storedHash))
+                {
                     _logger.LogError("sysadmin密码哈希未找到");
-                    return StatusCode(500, new ProblemDetails {
+                    return StatusCode(500, new ProblemDetails
+                    {
                         Title = "系统配置错误",
                         Detail = "系统配置错误",
                         Status = 500
@@ -126,9 +143,11 @@ namespace LYBT.WebAPI.Controllers {
                 }
 
                 // 验证密码
-                if (!PasswordHelper.Verify(storedHash, dto.Password)) {
+                if (!PasswordHelper.Verify(storedHash, dto.Password))
+                {
                     _logger.LogWarning("sysadmin密码验证失败");
-                    return Unauthorized(new ProblemDetails {
+                    return Unauthorized(new ProblemDetails
+                    {
                         Title = "认证失败",
                         Detail = "密码错误",
                         Status = 401
@@ -136,7 +155,8 @@ namespace LYBT.WebAPI.Controllers {
                 }
 
                 // 创建用户信息
-                var adminUser = new UserDto {
+                var adminUser = new UserDto
+                {
                     Id = Guid.NewGuid(),
                     Username = "sysadmin",
                     RealName = "系统管理员",
@@ -154,9 +174,11 @@ namespace LYBT.WebAPI.Controllers {
                     dto.RememberMe
                 );
 
-                var response = new LYBT.Shared.Models.Auth.LoginResponse {
+                var response = new LYBT.Shared.Models.Auth.LoginResponse
+                {
                     Token = token,
-                    User = new LYBT.Shared.Models.Auth.UserInfo {
+                    User = new LYBT.Shared.Models.Auth.UserInfo
+                    {
                         Id = adminUser.Id,
                         Username = adminUser.Username,
                         RealName = adminUser.RealName,
@@ -168,9 +190,12 @@ namespace LYBT.WebAPI.Controllers {
 
                 _logger.LogInformation("sysadmin登录成功");
                 return Ok(response);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "sysadmin登录处理异常");
-                return StatusCode(500, new ProblemDetails {
+                return StatusCode(500, new ProblemDetails
+                {
                     Title = "系统错误",
                     Detail = "登录处理异常",
                     Status = 500
@@ -182,18 +207,22 @@ namespace LYBT.WebAPI.Controllers {
         /// 用户登出
         /// </summary>
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout() {
+        public async Task<IActionResult> Logout()
+        {
             // 从JWT token中获取用户名
             var username = User?.Identity?.Name ?? string.Empty;
-            if (string.IsNullOrEmpty(username)) {
-                return Unauthorized(new ProblemDetails {
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized(new ProblemDetails
+                {
                     Title = "认证失败",
                     Detail = "无效的用户身份",
                     Status = 401
                 });
             }
 
-            var dto = new LogoutRequestDto {
+            var dto = new LogoutRequestDto
+            {
                 Username = username
             };
 
@@ -205,10 +234,13 @@ namespace LYBT.WebAPI.Controllers {
         /// 修改sysadmin密码
         /// </summary>
         [HttpPost("changeSysAdminPassword")]
-        public async Task<IActionResult> ChangeSysAdminPassword([FromBody] ChangeSysAdminPasswordDto dto) {
+        public async Task<IActionResult> ChangeSysAdminPassword([FromBody] ChangeSysAdminPasswordDto dto)
+        {
             var success = await _authService.ChangeSysAdminPasswordAsync(dto);
-            if (!success) {
-                return BadRequest(new ProblemDetails {
+            if (!success)
+            {
+                return BadRequest(new ProblemDetails
+                {
                     Title = "操作失败",
                     Detail = "修改密码失败，请检查当前密码",
                     Status = 400
@@ -222,13 +254,16 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取当前用户信息
         /// </summary>
         [HttpGet("current-user")]
-        public ActionResult<LYBT.Shared.Models.Auth.UserInfo> GetCurrentUser() {
+        public ActionResult<LYBT.Shared.Models.Auth.UserInfo> GetCurrentUser()
+        {
             var username = User?.Identity?.Name;
             var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId)) {
-                return Unauthorized(new ProblemDetails {
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new ProblemDetails
+                {
                     Title = "认证失败",
                     Detail = "无效的用户身份",
                     Status = 401
@@ -237,7 +272,8 @@ namespace LYBT.WebAPI.Controllers {
 
             var userRole = role ?? "User"; // 默认角色
 
-            var userInfo = new LYBT.Shared.Models.Auth.UserInfo {
+            var userInfo = new LYBT.Shared.Models.Auth.UserInfo
+            {
                 Id = Guid.Parse(userId),
                 Username = username,
                 RealName = username == "sysadmin" ? "系统管理员" : username,
@@ -252,13 +288,16 @@ namespace LYBT.WebAPI.Controllers {
         /// 刷新JWT令牌
         /// </summary>
         [HttpPost("refresh-token")]
-        public IActionResult RefreshToken() {
+        public IActionResult RefreshToken()
+        {
             var username = User?.Identity?.Name;
             var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId)) {
-                return Unauthorized(new ProblemDetails {
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new ProblemDetails
+                {
                     Title = "认证失败",
                     Detail = "无效的用户身份",
                     Status = 401
@@ -269,7 +308,8 @@ namespace LYBT.WebAPI.Controllers {
             var roles = role != null ? new[] { role } : new string[0];
             var newToken = _jwtService.GenerateToken(userId, username, roles, false);
 
-            var response = new {
+            var response = new
+            {
                 token = newToken,
                 refreshedAt = DateTime.UtcNow
             };
@@ -281,10 +321,13 @@ namespace LYBT.WebAPI.Controllers {
         /// 修改密码 (通用接口)
         /// </summary>
         [HttpPost("change-password")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto) {
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto)
+        {
             var username = User?.Identity?.Name;
-            if (string.IsNullOrEmpty(username)) {
-                return Unauthorized(new ProblemDetails {
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized(new ProblemDetails
+                {
                     Title = "认证失败",
                     Detail = "无效的用户身份",
                     Status = 401
@@ -292,14 +335,18 @@ namespace LYBT.WebAPI.Controllers {
             }
 
             // 如果是sysadmin，使用专用的修改密码方法
-            if (username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)) {
-                var sysAdminDto = new ChangeSysAdminPasswordDto {
+            if (username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
+            {
+                var sysAdminDto = new ChangeSysAdminPasswordDto
+                {
                     OldPassword = dto.OldPassword,
                     NewPassword = dto.NewPassword
                 };
                 var success = await _authService.ChangeSysAdminPasswordAsync(sysAdminDto);
-                if (!success) {
-                    return BadRequest(new ProblemDetails {
+                if (!success)
+                {
+                    return BadRequest(new ProblemDetails
+                    {
                         Title = "操作失败",
                         Detail = "修改密码失败，请检查当前密码",
                         Status = 400
@@ -309,7 +356,8 @@ namespace LYBT.WebAPI.Controllers {
             }
 
             // 其他用户的密码修改逻辑可以在这里实现
-            return StatusCode(501, new ProblemDetails {
+            return StatusCode(501, new ProblemDetails
+            {
                 Title = "功能未实现",
                 Detail = "普通用户密码修改功能尚未实现",
                 Status = 501

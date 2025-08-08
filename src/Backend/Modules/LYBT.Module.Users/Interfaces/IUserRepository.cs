@@ -1,12 +1,14 @@
 ﻿using LYBT.Models.Users;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 
-namespace LYBT.Module.Users.Interfaces {
+namespace LYBT.Module.Users.Interfaces
+{
 
     /// <summary>
     /// 用户仓储接口，定义用户数据的持久化操作
     /// </summary>
-    public interface IUserRepository {
+    public interface IUserRepository
+    {
 
         /// <summary>
         /// 新增用户
@@ -69,7 +71,7 @@ namespace LYBT.Module.Users.Interfaces {
         /// 获取启用的用户列表
         /// </summary>
         Task<List<UserModel>> GetActiveUsersAsync();
-        
+
         /// <summary>
         /// 获取所有用户
         /// </summary>

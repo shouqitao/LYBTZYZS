@@ -2,13 +2,15 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Herbs {
+namespace LYBT.Shared.Models.Contracts.Herbs
+{
 
     /// <summary>
     /// 中药材创建DTO - 前后端共享API契约
     /// 用于创建新中药材档案的请求模型
     /// </summary>
-    public class HerbCreateDto {
+    public class HerbCreateDto
+    {
 
         /// <summary>药材名称</summary>
         [Required(ErrorMessage = "药材名称不能为空")]

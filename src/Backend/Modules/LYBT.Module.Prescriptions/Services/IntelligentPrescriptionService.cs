@@ -9,18 +9,21 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
 
-namespace LYBT.Module.Prescriptions.Services {
+namespace LYBT.Module.Prescriptions.Services
+{
 
     /// <summary>
     /// 智能处方服务 - 处理验方组合、重复药材检测、缺药提醒等功能
     /// </summary>
-    public class IntelligentPrescriptionService : IIntelligentPrescriptionService {
+    public class IntelligentPrescriptionService : IIntelligentPrescriptionService
+    {
         // private readonly IFormulaService _formulaService; // 暂时注释，等待Formula模块重构
         private readonly IHerbService _herbService;
 
         public IntelligentPrescriptionService(
             // IFormulaService formulaService,
-            IHerbService herbService) {
+            IHerbService herbService)
+        {
             // _formulaService = formulaService;
             _herbService = herbService;
         }
@@ -29,7 +32,8 @@ namespace LYBT.Module.Prescriptions.Services {
         /// 智能组合多个验方模板生成处方
         /// </summary>
         public async Task<PrescriptionCompositionResult> ComposeFromFormulasAsync(
-            List<Guid> formulaIds, int dosageCount = 7) {
+            List<Guid> formulaIds, int dosageCount = 7)
+        {
             var result = new PrescriptionCompositionResult();
             var allHerbs = new Dictionary<string, PrescriptionItemModel>();
             var formulaNames = new List<string>();
@@ -44,9 +48,12 @@ namespace LYBT.Module.Prescriptions.Services {
             // }
 
             // 2. 处理每个验方模板的药材
-            foreach (var template in formulas) {
-                foreach (var herb in template.Herbs) {
-                    var formulaItem = new FormulaIngredientDto {
+            foreach (var template in formulas)
+            {
+                foreach (var herb in template.Herbs)
+                {
+                    var formulaItem = new FormulaIngredientDto
+                    {
                         Name = herb.HerbName,
                         Quantity = herb.Quantity,
                         Unit = herb.Unit,
@@ -80,18 +87,23 @@ namespace LYBT.Module.Prescriptions.Services {
         /// 处理验方模板中的单个药材项
         /// </summary>
         private void ProcessFormulaItem(FormulaIngredientDto herb, Dictionary<string, PrescriptionItemModel> allHerbs,
-            List<string> duplicateWarnings, string templateName) {
+            List<string> duplicateWarnings, string templateName)
+        {
             var herbName = herb.Name?.Trim().ToUpper();
             if (string.IsNullOrEmpty(herbName))
                 return;
 
-            if (allHerbs.ContainsKey(herbName)) {
+            if (allHerbs.ContainsKey(herbName))
+            {
                 // 处理重复药材，采用第一个遇到的剂量（逍遥散优先逻辑）
                 var existingItem = allHerbs[herbName];
                 duplicateWarnings.Add($"{herb.Name}在验方{templateName}中重复，已采用标准剂量：{existingItem.Quantity}{existingItem.Unit}");
-            } else {
+            }
+            else
+            {
                 // 创建新的处方项目
-                var prescriptionItem = new PrescriptionItemModel {
+                var prescriptionItem = new PrescriptionItemModel
+                {
                     Id = Guid.NewGuid(),
                     HerbId = herb.HerbId,
                     HerbName = herb.Name!,
@@ -107,11 +119,13 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <summary>
         /// 智能重复药材检测和处理
         /// </summary>
-        public PrescriptionDuplicateCheckResult DetectDuplicateHerbs(List<PrescriptionItemModel> items) {
+        public PrescriptionDuplicateCheckResult DetectDuplicateHerbs(List<PrescriptionItemModel> items)
+        {
             var result = new PrescriptionDuplicateCheckResult();
             var herbGroups = items.GroupBy(item => item.HerbName?.Trim().ToUpper()).ToList();
 
-            foreach (var group in herbGroups.Where(g => g.Count() > 1)) {
+            foreach (var group in herbGroups.Where(g => g.Count() > 1))
+            {
                 var duplicateItems = group.ToList();
                 var herbName = group.Key;
 
@@ -125,9 +139,12 @@ namespace LYBT.Module.Prescriptions.Services {
                     .Select(item => $"{item.Quantity}{item.Unit}")
                     .ToList();
 
-                if (conflictingQuantities.Any()) {
+                if (conflictingQuantities.Any())
+                {
                     result.Warnings.Add($"{herbName}在多个验方中重复，剂量冲突：{string.Join(", ", conflictingQuantities)}，已采用标准剂量：{standardQuantity}{standardItem.Unit}");
-                } else {
+                }
+                else
+                {
                     result.Warnings.Add($"{herbName}在多个验方中重复，剂量相同：{standardQuantity}{standardItem.Unit}");
                 }
 
@@ -146,14 +163,17 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <summary>
         /// 检查药材库存状态
         /// </summary>
-        public async Task<HerbAvailabilityCheckResult> CheckHerbAvailabilityAsync(List<PrescriptionItemModel> items) {
+        public async Task<HerbAvailabilityCheckResult> CheckHerbAvailabilityAsync(List<PrescriptionItemModel> items)
+        {
             var result = new HerbAvailabilityCheckResult();
             var allHerbs = await _herbService.GetAvailableHerbsAsync();
             var availableHerbNames = allHerbs.Select(h => h.Name?.Trim().ToUpper()).ToHashSet();
 
-            foreach (var item in items) {
+            foreach (var item in items)
+            {
                 var herbName = item.HerbName?.Trim().ToUpper();
-                if (!string.IsNullOrEmpty(herbName) && !availableHerbNames.Contains(herbName)) {
+                if (!string.IsNullOrEmpty(herbName) && !availableHerbNames.Contains(herbName))
+                {
                     result.MissingHerbs.Add(item.HerbName!);
                 }
             }
@@ -168,13 +188,15 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <summary>
         /// 计算处方价格和重量
         /// </summary>
-        public PrescriptionPriceCalculationResult CalculatePrescriptionPrice(List<PrescriptionItemModel> items, int dosageCount) {
+        public PrescriptionPriceCalculationResult CalculatePrescriptionPrice(List<PrescriptionItemModel> items, int dosageCount)
+        {
             var result = new PrescriptionPriceCalculationResult();
 
             decimal singleDosePrice = 0;
             decimal totalWeight = 0;
 
-            foreach (var item in items) {
+            foreach (var item in items)
+            {
                 // 单帖价格 = 药材单价 × 用量 (注意：这里需要获取实际单价，暂时使用0)
                 var itemPrice = 0 * item.Quantity; // 需要从药材信息中获取单价
                 singleDosePrice += itemPrice;
@@ -195,7 +217,8 @@ namespace LYBT.Module.Prescriptions.Services {
         /// 生成处方智能建议
         /// </summary>
         public async Task<PrescriptionSuggestionResult> GeneratePrescriptionSuggestionsAsync(
-            string diagnosis, List<string> symptoms, Guid? doctorId = null) {
+            string diagnosis, List<string> symptoms, Guid? doctorId = null)
+        {
             await Task.CompletedTask; // 异步占位
             var result = new PrescriptionSuggestionResult();
 
@@ -208,25 +231,30 @@ namespace LYBT.Module.Prescriptions.Services {
             //     allFormulas = await _formulaService.GetAllActiveFormulasAsync();
             // }
 
-            foreach (var formula in allFormulas) {
+            foreach (var formula in allFormulas)
+            {
                 // 基于验方名称和备注进行关键词匹配
-                if (ContainsRelevantKeywords(formula, diagnosis, symptoms)) {
+                if (ContainsRelevantKeywords(formula, diagnosis, symptoms))
+                {
                     result.SuggestedFormulas.Add(formula.Name);
                 }
             }
 
             // 生成用药建议
-            if (symptoms.Contains("失眠") || diagnosis.Contains("不寐")) {
+            if (symptoms.Contains("失眠") || diagnosis.Contains("不寐"))
+            {
                 result.SuggestedAdvice.Add("建议睡前30分钟温服");
                 result.Precautions.Add("服药期间避免浓茶咖啡");
             }
 
-            if (symptoms.Contains("腹泻") || diagnosis.Contains("泄泻")) {
+            if (symptoms.Contains("腹泻") || diagnosis.Contains("泄泻"))
+            {
                 result.SuggestedAdvice.Add("温服，忌食生冷");
                 result.Precautions.Add("腹泻严重时及时就医");
             }
 
-            if (symptoms.Contains("感冒") || diagnosis.Contains("外感")) {
+            if (symptoms.Contains("感冒") || diagnosis.Contains("外感"))
+            {
                 result.SuggestedAdvice.Add("热服取汗");
                 result.Precautions.Add("服药后避风寒，适当休息");
             }
@@ -237,17 +265,21 @@ namespace LYBT.Module.Prescriptions.Services {
         /// <summary>
         /// 检查验方是否包含相关关键词
         /// </summary>
-        private bool ContainsRelevantKeywords(FormulaDetailDto formula, string diagnosis, List<string> symptoms) {
+        private bool ContainsRelevantKeywords(FormulaDetailDto formula, string diagnosis, List<string> symptoms)
+        {
             var searchText = $"{formula.Name} {formula.Remark}".ToLower();
 
             // 诊断关键词匹配
-            if (!string.IsNullOrEmpty(diagnosis) && searchText.Contains(diagnosis.ToLower())) {
+            if (!string.IsNullOrEmpty(diagnosis) && searchText.Contains(diagnosis.ToLower()))
+            {
                 return true;
             }
 
             // 症状关键词匹配
-            foreach (var symptom in symptoms) {
-                if (!string.IsNullOrEmpty(symptom) && searchText.Contains(symptom.ToLower())) {
+            foreach (var symptom in symptoms)
+            {
+                if (!string.IsNullOrEmpty(symptom) && searchText.Contains(symptom.ToLower()))
+                {
                     return true;
                 }
             }

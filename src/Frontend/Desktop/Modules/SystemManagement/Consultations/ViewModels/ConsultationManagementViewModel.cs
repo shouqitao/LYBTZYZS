@@ -183,7 +183,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels
             {
                 IsLoading = true;
                 await Task.Delay(300); // 模拟删除
-                
+
                 Consultations.Remove(consultation);
                 TotalCount--;
             }

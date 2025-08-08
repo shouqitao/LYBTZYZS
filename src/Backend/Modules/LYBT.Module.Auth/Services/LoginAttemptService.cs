@@ -4,12 +4,14 @@ using System;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Concurrent;
 
-namespace LYBT.Module.Auth.Services {
+namespace LYBT.Module.Auth.Services
+{
 
     /// <summary>
     /// 登录尝试跟踪服务 - 用于防暴力破解
     /// </summary>
-    public interface ILoginAttemptService {
+    public interface ILoginAttemptService
+    {
         /// <summary>
         /// 记录失败的登录尝试
         /// </summary>
@@ -31,62 +33,73 @@ namespace LYBT.Module.Auth.Services {
         int GetRemainingLockTime(string username);
     }
 
-    public class LoginAttemptService : ILoginAttemptService {
+    public class LoginAttemptService : ILoginAttemptService
+    {
         private readonly IMemoryCache _cache;
         private readonly int _maxAttempts = 3;
         private readonly int _lockoutDurationMinutes = 15;
-        
+
         // 用于跟踪失败次数
         private readonly ConcurrentDictionary<string, LoginAttemptInfo> _attempts = new();
 
-        public LoginAttemptService(IMemoryCache cache) {
+        public LoginAttemptService(IMemoryCache cache)
+        {
             _cache = cache;
         }
 
-        public void RecordFailedAttempt(string username) {
+        public void RecordFailedAttempt(string username)
+        {
             var key = GetNormalizedKey(username);
             var now = DateTime.UtcNow;
 
-            _attempts.AddOrUpdate(key, 
-                new LoginAttemptInfo { 
-                    FailedAttempts = 1, 
+            _attempts.AddOrUpdate(key,
+                new LoginAttemptInfo
+                {
+                    FailedAttempts = 1,
                     FirstAttemptTime = now,
-                    LastAttemptTime = now 
+                    LastAttemptTime = now
                 },
-                (k, existing) => {
+                (k, existing) =>
+                {
                     existing.FailedAttempts++;
                     existing.LastAttemptTime = now;
-                    
+
                     // 如果达到最大尝试次数，设置锁定时间
-                    if (existing.FailedAttempts >= _maxAttempts) {
+                    if (existing.FailedAttempts >= _maxAttempts)
+                    {
                         existing.LockedUntil = now.AddMinutes(_lockoutDurationMinutes);
-                        
+
                         // 同时在缓存中设置锁定标记
                         var cacheKey = $"login_lockout_{key}";
                         _cache.Set(cacheKey, true, TimeSpan.FromMinutes(_lockoutDurationMinutes));
                     }
-                    
+
                     return existing;
                 });
         }
 
-        public bool IsAccountLocked(string username) {
+        public bool IsAccountLocked(string username)
+        {
             var key = GetNormalizedKey(username);
-            
+
             // 先检查缓存
             var cacheKey = $"login_lockout_{key}";
-            if (_cache.TryGetValue<bool>(cacheKey, out _)) {
+            if (_cache.TryGetValue<bool>(cacheKey, out _))
+            {
                 return true;
             }
 
             // 再检查内存字典
-            if (_attempts.TryGetValue(key, out var attemptInfo)) {
-                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil > DateTime.UtcNow) {
+            if (_attempts.TryGetValue(key, out var attemptInfo))
+            {
+                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil > DateTime.UtcNow)
+                {
                     return true;
                 }
-                
+
                 // 如果锁定已过期，清理记录
-                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil <= DateTime.UtcNow) {
+                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil <= DateTime.UtcNow)
+                {
                     _attempts.TryRemove(key, out _);
                 }
             }
@@ -94,20 +107,24 @@ namespace LYBT.Module.Auth.Services {
             return false;
         }
 
-        public void ClearAttempts(string username) {
+        public void ClearAttempts(string username)
+        {
             var key = GetNormalizedKey(username);
             _attempts.TryRemove(key, out _);
-            
+
             // 同时清除缓存中的锁定标记
             var cacheKey = $"login_lockout_{key}";
             _cache.Remove(cacheKey);
         }
 
-        public int GetRemainingLockTime(string username) {
+        public int GetRemainingLockTime(string username)
+        {
             var key = GetNormalizedKey(username);
-            
-            if (_attempts.TryGetValue(key, out var attemptInfo)) {
-                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil > DateTime.UtcNow) {
+
+            if (_attempts.TryGetValue(key, out var attemptInfo))
+            {
+                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil > DateTime.UtcNow)
+                {
                     return (int)(attemptInfo.LockedUntil.Value - DateTime.UtcNow).TotalSeconds;
                 }
             }
@@ -115,11 +132,13 @@ namespace LYBT.Module.Auth.Services {
             return 0;
         }
 
-        private string GetNormalizedKey(string username) {
+        private string GetNormalizedKey(string username)
+        {
             return username?.ToLowerInvariant() ?? string.Empty;
         }
 
-        private class LoginAttemptInfo {
+        private class LoginAttemptInfo
+        {
             public int FailedAttempts { get; set; }
             public DateTime FirstAttemptTime { get; set; }
             public DateTime LastAttemptTime { get; set; }

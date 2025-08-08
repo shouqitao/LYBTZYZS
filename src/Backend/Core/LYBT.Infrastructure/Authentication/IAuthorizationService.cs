@@ -1,11 +1,13 @@
 using System.Security.Claims;
 
-namespace LYBT.Infrastructure.Authentication {
+namespace LYBT.Infrastructure.Authentication
+{
 
     /// <summary>
     /// 授权服务接口
     /// </summary>
-    public interface IAuthorizationService {
+    public interface IAuthorizationService
+    {
 
         /// <summary>
         /// 检查用户是否有指定权限

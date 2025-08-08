@@ -49,7 +49,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
 
             // 注册日志工厂
             containerRegistry.RegisterSingleton<ILoggerFactory>(() => loggerFactory);
-            
+
             // 注册泛型日志器
             containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
         }
@@ -67,7 +67,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             }, NullLoggerFactory.Instance);
 
             IMapper mapper = mapperConfig.CreateMapper();
-            
+
             // 注册IMapper为单例
             containerRegistry.RegisterSingleton<IMapper>(() => mapper);
         }
@@ -111,7 +111,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
         {
             var tokenManager = container.Resolve<ITokenManager>();
             var authHandler = new AuthHeaderHandler(tokenManager);
-            
+
 #if DEBUG
             // 开发环境忽略SSL证书验证
             var innerHandler = new HttpClientHandler
@@ -180,12 +180,12 @@ namespace LYBT.WPF.Client.Shell.Extensions
 
 
             // 注册日志API服务
-//             {
-//                 var httpClient = CreateAuthenticatedHttpClient(container);
-//                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
-//                 httpClient.Timeout = TimeSpan.FromSeconds(60);
-//                 return RestService.For<ILogsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
-//             });
+            //             {
+            //                 var httpClient = CreateAuthenticatedHttpClient(container);
+            //                 httpClient.BaseAddress = new Uri(ApiConfiguration.BaseUrl);
+            //                 httpClient.Timeout = TimeSpan.FromSeconds(60);
+            //                 return RestService.For<ILogsApiService>(httpClient, RefitConfiguration.GetRefitSettings());
+            //             });
 
             // 注册系统设置API服务
             containerRegistry.Register<ISystemSettingsApiService>(container =>
@@ -255,7 +255,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
             // 暂时不注册 Prism 对话框，因为 IDialogAware 接口有兼容性问题
-            
+
             // 注册简单的对话框服务，使用 MessageBox 实现
             containerRegistry.RegisterSingleton<ICommonDialogService, SimpleDialogService>();
         }

@@ -23,12 +23,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
     /// <summary>
     /// 验方模板管理视图模型
     /// </summary>
-    public class FormulaManagementViewModel : BaseManagementViewModel<FormulaInfo, IFormulaApiService>
+    public class FormulaManagementViewModel : BaseServiceManagementViewModel<FormulaInfo, IFormulaService>
     {
         private readonly ICommonDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
         private readonly IHerbService _herbService;
-        private readonly IFormulaService _formulaService;
+        private readonly IFormulaApiService _formulaApiService;
 
         protected override string ModuleName => "验方模板管理";
 
@@ -57,17 +57,19 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 
         #endregion
 
-        public FormulaManagementViewModel(IFormulaApiService service,
+        public FormulaManagementViewModel(
+            IFormulaService formulaService,
+            IFormulaApiService formulaApiService,
             ICommonDialogService commonDialogService,
             IDialogService dialogService,
             IHerbService herbService,
-            IFormulaService formulaService)
-            : base(service)
+            Prism.Events.IEventAggregator eventAggregator)
+            : base(formulaService, eventAggregator)
         {
             _commonDialogService = commonDialogService;
             _dialogService = dialogService;
             _herbService = herbService;
-            _formulaService = formulaService;
+            _formulaApiService = formulaApiService;
             // 初始化额外的命令
             ImportTemplatesCommand = new DelegateCommand(ImportTemplates);
             CopyTemplateCommand = new DelegateCommand<FormulaInfo>(async (template) => await CopyTemplate(template));
@@ -100,32 +102,23 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
         {
             try
             {
-                var category = SelectedCategory == "全部" ? null : SelectedCategory;
-
-                var response = await Service.GetFormulasAsync(SearchKeyword, category);
-
-                if (response.IsSuccessStatusCode && response.Content != null)
+                // 如果需要传递分类信息，创建扩展请求
+                var extendedRequest = new ExtendedPaginationRequest
                 {
-                    var paginatedResult = response.Content;
-                    
-                    // 转换为前端模型
-                    var formulaInfos = paginatedResult.Items.Select(dto => ConvertToFormulaInfo(dto)).ToList();
+                    CurrentPage = request.CurrentPage,
+                    PageSize = request.PageSize,
+                    SearchKeyword = request.SearchKeyword,
+                    SortField = request.SortField,
+                    SortAscending = request.SortAscending
+                };
 
-                    var result = new PagedResult<FormulaInfo>
-                    {
-                        Items = formulaInfos,
-                        TotalCount = paginatedResult.TotalCount,
-                        CurrentPage = paginatedResult.CurrentPage,
-                        PageSize = paginatedResult.PageSize
-                    };
-
-                    return ServiceResult<PagedResult<FormulaInfo>>.Success(result);
-                }
-                else
+                if (SelectedCategory != "全部")
                 {
-                    var error = response.Error?.Content ?? "获取验方模板列表失败";
-                    return ServiceResult<PagedResult<FormulaInfo>>.Failure(error);
+                    extendedRequest.ExtensionData["Category"] = SelectedCategory;
                 }
+
+                var result = await Service.SearchFormulasAsync(extendedRequest);
+                return ServiceResult<PagedResult<FormulaInfo>>.Success(result);
             }
             catch (Exception ex)
             {
@@ -133,93 +126,95 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
             }
         }
 
-        protected override async Task<ServiceResult<bool>> DeleteFromServiceAsync(FormulaInfo item)
-        {
-            try
-            {
-                var response = await Service.DeleteFormulaAsync(item.Id);
-                if (response.IsSuccessStatusCode)
-                {
-                    return ServiceResult<bool>.Success(true);
-                }
-                else
-                {
-                    var error = response.Error?.Content ?? "删除验方模板失败";
-                    return ServiceResult<bool>.Failure(error);
-                }
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<bool>.Failure($"删除验方模板失败: {ex.Message}");
-            }
-        }
-
-        protected override string GetItemDisplayName(FormulaInfo item)
-        {
-            return item.Name ?? string.Empty;
-        }
-
-        protected override void ExecuteAdd()
+        protected override async Task AddAsync()
         {
             try
             {
                 // 直接使用注入的服务
-                var dialog = new Views.AddFormulaDialog(_herbService, _formulaService, _commonDialogService);
+                var dialog = new Views.AddFormulaDialog(_herbService, Service, _commonDialogService);
                 dialog.Owner = Application.Current.MainWindow;
-                
+
                 if (dialog.ShowDialog() == true)
                 {
-                    RefreshCommand.Execute();
+                    await RefreshAsync();
                 }
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"打开新增验方模板对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync($"打开新增验方模板对话框失败: {ex.Message}", "错误");
             }
         }
 
-        protected override void ExecuteEdit(FormulaInfo item)
+        protected override async Task EditAsync(FormulaInfo item)
         {
             if (item == null) return;
 
             try
             {
                 // 创建编辑对话框的ViewModel
-                var viewModel = new EditFormulaDialogViewModel(_formulaService, _herbService, _commonDialogService);
+                var viewModel = new EditFormulaDialogViewModel(Service, _herbService, _commonDialogService);
                 var dialog = new Views.EditFormulaDialog(viewModel);
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Initialize(item.Id);
-                
+
                 if (dialog.ShowDialog() == true)
                 {
-                    RefreshCommand.Execute();
+                    await RefreshAsync();
                 }
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"打开编辑验方模板对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync($"打开编辑验方模板对话框失败: {ex.Message}", "错误");
             }
         }
 
-        protected override void ExecuteView(FormulaInfo item)
+        protected override async Task DeleteAsync(FormulaInfo item)
+        {
+            if (item == null) return;
+
+            var confirm = await _commonDialogService.ShowConfirmationAsync(
+                $"确定要删除验方模板「{item.Name}」吗？",
+                "删除确认");
+
+            if (confirm)
+            {
+                var result = await Service.DeleteAsync(item.Id);
+                if (result.IsSuccess)
+                {
+                    await RefreshAsync();
+                    await _commonDialogService.ShowInformationAsync("验方模板删除成功", "成功");
+                }
+                else
+                {
+                    await _commonDialogService.ShowErrorAsync(
+                        result.ErrorMessage ?? "删除验方模板失败",
+                        "错误");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 查看验方模板
+        /// </summary>
+        private async Task ViewAsync(FormulaInfo item)
         {
             if (item == null) return;
 
             try
             {
                 // 创建查看对话框的ViewModel
-                var viewModel = new ViewFormulaDialogViewModel(_formulaService, _commonDialogService);
+                var viewModel = new ViewFormulaDialogViewModel(Service, _commonDialogService);
                 var dialog = new Views.ViewFormulaDialog(viewModel)
                 {
                     Owner = Application.Current.MainWindow
                 };
-                
+
                 dialog.Initialize(item.Id);
                 dialog.ShowDialog();
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"打开验方模板详情对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync($"打开验方模板详情对话框失败: {ex.Message}", "错误");
             }
         }
 
@@ -242,7 +237,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                 try
                 {
                     IsLoading = true;
-                    
+
                     // 验证文件格式
                     var extension = System.IO.Path.GetExtension(openDialog.FileName).ToLower();
                     if (extension != ".xlsx" && extension != ".csv")
@@ -250,10 +245,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                         await _commonDialogService.ShowWarningAsync("不支持的文件格式，请选择 Excel (.xlsx) 或 CSV (.csv) 文件", "格式错误");
                         return;
                     }
-                    
+
                     // 这里模拟导入过程
                     await Task.Delay(1000); // 模拟文件读取和处理
-                    
+
                     // 导入示例数据格式说明
                     var helpMessage = "验方模板导入格式说明：\n\n" +
                                     "Excel/CSV 文件应包含以下列：\n" +
@@ -265,15 +260,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                                     "6. 药材单位（必填）\n\n" +
                                     "每个模板可包含多行药材信息。\n\n" +
                                     "导入功能当前为演示版本，实际导入需要后端支持。";
-                    
+
                     _commonDialogService.ShowInformationAsync(helpMessage, "导入说明").GetAwaiter().GetResult();
-                    
+
                     // TODO: 实际导入时需要：
                     // 1. 使用 EPPlus 或类似库读取 Excel 文件
                     // 2. 解析文件内容并验证数据格式
                     // 3. 批量调用 API 创建验方模板
                     // 4. 显示导入进度和结果
-                    
+
                     _commonDialogService.ShowInformationAsync($"已选择文件：{openDialog.FileName}\n\n实际导入功能需要后端API支持批量导入。", "提示").GetAwaiter().GetResult();
                 }
                 catch (Exception ex)
@@ -292,21 +287,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
             if (template == null) return;
 
             var result = await _commonDialogService.ShowConfirmationAsync($"确定要复制验方模板 \"{template.Name}\" 吗？", "确认复制");
-            
+
             if (result)
             {
                 try
                 {
                     var newName = $"{template.Name}_副本";
-                    var response = await Service.CopyFormulaAsync(template.Id, newName);
-                    if (response.IsSuccessStatusCode)
+                    var response = await Service.CopyAsync(template.Id, newName);
+                    if (response.IsSuccess)
                     {
                         _commonDialogService.ShowInformationAsync($"验方模板 \"{template.Name}\" 已复制", "成功").GetAwaiter().GetResult();
                         RefreshCommand.Execute();
                     }
                     else
                     {
-                        var error = response.Error?.Content ?? "复制失败";
+                        var error = response.ErrorMessage ?? "复制失败";
                         _commonDialogService.ShowErrorAsync($"复制验方模板失败：{error}", "错误").GetAwaiter().GetResult();
                     }
                 }

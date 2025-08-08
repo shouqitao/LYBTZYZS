@@ -1,9 +1,11 @@
-namespace LYBT.Infrastructure.Options {
+namespace LYBT.Infrastructure.Options
+{
 
     /// <summary>
     /// JWT 配置项
     /// </summary>
-    public class JwtOptions {
+    public class JwtOptions
+    {
 
         /// <summary>
         /// 密钥

@@ -130,7 +130,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public decimal TotalPrice => Items.Sum(item => item.Subtotal);
 
         /// <summary>处方编号</summary>
-        public string PrescriptionNumber => OriginalPrescription != null 
+        public string PrescriptionNumber => OriginalPrescription != null
             ? $"CF{OriginalPrescription.CreateTime:yyyyMMdd}{OriginalPrescription.Id.ToString("N")[..6].ToUpper()}"
             : string.Empty;
 
@@ -183,14 +183,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             _prescriptionId = prescriptionId;
 
             Items = new ObservableCollection<PrescriptionItemEditModel>();
-            
+
             // 先初始化命令
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), () => CanSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
             AddItemCommand = new DelegateCommand(ExecuteAddItem);
             RemoveItemCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteRemoveItem);
             SelectHerbCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteSelectHerb);
-            
+
             // 然后添加事件处理器
             Items.CollectionChanged += (s, e) =>
             {
@@ -210,11 +210,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             {
                 IsLoading = true;
                 var response = await _prescriptionService.GetByIdAsync(_prescriptionId);
-                
-                if (response.IsSuccessStatusCode && response.Content != null)
+
+                if (response.IsSuccess && response.Data != null)
                 {
-                    OriginalPrescription = response.Content;
-                    
+                    OriginalPrescription = response.Data;
+
                     // 填充表单数据
                     PatientName = "患者" + OriginalPrescription.PatientId.ToString()[..8]; // TODO: 从其他服务获取患者姓名
                     DoctorName = "医生" + OriginalPrescription.DoctorId.ToString()[..8];   // TODO: 从其他服务获取医生姓名
@@ -222,7 +222,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                     DosageCount = 1; // TODO: OriginalPrescription.DosageCount; - 等待DTO属性添加
                     Usage = string.Empty; // TODO: OriginalPrescription.Usage ?? string.Empty; - 等待DTO属性添加
                     Remark = OriginalPrescription.Remark ?? string.Empty;
-                    
+
                     // 填充药材项目
                     Items.Clear();
                     if (OriginalPrescription.Items != null)
@@ -237,7 +237,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                                 Unit = item.Unit ?? "g",
                                 Price = 0 // TODO: item.Price - 等待DTO属性添加
                             };
-                            
+
                             editModel.PropertyChanged += (s, e) =>
                             {
                                 if (e.PropertyName == nameof(PrescriptionItemEditModel.Quantity) ||
@@ -249,14 +249,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                                     SaveCommand.RaiseCanExecuteChanged();
                                 }
                             };
-                            
+
                             Items.Add(editModel);
                         }
                     }
                 }
                 else
                 {
-                    var error = response.Error?.Content ?? "获取处方详情失败";
+                    var error = response.ErrorMessage ?? "获取处方详情失败";
                     _commonDialogService.ShowErrorAsync($"加载处方详情失败: {error}", "错误").GetAwaiter().GetResult();
                     CloseDialogCallback?.Invoke();
                 }
@@ -298,7 +298,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
                 // TODO: 实现实际的API调用
                 // var response = await _prescriptionService.UpdateAsync(request);
-                
+
                 // 暂时模拟成功响应
                 await Task.Delay(1000); // 模拟网络延迟
                 _commonDialogService.ShowInformationAsync("处方保存成功（模拟）", "成功").GetAwaiter().GetResult();
@@ -320,11 +320,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             if (HasChanges)
             {
                 var result = _commonDialogService.ShowConfirmationAsync("确定要取消编辑吗？未保存的数据将丢失。", "确认取消").GetAwaiter().GetResult();
-                
+
                 if (!result)
                     return;
             }
-            
+
             CloseDialogCallback?.Invoke();
         }
 
@@ -351,8 +351,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             if (item == null) return;
 
             var result = _commonDialogService.ShowConfirmationAsync($"确定要移除药材 {item.HerbName} 吗？", "确认移除").GetAwaiter().GetResult();
-            
-            if (result )
+
+            if (result)
             {
                 Items.Remove(item);
             }
@@ -376,24 +376,24 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         private bool HasItemChanges()
         {
             if (OriginalPrescription?.Items == null) return Items.Any();
-            
+
             var originalItems = OriginalPrescription.Items.ToList();
-            
+
             if (originalItems.Count != Items.Count) return true;
-            
+
             for (int i = 0; i < originalItems.Count; i++)
             {
                 var original = originalItems[i];
                 var current = Items[i];
-                
+
                 if (original.HerbId != current.HerbId ||
                     original.Quantity != current.Quantity)
-                    // TODO: || original.Price != current.Price - 等待DTO属性添加
+                // TODO: || original.Price != current.Price - 等待DTO属性添加
                 {
                     return true;
                 }
             }
-            
+
             return false;
         }
 

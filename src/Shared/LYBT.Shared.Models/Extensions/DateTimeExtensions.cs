@@ -1,17 +1,20 @@
-namespace LYBT.Shared.Models.Extensions {
+namespace LYBT.Shared.Models.Extensions
+{
 
     /// <summary>
     /// DateTime 扩展方法 - 前后端共享
     /// 提供日期时间的常用格式化和操作功能
     /// </summary>
-    public static class DateTimeExtensions {
+    public static class DateTimeExtensions
+    {
 
         /// <summary>
         /// 转换为标准日期时间字符串 (yyyy-MM-dd HH:mm:ss)
         /// </summary>
         /// <param name="dt">要格式化的日期时间</param>
         /// <returns>标准格式的日期时间字符串</returns>
-        public static string ToStandardDateTime(this DateTime dt) {
+        public static string ToStandardDateTime(this DateTime dt)
+        {
             return dt.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
@@ -20,7 +23,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">要格式化的日期时间</param>
         /// <returns>中文格式的日期字符串</returns>
-        public static string ToCnDate(this DateTime dt) {
+        public static string ToCnDate(this DateTime dt)
+        {
             return dt.ToString("yyyy年MM月dd日");
         }
 
@@ -29,7 +33,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">要格式化的日期时间</param>
         /// <returns>中文格式的日期时间字符串</returns>
-        public static string ToCnDateTime(this DateTime dt) {
+        public static string ToCnDateTime(this DateTime dt)
+        {
             return dt.ToString("yyyy年MM月dd日 HH:mm:ss");
         }
 
@@ -38,7 +43,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">要格式化的日期时间</param>
         /// <returns>ISO 8601格式的日期时间字符串</returns>
-        public static string ToIso8601(this DateTime dt) {
+        public static string ToIso8601(this DateTime dt)
+        {
             return dt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
         }
 
@@ -48,22 +54,28 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">要转换的日期时间</param>
         /// <returns>友好格式的时间字符串</returns>
-        public static string ToFriendlyString(this DateTime dt) {
+        public static string ToFriendlyString(this DateTime dt)
+        {
             var span = DateTime.Now - dt;
 
-            if (span.TotalDays > 365) {
+            if (span.TotalDays > 365)
+            {
                 return $"{(int)(span.TotalDays / 365)}年前";
             }
-            if (span.TotalDays > 30) {
+            if (span.TotalDays > 30)
+            {
                 return $"{(int)(span.TotalDays / 30)}个月前";
             }
-            if (span.TotalDays > 1) {
+            if (span.TotalDays > 1)
+            {
                 return $"{(int)span.TotalDays}天前";
             }
-            if (span.TotalHours > 1) {
+            if (span.TotalHours > 1)
+            {
                 return $"{(int)span.TotalHours}小时前";
             }
-            if (span.TotalMinutes > 1) {
+            if (span.TotalMinutes > 1)
+            {
                 return $"{(int)span.TotalMinutes}分钟前";
             }
 
@@ -75,7 +87,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">输入的日期时间</param>
         /// <returns>当天的开始时间（00:00:00）</returns>
-        public static DateTime StartOfDay(this DateTime dt) {
+        public static DateTime StartOfDay(this DateTime dt)
+        {
             return dt.Date;
         }
 
@@ -84,7 +97,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">输入的日期时间</param>
         /// <returns>当天的结束时间（23:59:59.9999999）</returns>
-        public static DateTime EndOfDay(this DateTime dt) {
+        public static DateTime EndOfDay(this DateTime dt)
+        {
             return dt.Date.AddDays(1).AddTicks(-1);
         }
 
@@ -93,7 +107,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">输入的日期时间</param>
         /// <returns>本月的第一天</returns>
-        public static DateTime StartOfMonth(this DateTime dt) {
+        public static DateTime StartOfMonth(this DateTime dt)
+        {
             return new DateTime(dt.Year, dt.Month, 1);
         }
 
@@ -102,7 +117,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">输入的日期时间</param>
         /// <returns>本月的最后一天</returns>
-        public static DateTime EndOfMonth(this DateTime dt) {
+        public static DateTime EndOfMonth(this DateTime dt)
+        {
             return dt.StartOfMonth().AddMonths(1).AddTicks(-1);
         }
 
@@ -112,7 +128,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// <param name="dt">要比较的第一个日期时间</param>
         /// <param name="other">要比较的第二个日期时间</param>
         /// <returns>如果是同一天返回true，否则返回false</returns>
-        public static bool IsSameDay(this DateTime dt, DateTime other) {
+        public static bool IsSameDay(this DateTime dt, DateTime other)
+        {
             return dt.Date == other.Date;
         }
 
@@ -121,7 +138,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">要判断的日期时间</param>
         /// <returns>如果是工作日返回true，否则返回false</returns>
-        public static bool IsWeekday(this DateTime dt) {
+        public static bool IsWeekday(this DateTime dt)
+        {
             return dt.DayOfWeek >= DayOfWeek.Monday && dt.DayOfWeek <= DayOfWeek.Friday;
         }
 
@@ -130,7 +148,8 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="dt">要判断的日期时间</param>
         /// <returns>如果是周末返回true，否则返回false</returns>
-        public static bool IsWeekend(this DateTime dt) {
+        public static bool IsWeekend(this DateTime dt)
+        {
             return dt.DayOfWeek == DayOfWeek.Saturday || dt.DayOfWeek == DayOfWeek.Sunday;
         }
 
@@ -140,10 +159,12 @@ namespace LYBT.Shared.Models.Extensions {
         /// </summary>
         /// <param name="birthDate">出生日期</param>
         /// <returns>当前年龄</returns>
-        public static int GetAge(this DateTime birthDate) {
+        public static int GetAge(this DateTime birthDate)
+        {
             var today = DateTime.Today;
             var age = today.Year - birthDate.Year;
-            if (birthDate.Date > today.AddYears(-age)) {
+            if (birthDate.Date > today.AddYears(-age))
+            {
                 age--;
             }
             return age;

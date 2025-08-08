@@ -1,11 +1,13 @@
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Models.Prescriptions {
+namespace LYBT.Models.Prescriptions
+{
 
     /// <summary>
     /// 处方组成结果
     /// </summary>
-    public class PrescriptionCompositionResult {
+    public class PrescriptionCompositionResult
+    {
 
         /// <summary>
         /// 是否成功
@@ -71,7 +73,8 @@ namespace LYBT.Models.Prescriptions {
     /// <summary>
     /// 处方重复检查结果
     /// </summary>
-    public class PrescriptionDuplicateCheckResult {
+    public class PrescriptionDuplicateCheckResult
+    {
 
         /// <summary>
         /// 是否有重复
@@ -112,7 +115,8 @@ namespace LYBT.Models.Prescriptions {
     /// <summary>
     /// 药材可用性检查结果
     /// </summary>
-    public class HerbAvailabilityCheckResult {
+    public class HerbAvailabilityCheckResult
+    {
 
         /// <summary>
         /// 是否可用
@@ -143,7 +147,8 @@ namespace LYBT.Models.Prescriptions {
     /// <summary>
     /// 处方价格计算结果
     /// </summary>
-    public class PrescriptionPriceCalculationResult {
+    public class PrescriptionPriceCalculationResult
+    {
 
         /// <summary>
         /// 总价格
@@ -179,7 +184,8 @@ namespace LYBT.Models.Prescriptions {
     /// <summary>
     /// 价格明细项
     /// </summary>
-    public class PriceDetailItem {
+    public class PriceDetailItem
+    {
 
         /// <summary>
         /// 项目名称
@@ -205,7 +211,8 @@ namespace LYBT.Models.Prescriptions {
     /// <summary>
     /// 处方建议结果
     /// </summary>
-    public class PrescriptionSuggestionResult {
+    public class PrescriptionSuggestionResult
+    {
 
         /// <summary>
         /// 建议列表
@@ -236,7 +243,8 @@ namespace LYBT.Models.Prescriptions {
     /// <summary>
     /// 处方建议项
     /// </summary>
-    public class PrescriptionSuggestion {
+    public class PrescriptionSuggestion
+    {
 
         /// <summary>
         /// 建议类型

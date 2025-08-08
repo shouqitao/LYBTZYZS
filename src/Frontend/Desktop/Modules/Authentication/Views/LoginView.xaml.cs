@@ -10,22 +10,22 @@ namespace LYBT.WPF.Client.Modules.Authentication.Views
     public partial class LoginView : UserControl
     {
         private bool _isPasswordSavedFromViewModel = false;
-        
+
         public LoginView()
         {
             InitializeComponent();
-            
+
             // 当控件加载完成后设置密码
             Loaded += OnLoaded;
         }
-        
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             if (DataContext is LoginViewModel viewModel)
             {
                 // 监听ViewModel的密码属性变化
                 viewModel.PropertyChanged += ViewModel_PropertyChanged;
-                
+
                 // 初始设置密码
                 if (!string.IsNullOrEmpty(viewModel.Password))
                 {
@@ -34,7 +34,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.Views
                 }
             }
         }
-        
+
         private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(LoginViewModel.Password) && DataContext is LoginViewModel viewModel)
@@ -57,7 +57,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.Views
                     _isPasswordSavedFromViewModel = false;
                     return;
                 }
-                
+
                 // 防止循环更新
                 if (viewModel.Password != passwordBox.Password)
                 {

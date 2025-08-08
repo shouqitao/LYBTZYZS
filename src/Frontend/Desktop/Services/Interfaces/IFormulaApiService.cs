@@ -23,7 +23,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// </summary>
         [Get("/api/v1/Formulas")]
         Task<Refit.ApiResponse<PaginatedResult<FormulaDto>>> GetFormulasAsync(
-            [Query] string? keyword = null, 
+            [Query] string? keyword = null,
             [Query] string? category = null);
 
         /// <summary>

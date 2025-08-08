@@ -19,8 +19,8 @@ namespace LYBT.WPF.Client.Core.Helpers
         /// <param name="searchProperties">要搜索的属性名称</param>
         /// <returns>搜索结果</returns>
         public static IEnumerable<T> Search<T>(
-            IEnumerable<T> source, 
-            string keyword, 
+            IEnumerable<T> source,
+            string keyword,
             params string[] searchProperties)
         {
             if (source == null || string.IsNullOrWhiteSpace(keyword))
@@ -52,7 +52,7 @@ namespace LYBT.WPF.Client.Core.Helpers
         /// <param name="filters">筛选条件</param>
         /// <returns>筛选结果</returns>
         public static IEnumerable<T> Filter<T>(
-            IEnumerable<T> source, 
+            IEnumerable<T> source,
             params Func<T, bool>[] filters)
         {
             if (source == null || filters == null || filters.Length == 0)
@@ -70,9 +70,9 @@ namespace LYBT.WPF.Client.Core.Helpers
         /// 构建数值范围筛选条件
         /// </summary>
         public static Func<T, bool> BuildRangeFilter<T, TValue>(
-            string propertyName, 
-            TValue? min, 
-            TValue? max) 
+            string propertyName,
+            TValue? min,
+            TValue? max)
             where TValue : struct, IComparable<TValue>
         {
             var property = typeof(T).GetProperty(propertyName);
@@ -97,8 +97,8 @@ namespace LYBT.WPF.Client.Core.Helpers
         /// 构建枚举值筛选条件
         /// </summary>
         public static Func<T, bool> BuildEnumFilter<T, TEnum>(
-            string propertyName, 
-            TEnum? value) 
+            string propertyName,
+            TEnum? value)
             where TEnum : struct, Enum
         {
             if (!value.HasValue) return _ => true;
@@ -117,7 +117,7 @@ namespace LYBT.WPF.Client.Core.Helpers
         /// 构建布尔值筛选条件
         /// </summary>
         public static Func<T, bool> BuildBooleanFilter<T>(
-            string propertyName, 
+            string propertyName,
             bool? value)
         {
             if (!value.HasValue) return _ => true;

@@ -1,9 +1,11 @@
-namespace LYBT.Infrastructure.Options {
+namespace LYBT.Infrastructure.Options
+{
 
     /// <summary>
     /// 认证模块配置选项
     /// </summary>
-    public class AuthOptions {
+    public class AuthOptions
+    {
 
         /// <summary>
         /// 最大登录失败次数，超过后锁定账户
@@ -44,7 +46,8 @@ namespace LYBT.Infrastructure.Options {
     /// <summary>
     /// 密码策略配置
     /// </summary>
-    public class PasswordPolicy {
+    public class PasswordPolicy
+    {
 
         /// <summary>
         /// 最小长度
@@ -85,7 +88,8 @@ namespace LYBT.Infrastructure.Options {
     /// <summary>
     /// 会话选项配置
     /// </summary>
-    public class SessionOptions {
+    public class SessionOptions
+    {
 
         /// <summary>
         /// 会话超时时间（分钟）

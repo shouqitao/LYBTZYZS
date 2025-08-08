@@ -1,12 +1,14 @@
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Logging.Dtos {
+namespace LYBT.Infrastructure.Logging.Dtos
+{
 
     /// <summary>
     /// 日志查询条件传输对象
     /// </summary>
-    public class LogQueryDto {
+    public class LogQueryDto
+    {
 
         /// <summary>
         /// 日志类型筛选

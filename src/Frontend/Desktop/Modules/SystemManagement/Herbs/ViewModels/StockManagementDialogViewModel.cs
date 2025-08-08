@@ -6,8 +6,8 @@ using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Herbs;
-
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Services;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 {
     /// <summary>
@@ -161,17 +161,20 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                     Remark = $"{Herb.StatusDescription}\n[库存调整] {DateTime.Now:yyyy-MM-dd HH:mm} {AdjustmentType} {Math.Abs(AdjustmentQuantity)} {Herb.Unit}，原因：{AdjustmentReason}"
                 };
 
-                var result = await _herbService.UpdateHerbAsync(updateDto);
-                if (result.IsSuccessStatusCode)
+                var response = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _herbService.UpdateHerbAsync(Herb.Id, updateDto)
+                );
+
+                if (response.IsSuccess)
                 {
                     _commonDialogService.ShowInformationAsync($"库存调整成功！\n{Herb.Name} 库存从 {CurrentStock} 调整为 {NewStock}", "调整成功").GetAwaiter().GetResult();
-                    
+
                     SaveCompleteCallback?.Invoke(true);
                     CloseDialogCallback?.Invoke();
                 }
                 else
                 {
-                    var error = result.Error?.Content ?? "库存调整失败";
+                    var error = response.ErrorMessage ?? "库存调整失败";
                     _commonDialogService.ShowErrorAsync($"库存调整失败：{error}", "调整失败").GetAwaiter().GetResult();
                     SaveCompleteCallback?.Invoke(false);
                 }

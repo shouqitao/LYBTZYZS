@@ -3,14 +3,16 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LYBT.Shared.Models.Core {
+namespace LYBT.Shared.Models.Core
+{
 
     /// <summary>
     /// 用户基础模型 - 前后端共享核心字段
     /// 包含所有通用的用户信息字段，各层可基于此模型扩展
     /// 医生功能已合并到用户模型中
     /// </summary>
-    public class BaseUserModel {
+    public class BaseUserModel
+    {
 
         /// <summary>用户唯一标识</summary>
         [DisplayName("用户ID")]

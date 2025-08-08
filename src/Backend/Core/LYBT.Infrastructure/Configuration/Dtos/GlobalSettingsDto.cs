@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration.Dtos {
+namespace LYBT.Infrastructure.Configuration.Dtos
+{
 
     /// <summary>
     /// 全局设置传输对象
     /// </summary>
-    public class GlobalSettingsDto {
+    public class GlobalSettingsDto
+    {
 
         /// <summary>
         /// ID

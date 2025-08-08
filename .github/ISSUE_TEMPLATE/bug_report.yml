@@ -1,0 +1,100 @@
+name: Bug 报告
+description: 创建一个报告来帮助我们改进
+title: "[BUG] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您报告问题！请填写以下信息帮助我们更好地理解和解决问题。
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug 描述
+      description: 清晰简洁地描述这个 bug
+      placeholder: 告诉我们发生了什么问题
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤
+      description: 复现此问题的步骤
+      placeholder: |
+        1. 打开 '...'
+        2. 点击 '...'
+        3. 滚动到 '...'
+        4. 看到错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+      description: 清晰简洁地描述您期望发生的情况
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: 清晰简洁地描述实际发生的情况
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图
+      description: 如果适用，请添加截图来帮助解释您的问题
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 相关模块
+      description: 选择出现问题的模块
+      options:
+        - Web API
+        - WPF 客户端
+        - 用户管理
+        - 患者管理
+        - 药材管理
+        - 看诊管理
+        - 处方管理
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息
+      description: |
+        示例:
+          - **操作系统**: Windows 10 21H2
+          - **.NET 版本**: 8.0.0
+          - **SQL Server 版本**: 2019
+      value: |
+        - **操作系统**: 
+        - **.NET 版本**: 
+        - **SQL Server 版本**: 
+        - **浏览器** (如适用): 
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关日志
+      description: 请粘贴任何相关的日志输出
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 附加信息
+      description: 添加关于这个问题的任何其他上下文信息

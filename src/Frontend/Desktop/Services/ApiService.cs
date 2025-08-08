@@ -23,7 +23,7 @@ namespace LYBT.WPF.Client.Services
         {
             _httpClient = httpClient;
             _tokenManager = tokenManager;
-            
+
             // 设置基础URL - 使用配置文件中的地址
             _httpClient.BaseAddress = new Uri(LYBT.WPF.Client.Core.Configuration.ApiConfiguration.BaseUrl);
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "LYBT.WPF.Client");
@@ -58,13 +58,13 @@ namespace LYBT.WPF.Client.Services
                 {
                     await EnsureAuthenticated();
                 }
-                
+
                 var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                
+
                 var response = await _httpClient.PostAsync(endpoint, content);
                 return await ProcessResponse<T>(response);
             }
@@ -87,7 +87,7 @@ namespace LYBT.WPF.Client.Services
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                
+
                 var response = await _httpClient.PutAsync(endpoint, content);
                 return await ProcessResponse<T>(response);
             }
@@ -127,7 +127,7 @@ namespace LYBT.WPF.Client.Services
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                
+
                 var response = await _httpClient.PatchAsync(endpoint, content);
                 return await ProcessResponse<T>(response);
             }
@@ -145,7 +145,7 @@ namespace LYBT.WPF.Client.Services
             var token = _tokenManager.GetToken();
             if (!string.IsNullOrEmpty(token))
             {
-                _httpClient.DefaultRequestHeaders.Authorization = 
+                _httpClient.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             }
             return Task.CompletedTask;
@@ -157,7 +157,7 @@ namespace LYBT.WPF.Client.Services
         private async Task<ServiceResult<T>> ProcessResponse<T>(HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();
-            
+
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -167,7 +167,7 @@ namespace LYBT.WPF.Client.Services
                     {
                         return ServiceResult<T>.Success(default(T)!);
                     }
-                    
+
                     var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
                     {
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -197,7 +197,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     errorMessage = $"请求失败: {response.StatusCode} - {content}";
                 }
-                
+
                 return ServiceResult<T>.Failure(errorMessage);
             }
         }

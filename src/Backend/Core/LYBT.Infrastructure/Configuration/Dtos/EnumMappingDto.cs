@@ -1,11 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Configuration.Dtos {
+namespace LYBT.Infrastructure.Configuration.Dtos
+{
 
     /// <summary>
     /// 枚举映射传输对象
     /// </summary>
-    public class EnumMappingDto {
+    public class EnumMappingDto
+    {
 
         /// <summary>
         /// 枚举类型名称

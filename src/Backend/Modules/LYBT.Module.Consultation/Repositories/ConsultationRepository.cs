@@ -9,29 +9,35 @@ using System.Linq.Expressions;
 
 namespace LYBT.Module.Consultation.Repositories;
 
-public class ConsultationRepository : IConsultationRepository {
+public class ConsultationRepository : IConsultationRepository
+{
     private readonly AppDbContext _context;
 
-    public ConsultationRepository(AppDbContext context) {
+    public ConsultationRepository(AppDbContext context)
+    {
         _context = context;
     }
 
-    public async Task<ConsultationModel?> GetByIdAsync(Guid id) {
+    public async Task<ConsultationModel?> GetByIdAsync(Guid id)
+    {
         return await _context.Consultations
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<List<ConsultationModel>> GetAllAsync() {
+    public async Task<List<ConsultationModel>> GetAllAsync()
+    {
         return await _context.Consultations
             .ToListAsync();
     }
 
-    public async Task<PaginatedResult<ConsultationModel>> GetPagedAsync(int page, int pageSize, 
-        Expression<Func<ConsultationModel, bool>>? predicate = null) {
+    public async Task<PaginatedResult<ConsultationModel>> GetPagedAsync(int page, int pageSize,
+        Expression<Func<ConsultationModel, bool>>? predicate = null)
+    {
         var query = _context.Consultations
             .AsQueryable();
 
-        if (predicate != null) {
+        if (predicate != null)
+        {
             query = query.Where(predicate);
         }
 
@@ -42,7 +48,8 @@ public class ConsultationRepository : IConsultationRepository {
             .Take(pageSize)
             .ToListAsync();
 
-        return new PaginatedResult<ConsultationModel> {
+        return new PaginatedResult<ConsultationModel>
+        {
             Items = items,
             TotalCount = totalCount,
             CurrentPage = page,
@@ -50,40 +57,46 @@ public class ConsultationRepository : IConsultationRepository {
         };
     }
 
-    public async Task<ConsultationModel> CreateAsync(ConsultationModel entity) {
+    public async Task<ConsultationModel> CreateAsync(ConsultationModel entity)
+    {
         _context.Consultations.Add(entity);
         await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<bool> UpdateAsync(ConsultationModel entity) {
+    public async Task<bool> UpdateAsync(ConsultationModel entity)
+    {
         _context.Consultations.Update(entity);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> DeleteAsync(Guid id) {
+    public async Task<bool> DeleteAsync(Guid id)
+    {
         var entity = await GetByIdAsync(id);
         if (entity == null) return false;
-        
+
         _context.Consultations.Remove(entity);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<List<ConsultationModel>> GetByPatientIdAsync(Guid patientId) {
+    public async Task<List<ConsultationModel>> GetByPatientIdAsync(Guid patientId)
+    {
         return await _context.Consultations
             .Where(c => c.PatientId == patientId)
             .OrderByDescending(c => c.CreateTime)
             .ToListAsync();
     }
 
-    public async Task<List<ConsultationModel>> GetByDoctorIdAsync(Guid doctorId) {
+    public async Task<List<ConsultationModel>> GetByDoctorIdAsync(Guid doctorId)
+    {
         return await _context.Consultations
             .Where(c => c.UserId == doctorId)
             .OrderByDescending(c => c.CreateTime)
             .ToListAsync();
     }
 
-    public async Task<List<ConsultationModel>> GetByStatusAsync(ConsultationStatus status) {
+    public async Task<List<ConsultationModel>> GetByStatusAsync(ConsultationStatus status)
+    {
         // ConsultationModel实际使用CommonStatus，需要转换
         var commonStatus = status == ConsultationStatus.InProgress ? CommonStatus.Enabled : CommonStatus.Disabled;
         return await _context.Consultations
@@ -92,23 +105,27 @@ public class ConsultationRepository : IConsultationRepository {
             .ToListAsync();
     }
 
-    public async Task<List<ConsultationModel>> GetByDateRangeAsync(DateTime startDate, DateTime endDate) {
+    public async Task<List<ConsultationModel>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
         return await _context.Consultations
             .Where(c => c.CreateTime >= startDate && c.CreateTime <= endDate)
             .OrderByDescending(c => c.CreateTime)
             .ToListAsync();
     }
 
-    public async Task<ConsultationModel?> GetByMedicalCaseIdAsync(Guid medicalCaseId) {
+    public async Task<ConsultationModel?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+    {
         return await _context.Consultations
             .FirstOrDefaultAsync(c => c.MedicalCaseId == medicalCaseId);
     }
 
-    public async Task<ConsultationModel> AddAsync(ConsultationModel entity) {
+    public async Task<ConsultationModel> AddAsync(ConsultationModel entity)
+    {
         return await CreateAsync(entity);
     }
 
-    public async Task<List<ConsultationModel>> GetListAsync() {
+    public async Task<List<ConsultationModel>> GetListAsync()
+    {
         return await GetAllAsync();
     }
 }

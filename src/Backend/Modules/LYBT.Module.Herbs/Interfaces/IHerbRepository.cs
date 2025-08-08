@@ -1,11 +1,13 @@
 ﻿using LYBT.Models.Herbs;
 
-namespace LYBT.Module.Herbs.Interfaces {
+namespace LYBT.Module.Herbs.Interfaces
+{
 
     /// <summary>
     /// 药材仓储接口，定义药材相关数据库操作
     /// </summary>
-    public interface IHerbRepository {
+    public interface IHerbRepository
+    {
 
         /// <summary>
         /// 根据ID获取药材详情

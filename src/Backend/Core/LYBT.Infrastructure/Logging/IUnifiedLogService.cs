@@ -2,12 +2,14 @@ using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
 
-namespace LYBT.Infrastructure.Logging {
+namespace LYBT.Infrastructure.Logging
+{
 
     /// <summary>
     /// 统一日志服务接口
     /// </summary>
-    public interface IUnifiedLogService {
+    public interface IUnifiedLogService
+    {
         // ==================== 基础日志操作 ====================
 
         /// <summary>

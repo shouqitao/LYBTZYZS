@@ -1,12 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace LYBT.Infrastructure.Authentication {
+namespace LYBT.Infrastructure.Authentication
+{
 
     /// <summary>
     /// 声明助手类
     /// </summary>
-    public static class ClaimsHelper {
+    public static class ClaimsHelper
+    {
 
         /// <summary>
         /// 创建用户基本声明
@@ -14,7 +16,8 @@ namespace LYBT.Infrastructure.Authentication {
         /// <param name="userId">用户ID</param>
         /// <param name="userName">用户名</param>
         /// <returns>声明列表</returns>
-        public static List<Claim> CreateBasicClaims(string userId, string userName) {
+        public static List<Claim> CreateBasicClaims(string userId, string userName)
+        {
             return new List<Claim> {
                 new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.UniqueName, userName),
@@ -28,7 +31,8 @@ namespace LYBT.Infrastructure.Authentication {
         /// </summary>
         /// <param name="claims">现有声明列表</param>
         /// <param name="roles">角色列表</param>
-        public static void AddRoleClaims(List<Claim> claims, IEnumerable<string> roles) {
+        public static void AddRoleClaims(List<Claim> claims, IEnumerable<string> roles)
+        {
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
         }
 
@@ -37,7 +41,8 @@ namespace LYBT.Infrastructure.Authentication {
         /// </summary>
         /// <param name="claims">现有声明列表</param>
         /// <param name="permissions">权限列表</param>
-        public static void AddPermissionClaims(List<Claim> claims, IEnumerable<string> permissions) {
+        public static void AddPermissionClaims(List<Claim> claims, IEnumerable<string> permissions)
+        {
             claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
         }
 
@@ -47,8 +52,10 @@ namespace LYBT.Infrastructure.Authentication {
         /// <param name="claims">现有声明列表</param>
         /// <param name="claimType">声明类型</param>
         /// <param name="claimValue">声明值</param>
-        public static void AddCustomClaim(List<Claim> claims, string claimType, string claimValue) {
-            if (!string.IsNullOrEmpty(claimType) && !string.IsNullOrEmpty(claimValue)) {
+        public static void AddCustomClaim(List<Claim> claims, string claimType, string claimValue)
+        {
+            if (!string.IsNullOrEmpty(claimType) && !string.IsNullOrEmpty(claimValue))
+            {
                 claims.Add(new Claim(claimType, claimValue));
             }
         }
@@ -58,7 +65,8 @@ namespace LYBT.Infrastructure.Authentication {
         /// </summary>
         /// <param name="principal">用户主体</param>
         /// <returns>用户ID</returns>
-        public static string? ExtractUserId(ClaimsPrincipal principal) {
+        public static string? ExtractUserId(ClaimsPrincipal principal)
+        {
             return principal?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
                    principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
@@ -68,7 +76,8 @@ namespace LYBT.Infrastructure.Authentication {
         /// </summary>
         /// <param name="principal">用户主体</param>
         /// <returns>用户名</returns>
-        public static string? ExtractUserName(ClaimsPrincipal principal) {
+        public static string? ExtractUserName(ClaimsPrincipal principal)
+        {
             return principal?.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ??
                    principal?.FindFirst(ClaimTypes.Name)?.Value ??
                    principal?.Identity?.Name;
@@ -79,7 +88,8 @@ namespace LYBT.Infrastructure.Authentication {
         /// </summary>
         /// <param name="principal">用户主体</param>
         /// <returns>角色列表</returns>
-        public static IEnumerable<string> ExtractRoles(ClaimsPrincipal principal) {
+        public static IEnumerable<string> ExtractRoles(ClaimsPrincipal principal)
+        {
             return principal?.FindAll(ClaimTypes.Role)?.Select(c => c.Value) ?? Enumerable.Empty<string>();
         }
 
@@ -88,7 +98,8 @@ namespace LYBT.Infrastructure.Authentication {
         /// </summary>
         /// <param name="principal">用户主体</param>
         /// <returns>权限列表</returns>
-        public static IEnumerable<string> ExtractPermissions(ClaimsPrincipal principal) {
+        public static IEnumerable<string> ExtractPermissions(ClaimsPrincipal principal)
+        {
             return principal?.FindAll("permission")?.Select(c => c.Value) ?? Enumerable.Empty<string>();
         }
     }

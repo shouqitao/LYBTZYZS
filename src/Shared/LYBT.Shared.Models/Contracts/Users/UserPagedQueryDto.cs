@@ -2,13 +2,15 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Contracts.Users {
+namespace LYBT.Shared.Models.Contracts.Users
+{
 
     /// <summary>
     /// 用户分页查询DTO - 前后端共享API契约
     /// 用于用户管理的分页查询和筛选
     /// </summary>
-    public class UserPagedQueryDto : PaginationRequest {
+    public class UserPagedQueryDto : PaginationRequest
+    {
 
         /// <summary>用户名关键词</summary>
         [DisplayName("用户名")]
@@ -20,7 +22,7 @@ namespace LYBT.Shared.Models.Contracts.Users {
 
         /// <summary>角色筛选</summary>
         [DisplayName("用户角色")]////  
-public string Role { get; set; } = "User";
+        public string Role { get; set; } = "User";
 
         /// <summary>邮箱关键词</summary>
         [DisplayName("邮箱")]

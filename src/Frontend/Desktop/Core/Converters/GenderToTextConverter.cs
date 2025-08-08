@@ -21,7 +21,7 @@ namespace LYBT.WPF.Client.Core.Converters
                     _ => "未知"
                 };
             }
-            
+
             if (value is int genderInt)
             {
                 return genderInt switch
@@ -31,7 +31,7 @@ namespace LYBT.WPF.Client.Core.Converters
                     _ => "未知"
                 };
             }
-            
+
             return "未知";
         }
 

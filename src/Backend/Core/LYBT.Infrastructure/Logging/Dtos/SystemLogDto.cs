@@ -1,12 +1,14 @@
 using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Logging.Dtos {
+namespace LYBT.Infrastructure.Logging.Dtos
+{
 
     /// <summary>
     /// 系统日志传输对象
     /// </summary>
-    public class SystemLogDto {
+    public class SystemLogDto
+    {
 
         /// <summary>
         /// 日志ID

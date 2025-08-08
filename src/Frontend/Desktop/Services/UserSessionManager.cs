@@ -81,7 +81,8 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         /// <param name="role">角色</param>
         /// <returns>是否有该角色</returns>
-        public bool HasRole(string role) {
+        public bool HasRole(string role)
+        {
             // 不再有角色概念
             return false;
         }

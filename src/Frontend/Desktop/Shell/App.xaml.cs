@@ -37,21 +37,21 @@ namespace LYBT.WPF.Client.Shell
                 ModuleType = typeof(AuthenticationModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
-            
+
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(SystemManagementModule),
                 ModuleType = typeof(SystemManagementModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
-            
+
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(ConsultationModule),
                 ModuleType = typeof(ConsultationModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
-            
+
             base.ConfigureModuleCatalog(moduleCatalog);
         }
     }

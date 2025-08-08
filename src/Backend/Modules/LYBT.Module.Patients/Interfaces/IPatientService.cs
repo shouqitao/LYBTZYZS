@@ -2,13 +2,15 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Patients.Interfaces {
+namespace LYBT.Module.Patients.Interfaces
+{
 
     /// <summary>
     /// 患者服务接口（简化版）
     /// 只提供基础的患者档案维护功能
     /// </summary>
-    public interface IPatientService {
+    public interface IPatientService
+    {
 
         /// <summary>
         /// 新增患者

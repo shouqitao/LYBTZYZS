@@ -1,9 +1,11 @@
-namespace LYBT.Infrastructure.Options {
+namespace LYBT.Infrastructure.Options
+{
 
     /// <summary>
     /// 缓存配置选项
     /// </summary>
-    public class CacheOptions {
+    public class CacheOptions
+    {
 
         /// <summary>
         /// 默认过期时间（分钟）
@@ -49,7 +51,8 @@ namespace LYBT.Infrastructure.Options {
     /// <summary>
     /// 内存缓存配置
     /// </summary>
-    public class MemoryCacheConfig {
+    public class MemoryCacheConfig
+    {
 
         /// <summary>
         /// 最大内存大小（MB）
@@ -70,7 +73,8 @@ namespace LYBT.Infrastructure.Options {
     /// <summary>
     /// 分布式缓存配置
     /// </summary>
-    public class DistributedCacheConfig {
+    public class DistributedCacheConfig
+    {
 
         /// <summary>
         /// 实例名称
@@ -101,7 +105,8 @@ namespace LYBT.Infrastructure.Options {
     /// <summary>
     /// 压缩配置
     /// </summary>
-    public class CompressionConfig {
+    public class CompressionConfig
+    {
 
         /// <summary>
         /// 是否启用压缩
@@ -122,7 +127,8 @@ namespace LYBT.Infrastructure.Options {
     /// <summary>
     /// 缓存统计配置
     /// </summary>
-    public class CacheStatsConfig {
+    public class CacheStatsConfig
+    {
 
         /// <summary>
         /// 是否启用统计

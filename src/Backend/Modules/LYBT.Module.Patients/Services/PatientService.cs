@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using System.Linq;
 using System;
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Shared.Models.Enums;
@@ -12,20 +12,23 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Utilities.Helpers;
 using System.Text.Json;
 
-namespace LYBT.Module.Patients.Services {
+namespace LYBT.Module.Patients.Services
+{
 
     /// <summary>
     /// 病人服务实现（业务逻辑层）
     /// 实现软删除策略：患者档案只能禁用/启用，不能物理删除
     /// </summary>
-    public class PatientService : IPatientService {
+    public class PatientService : IPatientService
+    {
         private readonly IPatientRepository _patientRepository;
         private readonly IMapper _mapper;
         private readonly IUnifiedLogService _logService;
 
         public PatientService(IPatientRepository patientRepository,
             IMapper mapper,
-            IUnifiedLogService logService) {
+            IUnifiedLogService logService)
+        {
             _patientRepository = patientRepository;
             _mapper = mapper;
             _logService = logService;
@@ -34,22 +37,28 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 新增患者档案，并记录操作日志
         /// </summary>
-        public async Task<PatientDetailDto?> CreateAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
+        public async Task<PatientDetailDto?> CreateAsync(PatientDetailDto dto, Guid operatorId, string operatorName)
+        {
             // 基础验证
-            if (string.IsNullOrWhiteSpace(dto.Name)) {
+            if (string.IsNullOrWhiteSpace(dto.Name))
+            {
                 throw new ArgumentException("患者姓名不能为空");
             }
 
             // 检查身份证号重复
-            if (!string.IsNullOrEmpty(dto.IDNumber)) {
-                if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber)) {
+            if (!string.IsNullOrEmpty(dto.IDNumber))
+            {
+                if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber))
+                {
                     throw new ArgumentException("身份证号已存在");
                 }
             }
 
             // 检查手机号重复
-            if (!string.IsNullOrEmpty(dto.PhoneNumber)) {
-                if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber)) {
+            if (!string.IsNullOrEmpty(dto.PhoneNumber))
+            {
+                if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber))
+                {
                     throw new ArgumentException("手机号已存在");
                 }
             }
@@ -61,19 +70,22 @@ namespace LYBT.Module.Patients.Services {
             model.UpdateTime = DateTime.Now;
 
             // 如果有身份证号，尝试解析出生日期和年龄
-            if (!string.IsNullOrEmpty(model.IdNumber) && CommonHelper.CheckIdNumber(model.IdNumber)) {
+            if (!string.IsNullOrEmpty(model.IdNumber) && CommonHelper.CheckIdNumber(model.IdNumber))
+            {
                 model.BirthDate = ExtractBirthDateFromIdNumber(model.IdNumber);
-                if (model.BirthDate.HasValue) {
+                if (model.BirthDate.HasValue)
+                {
                     model.Age = CalculateAge(model.BirthDate.Value);
                 }
             }
 
             var result = await _patientRepository.AddAsync(model);
 
-            if (result) {
+            if (result)
+            {
                 await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
                     $"新增患者档案：{model.Name}", JsonSerializer.Serialize(model));
-                    
+
                 // 返回创建的对象
                 return _mapper.Map<PatientDetailDto>(model);
             }
@@ -84,26 +96,32 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 更新患者信息
         /// </summary>
-        public async Task<PatientDetailDto?> UpdateAsync(Guid id, PatientDetailDto dto, Guid operatorId, string operatorName) {
+        public async Task<PatientDetailDto?> UpdateAsync(Guid id, PatientDetailDto dto, Guid operatorId, string operatorName)
+        {
             var model = await _patientRepository.GetByIdAsync(id, true); // 管理员更新时包含禁用患者档案
             if (model == null)
                 throw new ArgumentException("患者不存在");
 
             // 基础验证
-            if (string.IsNullOrWhiteSpace(dto.Name)) {
+            if (string.IsNullOrWhiteSpace(dto.Name))
+            {
                 throw new ArgumentException("患者姓名不能为空");
             }
 
             // 检查身份证号重复（排除当前患者）
-            if (!string.IsNullOrEmpty(dto.IDNumber)) {
-                if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber, id)) {
+            if (!string.IsNullOrEmpty(dto.IDNumber))
+            {
+                if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber, id))
+                {
                     throw new ArgumentException("身份证号已存在");
                 }
             }
 
             // 检查手机号重复（排除当前患者）
-            if (!string.IsNullOrEmpty(dto.PhoneNumber)) {
-                if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber, id)) {
+            if (!string.IsNullOrEmpty(dto.PhoneNumber))
+            {
+                if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber, id))
+                {
                     throw new ArgumentException("手机号已存在");
                 }
             }
@@ -114,17 +132,21 @@ namespace LYBT.Module.Patients.Services {
             model.UpdateTime = DateTime.Now;
 
             // 如果身份证号变了，重新解析出生日期和年龄
-            if (!string.IsNullOrEmpty(model.IdNumber) && CommonHelper.CheckIdNumber(model.IdNumber)) {
+            if (!string.IsNullOrEmpty(model.IdNumber) && CommonHelper.CheckIdNumber(model.IdNumber))
+            {
                 model.BirthDate = ExtractBirthDateFromIdNumber(model.IdNumber);
-                if (model.BirthDate.HasValue) {
+                if (model.BirthDate.HasValue)
+                {
                     model.Age = CalculateAge(model.BirthDate.Value);
                 }
             }
 
             var result = await _patientRepository.UpdateAsync(model);
 
-            if (result) {
-                await _logService.CreateLogAsync(new LogCreateDto {
+            if (result)
+            {
+                await _logService.CreateLogAsync(new LogCreateDto
+                {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = model.Id,
@@ -135,7 +157,7 @@ namespace LYBT.Module.Patients.Services {
                     OldValue = oldJson,
                     NewValue = JsonSerializer.Serialize(dto)
                 });
-                
+
                 return _mapper.Map<PatientDetailDto>(model);
             }
 
@@ -146,7 +168,8 @@ namespace LYBT.Module.Patients.Services {
         /// 根据患者ID获取患者详情
         /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<PatientDetailDto?> GetByIdAsync(Guid id) {
+        public async Task<PatientDetailDto?> GetByIdAsync(Guid id)
+        {
             bool includeDisabled = true;
             var model = await _patientRepository.GetByIdAsync(id, includeDisabled);
             return model == null ? null : _mapper.Map<PatientDetailDto>(model);
@@ -156,7 +179,8 @@ namespace LYBT.Module.Patients.Services {
         /// 获取所有患者列表
         /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetAllAsync() {
+        public async Task<List<PatientDetailDto>> GetAllAsync()
+        {
             bool includeDisabled = true;
             var list = await _patientRepository.GetListAsync(null, 1, 1000, includeDisabled);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
@@ -166,11 +190,13 @@ namespace LYBT.Module.Patients.Services {
         /// 分页查询患者
         /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query) {
+        public async Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query)
+        {
             bool includeDisabled = true;
             var list = await _patientRepository.GetListAsync(query.Name, query.CurrentPage, query.PageSize, includeDisabled);
             var total = await _patientRepository.GetCountAsync(query.Name, includeDisabled);
-            return new PaginatedResult<PatientDetailDto> {
+            return new PaginatedResult<PatientDetailDto>
+            {
                 TotalCount = total,
                 Items = list.Select(_mapper.Map<PatientDetailDto>).ToList(),
                 CurrentPage = query.CurrentPage,
@@ -181,10 +207,13 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 删除患者（软删除）
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName)
+        {
             var result = await _patientRepository.DisableAsync(id);
-            if (result) {
-                await _logService.CreateLogAsync(new LogCreateDto {
+            if (result)
+            {
+                await _logService.CreateLogAsync(new LogCreateDto
+                {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = id,
@@ -200,20 +229,26 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 设置患者状态（启用/禁用）
         /// </summary>
-        public async Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName) {
+        public async Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName)
+        {
             bool result;
             string action;
-            
-            if (isActive) {
+
+            if (isActive)
+            {
                 result = await _patientRepository.EnableAsync(id);
                 action = "启用";
-            } else {
+            }
+            else
+            {
                 result = await _patientRepository.DisableAsync(id);
                 action = "禁用";
             }
-            
-            if (result) {
-                await _logService.CreateLogAsync(new LogCreateDto {
+
+            if (result)
+            {
+                await _logService.CreateLogAsync(new LogCreateDto
+                {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
                     ObjectId = id,
@@ -230,7 +265,8 @@ namespace LYBT.Module.Patients.Services {
         /// 搜索患者（根据姓名、手机号、身份证号）
         /// 权限控制：禁用的患者仅管理员可查询
         /// </summary>
-        public async Task<List<PatientDetailDto>> SearchAsync(string keyword) {
+        public async Task<List<PatientDetailDto>> SearchAsync(string keyword)
+        {
             bool includeDisabled = true;
             var list = await _patientRepository.SearchAsync(keyword, includeDisabled);
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
@@ -239,7 +275,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取可用患者列表（用于挂号选择）
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetActivePatientsAsync() {
+        public async Task<List<PatientDetailDto>> GetActivePatientsAsync()
+        {
             var patients = await _patientRepository.GetActivePatientsAsync();
             return patients.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
@@ -247,7 +284,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 根据手机号查找患者
         /// </summary>
-        public async Task<PatientDetailDto?> GetByPhoneNumberAsync(string phoneNumber) {
+        public async Task<PatientDetailDto?> GetByPhoneNumberAsync(string phoneNumber)
+        {
             var model = await _patientRepository.GetByPhoneNumberAsync(phoneNumber);
             return model == null ? null : _mapper.Map<PatientDetailDto>(model);
         }
@@ -255,7 +293,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 根据身份证号查找患者
         /// </summary>
-        public async Task<PatientDetailDto?> GetByIDNumberAsync(string idNumber) {
+        public async Task<PatientDetailDto?> GetByIDNumberAsync(string idNumber)
+        {
             var model = await _patientRepository.GetByIdNumberAsync(idNumber);
             return model == null ? null : _mapper.Map<PatientDetailDto>(model);
         }
@@ -265,14 +304,17 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取患者就诊历史
         /// </summary>
-        public async Task<PatientVisitHistoryDto> GetVisitHistoryAsync(Guid patientId) {
+        public async Task<PatientVisitHistoryDto> GetVisitHistoryAsync(Guid patientId)
+        {
             var patient = await _patientRepository.GetByIdAsync(patientId, true);
-            if (patient == null) {
+            if (patient == null)
+            {
                 throw new ArgumentException("患者不存在");
             }
 
             // 这里简化实现，返回基础信息
-            return new PatientVisitHistoryDto {
+            return new PatientVisitHistoryDto
+            {
                 PatientId = patient.Id,
                 PatientName = patient.Name,
                 TotalVisits = patient.VisitCount,
@@ -286,9 +328,11 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 更新患者过敏史
         /// </summary>
-        public async Task<bool> UpdateAllergyHistoryAsync(Guid patientId, string allergyHistory, Guid operatorId, string operatorName) {
+        public async Task<bool> UpdateAllergyHistoryAsync(Guid patientId, string allergyHistory, Guid operatorId, string operatorName)
+        {
             var patient = await _patientRepository.GetByIdAsync(patientId, true);
-            if (patient == null) {
+            if (patient == null)
+            {
                 return false;
             }
 
@@ -297,7 +341,8 @@ namespace LYBT.Module.Patients.Services {
             patient.UpdateTime = DateTime.Now;
 
             var result = await _patientRepository.UpdateAsync(patient);
-            if (result) {
+            if (result)
+            {
                 await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Update,
                     $"更新患者过敏史：{patient.Name}",
                     JsonSerializer.Serialize(new { OldValue = oldValue, NewValue = allergyHistory }));
@@ -309,25 +354,33 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 批量导入患者档案
         /// </summary>
-        public async Task<PatientImportResultDto> ImportPatientsAsync(List<PatientImportDto> patients, Guid operatorId, string operatorName) {
-            var result = new PatientImportResultDto {
+        public async Task<PatientImportResultDto> ImportPatientsAsync(List<PatientImportDto> patients, Guid operatorId, string operatorName)
+        {
+            var result = new PatientImportResultDto
+            {
                 TotalCount = patients.Count,
                 ImportBatchId = Guid.NewGuid().ToString()
             };
 
-            foreach (var dto in patients) {
-                try {
+            foreach (var dto in patients)
+            {
+                try
+                {
                     // 检查重复
-                    if (!string.IsNullOrEmpty(dto.IdNumber)) {
-                        if (await _patientRepository.IsIdNumberExistsAsync(dto.IdNumber)) {
+                    if (!string.IsNullOrEmpty(dto.IdNumber))
+                    {
+                        if (await _patientRepository.IsIdNumberExistsAsync(dto.IdNumber))
+                        {
                             result.DuplicateCount++;
                             result.DuplicateRecords.Add($"{dto.Name} - 身份证号重复：{dto.IdNumber}");
                             continue;
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(dto.PhoneNumber)) {
-                        if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber)) {
+                    if (!string.IsNullOrEmpty(dto.PhoneNumber))
+                    {
+                        if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber))
+                        {
                             result.DuplicateCount++;
                             result.DuplicateRecords.Add($"{dto.Name} - 手机号重复：{dto.PhoneNumber}");
                             continue;
@@ -341,13 +394,18 @@ namespace LYBT.Module.Patients.Services {
                     model.CreateTime = DateTime.Now;
                     model.UpdateTime = DateTime.Now;
 
-                    if (await _patientRepository.AddAsync(model)) {
+                    if (await _patientRepository.AddAsync(model))
+                    {
                         result.SuccessCount++;
-                    } else {
+                    }
+                    else
+                    {
                         result.FailedCount++;
                         result.FailedRecords.Add($"{dto.Name} - 保存失败");
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     result.FailedCount++;
                     result.FailedRecords.Add($"{dto.Name} - {ex.Message}");
                 }
@@ -363,11 +421,13 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 导出患者档案
         /// </summary>
-        public async Task<List<PatientExportDto>> ExportPatientsAsync(PatientExportQueryDto query) {
+        public async Task<List<PatientExportDto>> ExportPatientsAsync(PatientExportQueryDto query)
+        {
 
             var patients = await _patientRepository.GetListAsync(null, 1, 10000, query.IncludeInactive);
-            
-            return patients.Select(p => new PatientExportDto {
+
+            return patients.Select(p => new PatientExportDto
+            {
                 Name = p.Name,
                 Gender = p.Gender.ToString(),
                 Age = p.Age,
@@ -384,17 +444,20 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 合并重复患者档案
         /// </summary>
-        public async Task<bool> MergeDuplicatePatientsAsync(Guid primaryId, Guid duplicateId, Guid operatorId, string operatorName) {
+        public async Task<bool> MergeDuplicatePatientsAsync(Guid primaryId, Guid duplicateId, Guid operatorId, string operatorName)
+        {
             var primary = await _patientRepository.GetByIdAsync(primaryId, true);
             var duplicate = await _patientRepository.GetByIdAsync(duplicateId, true);
 
-            if (primary == null || duplicate == null) {
+            if (primary == null || duplicate == null)
+            {
                 return false;
             }
 
             // 更新主患者的就诊次数
             primary.VisitCount += duplicate.VisitCount;
-            if (duplicate.LastVisitTime > primary.LastVisitTime) {
+            if (duplicate.LastVisitTime > primary.LastVisitTime)
+            {
                 primary.LastVisitTime = duplicate.LastVisitTime;
             }
 
@@ -415,7 +478,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取患者标签（简化实现）
         /// </summary>
-        public async Task<List<PatientTagDto>> GetPatientTagsAsync(Guid patientId) {
+        public async Task<List<PatientTagDto>> GetPatientTagsAsync(Guid patientId)
+        {
 
             await Task.CompletedTask;
             return new List<PatientTagDto>();
@@ -424,7 +488,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 设置患者标签（简化实现）
         /// </summary>
-        public async Task<bool> SetPatientTagsAsync(Guid patientId, List<string> tags, Guid operatorId, string operatorName) {
+        public async Task<bool> SetPatientTagsAsync(Guid patientId, List<string> tags, Guid operatorId, string operatorName)
+        {
 
             await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Update,
                 $"设置患者标签",
@@ -439,10 +504,12 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 高级搜索患者
         /// </summary>
-        public async Task<PaginatedResult<PatientDetailDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query) {
+        public async Task<PaginatedResult<PatientDetailDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
+        {
 
             // 这里简化为基本查询
-            var basicQuery = new PatientPagedQueryDto {
+            var basicQuery = new PatientPagedQueryDto
+            {
                 Name = query.Name,
                 CurrentPage = query.CurrentPage,
                 PageSize = query.PageSize
@@ -453,12 +520,14 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取患者统计信息
         /// </summary>
-        public async Task<PatientStatisticsDto> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null) {
+        public async Task<PatientStatisticsDto> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
             var allPatients = await _patientRepository.GetListAsync(null, 1, int.MaxValue, true);
             var now = DateTime.Now;
             var today = DateTime.Today;
 
-            return new PatientStatisticsDto {
+            return new PatientStatisticsDto
+            {
                 TotalPatients = allPatients.Count,
                 ActivePatients = allPatients.Count(p => p.Status == CommonStatus.Enabled),
                 InactivePatients = allPatients.Count(p => p.Status == CommonStatus.Disabled),
@@ -470,9 +539,9 @@ namespace LYBT.Module.Patients.Services {
                 PatientsWithAllergy = allPatients.Count(p => !string.IsNullOrEmpty(p.AllergyHistory)),
                 TodayNewPatients = allPatients.Count(p => p.CreateTime.Date == today),
                 MonthNewPatients = allPatients.Count(p => p.CreateTime.Year == now.Year && p.CreateTime.Month == now.Month),
-                LostPatients = allPatients.Count(p => p.LastVisitTime.HasValue && 
+                LostPatients = allPatients.Count(p => p.LastVisitTime.HasValue &&
                     (now - p.LastVisitTime.Value).TotalDays > 180),
-                NewPatients = allPatients.Count(p => 
+                NewPatients = allPatients.Count(p =>
                     (!startDate.HasValue || p.CreateTime >= startDate) &&
                     (!endDate.HasValue || p.CreateTime <= endDate))
             };
@@ -481,7 +550,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取患者年龄分布统计
         /// </summary>
-        public async Task<List<AgeDistributionDto>> GetAgeDistributionAsync() {
+        public async Task<List<AgeDistributionDto>> GetAgeDistributionAsync()
+        {
             var patients = await _patientRepository.GetListAsync(null, 1, int.MaxValue, false);
             var total = patients.Count;
 
@@ -493,9 +563,11 @@ namespace LYBT.Module.Patients.Services {
                 new { Min = 66, Max = int.MaxValue, Range = "66岁以上（老年）" }
             };
 
-            return ageRanges.Select(range => {
+            return ageRanges.Select(range =>
+            {
                 var patientsInRange = patients.Where(p => p.Age >= range.Min && p.Age <= range.Max).ToList();
-                return new AgeDistributionDto {
+                return new AgeDistributionDto
+                {
                     AgeRange = range.Range,
                     MinAge = range.Min,
                     MaxAge = range.Max == int.MaxValue ? 100 : range.Max,
@@ -510,7 +582,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取患者性别分布统计
         /// </summary>
-        public async Task<GenderDistributionDto> GetGenderDistributionAsync() {
+        public async Task<GenderDistributionDto> GetGenderDistributionAsync()
+        {
             var patients = await _patientRepository.GetListAsync(null, 1, int.MaxValue, false);
             var total = patients.Count;
 
@@ -518,7 +591,8 @@ namespace LYBT.Module.Patients.Services {
             var femaleCount = patients.Count(p => p.Gender == Gender.Female);
             var unknownCount = patients.Count(p => p.Gender == Gender.Unknown);
 
-            return new GenderDistributionDto {
+            return new GenderDistributionDto
+            {
                 MaleCount = maleCount,
                 MalePercentage = total > 0 ? (double)maleCount / total * 100 : 0,
                 FemaleCount = femaleCount,
@@ -532,17 +606,20 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取新增患者趋势
         /// </summary>
-        public async Task<List<PatientTrendDto>> GetNewPatientTrendAsync(int months = 12) {
+        public async Task<List<PatientTrendDto>> GetNewPatientTrendAsync(int months = 12)
+        {
             var patients = await _patientRepository.GetListAsync(null, 1, int.MaxValue, true);
             var startDate = DateTime.Now.AddMonths(-months);
-            
+
             var monthlyData = patients
                 .Where(p => p.CreateTime >= startDate)
                 .GroupBy(p => new { p.CreateTime.Year, p.CreateTime.Month })
                 .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
-                .Select(g => {
+                .Select(g =>
+                {
                     var monthPatients = g.ToList();
-                    return new PatientTrendDto {
+                    return new PatientTrendDto
+                    {
                         Year = g.Key.Year,
                         Month = g.Key.Month,
                         MonthName = $"{g.Key.Year}年{g.Key.Month}月",
@@ -555,10 +632,12 @@ namespace LYBT.Module.Patients.Services {
                 }).ToList();
 
             // 计算环比增长率
-            for (int i = 1; i < monthlyData.Count; i++) {
-                if (monthlyData[i - 1].NewPatients > 0) {
-                    monthlyData[i].GrowthRate = 
-                        (double)(monthlyData[i].NewPatients - monthlyData[i - 1].NewPatients) / 
+            for (int i = 1; i < monthlyData.Count; i++)
+            {
+                if (monthlyData[i - 1].NewPatients > 0)
+                {
+                    monthlyData[i].GrowthRate =
+                        (double)(monthlyData[i].NewPatients - monthlyData[i - 1].NewPatients) /
                         monthlyData[i - 1].NewPatients * 100;
                 }
             }
@@ -569,7 +648,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取活跃患者列表
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetRecentActivePatientsAsync(int days = 30) {
+        public async Task<List<PatientDetailDto>> GetRecentActivePatientsAsync(int days = 30)
+        {
             var cutoffDate = DateTime.Now.AddDays(-days);
             var patients = await _patientRepository.GetListAsync(null, 1, int.MaxValue, false);
             var activePatients = patients
@@ -583,7 +663,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取流失患者列表
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetInactivePatientsAsync(int days = 180) {
+        public async Task<List<PatientDetailDto>> GetInactivePatientsAsync(int days = 180)
+        {
             var cutoffDate = DateTime.Now.AddDays(-days);
             var patients = await _patientRepository.GetListAsync(null, 1, int.MaxValue, false);
             var inactivePatients = patients
@@ -597,7 +678,8 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 获取今日新增患者
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetTodayNewPatientsAsync() {
+        public async Task<List<PatientDetailDto>> GetTodayNewPatientsAsync()
+        {
             var today = DateTime.Today;
             var patients = await _patientRepository.GetListAsync(null, 1, int.MaxValue, false);
             var todayPatients = patients
@@ -611,19 +693,24 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 检查患者是否重复
         /// </summary>
-        public async Task<List<PatientDetailDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber) {
+        public async Task<List<PatientDetailDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
+        {
             var duplicates = new List<PatientModel>();
 
-            if (!string.IsNullOrEmpty(idNumber)) {
+            if (!string.IsNullOrEmpty(idNumber))
+            {
                 var byIdNumber = await _patientRepository.GetByIdNumberAsync(idNumber);
-                if (byIdNumber != null) {
+                if (byIdNumber != null)
+                {
                     duplicates.Add(byIdNumber);
                 }
             }
 
-            if (!string.IsNullOrEmpty(phoneNumber)) {
+            if (!string.IsNullOrEmpty(phoneNumber))
+            {
                 var byPhone = await _patientRepository.GetByPhoneNumberAsync(phoneNumber);
-                if (byPhone != null && !duplicates.Any(p => p.Id == byPhone.Id)) {
+                if (byPhone != null && !duplicates.Any(p => p.Id == byPhone.Id))
+                {
                     duplicates.Add(byPhone);
                 }
             }
@@ -636,17 +723,22 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 从身份证号码中提取出生日期
         /// </summary>
-        private DateTime? ExtractBirthDateFromIdNumber(string idNumber) {
-            if (string.IsNullOrEmpty(idNumber) || idNumber.Length != 18) {
+        private DateTime? ExtractBirthDateFromIdNumber(string idNumber)
+        {
+            if (string.IsNullOrEmpty(idNumber) || idNumber.Length != 18)
+            {
                 return null;
             }
 
-            try {
+            try
+            {
                 var year = int.Parse(idNumber.Substring(6, 4));
                 var month = int.Parse(idNumber.Substring(10, 2));
                 var day = int.Parse(idNumber.Substring(12, 2));
                 return new DateTime(year, month, day);
-            } catch {
+            }
+            catch
+            {
                 return null;
             }
         }
@@ -654,10 +746,12 @@ namespace LYBT.Module.Patients.Services {
         /// <summary>
         /// 计算年龄
         /// </summary>
-        private int CalculateAge(DateTime birthDate) {
+        private int CalculateAge(DateTime birthDate)
+        {
             var today = DateTime.Today;
             var age = today.Year - birthDate.Year;
-            if (birthDate.Date > today.AddYears(-age)) {
+            if (birthDate.Date > today.AddYears(-age))
+            {
                 age--;
             }
             return age;
@@ -667,7 +761,8 @@ namespace LYBT.Module.Patients.Services {
         /// 统一的患者操作日志记录
         /// </summary>
         private async Task LogPatientOperationAsync(Guid operatorId, string operatorName,
-            LogActionType actionType, string content, string? parameters = null) {
+            LogActionType actionType, string content, string? parameters = null)
+        {
             await _logService.LogUserActionAsync(
                 operatorId,
                 operatorName,

@@ -1,10 +1,12 @@
 using LYBT.Shared.Models.Core;
 
-namespace LYBT.WPF.Client.Core.Models.Authentication {
+namespace LYBT.WPF.Client.Core.Models.Authentication
+{
     /// <summary>
     /// 登录响应模型
     /// </summary>
-    public class LoginResponse {
+    public class LoginResponse
+    {
         /// <summary>JWT令牌</summary>
         public string Token { get; set; } = string.Empty;
 

@@ -23,21 +23,21 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
         private Dictionary<string, HerbInfo> _herbDict = new Dictionary<string, HerbInfo>(StringComparer.OrdinalIgnoreCase);
         private List<SelectedHerbItem> _selectedHerbs = new List<SelectedHerbItem>();
         private bool _isLoadingHerbs = false;
-        
+
         public AddFormulaDialog(IHerbService herbService, IFormulaService formulaService,
             ICommonDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             InitializeComponent();
-            
+
             _herbService = herbService;
             _formulaService = formulaService;
-            
+
             // 设置焦点到验方名称
-            Loaded += async (s, e) => 
+            Loaded += async (s, e) =>
             {
                 txtFormulaName.Focus();
-                
+
                 if (_herbService != null)
                 {
                     await LoadHerbs();
@@ -48,11 +48,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                     LoadPredefinedHerbs();
                 }
             };
-            
+
             // 设置ComboBox的文本变化事件用于过滤
             cboHerbName.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler(OnHerbNameTextChanged));
         }
-        
+
         private void LoadPredefinedHerbs()
         {
             // 预定义的常用药材列表（演示用）
@@ -89,23 +89,23 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 new { Name = "白芷", PinYin = "bz", Unit = "g" },
                 new { Name = "腹皮", PinYin = "fp", Unit = "g" }
             };
-            
+
             _availableHerbs.Clear();
             _herbDict.Clear();
-            
+
             foreach (var herb in predefinedHerbs)
             {
-                var herbInfo = new HerbInfo 
-                { 
+                var herbInfo = new HerbInfo
+                {
                     Id = Guid.NewGuid(),
-                    Name = herb.Name, 
+                    Name = herb.Name,
                     PinYinCode = herb.PinYin,
-                    Unit = herb.Unit 
+                    Unit = herb.Unit
                 };
                 _availableHerbs.Add(herbInfo);
                 _herbDict[herb.Name] = herbInfo;
             }
-            
+
             // 填充ComboBox
             cboHerbName.Items.Clear();
             foreach (var herb in _availableHerbs.OrderBy(h => h.Name))
@@ -113,23 +113,23 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 cboHerbName.Items.Add(herb.Name);
             }
         }
-        
+
         private async Task LoadHerbs()
         {
             try
             {
                 _isLoadingHerbs = true;
-                
+
                 // 从药材服务加载可用药材
                 _availableHerbs = await _herbService.GetAvailableHerbsAsync();
-                
+
                 // 建立名称和拼音索引
                 _herbDict.Clear();
                 foreach (var herb in _availableHerbs)
                 {
                     _herbDict[herb.Name] = herb;
                 }
-                
+
                 // 填充ComboBox
                 cboHerbName.Items.Clear();
                 foreach (var herb in _availableHerbs.OrderBy(h => h.Name))
@@ -146,14 +146,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 _isLoadingHerbs = false;
             }
         }
-        
+
         private void OnHerbNameTextChanged(object sender, TextChangedEventArgs e)
         {
             if (_isLoadingHerbs) return;
-            
+
             var comboBox = sender as ComboBox;
             if (comboBox == null || !comboBox.IsDropDownOpen) return;
-            
+
             var searchText = comboBox.Text?.ToLower() ?? "";
             if (string.IsNullOrWhiteSpace(searchText))
             {
@@ -165,26 +165,26 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 }
                 return;
             }
-            
+
             // 过滤药材（支持名称和拼音首字母匹配）
             var filteredHerbs = _availableHerbs.Where(h =>
                 h.Name.Contains(searchText) ||
                 (h.PinYinCode?.ToLower().StartsWith(searchText) ?? false)
             ).OrderBy(h => h.Name).ToList();
-            
+
             comboBox.Items.Clear();
             foreach (var herb in filteredHerbs)
             {
                 comboBox.Items.Add(herb.Name);
             }
-            
+
             // 如果没有匹配项，保持用户输入
             if (comboBox.Items.Count == 0)
             {
                 comboBox.Text = searchText;
             }
         }
-        
+
         private void cboHerbName_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (cboHerbName.SelectedItem != null)
@@ -197,13 +197,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 }
             }
         }
-        
+
         private void cboHerbName_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter || e.Key == Key.Tab)
             {
                 e.Handled = true;
-                
+
                 // 验证药材是否存在
                 var herbName = cboHerbName.Text?.Trim();
                 if (!string.IsNullOrWhiteSpace(herbName))
@@ -218,7 +218,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                         }
                         return;
                     }
-                    
+
                     // 选中药材并更新单位
                     if (_herbDict.TryGetValue(herbName, out var herb))
                     {
@@ -226,12 +226,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                         txtUnit.Text = herb.Unit ?? "g";
                     }
                 }
-                
+
                 txtQuantity.Focus();
                 txtQuantity.SelectAll();
             }
         }
-        
+
         private void txtQuantity_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -240,24 +240,24 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 AddHerb();
             }
         }
-        
+
         private void btnAddHerb_Click(object sender, RoutedEventArgs e)
         {
             AddHerb();
         }
-        
+
         private void AddHerb()
         {
             var herbName = cboHerbName.Text?.Trim();
             var quantityText = txtQuantity.Text?.Trim();
-            
+
             if (string.IsNullOrWhiteSpace(herbName))
             {
                 _commonDialogService.ShowWarningAsync("请输入药材名称", "提示").GetAwaiter().GetResult();
                 cboHerbName.Focus();
                 return;
             }
-            
+
             // 验证药材是否存在
             if (!_herbDict.TryGetValue(herbName, out var herb))
             {
@@ -269,7 +269,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 }
                 return;
             }
-            
+
             if (string.IsNullOrWhiteSpace(quantityText) || !decimal.TryParse(quantityText, out decimal quantity) || quantity <= 0)
             {
                 _commonDialogService.ShowWarningAsync("请输入有效的剂量", "提示").GetAwaiter().GetResult();
@@ -277,28 +277,28 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 txtQuantity.SelectAll();
                 return;
             }
-            
+
             // 添加药材
-            var selectedHerb = new SelectedHerbItem 
-            { 
+            var selectedHerb = new SelectedHerbItem
+            {
                 HerbId = herb.Id,
-                HerbName = herb.Name, 
+                HerbName = herb.Name,
                 Quantity = quantity,
                 Unit = herb.Unit ?? "g"
             };
             _selectedHerbs.Add(selectedHerb);
-            
+
             // 创建显示控件
             var border = CreateHerbDisplay(selectedHerb);
             wpHerbs.Children.Add(border);
-            
+
             // 清空输入
             cboHerbName.Text = "";
             txtQuantity.Text = "";
             txtUnit.Text = "g";
             cboHerbName.Focus();
         }
-        
+
         private Border CreateHerbDisplay(SelectedHerbItem herb)
         {
             var border = new Border
@@ -309,9 +309,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 CornerRadius = new CornerRadius(3),
                 MinWidth = 120  // 确保每个药材项有最小宽度
             };
-            
+
             var stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
-            
+
             var textBlock = new TextBlock
             {
                 Text = $"{herb.HerbName} {herb.Quantity}{herb.Unit}",
@@ -319,7 +319,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0, 0, 10, 0)
             };
-            
+
             var deleteButton = new Button
             {
                 Content = "×",
@@ -333,7 +333,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 Cursor = Cursors.Hand,
                 Tag = herb
             };
-            
+
             deleteButton.Click += (s, e) =>
             {
                 var btn = s as Button;
@@ -344,14 +344,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 }
                 wpHerbs.Children.Remove(border);
             };
-            
+
             stackPanel.Children.Add(textBlock);
             stackPanel.Children.Add(deleteButton);
             border.Child = stackPanel;
-            
+
             return border;
         }
-        
+
         private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
             // 验证
@@ -361,16 +361,16 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 txtFormulaName.Focus();
                 return;
             }
-            
+
             if (_selectedHerbs.Count == 0)
             {
                 await _commonDialogService.ShowWarningAsync("请至少添加一味药材", "提示");
                 cboHerbName.Focus();
                 return;
             }
-            
+
             var category = (cboCategory.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "内科方";
-            
+
             try
             {
                 // 创建DTO
@@ -388,12 +388,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                         SortOrder = index
                     }).ToList()
                 };
-                
+
                 // 调用服务保存
                 if (_formulaService != null)
                 {
                     var result = await _formulaService.CreateAsync(createDto);
-                    
+
                     if (result.IsSuccess)
                     {
                         _commonDialogService.ShowInformationAsync("验方模板保存成功", "成功").GetAwaiter().GetResult();
@@ -414,7 +414,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                                   $"药材组成：{herbList}\n" +
                                   $"功效说明：{createDto.Effect}\n" +
                                   $"用法用量：{createDto.Usage}", "保存成功（演示）").GetAwaiter().GetResult();
-                    
+
                     DialogResult = true;
                     Close();
                 }
@@ -424,13 +424,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                 _commonDialogService.ShowErrorAsync($"保存验方时发生错误：{ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
-        
+
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
             Close();
         }
-        
+
         // 内部类：选中的药材项
         private class SelectedHerbItem
         {
@@ -439,7 +439,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
             public decimal Quantity { get; set; }
             public string Unit { get; set; } = "g";
         }
-        
+
         // 处理粘贴事件（支持批量输入）
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
@@ -453,22 +453,22 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
             }
             base.OnPreviewKeyDown(e);
         }
-        
+
         private void HandlePaste()
         {
             var text = Clipboard.GetText();
             if (string.IsNullOrWhiteSpace(text)) return;
-            
+
             // 尝试解析粘贴的文本
             // 支持格式：白芍25 川芎50 或 白芍 25 川芎 50
             var pattern = @"(\S+)\s*(\d+(?:\.\d+)?)";
             var matches = Regex.Matches(text, pattern);
-            
+
             if (matches.Count > 0)
             {
                 var validHerbs = new List<(string name, decimal quantity, HerbInfo herb)>();
                 var invalidHerbs = new List<string>();
-                
+
                 foreach (Match match in matches)
                 {
                     var herbName = match.Groups[1].Value;
@@ -484,24 +484,24 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                         }
                     }
                 }
-                
+
                 if (invalidHerbs.Count > 0)
                 {
                     _commonDialogService.ShowWarningAsync($"以下药材不存在：{string.Join("、", invalidHerbs)}", "提示").GetAwaiter().GetResult();
                 }
-                
+
                 if (validHerbs.Count > 0)
                 {
                     var result = _commonDialogService.ShowConfirmationAsync($"检测到{validHerbs.Count}味药材，是否批量添加？", "批量添加").GetAwaiter().GetResult();
-                    
+
                     if (result)
                     {
                         foreach (var (name, quantity, herb) in validHerbs)
                         {
-                            var selectedHerb = new SelectedHerbItem 
-                            { 
+                            var selectedHerb = new SelectedHerbItem
+                            {
                                 HerbId = herb.Id,
-                                HerbName = name, 
+                                HerbName = name,
                                 Quantity = quantity,
                                 Unit = herb.Unit ?? "g"
                             };
@@ -509,7 +509,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
                             var border = CreateHerbDisplay(selectedHerb);
                             wpHerbs.Children.Add(border);
                         }
-                        
+
                         // 清空输入框
                         cboHerbName.Text = "";
                         txtQuantity.Text = "";

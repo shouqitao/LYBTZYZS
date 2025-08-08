@@ -29,13 +29,15 @@ namespace LYBT.WebAPI.Extensions;
 /// <summary>
 /// 所有模块服务注入扩展
 /// </summary>
-public static class ServiceCollectionExtension {
+public static class ServiceCollectionExtension
+{
     /// <summary>
     /// 注册所有LYBT业务模块服务
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <returns>服务集合</returns>
-    public static IServiceCollection AddAllModules(this IServiceCollection services) {
+    public static IServiceCollection AddAllModules(this IServiceCollection services)
+    {
         // 认证模块
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<SysAdminHandler>();
@@ -85,7 +87,8 @@ public static class ServiceCollectionExtension {
     /// <param name="services">服务集合</param>
     /// <returns>服务集合</returns>
     [Obsolete("请使用 AddAutoMapperConfiguration 替代")]
-    public static IServiceCollection AddLybtAutoMapperProfiles(this IServiceCollection services) {
+    public static IServiceCollection AddLybtAutoMapperProfiles(this IServiceCollection services)
+    {
         // 调用新的配置方法
         return services.AddAutoMapperConfiguration();
     }

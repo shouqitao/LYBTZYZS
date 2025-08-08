@@ -54,6 +54,11 @@ namespace LYBT.Module.Consultation.Interfaces
         Task<int> GetDoctorConsultationCountAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null);
 
         /// <summary>
+        /// 更新看诊状态
+        /// </summary>
+        Task<ConsultationDetailDto> UpdateStatusAsync(Guid id, int status, string? reason = null);
+
+        /// <summary>
         /// 删除看诊记录（软删除）
         /// </summary>
         Task<bool> DeleteAsync(Guid id);

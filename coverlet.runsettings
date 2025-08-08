@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura,opencover</Format>
+          <Exclude>[*]*.Migrations.*,[*]*.Designer.*,[xunit*]*,[*Tests]*</Exclude>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <ExcludeByFile>**/Migrations/**,**/obj/**,**/bin/**</ExcludeByFile>
+          <IncludeDirectory>../src/**</IncludeDirectory>
+          <SingleHit>false</SingleHit>
+          <UseSourceLink>true</UseSourceLink>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SkipAutoProps>true</SkipAutoProps>
+          <DeterministicReport>true</DeterministicReport>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

@@ -39,8 +39,8 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         public string Username
         {
             get => _username;
-            set 
-            { 
+            set
+            {
                 SetProperty(ref _username, value);
                 LoginCommand.RaiseCanExecuteChanged();
             }
@@ -50,8 +50,8 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         public string Password
         {
             get => _password;
-            set 
-            { 
+            set
+            {
                 SetProperty(ref _password, value);
                 LoginCommand.RaiseCanExecuteChanged();
             }
@@ -75,8 +75,8 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         public bool IsApiOnline
         {
             get => _isApiOnline;
-            set 
-            { 
+            set
+            {
                 SetProperty(ref _isApiOnline, value);
                 LoginCommand.RaiseCanExecuteChanged();
             }
@@ -96,13 +96,13 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             _credentialService = credentialService ?? throw new ArgumentNullException(nameof(credentialService));
 
             LoginCommand = new DelegateCommand(ExecuteLoginAsync, CanExecuteLogin);
-            
+
             // 监听登出事件以清除登录状态消息
             EventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
-            
+
             // 立即加载保存的凭据
             LoadSavedCredentials();
-            
+
             // 启动API连接检测
             StartApiConnectionCheck();
         }
@@ -153,7 +153,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                 {
                     // 保存凭据（如果选择了记住我）
                     _credentialService.SaveCredentials(Username, Password, RememberMe);
-                    
+
                     // 检查是否为超级管理员
                     if (response.Data.User.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
                     {
@@ -165,10 +165,10 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
                         var roleDisplayName = "用户";
                         StatusMessage = $"{roleDisplayName}登录成功，正在跳转...";
                     }
-                    
+
                     // 等待一下让用户看到成功消息
                     await Task.Delay(1000);
-                    
+
                     // 通过事件总线通知登录成功
                     EventAggregator.GetEvent<LoginSuccessEvent>().Publish();
                 }
@@ -194,11 +194,11 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         {
             ClearError();
             ClearStatus();
-            
+
             // 登出时重新加载保存的凭据（如果有）
             LoadSavedCredentials();
         }
-        
+
         /// <summary>
         /// 加载保存的凭据
         /// </summary>
@@ -255,7 +255,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             _ = CheckApiConnection();
 
             // 设置定时器，每5秒检测一次
-            _apiCheckTimer = new System.Threading.Timer(async _ => await CheckApiConnection(), null, 
+            _apiCheckTimer = new System.Threading.Timer(async _ => await CheckApiConnection(), null,
                 TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
         }
 
@@ -268,7 +268,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
             {
                 // 调用认证服务的健康检查接口
                 var isOnline = await _authService.CheckConnectionAsync();
-                
+
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     IsApiOnline = isOnline;

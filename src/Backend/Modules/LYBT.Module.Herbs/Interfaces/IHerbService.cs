@@ -1,13 +1,15 @@
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Module.Herbs.Interfaces {
+namespace LYBT.Module.Herbs.Interfaces
+{
 
     /// <summary>
     /// 药材业务服务接口（简化版）
     /// 只提供基础的药材信息维护功能，不包含库存管理
     /// </summary>
-    public interface IHerbService {
+    public interface IHerbService
+    {
 
         /// <summary>
         /// 获取药材详情

@@ -1,16 +1,18 @@
 using System.Threading.Tasks;
 using System.Linq;
 using System;
-﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Prescriptions.Services {
+namespace LYBT.Module.Prescriptions.Services
+{
 
     /// <summary>
     /// 处方业务接口定义
     /// </summary>
-    public interface IPrescriptionService {
+    public interface IPrescriptionService
+    {
 
         Task<List<PrescriptionDto>> GetAllAsync();
 

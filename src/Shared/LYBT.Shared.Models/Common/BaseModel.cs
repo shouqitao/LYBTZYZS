@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Common {
+namespace LYBT.Shared.Models.Common
+{
 
     /// <summary>
     /// 基础模型类 - 提供通用属性
     /// </summary>
-    public abstract class BaseModel {
+    public abstract class BaseModel
+    {
 
         /// <summary>
         /// 主键ID
@@ -22,7 +24,8 @@ namespace LYBT.Shared.Models.Common {
     /// <summary>
     /// 可审计模型类 - 包含创建和修改信息
     /// </summary>
-    public abstract class AuditableModel : BaseModel {
+    public abstract class AuditableModel : BaseModel
+    {
 
         /// <summary>
         /// 创建时间

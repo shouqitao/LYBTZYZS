@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Users {
+namespace LYBT.Shared.Models.Contracts.Users
+{
 
     /// <summary>
     /// 用户修改密码 DTO
     /// </summary>
-    public class ChangePasswordDto {
+    public class ChangePasswordDto
+    {
 
         /// <summary>
         /// 用户ID

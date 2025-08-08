@@ -2,13 +2,15 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Herbs {
+namespace LYBT.Shared.Models.Contracts.Herbs
+{
 
     /// <summary>
     /// 中药材详情DTO - 前后端共享API契约
     /// 用于中药材档案详情的展示和传输
     /// </summary>
-    public class HerbDetailDto {
+    public class HerbDetailDto
+    {
 
         /// <summary>药材ID</summary>
         [DisplayName("药材ID")]

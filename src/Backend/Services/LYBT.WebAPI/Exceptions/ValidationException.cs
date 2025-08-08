@@ -8,16 +8,16 @@ namespace LYBT.WebAPI.Exceptions
         public Dictionary<string, string[]>? Errors { get; set; }
 
         public ValidationException() : base("验证失败") { }
-        
+
         public ValidationException(string message) : base(message) { }
-        
-        public ValidationException(string message, Dictionary<string, string[]> errors) 
+
+        public ValidationException(string message, Dictionary<string, string[]> errors)
             : base(message)
         {
             Errors = errors;
         }
-        
-        public ValidationException(string message, Exception innerException) 
+
+        public ValidationException(string message, Exception innerException)
             : base(message, innerException) { }
     }
 }

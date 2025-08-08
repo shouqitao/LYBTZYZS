@@ -152,7 +152,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             // _herbService = herbService; // TODO: 等待IHerbsApiService实现
 
             Items = new ObservableCollection<PrescriptionItemEditModel>();
-            
+
             // 先初始化命令
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), () => CanSave);
             SaveAndContinueCommand = new DelegateCommand(async () => await ExecuteSaveAndContinueAsync(), () => CanSave);
@@ -160,7 +160,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             AddItemCommand = new DelegateCommand(ExecuteAddItem);
             RemoveItemCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteRemoveItem);
             SelectHerbCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteSelectHerb);
-            
+
             // 然后添加事件处理器
             Items.CollectionChanged += (s, e) =>
             {
@@ -183,7 +183,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         private async Task ExecuteSaveAndContinueAsync()
         {
             if (!await SavePrescriptionAsync()) return;
-            
+
             // 清空表单，准备下一个处方
             ClearForm();
             await _commonDialogService.ShowInformationAsync("处方保存成功，可以继续添加新处方", "成功");
@@ -216,7 +216,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
                 // TODO: 实现实际的API调用
                 // var response = await _prescriptionService.CreateAsync(request);
-                
+
                 // 暂时模拟成功响应
                 await Task.Delay(1000); // 模拟网络延迟
                 SaveSuccessCallback?.Invoke(requestData);
@@ -237,8 +237,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         private void ExecuteCancel()
         {
             var result = _commonDialogService.ShowConfirmationAsync("确定要取消新增处方吗？未保存的数据将丢失。", "确认取消").GetAwaiter().GetResult();
-            
-            if (result )
+
+            if (result)
             {
                 CloseDialogCallback?.Invoke();
             }
@@ -264,8 +264,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             if (item == null) return;
 
             var result = _commonDialogService.ShowConfirmationAsync($"确定要移除药材 {item.HerbName} 吗？", "确认移除").GetAwaiter().GetResult();
-            
-            if (result )
+
+            if (result)
             {
                 Items.Remove(item);
             }
@@ -294,7 +294,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             DosageCount = 1;
             Usage = string.Empty;
             Remark = string.Empty;
-            
+
             Items.Clear();
             ExecuteAddItem();
         }
@@ -369,9 +369,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public decimal Subtotal => Quantity * Price;
 
         /// <summary>是否有效</summary>
-        public bool IsValid => HerbId != Guid.Empty && 
-                               !string.IsNullOrWhiteSpace(HerbName) && 
-                               Quantity > 0 && 
+        public bool IsValid => HerbId != Guid.Empty &&
+                               !string.IsNullOrWhiteSpace(HerbName) &&
+                               Quantity > 0 &&
                                Price >= 0;
     }
 }

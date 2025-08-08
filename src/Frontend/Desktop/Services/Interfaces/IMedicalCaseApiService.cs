@@ -18,7 +18,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// </summary>
         [Get("/api/v1/MedicalCase")]
         Task<Refit.ApiResponse<PaginatedResult<MedicalCaseDto>>> GetPagedAsync(
-            [Query] int pageIndex = 1, 
+            [Query] int pageIndex = 1,
             [Query] int pageSize = 20);
 
         /// <summary>

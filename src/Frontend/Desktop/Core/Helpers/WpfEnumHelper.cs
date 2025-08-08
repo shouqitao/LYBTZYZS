@@ -38,16 +38,16 @@ namespace LYBT.Client.Core.Helpers
         public static ObservableCollection<NullableEnumItem<T>> BuildComboBoxSourceWithEmpty<T>(string emptyText = "请选择...") where T : struct, Enum
         {
             var list = new ObservableCollection<NullableEnumItem<T>>();
-            
+
             // 添加空选项
             list.Add(new NullableEnumItem<T>(null, emptyText));
-            
+
             // 添加枚举选项
             foreach (T value in Enum.GetValues(typeof(T)))
             {
                 list.Add(new NullableEnumItem<T>(value, value.GetDescription()));
             }
-            
+
             return list;
         }
 
@@ -61,12 +61,12 @@ namespace LYBT.Client.Core.Helpers
             Func<T, string> groupSelector) where T : Enum
         {
             var items = new List<EnumItem<T>>();
-            
+
             foreach (T value in Enum.GetValues(typeof(T)))
             {
                 items.Add(new EnumItem<T>(value, value.GetDescription()));
             }
-            
+
             return items.GroupBy(item => groupSelector(item.Value));
         }
 

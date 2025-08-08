@@ -2,12 +2,14 @@ using LYBT.Shared.Models.Core;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Models.Users {
+namespace LYBT.Models.Users
+{
 
     /// <summary>
     /// 用户实体类，数据库映射，继承共享基础模型
     /// </summary>
-    public class UserModel : BaseUserModel {
+    public class UserModel : BaseUserModel
+    {
 
         /// <summary>
         /// 密码哈希（敏感信息，仅后端使用）

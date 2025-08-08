@@ -12,7 +12,6 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
-
 using LYBT.WPF.Client.Core.Models.Users;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
@@ -24,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
     {
         private readonly IUserApiService _userService;
         private readonly UserInfo? _originalUser;
-        
+
         private string _userName = string.Empty;
         private string _realName = string.Empty;
         private string _email = string.Empty;
@@ -34,9 +33,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         private string _validationMessage = string.Empty;
         private bool _isNewUser;
         private bool _isRoleSelectionEnabled;
-        
+
         public List<RoleItem> Roles { get; }
-        
+
         /// <summary>角色选择是否启用（新建用户时禁用，固定为普通用户）</summary>
         public bool IsRoleSelectionEnabled
         {
@@ -107,10 +106,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
         /// <summary>对话框结果</summary>
         public bool? DialogResult { get; private set; }
-        
+
         /// <summary>保存完成回调</summary>
         public Action<bool>? SaveCompleteCallback { get; set; }
-        
+
         /// <summary>关闭对话框回调</summary>
         public Action? CloseDialogCallback { get; set; }
 
@@ -162,7 +161,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             Email = string.Empty; // Email字段已按优化标准移除
             PhoneNumber = user.PhoneNumber ?? string.Empty;
             IsActive = user.Status == CommonStatus.Enabled; // 使用Status属性
-            
+
             // 角色固定：sysadmin是管理员（但不能修改），其他都是普通用户
             // 编辑时角色不可更改，固定显示为普通用户
             SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
@@ -170,8 +169,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
 
         private bool CanExecuteSave()
         {
-            return !string.IsNullOrWhiteSpace(UserName) && 
-                   !string.IsNullOrWhiteSpace(RealName) && 
+            return !string.IsNullOrWhiteSpace(UserName) &&
+                   !string.IsNullOrWhiteSpace(RealName) &&
                    SelectedRole != null;
         }
 
@@ -183,12 +182,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
             try
             {
                 bool success;
-                
+
                 if (IsNewUser)
                 {
                     // 新增用户
-                    var createRequest = new UserCreateDto 
-                    { 
+                    var createRequest = new UserCreateDto
+                    {
                         Username = UserName.Trim(), // 需要提供用户名
                         Password = "ChangeMe123", // 默认密码
                         ConfirmPassword = "ChangeMe123", // 确认密码
@@ -198,12 +197,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                         // Role和Email已按优化标准移除
                     };
 
-                    var response = await _userService.CreateUserAsync(createRequest);
-                    success = response.IsSuccessStatusCode;
-                    
+                    var response = await Services.ApiErrorHandler.HandleApiResponseAsync(async () =>
+                        await _userService.CreateUserAsync(createRequest)
+                    );
+                    success = response.IsSuccess;
+
                     if (!success)
                     {
-                        ValidationMessage = response.Error?.Content ?? "创建用户失败";
+                        ValidationMessage = response.ErrorMessage ?? "创建用户失败";
                         return;
                     }
                 }
@@ -216,8 +217,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                         return;
                     }
 
-                    var updateRequest = new UserUpdateDto 
-                    { 
+                    var updateRequest = new UserUpdateDto
+                    {
                         Id = _originalUser.Id, // 需要提供用户ID
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
@@ -227,12 +228,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                         // Email已按优化标准移除
                     };
 
-                    var response = await _userService.UpdateUserAsync(updateRequest);
-                    success = response.IsSuccessStatusCode;
-                    
+                    var response = await Services.ApiErrorHandler.HandleApiResponseAsync(async () =>
+                        await _userService.UpdateUserAsync(_originalUser.Id, updateRequest)
+                    );
+                    success = response.IsSuccess;
+
                     if (!success)
                     {
-                        ValidationMessage = response.Error?.Content ?? "更新用户失败";
+                        ValidationMessage = response.ErrorMessage ?? "更新用户失败";
                         return;
                     }
                 }

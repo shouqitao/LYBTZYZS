@@ -2,12 +2,14 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Logging.Dtos {
+namespace LYBT.Infrastructure.Logging.Dtos
+{
 
     /// <summary>
     /// 日志创建传输对象
     /// </summary>
-    public class LogCreateDto {
+    public class LogCreateDto
+    {
 
         /// <summary>
         /// 日志类型（必填）

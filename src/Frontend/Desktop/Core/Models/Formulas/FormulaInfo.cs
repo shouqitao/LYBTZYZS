@@ -4,11 +4,13 @@ using System.Linq;
 using LYBT.Shared.Models.Core;
 using LYBT.WPF.Client.Core.Models.Herbs;
 
-namespace LYBT.WPF.Client.Core.Models.Formulas {
+namespace LYBT.WPF.Client.Core.Models.Formulas
+{
     /// <summary>
     /// 验方信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class FormulaInfo : BaseFormulaModel {
+    public class FormulaInfo : BaseFormulaModel
+    {
         /// <summary>分类</summary>
         public string Category { get; set; } = string.Empty;
 
@@ -42,24 +44,27 @@ namespace LYBT.WPF.Client.Core.Models.Formulas {
         /// <summary>
         /// 创建时间（前端显示字段，映射自CreateTime）
         /// </summary>
-        public DateTime CreatedTime { 
-            get => CreateTime; 
-            set => CreateTime = value; 
+        public DateTime CreatedTime
+        {
+            get => CreateTime;
+            set => CreateTime = value;
         }
 
         /// <summary>
         /// 更新时间（前端显示字段，映射自UpdateTime）
         /// </summary>
-        public DateTime? UpdatedTime { 
-            get => UpdateTime; 
-            set => UpdateTime = value; 
+        public DateTime? UpdatedTime
+        {
+            get => UpdateTime;
+            set => UpdateTime = value;
         }
     }
 
     /// <summary>
     /// 验方中的药材项
     /// </summary>
-    public class FormulaHerbItem {
+    public class FormulaHerbItem
+    {
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
         public decimal Quantity { get; set; }

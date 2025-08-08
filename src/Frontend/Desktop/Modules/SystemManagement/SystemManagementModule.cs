@@ -23,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成
-            
+
             // 注册自定义的ViewModel映射
             ViewModelLocationProvider.Register<UserManagementView, UserManagementViewModelSimple>();
             ViewModelLocationProvider.Register<FormulaManagementView, FormulaManagementViewModel>();
@@ -36,47 +36,47 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
         {
             // 注册系统管理主视图
             containerRegistry.RegisterForNavigation<AdminMainView>();
-            
+
             // 注册用户管理视图
             containerRegistry.RegisterForNavigation<UserManagementView>();
-            
+
             // 注册患者管理视图
             containerRegistry.RegisterForNavigation<PatientManagementView>();
-            
+
             // 注册看诊记录管理视图
             containerRegistry.RegisterForNavigation<ConsultationManagementView>();
-            
-            
+
+
             // 注册中药材管理视图
             containerRegistry.RegisterForNavigation<HerbManagementView>();
-            
+
             // 注册处方模板管理视图
             containerRegistry.RegisterForNavigation<PrescriptionTemplatesView>();
-            
+
             // 注册处方管理视图
             containerRegistry.RegisterForNavigation<PrescriptionManagementView>();
-            
+
             // 注册验方管理视图
             containerRegistry.RegisterForNavigation<FormulaManagementView>();
-            
+
             // 注册对话框
             RegisterDialogs(containerRegistry);
         }
-        
+
         private void RegisterDialogs(IContainerRegistry containerRegistry)
         {
             // 角色管理对话框
             // containerRegistry.RegisterDialog<ViewRoleDialog, ViewRoleDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
-            
+
             // 中药材管理对话框
             // containerRegistry.RegisterDialog<Herbs.Views.ViewHerbDialog, Herbs.ViewModels.ViewHerbDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
-            
+
             // 验方模板管理对话框
             // containerRegistry.RegisterDialog<Formulas.Views.ViewFormulaDialog, Formulas.ViewModels.ViewFormulaDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
-            
+
             // 处方管理对话框
             // containerRegistry.RegisterDialog<Prescriptions.Views.ViewPrescriptionDialog, Prescriptions.ViewModels.ViewPrescriptionDialogViewModel>(); // Temporarily disabled - IDialogAware not implemented
-            
+
             // TODO: 注册其他对话框
         }
     }

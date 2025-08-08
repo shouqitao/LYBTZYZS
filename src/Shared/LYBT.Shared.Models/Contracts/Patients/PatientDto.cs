@@ -1,12 +1,14 @@
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Contracts.Patients {
+namespace LYBT.Shared.Models.Contracts.Patients
+{
 
     /// <summary>
     /// 病人列表展示 DTO（用于病人列表）
     /// </summary>
-    public class PatientDto {
+    public class PatientDto
+    {
 
         /// <summary>病人ID</summary>
         [DisplayName("病人ID")]

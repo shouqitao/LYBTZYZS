@@ -1,12 +1,14 @@
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Logging {
+namespace LYBT.Infrastructure.Logging
+{
 
     /// <summary>
     /// 统一日志实体模型（整合原 Module.Logs）
     /// </summary>
-    public class LogModel {
+    public class LogModel
+    {
 
         /// <summary>
         /// 日志ID（主键，唯一标识一条日志）

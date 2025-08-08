@@ -16,17 +16,17 @@ namespace LYBT.WPF.Client.Core.Models.Consultation
         public string DoctorName { get; set; } = string.Empty;
 
         /// <summary>血压格式化显示（收缩压/舒张压）</summary>
-        public string BloodPressureText => 
-            (SystolicPressure.HasValue && DiastolicPressure.HasValue) 
-                ? $"{SystolicPressure}/{DiastolicPressure} mmHg" 
+        public string BloodPressureText =>
+            (SystolicPressure.HasValue && DiastolicPressure.HasValue)
+                ? $"{SystolicPressure}/{DiastolicPressure} mmHg"
                 : "未测量";
 
         /// <summary>体温格式化显示</summary>
-        public string TemperatureText => 
+        public string TemperatureText =>
             Temperature.HasValue ? $"{Temperature:F1}°C" : "未测量";
 
         /// <summary>心率格式化显示</summary>
-        public string HeartRateText => 
+        public string HeartRateText =>
             HeartRate.HasValue ? $"{HeartRate} 次/分" : "未测量";
 
         /// <summary>诊断类型名称（前端显示字段）</summary>
@@ -39,11 +39,11 @@ namespace LYBT.WPF.Client.Core.Models.Consultation
         public string ConsultationTimeText => ConsultationTime.ToString("yyyy-MM-dd HH:mm");
 
         /// <summary>看诊时长描述</summary>
-        public string DurationText => 
+        public string DurationText =>
             Duration.HasValue ? $"{Duration} 分钟" : "未记录";
 
         /// <summary>中医四诊是否完整</summary>
-        public bool IsTCMComplete => 
+        public bool IsTCMComplete =>
             !string.IsNullOrWhiteSpace(Inspection) &&
             !string.IsNullOrWhiteSpace(AuscultationOlfaction) &&
             !string.IsNullOrWhiteSpace(Inquiry) &&

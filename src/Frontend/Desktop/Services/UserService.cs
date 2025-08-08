@@ -47,11 +47,11 @@ namespace LYBT.WPF.Client.Services
                     phoneNumber: request.PhoneNumber,
                     isActive: request.Status == CommonStatus.Enabled ? true : (request.Status == CommonStatus.Disabled ? false : null)
                 );
-                
+
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     var users = response.Content.Items.Select(ConvertToUserInfo).ToList();
-                    
+
                     return new LYBT.WPF.Client.Core.Models.Common.PagedResult<UserInfo>
                     {
                         Items = users,
@@ -80,7 +80,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> CreateUserAsync(UserCreateDto request)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.CreateUserAsync(request)
             );
         }
@@ -90,7 +90,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> UpdateUserAsync(UserUpdateDto request)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.UpdateUserAsync(request.Id, request)
             );
         }
@@ -100,7 +100,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> DisableUserAsync(Guid userId)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ToggleStatusAsync(userId)
             );
         }
@@ -110,7 +110,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> EnableUserAsync(Guid userId)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ToggleStatusAsync(userId)
             );
         }
@@ -120,7 +120,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> ResetPasswordAsync(Guid userId)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ResetPasswordAsync(userId)
             );
         }
@@ -139,15 +139,15 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<UserInfo>> GetUserByIdAsync(Guid userId)
         {
-            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _userApiService.GetUserByIdAsync(userId)
             );
-            
+
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
                 return ServiceResult<UserInfo>.Success(ConvertToUserInfo(apiResponse.Data));
             }
-            
+
             return ServiceResult<UserInfo>.Failure(apiResponse.ErrorMessage ?? "获取用户详情失败", apiResponse.Exception);
         }
 
@@ -156,16 +156,16 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<UserInfo>>> GetActiveUsersAsync()
         {
-            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _userApiService.GetActiveUsersAsync()
             );
-            
+
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
                 var users = apiResponse.Data.Select(ConvertToUserInfo).ToList();
                 return ServiceResult<List<UserInfo>>.Success(users);
             }
-            
+
             return ServiceResult<List<UserInfo>>.Failure(apiResponse.ErrorMessage ?? "获取活跃用户失败", apiResponse.Exception);
         }
 
@@ -175,7 +175,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> BatchDisableUsersAsync(List<Guid> userIds)
         {
             var dto = new BatchIdsDto { Ids = userIds };
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.BatchDisableAsync(dto)
             );
         }
@@ -186,7 +186,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> BatchEnableUsersAsync(List<Guid> userIds)
         {
             var dto = new BatchIdsDto { Ids = userIds };
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.BatchEnableAsync(dto)
             );
         }
@@ -197,7 +197,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> ChangePasswordAsync(string oldPassword, string newPassword)
         {
             var dto = new ChangePasswordDto { OldPassword = oldPassword, NewPassword = newPassword };
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ChangePasswordAsync(dto)
             );
         }
@@ -207,12 +207,12 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> ChangeProfileAsync(string realName, string? phoneNumber)
         {
-            var dto = new ChangeProfileDto 
-            { 
-                RealName = realName, 
-                PhoneNumber = phoneNumber 
+            var dto = new ChangeProfileDto
+            {
+                RealName = realName,
+                PhoneNumber = phoneNumber
             };
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ChangeProfileAsync(dto)
             );
         }

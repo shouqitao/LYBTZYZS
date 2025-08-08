@@ -23,9 +23,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
         where TService : class
     {
         protected readonly TService Service;
-        
+
         #region 属性
-        
+
         private string _searchKeyword = string.Empty;
         private TModel? _selectedItem;
         private int _currentPage = 1;
@@ -110,11 +110,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
 
         /// <summary>是否可以跳转到最后一页</summary>
         public bool CanGoLastPage => CurrentPage < TotalPages;
-        
+
         #endregion
 
         #region 命令
-        
+
         public DelegateCommand SearchCommand { get; }
         public DelegateCommand AddCommand { get; }
         public DelegateCommand RefreshCommand { get; }
@@ -125,7 +125,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
         public DelegateCommand PreviousPageCommand { get; }
         public DelegateCommand NextPageCommand { get; }
         public DelegateCommand LastPageCommand { get; }
-        
+
         #endregion
 
         protected BaseManagementViewModel(TService service)
@@ -142,7 +142,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
             EditCommand = new DelegateCommand<TModel>(ExecuteEdit, CanExecuteEdit);
             ViewCommand = new DelegateCommand<TModel>(ExecuteView, CanExecuteView);
             DeleteCommand = new DelegateCommand<TModel>(async (item) => await ExecuteDeleteAsync(item), CanExecuteDelete);
-            
+
             FirstPageCommand = new DelegateCommand(async () => { CurrentPage = 1; await LoadDataAsync(); }, () => CanGoFirstPage);
             PreviousPageCommand = new DelegateCommand(async () => { CurrentPage--; await LoadDataAsync(); }, () => CanGoPreviousPage);
             NextPageCommand = new DelegateCommand(async () => { CurrentPage++; await LoadDataAsync(); }, () => CanGoNextPage);
@@ -156,7 +156,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
         }
 
         #region 抽象方法 - 子类必须实现
-        
+
         /// <summary>
         /// 加载数据的具体实现
         /// </summary>
@@ -171,11 +171,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
         /// 获取项目的显示名称（用于删除确认等）
         /// </summary>
         protected abstract string GetItemDisplayName(TModel item);
-        
+
         #endregion
 
         #region 虚方法 - 子类可选重写
-        
+
         /// <summary>
         /// 初始化扩展（子类可重写以添加额外初始化）
         /// </summary>
@@ -221,11 +221,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
         /// 是否可以执行删除
         /// </summary>
         protected virtual bool CanExecuteDelete(TModel item) => item != null;
-        
+
         #endregion
 
         #region 私有方法
-        
+
         /// <summary>
         /// 加载数据
         /// </summary>
@@ -308,13 +308,13 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels
             RaisePropertyChanged(nameof(CanGoPreviousPage));
             RaisePropertyChanged(nameof(CanGoNextPage));
             RaisePropertyChanged(nameof(CanGoLastPage));
-            
+
             FirstPageCommand?.RaiseCanExecuteChanged();
             PreviousPageCommand?.RaiseCanExecuteChanged();
             NextPageCommand?.RaiseCanExecuteChanged();
             LastPageCommand?.RaiseCanExecuteChanged();
         }
-        
+
         #endregion
     }
 }

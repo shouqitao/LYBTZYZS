@@ -1,11 +1,13 @@
 using System.Security.Claims;
 
-namespace LYBT.Infrastructure.Authentication {
+namespace LYBT.Infrastructure.Authentication
+{
 
     /// <summary>
     /// JWT认证服务接口
     /// </summary>
-    public interface IJwtAuthenticationService {
+    public interface IJwtAuthenticationService
+    {
 
         /// <summary>
         /// 生成JWT令牌
@@ -42,7 +44,8 @@ namespace LYBT.Infrastructure.Authentication {
     /// <summary>
     /// 令牌用户信息
     /// </summary>
-    public class TokenUserInfo {
+    public class TokenUserInfo
+    {
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public IEnumerable<string> Roles { get; set; } = new List<string>();

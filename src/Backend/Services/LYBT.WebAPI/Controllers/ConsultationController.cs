@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -10,8 +11,9 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 看诊管理控制器
     /// </summary>
-    [Route("api/v1/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class ConsultationController : BaseController
     {
@@ -28,18 +30,41 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        [HttpPost("paged")]
-        public async Task<IActionResult> GetPaged([FromBody] ConsultationPagedQueryDto query)
+        [HttpGet]
+        public async Task<IActionResult> GetConsultations(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? keyword = null,
+            [FromQuery] Guid? doctorId = null,
+            [FromQuery] Guid? patientId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] int? status = null)
         {
             try
             {
+                var query = new ConsultationPagedQueryDto
+                {
+                    PageIndex = page,
+                    PageSize = pageSize,
+                    Keyword = keyword,
+                    UserId = doctorId,
+                    PatientId = patientId,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    // Status 不在 ConsultationPagedQueryDto 中，可能需要扩展或使用其他参数
+                };
+
                 var result = await _consultationService.GetPagedAsync(query);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "分页查询看诊记录失败");
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "查询看诊记录失败",
+                    statusCode: StatusCodes.Status400BadRequest);
             }
         }
 
@@ -61,7 +86,10 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取看诊详情失败: {Id}", id);
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "获取看诊详情失败",
+                    statusCode: StatusCodes.Status400BadRequest);
             }
         }
 
@@ -83,7 +111,10 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "根据医疗案例ID获取看诊信息失败: {MedicalCaseId}", medicalCaseId);
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "获取看诊信息失败",
+                    statusCode: StatusCodes.Status400BadRequest);
             }
         }
 
@@ -105,12 +136,18 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "操作无效",
+                    statusCode: StatusCodes.Status400BadRequest);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "开始看诊失败");
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "开始看诊失败",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -132,12 +169,18 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "看诊记录不存在",
+                    statusCode: StatusCodes.Status404NotFound);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新看诊信息失败: {Id}", id);
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "更新看诊信息失败",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -159,16 +202,25 @@ namespace LYBT.WebAPI.Controllers
                 {
                     return Ok(new { message = "看诊完成" });
                 }
-                return BadRequest(new { message = "完成看诊失败" });
+                return Problem(
+                    detail: "完成看诊操作失败",
+                    title: "操作失败",
+                    statusCode: StatusCodes.Status400BadRequest);
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "看诊记录不存在",
+                    statusCode: StatusCodes.Status404NotFound);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "完成看诊失败: {Id}", id);
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "完成看诊失败",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -186,7 +238,10 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取医生今日看诊列表失败: {DoctorId}", doctorId);
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "获取看诊列表失败",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -204,7 +259,10 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取患者历史看诊记录失败: {PatientId}", patientId);
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "获取历史记录失败",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -225,7 +283,43 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "统计医生看诊数量失败: {DoctorId}", doctorId);
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "统计失败",
+                    statusCode: StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        /// <summary>
+        /// 更新看诊状态
+        /// </summary>
+        [HttpPost("{id}/update-status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var result = await _consultationService.UpdateStatusAsync(id, dto.Status, dto.Reason);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Problem(
+                    detail: ex.Message,
+                    title: "状态更新失败",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新看诊状态失败: {Id}", id);
+                return Problem(
+                    detail: ex.Message,
+                    title: "更新状态失败",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -247,7 +341,10 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "删除看诊记录失败: {Id}", id);
-                return BadRequest(new { message = ex.Message });
+                return Problem(
+                    detail: ex.Message,
+                    title: "删除失败",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
     }

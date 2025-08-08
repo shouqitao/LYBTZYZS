@@ -32,7 +32,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> AddAsync(PatientDetailDto dto)
         {
-            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _patientsApiService.CreatePatientAsync(dto)
             );
             return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
@@ -43,7 +43,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> UpdateAsync(PatientDetailDto dto)
         {
-            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _patientsApiService.UpdatePatientAsync(dto.Id, dto)
             );
             return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
@@ -54,7 +54,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> EnableAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _patientsApiService.ToggleStatusAsync(id)
             );
         }
@@ -64,7 +64,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> DisableAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _patientsApiService.ToggleStatusAsync(id)
             );
         }
@@ -74,7 +74,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _patientsApiService.GetPatientAsync(id)
             );
         }
@@ -84,7 +84,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDetailDto>>> GetAllAsync()
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _patientsApiService.GetAllAsync()
             );
         }
@@ -108,7 +108,7 @@ namespace LYBT.WPF.Client.Services
                     gender: query.Gender,
                     minAge: query.MinAge,
                     maxAge: query.MaxAge,
-                    status: query.Status
+                    status: query.Status.HasValue ? (PatientStatus)(int)query.Status.Value : null
                 );
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
@@ -167,7 +167,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDetailDto>>> SearchAsync(string keyword)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _patientsApiService.SearchAsync(keyword)
             );
         }
@@ -186,7 +186,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDetailDto>>> ExportAsync()
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _patientsApiService.ExportAsync()
             );
         }
@@ -205,7 +205,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDetailDto>>> GetActivePatientsAsync()
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _patientsApiService.GetActivePatientsAsync()
             );
         }
@@ -215,7 +215,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PatientDetailDto>> FindOrCreateAsync(PatientDetailDto dto)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _patientsApiService.FindOrCreateAsync(dto)
             );
         }

@@ -12,13 +12,13 @@ namespace LYBT.WPF.Client.Core.Models.Users
     {
         /// <summary>是否选中（用于批量操作）</summary>
         public bool IsSelected { get; set; }
-        
+
         /// <summary>显示名称</summary>
         public string DisplayName => string.IsNullOrEmpty(RealName) ? Username : RealName;
-        
+
         /// <summary>状态文本</summary>
         public string StatusText => Status.GetDescription();
-        
+
         /// <summary>是否为系统管理员（基于用户名判断）</summary>
         public bool IsSysAdmin => Username == "sysadmin";
     }

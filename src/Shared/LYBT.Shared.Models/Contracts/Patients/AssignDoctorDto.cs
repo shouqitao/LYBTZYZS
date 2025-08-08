@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Patients {
+namespace LYBT.Shared.Models.Contracts.Patients
+{
 
     /// <summary>
     /// 给患者档案授权医生 DTO
     /// </summary>
-    public class AssignDoctorDto {
+    public class AssignDoctorDto
+    {
 
         [Required]
         [DisplayName("DoctorId")]

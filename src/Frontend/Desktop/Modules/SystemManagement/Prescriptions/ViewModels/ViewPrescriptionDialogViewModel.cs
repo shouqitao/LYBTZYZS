@@ -58,7 +58,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         #region 计算属性
 
         /// <summary>处方编号</summary>
-        public string PrescriptionNumber => Prescription != null 
+        public string PrescriptionNumber => Prescription != null
             ? $"CF{Prescription.CreateTime:yyyyMMdd}{Prescription.Id.ToString("N")[..6].ToUpper()}"
             : string.Empty;
 
@@ -94,7 +94,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public decimal TotalWeight => Items.Sum(item => item.Quantity);
 
         /// <summary>药材清单文本</summary>
-        public string ItemsListText => Items.Any() 
+        public string ItemsListText => Items.Any()
             ? string.Join("、", Items.Select(item => $"{item.HerbName} {item.Quantity}{item.Unit}"))
             : "暂无药材";
 
@@ -148,11 +148,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             {
                 IsLoading = true;
                 var response = await _prescriptionService.GetByIdAsync(id);
-                
-                if (response.IsSuccessStatusCode && response.Content != null)
+
+                if (response.IsSuccess && response.Data != null)
                 {
-                    Prescription = response.Content;
-                    
+                    Prescription = response.Data;
+
                     // 更新药材项目
                     Items.Clear();
                     if (Prescription.Items != null)
@@ -162,16 +162,16 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                             Items.Add(item);
                         }
                     }
-                    
+
                     UpdateComputedProperties();
-                    
+
                     // 更新命令状态
                     EditCommand.RaiseCanExecuteChanged();
                     VoidCommand.RaiseCanExecuteChanged();
                 }
                 else
                 {
-                    var error = response.Error?.Content ?? "获取处方详情失败";
+                    var error = response.ErrorMessage ?? "获取处方详情失败";
                     _commonDialogService.ShowErrorAsync($"加载处方详情失败: {error}", "错误").GetAwaiter().GetResult();
                     RaiseRequestClose(new DialogResult(ButtonResult.OK));
                 }
@@ -221,23 +221,23 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
             var result = await _commonDialogService.ShowConfirmationAsync($"确定要作废该处方吗？\n处方编号：{PrescriptionNumber}\n患者：{PatientName}\n\n作废后将无法恢复！", "确认作废");
 
-            if (result )
+            if (result)
             {
                 try
                 {
                     IsLoading = true;
                     var response = await _prescriptionService.CancelAsync(Prescription.Id);
-                    
-                    if (response.IsSuccessStatusCode)
+
+                    if (response.IsSuccess)
                     {
                         _commonDialogService.ShowInformationAsync("处方作废成功", "成功").GetAwaiter().GetResult();
-                        
+
                         // 重新加载处方信息以更新状态
                         await LoadPrescriptionAsync(Prescription.Id);
                     }
                     else
                     {
-                        var error = response.Error?.Content ?? "作废处方失败";
+                        var error = response.ErrorMessage ?? "作废处方失败";
                         _commonDialogService.ShowErrorAsync($"作废处方失败: {error}", "错误").GetAwaiter().GetResult();
                     }
                 }
@@ -251,7 +251,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
                 }
             }
         }
-        
+
         private void UpdateComputedProperties()
         {
             // 触发计算属性更新

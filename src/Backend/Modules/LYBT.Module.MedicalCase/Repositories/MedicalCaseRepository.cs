@@ -8,32 +8,38 @@ using System.Linq.Expressions;
 
 namespace LYBT.Module.MedicalCase.Repositories;
 
-public class MedicalCaseRepository : IMedicalCaseRepository {
+public class MedicalCaseRepository : IMedicalCaseRepository
+{
     private readonly AppDbContext _context;
 
-    public MedicalCaseRepository(AppDbContext context) {
+    public MedicalCaseRepository(AppDbContext context)
+    {
         _context = context;
     }
 
-    public async Task<MedicalCaseModel?> GetByIdAsync(Guid id) {
+    public async Task<MedicalCaseModel?> GetByIdAsync(Guid id)
+    {
         return await _context.MedicalCases
             .Include(m => m.Consultation)
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
-    public async Task<List<MedicalCaseModel>> GetAllAsync() {
+    public async Task<List<MedicalCaseModel>> GetAllAsync()
+    {
         return await _context.MedicalCases
             .Include(m => m.Consultation)
             .ToListAsync();
     }
 
-    public async Task<PaginatedResult<MedicalCaseModel>> GetPagedAsync(int page, int pageSize, 
-        Expression<Func<MedicalCaseModel, bool>>? predicate = null) {
+    public async Task<PaginatedResult<MedicalCaseModel>> GetPagedAsync(int page, int pageSize,
+        Expression<Func<MedicalCaseModel, bool>>? predicate = null)
+    {
         var query = _context.MedicalCases
             .Include(m => m.Consultation)
             .AsQueryable();
 
-        if (predicate != null) {
+        if (predicate != null)
+        {
             query = query.Where(predicate);
         }
 
@@ -44,7 +50,8 @@ public class MedicalCaseRepository : IMedicalCaseRepository {
             .Take(pageSize)
             .ToListAsync();
 
-        return new PaginatedResult<MedicalCaseModel> {
+        return new PaginatedResult<MedicalCaseModel>
+        {
             Items = items,
             TotalCount = totalCount,
             CurrentPage = page,
@@ -52,26 +59,30 @@ public class MedicalCaseRepository : IMedicalCaseRepository {
         };
     }
 
-    public async Task<MedicalCaseModel> CreateAsync(MedicalCaseModel entity) {
+    public async Task<MedicalCaseModel> CreateAsync(MedicalCaseModel entity)
+    {
         _context.MedicalCases.Add(entity);
         await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<bool> UpdateAsync(MedicalCaseModel entity) {
+    public async Task<bool> UpdateAsync(MedicalCaseModel entity)
+    {
         _context.MedicalCases.Update(entity);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> DeleteAsync(Guid id) {
+    public async Task<bool> DeleteAsync(Guid id)
+    {
         var entity = await GetByIdAsync(id);
         if (entity == null) return false;
-        
+
         _context.MedicalCases.Remove(entity);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<List<MedicalCaseModel>> GetByPatientIdAsync(Guid patientId) {
+    public async Task<List<MedicalCaseModel>> GetByPatientIdAsync(Guid patientId)
+    {
         return await _context.MedicalCases
             .Include(m => m.Consultation)
             .Where(m => m.PatientId == patientId)
@@ -79,7 +90,8 @@ public class MedicalCaseRepository : IMedicalCaseRepository {
             .ToListAsync();
     }
 
-    public async Task<List<MedicalCaseModel>> GetByDoctorIdAsync(Guid doctorId) {
+    public async Task<List<MedicalCaseModel>> GetByDoctorIdAsync(Guid doctorId)
+    {
         return await _context.MedicalCases
             .Include(m => m.Consultation)
             .Where(m => m.UserId == doctorId)
@@ -87,7 +99,8 @@ public class MedicalCaseRepository : IMedicalCaseRepository {
             .ToListAsync();
     }
 
-    public async Task<List<MedicalCaseModel>> GetByStatusAsync(MedicalCaseStatus status) {
+    public async Task<List<MedicalCaseModel>> GetByStatusAsync(MedicalCaseStatus status)
+    {
         return await _context.MedicalCases
             .Include(m => m.Consultation)
             .Where(m => m.Status == status)
@@ -95,7 +108,8 @@ public class MedicalCaseRepository : IMedicalCaseRepository {
             .ToListAsync();
     }
 
-    public async Task<List<MedicalCaseModel>> GetByDateRangeAsync(DateTime startDate, DateTime endDate) {
+    public async Task<List<MedicalCaseModel>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
         return await _context.MedicalCases
             .Include(m => m.Consultation)
             .Where(m => m.CreateTime >= startDate && m.CreateTime <= endDate)
@@ -103,7 +117,8 @@ public class MedicalCaseRepository : IMedicalCaseRepository {
             .ToListAsync();
     }
 
-    public async Task<MedicalCaseModel?> GetLatestByPatientIdAsync(Guid patientId) {
+    public async Task<MedicalCaseModel?> GetLatestByPatientIdAsync(Guid patientId)
+    {
         return await _context.MedicalCases
             .Include(m => m.Consultation)
             .Where(m => m.PatientId == patientId)
@@ -111,15 +126,18 @@ public class MedicalCaseRepository : IMedicalCaseRepository {
             .FirstOrDefaultAsync();
     }
 
-    public async Task<MedicalCaseModel> AddAsync(MedicalCaseModel entity) {
+    public async Task<MedicalCaseModel> AddAsync(MedicalCaseModel entity)
+    {
         return await CreateAsync(entity);
     }
 
-    public async Task<List<MedicalCaseModel>> GetListAsync() {
+    public async Task<List<MedicalCaseModel>> GetListAsync()
+    {
         return await GetAllAsync();
     }
 
-    public async Task<List<MedicalCaseModel>> GetByUserIdAsync(Guid userId) {
+    public async Task<List<MedicalCaseModel>> GetByUserIdAsync(Guid userId)
+    {
         return await GetByDoctorIdAsync(userId);
     }
 }

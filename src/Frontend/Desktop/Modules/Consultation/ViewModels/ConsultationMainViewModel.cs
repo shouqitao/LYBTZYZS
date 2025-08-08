@@ -30,25 +30,25 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
     public class ConsultationMainViewModel : BindableBase
     {
         #region 配置常量
-        
+
         private const int MAX_PATIENT_DISPLAY_COUNT = 50; // 最大患者显示数量
         private const int MAX_FORMULA_DISPLAY_COUNT = 20; // 最大验方显示数量
-        
+
         // 处方验证常量
         private const decimal MIN_HERB_QUANTITY = 0.1m; // 最小药材用量
         private const decimal MAX_HERB_QUANTITY = 1000m; // 最大药材用量
         private const decimal DEFAULT_HERB_QUANTITY = 10m; // 默认药材用量
         private const int MAX_PRESCRIPTION_ITEMS = 50; // 最大处方项目数
-        
+
         // 缓存配置常量
         private const int HERBS_CACHE_DURATION_MINUTES = 30; // 药材缓存30分钟
         private const int FORMULAS_CACHE_DURATION_MINUTES = 60; // 验方缓存60分钟
         private const int PATIENTS_CACHE_DURATION_MINUTES = 10; // 患者缓存10分钟
-        
+
         #endregion
-        
+
         #region 依赖服务
-        
+
         private readonly IPatientsApiService _patientsApiService;
         private readonly IConsultationApiService _consultationApiService;
         private readonly IFormulaApiService _formulaApiService;
@@ -228,10 +228,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         private async Task RefreshAllDataAsync()
         {
             _logger.LogInformation("手动刷新所有数据，清除缓存");
-            
+
             // 清除所有缓存
             ClearAllCache();
-            
+
             // 重新加载所有数据
             await LoadInitialDataAsync();
         }
@@ -248,13 +248,13 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 // 获取启用的患者列表（最近就诊的患者优先）
                 var response = await _patientsApiService.GetActivePatientsAsync();
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     Patients.Clear();
-                    
+
                     // 转换DTO为UI模型
                     foreach (var patientDto in response.Content.Take(MAX_PATIENT_DISPLAY_COUNT)) // 限制显示患者数量
                     {
@@ -269,10 +269,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         };
                         Patients.Add(patientInfo);
                     }
-                    
+
                     // 更新缓存时间戳
                     _patientsCacheTime = DateTime.Now;
-                    
+
                     _logger.LogInformation($"从API加载 {Patients.Count} 个患者，已缓存");
                 }
                 else
@@ -321,10 +321,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 // 使用真实API获取可用药材列表
                 var herbs = await _herbService.GetAvailableHerbsAsync();
-                
+
                 _allHerbs.Clear();
                 AvailableHerbs.Clear();
                 foreach (var herb in herbs)
@@ -332,10 +332,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                     _allHerbs.Add(herb);
                     AvailableHerbs.Add(herb);
                 }
-                
+
                 // 更新缓存时间戳
                 _herbsCacheTime = DateTime.Now;
-                
+
                 _logger.LogInformation($"从API加载 {herbs.Count} 种可用药材，已缓存");
             }
             catch (UnauthorizedAccessException ex)
@@ -363,7 +363,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             {
                 _logger.LogError(ex, "加载可用药材时发生未知异常");
                 ShowErrorMessage("加载药材数据失败，请联系技术支持");
-                
+
                 // 发生错误时清空列表，避免显示过期数据
                 _allHerbs.Clear();
                 AvailableHerbs.Clear();
@@ -389,13 +389,13 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 // 获取验方列表
                 var formulaResult = await _formulaApiService.GetFormulasAsync();
                 if (formulaResult.IsSuccessStatusCode && formulaResult.Content != null)
                 {
                     AvailableFormulas.Clear();
-                    
+
                     // 限制显示数量，避免UI性能问题
                     var formulas = formulaResult.Content.Items.Take(MAX_FORMULA_DISPLAY_COUNT);
                     foreach (var formulaDto in formulas)
@@ -420,10 +420,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         };
                         AvailableFormulas.Add(formulaInfo);
                     }
-                    
+
                     // 更新缓存时间戳
                     _formulasCacheTime = DateTime.Now;
-                    
+
                     _logger.LogInformation($"从API加载 {AvailableFormulas.Count} 个验方，已缓存");
                 }
                 else
@@ -468,7 +468,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         private void FilterHerbs()
         {
             List<HerbInfo> filteredHerbs;
-            
+
             if (string.IsNullOrWhiteSpace(HerbSearchKeyword))
             {
                 // 没有搜索关键词时显示所有药材
@@ -478,12 +478,12 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             {
                 // 根据关键词过滤 - 支持名称、拼音码搜索
                 var keyword = HerbSearchKeyword.Trim();
-                filteredHerbs = _allHerbs.Where(h => 
+                filteredHerbs = _allHerbs.Where(h =>
                     h.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
                     (!string.IsNullOrEmpty(h.PinYinCode) && h.PinYinCode.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                 ).ToList();
             }
-            
+
             // 使用更高效的集合更新方式
             AvailableHerbs.Clear();
             foreach (var herb in filteredHerbs)
@@ -504,13 +504,13 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 // 使用API搜索患者
                 var response = await _patientsApiService.SearchAsync(SearchKeyword);
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     Patients.Clear();
-                    
+
                     // 转换搜索结果为UI模型
                     foreach (var patientDto in response.Content)
                     {
@@ -525,7 +525,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         };
                         Patients.Add(patientInfo);
                     }
-                    
+
                     _logger.LogInformation($"搜索到 {Patients.Count} 个匹配的患者");
                 }
                 else
@@ -572,13 +572,13 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         private void StartNewConsultation()
         {
             if (SelectedPatient == null) return;
-            
+
             // 重用患者选择逻辑
             OnPatientSelected();
-            
+
             // 清空处方项目（开始新的看诊）
             PrescriptionItems.Clear();
-            
+
             // 重置处方ID（开始新处方）
             CurrentPrescriptionId = Guid.Empty;
         }
@@ -596,7 +596,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 // 准备看诊数据
                 var startDto = new ConsultationStartDto
                 {
@@ -632,7 +632,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                     Palpation = CurrentConsultation.Palpation,
                     TongueInspection = CurrentConsultation.TongueInspection,
                     PulseCondition = CurrentConsultation.PulseCondition,
-                    
+
                     // 辨证论治
                     TCMDiagnosis = CurrentConsultation.TCMDiagnosis,
                     TreatmentPrinciple = CurrentConsultation.TreatmentPrinciple,
@@ -645,14 +645,14 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                 if (updateResponse.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"成功保存看诊记录: {CurrentConsultation.Id}");
-                    
+
                     // 保存处方（如果有处方项目）
                     bool prescriptionSaveResult = true;
                     if (PrescriptionItems.Any())
                     {
                         prescriptionSaveResult = await SavePrescriptionAsync();
                     }
-                    
+
                     if (prescriptionSaveResult)
                     {
                         ShowSuccessMessage($"保存成功！看诊记录已保存{(PrescriptionItems.Any() ? "，处方已保存" : "")}");
@@ -710,16 +710,16 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 // 获取验方详情
                 var response = await _formulaApiService.GetFormulaByIdAsync(formula.Id);
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     var formulaDetail = response.Content;
-                    
+
                     // 清空当前处方
                     PrescriptionItems.Clear();
-                    
+
                     // 添加验方中的药材到处方
                     foreach (var herb in formulaDetail.Herbs)
                     {
@@ -733,7 +733,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         };
                         PrescriptionItems.Add(prescriptionItem);
                     }
-                    
+
                     ShowSuccessMessage($"已应用验方：{formula.Name}，共 {formulaDetail.Herbs.Count} 味药材");
                     _logger.LogInformation($"成功应用验方: {formula.Name}");
                 }
@@ -795,31 +795,31 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 // 构建处方数据
                 var prescriptionData = BuildPrescriptionData();
-                
+
                 // 先显示预览
                 var previewResult = await _prescriptionPrintService.PreviewPrescriptionAsync(prescriptionData);
                 if (previewResult.Success)
                 {
                     // 显示打印预览对话框
                     var result = System.Windows.MessageBox.Show(
-                        $"处方预览：\n\n{previewResult.Content}\n\n确定要打印吗？", 
-                        "处方打印预览", 
-                        System.Windows.MessageBoxButton.YesNo, 
+                        $"处方预览：\n\n{previewResult.Content}\n\n确定要打印吗？",
+                        "处方打印预览",
+                        System.Windows.MessageBoxButton.YesNo,
                         System.Windows.MessageBoxImage.Question);
-                    
+
                     if (result == System.Windows.MessageBoxResult.Yes)
                     {
                         // 执行打印
                         var printSuccess = await _prescriptionPrintService.PrintPrescriptionAsync(prescriptionData);
                         if (printSuccess)
                         {
-                            System.Windows.MessageBox.Show("处方打印成功！", "提示", 
-                                System.Windows.MessageBoxButton.OK, 
+                            System.Windows.MessageBox.Show("处方打印成功！", "提示",
+                                System.Windows.MessageBoxButton.OK,
                                 System.Windows.MessageBoxImage.Information);
-                            
+
                             _logger.LogInformation($"处方打印成功：患者 {CurrentConsultation.PatientName}，共 {PrescriptionItems.Count} 味药材");
                         }
                         else
@@ -928,7 +928,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                     }
                     else
                     {
-                        _logger.LogError($"创建处方失败: {createResponse.Error?.Content}");
+                        _logger.LogError($"创建处方失败: {createResult.ErrorMessage}");
                         return false;
                     }
                 }
@@ -961,7 +961,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                     }
                     else
                     {
-                        _logger.LogError($"更新处方失败: {updateResponse.Error?.Content}");
+                        _logger.LogError($"更新处方失败: {updateResult.ErrorMessage}");
                         return false;
                     }
                 }
@@ -1042,7 +1042,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 
             PrescriptionItems.Remove(item);
             _logger.LogInformation($"移除药材: {item.HerbName}");
-            
+
             // 刷新命令状态
             (PrintPrescriptionCommand as DelegateCommand)?.RaiseCanExecuteChanged();
         }
@@ -1224,8 +1224,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         private void ShowErrorMessage(string message)
         {
             // 显示输入验证错误消息
-            System.Windows.MessageBox.Show(message, "输入验证", 
-                System.Windows.MessageBoxButton.OK, 
+            System.Windows.MessageBox.Show(message, "输入验证",
+                System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Warning);
         }
 
@@ -1235,8 +1235,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         private void ShowSuccessMessage(string message)
         {
             // TODO: 实现成功消息显示
-            System.Windows.MessageBox.Show(message, "成功", 
-                System.Windows.MessageBoxButton.OK, 
+            System.Windows.MessageBox.Show(message, "成功",
+                System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);
         }
 

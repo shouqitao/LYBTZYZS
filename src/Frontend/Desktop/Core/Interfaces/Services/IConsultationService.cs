@@ -60,6 +60,11 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         Task<ServiceResult<int>> GetDoctorConsultationCountAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null);
 
         /// <summary>
+        /// 更新看诊状态
+        /// </summary>
+        Task<ServiceResult<ConsultationInfo>> UpdateStatusAsync(Guid id, int status, string? reason = null);
+
+        /// <summary>
         /// 删除看诊记录（软删除）
         /// </summary>
         Task<ServiceResult<bool>> DeleteAsync(Guid id);

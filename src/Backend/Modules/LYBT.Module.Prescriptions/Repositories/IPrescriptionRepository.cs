@@ -1,12 +1,14 @@
 using LYBT.Models.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Prescriptions.Repositories {
+namespace LYBT.Module.Prescriptions.Repositories
+{
 
     /// <summary>
     /// 表示IPrescriptionRepository。
     /// </summary>
-    public interface IPrescriptionRepository {
+    public interface IPrescriptionRepository
+    {
 
         Task<PrescriptionModel?> GetByIdAsync(Guid id);
 

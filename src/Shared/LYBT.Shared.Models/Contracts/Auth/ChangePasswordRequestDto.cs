@@ -5,7 +5,8 @@ namespace LYBT.Shared.Models.Contracts.Auth;
 /// <summary>
 /// 修改密码请求DTO
 /// </summary>
-public class ChangePasswordRequestDto {
+public class ChangePasswordRequestDto
+{
 
     /// <summary>
     /// 旧密码

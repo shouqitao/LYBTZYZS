@@ -5,23 +5,27 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 
-namespace LYBT.Module.Users.Repositories {
+namespace LYBT.Module.Users.Repositories
+{
 
     /// <summary>
     /// 用户仓储实现类（基于EF Core统一数据库上下文）
     /// 实现软删除策略：用户只能禁用/启用，不能物理删除
     /// </summary>
-    public class UserRepository : IUserRepository {
+    public class UserRepository : IUserRepository
+    {
         private readonly AppDbContext _dbContext;
 
-        public UserRepository(AppDbContext dbContext) {
+        public UserRepository(AppDbContext dbContext)
+        {
             _dbContext = dbContext;
         }
 
         /// <summary>
         /// 新增用户
         /// </summary>
-        public async Task<bool> AddAsync(UserModel user) {
+        public async Task<bool> AddAsync(UserModel user)
+        {
             await _dbContext.Users.AddAsync(user);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -29,7 +33,8 @@ namespace LYBT.Module.Users.Repositories {
         /// <summary>
         /// 更新用户
         /// </summary>
-        public async Task<bool> UpdateAsync(UserModel user) {
+        public async Task<bool> UpdateAsync(UserModel user)
+        {
             _dbContext.Users.Update(user);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -37,7 +42,8 @@ namespace LYBT.Module.Users.Repositories {
         /// <summary>
         /// 禁用用户（软删除）
         /// </summary>
-        public async Task<bool> DisableAsync(Guid id) {
+        public async Task<bool> DisableAsync(Guid id)
+        {
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
                 return false;
@@ -50,7 +56,8 @@ namespace LYBT.Module.Users.Repositories {
         /// <summary>
         /// 启用用户
         /// </summary>
-        public async Task<bool> EnableAsync(Guid id) {
+        public async Task<bool> EnableAsync(Guid id)
+        {
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
                 return false;
@@ -64,38 +71,46 @@ namespace LYBT.Module.Users.Repositories {
         /// 分页条件查找用户
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<(IList<UserModel> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false) {
+        public async Task<(IList<UserModel> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false)
+        {
             var dbSet = _dbContext.Users.AsQueryable();
 
             // 隐藏内置的sysadmin用户
             dbSet = dbSet.Where(u => u.Username != "sysadmin");
 
             // 权限控制：非管理员只能看到启用的用户
-            if (!includeDisabled) {
+            if (!includeDisabled)
+            {
                 dbSet = dbSet.Where(u => u.Status == CommonStatus.Enabled);
             }
 
             // 通用搜索关键词（模糊搜索：用户名、真实姓名、拼音码）
-            if (!string.IsNullOrWhiteSpace(query.SearchKeyword)) {
+            if (!string.IsNullOrWhiteSpace(query.SearchKeyword))
+            {
                 var keyword = query.SearchKeyword.Trim();
-                dbSet = dbSet.Where(u => 
+                dbSet = dbSet.Where(u =>
                     u.Username.Contains(keyword) ||
                     u.RealName.Contains(keyword) ||
                     (u.PinYinCode != null && u.PinYinCode.Contains(keyword.ToUpperInvariant()))
                 );
             }
             // 特定字段搜索（精确搜索）
-            else {
-                if (!string.IsNullOrWhiteSpace(query.Username)) {
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(query.Username))
+                {
                     dbSet = dbSet.Where(u => u.Username.Contains(query.Username));
                 }
-                if (!string.IsNullOrWhiteSpace(query.RealName)) {
+                if (!string.IsNullOrWhiteSpace(query.RealName))
+                {
                     dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
                 }
-                if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
+                if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
+                {
                     dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
                 }
-                if (!string.IsNullOrWhiteSpace(query.PinYinCode)) {
+                if (!string.IsNullOrWhiteSpace(query.PinYinCode))
+                {
                     var keyword = query.PinYinCode.ToUpperInvariant();
                     dbSet = dbSet.Where(u => u.PinYinCode != null && u.PinYinCode.Contains(keyword));
                 }
@@ -105,7 +120,8 @@ namespace LYBT.Module.Users.Repositories {
             // 角色功能已合并到用户模块中
 
             // 状态筛选
-            if (query.Status.HasValue) {
+            if (query.Status.HasValue)
+            {
                 dbSet = dbSet.Where(u => u.Status == query.Status.Value);
             }
 
@@ -113,16 +129,20 @@ namespace LYBT.Module.Users.Repositories {
             int total = await dbSet.CountAsync();
 
             // 日期范围筛选
-            if (query.CreateStartDate.HasValue) {
+            if (query.CreateStartDate.HasValue)
+            {
                 dbSet = dbSet.Where(u => u.CreateTime >= query.CreateStartDate.Value);
             }
-            if (query.CreateEndDate.HasValue) {
+            if (query.CreateEndDate.HasValue)
+            {
                 dbSet = dbSet.Where(u => u.CreateTime <= query.CreateEndDate.Value);
             }
-            if (query.LoginStartDate.HasValue) {
+            if (query.LoginStartDate.HasValue)
+            {
                 dbSet = dbSet.Where(u => u.LastLoginTime >= query.LoginStartDate.Value);
             }
-            if (query.LoginEndDate.HasValue) {
+            if (query.LoginEndDate.HasValue)
+            {
                 dbSet = dbSet.Where(u => u.LastLoginTime <= query.LoginEndDate.Value);
             }
 
@@ -140,7 +160,8 @@ namespace LYBT.Module.Users.Repositories {
         /// <summary>
         /// 根据用户名查找（包括禁用用户，用于登录验证）
         /// </summary>
-        public async Task<UserModel?> GetByUsernameAsync(string userName) {
+        public async Task<UserModel?> GetByUsernameAsync(string userName)
+        {
             return await _dbContext.Users
                 .FirstOrDefaultAsync(u => u.Username == userName);
         }
@@ -149,10 +170,12 @@ namespace LYBT.Module.Users.Repositories {
         /// 根据ID查找
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<UserModel?> GetByIdAsync(Guid id, bool includeDisabled = false) {
+        public async Task<UserModel?> GetByIdAsync(Guid id, bool includeDisabled = false)
+        {
             var query = _dbContext.Users.AsQueryable();
 
-            if (!includeDisabled) {
+            if (!includeDisabled)
+            {
                 query = query.Where(u => u.Status == CommonStatus.Enabled);
             }
 
@@ -163,8 +186,10 @@ namespace LYBT.Module.Users.Repositories {
         /// 根据ID列表批量获取用户
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false) {
-            if (!ids.Any()) {
+        public async Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false)
+        {
+            if (!ids.Any())
+            {
                 return new List<UserModel>();
             }
 
@@ -180,14 +205,16 @@ namespace LYBT.Module.Users.Repositories {
         /// <summary>
         /// 校验用户名是否存在（包括禁用用户）
         /// </summary>
-        public async Task<bool> ExistsByUsernameAsync(string userName) {
+        public async Task<bool> ExistsByUsernameAsync(string userName)
+        {
             return await _dbContext.Users.AnyAsync(u => u.Username == userName);
         }
 
         /// <summary>
         /// 更新用户密码
         /// </summary>
-        public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash) {
+        public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash)
+        {
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
                 return false;
@@ -200,8 +227,10 @@ namespace LYBT.Module.Users.Repositories {
         /// <summary>
         /// 批量更新启用状态
         /// </summary>
-        public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive) {
-            if (!ids.Any()) {
+        public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive)
+        {
+            if (!ids.Any())
+            {
                 return 0;
             }
 
@@ -215,17 +244,18 @@ namespace LYBT.Module.Users.Repositories {
         /// <summary>
         /// 获取启用的用户列表
         /// </summary>
-        public async Task<List<UserModel>> GetActiveUsersAsync() {
+        public async Task<List<UserModel>> GetActiveUsersAsync()
+        {
             return await _dbContext.Users
                 .Where(u => u.Status == CommonStatus.Enabled && u.Username != "sysadmin")
                 .OrderBy(u => u.RealName)
                 .ToListAsync();
         }
-    
+
 
         public async Task<List<UserModel>> GetAllAsync()
         {
             return await _dbContext.Users.ToListAsync();
         }
-}
+    }
 }

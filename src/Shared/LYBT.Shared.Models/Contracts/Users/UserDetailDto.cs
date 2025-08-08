@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Users {
+namespace LYBT.Shared.Models.Contracts.Users
+{
 
     /// <summary>
     /// 用户详情 DTO，用于用户资料查看与编辑（不包含密码）
     /// </summary>
-    public class UserDetailDto {
+    public class UserDetailDto
+    {
 
         /// <summary>用户唯一标识（主键，Guid 类型，必填）</summary>
         [Required(ErrorMessage = "用户ID不能为空")]

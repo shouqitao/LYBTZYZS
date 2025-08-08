@@ -79,7 +79,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
         protected BaseViewModel(IEventAggregator eventAggregator)
         {
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
-            
+
             RefreshCommand = new DelegateCommand(ExecuteRefresh, CanExecuteRefresh);
             ClearErrorCommand = new DelegateCommand(ExecuteClearError, CanExecuteClearError);
         }

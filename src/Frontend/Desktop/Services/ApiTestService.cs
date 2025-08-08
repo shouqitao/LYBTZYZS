@@ -28,7 +28,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<string> RunFullApiTestAsync()
         {
             var report = "=== LYBT WPF API 功能测试报告 ===\n\n";
-            
+
             try
             {
                 // 1. 测试登录功能
@@ -81,12 +81,12 @@ namespace LYBT.WPF.Client.Services
                 };
 
                 var response = await _authService.LoginAsync(loginRequest);
-                
+
                 if (response.IsSuccess && response.Data != null)
                 {
                     var user = response.Data.User;
                     var token = _authService.GetToken();
-                    
+
                     return $"✅ 登录成功\n" +
                            $"   用户: {user.RealName} ({user.Username})\n" +
                            $"   角色: {user.Role}\n" +

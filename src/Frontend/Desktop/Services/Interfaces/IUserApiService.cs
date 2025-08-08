@@ -17,7 +17,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// </summary>
         [Get("/api/v1/users")]
         Task<Refit.ApiResponse<PaginatedResult<UserDto>>> GetUsersAsync(
-            [Query] int page = 1, 
+            [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null,
             [Query] string? username = null,

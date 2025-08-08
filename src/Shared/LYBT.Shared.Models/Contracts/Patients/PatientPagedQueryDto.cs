@@ -2,13 +2,15 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Contracts.Patients {
+namespace LYBT.Shared.Models.Contracts.Patients
+{
 
     /// <summary>
     /// 患者分页查询DTO - 前后端共享API契约
     /// 用于患者档案的分页查询和筛选
     /// </summary>
-    public class PatientPagedQueryDto : PaginationRequest {
+    public class PatientPagedQueryDto : PaginationRequest
+    {
 
         /// <summary>姓名关键词</summary>
         [DisplayName("姓名关键词")]

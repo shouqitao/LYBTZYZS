@@ -1,12 +1,14 @@
 using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Logging {
+namespace LYBT.Infrastructure.Logging
+{
 
     /// <summary>
     /// 系统日志实体模型
     /// </summary>
-    public class SystemLogModel {
+    public class SystemLogModel
+    {
 
         /// <summary>
         /// 日志ID（主键）

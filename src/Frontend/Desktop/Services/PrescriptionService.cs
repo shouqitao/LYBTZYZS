@@ -32,20 +32,22 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var response = await _prescriptionApiService.GetListAsync(
-                    page: request.CurrentPage,
-                    pageSize: request.PageSize,
-                    keyword: request.SearchKeyword
+                var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _prescriptionApiService.GetListAsync(
+                        page: request.CurrentPage,
+                        pageSize: request.PageSize,
+                        keyword: request.SearchKeyword
+                    )
                 );
 
-                if (response.IsSuccessStatusCode && response.Content != null)
+                if (result.IsSuccess && result.Data != null)
                 {
                     return new PagedResult<PrescriptionDto>
                     {
-                        Items = response.Content.Items,
-                        TotalCount = response.Content.TotalCount,
-                        CurrentPage = response.Content.CurrentPage,
-                        PageSize = response.Content.PageSize
+                        Items = result.Data.Items.ToList(),
+                        TotalCount = result.Data.TotalCount,
+                        CurrentPage = result.Data.CurrentPage,
+                        PageSize = result.Data.PageSize
                     };
                 }
 
@@ -55,7 +57,7 @@ namespace LYBT.WPF.Client.Services
                     TotalCount = 0,
                     CurrentPage = request.CurrentPage,
                     PageSize = request.PageSize,
-                    ErrorMessage = "获取处方列表失败"
+                    ErrorMessage = result.ErrorMessage ?? "获取处方列表失败"
                 };
             }
             catch (Exception ex)
@@ -76,7 +78,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PrescriptionDetailDto>> GetByIdAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _prescriptionApiService.GetByIdAsync(id)
             );
         }
@@ -86,7 +88,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _prescriptionApiService.CreatePrescriptionAsync(dto)
             );
         }
@@ -96,7 +98,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(PrescriptionEditDto dto)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _prescriptionApiService.UpdatePrescriptionAsync(dto.Id, dto)
             );
         }
@@ -106,12 +108,12 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {
-            var response = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var response = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _prescriptionApiService.DeletePrescriptionAsync(id)
             );
-            
-            return response.IsSuccess 
-                ? ServiceResult.Success() 
+
+            return response.IsSuccess
+                ? ServiceResult.Success()
                 : ServiceResult.Failure(response.ErrorMessage ?? "删除处方失败");
         }
 
@@ -120,7 +122,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> CancelAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _prescriptionApiService.CancelPrescriptionAsync(id)
             );
         }

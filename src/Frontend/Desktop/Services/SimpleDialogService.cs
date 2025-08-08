@@ -50,12 +50,12 @@ namespace LYBT.WPF.Client.Services
                 /* Title = title, */
                 Filter = filter
             };
-            
+
             if (dialog.ShowDialog() == true)
             {
                 return Task.FromResult<string?>(dialog.FileName);
             }
-            
+
             return Task.FromResult<string?>(null);
         }
 
@@ -67,12 +67,12 @@ namespace LYBT.WPF.Client.Services
                 Filter = filter,
                 FileName = defaultFileName
             };
-            
+
             if (dialog.ShowDialog() == true)
             {
                 return Task.FromResult<string?>(dialog.FileName);
             }
-            
+
             return Task.FromResult<string?>(null);
         }
 

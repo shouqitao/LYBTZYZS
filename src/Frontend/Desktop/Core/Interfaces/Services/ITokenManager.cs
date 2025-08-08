@@ -9,12 +9,12 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 获取当前Token
         /// </summary>
         string? GetToken();
-        
+
         /// <summary>
         /// 设置Token
         /// </summary>
         void SetToken(string token);
-        
+
         /// <summary>
         /// 清除Token
         /// </summary>

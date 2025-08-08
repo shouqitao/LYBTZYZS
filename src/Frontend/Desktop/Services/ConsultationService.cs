@@ -11,6 +11,7 @@ using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -36,26 +37,29 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        public async Task<PagedResult<ConsultationInfo>> SearchConsultationsAsync(PaginationRequest query)
+        public async Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<ConsultationInfo>> SearchConsultationsAsync(PaginationRequest query)
         {
             try
             {
-                var consultationQuery = new ConsultationPagedQueryDto
-                {
-                    PageIndex = query.CurrentPage,
-                    PageSize = query.PageSize,
-                    Keyword = query.SearchKeyword
-                };
-
+                // 如果需要更高级的查询，应该传入特定的查询对象而不是使用ExtensionData
                 var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                    await _apiService.GetPagedAsync(consultationQuery)
+                    await _apiService.GetConsultationsAsync(
+                        page: query.CurrentPage,
+                        pageSize: query.PageSize,
+                        keyword: query.SearchKeyword,
+                        doctorId: null,
+                        patientId: null,
+                        startDate: null,
+                        endDate: null,
+                        status: null
+                    )
                 );
 
                 if (apiResponse.IsSuccess && apiResponse.Data != null)
                 {
                     var consultations = apiResponse.Data.Data?.Select(MapToConsultationInfo).ToList() ?? new List<ConsultationInfo>();
-                    
-                    return new PagedResult<ConsultationInfo>
+
+                    return new LYBT.WPF.Client.Core.Models.Common.PagedResult<ConsultationInfo>
                     {
                         Items = consultations,
                         TotalCount = apiResponse.Data.TotalCount,
@@ -64,7 +68,7 @@ namespace LYBT.WPF.Client.Services
                     };
                 }
 
-                return new PagedResult<ConsultationInfo>
+                return new LYBT.WPF.Client.Core.Models.Common.PagedResult<ConsultationInfo>
                 {
                     Items = new List<ConsultationInfo>(),
                     TotalCount = 0,
@@ -75,7 +79,7 @@ namespace LYBT.WPF.Client.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "分页查询看诊记录失败");
-                return new PagedResult<ConsultationInfo>
+                return new LYBT.WPF.Client.Core.Models.Common.PagedResult<ConsultationInfo>
                 {
                     Items = new List<ConsultationInfo>(),
                     TotalCount = 0,
@@ -292,6 +296,38 @@ namespace LYBT.WPF.Client.Services
         }
 
         /// <summary>
+        /// 更新看诊状态
+        /// </summary>
+        public async Task<ServiceResult<ConsultationInfo>> UpdateStatusAsync(Guid id, int status, string? reason = null)
+        {
+            try
+            {
+                var dto = new UpdateStatusDto
+                {
+                    Status = status,
+                    Reason = reason
+                };
+
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.UpdateStatusAsync(id, dto)
+                );
+
+                if (apiResponse.IsSuccess && apiResponse.Data != null)
+                {
+                    var consultation = MapToConsultationInfo(apiResponse.Data);
+                    return ServiceResult<ConsultationInfo>.Success(consultation);
+                }
+
+                return ServiceResult<ConsultationInfo>.Failure(apiResponse.ErrorMessage ?? "更新看诊状态失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新看诊状态失败: {Id}", id);
+                return ServiceResult<ConsultationInfo>.Failure("更新看诊状态失败");
+            }
+        }
+
+        /// <summary>
         /// 删除看诊记录（软删除）
         /// </summary>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
@@ -351,7 +387,7 @@ namespace LYBT.WPF.Client.Services
                 UserId = dto.UserId,
                 DoctorName = dto.DoctorName,
                 ConsultationTime = dto.ConsultationTime,
-                
+
                 // 中医四诊
                 Inspection = dto.Inspection,
                 AuscultationOlfaction = dto.AuscultationOlfaction,
@@ -359,14 +395,14 @@ namespace LYBT.WPF.Client.Services
                 Palpation = dto.Palpation,
                 TongueInspection = dto.TongueInspection,
                 PulseCondition = dto.PulseCondition,
-                
+
                 // 诊断信息
                 TCMDiagnosis = dto.TCMDiagnosis,
                 Diagnosis = dto.Diagnosis,
-                
+
                 // 其他信息
                 Remark = dto.Remark,
-                
+
                 Status = Shared.Models.Enums.CommonStatus.Enabled // 默认状态
             };
         }

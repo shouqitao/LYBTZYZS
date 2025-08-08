@@ -13,14 +13,17 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Text.Json;
 
-namespace LYBT.Infrastructure.Data {
+namespace LYBT.Infrastructure.Data
+{
 
     /// <summary>
     /// 统一应用数据库上下文 - 整个项目使用单一数据库LYBTDB
     /// </summary>
-    public class AppDbContext : DbContext {
+    public class AppDbContext : DbContext
+    {
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
         }
 
         // 用户管理
@@ -33,13 +36,13 @@ namespace LYBT.Infrastructure.Data {
         public DbSet<PatientModel> Patients { get; set; }
 
         // 医生管理
-    // public DbSet<DoctorModel> Doctors { get; set; } // 医生功能已整合到Users
+        // public DbSet<DoctorModel> Doctors { get; set; } // 医生功能已整合到Users
 
         // 挂号管理
-    // public DbSet<RegistrationModel> Registrations { get; set; } // 模块已删除
+        // public DbSet<RegistrationModel> Registrations { get; set; } // 模块已删除
 
         // 排队管理
-    // public DbSet<QueueingModel> Queueings { get; set; } // 模块已删除
+        // public DbSet<QueueingModel> Queueings { get; set; } // 模块已删除
 
         // 医疗案例
         public DbSet<MedicalCaseModel> MedicalCases { get; set; }
@@ -48,7 +51,7 @@ namespace LYBT.Infrastructure.Data {
         public DbSet<ConsultationModel> Consultations { get; set; }
 
         // 治疗方案
-    // public DbSet<TreatmentPlanModel> TreatmentPlans { get; set; } // 模块已删除
+        // public DbSet<TreatmentPlanModel> TreatmentPlans { get; set; } // 模块已删除
 
         // 诊断治疗（已删除，使用Consultation替代）
         // public DbSet<DiagnosisTreatmentModel> DiagnosisTreatments { get; set; }
@@ -65,23 +68,23 @@ namespace LYBT.Infrastructure.Data {
         public DbSet<FormulaModel> Formulas { get; set; }
 
         // 药房管理
-    // public DbSet<PharmacyModel> Pharmacies { get; set; } // 模块已删除
+        // public DbSet<PharmacyModel> Pharmacies { get; set; } // 模块已删除
 
-    // public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; } // 模块已删除
+        // public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; } // 模块已删除
 
         // 收银管理
-    // public DbSet<CashierRecord> CashierRecords { get; set; } // 模块已删除
-    // public DbSet<CashierItem> CashierItems { get; set; } // 模块已删除
-    // public DbSet<CashierPayment> CashierPayments { get; set; } // 模块已删除
-    // public DbSet<DailySettlement> DailySettlements { get; set; } // 模块已删除
-    // public DbSet<Invoice> Invoices { get; set; } // 模块已删除
+        // public DbSet<CashierRecord> CashierRecords { get; set; } // 模块已删除
+        // public DbSet<CashierItem> CashierItems { get; set; } // 模块已删除
+        // public DbSet<CashierPayment> CashierPayments { get; set; } // 模块已删除
+        // public DbSet<DailySettlement> DailySettlements { get; set; } // 模块已删除
+        // public DbSet<Invoice> Invoices { get; set; } // 模块已删除
 
         // 病历管理（已删除，使用MedicalCase和Consultation替代）
         // public DbSet<RecordModel> Records { get; set; }
 
         // 治疗室管理
-    // public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; } // 模块已删除
-    // public DbSet<TreatmentTaskModel> TreatmentTasks { get; set; } // 模块已删除
+        // public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; } // 模块已删除
+        // public DbSet<TreatmentTaskModel> TreatmentTasks { get; set; } // 模块已删除
 
         // 同步管理（MVP阶段暂不需要）
         // public DbSet<SyncTaskModel> SyncTasks { get; set; }
@@ -141,7 +144,8 @@ namespace LYBT.Infrastructure.Data {
         /// </summary>
     // public DbSet<LYBT.Models.TreatmentRoom.TreatmentCatalogModel> TreatmentCatalogs { get; set; } // 模块已删除
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
             base.OnModelCreating(modelBuilder);
 
             // 配置各个实体的映射关系
@@ -167,7 +171,8 @@ namespace LYBT.Infrastructure.Data {
             ConfigureConfigurationModels(modelBuilder);
         }
 
-        private static void ConfigureUsers(ModelBuilder modelBuilder) {
+        private static void ConfigureUsers(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<UserModel>();
             entity.ToTable("Users");
             entity.HasKey(u => u.Id);
@@ -190,7 +195,8 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(u => u.Introduction).HasMaxLength(1000);
         }
 
-        private static void ConfigureAdminSecrets(ModelBuilder modelBuilder) {
+        private static void ConfigureAdminSecrets(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<AdminSecretModel>();
             entity.ToTable("AdminSecrets");
             entity.HasKey(a => a.Id);
@@ -200,14 +206,16 @@ namespace LYBT.Infrastructure.Data {
 
             // 添加默认的 sysadmin 种子数据
             // 密码: Admin@123456
-            entity.HasData(new AdminSecretModel {
+            entity.HasData(new AdminSecretModel
+            {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Username = "sysadmin",
                 PasswordHash = "AQAAAAIAAYagAAAAEBZtKH/jLrWSCIstrn4KyQtIopjqYQNrjJ8ZTIZxjKrpJ1l0obDU19hLQMSNwBjbeQ=="
             });
         }
 
-        private static void ConfigurePatients(ModelBuilder modelBuilder) {
+        private static void ConfigurePatients(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<PatientModel>();
             entity.ToTable("Patients");
             entity.HasKey(p => p.Id);
@@ -253,7 +261,8 @@ namespace LYBT.Infrastructure.Data {
             entity.HasKey(q => q.Id);
         }*/
 
-        private static void ConfigureMedicalCases(ModelBuilder modelBuilder) {
+        private static void ConfigureMedicalCases(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<MedicalCaseModel>();
             entity.ToTable("MedicalCases");
             entity.HasKey(m => m.Id);
@@ -263,13 +272,14 @@ namespace LYBT.Infrastructure.Data {
             entity.HasIndex(m => m.UserId);
             entity.HasIndex(m => m.CreateTime);
             entity.HasIndex(m => m.Status);
-            
+
             // 配置关联关系
             // entity.HasOne(m => m.Registration).WithMany().HasForeignKey(m => m.RegistrationId); // 模块已删除
             entity.HasOne(m => m.Consultation).WithMany().HasForeignKey(m => m.ConsultationId);
         }
 
-        private static void ConfigureConsultations(ModelBuilder modelBuilder) {
+        private static void ConfigureConsultations(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<ConsultationModel>();
             entity.ToTable("Consultations");
             entity.HasKey(c => c.Id);
@@ -298,7 +308,8 @@ namespace LYBT.Infrastructure.Data {
 
         // DiagnosisTreatments已删除，使用Consultation替代
 
-        private static void ConfigurePrescriptions(ModelBuilder modelBuilder) {
+        private static void ConfigurePrescriptions(ModelBuilder modelBuilder)
+        {
             var prescriptionEntity = modelBuilder.Entity<PrescriptionModel>();
             prescriptionEntity.ToTable("Prescriptions");
             prescriptionEntity.HasKey(p => p.Id);
@@ -308,7 +319,8 @@ namespace LYBT.Infrastructure.Data {
             itemEntity.HasKey(i => i.Id);
         }
 
-        private static void ConfigureHerbs(ModelBuilder modelBuilder) {
+        private static void ConfigureHerbs(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<HerbModel>();
             entity.ToTable("Herbs");
             entity.HasKey(h => h.Id);
@@ -326,7 +338,8 @@ namespace LYBT.Infrastructure.Data {
             entity.HasIndex(h => h.PinYinCode);
         }
 
-        private static void ConfigureFormulas(ModelBuilder modelBuilder) {
+        private static void ConfigureFormulas(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<FormulaModel>();
             entity.ToTable("Formulas");
             entity.HasKey(f => f.Id);
@@ -427,9 +440,11 @@ namespace LYBT.Infrastructure.Data {
         /// <summary>
         /// 配置日志相关实体
         /// </summary>
-        private static void ConfigureLogModels(ModelBuilder modelBuilder) {
+        private static void ConfigureLogModels(ModelBuilder modelBuilder)
+        {
             // 统一日志配置
-            modelBuilder.Entity<LogModel>(entity => {
+            modelBuilder.Entity<LogModel>(entity =>
+            {
                 entity.ToTable("InfrastructureLogs");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.LogType).HasConversion<string>();
@@ -445,7 +460,8 @@ namespace LYBT.Infrastructure.Data {
             });
 
             // 系统日志配置
-            modelBuilder.Entity<SystemLogModel>(entity => {
+            modelBuilder.Entity<SystemLogModel>(entity =>
+            {
                 entity.ToTable("SystemLogs");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Level).HasConversion<string>();
@@ -459,7 +475,8 @@ namespace LYBT.Infrastructure.Data {
             });
 
             // 用户操作日志配置
-            modelBuilder.Entity<UserActionLogModel>(entity => {
+            modelBuilder.Entity<UserActionLogModel>(entity =>
+            {
                 entity.ToTable("UserActionLogs");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.ActionType).HasConversion<string>();
@@ -478,7 +495,8 @@ namespace LYBT.Infrastructure.Data {
             });
 
             // 错误日志配置
-            modelBuilder.Entity<ErrorLogModel>(entity => {
+            modelBuilder.Entity<ErrorLogModel>(entity =>
+            {
                 entity.ToTable("ErrorLogs");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
@@ -496,7 +514,8 @@ namespace LYBT.Infrastructure.Data {
             });
 
             // 审计日志配置
-            modelBuilder.Entity<AuditLogModel>(entity => {
+            modelBuilder.Entity<AuditLogModel>(entity =>
+            {
                 entity.ToTable("AuditLogs");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.EventType).HasMaxLength(50);
@@ -517,7 +536,8 @@ namespace LYBT.Infrastructure.Data {
             });
 
             // 性能日志配置
-            modelBuilder.Entity<PerformanceLogModel>(entity => {
+            modelBuilder.Entity<PerformanceLogModel>(entity =>
+            {
                 entity.ToTable("PerformanceLogs");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.OperationName).HasMaxLength(100);
@@ -536,9 +556,11 @@ namespace LYBT.Infrastructure.Data {
         /// <summary>
         /// 配置配置相关实体
         /// </summary>
-        private static void ConfigureConfigurationModels(ModelBuilder modelBuilder) {
+        private static void ConfigureConfigurationModels(ModelBuilder modelBuilder)
+        {
             // 全局设置配置
-            modelBuilder.Entity<GlobalSettingsModel>(entity => {
+            modelBuilder.Entity<GlobalSettingsModel>(entity =>
+            {
                 entity.ToTable("GlobalSettings");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.SystemName).HasMaxLength(100);
@@ -550,7 +572,8 @@ namespace LYBT.Infrastructure.Data {
             });
 
             // 系统设置配置
-            modelBuilder.Entity<SettingsModel>(entity => {
+            modelBuilder.Entity<SettingsModel>(entity =>
+            {
                 entity.ToTable("Settings");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Key).HasMaxLength(128).IsRequired();
@@ -565,7 +588,8 @@ namespace LYBT.Infrastructure.Data {
             });
 
             // 诊断目录配置
-            modelBuilder.Entity<DiagnosisCatalogModel>(entity => {
+            modelBuilder.Entity<DiagnosisCatalogModel>(entity =>
+            {
                 entity.ToTable("DiagnosisCatalogs");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Code).HasMaxLength(20);

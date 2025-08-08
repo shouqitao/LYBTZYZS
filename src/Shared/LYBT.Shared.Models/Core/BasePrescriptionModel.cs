@@ -1,13 +1,15 @@
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Core {
+namespace LYBT.Shared.Models.Core
+{
 
     /// <summary>
     /// 处方基础模型 - 前后端共享核心字段
     /// 包含所有通用的处方信息字段，各层可基于此模型扩展
     /// </summary>
-    public class BasePrescriptionModel {
+    public class BasePrescriptionModel
+    {
 
         /// <summary>处方唯一标识</summary>
         [DisplayName("处方ID")]

@@ -1,11 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Logging {
+namespace LYBT.Infrastructure.Logging
+{
 
     /// <summary>
     /// 错误日志实体模型
     /// </summary>
-    public class ErrorLogModel {
+    public class ErrorLogModel
+    {
 
         /// <summary>
         /// 日志ID（主键）

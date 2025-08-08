@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Auth {
+namespace LYBT.Shared.Models.Contracts.Auth
+{
 
     /// <summary>
     /// 用户登录请求 DTO
     /// </summary>
-    public class LoginRequestDto {
+    public class LoginRequestDto
+    {
 
         /// <summary>用户名</summary>
         [Required(ErrorMessage = "用户名不能为空")]

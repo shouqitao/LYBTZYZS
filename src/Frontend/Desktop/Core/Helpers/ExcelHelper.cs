@@ -30,7 +30,7 @@ namespace LYBT.WPF.Client.Core.Helpers
             // 创建标题行
             IRow headerRow = sheet.CreateRow(0);
             var headerStyle = CreateHeaderStyle(workbook);
-            
+
             int columnIndex = 0;
             foreach (var column in columns)
             {
@@ -46,7 +46,7 @@ namespace LYBT.WPF.Client.Core.Helpers
             {
                 IRow dataRow = sheet.CreateRow(rowIndex);
                 columnIndex = 0;
-                
+
                 foreach (var column in columns)
                 {
                     ICell cell = dataRow.CreateCell(columnIndex);
@@ -95,7 +95,7 @@ namespace LYBT.WPF.Client.Core.Helpers
             // 创建标题行
             IRow headerRow = sheet.CreateRow(0);
             var headerStyle = CreateHeaderStyle(workbook);
-            
+
             for (int i = 0; i < columns.Length; i++)
             {
                 ICell cell = headerRow.CreateCell(i);

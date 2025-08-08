@@ -1,11 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Logging {
+namespace LYBT.Infrastructure.Logging
+{
 
     /// <summary>
     /// 性能日志实体模型
     /// </summary>
-    public class PerformanceLogModel {
+    public class PerformanceLogModel
+    {
 
         /// <summary>
         /// 性能日志ID（主键）

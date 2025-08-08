@@ -2,13 +2,15 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Patients {
+namespace LYBT.Shared.Models.Contracts.Patients
+{
 
     /// <summary>
     /// 患者详情DTO - 简化版
     /// 只包含核心的患者信息字段
     /// </summary>
-    public class PatientDetailDto {
+    public class PatientDetailDto
+    {
 
         /// <summary>患者ID</summary>
         [DisplayName("患者ID")]

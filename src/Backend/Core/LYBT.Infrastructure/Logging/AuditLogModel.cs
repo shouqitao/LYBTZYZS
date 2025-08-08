@@ -1,11 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Logging {
+namespace LYBT.Infrastructure.Logging
+{
 
     /// <summary>
     /// 审计日志实体模型
     /// </summary>
-    public class AuditLogModel {
+    public class AuditLogModel
+    {
 
         /// <summary>
         /// 审计日志ID（主键）

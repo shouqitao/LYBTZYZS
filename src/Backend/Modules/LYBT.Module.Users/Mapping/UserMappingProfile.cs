@@ -4,15 +4,18 @@ using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
 using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
 using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
 
-namespace LYBT.Module.Users.Mapping {
+namespace LYBT.Module.Users.Mapping
+{
 
     /// <summary>
     /// 用户实体与DTO映射配置（AutoMapper用）
     /// 更新以支持共享契约模型和基础模型继承
     /// </summary>
-    public class UserMappingProfile : Profile {
+    public class UserMappingProfile : Profile
+    {
 
-        public UserMappingProfile() {
+        public UserMappingProfile()
+        {
             // ==================== 共享契约映射 ====================
 
             // 用户实体转共享UserDto（API响应）

@@ -54,7 +54,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 分页获取医疗案例列表
         /// </summary>
-        
+
         /// <summary>
         /// 获取所有医疗案例
         /// </summary>
@@ -74,7 +74,7 @@ namespace LYBT.Module.MedicalCase.Services
                 // 搜索过滤
                 if (!string.IsNullOrWhiteSpace(request.SearchKeyword))
                 {
-                    dtos = dtos.Where(x => 
+                    dtos = dtos.Where(x =>
                         x.PatientName.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ||
                         x.DoctorName.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ||
                         x.DiagnosisSummary.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase)
@@ -182,7 +182,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 更新医疗案例状态
         /// </summary>
-        
+
         /// <summary>
         /// 更新医疗案例（使用EditDto）
         /// </summary>
@@ -312,8 +312,8 @@ namespace LYBT.Module.MedicalCase.Services
         {
             var today = DateTime.Today;
             return await _dbContext.MedicalCases
-                .Where(m => m.UserId == userId && 
-                           m.CreateTime >= today && 
+                .Where(m => m.UserId == userId &&
+                           m.CreateTime >= today &&
                            m.CreateTime < today.AddDays(1))
                 .ToListAsync();
         }
@@ -389,8 +389,8 @@ namespace LYBT.Module.MedicalCase.Services
         /// 分页查询
         /// </summary>
         public async Task<(List<MedicalCaseModel> Items, int Total)> GetPagedAsync(
-            int pageIndex, 
-            int pageSize, 
+            int pageIndex,
+            int pageSize,
             LYBT.Shared.Models.Enums.MedicalCaseStatus? status = null,
             DateTime? startDate = null,
             DateTime? endDate = null)

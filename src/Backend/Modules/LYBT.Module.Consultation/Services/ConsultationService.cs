@@ -15,11 +15,13 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Consultation.Services {
+namespace LYBT.Module.Consultation.Services
+{
     /// <summary>
     /// 看诊服务实现
     /// </summary>
-    public class ConsultationService : IConsultationService {
+    public class ConsultationService : IConsultationService
+    {
         private readonly LYBT.Infrastructure.Data.AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<ConsultationService> _logger;
@@ -27,7 +29,8 @@ namespace LYBT.Module.Consultation.Services {
         public ConsultationService(
             AppDbContext context,
             IMapper mapper,
-            ILogger<ConsultationService> logger) {
+            ILogger<ConsultationService> logger)
+        {
             _context = context;
             _mapper = mapper;
             _logger = logger;
@@ -36,36 +39,44 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        public async Task<PagedResult<ConsultationDto>> GetPagedAsync(ConsultationPagedQueryDto query) {
-            try {
+        public async Task<PagedResult<ConsultationDto>> GetPagedAsync(ConsultationPagedQueryDto query)
+        {
+            try
+            {
                 var consultationsQuery = _context.Consultations
                     .Where(c => c.Status == CommonStatus.Enabled)
                     .AsQueryable();
 
                 // 应用筛选条件
-                if (query.PatientId.HasValue) {
+                if (query.PatientId.HasValue)
+                {
                     consultationsQuery = consultationsQuery.Where(c => c.PatientId == query.PatientId.Value);
                 }
 
-                if (query.UserId.HasValue) {
+                if (query.UserId.HasValue)
+                {
                     consultationsQuery = consultationsQuery.Where(c => c.UserId == query.UserId.Value);
                 }
 
-                if (query.StartDate.HasValue) {
+                if (query.StartDate.HasValue)
+                {
                     consultationsQuery = consultationsQuery.Where(c => c.ConsultationTime >= query.StartDate.Value);
                 }
 
-                if (query.EndDate.HasValue) {
+                if (query.EndDate.HasValue)
+                {
                     consultationsQuery = consultationsQuery.Where(c => c.ConsultationTime <= query.EndDate.Value);
                 }
 
-                if (!string.IsNullOrWhiteSpace(query.DiagnosisKeyword)) {
+                if (!string.IsNullOrWhiteSpace(query.DiagnosisKeyword))
+                {
                     consultationsQuery = consultationsQuery.Where(c =>
                         c.Diagnosis.Contains(query.DiagnosisKeyword) ||
                         c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(query.DiagnosisKeyword));
                 }
 
-                if (!string.IsNullOrWhiteSpace(query.SearchKeyword)) {
+                if (!string.IsNullOrWhiteSpace(query.SearchKeyword))
+                {
                     consultationsQuery = consultationsQuery.Where(c =>
                         c.Diagnosis.Contains(query.SearchKeyword));
                 }
@@ -93,7 +104,8 @@ namespace LYBT.Module.Consultation.Services {
                     .ToDictionaryAsync(d => d.Id);
 
                 // 转换为DTO
-                var items = consultations.Select(c => new ConsultationDto {
+                var items = consultations.Select(c => new ConsultationDto
+                {
                     Id = c.Id,
                     MedicalCaseId = c.MedicalCaseId,
                     PatientId = c.PatientId,
@@ -105,13 +117,16 @@ namespace LYBT.Module.Consultation.Services {
                     Status = GetConsultationStatus(c)
                 }).ToList();
 
-                return new PagedResult<ConsultationDto> {
+                return new PagedResult<ConsultationDto>
+                {
                     Data = items,
                     TotalCount = totalCount,
                     PageIndex = query.CurrentPage,
                     PageSize = query.PageSize
                 };
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "分页查询看诊记录失败");
                 throw;
             }
@@ -120,8 +135,10 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 获取看诊详情
         /// </summary>
-        public async Task<ConsultationDetailDto?> GetByIdAsync(Guid id) {
-            try {
+        public async Task<ConsultationDetailDto?> GetByIdAsync(Guid id)
+        {
+            try
+            {
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == id && c.Status == CommonStatus.Enabled);
 
@@ -129,7 +146,9 @@ namespace LYBT.Module.Consultation.Services {
                     return null;
 
                 return await ConvertToDetailDto(consultation);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "获取看诊详情失败: {Id}", id);
                 throw;
             }
@@ -138,8 +157,10 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 根据医疗案例ID获取看诊信息
         /// </summary>
-        public async Task<ConsultationDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId) {
-            try {
+        public async Task<ConsultationDetailDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.MedicalCaseId == medicalCaseId && c.Status == CommonStatus.Enabled);
 
@@ -147,7 +168,9 @@ namespace LYBT.Module.Consultation.Services {
                     return null;
 
                 return await ConvertToDetailDto(consultation);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "根据医疗案例ID获取看诊信息失败: {MedicalCaseId}", medicalCaseId);
                 throw;
             }
@@ -156,19 +179,23 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 开始看诊
         /// </summary>
-        public async Task<ConsultationDetailDto> StartConsultationAsync(ConsultationStartDto dto) {
+        public async Task<ConsultationDetailDto> StartConsultationAsync(ConsultationStartDto dto)
+        {
             using var transaction = await _context.Database.BeginTransactionAsync();
-            try {
+            try
+            {
                 // 检查是否已存在看诊记录
                 var existingConsultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.MedicalCaseId == dto.MedicalCaseId && c.Status == CommonStatus.Enabled);
 
-                if (existingConsultation != null) {
+                if (existingConsultation != null)
+                {
                     throw new InvalidOperationException("该医疗案例已存在看诊记录");
                 }
 
                 // 创建看诊记录
-                var consultation = new ConsultationModel {
+                var consultation = new ConsultationModel
+                {
                     Id = Guid.NewGuid(),
                     MedicalCaseId = dto.MedicalCaseId,
                     PatientId = dto.PatientId,
@@ -184,7 +211,8 @@ namespace LYBT.Module.Consultation.Services {
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(m => m.Id == dto.MedicalCaseId);
 
-                if (medicalCase != null) {
+                if (medicalCase != null)
+                {
                     medicalCase.Status = MedicalCaseStatus.InConsultation;
                     medicalCase.ConsultationId = consultation.Id;
                     medicalCase.UpdateTime = DateTime.Now;
@@ -194,7 +222,9 @@ namespace LYBT.Module.Consultation.Services {
                 await transaction.CommitAsync();
 
                 return await ConvertToDetailDto(consultation);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "开始看诊失败");
                 throw;
@@ -204,12 +234,15 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 更新看诊信息
         /// </summary>
-        public async Task<ConsultationDetailDto> UpdateConsultationAsync(Guid id, ConsultationUpdateDto dto) {
-            try {
+        public async Task<ConsultationDetailDto> UpdateConsultationAsync(Guid id, ConsultationUpdateDto dto)
+        {
+            try
+            {
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == id && c.Status == CommonStatus.Enabled);
 
-                if (consultation == null) {
+                if (consultation == null)
+                {
                     throw new InvalidOperationException("看诊记录不存在");
                 }
 
@@ -248,7 +281,9 @@ namespace LYBT.Module.Consultation.Services {
                 await _context.SaveChangesAsync();
 
                 return await ConvertToDetailDto(consultation);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "更新看诊信息失败: {Id}", id);
                 throw;
             }
@@ -257,13 +292,16 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 完成看诊
         /// </summary>
-        public async Task<bool> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto) {
+        public async Task<bool> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
+        {
             using var transaction = await _context.Database.BeginTransactionAsync();
-            try {
+            try
+            {
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == id && c.Status == CommonStatus.Enabled);
 
-                if (consultation == null) {
+                if (consultation == null)
+                {
                     throw new InvalidOperationException("看诊记录不存在");
                 }
 
@@ -279,7 +317,8 @@ namespace LYBT.Module.Consultation.Services {
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(m => m.ConsultationId == consultation.Id);
 
-                if (medicalCase != null) {
+                if (medicalCase != null)
+                {
                     medicalCase.Status = MedicalCaseStatus.Completed;
                     medicalCase.UpdateTime = DateTime.Now;
                     medicalCase.CompleteTime = DateTime.Now;
@@ -289,7 +328,9 @@ namespace LYBT.Module.Consultation.Services {
                 await transaction.CommitAsync();
 
                 return true;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "完成看诊失败: {Id}", id);
                 throw;
@@ -299,8 +340,10 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 获取医生今日看诊列表
         /// </summary>
-        public async Task<List<ConsultationDto>> GetTodayConsultationsByDoctorAsync(Guid doctorId) {
-            try {
+        public async Task<List<ConsultationDto>> GetTodayConsultationsByDoctorAsync(Guid doctorId)
+        {
+            try
+            {
                 var today = DateTime.Today;
                 var tomorrow = today.AddDays(1);
 
@@ -318,7 +361,8 @@ namespace LYBT.Module.Consultation.Services {
                     .Where(p => patientIds.Contains(p.Id))
                     .ToDictionaryAsync(p => p.Id);
 
-                return consultations.Select(c => new ConsultationDto {
+                return consultations.Select(c => new ConsultationDto
+                {
                     Id = c.Id,
                     MedicalCaseId = c.MedicalCaseId,
                     PatientId = c.PatientId,
@@ -329,7 +373,9 @@ namespace LYBT.Module.Consultation.Services {
                     ConsultationTime = c.ConsultationTime,
                     Status = GetConsultationStatus(c)
                 }).ToList();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "获取医生今日看诊列表失败: {DoctorId}", doctorId);
                 throw;
             }
@@ -338,8 +384,10 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 获取患者历史看诊记录
         /// </summary>
-        public async Task<List<ConsultationDto>> GetPatientHistoryAsync(Guid patientId) {
-            try {
+        public async Task<List<ConsultationDto>> GetPatientHistoryAsync(Guid patientId)
+        {
+            try
+            {
                 var consultations = await _context.Consultations
                     .Where(c => c.PatientId == patientId && c.Status == CommonStatus.Enabled)
                     .OrderByDescending(c => c.ConsultationTime)
@@ -351,7 +399,8 @@ namespace LYBT.Module.Consultation.Services {
                     .Where(d => doctorIds.Contains(d.Id))
                     .ToDictionaryAsync(d => d.Id);
 
-                return consultations.Select(c => new ConsultationDto {
+                return consultations.Select(c => new ConsultationDto
+                {
                     Id = c.Id,
                     MedicalCaseId = c.MedicalCaseId,
                     PatientId = c.PatientId,
@@ -362,7 +411,9 @@ namespace LYBT.Module.Consultation.Services {
                     ConsultationTime = c.ConsultationTime,
                     Status = GetConsultationStatus(c)
                 }).ToList();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "获取患者历史看诊记录失败: {PatientId}", patientId);
                 throw;
             }
@@ -371,22 +422,67 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 统计医生看诊数量
         /// </summary>
-        public async Task<int> GetDoctorConsultationCountAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null) {
-            try {
+        public async Task<int> GetDoctorConsultationCountAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
                 var query = _context.Consultations
                     .Where(c => c.UserId == doctorId && c.Status == CommonStatus.Enabled);
 
-                if (startDate.HasValue) {
+                if (startDate.HasValue)
+                {
                     query = query.Where(c => c.ConsultationTime >= startDate.Value);
                 }
 
-                if (endDate.HasValue) {
+                if (endDate.HasValue)
+                {
                     query = query.Where(c => c.ConsultationTime <= endDate.Value);
                 }
 
                 return await query.CountAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "统计医生看诊数量失败: {DoctorId}", doctorId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 更新看诊状态
+        /// </summary>
+        public async Task<ConsultationDetailDto> UpdateStatusAsync(Guid id, int status, string? reason = null)
+        {
+            try
+            {
+                var consultation = await _context.Consultations
+                    .Include(c => c.Patient)
+                    .Include(c => c.User)
+                    .Include(c => c.MedicalCase)
+                    .FirstOrDefaultAsync(c => c.Id == id);
+
+                if (consultation == null)
+                    throw new InvalidOperationException("看诊记录不存在");
+
+                // 更新状态
+                consultation.Status = (CommonStatus)status;
+                consultation.UpdateTime = DateTime.Now;
+
+                // 如果有原因，记录到备注中
+                if (!string.IsNullOrWhiteSpace(reason))
+                {
+                    consultation.Remark = string.IsNullOrWhiteSpace(consultation.Remark)
+                        ? $"状态更新原因: {reason}"
+                        : $"{consultation.Remark}\n\n状态更新原因: {reason}";
+                }
+
+                await _context.SaveChangesAsync();
+
+                return await ConvertToDetailDto(consultation);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新看诊状态失败: {Id}", id);
                 throw;
             }
         }
@@ -394,8 +490,10 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 删除看诊记录（软删除）
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id) {
-            try {
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            try
+            {
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -407,7 +505,9 @@ namespace LYBT.Module.Consultation.Services {
 
                 await _context.SaveChangesAsync();
                 return true;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "删除看诊记录失败: {Id}", id);
                 throw;
             }
@@ -418,11 +518,13 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 转换为详情DTO
         /// </summary>
-        private async Task<ConsultationDetailDto> ConvertToDetailDto(ConsultationModel consultation) {
+        private async Task<ConsultationDetailDto> ConvertToDetailDto(ConsultationModel consultation)
+        {
             var patient = await _context.Patients.FindAsync(consultation.PatientId);
             var doctor = await _context.Users.FindAsync(consultation.UserId);
 
-            return new ConsultationDetailDto {
+            return new ConsultationDetailDto
+            {
                 Id = consultation.Id,
                 MedicalCaseId = consultation.MedicalCaseId,
                 PatientId = consultation.PatientId,
@@ -449,12 +551,18 @@ namespace LYBT.Module.Consultation.Services {
         /// <summary>
         /// 获取看诊状态
         /// </summary>
-        private static string GetConsultationStatus(ConsultationModel consultation) {
-            if (consultation.Duration.HasValue && consultation.Duration.Value > 0) {
+        private static string GetConsultationStatus(ConsultationModel consultation)
+        {
+            if (consultation.Duration.HasValue && consultation.Duration.Value > 0)
+            {
                 return "已完成";
-            } else if ((DateTime.Now - consultation.ConsultationTime).TotalMinutes < 30) {
+            }
+            else if ((DateTime.Now - consultation.ConsultationTime).TotalMinutes < 30)
+            {
                 return "看诊中";
-            } else {
+            }
+            else
+            {
                 return "待完成";
             }
         }

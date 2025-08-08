@@ -1,9 +1,11 @@
-namespace LYBT.Shared.Models.Constants {
+namespace LYBT.Shared.Models.Constants
+{
 
     /// <summary>
     /// 系统常量定义 - 前后端共享
     /// </summary>
-    public static class SystemConstants {
+    public static class SystemConstants
+    {
 
         /// <summary>
         /// 系统名称
@@ -49,7 +51,8 @@ namespace LYBT.Shared.Models.Constants {
     /// <summary>
     /// API路由常量 - 前后端共享
     /// </summary>
-    public static class ApiRoutes {
+    public static class ApiRoutes
+    {
 
         /// <summary>
         /// API版本
@@ -64,7 +67,8 @@ namespace LYBT.Shared.Models.Constants {
         /// <summary>
         /// 认证相关API
         /// </summary>
-        public static class Auth {
+        public static class Auth
+        {
             public const string Base = $"{ApiBase}/Auth";
             public const string Login = $"{Base}/login";
             public const string Logout = $"{Base}/logout";
@@ -74,7 +78,8 @@ namespace LYBT.Shared.Models.Constants {
         /// <summary>
         /// 用户管理API
         /// </summary>
-        public static class Users {
+        public static class Users
+        {
             public const string Base = $"{ApiBase}/Users";
             public const string Search = $"{Base}/search";
             public const string Add = $"{Base}/add";
@@ -86,7 +91,8 @@ namespace LYBT.Shared.Models.Constants {
         /// <summary>
         /// 患者管理API
         /// </summary>
-        public static class Patients {
+        public static class Patients
+        {
             public const string Base = $"{ApiBase}/Patients";
             public const string Paged = $"{Base}/paged";
             public const string Search = $"{Base}/search";
@@ -97,7 +103,8 @@ namespace LYBT.Shared.Models.Constants {
         /// <summary>
         /// 医生管理API
         /// </summary>
-        public static class Doctors {
+        public static class Doctors
+        {
             public const string Base = $"{ApiBase}/Doctors";
             public const string Paged = $"{Base}/paged";
             public const string Search = $"{Base}/search";
@@ -107,7 +114,8 @@ namespace LYBT.Shared.Models.Constants {
         /// <summary>
         /// 药材管理API
         /// </summary>
-        public static class Herbs {
+        public static class Herbs
+        {
             public const string Base = $"{ApiBase}/Herbs";
             public const string Paged = $"{Base}/paged";
             public const string Available = $"{Base}/available";
@@ -118,7 +126,8 @@ namespace LYBT.Shared.Models.Constants {
         /// <summary>
         /// 健康检查API
         /// </summary>
-        public static class Health {
+        public static class Health
+        {
             public const string Base = "api/Health";
             public const string Database = $"{Base}/database";
             public const string Detailed = $"{Base}/detailed";
@@ -128,7 +137,8 @@ namespace LYBT.Shared.Models.Constants {
     /// <summary>
     /// API响应消息常量 - 前后端共享
     /// </summary>
-    public static class Messages {
+    public static class Messages
+    {
 
         /// <summary>
         /// 操作成功
@@ -194,7 +204,8 @@ namespace LYBT.Shared.Models.Constants {
     /// <summary>
     /// 日期时间格式常量 - 前后端共享
     /// </summary>
-    public static class DateTimeFormats {
+    public static class DateTimeFormats
+    {
 
         /// <summary>
         /// 标准日期时间格式
@@ -235,7 +246,8 @@ namespace LYBT.Shared.Models.Constants {
     /// <summary>
     /// 正则表达式常量 - 前后端共享
     /// </summary>
-    public static class RegexPatterns {
+    public static class RegexPatterns
+    {
 
         /// <summary>
         /// 手机号正则表达式
@@ -271,7 +283,8 @@ namespace LYBT.Shared.Models.Constants {
     /// <summary>
     /// 缓存键常量 - 后端专用（从Backend项目迁移）
     /// </summary>
-    public static class CacheKeys {
+    public static class CacheKeys
+    {
 
         /// <summary>
         /// 用户信息缓存键前缀
@@ -317,7 +330,8 @@ namespace LYBT.Shared.Models.Constants {
     /// <summary>
     /// 文件相关常量 - 后端专用（从Backend项目迁移）
     /// </summary>
-    public static class FileConstants {
+    public static class FileConstants
+    {
 
         /// <summary>
         /// 允许上传的图片格式

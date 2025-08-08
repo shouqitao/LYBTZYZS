@@ -131,12 +131,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                 .ObservesProperty(() => Category)
                 .ObservesProperty(() => Indications)
                 .ObservesProperty(() => TemplateHerbs);
-            
+
             CancelCommand = new DelegateCommand(ExecuteCancel);
             AddHerbCommand = new DelegateCommand(ExecuteAddHerb, CanExecuteAddHerb)
                 .ObservesProperty(() => SelectedHerb)
                 .ObservesProperty(() => HerbQuantity);
-            
+
             RemoveHerbCommand = new DelegateCommand<FormulaHerbItem>(ExecuteRemoveHerb);
 
             // 获取当前窗口实例
@@ -194,7 +194,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                 if (response.IsSuccess)
                 {
                     _commonDialogService.ShowInformationAsync("验方模板创建成功", "成功").GetAwaiter().GetResult();
-                    
+
                     // 安全设置DialogResult
                     try
                     {

@@ -22,9 +22,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         private readonly IPatientService _patientService;
         private bool _isEditMode;
         private Guid? _editingPatientId = null;
-        
+
         #region 属性
-        
+
         private string _name = string.Empty;
         private bool _isMale = true;
         private DateTime? _birthDate = DateTime.Now.AddYears(-30);
@@ -120,14 +120,14 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             get => _remark;
             set => SetProperty(ref _remark, value);
         }
-        
+
         #endregion
 
         #region 命令
-        
+
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
-        
+
         #endregion
 
         public Action<bool>? CloseDialogCallback { get; set; }
@@ -141,7 +141,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             _patientService = patientService;
             _commonDialogService = commonDialogService;
             _isEditMode = false;
-            
+
             SaveCommand = new DelegateCommand(ExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
         }
@@ -203,7 +203,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 {
                     result = await _patientService.AddAsync(patient);
                 }
-                
+
                 if (result.IsSuccess)
                 {
                     await _commonDialogService.ShowInformationAsync($"患者信息{(_isEditMode ? "更新" : "保存")}成功", "成功");
@@ -232,7 +232,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         {
             _isEditMode = true;
             _editingPatientId = patientId;
-            
+
             try
             {
                 var result = await _patientService.GetByIdAsync(patientId);
@@ -246,7 +246,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                     Phone = patient.PhoneNumber ?? string.Empty;
                     Address = patient.Address ?? string.Empty;
                     Allergies = patient.AllergyHistory ?? string.Empty;
-                    
+
                     // 从备注中解析紧急联系人信息和既往病史
                     if (!string.IsNullOrEmpty(patient.Remark))
                     {
@@ -291,10 +291,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         public void SetEditMode(PatientInfo patient)
         {
             if (patient == null) return;
-            
+
             _isEditMode = true;
             _editingPatientId = patient.Id;
-            
+
             Name = patient.Name;
             IsMale = patient.Gender == Gender.Male;
             BirthDate = patient.BirthDate;
@@ -302,7 +302,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             Phone = patient.PhoneNumber ?? string.Empty;
             Address = patient.Address ?? string.Empty;
             Allergies = patient.AllergyHistory ?? string.Empty;
-            
+
             // 备注和既往病史等可能需要从完整的详情中获取
             // 这里先设置基本信息
         }

@@ -1,12 +1,14 @@
 using LYBT.Shared.Models.Core;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Contracts.Auth {
+namespace LYBT.Shared.Models.Contracts.Auth
+{
 
     /// <summary>
     /// 登录成功返回 DTO
     /// </summary>
-    public class LoginResponseDto {
+    public class LoginResponseDto
+    {
 
         /// <summary>JWT令牌</summary>
         [DisplayName("JWT Token")]

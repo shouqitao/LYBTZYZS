@@ -5,16 +5,19 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace LYBT.Infrastructure.Authentication {
+namespace LYBT.Infrastructure.Authentication
+{
 
     /// <summary>
     /// JWT认证服务实现
     /// </summary>
-    public class JwtAuthenticationService : IJwtAuthenticationService {
+    public class JwtAuthenticationService : IJwtAuthenticationService
+    {
         private readonly JwtOptions _jwtOptions;
         private readonly JwtSecurityTokenHandler _tokenHandler;
 
-        public JwtAuthenticationService(IOptions<JwtOptions> jwtOptions) {
+        public JwtAuthenticationService(IOptions<JwtOptions> jwtOptions)
+        {
             _jwtOptions = jwtOptions.Value;
             _tokenHandler = new JwtSecurityTokenHandler();
         }
@@ -22,7 +25,8 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 生成JWT令牌
         /// </summary>
-        public string GenerateToken(string userId, string userName, IEnumerable<string> roles, bool rememberMe = false) {
+        public string GenerateToken(string userId, string userName, IEnumerable<string> roles, bool rememberMe = false)
+        {
             var claims = new List<Claim> {
                 new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.UniqueName, userName),
@@ -54,9 +58,12 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 验证JWT令牌
         /// </summary>
-        public ClaimsPrincipal? ValidateToken(string token) {
-            try {
-                var validationParameters = new TokenValidationParameters {
+        public ClaimsPrincipal? ValidateToken(string token)
+        {
+            try
+            {
+                var validationParameters = new TokenValidationParameters
+                {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -69,7 +76,9 @@ namespace LYBT.Infrastructure.Authentication {
 
                 var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
                 return principal;
-            } catch {
+            }
+            catch
+            {
                 return null;
             }
         }
@@ -77,9 +86,11 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 刷新JWT令牌
         /// </summary>
-        public string RefreshToken(string token) {
+        public string RefreshToken(string token)
+        {
             var principal = ValidateToken(token);
-            if (principal == null) {
+            if (principal == null)
+            {
                 throw new SecurityTokenException("Invalid token");
             }
 
@@ -93,21 +104,26 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 从令牌中提取用户信息
         /// </summary>
-        public TokenUserInfo? ExtractUserInfo(string token) {
-            try {
+        public TokenUserInfo? ExtractUserInfo(string token)
+        {
+            try
+            {
                 var jsonToken = _tokenHandler.ReadJwtToken(token);
 
                 var userId = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
                 var userName = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
                 var roles = jsonToken.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value);
 
-                return new TokenUserInfo {
+                return new TokenUserInfo
+                {
                     UserId = userId,
                     UserName = userName,
                     Roles = roles,
                     ExpiresAt = jsonToken.ValidTo
                 };
-            } catch {
+            }
+            catch
+            {
                 return null;
             }
         }

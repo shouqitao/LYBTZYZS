@@ -20,8 +20,8 @@ namespace LYBT.WPF.Client.Controls.Users
         /// </summary>
         public static readonly DependencyProperty UserDataProperty =
             DependencyProperty.Register(
-                nameof(UserData), 
-                typeof(UserDto), 
+                nameof(UserData),
+                typeof(UserDto),
                 typeof(UserDisplayControl),
                 new PropertyMetadata(null, OnUserDataChanged));
 
@@ -50,8 +50,8 @@ namespace LYBT.WPF.Client.Controls.Users
         /// </summary>
         public static readonly DependencyProperty DisplayModeProperty =
             DependencyProperty.Register(
-                nameof(DisplayMode), 
-                typeof(UserDisplayMode), 
+                nameof(DisplayMode),
+                typeof(UserDisplayMode),
                 typeof(UserDisplayControl),
                 new PropertyMetadata(UserDisplayMode.Card));
 

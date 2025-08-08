@@ -18,11 +18,13 @@ namespace LYBT.WebAPI.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize] // 全部接口必须登录
-public class UsersController : BaseController {
+public class UsersController : BaseController
+{
     private readonly IUserService _userService;
 
-    public UsersController(IUserService userService, IMemoryCache cache, ILogger<UsersController> logger) 
-        : base(logger, cache) {
+    public UsersController(IUserService userService, IMemoryCache cache, ILogger<UsersController> logger)
+        : base(logger, cache)
+    {
         _userService = userService;
     }
 
@@ -36,13 +38,16 @@ public class UsersController : BaseController {
     /// 切换用户状态（启用/禁用）
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    public async Task<IActionResult> ToggleStatus(Guid id) {
+    public async Task<IActionResult> ToggleStatus(Guid id)
+    {
         var (operatorId, operatorName, operatorRole) = GetOperator();
-        
+
         // 先获取用户当前状态
         var user = await _userService.GetByIdAsync(id);
-        if (user == null) {
-            return NotFound(new ProblemDetails {
+        if (user == null)
+        {
+            return NotFound(new ProblemDetails
+            {
                 Title = "资源未找到"
             });
         }
@@ -50,19 +55,26 @@ public class UsersController : BaseController {
         // 根据当前状态切换
         bool result;
         string message;
-        if (user.Status == CommonStatus.Enabled) {
+        if (user.Status == CommonStatus.Enabled)
+        {
             result = await _userService.DisableAsync(id, operatorId, operatorName);
             message = "用户已禁用";
-        } else {
+        }
+        else
+        {
             result = await _userService.EnableAsync(id, operatorId, operatorName);
             message = "用户已启用";
         }
-        
-        if (result) {
+
+        if (result)
+        {
             LogOperation(message, null, id);
             return Ok(new { message });
-        } else {
-            return BadRequest(new ProblemDetails {
+        }
+        else
+        {
+            return BadRequest(new ProblemDetails
+            {
                 Title = "操作失败",
                 Detail = "状态切换失败",
                 Status = 400
@@ -74,7 +86,8 @@ public class UsersController : BaseController {
     /// 批量禁用用户
     /// </summary>
     [HttpPatch("batch-disable")]
-    public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto) {
+    public async Task<IActionResult> BatchDisable([FromBody] BatchIdsDto dto)
+    {
         var (operatorId, operatorName, _) = GetOperator();
         var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
         LogOperation("批量禁用用户成功", new { Count = count, Ids = dto.Ids }, null);
@@ -85,7 +98,8 @@ public class UsersController : BaseController {
     /// 批量启用用户
     /// </summary>
     [HttpPatch("batch-enable")]
-    public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto) {
+    public async Task<IActionResult> BatchEnable([FromBody] BatchIdsDto dto)
+    {
         var (operatorId, operatorName, _) = GetOperator();
         var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
         LogOperation("批量启用用户成功", new { Count = count, Ids = dto.Ids }, null);
@@ -96,14 +110,19 @@ public class UsersController : BaseController {
     /// 管理员重置密码，恢复为默认值
     /// </summary>
     [HttpPost("resetPassword/{id}")]
-    public async Task<IActionResult> ResetPassword(Guid id) {
+    public async Task<IActionResult> ResetPassword(Guid id)
+    {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
-        if (result) {
+        if (result)
+        {
             LogOperation("重置用户密码成功", null, id);
             return Ok(new { message = "密码重置成功" });
-        } else {
-            return BadRequest(new ProblemDetails {
+        }
+        else
+        {
+            return BadRequest(new ProblemDetails
+            {
                 Title = "操作失败",
                 Detail = "密码重置失败",
                 Status = 400
@@ -115,21 +134,27 @@ public class UsersController : BaseController {
     /// 用户修改密码
     /// </summary>
     [HttpPatch("password")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto) {
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
         var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userId, out var id))
-            return Unauthorized(new ProblemDetails {
+            return Unauthorized(new ProblemDetails
+            {
                 Title = "认证失败",
                 Detail = "未登录或用户信息无效",
                 Status = 401
             });
 
         var result = await _userService.ChangePasswordAsync(id, dto.OldPassword, dto.NewPassword);
-        if (result) {
+        if (result)
+        {
             LogOperation("修改密码成功", null, id);
             return Ok(new { message = "密码修改成功" });
-        } else {
-            return BadRequest(new ProblemDetails {
+        }
+        else
+        {
+            return BadRequest(new ProblemDetails
+            {
                 Title = "操作失败",
                 Detail = "密码修改失败",
                 Status = 400
@@ -141,21 +166,27 @@ public class UsersController : BaseController {
     /// 用户修改个人信息
     /// </summary>
     [HttpPut("profile")]
-    public async Task<IActionResult> ChangeProfile([FromBody] ChangeProfileDto dto) {
+    public async Task<IActionResult> ChangeProfile([FromBody] ChangeProfileDto dto)
+    {
         var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userId, out var id))
-            return Unauthorized(new ProblemDetails {
+            return Unauthorized(new ProblemDetails
+            {
                 Title = "认证失败",
                 Detail = "未登录或用户信息无效",
                 Status = 401
             });
 
         var result = await _userService.ChangeProfileAsync(id, dto.RealName, dto.PhoneNumber);
-        if (result) {
+        if (result)
+        {
             LogOperation("修改个人信息成功", dto, id);
             return Ok(new { message = "个人信息修改成功" });
-        } else {
-            return BadRequest(new ProblemDetails {
+        }
+        else
+        {
+            return BadRequest(new ProblemDetails
+            {
                 Title = "操作失败",
                 Detail = "个人信息修改失败",
                 Status = 400
@@ -167,7 +198,8 @@ public class UsersController : BaseController {
     /// 获取所有角色
     /// </summary>
     [HttpGet("getRoles")]
-    public ActionResult<IEnumerable<object>> GetRoles() {
+    public ActionResult<IEnumerable<object>> GetRoles()
+    {
         var roles = _userService.GetRoles();
         return Ok(roles);
     }
@@ -178,7 +210,8 @@ public class UsersController : BaseController {
     /// 获取启用的用户列表
     /// </summary>
     [HttpGet("active")]
-    public async Task<ActionResult<IEnumerable<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetActiveUsers() {
+    public async Task<ActionResult<IEnumerable<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetActiveUsers()
+    {
         var users = await _userService.GetActiveUsersAsync();
         return Ok(users);
     }
@@ -190,7 +223,7 @@ public class UsersController : BaseController {
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetUsers(
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
         [FromQuery] string? username = null,
@@ -198,9 +231,11 @@ public class UsersController : BaseController {
         [FromQuery] string? email = null,
         [FromQuery] string? phoneNumber = null,
         [FromQuery] string? role = null,
-        [FromQuery] bool? isActive = null) {
+        [FromQuery] bool? isActive = null)
+    {
         var (_, _, operatorRole) = GetOperator();
-        var query = new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto {
+        var query = new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto
+        {
             CurrentPage = page,
             PageSize = pageSize,
             SearchKeyword = keyword,
@@ -219,11 +254,14 @@ public class UsersController : BaseController {
     /// 根据ID获取用户 (RESTful GET /Users/{id})
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Users.UserDto>> GetUser(Guid id) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Users.UserDto>> GetUser(Guid id)
+    {
         var (_, _, operatorRole) = GetOperator();
         var user = await _userService.GetByIdAsync(id);
-        if (user == null) {
-            return NotFound(new ProblemDetails {
+        if (user == null)
+        {
+            return NotFound(new ProblemDetails
+            {
                 Title = "资源未找到"
             });
         }
@@ -234,14 +272,19 @@ public class UsersController : BaseController {
     /// 创建新用户 (RESTful POST /Users)
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
+    public async Task<IActionResult> CreateUser([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto)
+    {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _userService.AddAsync(dto, operatorId, operatorName);
-        if (result != null) {
+        if (result != null)
+        {
             LogOperation("创建用户成功", result, result.Id);
             return Ok(result);
-        } else {
-            return BadRequest(new ProblemDetails {
+        }
+        else
+        {
+            return BadRequest(new ProblemDetails
+            {
                 Title = "操作失败",
                 Detail = "用户创建失败",
                 Status = 400
@@ -253,19 +296,24 @@ public class UsersController : BaseController {
     /// 更新用户信息 (RESTful PUT /Users/{id})
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Users.UserUpdateDto dto) {
+    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Users.UserUpdateDto dto)
+    {
         var (operatorId, operatorName, _) = GetOperator();
         // 确保DTO的ID与路由参数一致
         dto.Id = id;
         var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
-        if (result) {
+        if (result)
+        {
             // 获取更新后的资源
-                var (_, _, operatorRole) = GetOperator();
-                var updated = await _userService.GetByIdAsync(dto.Id);
-                LogOperation("用户信息更新成功", updated, dto.Id);
-                return Ok(updated);
-        } else {
-            return BadRequest(new ProblemDetails {
+            var (_, _, operatorRole) = GetOperator();
+            var updated = await _userService.GetByIdAsync(dto.Id);
+            LogOperation("用户信息更新成功", updated, dto.Id);
+            return Ok(updated);
+        }
+        else
+        {
+            return BadRequest(new ProblemDetails
+            {
                 Title = "操作失败",
                 Detail = "用户信息更新失败",
                 Status = 400

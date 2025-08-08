@@ -218,7 +218,7 @@ namespace LYBT.WPF.Client.Services
                     using (var dialog = new FolderBrowserDialog())
                     {
                         dialog.Description = title;
-                        
+
                         if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         {
                             return dialog.SelectedPath;

@@ -1,13 +1,15 @@
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Contracts.Users {
+namespace LYBT.Shared.Models.Contracts.Users
+{
 
     /// <summary>
     /// 用户信息DTO - 前后端共享API契约
     /// 用于用户信息的展示和传输（不包含敏感信息）
     /// </summary>
-    public class UserDto {
+    public class UserDto
+    {
 
         /// <summary>用户ID</summary>
         [DisplayName("用户ID")]

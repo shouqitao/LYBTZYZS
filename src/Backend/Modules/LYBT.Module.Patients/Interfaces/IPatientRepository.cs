@@ -1,12 +1,14 @@
 ﻿using LYBT.Models.Patients;
 
-namespace LYBT.Module.Patients.Interfaces {
+namespace LYBT.Module.Patients.Interfaces
+{
 
     /// <summary>
     /// 病人仓储接口，定义病人相关数据操作
     /// 实现软删除策略：患者档案只能禁用/启用，不能物理删除
     /// </summary>
-    public interface IPatientRepository {
+    public interface IPatientRepository
+    {
 
         /// <summary>
         /// 新增病人记录

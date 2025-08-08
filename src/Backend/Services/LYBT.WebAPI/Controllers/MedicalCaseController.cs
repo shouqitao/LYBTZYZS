@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -11,8 +12,9 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 医疗案例管理控制器
     /// </summary>
-    [Route("api/v1/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class MedicalCaseController : BaseController
     {

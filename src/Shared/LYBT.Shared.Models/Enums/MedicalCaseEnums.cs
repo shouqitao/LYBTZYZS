@@ -25,5 +25,5 @@ namespace LYBT.Shared.Models.Enums
         [Description("已取消")]
         Cancelled = 3
     }
-    
+
 }

@@ -1,12 +1,14 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Core {
+namespace LYBT.Shared.Models.Core
+{
 
     /// <summary>
     /// 诊疗基础模型 - 前后端共享核心字段
     /// 包含所有通用的诊疗信息字段，各层可基于此模型扩展
     /// </summary>
-    public class BaseDiagnosisTreatmentModel {
+    public class BaseDiagnosisTreatmentModel
+    {
 
         /// <summary>诊疗唯一标识</summary>
         [DisplayName("诊疗ID")]

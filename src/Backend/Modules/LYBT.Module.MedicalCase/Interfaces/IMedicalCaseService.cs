@@ -14,7 +14,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseCreateDto dto);
         Task<bool> UpdateAsync(MedicalCaseEditDto dto);
         Task<bool> DeleteAsync(Guid id);
-        
+
         // 工作流
         Task<List<MedicalCaseModel>> GetTodayByUserIdAsync(Guid userId);
         Task<bool> UpdateStatusAsync(Guid id, LYBT.Shared.Models.Enums.MedicalCaseStatus status);
@@ -24,7 +24,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         Task<bool> CancelMedicalCaseAsync(Guid id, string reason);
         Task<List<MedicalCaseModel>> GetPendingCasesByStatusAsync(LYBT.Shared.Models.Enums.MedicalCaseStatus status);
         Task<(List<MedicalCaseModel> Items, int Total)> GetPagedAsync(int pageIndex, int pageSize, LYBT.Shared.Models.Enums.MedicalCaseStatus? status = null, DateTime? startDate = null, DateTime? endDate = null);
-        
+
         // 额外方法
         Task<bool> CompleteCaseAsync(Guid id);
     }

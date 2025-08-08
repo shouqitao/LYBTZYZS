@@ -1,12 +1,14 @@
 using System.ComponentModel;
 // using LYBT.Shared.Models.Enums; // UserRole已删除
 
-namespace LYBT.Shared.Models.Auth {
+namespace LYBT.Shared.Models.Auth
+{
 
     /// <summary>
     /// 用户信息 - API契约
     /// </summary>
-    public class UserInfo {
+    public class UserInfo
+    {
 
         /// <summary>用户ID</summary>
         [DisplayName("用户ID")]
@@ -22,7 +24,7 @@ namespace LYBT.Shared.Models.Auth {
 
         /// <summary>角色</summary>
         [DisplayName("角色")]// 
-public string Role { get; set; } = "User";
+        public string Role { get; set; } = "User";
 
         /// <summary>邮箱</summary>
         [DisplayName("邮箱")]

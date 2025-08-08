@@ -81,7 +81,7 @@ namespace LYBT.WPF.Client.Core.Models.Backup
         private string GetExecutionTimeDisplay()
         {
             var timeStr = ExecutionTime.ToString(@"hh\:mm");
-            
+
             return ScheduleType switch
             {
                 ScheduleType.Daily => $"每天 {timeStr}",

@@ -12,7 +12,7 @@ namespace LYBT.WPF.Client.Core.ViewModels
     public abstract class DialogViewModelBase : BindableBase
     {
         private string _title = "对话框";
-        
+
         /// <summary>
         /// 对话框标题
         /// </summary>

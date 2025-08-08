@@ -1,18 +1,22 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace LYBT.Infrastructure.Authentication {
+namespace LYBT.Infrastructure.Authentication
+{
 
     /// <summary>
     /// 授权服务实现
     /// </summary>
-    public class AuthorizationService : IAuthorizationService {
+    public class AuthorizationService : IAuthorizationService
+    {
 
         /// <summary>
         /// 检查用户是否有指定权限
         /// </summary>
-        public bool HasPermission(ClaimsPrincipal principal, string permission) {
-            if (principal?.Identity?.IsAuthenticated != true) {
+        public bool HasPermission(ClaimsPrincipal principal, string permission)
+        {
+            if (principal?.Identity?.IsAuthenticated != true)
+            {
                 return false;
             }
 
@@ -23,8 +27,10 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 检查用户是否有指定角色
         /// </summary>
-        public bool HasRole(ClaimsPrincipal principal, string role) {
-            if (principal?.Identity?.IsAuthenticated != true) {
+        public bool HasRole(ClaimsPrincipal principal, string role)
+        {
+            if (principal?.Identity?.IsAuthenticated != true)
+            {
                 return false;
             }
 
@@ -34,8 +40,10 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 检查用户是否有任一指定角色
         /// </summary>
-        public bool HasAnyRole(ClaimsPrincipal principal, params string[] roles) {
-            if (principal?.Identity?.IsAuthenticated != true || roles.Length == 0) {
+        public bool HasAnyRole(ClaimsPrincipal principal, params string[] roles)
+        {
+            if (principal?.Identity?.IsAuthenticated != true || roles.Length == 0)
+            {
                 return false;
             }
 
@@ -45,8 +53,10 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 检查用户是否拥有所有指定角色
         /// </summary>
-        public bool HasAllRoles(ClaimsPrincipal principal, params string[] roles) {
-            if (principal?.Identity?.IsAuthenticated != true || roles.Length == 0) {
+        public bool HasAllRoles(ClaimsPrincipal principal, params string[] roles)
+        {
+            if (principal?.Identity?.IsAuthenticated != true || roles.Length == 0)
+            {
                 return false;
             }
 
@@ -56,8 +66,10 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 获取用户ID
         /// </summary>
-        public string? GetUserId(ClaimsPrincipal principal) {
-            if (principal?.Identity?.IsAuthenticated != true) {
+        public string? GetUserId(ClaimsPrincipal principal)
+        {
+            if (principal?.Identity?.IsAuthenticated != true)
+            {
                 return null;
             }
 
@@ -68,8 +80,10 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 获取用户名
         /// </summary>
-        public string? GetUserName(ClaimsPrincipal principal) {
-            if (principal?.Identity?.IsAuthenticated != true) {
+        public string? GetUserName(ClaimsPrincipal principal)
+        {
+            if (principal?.Identity?.IsAuthenticated != true)
+            {
                 return null;
             }
 
@@ -81,8 +95,10 @@ namespace LYBT.Infrastructure.Authentication {
         /// <summary>
         /// 获取用户角色列表
         /// </summary>
-        public IEnumerable<string> GetUserRoles(ClaimsPrincipal principal) {
-            if (principal?.Identity?.IsAuthenticated != true) {
+        public IEnumerable<string> GetUserRoles(ClaimsPrincipal principal)
+        {
+            if (principal?.Identity?.IsAuthenticated != true)
+            {
                 return Enumerable.Empty<string>();
             }
 

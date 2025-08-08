@@ -18,7 +18,7 @@ namespace LYBT.WPF.Client.Services
             try
             {
                 var response = await apiCall();
-                
+
                 if (response.IsSuccessStatusCode)
                 {
                     return ServiceResult<T>.Success(response.Content!);
@@ -112,7 +112,7 @@ namespace LYBT.WPF.Client.Services
                         {
                             PropertyNameCaseInsensitive = true
                         });
-                        
+
                         if (problemDetails != null)
                         {
                             return Task.FromResult(problemDetails.Detail ?? problemDetails.Title ?? "请求失败");
@@ -137,7 +137,7 @@ namespace LYBT.WPF.Client.Services
                 System.Net.HttpStatusCode.GatewayTimeout => "请求超时",
                 _ => "请求失败"
             };
-            
+
             return Task.FromResult(errorMessage);
         }
 

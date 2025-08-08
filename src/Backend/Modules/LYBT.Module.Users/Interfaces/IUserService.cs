@@ -5,12 +5,14 @@ using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
 
-namespace LYBT.Module.Users.Interfaces {
+namespace LYBT.Module.Users.Interfaces
+{
 
     /// <summary>
     /// 用户服务接口，封装业务逻辑（含日志集成）
     /// </summary>
-    public interface IUserService {
+    public interface IUserService
+    {
 
         /// <summary>
         /// 分页/条件查找用户

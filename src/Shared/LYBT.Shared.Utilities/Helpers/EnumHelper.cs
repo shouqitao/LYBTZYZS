@@ -29,12 +29,12 @@ namespace LYBT.Shared.Utilities.Helpers
         public static Dictionary<T, string> GetEnumDescriptions<T>() where T : Enum
         {
             var result = new Dictionary<T, string>();
-            
+
             foreach (T value in Enum.GetValues(typeof(T)))
             {
                 result[value] = value.GetDescription();
             }
-            
+
             return result;
         }
 
@@ -53,7 +53,7 @@ namespace LYBT.Shared.Utilities.Helpers
                     return value;
                 }
             }
-            
+
             return default(T)!;
         }
 
@@ -143,12 +143,12 @@ namespace LYBT.Shared.Utilities.Helpers
         public static List<KeyValuePair<T, string>> GetKeyValuePairs<T>() where T : Enum
         {
             var result = new List<KeyValuePair<T, string>>();
-            
+
             foreach (T value in Enum.GetValues(typeof(T)))
             {
                 result.Add(new KeyValuePair<T, string>(value, value.GetDescription()));
             }
-            
+
             return result;
         }
 
@@ -160,12 +160,12 @@ namespace LYBT.Shared.Utilities.Helpers
         public static List<KeyValuePair<int, string>> GetIntKeyValuePairs<T>() where T : Enum
         {
             var result = new List<KeyValuePair<int, string>>();
-            
+
             foreach (T value in Enum.GetValues(typeof(T)))
             {
                 result.Add(new KeyValuePair<int, string>(ToInt(value), value.GetDescription()));
             }
-            
+
             return result;
         }
     }

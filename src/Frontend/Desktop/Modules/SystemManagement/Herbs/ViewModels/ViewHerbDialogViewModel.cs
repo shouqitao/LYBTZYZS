@@ -127,7 +127,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             {
                 IsLoading = true;
                 var herb = await _herbService.GetByIdAsync(herbId);
-                
+
                 if (herb != null)
                 {
                     Herb = herb;

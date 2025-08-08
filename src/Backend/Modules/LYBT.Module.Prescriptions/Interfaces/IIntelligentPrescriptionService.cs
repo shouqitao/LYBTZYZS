@@ -1,12 +1,14 @@
 using LYBT.Models.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Prescriptions.Interfaces {
+namespace LYBT.Module.Prescriptions.Interfaces
+{
 
     /// <summary>
     /// 智能处方服务接口
     /// </summary>
-    public interface IIntelligentPrescriptionService {
+    public interface IIntelligentPrescriptionService
+    {
 
         /// <summary>
         /// 智能组合多个验方模板生成处方

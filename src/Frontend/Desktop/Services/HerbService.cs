@@ -38,14 +38,14 @@ namespace LYBT.WPF.Client.Services
                     keyword: query.SearchKeyword,
                     name: query.Name,
                     origin: query.Origin,
-                    effect: query.Effect,
-                    usage: query.Usage,
+                    effect: null,
+                    usage: null,
                     status: query.Status.HasValue ? (int?)query.Status.Value : null,
                     minPrice: query.MinPrice,
                     maxPrice: query.MaxPrice,
-                    hasStock: query.HasStock
+                    hasStock: null
                 );
-                
+
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     var herbInfos = response.Content.Items.Select(ConvertToHerbInfo).ToList();
@@ -62,21 +62,21 @@ namespace LYBT.WPF.Client.Services
             catch (Refit.ApiException apiEx)
             {
                 // 返回空结果而不是抛出异常
-                return new PagedResult 
-                { 
-                    Items = new List<HerbInfo>(), 
+                return new PagedResult
+                {
+                    Items = new List<HerbInfo>(),
                     TotalCount = 0,
-                    ErrorMessage = apiEx.StatusCode == System.Net.HttpStatusCode.Unauthorized 
-                        ? "未授权访问，请先登录" 
+                    ErrorMessage = apiEx.StatusCode == System.Net.HttpStatusCode.Unauthorized
+                        ? "未授权访问，请先登录"
                         : $"API请求失败: {apiEx.StatusCode}"
                 };
             }
             catch (System.Net.Http.HttpRequestException)
             {
                 // 返回空结果而不是抛出异常
-                return new PagedResult 
-                { 
-                    Items = new List<HerbInfo>(), 
+                return new PagedResult
+                {
+                    Items = new List<HerbInfo>(),
                     TotalCount = 0,
                     ErrorMessage = "无法连接到服务器，请检查网络连接和API服务状态"
                 };
@@ -84,9 +84,9 @@ namespace LYBT.WPF.Client.Services
             catch (Exception ex)
             {
                 // 返回空结果而不是抛出异常
-                return new PagedResult 
-                { 
-                    Items = new List<HerbInfo>(), 
+                return new PagedResult
+                {
+                    Items = new List<HerbInfo>(),
                     TotalCount = 0,
                     ErrorMessage = $"搜索药材失败: {ex.Message}"
                 };
@@ -139,7 +139,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> CreateHerbAsync(HerbCreateDto dto)
         {
-            var result = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _herbApiService.CreateHerbAsync(dto)
             );
             return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
@@ -150,7 +150,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> UpdateHerbAsync(HerbUpdateDto dto)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _herbApiService.UpdateHerbAsync(dto.Id, dto)
             );
         }
@@ -161,7 +161,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> DeleteHerbAsync(Guid id)
         {
             // 本系统采用软删除策略，使用状态切换
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _herbApiService.ToggleStatusAsync(id)
             );
         }
@@ -171,7 +171,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> UpdateStatusAsync(Guid id, CommonStatusUpdateDto dto)
         {
-            return await ApiErrorHandler.HandleApiCallAsync(async () => 
+            return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _herbApiService.UpdateStatusAsync(dto)
             );
         }
@@ -262,7 +262,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _herbApiService.ImportHerbsAsync(herbs)
             );
         }

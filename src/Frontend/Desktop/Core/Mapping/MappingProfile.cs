@@ -15,7 +15,7 @@ namespace LYBT.WPF.Client.Core.Mapping
             CreateMap<PatientDetailDto, PatientInfo>()
                 .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IDNumber))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
-            
+
             CreateMap<PatientInfo, PatientDetailDto>()
                 .ForMember(dest => dest.IDNumber, opt => opt.MapFrom(src => src.IdNumber));
 

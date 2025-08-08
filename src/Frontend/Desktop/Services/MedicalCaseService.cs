@@ -72,7 +72,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.GetByIdAsync(id)
             );
         }
@@ -82,16 +82,16 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<MedicalCaseInfo>> CreateAsync(MedicalCaseCreateDto createDto)
         {
-            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.CreateAsync(createDto)
             );
-            
+
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
                 var createdMedicalCase = ConvertToMedicalCaseInfo(apiResponse.Data);
                 return ServiceResult<MedicalCaseInfo>.Success(createdMedicalCase);
             }
-            
+
             return ServiceResult<MedicalCaseInfo>.Failure(apiResponse.ErrorMessage ?? "创建医疗案例失败", apiResponse.Exception);
         }
 
@@ -100,7 +100,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<bool>> UpdateAsync(MedicalCaseEditDto editDto)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.UpdateAsync(editDto.Id, editDto)
             );
         }
@@ -110,16 +110,16 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<MedicalCaseInfo>>> GetByPatientIdAsync(Guid patientId)
         {
-            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.GetByPatientIdAsync(patientId)
             );
-            
+
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
                 var medicalCases = apiResponse.Data.Select(ConvertToMedicalCaseInfo).ToList();
                 return ServiceResult<List<MedicalCaseInfo>>.Success(medicalCases);
             }
-            
+
             return ServiceResult<List<MedicalCaseInfo>>.Failure(apiResponse.ErrorMessage ?? "获取患者医疗案例列表失败", apiResponse.Exception);
         }
 
@@ -128,16 +128,16 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<MedicalCaseInfo>>> GetTodayByUserIdAsync(Guid userId)
         {
-            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.GetTodayByUserIdAsync(userId)
             );
-            
+
             if (apiResponse.IsSuccess && apiResponse.Data != null)
             {
                 var medicalCases = apiResponse.Data.Select(ConvertToMedicalCaseInfo).ToList();
                 return ServiceResult<List<MedicalCaseInfo>>.Success(medicalCases);
             }
-            
+
             return ServiceResult<List<MedicalCaseInfo>>.Failure(apiResponse.ErrorMessage ?? "获取今日医疗案例列表失败", apiResponse.Exception);
         }
 
@@ -146,7 +146,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, MedicalCaseStatus status)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.UpdateStatusAsync(id, status)
             );
         }
@@ -156,7 +156,7 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () => 
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.DeleteAsync(id)
             );
         }

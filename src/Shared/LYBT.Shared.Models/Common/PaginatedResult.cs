@@ -1,9 +1,11 @@
-namespace LYBT.Shared.Models.Common {
+namespace LYBT.Shared.Models.Common
+{
 
     /// <summary>
     /// 分页请求模型 - 前后端统一
     /// </summary>
-    public class PaginationRequest {
+    public class PaginationRequest
+    {
 
         /// <summary>
         /// 当前页码（从1开始）
@@ -40,7 +42,8 @@ namespace LYBT.Shared.Models.Common {
     /// 分页结果模型 - 前后端统一
     /// </summary>
     /// <typeparam name="T">数据项类型</typeparam>
-    public class PaginatedResult<T> {
+    public class PaginatedResult<T>
+    {
 
         /// <summary>
         /// 数据项集合
@@ -80,7 +83,8 @@ namespace LYBT.Shared.Models.Common {
         /// <summary>
         /// 构造函数
         /// </summary>
-        public PaginatedResult() {
+        public PaginatedResult()
+        {
         }
 
         /// <summary>
@@ -90,7 +94,8 @@ namespace LYBT.Shared.Models.Common {
         /// <param name="totalCount">总记录数</param>
         /// <param name="currentPage">当前页码</param>
         /// <param name="pageSize">每页大小</param>
-        public PaginatedResult(IList<T> items, int totalCount, int currentPage, int pageSize) {
+        public PaginatedResult(IList<T> items, int totalCount, int currentPage, int pageSize)
+        {
             Items = items;
             TotalCount = totalCount;
             CurrentPage = currentPage;
@@ -103,7 +108,8 @@ namespace LYBT.Shared.Models.Common {
         /// <param name="currentPage">当前页码</param>
         /// <param name="pageSize">每页大小</param>
         /// <returns>空分页结果</returns>
-        public static PaginatedResult<T> Empty(int currentPage = 1, int pageSize = 10) {
+        public static PaginatedResult<T> Empty(int currentPage = 1, int pageSize = 10)
+        {
             return new PaginatedResult<T>([], 0, currentPage, pageSize);
         }
     }

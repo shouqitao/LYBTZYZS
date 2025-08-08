@@ -42,19 +42,19 @@ namespace LYBT.WebAPI.Middleware
                     problemDetails.Title = "业务错误";
                     problemDetails.Detail = businessException.Message;
                     break;
-                    
+
                 case NotFoundException notFoundException:
                     problemDetails.Status = StatusCodes.Status404NotFound;
                     problemDetails.Title = "资源未找到";
                     problemDetails.Detail = notFoundException.Message;
                     break;
-                    
+
                 case UnauthorizedAccessException:
                     problemDetails.Status = StatusCodes.Status401Unauthorized;
                     problemDetails.Title = "未授权";
                     problemDetails.Detail = "您没有权限访问此资源";
                     break;
-                    
+
                 case ValidationException validationException:
                     problemDetails.Status = StatusCodes.Status400BadRequest;
                     problemDetails.Title = "验证失败";
@@ -64,7 +64,7 @@ namespace LYBT.WebAPI.Middleware
                         problemDetails.Extensions["errors"] = validationException.Errors;
                     }
                     break;
-                    
+
                 default:
                     // 生产环境不暴露详细错误信息
                     if (httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())

@@ -1,14 +1,16 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace LYBT.Shared.Models.Enums {
+namespace LYBT.Shared.Models.Enums
+{
 
     /// <summary>
     /// 医生状态枚举 - 前后端共享
     /// </summary>
     [Description("医生状态")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum DoctorStatus {
+    public enum DoctorStatus
+    {
 
         /// <summary>停用</summary>
         [Description("停用")]
@@ -28,7 +30,8 @@ namespace LYBT.Shared.Models.Enums {
     /// </summary>
     [Description("医生职称")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum DoctorTitle {
+    public enum DoctorTitle
+    {
 
         /// <summary>主任医师</summary>
         [Description("主任医师")]
@@ -64,7 +67,8 @@ namespace LYBT.Shared.Models.Enums {
     /// </summary>
     [Description("医生工作状态")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum DoctorWorkStatus {
+    public enum DoctorWorkStatus
+    {
 
         /// <summary>离岗</summary>
         [Description("离岗")]

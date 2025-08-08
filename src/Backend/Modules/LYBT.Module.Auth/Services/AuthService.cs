@@ -13,12 +13,14 @@ using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace LYBT.Module.Auth.Services {
+namespace LYBT.Module.Auth.Services
+{
 
     /// <summary>
     /// 认证模块核心服务，实现用户登录验证、令牌生成及登录日志记录
     /// </summary>
-    public class AuthService : IAuthService {
+    public class AuthService : IAuthService
+    {
         private readonly IAuthRepository _authRepository;
         private readonly IMapper _mapper;
         private readonly IUnifiedLogService _logService;
@@ -34,7 +36,8 @@ namespace LYBT.Module.Auth.Services {
             SysAdminHandler sysAdminHandler,
             IOptions<AuthOptions> authOptions,
             ILogger<AuthService> logger,
-            ILoginAttemptService loginAttemptService) {
+            ILoginAttemptService loginAttemptService)
+        {
             _authRepository = authRepository;
             _mapper = mapper;
             _logService = logService;
@@ -47,10 +50,13 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 用户登录并校验凭据，成功后返回用户信息并记录登录日志
         /// </summary>
-        public async Task<UserDto?> LoginAsync(LoginRequestDto dto) {
-            try {
+        public async Task<UserDto?> LoginAsync(LoginRequestDto dto)
+        {
+            try
+            {
                 // 1. 检查账户是否被锁定（防暴力破解）
-                if (_loginAttemptService.IsAccountLocked(dto.Username)) {
+                if (_loginAttemptService.IsAccountLocked(dto.Username))
+                {
                     var remainingSeconds = _loginAttemptService.GetRemainingLockTime(dto.Username);
                     var remainingMinutes = Math.Ceiling(remainingSeconds / 60.0);
                     await LogFailedLogin(Guid.Empty, dto.Username, $"账户已被锁定，请{remainingMinutes}分钟后再试", dto);
@@ -59,14 +65,16 @@ namespace LYBT.Module.Auth.Services {
 
                 // 2. 验证登录类型
                 var loginTypeValidation = ValidateLoginType(dto);
-                if (!loginTypeValidation.IsValid) {
+                if (!loginTypeValidation.IsValid)
+                {
                     await LogFailedLogin(Guid.Empty, dto.Username, loginTypeValidation.ErrorMessage, dto);
                     return null;
                 }
 
                 // 3. 获取用户信息
                 var user = await GetUserForAuthentication(dto.Username);
-                if (user == null) {
+                if (user == null)
+                {
                     _loginAttemptService.RecordFailedAttempt(dto.Username);
                     await LogFailedLogin(Guid.Empty, dto.Username, "用户不存在或未启用", dto);
                     return null;
@@ -74,14 +82,16 @@ namespace LYBT.Module.Auth.Services {
 
                 // 4. 检查账户状态
                 var lockoutCheck = CheckAccountLockout(user);
-                if (lockoutCheck.IsLocked) {
+                if (lockoutCheck.IsLocked)
+                {
                     await LogFailedLogin(user.Id, user.RealName, lockoutCheck.ErrorMessage, dto);
                     return null;
                 }
 
                 // 5. 验证密码
                 var passwordValidation = await ValidatePasswordAsync(user, dto.Password);
-                if (!passwordValidation.IsValid) {
+                if (!passwordValidation.IsValid)
+                {
                     _loginAttemptService.RecordFailedAttempt(dto.Username);
                     await HandleFailedLoginAsync(user, dto, passwordValidation.ErrorMessage);
                     return null;
@@ -90,7 +100,9 @@ namespace LYBT.Module.Auth.Services {
                 // 6. 登录成功，清除失败尝试记录
                 _loginAttemptService.ClearAttempts(dto.Username);
                 return await HandleSuccessfulLoginAsync(user, dto);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await LogLoginException(dto.Username, ex, dto);
                 throw;
             }
@@ -99,7 +111,8 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 用户登出并写入日志
         /// </summary>
-        public async Task<bool> LogoutAsync(LogoutRequestDto dto) {
+        public async Task<bool> LogoutAsync(LogoutRequestDto dto)
+        {
             var user = await _authRepository.GetByUsernameAsync(dto.Username);
             var operatorName = GetOperatorName(user, dto.Username);
 
@@ -116,13 +129,16 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 修改系统管理员密码，先校验旧密码
         /// </summary>
-        public async Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto) {
+        public async Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto)
+        {
             var currentHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
-            if (string.IsNullOrEmpty(currentHash)) {
+            if (string.IsNullOrEmpty(currentHash))
+            {
                 return false;
             }
 
-            if (!PasswordHelper.Verify(currentHash, dto.OldPassword)) {
+            if (!PasswordHelper.Verify(currentHash, dto.OldPassword))
+            {
                 return false;
             }
 
@@ -144,12 +160,15 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 验证登录类型
         /// </summary>
-        private (bool IsValid, string ErrorMessage) ValidateLoginType(LoginRequestDto dto) {
-            if (string.IsNullOrEmpty(dto.LoginType)) {
+        private (bool IsValid, string ErrorMessage) ValidateLoginType(LoginRequestDto dto)
+        {
+            if (string.IsNullOrEmpty(dto.LoginType))
+            {
                 dto.LoginType = "Password";
             }
 
-            if (!_authOptions.SupportedLoginTypes.Contains(dto.LoginType)) {
+            if (!_authOptions.SupportedLoginTypes.Contains(dto.LoginType))
+            {
                 return (false, $"不支持的登录类型: {dto.LoginType}");
             }
 
@@ -159,15 +178,18 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 获取用于认证的用户信息
         /// </summary>
-        private async Task<UserModel?> GetUserForAuthentication(string username) {
+        private async Task<UserModel?> GetUserForAuthentication(string username)
+        {
             // 处理系统管理员
-            if (_sysAdminHandler.IsSysAdmin(username)) {
+            if (_sysAdminHandler.IsSysAdmin(username))
+            {
                 return await _sysAdminHandler.GetSysAdminUserAsync(username);
             }
 
             // 获取普通用户
             var user = await _authRepository.GetByUsernameAsync(username);
-            if (user == null || user.Status != CommonStatus.Enabled) {
+            if (user == null || user.Status != CommonStatus.Enabled)
+            {
                 return null;
             }
 
@@ -177,8 +199,10 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 检查账户锁定状态
         /// </summary>
-        private (bool IsLocked, string ErrorMessage) CheckAccountLockout(UserModel user) {
-            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.Now) {
+        private (bool IsLocked, string ErrorMessage) CheckAccountLockout(UserModel user)
+        {
+            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.Now)
+            {
                 var lockoutEndTime = user.LockoutEnd.Value.ToString("yyyy-MM-dd HH:mm:ss");
                 return (true, $"账户已锁定至 {lockoutEndTime}");
             }
@@ -189,21 +213,27 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 验证密码 - 简化版本
         /// </summary>
-        private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(UserModel user, string password) {
+        private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(UserModel user, string password)
+        {
             string storedHash;
 
-            if (_sysAdminHandler.IsSysAdmin(user.Username)) {
+            if (_sysAdminHandler.IsSysAdmin(user.Username))
+            {
                 storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync() ?? string.Empty;
-            } else {
+            }
+            else
+            {
                 storedHash = user.PasswordHash;
             }
 
-            if (string.IsNullOrEmpty(storedHash)) {
+            if (string.IsNullOrEmpty(storedHash))
+            {
                 return (false, "用户密码未设置");
             }
 
             var verifyResult = PasswordHelper.Verify(storedHash, password);
-            if (!verifyResult) {
+            if (!verifyResult)
+            {
                 return (false, "密码错误");
             }
 
@@ -213,22 +243,26 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 处理登录失败
         /// </summary>
-        private async Task HandleFailedLoginAsync(UserModel user, LoginRequestDto dto, string reason) {
+        private async Task HandleFailedLoginAsync(UserModel user, LoginRequestDto dto, string reason)
+        {
             // 增加失败次数
             user.FailedLoginCount++;
 
             // 检查是否需要锁定账户
-            if (user.FailedLoginCount >= _authOptions.MaxFailedLoginAttempts) {
+            if (user.FailedLoginCount >= _authOptions.MaxFailedLoginAttempts)
+            {
                 user.LockoutEnd = DateTime.Now.Add(_authOptions.AccountLockoutDuration);
             }
 
             // 更新用户锁定信息（仅对非sysadmin用户）
-            if (!_sysAdminHandler.IsSysAdmin(user.Username)) {
+            if (!_sysAdminHandler.IsSysAdmin(user.Username))
+            {
                 await _authRepository.UpdateUserLoginProtectionAsync(user);
             }
 
             var message = $"{reason}，失败次数: {user.FailedLoginCount}";
-            if (user.LockoutEnd.HasValue) {
+            if (user.LockoutEnd.HasValue)
+            {
                 message += $"，账户已锁定至: {user.LockoutEnd.Value:yyyy-MM-dd HH:mm:ss}";
             }
 
@@ -238,14 +272,16 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 处理登录成功
         /// </summary>
-        private async Task<UserDto> HandleSuccessfulLoginAsync(UserModel user, LoginRequestDto dto) {
+        private async Task<UserDto> HandleSuccessfulLoginAsync(UserModel user, LoginRequestDto dto)
+        {
             // 重置失败计数和锁定状态
             user.FailedLoginCount = 0;
             user.LockoutEnd = null;
             user.LastLoginTime = DateTime.Now;
 
             // 更新数据库（仅对非sysadmin用户）
-            if (!_sysAdminHandler.IsSysAdmin(user.Username)) {
+            if (!_sysAdminHandler.IsSysAdmin(user.Username))
+            {
                 await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
                 await _authRepository.UpdateUserLoginProtectionAsync(user);
             }
@@ -254,7 +290,8 @@ namespace LYBT.Module.Auth.Services {
             await LogSuccessfulLogin(user, dto);
 
             // 手动创建UserDto以避免AutoMapper问题（特别是对于临时sysadmin用户）
-            return new UserDto {
+            return new UserDto
+            {
                 Id = user.Id,
                 Username = user.Username,
                 RealName = user.RealName,
@@ -268,15 +305,18 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 记录登录失败日志
         /// </summary>
-        private async Task LogFailedLogin(Guid userId, string operatorName, string reason, LoginRequestDto dto) {
+        private async Task LogFailedLogin(Guid userId, string operatorName, string reason, LoginRequestDto dto)
+        {
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
 
             var content = $"登录失败: {reason}";
-            if (!string.IsNullOrEmpty(dto.ClientIp)) {
+            if (!string.IsNullOrEmpty(dto.ClientIp))
+            {
                 content += $" | IP: {dto.ClientIp}";
             }
-            if (!string.IsNullOrEmpty(dto.UserAgent)) {
+            if (!string.IsNullOrEmpty(dto.UserAgent))
+            {
                 content += $" | UA: {dto.UserAgent}";
             }
 
@@ -286,15 +326,18 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 记录登录成功日志
         /// </summary>
-        private async Task LogSuccessfulLogin(UserModel user, LoginRequestDto dto) {
+        private async Task LogSuccessfulLogin(UserModel user, LoginRequestDto dto)
+        {
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
 
             var content = "登录成功";
-            if (!string.IsNullOrEmpty(dto.ClientIp)) {
+            if (!string.IsNullOrEmpty(dto.ClientIp))
+            {
                 content += $" | IP: {dto.ClientIp}";
             }
-            if (!string.IsNullOrEmpty(dto.UserAgent)) {
+            if (!string.IsNullOrEmpty(dto.UserAgent))
+            {
                 content += $" | UA: {dto.UserAgent}";
             }
 
@@ -304,9 +347,11 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 记录登录异常日志
         /// </summary>
-        private async Task LogLoginException(string username, Exception ex, LoginRequestDto dto) {
+        private async Task LogLoginException(string username, Exception ex, LoginRequestDto dto)
+        {
             var content = $"登录异常: {ex.Message}";
-            if (!string.IsNullOrEmpty(dto.ClientIp)) {
+            if (!string.IsNullOrEmpty(dto.ClientIp))
+            {
                 content += $" | IP: {dto.ClientIp}";
             }
 
@@ -316,12 +361,18 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 统一的用户操作日志记录
         /// </summary>
-        private async Task LogUserAction(Guid userId, string operatorName, ActionType actionType, string content) {
-            if (actionType == ActionType.Login) {
+        private async Task LogUserAction(Guid userId, string operatorName, ActionType actionType, string content)
+        {
+            if (actionType == ActionType.Login)
+            {
                 await _logService.LogUserLoginAsync(userId, operatorName, "", "", true);
-            } else if (actionType == ActionType.Logout) {
+            }
+            else if (actionType == ActionType.Logout)
+            {
                 await _logService.LogUserLogoutAsync(userId, operatorName, "");
-            } else {
+            }
+            else
+            {
                 await _logService.LogUserActionAsync(
                     userId,
                     operatorName,
@@ -336,12 +387,15 @@ namespace LYBT.Module.Auth.Services {
         /// <summary>
         /// 获取操作人姓名
         /// </summary>
-        private string GetOperatorName(UserModel? user, string fallbackUsername) {
-            if (!string.IsNullOrEmpty(user?.RealName)) {
+        private string GetOperatorName(UserModel? user, string fallbackUsername)
+        {
+            if (!string.IsNullOrEmpty(user?.RealName))
+            {
                 return user.RealName;
             }
 
-            if (_sysAdminHandler.IsSysAdmin(fallbackUsername)) {
+            if (_sysAdminHandler.IsSysAdmin(fallbackUsername))
+            {
                 return "系统管理员";
             }
 

@@ -42,7 +42,7 @@ namespace LYBT.Module.Formula.Repositories
         {
             var formula = await GetByIdAsync(id);
             if (formula == null) return false;
-            
+
             _context.Formulas.Remove(formula);
             return await _context.SaveChangesAsync() > 0;
         }

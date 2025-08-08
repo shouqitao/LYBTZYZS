@@ -186,7 +186,16 @@
       "Bash(pip install:*)",
       "Bash(move \"FormulaTemplateService.cs\" \"FormulaService.cs\")",
       "Bash(rg:*)",
-      "Bash(move:*)"
+      "Bash(move:*)",
+      "Bash(dotnet --version)",
+      "Bash(dotnet sln:*)",
+      "Bash(dotnet format:*)",
+      "Bash(test-with-coverage.bat)",
+      "Bash(scriptstest-with-coverage.bat)",
+      "Bash(reportgenerator:*)",
+      "Bash(dotnet tool install:*)",
+      "Bash(dotnet list:*)",
+      "Bash(echo)"
     ],
     "deny": []
   }

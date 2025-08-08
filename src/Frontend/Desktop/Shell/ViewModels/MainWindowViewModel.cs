@@ -31,7 +31,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         private readonly IEventAggregator _eventAggregator;
         private readonly IPermissionService _permissionService;
         private readonly IUserService _userService;
-        
+
         private string _title = "凌隐宝堂中医诊所诊疗系统";
         private UserInfo? _currentUser;
         private bool _isLoggedIn = false;
@@ -40,8 +40,8 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         public DelegateCommand TestApiCommand { get; }
         public DelegateCommand ShowControlExamplesCommand { get; }
 
-        public MainWindowViewModel(IRegionManager regionManager, 
-            IEventAggregator eventAggregator, 
+        public MainWindowViewModel(IRegionManager regionManager,
+            IEventAggregator eventAggregator,
             IAuthenticationService authService,
             IPermissionService permissionService,
             IUserService userService,
@@ -86,8 +86,8 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         public bool IsLoggedIn
         {
             get => _isLoggedIn;
-            set 
-            { 
+            set
+            {
                 SetProperty(ref _isLoggedIn, value);
                 RaisePropertyChanged(nameof(IsNotLoggedIn));
             }
@@ -102,26 +102,26 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         private async void ExecuteLogout()
         {
             var result = await _commonDialogService.ShowConfirmationAsync("确定要退出登录吗？", "退出确认");
-            if (result )
+            if (result)
             {
                 try
                 {
                     await _authService.LogoutAsync();
-                    
+
                     // 发布登出事件以清除登录状态消息
                     _eventAggregator.GetEvent<LogoutEvent>().Publish();
-                    
+
                     // 清除用户信息
                     CurrentUser = null;
                     IsLoggedIn = false;
                     Title = "凌隐宝堂中医诊所诊疗系统";
-                    
+
                     // 清除内容区域
                     if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
                     {
                         _regionManager.Regions["ContentRegion"].RemoveAll();
                     }
-                    
+
                     // 显示登录界面
                     ShowLoginDialog();
                 }
@@ -143,7 +143,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                 IsLoggedIn = true;
                 TestApiCommand.RaiseCanExecuteChanged();
                 ShowControlExamplesCommand.RaiseCanExecuteChanged();
-                
+
                 LoadMainContent();
             }
             else
@@ -178,7 +178,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         /// </summary>
         private void LoadMainContent()
         {
-            if (CurrentUser == null) 
+            if (CurrentUser == null)
             {
                 _commonDialogService.ShowErrorAsync("当前用户信息为空，无法加载主界面", "错误").GetAwaiter().GetResult();
                 return;
@@ -190,7 +190,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
 
             // 获取对应的主界面视图名称
             var mainViewName = RoleNavigationConfig.GetMainViewName(CurrentUser.Username == "sysadmin" ? "管理员" : "用户");
-            
+
             if (_regionManager != null)
             {
                 try
@@ -200,13 +200,13 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                     {
                         _regionManager.Regions["ContentRegion"].RemoveAll();
                     }
-                    
+
                     // 清除登录区域
                     if (_regionManager.Regions.ContainsRegionWithName("LoginRegion"))
                     {
                         _regionManager.Regions["LoginRegion"].RemoveAll();
                     }
-                    
+
                     // 导航到主界面
                     _regionManager.RequestNavigate("ContentRegion", mainViewName);
                 }

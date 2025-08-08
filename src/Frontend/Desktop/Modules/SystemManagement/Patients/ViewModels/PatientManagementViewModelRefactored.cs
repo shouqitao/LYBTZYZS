@@ -20,7 +20,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         protected override string ModuleName => "患者";
 
         public PatientManagementViewModelRefactored(IPatientService patientService,
-            ICommonDialogService commonDialogService) 
+            ICommonDialogService commonDialogService)
             : base(patientService)
         {
             _commonDialogService = commonDialogService;
@@ -43,10 +43,10 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                     SearchKeyword = request.SearchKeyword,
                     Name = request.SearchKeyword // 用搜索关键词搜索姓名
                 };
-                
+
                 // 调用患者服务获取分页数据
                 var result = await Service.GetPagedAsync(query);
-                
+
                 // 转换为ServiceResult格式
                 return ServiceResult<PagedResult<PatientInfo>>.Success(new PagedResult<PatientInfo>
                 {
@@ -68,7 +68,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         protected override async Task<ServiceResult<bool>> DeleteFromServiceAsync(PatientInfo patient)
         {
             if (patient == null) return ServiceResult<bool>.Failure("患者信息不能为空");
-            
+
             // 使用禁用功能代替删除（软删除）
             var result = await Service.DisableAsync(patient.Id);
             if (result.IsSuccess)
@@ -103,11 +103,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 var dialog = new Views.AddPatientDialog();
                 dialog.Owner = System.Windows.Application.Current.MainWindow;
                 dialog.Title = "新增患者";
-                
+
                 // 创建 ViewModel 并设置为添加模式
                 var viewModel = new AddPatientDialogViewModel(Service, _commonDialogService);
                 dialog.DataContext = viewModel;
-                
+
                 // 设置保存成功回调
                 viewModel.CloseDialogCallback = (success) =>
                 {
@@ -121,7 +121,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                         dialog.Close();
                     }
                 };
-                
+
                 if (dialog.ShowDialog() == true)
                 {
                     RefreshCommand.Execute();
@@ -145,15 +145,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                 var dialog = new Views.AddPatientDialog();
                 dialog.Owner = System.Windows.Application.Current.MainWindow;
                 dialog.Title = "编辑患者";
-                
+
                 // 创建 ViewModel 并设置为编辑模式
                 var viewModel = new AddPatientDialogViewModel(Service, _commonDialogService);
-                
+
                 // 设置编辑模式并加载患者信息
                 viewModel.SetEditMode(patient);
-                
+
                 dialog.DataContext = viewModel;
-                
+
                 // 设置保存成功回调
                 viewModel.CloseDialogCallback = (success) =>
                 {
@@ -167,7 +167,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                         dialog.Close();
                     }
                 };
-                
+
                 if (dialog.ShowDialog() == true)
                 {
                     RefreshCommand.Execute();
@@ -192,7 +192,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             //     { "PatientId", patient.Id }
             // };
             // _dialogService.ShowDialog("ViewPatientDialog", parameters, null);
-            
+
             // 暂时显示简单信息
             var info = $"患者信息：\n" +
                       $"姓名：{patient.Name}\n" +
@@ -200,7 +200,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
                       $"年龄：{patient.Age}岁\n" +
                       $"电话：{patient.PhoneNumber ?? "未填写"}\n" +
                       $"地址：{patient.Address ?? "未填写"}";
-            
+
             _commonDialogService.ShowInformationAsync(info, "患者详情").GetAwaiter().GetResult();
         }
 

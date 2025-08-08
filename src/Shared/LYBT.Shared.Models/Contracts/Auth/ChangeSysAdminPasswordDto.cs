@@ -1,11 +1,13 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Contracts.Auth {
+namespace LYBT.Shared.Models.Contracts.Auth
+{
 
     /// <summary>
     /// 修改 sysadmin 密码 DTO
     /// </summary>
-    public class ChangeSysAdminPasswordDto {
+    public class ChangeSysAdminPasswordDto
+    {
 
         /// <summary>
         /// 原密码

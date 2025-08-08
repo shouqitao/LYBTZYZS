@@ -15,8 +15,16 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        [Post("/api/v1/consultation/paged")]
-        Task<Refit.ApiResponse<PagedResult<ConsultationDto>>> GetPagedAsync([Body] ConsultationPagedQueryDto query);
+        [Get("/api/v1/consultation")]
+        Task<Refit.ApiResponse<PagedResult<ConsultationDto>>> GetConsultationsAsync(
+            [Query] int page = 1,
+            [Query] int pageSize = 10,
+            [Query] string? keyword = null,
+            [Query] Guid? doctorId = null,
+            [Query] Guid? patientId = null,
+            [Query] DateTime? startDate = null,
+            [Query] DateTime? endDate = null,
+            [Query] int? status = null);
 
         /// <summary>
         /// 获取看诊详情
@@ -65,6 +73,12 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// </summary>
         [Get("/api/v1/consultation/doctor/{doctorId}/count")]
         Task<Refit.ApiResponse<int>> GetDoctorConsultationCountAsync(Guid doctorId, [Query] DateTime? startDate = null, [Query] DateTime? endDate = null);
+
+        /// <summary>
+        /// 更新看诊状态
+        /// </summary>
+        [Post("/api/v1/consultation/{id}/update-status")]
+        Task<Refit.ApiResponse<ConsultationDetailDto>> UpdateStatusAsync(Guid id, [Body] UpdateStatusDto dto);
 
         /// <summary>
         /// 删除看诊记录（软删除）

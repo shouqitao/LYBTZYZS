@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Users {
+namespace LYBT.Shared.Models.Contracts.Users
+{
 
     /// <summary>
     /// 管理员重置密码 DTO
     /// </summary>
-    public class ResetPasswordDto {
+    public class ResetPasswordDto
+    {
 
         /// <summary>
         /// 新密码（必填）

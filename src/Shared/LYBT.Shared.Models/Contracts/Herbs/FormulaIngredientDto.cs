@@ -1,13 +1,15 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Herbs {
+namespace LYBT.Shared.Models.Contracts.Herbs
+{
 
     /// <summary>
     /// 方剂药材成分DTO - 前后端共享API契约
     /// 用于在药方中表示单味药材的用量和计价信息
     /// </summary>
-    public class FormulaIngredientDto {
+    public class FormulaIngredientDto
+    {
 
         /// <summary>药材ID</summary>
         [Required(ErrorMessage = "药材ID不能为空")]

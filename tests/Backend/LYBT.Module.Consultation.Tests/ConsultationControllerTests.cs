@@ -31,15 +31,9 @@ namespace LYBT.Module.Consultation.Tests
         }
 
         [Fact]
-        public async Task GetPaged_ShouldReturnOkWithPagedResult()
+        public async Task GetConsultations_ShouldReturnOkWithPagedResult()
         {
             // Arrange
-            var query = new ConsultationPagedQueryDto
-            {
-                PageIndex = 1,
-                PageSize = 10
-            };
-
             var expectedResult = new PagedResult<ConsultationDto>
             {
                 Data = new List<ConsultationDto>
@@ -55,7 +49,7 @@ namespace LYBT.Module.Consultation.Tests
                 .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _controller.GetPaged(query);
+            var result = await _controller.GetConsultations(page: 1, pageSize: 10);
 
             // Assert
             result.Should().BeOfType<OkObjectResult>();

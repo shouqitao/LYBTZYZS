@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using System.Linq;
 using System;
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Shared.Models.Enums;
 using LYBT.Models.Users;
@@ -18,12 +18,14 @@ using UserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 using SharedUserUpdateDto = LYBT.Shared.Models.Contracts.Users.UserUpdateDto;
 
-namespace LYBT.Module.Users.Services {
+namespace LYBT.Module.Users.Services
+{
 
     /// <summary>
     /// 用户服务实现类（集成日志模块）
     /// </summary>
-    public class UserService : IUserService {
+    public class UserService : IUserService
+    {
         private readonly IUserRepository _userRepository;
         private readonly IUnifiedLogService _logService;
         private readonly UserOptions _options;
@@ -33,7 +35,8 @@ namespace LYBT.Module.Users.Services {
             IUserRepository userRepository,
             IUnifiedLogService logService,
             IOptions<UserOptions> options,
-            IMapper mapper) {
+            IMapper mapper)
+        {
             _userRepository = userRepository;
             _logService = logService;
             _options = options.Value;
@@ -44,13 +47,15 @@ namespace LYBT.Module.Users.Services {
         /// 分页/条件查找用户
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        public async Task<PaginatedResult<SharedUserDto>> GetPagedAsync(SharedUserPagedQueryDto query) {
+        public async Task<PaginatedResult<SharedUserDto>> GetPagedAsync(SharedUserPagedQueryDto query)
+        {
             // 管理员可以查看所有用户（包括禁用的），普通用户只能查看启用的用户
             bool includeDisabled = true;
 
             var (models, total) = await _userRepository.GetPagedAsync(query, includeDisabled);
             var users = _mapper.Map<List<SharedUserDto>>(models);
-            return new PaginatedResult<SharedUserDto> {
+            return new PaginatedResult<SharedUserDto>
+            {
                 TotalCount = total,
                 Items = users,
                 CurrentPage = query.CurrentPage,
@@ -62,7 +67,8 @@ namespace LYBT.Module.Users.Services {
         /// 根据ID获取用户详情
         /// 根据当前操作者角色决定是否包含禁用用户
         /// </summary>
-        public async Task<SharedUserDto?> GetByIdAsync(Guid id) {
+        public async Task<SharedUserDto?> GetByIdAsync(Guid id)
+        {
             // 管理员可以查看所有用户（包括禁用的），普通用户只能查看启用的用户
             bool includeDisabled = true;
 
@@ -73,19 +79,21 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 新增用户
         /// </summary>
-        public async Task<SharedUserDto?> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName) {
+        public async Task<SharedUserDto?> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName)
+        {
             await ValidateUserCreation(dto);
 
             var user = CreateUserFromDto(dto);
             var result = await _userRepository.AddAsync(user);
 
-            if (result) {
+            if (result)
+            {
                 await LogUserOperation(
                     user.Id, ActionType.Create, operatorId, operatorName,
                     $"新增用户：{user.Username}",
                     newValue: user
                 );
-                
+
                 // 返回创建的对象
                 return _mapper.Map<SharedUserDto>(user);
             }
@@ -96,14 +104,16 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 编辑用户
         /// </summary>
-        public async Task<bool> UpdateAsync(SharedUserUpdateDto dto, Guid operatorId, string operatorName) {
+        public async Task<bool> UpdateAsync(SharedUserUpdateDto dto, Guid operatorId, string operatorName)
+        {
             var existingUser = await GetExistingUser(dto.Id);
             var oldSnapshot = JsonSerializer.Serialize(existingUser);
 
             UpdateUserFromDto(existingUser, dto);
             var result = await _userRepository.UpdateAsync(existingUser);
 
-            if (result) {
+            if (result)
+            {
                 await LogUserOperation(
                     existingUser.Id, ActionType.Update, operatorId, operatorName,
                     $"修改用户信息：{existingUser.Username}",
@@ -117,11 +127,13 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 禁用用户
         /// </summary>
-        public async Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName) {
+        public async Task<bool> DisableAsync(Guid id, Guid operatorId, string operatorName)
+        {
             var user = await GetExistingUser(id);
             var result = await _userRepository.DisableAsync(id);
 
-            if (result) {
+            if (result)
+            {
                 await LogUserOperation(
                     id, ActionType.Disable, operatorId, operatorName,
                     $"禁用用户：{user.Username}",
@@ -135,11 +147,13 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 启用用户
         /// </summary>
-        public async Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName) {
+        public async Task<bool> EnableAsync(Guid id, Guid operatorId, string operatorName)
+        {
             var user = await GetExistingUser(id);
             var result = await _userRepository.EnableAsync(id);
 
-            if (result) {
+            if (result)
+            {
                 await LogUserOperation(
                     id, ActionType.Enable, operatorId, operatorName,
                     $"启用用户：{user.Username}",
@@ -153,13 +167,15 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 批量禁用用户
         /// </summary>
-        public async Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
+        public async Task<int> BatchDisableAsync(List<Guid> ids, Guid operatorId, string operatorName)
+        {
             ValidateBatchOperation(ids);
 
             var users = await GetUsersByIds(ids);
             var updatedCount = await _userRepository.UpdateActiveStatusAsync(ids, false);
 
-            if (updatedCount > 0) {
+            if (updatedCount > 0)
+            {
                 await LogBatchUserOperation(
                     users, ActionType.Disable, operatorId, operatorName,
                     $"批量禁用 {updatedCount} 个用户"
@@ -172,13 +188,15 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 批量启用用户
         /// </summary>
-        public async Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName) {
+        public async Task<int> BatchEnableAsync(List<Guid> ids, Guid operatorId, string operatorName)
+        {
             ValidateBatchOperation(ids);
 
             var users = await GetUsersByIds(ids);
             var updatedCount = await _userRepository.UpdateActiveStatusAsync(ids, true);
 
-            if (updatedCount > 0) {
+            if (updatedCount > 0)
+            {
                 await LogBatchUserOperation(
                     users, ActionType.Enable, operatorId, operatorName,
                     $"批量启用 {updatedCount} 个用户"
@@ -191,19 +209,22 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 管理员重置密码
         /// </summary>
-        public async Task<bool> ResetPasswordAsync(Guid id, Guid operatorId, string operatorName) {
+        public async Task<bool> ResetPasswordAsync(Guid id, Guid operatorId, string operatorName)
+        {
             var user = await GetExistingUser(id);
 
             var newPasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword);
             var result = await _userRepository.UpdatePasswordAsync(id, newPasswordHash);
 
-            if (result) {
+            if (result)
+            {
                 await LogUserOperation(
                     id, ActionType.ResetPassword, operatorId, operatorName,
                     $"重置用户密码：{user.Username}"
                 );
 
-                if (_options.SendPasswordResetNotification) {
+                if (_options.SendPasswordResetNotification)
+                {
                     await SendPasswordResetNotification(user);
                 }
             }
@@ -214,17 +235,20 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 用户修改密码
         /// </summary>
-        public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
+        public async Task<bool> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
+        {
             var user = await GetExistingUser(id);
 
-            if (!PasswordHelper.Verify(user.PasswordHash, oldPassword)) {
+            if (!PasswordHelper.Verify(user.PasswordHash, oldPassword))
+            {
                 throw new UnauthorizedAccessException("原密码错误");
             }
 
             var newPasswordHash = PasswordHelper.Hash(newPassword);
             var result = await _userRepository.UpdatePasswordAsync(id, newPasswordHash);
 
-            if (result) {
+            if (result)
+            {
                 await LogUserOperation(
                     id, ActionType.Edit, id, user.RealName,
                     "用户修改个人密码"
@@ -237,7 +261,8 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 用户修改个人信息
         /// </summary>
-        public async Task<bool> ChangeProfileAsync(Guid id, string realName, string? phoneNumber) {
+        public async Task<bool> ChangeProfileAsync(Guid id, string realName, string? phoneNumber)
+        {
             var user = await GetExistingUser(id);
             var oldSnapshot = JsonSerializer.Serialize(user);
 
@@ -247,7 +272,8 @@ namespace LYBT.Module.Users.Services {
 
             var result = await _userRepository.UpdateAsync(user);
 
-            if (result) {
+            if (result)
+            {
                 await LogUserOperation(
                     id, ActionType.Edit, id, user.RealName,
                     "用户修改个人信息",
@@ -261,7 +287,8 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 获取系统所有角色
         /// </summary>
-        public List<object> GetRoles() {
+        public List<object> GetRoles()
+        {
             var roles = new List<object> { new { Value = "Admin", DisplayName = "管理员" } };
             return roles;
         }
@@ -269,7 +296,8 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 获取启用的用户列表
         /// </summary>
-        public async Task<List<SharedUserDto>> GetActiveUsersAsync() {
+        public async Task<List<SharedUserDto>> GetActiveUsersAsync()
+        {
             var users = await _userRepository.GetActiveUsersAsync();
             return _mapper.Map<List<SharedUserDto>>(users);
         }
@@ -279,15 +307,18 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 映射用户模型到DTO (现已使用AutoMapper，此方法保留用于兼容性)
         /// </summary>
-        private SharedUserDto MapToSharedUserDto(UserModel model) {
+        private SharedUserDto MapToSharedUserDto(UserModel model)
+        {
             return _mapper.Map<SharedUserDto>(model);
         }
 
         /// <summary>
         /// 从DTO创建用户模型
         /// </summary>
-        private UserModel CreateUserFromDto(SharedUserCreateDto dto) {
-            return new UserModel {
+        private UserModel CreateUserFromDto(SharedUserCreateDto dto)
+        {
+            return new UserModel
+            {
                 Id = Guid.NewGuid(),
                 Username = dto.Username,
                 RealName = dto.RealName,
@@ -302,7 +333,8 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 从DTO更新用户模型
         /// </summary>
-        private void UpdateUserFromDto(UserModel user, SharedUserUpdateDto dto) {
+        private void UpdateUserFromDto(UserModel user, SharedUserUpdateDto dto)
+        {
             user.RealName = dto.RealName;
             user.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName);
             user.Status = dto.Status;
@@ -312,8 +344,10 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 验证用户创建请求
         /// </summary>
-        private async Task ValidateUserCreation(SharedUserCreateDto dto) {
-            if (await _userRepository.ExistsByUsernameAsync(dto.Username)) {
+        private async Task ValidateUserCreation(SharedUserCreateDto dto)
+        {
+            if (await _userRepository.ExistsByUsernameAsync(dto.Username))
+            {
                 throw new InvalidOperationException("用户名已存在");
             }
 
@@ -323,10 +357,12 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 获取现有用户（不存在时抛出异常）
         /// </summary>
-        private async Task<UserModel> GetExistingUser(Guid id) {
+        private async Task<UserModel> GetExistingUser(Guid id)
+        {
             // 内部方法总是包含禁用用户，确保操作能正常进行
             var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
-            if (user == null) {
+            if (user == null)
+            {
                 throw new InvalidOperationException("用户不存在");
             }
             return user;
@@ -335,7 +371,8 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 根据ID列表获取用户列表
         /// </summary>
-        private async Task<List<UserModel>> GetUsersByIds(List<Guid> ids) {
+        private async Task<List<UserModel>> GetUsersByIds(List<Guid> ids)
+        {
             // 内部方法总是包含禁用用户，确保批量操作能正常进行
             return await _userRepository.GetUsersByIdsAsync(ids, includeDisabled: true);
         }
@@ -343,12 +380,15 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 验证批量操作
         /// </summary>
-        private void ValidateBatchOperation(List<Guid> ids) {
-            if (ids == null || ids.Count == 0) {
+        private void ValidateBatchOperation(List<Guid> ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
                 throw new ArgumentException("批量操作的ID列表不能为空");
             }
 
-            if (ids.Count > _options.MaxBatchOperationSize) {
+            if (ids.Count > _options.MaxBatchOperationSize)
+            {
                 throw new ArgumentException($"批量操作数量不能超过 {_options.MaxBatchOperationSize}");
             }
         }
@@ -358,7 +398,8 @@ namespace LYBT.Module.Users.Services {
         /// </summary>
         private async Task LogUserOperation(
             Guid userId, ActionType actionType, Guid operatorId, string operatorName,
-            string content, string? oldValue = null, object? newValue = null) {
+            string content, string? oldValue = null, object? newValue = null)
+        {
             if (!_options.EnableDetailedAuditLogging)
                 return;
 
@@ -378,7 +419,8 @@ namespace LYBT.Module.Users.Services {
         /// </summary>
         private async Task LogBatchUserOperation(
             List<UserModel> users, ActionType actionType, Guid operatorId, string operatorName,
-            string content) {
+            string content)
+        {
             if (!_options.EnableDetailedAuditLogging)
                 return;
 
@@ -399,7 +441,8 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 发送密码重置通知（待实现）
         /// </summary>
-        private async Task SendPasswordResetNotification(UserModel user) {
+        private async Task SendPasswordResetNotification(UserModel user)
+        {
 
             // 可以发送邮件、短信或系统内通知
             await Task.CompletedTask;
@@ -441,5 +484,5 @@ namespace LYBT.Module.Users.Services {
 
         #endregion
 
-}
+    }
 }

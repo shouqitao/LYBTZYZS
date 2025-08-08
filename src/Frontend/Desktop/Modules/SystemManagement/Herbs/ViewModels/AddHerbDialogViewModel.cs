@@ -18,7 +18,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         private readonly IHerbService _herbService;
         private readonly Window _window;
-        
+
         private string _herbName = string.Empty;
         private string _pinYinCode = string.Empty;
         private string _wuBiCode = string.Empty;
@@ -144,7 +144,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             {
                 // 使用CommonHelper生成拼音码
                 PinYinCode = CommonHelper.GetPinyinCode(HerbName);
-                
+
                 // 使用CommonHelper生成五笔码
                 WuBiCode = CommonHelper.GetWuBiCode(HerbName);
             }
@@ -157,9 +157,9 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         private bool CanExecuteSave()
         {
-            return !string.IsNullOrWhiteSpace(HerbName) && 
-                   !string.IsNullOrWhiteSpace(Unit) && 
-                   Price > 0 && 
+            return !string.IsNullOrWhiteSpace(HerbName) &&
+                   !string.IsNullOrWhiteSpace(Unit) &&
+                   Price > 0 &&
                    Stock >= 0;
         }
 

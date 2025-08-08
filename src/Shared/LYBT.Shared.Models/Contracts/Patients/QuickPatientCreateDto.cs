@@ -1,12 +1,14 @@
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Contracts.Patients {
+namespace LYBT.Shared.Models.Contracts.Patients
+{
 
     /// <summary>
     /// 快速创建患者档案DTO (医生可以跳过挂号直接创建患者档案并发起看诊)
     /// </summary>
-    public class QuickPatientCreateDto {
+    public class QuickPatientCreateDto
+    {
 
         /// <summary>
         /// 患者档案姓名

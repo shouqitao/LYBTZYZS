@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Core {
+namespace LYBT.Shared.Models.Core
+{
 
     /// <summary>
     /// 治疗目录基础模型 - 前后端共享
     /// </summary>
-    public abstract class BaseTreatmentCatalogModel {
+    public abstract class BaseTreatmentCatalogModel
+    {
 
         /// <summary>主键ID</summary>
         [DisplayName("主键ID")]

@@ -49,7 +49,7 @@ namespace LYBT.Shared.Models.Enums
             return logLevel switch
             {
                 Microsoft.Extensions.Logging.LogLevel.Trace => "跟踪",
-                Microsoft.Extensions.Logging.LogLevel.Debug => "调试", 
+                Microsoft.Extensions.Logging.LogLevel.Debug => "调试",
                 Microsoft.Extensions.Logging.LogLevel.Information => "信息",
                 Microsoft.Extensions.Logging.LogLevel.Warning => "警告",
                 Microsoft.Extensions.Logging.LogLevel.Error => "错误",

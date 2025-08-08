@@ -20,7 +20,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         private readonly IHerbService _herbService;
         private readonly Window _window;
         private HerbInfo? _originalHerb;
-        
+
         private string _herbName = string.Empty;
         private string _pinYinCode = string.Empty;
         private string _wuBiCode = string.Empty;
@@ -144,7 +144,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         public void SetHerb(HerbInfo herb)
         {
             _originalHerb = herb ?? throw new ArgumentNullException(nameof(herb));
-            
+
             HerbName = herb.Name ?? string.Empty;
             PinYinCode = herb.PinYinCode ?? string.Empty;
             // Stock = herb.Stock; // 字段已移除
@@ -183,8 +183,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 
         private bool CanExecuteSave()
         {
-            return !string.IsNullOrWhiteSpace(HerbName) && 
-                   !string.IsNullOrWhiteSpace(Unit) && 
+            return !string.IsNullOrWhiteSpace(HerbName) &&
+                   !string.IsNullOrWhiteSpace(Unit) &&
                    Price > 0;
         }
 

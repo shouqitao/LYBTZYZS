@@ -2,13 +2,15 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Users {
+namespace LYBT.Shared.Models.Contracts.Users
+{
 
     /// <summary>
     /// 用户创建DTO - 前后端共享API契约
     /// 用于创建新用户账户的请求模型
     /// </summary>
-    public class UserCreateDto {
+    public class UserCreateDto
+    {
 
         /// <summary>用户名</summary>
         [Required(ErrorMessage = "用户名不能为空")]

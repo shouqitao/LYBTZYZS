@@ -2,13 +2,15 @@ using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Patients {
+namespace LYBT.Shared.Models.Contracts.Patients
+{
 
     /// <summary>
     /// 患者创建DTO - 前后端共享API契约
     /// 用于创建新患者档案的请求模型
     /// </summary>
-    public class PatientCreateDto {
+    public class PatientCreateDto
+    {
 
         /// <summary>姓名</summary>
         [Required(ErrorMessage = "姓名不能为空")]

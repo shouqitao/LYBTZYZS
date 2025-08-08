@@ -13,7 +13,8 @@ using PatientDetailDto = LYBT.Shared.Models.Contracts.Patients.PatientDetailDto;
 using PatientPagedQueryDto = LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto;
 using QuickPatientCreateDto = LYBT.Shared.Models.Contracts.Patients.QuickPatientCreateDto;
 
-namespace LYBT.WebAPI.Controllers {
+namespace LYBT.WebAPI.Controllers
+{
 
     /// <summary>
     /// 病人管理API接口
@@ -23,11 +24,13 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class PatientsController : BaseController {
+    public class PatientsController : BaseController
+    {
         private readonly IPatientService _patientService;
 
-        public PatientsController(IPatientService patientService, IMemoryCache cache, ILogger<PatientsController> logger) 
-            : base(logger, cache) {
+        public PatientsController(IPatientService patientService, IMemoryCache cache, ILogger<PatientsController> logger)
+            : base(logger, cache)
+        {
             _patientService = patientService;
         }
 
@@ -37,10 +40,12 @@ namespace LYBT.WebAPI.Controllers {
         /// 快速创建患者档案（简化版本）
         /// </summary>
         [HttpPost("quick")]
-        public async Task<IActionResult> QuickCreate([FromBody] QuickPatientCreateDto dto) {
+        public async Task<IActionResult> QuickCreate([FromBody] QuickPatientCreateDto dto)
+        {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             // 将QuickPatientCreateDto转换为PatientDetailDto
-            var patientDto = new PatientDetailDto {
+            var patientDto = new PatientDetailDto
+            {
                 Name = dto.Name,
                 Gender = dto.Gender,
                 Age = dto.Age ?? 0,
@@ -50,11 +55,15 @@ namespace LYBT.WebAPI.Controllers {
             };
 
             var result = await _patientService.CreateAsync(patientDto, operatorId, operatorName);
-            if (result != null) {
+            if (result != null)
+            {
                 LogOperation("患者档案快速创建成功", result, result.Id);
                 return Ok(result);
-            } else {
-                return BadRequest(new ProblemDetails {
+            }
+            else
+            {
+                return BadRequest(new ProblemDetails
+                {
                     Title = "操作失败",
                     Detail = "患者档案快速创建失败，必填项不完整或已存在",
                     Status = 400
@@ -68,12 +77,15 @@ namespace LYBT.WebAPI.Controllers {
         /// 切换患者档案状态（启用/禁用）
         /// </summary>
         [HttpPatch("{id}/toggle-status")]
-        public async Task<IActionResult> ToggleStatus(Guid id) {
+        public async Task<IActionResult> ToggleStatus(Guid id)
+        {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             // 先获取患者当前状态
             var patient = await _patientService.GetByIdAsync(id);
-            if (patient == null) {
-                return NotFound(new ProblemDetails {
+            if (patient == null)
+            {
+                return NotFound(new ProblemDetails
+                {
                     Title = "资源未找到"
                 });
             }
@@ -81,18 +93,25 @@ namespace LYBT.WebAPI.Controllers {
             // 根据当前状态切换
             bool result;
             string message;
-            if (patient.Status == CommonStatus.Enabled) {
+            if (patient.Status == CommonStatus.Enabled)
+            {
                 result = await _patientService.SetStatusAsync(id, false, operatorId, operatorName);
                 message = "患者档案已禁用";
-            } else {
+            }
+            else
+            {
                 result = await _patientService.SetStatusAsync(id, true, operatorId, operatorName);
                 message = "患者档案已启用";
             }
-            
-            if (result) {
+
+            if (result)
+            {
                 return Ok(new { message });
-            } else {
-                return BadRequest(new ProblemDetails {
+            }
+            else
+            {
+                return BadRequest(new ProblemDetails
+                {
                     Title = "操作失败",
                     Detail = "状态切换失败",
                     Status = 400
@@ -105,10 +124,12 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("all")]
-        public async Task<ActionResult<List<PatientDetailDto>>> GetAll() {
+        public async Task<ActionResult<List<PatientDetailDto>>> GetAll()
+        {
             var (_, _, operatorRole) = GetOperator();
 
-            if (!_cache.TryGetValue($"patients:all:{operatorRole}", out List<PatientDetailDto>? data)) {
+            if (!_cache.TryGetValue($"patients:all:{operatorRole}", out List<PatientDetailDto>? data))
+            {
                 data = await _patientService.GetAllAsync();
                 _cache.Set($"patients:all:{operatorRole}", data, TimeSpan.FromMinutes(5));
             }
@@ -120,7 +141,8 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<PaginatedResult<PatientDetailDto>>> GetPaged([FromBody] PatientPagedQueryDto query) {
+        public async Task<ActionResult<PaginatedResult<PatientDetailDto>>> GetPaged([FromBody] PatientPagedQueryDto query)
+        {
             var (_, _, operatorRole) = GetOperator();
             var result = await _patientService.GetPagedAsync(query);
             return Ok(result);
@@ -133,7 +155,8 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("search")]
-        public async Task<ActionResult<List<PatientDetailDto>>> Search([FromQuery] string keyword = "") {
+        public async Task<ActionResult<List<PatientDetailDto>>> Search([FromQuery] string keyword = "")
+        {
             var (_, _, operatorRole) = GetOperator();
             var list = await _patientService.SearchAsync(keyword);
             return Ok(list);
@@ -144,7 +167,8 @@ namespace LYBT.WebAPI.Controllers {
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("export")]
-        public async Task<ActionResult<List<PatientDetailDto>>> Export() {
+        public async Task<ActionResult<List<PatientDetailDto>>> Export()
+        {
             var (_, _, operatorRole) = GetOperator();
             var data = await _patientService.GetAllAsync();
             return Ok(data);
@@ -157,7 +181,8 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取启用的患者档案列表
         /// </summary>
         [HttpGet("active")]
-        public async Task<ActionResult<List<PatientDetailDto>>> GetActivePatients() {
+        public async Task<ActionResult<List<PatientDetailDto>>> GetActivePatients()
+        {
             var patients = await _patientService.GetActivePatientsAsync();
             return Ok(patients);
         }
@@ -167,7 +192,8 @@ namespace LYBT.WebAPI.Controllers {
         /// 根据姓名和身份证号查询患者档案，如果不存在则创建新档案
         /// </summary>
         [HttpPost("find-or-create")]
-        public async Task<ActionResult<PatientDetailDto>> FindOrCreate([FromBody] PatientDetailDto dto) {
+        public async Task<ActionResult<PatientDetailDto>> FindOrCreate([FromBody] PatientDetailDto dto)
+        {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var patient = await FindOrCreatePatientAsync(dto, operatorId, operatorName);
             return Ok(patient);
@@ -180,8 +206,8 @@ namespace LYBT.WebAPI.Controllers {
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<PaginatedResult<PatientDetailDto>>> GetPatients(
-            [FromQuery] int page = 1, 
-            [FromQuery] int pageSize = 20, 
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
             [FromQuery] string? name = null,
             [FromQuery] string? phoneNumber = null,
@@ -190,9 +216,11 @@ namespace LYBT.WebAPI.Controllers {
             [FromQuery] Gender? gender = null,
             [FromQuery] int? minAge = null,
             [FromQuery] int? maxAge = null,
-            [FromQuery] PatientStatus? status = null) {
+            [FromQuery] PatientStatus? status = null)
+        {
             var (_, _, operatorRole) = GetOperator();
-            var query = new PatientPagedQueryDto {
+            var query = new PatientPagedQueryDto
+            {
                 CurrentPage = page,
                 PageSize = pageSize,
                 SearchKeyword = keyword,
@@ -212,14 +240,19 @@ namespace LYBT.WebAPI.Controllers {
         /// 创建新患者 (RESTful POST /Patients)
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> CreatePatient([FromBody] PatientDetailDto dto) {
+        public async Task<IActionResult> CreatePatient([FromBody] PatientDetailDto dto)
+        {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var result = await _patientService.CreateAsync(dto, operatorId, operatorName);
-            if (result != null) {
+            if (result != null)
+            {
                 LogOperation("患者创建成功", result, result.Id);
                 return Ok(result);
-            } else {
-                return BadRequest(new ProblemDetails {
+            }
+            else
+            {
+                return BadRequest(new ProblemDetails
+                {
                     Title = "操作失败",
                     Detail = "患者创建失败",
                     Status = 400
@@ -231,11 +264,14 @@ namespace LYBT.WebAPI.Controllers {
         /// 根据ID获取患者 (RESTful GET /Patients/{id})
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<PatientDetailDto>> GetPatient(Guid id) {
+        public async Task<ActionResult<PatientDetailDto>> GetPatient(Guid id)
+        {
             var (_, _, operatorRole) = GetOperator();
             var patient = await _patientService.GetByIdAsync(id);
-            if (patient == null) {
-                return NotFound(new ProblemDetails {
+            if (patient == null)
+            {
+                return NotFound(new ProblemDetails
+                {
                     Title = "资源未找到"
                 });
             }
@@ -246,18 +282,23 @@ namespace LYBT.WebAPI.Controllers {
         /// 更新患者信息 (RESTful PUT /Patients/{id})
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<PatientDto>> UpdatePatient(Guid id, [FromBody] PatientDetailDto dto) {
+        public async Task<ActionResult<PatientDto>> UpdatePatient(Guid id, [FromBody] PatientDetailDto dto)
+        {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             // 确保DTO的ID与路由参数一致
             dto.Id = id;
             var result = await _patientService.UpdateAsync(id, dto, operatorId, operatorName);
-            if (result != null) {
+            if (result != null)
+            {
                 // 获取更新后的资源
                 var updated = await _patientService.GetByIdAsync(id);
                 LogOperation("更新患者信息成功");
                 return Ok(updated);
-            } else {
-                return BadRequest(new ProblemDetails {
+            }
+            else
+            {
+                return BadRequest(new ProblemDetails
+                {
                     Title = "操作失败",
                     Detail = "患者信息更新失败",
                     Status = 400
@@ -269,13 +310,18 @@ namespace LYBT.WebAPI.Controllers {
         /// 删除患者 (RESTful DELETE /Patients/{id}) - 实际执行软删除
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePatient(Guid id) {
+        public async Task<IActionResult> DeletePatient(Guid id)
+        {
             var (operatorId, operatorName, operatorRole) = GetOperator();
             var result = await _patientService.SetStatusAsync(id, false, operatorId, operatorName);
-            if (result) {
+            if (result)
+            {
                 return Ok(new { message = "患者已禁用" });
-            } else {
-                return BadRequest(new ProblemDetails {
+            }
+            else
+            {
+                return BadRequest(new ProblemDetails
+                {
                     Title = "操作失败",
                     Detail = "禁用患者失败",
                     Status = 400
@@ -285,17 +331,19 @@ namespace LYBT.WebAPI.Controllers {
 
         // 注意：不提供真正的删除接口，患者档案只能禁用，不能删除
         // 原有的删除相关接口已移除，改为禁用/启用操作
-    
+
         /// <summary>
         /// 辅助方法：查找或创建患者
         /// </summary>
-        private async Task<PatientDetailDto?> FindOrCreatePatientAsync(PatientDetailDto dto, Guid operatorId, string operatorName) {
+        private async Task<PatientDetailDto?> FindOrCreatePatientAsync(PatientDetailDto dto, Guid operatorId, string operatorName)
+        {
             // 先尝试根据手机号查找
-            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber)) {
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+            {
                 var existing = await _patientService.GetByPhoneNumberAsync(dto.PhoneNumber);
                 if (existing != null) return existing;
             }
-            
+
             // 如果不存在，创建新患者
             return await _patientService.CreateAsync(dto, operatorId, operatorName);
         }

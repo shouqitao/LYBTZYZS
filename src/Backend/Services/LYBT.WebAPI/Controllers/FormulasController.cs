@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using LYBT.Module.Formula.Interfaces;
@@ -10,8 +11,9 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 验方管理控制器
     /// </summary>
-    [Route("api/v1/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class FormulasController : BaseController
     {

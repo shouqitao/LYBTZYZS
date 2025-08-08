@@ -14,7 +14,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
         public EditFormulaDialog(EditFormulaDialogViewModel viewModel)
         {
             InitializeComponent();
-            
+
             _viewModel = viewModel;
             DataContext = _viewModel;
         }

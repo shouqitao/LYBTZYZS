@@ -1,12 +1,14 @@
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Infrastructure.Logging.Dtos {
+namespace LYBT.Infrastructure.Logging.Dtos
+{
 
     /// <summary>
     /// 用户操作日志传输对象
     /// </summary>
-    public class UserActionLogDto {
+    public class UserActionLogDto
+    {
 
         /// <summary>
         /// 日志ID

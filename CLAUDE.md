@@ -92,6 +92,22 @@ python api_test_automation.py
   - 1个边缘情况测试  
   - 1个失败情况测试
 
+### 测试完成状态（2025-08-08）
+
+**Repository层测试**（完成）：
+- 97个测试用例全部通过
+- UserRepository: 31个测试
+- PatientRepository: 38个测试 
+- HerbRepository: 28个测试
+
+**Service层测试**（进行中）：
+- UserService: 68个测试用例（完成）
+- PatientService: 88个测试用例（完成）
+- 总计156个Service层测试已完成
+- 下一步：HerbService、AuthService单元测试
+
+**代码覆盖率**：从2.30%提升至2.76%，目标60%
+
 ### API测试
 
 - 使用 Python 脚本进行 API 自动化测试
@@ -140,8 +156,8 @@ src/
 6. **Consultation** - 看诊管理（核心模块，支持中医四诊）
 7. **MedicalCase** - 医疗案例（统一管理整个诊疗流程）
 8. **Prescriptions** - 处方管理
-9. **Herbs** - 中药材管理
-10. **FormulaTemplates** - 验方模板
+9. **Herbs** - 中药材管理（仅处方用药，不涉及库存管理）
+10. **Formula** - 验方管理（经典验方模板，支持处方组合）
 11. **Pharmacy** - 药房管理
 12. **Billing** - 收费结算
 13. **Records** - 病历档案
@@ -149,6 +165,10 @@ src/
 15. **TreatmentRoom** - 治疗室管理
 16. **Sync** - 数据同步
 17. **DiagnosisTreatment** - 诊断治疗（保留兼容）
+
+**重要说明**：
+- **Herbs模块**：只负责管理诊所可用药材信息和单价，供医生开处方时选择使用，不涉及药品库存管理
+- **Formula模块**：管理验方模板，支持经典验方库和医生个人验方，可被Prescriptions引用组合
 
 ## 核心工作流
 
@@ -272,10 +292,11 @@ public async Task<Result> MethodName(Type param)
 
 - **Pharmacy**: 药房
 - **Prescriptions**: 处方  
-- **FormulaTemplate**: 验方
+- **Formula**: 验方（验方模板）
 - **Consultation**: 看诊
-- **Herbs**: 中药材
+- **Herbs**: 中药材（仅用于处方，不含库存管理）
 - **TCM**: 中医（Traditional Chinese Medicine）
+- **MedicalCase**: 医疗案例（就诊流程聚合根）
 
 ## 项目特定指令
 
@@ -307,6 +328,15 @@ public async Task<Result> MethodName(Type param)
     cfg.AddProfile(new MappingProfile());
   }, NullLoggerFactory.Instance);  // 关键：需要ILoggerFactory参数
   ```
+
+**测试中的AutoMapper配置**：
+```csharp
+// 在单元测试中的正确配置方式
+var config = new MapperConfiguration(cfg => 
+    cfg.AddProfile(new UserMappingProfile()), 
+    NullLoggerFactory.Instance);  // 必须的第二参数
+var mapper = config.CreateMapper();
+```
 
 ### 依赖注入配置
 
@@ -340,11 +370,17 @@ public async Task<Result> MethodName(Type param)
 
 ## 🎯 项目质量目标
 
-- 代码覆盖率 > 70%
+- **代码覆盖率目标：60%**（当前：2.76%）
 - 响应时间 < 2秒
 - 零关键bug
 - 完整的错误处理
 - 用户友好的中文提示
+
+### 质量改进计划
+
+1. **高优先级**：完成核心Service层测试（HerbService、AuthService）
+2. **中优先级**：添加Controller层测试，提升覆盖率到60%
+3. **低优先级**：实现缓存机制、API版本管理
 
 ## 中文编码
 

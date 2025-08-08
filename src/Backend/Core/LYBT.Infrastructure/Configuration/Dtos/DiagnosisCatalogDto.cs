@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration.Dtos {
+namespace LYBT.Infrastructure.Configuration.Dtos
+{
 
     /// <summary>
     /// 诊断目录传输对象
     /// </summary>
-    public class DiagnosisCatalogDto {
+    public class DiagnosisCatalogDto
+    {
 
         /// <summary>
         /// 主键ID

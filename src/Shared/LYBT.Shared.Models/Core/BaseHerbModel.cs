@@ -1,13 +1,15 @@
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Core {
+namespace LYBT.Shared.Models.Core
+{
 
     /// <summary>
     /// 中药材基础模型（简化版）
     /// 只保留基础信息，不包含库存管理
     /// </summary>
-    public class BaseHerbModel {
+    public class BaseHerbModel
+    {
 
         /// <summary>药材唯一标识</summary>
         [DisplayName("药材ID")]

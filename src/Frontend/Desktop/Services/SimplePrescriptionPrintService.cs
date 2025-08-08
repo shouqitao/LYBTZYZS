@@ -36,7 +36,7 @@ namespace LYBT.WPF.Client.Services
                             Message = "预览生成成功"
                         };
                     }
-                    
+
                     return new PreviewResult
                     {
                         Success = false,
@@ -69,21 +69,21 @@ namespace LYBT.WPF.Client.Services
                         {
                             var document = CreatePrescriptionDocument(model);
                             var printDialog = new PrintDialog();
-                            
+
                             if (printDialog.ShowDialog() == true)
                             {
                                 document.PageHeight = printDialog.PrintableAreaHeight;
                                 document.PageWidth = printDialog.PrintableAreaWidth;
                                 printDialog.PrintDocument(
-                                    ((IDocumentPaginatorSource)document).DocumentPaginator, 
+                                    ((IDocumentPaginatorSource)document).DocumentPaginator,
                                     "中医处方"
                                 );
                             }
                         });
-                        
+
                         return true;
                     }
-                    
+
                     return false;
                 }
                 catch
@@ -107,7 +107,7 @@ namespace LYBT.WPF.Client.Services
                         var html = GenerateHtmlContent(model);
                         var htmlPath = fileName.Replace(".pdf", ".html");
                         File.WriteAllText(htmlPath, html, Encoding.UTF8);
-                        
+
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             MessageBox.Show(
@@ -117,10 +117,10 @@ namespace LYBT.WPF.Client.Services
                                 MessageBoxImage.Information
                             );
                         });
-                        
+
                         return true;
                     }
-                    
+
                     return false;
                 }
                 catch
@@ -212,7 +212,7 @@ namespace LYBT.WPF.Client.Services
             // 处方内容
             var list = new List();
             list.MarkerStyle = TextMarkerStyle.Decimal;
-            
+
             foreach (var item in model.Herbs)
             {
                 var listItem = new ListItem(new Paragraph(new Run(
@@ -220,7 +220,7 @@ namespace LYBT.WPF.Client.Services
                 )));
                 list.ListItems.Add(listItem);
             }
-            
+
             document.Blocks.Add(list);
 
             // 总价
@@ -262,7 +262,7 @@ namespace LYBT.WPF.Client.Services
         private string GenerateHtmlContent(SimplePrescriptionModel model)
         {
             var html = new StringBuilder();
-            
+
             html.AppendLine(string.Format(@"<!DOCTYPE html>
 <html>
 <head>

@@ -1,12 +1,14 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Models.Core {
+namespace LYBT.Shared.Models.Core
+{
 
     /// <summary>
     /// 治疗室任务基础模型 - 前后端共享核心字段
     /// 包含所有通用的治疗室任务信息字段，各层可基于此模型扩展
     /// </summary>
-    public class BaseTreatmentRoomModel {
+    public class BaseTreatmentRoomModel
+    {
 
         /// <summary>任务唯一标识</summary>
         [DisplayName("任务ID")]
