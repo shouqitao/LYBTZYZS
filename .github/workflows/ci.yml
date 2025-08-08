@@ -83,7 +83,7 @@ jobs:
         retention-days: 30
 
     - name: 发布测试报告
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@v2
       if: always()
       with:
         name: .NET 测试报告
