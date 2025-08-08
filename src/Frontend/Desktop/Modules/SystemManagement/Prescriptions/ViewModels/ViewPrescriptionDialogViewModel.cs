@@ -127,7 +127,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             CloseCommand = new DelegateCommand(ExecuteClose);
             PrintCommand = new DelegateCommand(ExecutePrint);
             EditCommand = new DelegateCommand(ExecuteEdit, () => CanEdit);
-            VoidCommand = new DelegateCommand(ExecuteVoid, () => CanVoid);
+            VoidCommand = new DelegateCommand(async () => await ExecuteVoidAsync(), () => CanVoid);
 
             // 加载处方详情在 OnDialogOpened 中处理
         }
@@ -215,7 +215,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             }
         }
 
-        private async void ExecuteVoid()
+        private async Task ExecuteVoidAsync()
         {
             if (Prescription == null) return;
 

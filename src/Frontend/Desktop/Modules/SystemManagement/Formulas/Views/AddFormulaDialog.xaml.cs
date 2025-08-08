@@ -354,6 +354,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
 
         private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
+            await HandleSaveAsync();
+        }
+
+        private async Task HandleSaveAsync()
+        {
             // 验证
             if (string.IsNullOrWhiteSpace(txtFormulaName.Text))
             {

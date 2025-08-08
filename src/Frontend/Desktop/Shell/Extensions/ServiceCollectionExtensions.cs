@@ -4,14 +4,17 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Caching.Memory;
 using Prism.Ioc;
 using Refit;
 using AutoMapper;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
+using LYBT.WPF.Client.Services.Cache;
 using LYBT.WPF.Client.Core.Configuration;
 using LYBT.WPF.Client.Core.Mapping;
+using LYBT.WPF.Client.Core.Models.Cache;
 using LYBT.WPF.Client.Infrastructure;
 using LYBT.WPF.Client.Services.Handlers;
 
@@ -29,6 +32,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
         {
             RegisterLogging(containerRegistry);
             RegisterAutoMapper(containerRegistry);
+            RegisterCacheServices(containerRegistry);
             RegisterHttpServices(containerRegistry);
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
@@ -70,6 +74,31 @@ namespace LYBT.WPF.Client.Shell.Extensions
 
             // 注册IMapper为单例
             containerRegistry.RegisterSingleton<IMapper>(() => mapper);
+        }
+
+        /// <summary>
+        /// 注册缓存服务
+        /// </summary>
+        private static void RegisterCacheServices(IContainerRegistry containerRegistry)
+        {
+            // 注册Microsoft.Extensions.Caching.Memory
+            containerRegistry.RegisterSingleton<IMemoryCache>(() => new MemoryCache(new MemoryCacheOptions
+            {
+                SizeLimit = 1000 // 可选：设置大小限制
+            }));
+
+            // 注册缓存配置（根据环境选择不同的配置）
+            containerRegistry.RegisterSingleton<CacheOptions>(() =>
+            {
+#if DEBUG
+                return CacheOptions.Development();
+#else
+                return CacheOptions.Production();
+#endif
+            });
+
+            // 注册缓存服务
+            containerRegistry.RegisterSingleton<ICacheService, MemoryCacheService>();
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using LYBT.Shared.Utilities.Helpers;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
@@ -124,7 +125,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
             _commonDialogService = commonDialogService;
             _herbService = herbService;
 
-            SaveCommand = new DelegateCommand(ExecuteSave, CanExecuteSave)
+            SaveCommand = new DelegateCommand(ExecuteSaveWrapper, CanExecuteSave)
                 .ObservesProperty(() => HerbName)
                 .ObservesProperty(() => Unit)
                 .ObservesProperty(() => Price)
@@ -163,7 +164,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
                    Stock >= 0;
         }
 
-        private async void ExecuteSave()
+        private async void ExecuteSaveWrapper()
+        {
+            await ExecuteSave();
+        }
+
+        private async Task ExecuteSave()
         {
             try
             {

@@ -71,7 +71,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
             _herbService = herbService;
             _formulaApiService = formulaApiService;
             // 初始化额外的命令
-            ImportTemplatesCommand = new DelegateCommand(ImportTemplates);
+            ImportTemplatesCommand = new DelegateCommand(async () => await ImportTemplatesAsync());
             CopyTemplateCommand = new DelegateCommand<FormulaInfo>(async (template) => await CopyTemplate(template));
 
             // 初始化分类
@@ -223,7 +223,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 
         #region 额外功能
 
-        private async void ImportTemplates()
+        private async Task ImportTemplatesAsync()
         {
             var openDialog = new OpenFileDialog
             {

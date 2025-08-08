@@ -47,5 +47,17 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services.Interfaces
         /// 清除所有缓存
         /// </summary>
         void ClearAllCache();
+
+        /// <summary>
+        /// 清除特定类型的缓存
+        /// </summary>
+        /// <param name="cacheType">缓存类型（herbs/formulas/patients）</param>
+        void ClearSpecificCache(string cacheType);
+
+        /// <summary>
+        /// 获取缓存统计信息
+        /// </summary>
+        /// <returns>缓存统计</returns>
+        object GetCacheStatistics();
     }
 }

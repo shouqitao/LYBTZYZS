@@ -21,9 +21,13 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
     {
         #region 缓存配置常量
         
-        private const int HERBS_CACHE_DURATION_MINUTES = 30;
-        private const int FORMULAS_CACHE_DURATION_MINUTES = 60;
-        private const int PATIENTS_CACHE_DURATION_MINUTES = 10;
+        private const string HERBS_CACHE_KEY = "consultation:herbs";
+        private const string FORMULAS_CACHE_KEY = "consultation:formulas";
+        private const string PATIENTS_CACHE_KEY = "consultation:patients";
+        
+        private static readonly TimeSpan HERBS_CACHE_DURATION = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan FORMULAS_CACHE_DURATION = TimeSpan.FromMinutes(60);
+        private static readonly TimeSpan PATIENTS_CACHE_DURATION = TimeSpan.FromMinutes(10);
         
         #endregion
 
@@ -33,21 +37,9 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         private readonly IConsultationApiService _consultationApiService;
         private readonly IFormulaApiService _formulaApiService;
         private readonly IHerbService _herbService;
+        private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
         private readonly ILogger<ConsultationDataService> _logger;
-        
-        #endregion
-
-        #region 缓存字段
-        
-        private List<HerbInfo>? _cachedHerbs;
-        private DateTime _herbsCacheTime = DateTime.MinValue;
-        
-        private List<FormulaInfo>? _cachedFormulas;
-        private DateTime _formulasCacheTime = DateTime.MinValue;
-        
-        private List<PatientInfo>? _cachedPatients;
-        private DateTime _patientsCacheTime = DateTime.MinValue;
         
         #endregion
 
@@ -56,15 +48,17 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             IConsultationApiService consultationApiService,
             IFormulaApiService formulaApiService,
             IHerbService herbService,
+            ICacheService cacheService,
             IMapper mapper,
             ILogger<ConsultationDataService> logger)
         {
-            _patientsApiService = patientsApiService;
-            _consultationApiService = consultationApiService;
-            _formulaApiService = formulaApiService;
-            _herbService = herbService;
-            _mapper = mapper;
-            _logger = logger;
+            _patientsApiService = patientsApiService ?? throw new ArgumentNullException(nameof(patientsApiService));
+            _consultationApiService = consultationApiService ?? throw new ArgumentNullException(nameof(consultationApiService));
+            _formulaApiService = formulaApiService ?? throw new ArgumentNullException(nameof(formulaApiService));
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         #region 患者数据加载
@@ -76,30 +70,30 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         {
             try
             {
-                // 检查缓存
-                if (!forceRefresh && IsCacheValid(_patientsCacheTime, PATIENTS_CACHE_DURATION_MINUTES))
+                // 如果强制刷新，先清除缓存
+                if (forceRefresh)
                 {
-                    _logger.LogDebug("使用缓存的患者数据");
-                    return _cachedPatients ?? new List<PatientInfo>();
+                    _cacheService.Remove(PATIENTS_CACHE_KEY);
                 }
 
-                _logger.LogInformation("从API加载患者列表");
-                var response = await _patientsApiService.GetActivePatientsAsync();
-                
-                if (response.IsSuccessStatusCode && response.Content != null)
+                // 使用GetOrCreateAsync方法，自动处理缓存逻辑
+                var patients = await _cacheService.GetOrCreateAsync(PATIENTS_CACHE_KEY, async () =>
                 {
-                    var patients = _mapper.Map<List<PatientInfo>>(response.Content);
+                    _logger.LogInformation("从API加载患者列表");
+                    var response = await _patientsApiService.GetActivePatientsAsync();
                     
-                    // 更新缓存
-                    _cachedPatients = patients;
-                    _patientsCacheTime = DateTime.Now;
+                    if (response.IsSuccessStatusCode && response.Content != null)
+                    {
+                        var patientList = _mapper.Map<List<PatientInfo>>(response.Content);
+                        _logger.LogInformation($"成功加载 {patientList.Count} 个患者");
+                        return patientList;
+                    }
                     
-                    _logger.LogInformation($"成功加载 {patients.Count} 个患者");
-                    return patients;
-                }
-                
-                _logger.LogWarning("加载患者列表失败");
-                return new List<PatientInfo>();
+                    _logger.LogWarning("加载患者列表失败，返回空列表");
+                    return new List<PatientInfo>();
+                }, PATIENTS_CACHE_DURATION);
+
+                return patients;
             }
             catch (Exception ex)
             {
@@ -119,21 +113,21 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         {
             try
             {
-                // 检查缓存
-                if (!forceRefresh && IsCacheValid(_herbsCacheTime, HERBS_CACHE_DURATION_MINUTES))
+                // 如果强制刷新，先清除缓存
+                if (forceRefresh)
                 {
-                    _logger.LogDebug("使用缓存的中药材数据");
-                    return _cachedHerbs ?? new List<HerbInfo>();
+                    _cacheService.Remove(HERBS_CACHE_KEY);
                 }
 
-                _logger.LogInformation("从API加载中药材列表");
-                var herbs = await _herbService.GetHerbsAsync();
-                
-                // 更新缓存
-                _cachedHerbs = herbs;
-                _herbsCacheTime = DateTime.Now;
-                
-                _logger.LogInformation($"成功加载 {herbs.Count} 种中药材");
+                // 使用GetOrCreateAsync方法，自动处理缓存逻辑
+                var herbs = await _cacheService.GetOrCreateAsync(HERBS_CACHE_KEY, async () =>
+                {
+                    _logger.LogInformation("从API加载中药材列表");
+                    var herbList = await _herbService.GetHerbsAsync();
+                    _logger.LogInformation($"成功加载 {herbList.Count} 种中药材");
+                    return herbList;
+                }, HERBS_CACHE_DURATION);
+
                 return herbs;
             }
             catch (Exception ex)
@@ -154,30 +148,30 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         {
             try
             {
-                // 检查缓存
-                if (!forceRefresh && IsCacheValid(_formulasCacheTime, FORMULAS_CACHE_DURATION_MINUTES))
+                // 如果强制刷新，先清除缓存
+                if (forceRefresh)
                 {
-                    _logger.LogDebug("使用缓存的验方数据");
-                    return _cachedFormulas ?? new List<FormulaInfo>();
+                    _cacheService.Remove(FORMULAS_CACHE_KEY);
                 }
 
-                _logger.LogInformation("从API加载验方模板列表");
-                var response = await _formulaApiService.GetFormulasAsync();
-                
-                if (response.IsSuccessStatusCode && response.Content != null)
+                // 使用GetOrCreateAsync方法，自动处理缓存逻辑
+                var formulas = await _cacheService.GetOrCreateAsync(FORMULAS_CACHE_KEY, async () =>
                 {
-                    var formulas = _mapper.Map<List<FormulaInfo>>(response.Content.Items);
+                    _logger.LogInformation("从API加载验方模板列表");
+                    var response = await _formulaApiService.GetFormulasAsync();
                     
-                    // 更新缓存
-                    _cachedFormulas = formulas;
-                    _formulasCacheTime = DateTime.Now;
+                    if (response.IsSuccessStatusCode && response.Content != null)
+                    {
+                        var formulaList = _mapper.Map<List<FormulaInfo>>(response.Content.Items);
+                        _logger.LogInformation($"成功加载 {formulaList.Count} 个验方模板");
+                        return formulaList;
+                    }
                     
-                    _logger.LogInformation($"成功加载 {formulas.Count} 个验方模板");
-                    return formulas;
-                }
-                
-                _logger.LogWarning("加载验方模板列表失败");
-                return new List<FormulaInfo>();
+                    _logger.LogWarning("加载验方模板列表失败，返回空列表");
+                    return new List<FormulaInfo>();
+                }, FORMULAS_CACHE_DURATION);
+
+                return formulas;
             }
             catch (Exception ex)
             {
@@ -251,32 +245,84 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
 
         #endregion
 
-        #region 辅助方法
-
-        /// <summary>
-        /// 检查缓存是否有效
-        /// </summary>
-        private bool IsCacheValid(DateTime cacheTime, int durationMinutes)
-        {
-            return cacheTime != DateTime.MinValue && 
-                   (DateTime.Now - cacheTime).TotalMinutes < durationMinutes;
-        }
+        #region 缓存管理
 
         /// <summary>
         /// 清除所有缓存
         /// </summary>
         public void ClearAllCache()
         {
-            _cachedHerbs = null;
-            _herbsCacheTime = DateTime.MinValue;
-            
-            _cachedFormulas = null;
-            _formulasCacheTime = DateTime.MinValue;
-            
-            _cachedPatients = null;
-            _patientsCacheTime = DateTime.MinValue;
-            
-            _logger.LogInformation("已清除所有缓存数据");
+            try
+            {
+                // 使用缓存服务的批量移除功能
+                var keysToRemove = new[] { HERBS_CACHE_KEY, FORMULAS_CACHE_KEY, PATIENTS_CACHE_KEY };
+                var removedCount = _cacheService.RemoveMany(keysToRemove);
+                
+                _logger.LogInformation("已清除所有缓存数据，共移除 {Count} 项", removedCount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清除缓存时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 清除特定类型的缓存
+        /// </summary>
+        /// <param name="cacheType">缓存类型（herbs/formulas/patients）</param>
+        public void ClearSpecificCache(string cacheType)
+        {
+            try
+            {
+                var key = cacheType.ToLower() switch
+                {
+                    "herbs" => HERBS_CACHE_KEY,
+                    "formulas" => FORMULAS_CACHE_KEY,
+                    "patients" => PATIENTS_CACHE_KEY,
+                    _ => null
+                };
+
+                if (key != null)
+                {
+                    var removed = _cacheService.Remove(key);
+                    _logger.LogInformation("已清除 {CacheType} 缓存，结果: {Result}", cacheType, removed ? "成功" : "未找到");
+                }
+                else
+                {
+                    _logger.LogWarning("未知的缓存类型: {CacheType}", cacheType);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清除特定缓存时发生异常，类型: {CacheType}", cacheType);
+            }
+        }
+
+        /// <summary>
+        /// 获取缓存统计信息
+        /// </summary>
+        /// <returns>缓存统计</returns>
+        public object GetCacheStatistics()
+        {
+            try
+            {
+                var stats = _cacheService.GetStatistics();
+                return new
+                {
+                    TotalItems = stats.ItemCount,
+                    HitRate = $"{stats.HitRate:P2}",
+                    TotalRequests = stats.TotalRequests,
+                    MemoryUsage = $"{stats.EstimatedMemoryUsage / 1024 / 1024:F2} MB",
+                    HerbsCached = _cacheService.Exists(HERBS_CACHE_KEY),
+                    FormulasCached = _cacheService.Exists(FORMULAS_CACHE_KEY),
+                    PatientsCached = _cacheService.Exists(PATIENTS_CACHE_KEY)
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取缓存统计信息时发生异常");
+                return new { Error = "获取统计信息失败" };
+            }
         }
 
         #endregion

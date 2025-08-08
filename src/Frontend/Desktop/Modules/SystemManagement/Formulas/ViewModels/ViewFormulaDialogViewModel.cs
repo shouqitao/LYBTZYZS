@@ -149,7 +149,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
             }
         }
 
-        public async void Initialize(Guid templateId)
+        public async System.Threading.Tasks.Task InitializeAsync(Guid templateId)
         {
             _templateId = templateId;
             await LoadTemplateData();

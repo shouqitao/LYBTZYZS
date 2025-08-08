@@ -112,7 +112,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             // 初始化扩展命令
             ViewDetailsCommand = new DelegateCommand<PrescriptionInfo>(ExecuteViewDetails);
             PrintCommand = new DelegateCommand<PrescriptionInfo>(ExecutePrint);
-            VoidCommand = new DelegateCommand<PrescriptionInfo>(ExecuteVoid);
+            VoidCommand = new DelegateCommand<PrescriptionInfo>(async p => await ExecuteVoidAsync(p));
             ClearFiltersCommand = new DelegateCommand(ExecuteClearFilters);
             ExportCommand = new DelegateCommand(ExecuteExport);
 
@@ -244,7 +244,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
             }
         }
 
-        private async void ExecuteVoid(PrescriptionInfo prescription)
+        private async Task ExecuteVoidAsync(PrescriptionInfo prescription)
         {
             if (prescription == null) return;
 

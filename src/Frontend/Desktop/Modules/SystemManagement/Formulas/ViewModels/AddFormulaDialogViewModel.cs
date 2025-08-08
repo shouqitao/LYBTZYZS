@@ -126,7 +126,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
             _formulaService = formulaService;
             _herbService = herbService;
 
-            SaveCommand = new DelegateCommand(ExecuteSave, CanExecuteSave)
+            SaveCommand = new DelegateCommand(ExecuteSaveWrapper, CanExecuteSave)
                 .ObservesProperty(() => TemplateName)
                 .ObservesProperty(() => Category)
                 .ObservesProperty(() => Indications)
@@ -171,7 +171,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
                    TemplateHerbs.Count > 0;
         }
 
-        private async void ExecuteSave()
+        private async void ExecuteSaveWrapper()
+        {
+            await ExecuteSave();
+        }
+
+        private async System.Threading.Tasks.Task ExecuteSave()
         {
             try
             {

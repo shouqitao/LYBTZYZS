@@ -142,11 +142,16 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
             _commonDialogService = commonDialogService;
             _isEditMode = false;
 
-            SaveCommand = new DelegateCommand(ExecuteSave);
+            SaveCommand = new DelegateCommand(ExecuteSaveWrapper);
             CancelCommand = new DelegateCommand(ExecuteCancel);
         }
 
-        private async void ExecuteSave()
+        private async void ExecuteSaveWrapper()
+        {
+            await ExecuteSave();
+        }
+
+        private async Task ExecuteSave()
         {
             // 验证必填字段
             if (string.IsNullOrWhiteSpace(Name))

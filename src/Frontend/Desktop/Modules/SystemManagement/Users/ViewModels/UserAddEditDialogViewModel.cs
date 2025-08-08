@@ -141,7 +141,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                 SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
             }
 
-            SaveCommand = new DelegateCommand(ExecuteSave, CanExecuteSave);
+            SaveCommand = new DelegateCommand(ExecuteSaveWrapper, CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
 
             // 监听属性变化以更新命令状态
@@ -174,7 +174,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
                    SelectedRole != null;
         }
 
-        private async void ExecuteSave()
+        private async void ExecuteSaveWrapper()
+        {
+            await ExecuteSave();
+        }
+
+        private async Task ExecuteSave()
         {
             if (!ValidateInput())
                 return;
