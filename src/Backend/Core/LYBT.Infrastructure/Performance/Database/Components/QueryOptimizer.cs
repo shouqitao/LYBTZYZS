@@ -150,22 +150,20 @@ namespace LYBT.Infrastructure.Performance.Database.Components
 
                 try
                 {
-                    // 创建编译查询
-                    var compiledQuery = EF.CompileQuery(queryFactory);
-                    
+                    // EF.CompileQuery 需要特定的表达式树格式，暂时直接缓存原查询工厂
                     var cacheItem = new CompiledQuery
                     {
-                        QueryFactory = ctx => compiledQuery((DbContext)ctx)
+                        QueryFactory = ctx => queryFactory(ctx)
                     };
                     
                     _compiledQueryCache[queryKey] = cacheItem;
                     
-                    _logger.LogDebug("创建并缓存编译查询: {QueryKey}", queryKey);
-                    return compiledQuery;
+                    _logger.LogDebug("缓存查询工厂 (编译查询功能暂时禁用): {QueryKey}", queryKey);
+                    return queryFactory;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "创建编译查询失败: {QueryKey}", queryKey);
+                    _logger.LogError(ex, "缓存查询工厂失败: {QueryKey}", queryKey);
                     return queryFactory; // 返回原始查询工厂
                 }
             }
@@ -243,7 +241,7 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                 
                 result.OptimalPoolSize = optimalSize.Key;
                 result.PerformanceScore = optimalSize.Value;
-                result.TestResults = testResults;
+                result.TestResults = testResults.Select(kvp => $"连接池大小: {kvp.Key}, 性能评分: {kvp.Value:F2}").ToList();
                 result.IsOptimized = true;
 
                 _logger.LogInformation("连接池优化完成: 最优大小={OptimalSize}, 性能评分={Score:F2}",
@@ -270,6 +268,9 @@ namespace LYBT.Infrastructure.Performance.Database.Components
             IQueryable<T> query,
             CancellationToken cancellationToken = default) where T : class
         {
+            // 为将来的异步分析预留
+            await Task.CompletedTask;
+            
             var suggestions = new QueryOptimizationSuggestions();
 
             try
@@ -306,7 +307,7 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                 suggestions.Recommendations.AddRange(includeAnalysis);
 
                 // 估算性能等级
-                suggestions.EstimatedPerformanceLevel = EstimatePerformanceLevel(suggestions.ComplexityScore, joinCount);
+                suggestions.EstimatedPerformanceLevel = EstimatePerformanceLevel(suggestions.ComplexityScore, joinCount).ToString();
 
                 _logger.LogDebug("查询优化建议分析完成: 复杂度={Complexity}, 建议数={Count}",
                     suggestions.ComplexityScore, suggestions.Recommendations.Count);

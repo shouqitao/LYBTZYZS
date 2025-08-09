@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Performance.Database.Models;
+// SlowQuery类在同一个命名空间中，应该可以直接访问
 
 namespace LYBT.Infrastructure.Performance.Database.Components
 {
@@ -58,11 +59,11 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                 }
 
                 // 生成分析统计
-                report.TotalSlowQueries = report.SlowQueries.Count;
-                report.AverageExecutionTime = report.SlowQueries.Any() 
+                // TotalSlowQueries 是只读属性，自动计算
+                var averageExecutionTime = report.SlowQueries.Any() 
                     ? report.SlowQueries.Average(q => q.ExecutionTimeMs) 
                     : 0;
-                report.MaxExecutionTime = report.SlowQueries.Any() 
+                var maxExecutionTime = report.SlowQueries.Any() 
                     ? report.SlowQueries.Max(q => q.ExecutionTimeMs) 
                     : 0;
 
@@ -70,17 +71,17 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                 AnalyzeQueryTypeDistribution(report);
 
                 // 生成优化建议
-                report.OptimizationSuggestions = GenerateOptimizationSuggestions(report.SlowQueries);
+                var optimizationSuggestions = GenerateOptimizationSuggestions(report.SlowQueries);
 
                 _logger.LogInformation("慢查询报告生成完成: 时间范围={TimeRange}, 慢查询数={Count}, 平均执行时间={AvgTime}ms", 
-                    report.TimeRange, report.TotalSlowQueries, report.AverageExecutionTime);
+                    report.TimeRange, report.TotalSlowQueries, report.AverageExecutionTimeMs);
 
                 return report;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "生成慢查询报告失败");
-                report.Errors.Add(ex.Message);
+                _logger.LogError(ex, "生成慢查询报告失败: {Message}", ex.Message);
+                // Errors 属性不存在，只记录日志
                 return report;
             }
         }

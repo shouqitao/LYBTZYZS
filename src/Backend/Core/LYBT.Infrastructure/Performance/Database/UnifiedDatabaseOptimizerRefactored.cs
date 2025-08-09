@@ -460,15 +460,17 @@ namespace LYBT.Infrastructure.Performance.Database
                 }
 
                 // 基于慢查询的建议
-                if (diagnosis.SlowQueryReport?.TotalSlowQueries > 10)
+                var slowQueryCount = diagnosis.SlowQueryReport?.TotalSlowQueries ?? 0;
+                if (slowQueryCount > 10)
                 {
-                    recommendations.Add($"发现{diagnosis.SlowQueryReport.TotalSlowQueries}个慢查询，建议重点优化");
+                    recommendations.Add($"发现{slowQueryCount}个慢查询，建议重点优化");
                 }
 
                 // 基于索引分析的建议
-                if (diagnosis.IndexAnalysis?.UnusedIndexes?.Count > 5)
+                var unusedIndexCount = diagnosis.IndexAnalysis?.UnusedIndexes ?? 0;
+                if (unusedIndexCount > 5)
                 {
-                    recommendations.Add($"发现{diagnosis.IndexAnalysis.UnusedIndexes.Count}个未使用的索引，考虑删除以提升性能");
+                    recommendations.Add($"发现{unusedIndexCount}个未使用的索引，考虑删除以提升性能");
                 }
 
                 if (!recommendations.Any())

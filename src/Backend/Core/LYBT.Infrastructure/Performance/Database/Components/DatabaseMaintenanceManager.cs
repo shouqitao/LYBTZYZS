@@ -60,7 +60,7 @@ namespace LYBT.Infrastructure.Performance.Database.Components
 
                 // 记录维护后的数据库大小
                 result.DatabaseSizeAfterMB = await GetDatabaseSizeAsync(connection, cancellationToken);
-                result.SpaceSavedMB = result.DatabaseSizeBeforeMB - result.DatabaseSizeAfterMB;
+                // SpaceSavedMB 是计算属性，不需要手动赋值
 
                 _logger.LogInformation("数据库维护完成: 节省空间={SpaceSaved}MB, 耗时={ElapsedMs}ms", 
                     result.SpaceSavedMB, result.TotalExecutionTimeMs);
@@ -168,7 +168,7 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                 }
 
                 _logger.LogInformation("索引分析完成: 未使用索引={UnusedCount}, 碎片化索引={FragmentedCount}",
-                    report.UnusedIndexes.Count, report.FragmentedIndexes.Count);
+                    report.UnusedIndexes, report.FragmentedIndexes);
             }
             catch (Exception ex)
             {
@@ -431,7 +431,8 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                         IndexType = reader.GetString("IndexType")
                     };
                     
-                    report.UnusedIndexes.Add(unusedIndex);
+                    report.UnusedIndexDetails.Add(unusedIndex);
+                    report.UnusedIndexes++; // 更新计数
                 }
             }
             catch (Exception ex)
@@ -496,14 +497,14 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                         // 重建索引
                         maintenanceCommand.CommandText = $"ALTER INDEX [{index.IndexName}] ON [{index.TableName}] REBUILD";
                         await maintenanceCommand.ExecuteNonQueryAsync(cancellationToken);
-                        result.RebuiltIndexCount++;
+                        result.IndexesRebuilt++;
                     }
                     else
                     {
                         // 重组索引
                         maintenanceCommand.CommandText = $"ALTER INDEX [{index.IndexName}] ON [{index.TableName}] REORGANIZE";
                         await maintenanceCommand.ExecuteNonQueryAsync(cancellationToken);
-                        result.ReorganizedIndexCount++;
+                        result.IndexesReorganized++;
                     }
                 }
             }
@@ -528,6 +529,9 @@ namespace LYBT.Infrastructure.Performance.Database.Components
             MaintenanceResult result,
             CancellationToken cancellationToken)
         {
+            // 为将来的异步操作预留
+            await Task.CompletedTask;
+            
             try
             {
                 if (options.UpdateStatistics)

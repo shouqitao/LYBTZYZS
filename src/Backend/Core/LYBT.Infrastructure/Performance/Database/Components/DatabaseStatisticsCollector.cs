@@ -88,16 +88,16 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                 detailedStats.BasicStatistics = basicStats;
 
                 // 获取表级统计信息
-                detailedStats.TableStatistics = await GetTableStatisticsAsync(connection, cancellationToken);
+                detailedStats.TableStats = await GetTableStatisticsAsync(connection, cancellationToken);
 
                 // 获取索引统计信息
-                detailedStats.IndexStatistics = await GetIndexStatisticsAsync(connection, cancellationToken);
+                detailedStats.IndexStats = await GetIndexStatisticsAsync(connection, cancellationToken);
 
                 // 获取连接统计信息
-                detailedStats.ConnectionStatistics = await GetConnectionStatisticsAsync(connection, cancellationToken);
+                detailedStats.ConnectionStats = await GetConnectionStatisticsAsync(connection, cancellationToken);
 
                 // 获取性能计数器
-                detailedStats.PerformanceCounters = await GetPerformanceCountersAsync(connection, cancellationToken);
+                detailedStats.PerformanceCounters = await GetRealTimePerformanceMetricsAsync(cancellationToken);
 
                 _logger.LogInformation("详细数据库统计信息收集完成");
                 return detailedStats;
@@ -267,8 +267,8 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                         {
                             TableName = reader.GetString("TableName"),
                             RowCount = Convert.ToInt64(reader["RowCount"]),
-                            SizeMB = Convert.ToDecimal(reader["SizeMB"]),
-                            UsedSizeMB = Convert.ToDecimal(reader["UsedSizeMB"])
+                            DataSizeKB = Convert.ToInt64(reader["SizeMB"]) * 1024,
+                            IndexSizeKB = Convert.ToInt64(reader["UsedSizeMB"]) * 1024 - Convert.ToInt64(reader["SizeMB"]) * 1024
                         };
 
                         tableStats.Add(tableStat);
@@ -324,8 +324,8 @@ namespace LYBT.Infrastructure.Performance.Database.Components
                             UserScans = reader.IsDBNull("user_scans") ? 0 : Convert.ToInt64(reader["user_scans"]),
                             UserLookups = reader.IsDBNull("user_lookups") ? 0 : Convert.ToInt64(reader["user_lookups"]),
                             UserUpdates = reader.IsDBNull("user_updates") ? 0 : Convert.ToInt64(reader["user_updates"]),
-                            LastUserSeek = reader.IsDBNull("last_user_seek") ? null : reader.GetDateTime("last_user_seek"),
-                            LastUserScan = reader.IsDBNull("last_user_scan") ? null : reader.GetDateTime("last_user_scan")
+                            LastUserSeek = reader.IsDBNull("last_user_seek") ? DateTime.MinValue : reader.GetDateTime("last_user_seek"),
+                            LastUserScan = reader.IsDBNull("last_user_scan") ? DateTime.MinValue : reader.GetDateTime("last_user_scan")
                         };
 
                         indexStats.Add(indexStat);

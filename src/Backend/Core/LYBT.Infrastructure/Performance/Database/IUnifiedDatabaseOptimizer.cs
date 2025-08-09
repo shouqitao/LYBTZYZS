@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using LYBT.Infrastructure.Performance.Database.Models;
 
 namespace LYBT.Infrastructure.Performance.Database
 {
@@ -128,6 +129,16 @@ namespace LYBT.Infrastructure.Performance.Database
         /// 内存使用（KB）
         /// </summary>
         public long MemoryUsageKB { get; set; }
+        
+        /// <summary>
+        /// 写入操作数
+        /// </summary>
+        public long Writes { get; set; }
+        
+        /// <summary>
+        /// 查询类型
+        /// </summary>
+        public string QueryType { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -238,6 +249,21 @@ namespace LYBT.Infrastructure.Performance.Database
         /// 碎片化程度
         /// </summary>
         public double FragmentationPercentage { get; set; }
+        
+        /// <summary>
+        /// 表数量
+        /// </summary>
+        public int TableCount { get; set; }
+        
+        /// <summary>
+        /// 日志大小（MB）
+        /// </summary>
+        public long LogSizeMB { get; set; }
+        
+        /// <summary>
+        /// 索引数量
+        /// </summary>
+        public int IndexCount { get; set; }
     }
 
     /// <summary>
@@ -279,6 +305,21 @@ namespace LYBT.Infrastructure.Performance.Database
         /// 分页参数
         /// </summary>
         public PaginationOptions? Pagination { get; set; }
+        
+        /// <summary>
+        /// 包含属性列表
+        /// </summary>
+        public List<string> IncludeProperties { get; set; } = new();
+        
+        /// <summary>
+        /// 启用分割查询
+        /// </summary>
+        public bool SplitQuery { get; set; } = false;
+        
+        /// <summary>
+        /// 查询标签
+        /// </summary>
+        public string QueryTag { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -375,6 +416,11 @@ namespace LYBT.Infrastructure.Performance.Database
         public double FragmentationThreshold { get; set; } = 30.0;
 
         /// <summary>
+        /// 检查数据库完整性
+        /// </summary>
+        public bool CheckDatabaseIntegrity { get; set; } = false;
+        
+        /// <summary>
         /// 要维护的表列表（为空表示所有表）
         /// </summary>
         public List<string> TableNames { get; set; } = new List<string>();
@@ -450,6 +496,11 @@ namespace LYBT.Infrastructure.Performance.Database
         /// 平均执行时间
         /// </summary>
         public double AverageExecutionTimeMs => SlowQueries.Any() ? SlowQueries.Average(q => q.ExecutionTimeMs) : 0;
+        
+        /// <summary>
+        /// 查询类型分布
+        /// </summary>
+        public List<QueryTypeStats> QueryTypeDistribution { get; set; } = new List<QueryTypeStats>();
     }
 
     /// <summary>
@@ -496,5 +547,15 @@ namespace LYBT.Infrastructure.Performance.Database
         /// 物理读取次数
         /// </summary>
         public long PhysicalReads { get; set; }
+
+        /// <summary>
+        /// 写入操作数
+        /// </summary>
+        public long Writes { get; set; }
+
+        /// <summary>
+        /// 查询类型
+        /// </summary>
+        public string QueryType { get; set; } = string.Empty;
     }
 }

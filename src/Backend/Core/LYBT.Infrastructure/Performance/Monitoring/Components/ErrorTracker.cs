@@ -286,10 +286,11 @@ namespace LYBT.Infrastructure.Performance.Monitoring.Components
                     existingError.OccurrenceCount++;
                     existingError.LastOccurrence = now;
                     
-                    if (now - existingError.FirstOccurrence <= _criticalErrorThreshold)
+                    if (now - existingError.FirstOccurrence <= _criticalErrorThreshold && 
+                        existingError.OccurrenceCount >= _criticalErrorCountThreshold)
                     {
                         existingError.Severity = ErrorSeverity.Critical;
-                        _logger.LogWarning("关键错误频率增加：{ErrorType}，发生次数：{Count}", 
+                        _logger.LogWarning("关键错误频率增加：{ErrorType}，发生次数：{Count}，达到关键阈值", 
                             errorRecord.Exception.GetType().Name, existingError.OccurrenceCount);
                     }
                 }

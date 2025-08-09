@@ -216,7 +216,7 @@ namespace LYBT.Infrastructure.Performance.Monitoring.Components
         /// <summary>
         /// 关闭监控仪表板
         /// </summary>
-        public async Task ShutdownAsync(CancellationToken cancellationToken = default)
+        public Task ShutdownAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -226,6 +226,7 @@ namespace LYBT.Infrastructure.Performance.Monitoring.Components
                 _healthCheckCache.Clear();
 
                 _logger.LogInformation("MonitoringDashboard关闭完成，处理了{AlertCount}个警报", _alertQueue.Count);
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
