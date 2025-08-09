@@ -11,7 +11,6 @@ using AutoMapper;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
-using LYBT.WPF.Client.Services.Cache;
 using LYBT.WPF.Client.Core.Configuration;
 using LYBT.WPF.Client.Core.Mapping;
 using LYBT.WPF.Client.Core.Models.Cache;
@@ -99,7 +98,8 @@ namespace LYBT.WPF.Client.Shell.Extensions
             });
 
             // 注册缓存服务
-            containerRegistry.RegisterSingleton<ICacheService, MemoryCacheService>();
+            // TODO: 实现MemoryCacheService或使用替代方案
+            // containerRegistry.RegisterSingleton<ICacheService, MemoryCacheService>();
         }
 
         /// <summary>

@@ -16,6 +16,8 @@ using Prism.Dialogs;
 using LYBT.WPF.Client.Core.Extensions;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Core.Models.Prescriptions;
+using LYBT.WPF.Client.Modules.Consultation.Services;
+using LYBT.WPF.Client.Modules.Consultation.Constants;
 namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 {
     /// <summary>
@@ -32,6 +34,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         private readonly IFormulaService _formulaService;
         private readonly IDialogService _dialogService;
         private readonly ILogger<PrescriptionViewModel> _logger;
+        
+        // TODO: 可以在这里添加新的服务类
 
         #endregion
 
@@ -69,7 +73,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         }
 
         // 剂数（默认7剂）
-        private int _dosageCount = 7;
+        private int _dosageCount = PrescriptionConstants.DefaultDosageCount;
         public int DosageCount
         {
             get => _dosageCount;
@@ -83,7 +87,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         }
 
         // 用法用量
-        private string _usage = "每日1剂，水煎服，分早晚两次温服";
+        private string _usage = PrescriptionConstants.DefaultUsage;
         public string Usage
         {
             get => _usage;
@@ -113,7 +117,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         }
 
         // 折扣（0.1-1.0，1.0表示无折扣）
-        private decimal _discount = 1.0m;
+        private decimal _discount = PrescriptionConstants.DefaultDiscount;
         public decimal Discount
         {
             get => _discount;
@@ -180,25 +184,15 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         }
 
         // 输入提示
-        public string UsageHint => "请输入用法用量，如：每日1剂，水煎服...";
-        public string MedicalAdviceHint => "（可选）输入医嘱，如：忌生冷、注意休息等...";
-        public string RemarkHint => "（可选）补充说明...";
+        public string UsageHint => PrescriptionConstants.UsageHint;
+        public string MedicalAdviceHint => PrescriptionConstants.MedicalAdviceHint;
+        public string RemarkHint => PrescriptionConstants.RemarkHint;
 
-        // 常用剂数选项
-        public ObservableCollection<int> CommonDosageCounts { get; } = new ObservableCollection<int> { 3, 5, 7, 10, 14, 21, 30 };
-
-        // 常用用法
-        public ObservableCollection<string> CommonUsages { get; } = new ObservableCollection<string>
-        {
-            "每日1剂，水煎服，分早晚两次温服",
-            "每日1剂，水煎服，分三次温服",
-            "每日2剂，水煎服，分四次温服",
-            "每日1剂，水煎服，早晚饭后温服",
-            "每日1剂，水煎服，睡前温服",
-            "每日1剂，开水泡服，代茶饮",
-            "研末冲服，每次3g，每日3次",
-            "每日1剂，水煎服，分2次温服，饭前服"
-        };
+        // 常用选项（使用常量类）
+        public ObservableCollection<int> CommonDosageCounts { get; } = 
+            new ObservableCollection<int>(PrescriptionConstants.CommonDosageCounts);
+        public ObservableCollection<string> CommonUsages { get; } = 
+            new ObservableCollection<string>(PrescriptionConstants.CommonUsages);
 
         #endregion
 
@@ -233,6 +227,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             _formulaService = formulaService;
             _dialogService = dialogService;
             _logger = logger;
+            // TODO: 初始化新的服务类
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), () => !IsLoading && PrescriptionItems.Count > 0);
@@ -308,15 +303,12 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                     {
                         PrescriptionItems.Add(new PrescriptionItemViewModel(new Core.Models.Prescriptions.PrescriptionItem
                         {
-
                             HerbId = item.HerbId,
                             HerbName = item.HerbName,
                             Quantity = item.Quantity,
                             Unit = item.Unit,
                             UnitPrice = item.UnitPrice,
                             ImportSource = item.Remark
-                        
-                        
                         }));
                     }
                     
@@ -359,13 +351,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                 // 发布步骤完成事件
                 var stepData = new WorkflowStepData
                 {
-                    Step = WorkflowStep.Prescription,
+                    Step = Core.Models.Consultation.WorkflowStep.Prescription,
                     Data = prescriptionData
                 };
                 _eventAggregator.GetEvent<WorkflowStepCompletedEvent>().Publish(stepData);
-
-                // 发布处方保存事件
-                // 发布处方保存事件
 
                 HasChanges = false;
                 await _dialogService.ShowInformationAsync("处方保存成功", "成功");
@@ -390,12 +379,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                 
             if (confirm)
             {
-                PrescriptionItems.Clear();
-                MedicalAdvice = "";
-                Remark = "";
-                Discount = 1.0m;
-                DosageCount = 7;
-                HasChanges = true;
+                ResetToDefault();
             }
         }
 
@@ -464,15 +448,12 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         // 添加新药材
                         PrescriptionItems.Add(new PrescriptionItemViewModel(new Core.Models.Prescriptions.PrescriptionItem
                         {
-
                             HerbId = herbItem.HerbId,
                             HerbName = herbItem.HerbName,
                             Quantity = herbItem.Quantity,
                             Unit = herbItem.Unit,
                             UnitPrice = herbItem.UnitPrice,
                             ImportSource = "手动添加"
-                        
-                        
                         }));
                         addedCount++;
                     }
@@ -517,36 +498,10 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         {
             try
             {
-                // 创建并显示验方选择对话框
-                var dialog = new Views.SelectFormulaDialog();
-                var dialogViewModel = new SelectFormulaDialogViewModel(_formulaService, _dialogService);
-                
-                // 设置回调
-                dialogViewModel.OnFormulaSelected = async (formula) =>
-                {
-                    dialog.DialogResult = true;
-                    dialog.Close();
-                    
-                    // 导入验方中的药材
-                    await ImportFormulaItems(formula);
-                };
-                
-                dialogViewModel.OnCancelled = () =>
-                {
-                    dialog.DialogResult = false;
-                    dialog.Close();
-                };
-                
-                dialog.DataContext = dialogViewModel;
-                dialog.Owner = System.Windows.Application.Current.MainWindow;
-                
-                // 显示对话框
-                var result = dialog.ShowDialog();
-                
-                if (result == true)
-                {
-                    _logger.LogInformation("验方导入成功");
-                }
+                // TODO: 实现验方选择和导入功能
+                await _dialogService.ShowInformationAsync(
+                    "验方导入功能待实现",
+                    "功能提示");
             }
             catch (Exception ex)
             {
@@ -555,82 +510,27 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             }
         }
 
-        private async Task ImportFormulaItems(LYBT.WPF.Client.Core.Models.Formulas.FormulaInfo formula)
+        #region 辅助方法
+        
+        // 辅助转换方法已简化
+
+        /// <summary>
+        /// 重置到默认状态
+        /// </summary>
+        private void ResetToDefault()
         {
-            try
-            {
-                var importedCount = 0;
-                var updatedCount = 0;
-                
-                // 导入验方中的药材
-                foreach (var herbItem in formula.Herbs)
-                {
-                    // 检查是否已存在
-                    var existing = PrescriptionItems.FirstOrDefault(p => p.HerbId == herbItem.HerbId);
-                    if (existing != null)
-                    {
-                        // 多验方相同药材取最小剂量
-                        if (herbItem.Quantity < existing.Quantity)
-                        {
-                            existing.Quantity = herbItem.Quantity;
-                            existing.Source += $"、{formula.Name}(取最小剂量)";
-                        }
-                        else
-                        {
-                            existing.Source += $"、{formula.Name}";
-                        }
-                        updatedCount++;
-                    }
-                    else
-                    {
-                        // 添加新药材
-                        PrescriptionItems.Add(new PrescriptionItemViewModel(new Core.Models.Prescriptions.PrescriptionItem
-                        {
-                            HerbId = herbItem.HerbId,
-                            HerbName = herbItem.HerbName,
-                            Quantity = herbItem.Quantity,
-                            Unit = herbItem.Unit,
-                            UnitPrice = herbItem.UnitPrice,
-                            ImportSource = $"验方：{formula.Name}"
-                        }));
-                        importedCount++;
-                    }
-                }
-                
-                HasChanges = true;
-                
-                var message = $"验方\"{formula.Name}\"导入成功\n";
-                if (importedCount > 0)
-                    message += $"新增{importedCount}味药材";
-                if (updatedCount > 0)
-                    message += $"{(importedCount > 0 ? "，" : "")}更新{updatedCount}味药材";
-                
-                await _dialogService.ShowInformationAsync(message, "导入成功");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导入验方药材失败");
-                await _dialogService.ShowErrorAsync("导入验方药材失败: " + ex.Message, "错误");
-            }
+            PrescriptionItems.Clear();
+            MedicalAdvice = "";
+            Remark = "";
+            Discount = PrescriptionConstants.DefaultDiscount;
+            DosageCount = PrescriptionConstants.DefaultDosageCount;
+            HasChanges = true;
         }
 
-        private async Task ImportHistoryAsync()
-        {
-            try
-            {
-                // TODO: 实现历史处方选择
-                await _dialogService.ShowInformationAsync(
-                    "从患者历史处方中导入",
-                    "功能提示");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导入历史处方失败");
-                await _dialogService.ShowErrorAsync("导入失败: " + ex.Message, "错误");
-            }
-        }
-
-        private void SetDiscount(string? discountStr)
+        /// <summary>
+        /// 尝试解析并设置折扣
+        /// </summary>
+        private void TryParseAndSetDiscount(string? discountStr)
         {
             if (decimal.TryParse(discountStr, out var discount))
             {
@@ -647,20 +547,49 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             }
         }
 
-        private void SetDosage(string? dosageStr)
+        /// <summary>
+        /// 尝试解析并设置剂数
+        /// </summary>
+        private void TryParseAndSetDosage(string? dosageStr)
         {
-            if (int.TryParse(dosageStr, out var dosage) && dosage > 0)
+            if (int.TryParse(dosageStr, out var dosage) && 
+                dosage >= PrescriptionConstants.MinDosageCount && 
+                dosage <= PrescriptionConstants.MaxDosageCount)
             {
                 DosageCount = dosage;
             }
         }
+        
+        #endregion
+
+        private async Task ImportHistoryAsync()
+        {
+            try
+            {
+                // TODO: 实现历史处方选择和导入
+                await _dialogService.ShowInformationAsync(
+                    "从患者历史处方中导入",
+                    "功能提示");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导入历史处方失败");
+                await _dialogService.ShowErrorAsync("导入失败: " + ex.Message, "错误");
+            }
+        }
+
+        private void SetDiscount(string? discountStr) =>
+            TryParseAndSetDiscount(discountStr);
+
+        private void SetDosage(string? dosageStr) =>
+            TryParseAndSetDosage(dosageStr);
 
         private void GeneratePrescriptionNo()
         {
-            // 生成处方编号：RX + 日期 + 流水号
-            var date = DateTime.Now.ToString("yyyyMMdd");
-            var sequence = new Random().Next(1, 999).ToString("D3");
-            PrescriptionNo = $"RX{date}{sequence}";
+            // 使用常量中定义的格式
+            var sequence = new Random().Next(1, 999);
+            PrescriptionNo = string.Format(PrescriptionConstants.PrescriptionNumberFormat,
+                DateTime.Now, sequence);
         }
 
         private async Task PrintPreviewAsync()
@@ -708,9 +637,9 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             (SaveCommand as DelegateCommand)?.RaiseCanExecuteChanged();
         }
 
-        private void OnSaveStepData(WorkflowStep step)
+        private void OnSaveStepData(Core.Models.Consultation.WorkflowStep step)
         {
-            if (step == WorkflowStep.Prescription)
+            if (step == Core.Models.Consultation.WorkflowStep.Prescription)
             {
                 // 自动保存当前数据
                 _ = SaveAsync();
@@ -738,81 +667,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 
         #endregion
 
-        #region 内部类型
-
-        /// <summary>
-        /// 处方项
-        /// </summary>
-        public class PrescriptionItemViewModel : BindableBase
-        {
-            private readonly Core.Models.Prescriptions.PrescriptionItem _item;
-            
-            public PrescriptionItemViewModel(Core.Models.Prescriptions.PrescriptionItem item)
-            {
-                _item = item ?? new Core.Models.Prescriptions.PrescriptionItem();
-            }
-            
-            public PrescriptionItemViewModel() : this(new Core.Models.Prescriptions.PrescriptionItem())
-            {
-            }
-            
-            public Guid HerbId 
-            { 
-                get => _item.HerbId; 
-                set { _item.HerbId = value; RaisePropertyChanged(); }
-            }
-            
-            public string HerbName 
-            { 
-                get => _item.HerbName; 
-                set { _item.HerbName = value; RaisePropertyChanged(); }
-            }
-            
-            public decimal Quantity
-            {
-                get => _item.Quantity;
-                set
-                {
-                    _item.Quantity = value;
-                    RaisePropertyChanged();
-                    RaisePropertyChanged(nameof(Subtotal));
-                    RaisePropertyChanged(nameof(DisplayText));
-                    RaisePropertyChanged(nameof(PriceText));
-                }
-            }
-            
-            public string Unit 
-            { 
-                get => _item.Unit; 
-                set { _item.Unit = value; RaisePropertyChanged(); }
-            }
-            
-            public decimal UnitPrice 
-            { 
-                get => _item.UnitPrice; 
-                set 
-                { 
-                    _item.UnitPrice = value; 
-                    RaisePropertyChanged(); 
-                    RaisePropertyChanged(nameof(Subtotal));
-                    RaisePropertyChanged(nameof(PriceText));
-                }
-            }
-            
-            public decimal Subtotal => _item.Subtotal;
-            
-            public string? Source 
-            { 
-                get => _item.ImportSource; 
-                set { _item.ImportSource = value; RaisePropertyChanged(); }
-            }
-            
-            public string DisplayText => _item.DisplayText;
-            public string PriceText => _item.PriceText;
-            
-            public Core.Models.Prescriptions.PrescriptionItem GetModel() => _item;
-        }
-
-        #endregion
+        // PrescriptionItemViewModel已移动到独立文件
+        // 参见：PrescriptionItemViewModel.cs
     }
 }

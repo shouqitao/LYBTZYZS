@@ -19,6 +19,12 @@ public static class PatientsModule
         // 已改为使用统一的 AppDbContext，不再需要独立的 PatientsDbContext
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IPatientService, PatientService>();
+        
+        // 注册拆分后的专门服务
+        services.AddScoped<PatientValidationService>();
+        services.AddScoped<PatientArchiveService>();
+        services.AddScoped<PatientStatisticsService>();
+        
         return services;
     }
 }
