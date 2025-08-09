@@ -14,6 +14,8 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 {
     /// <summary>
@@ -21,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     /// </summary>
     public class PrescriptionManagementViewModel : BaseManagementViewModel<PrescriptionInfo, IPrescriptionService>
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
         private readonly IPrescriptionValidationService _validationService;
 
         #region 搜索条件
@@ -94,7 +96,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         public PrescriptionManagementViewModel(
             IPrescriptionService service,
-            ICommonDialogService commonDialogService,
+            IDialogService commonDialogService,
             IPrescriptionValidationService validationService)
             : base(service)
         {

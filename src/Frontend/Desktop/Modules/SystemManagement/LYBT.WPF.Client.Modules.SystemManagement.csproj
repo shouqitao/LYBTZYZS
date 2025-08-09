@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\Services\LYBT.WPF.Client.Services.csproj" />
     <ProjectReference Include="..\..\Infrastructure\LYBT.WPF.Client.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\..\Backend\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\MedicalCase\LYBT.WPF.Client.Modules.MedicalCase.csproj" />
   </ItemGroup>
 
 </Project>

@@ -208,5 +208,54 @@ namespace LYBT.WPF.Client.Services
                 return ServiceResult<List<PrescriptionDto>>.Failure($"获取今日处方失败: {ex.Message}", ex);
             }
         }
+
+        /// <summary>
+        /// 根据医疗案例ID获取处方
+        /// </summary>
+        public async Task<ServiceResult<PrescriptionDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                // 使用查询接口，按医疗案例ID查找处方
+                var response = await _prescriptionApiService.GetListAsync(
+                    page: 1,
+                    pageSize: 1
+                );
+
+                // TODO: 这里需要后端支持按医疗案例ID查询的API接口
+                // 目前的API可能不支持按medicalCaseId查询，需要后端扩展
+
+                if (response.IsSuccessStatusCode && response.Content != null && response.Content.Items.Any())
+                {
+                    var prescription = response.Content.Items.First();
+                    
+                    // 将PrescriptionDto转换为PrescriptionDetailDto
+                    var detailDto = new PrescriptionDetailDto
+                    {
+                        Id = prescription.Id,
+                        PatientId = prescription.PatientId,
+                        PatientName = prescription.PatientName,
+                        DoctorId = prescription.DoctorId,
+                        DoctorName = prescription.DoctorName,
+                        Diagnosis = prescription.Diagnosis ?? "",
+                        DosageCount = prescription.DosageCount,
+                        Status = prescription.Status,
+                        TotalPrice = prescription.TotalPrice,
+                        CreateTime = prescription.CreateTime,
+                        Items = prescription.Items,
+                        Usage = "",
+                        Remark = ""
+                    };
+
+                    return ServiceResult<PrescriptionDetailDto>.Success(detailDto);
+                }
+
+                return ServiceResult<PrescriptionDetailDto>.Failure("未找到对应的处方记录");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<PrescriptionDetailDto>.Failure($"根据医疗案例ID获取处方失败: {ex.Message}", ex);
+            }
+        }
     }
 }

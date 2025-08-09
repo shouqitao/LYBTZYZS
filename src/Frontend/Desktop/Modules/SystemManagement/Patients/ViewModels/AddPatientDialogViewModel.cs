@@ -10,6 +10,8 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 {
     /// <summary>
@@ -17,7 +19,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
     /// </summary>
     public class AddPatientDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IPatientService _patientService;
         private bool _isEditMode;
@@ -136,7 +138,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
         /// 用于新增的构造函数
         /// </summary>
         public AddPatientDialogViewModel(IPatientService patientService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             _patientService = patientService;
             _commonDialogService = commonDialogService;

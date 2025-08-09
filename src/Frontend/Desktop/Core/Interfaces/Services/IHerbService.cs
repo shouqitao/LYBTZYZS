@@ -5,6 +5,7 @@ using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Shared.Models.Common;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
 {
@@ -13,6 +14,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
     /// </summary>
     public interface IHerbService
     {
+        Task<ApiResult<List<HerbDto>>> GetListAsync(HerbPagedQueryDto? query = null);
         /// <summary>
         /// 分页查询药材
         /// </summary>
@@ -78,5 +80,10 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 导出药材数据
         /// </summary>
         Task<List<HerbInfo>> ExportHerbsAsync();
+
+        /// <summary>
+        /// 按名称搜索药材
+        /// </summary>
+        Task<ServiceResult<List<HerbInfo>>> SearchByNameAsync(string name);
     }
 }

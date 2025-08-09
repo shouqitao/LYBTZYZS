@@ -5,31 +5,43 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Navigation.Regions;
+using Prism.Events;
 using LYBT.WPF.Client.Core.Models.Patients;
 using LYBT.WPF.Client.Core.Models.Prescriptions;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Events;
+using LYBT.WPF.Client.Core.Models.MedicalCase;
+using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Modules.Consultation.Services;
 using LYBT.WPF.Client.Modules.Consultation.Services.Interfaces;
+using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 {
     /// <summary>
-    /// 看诊主界面视图模型 - 重构后的精简协调器
-    /// 负责协调各个服务完成看诊流程，不包含具体业务逻辑
+    /// 看诊主界面视图模型 - 增强版（集成MedicalCase）
+    /// 负责协调看诊流程，与医疗案例模块深度集成
     /// </summary>
-    public class ConsultationMainViewModel : BindableBase
+    public class ConsultationMainViewModel : BindableBase, INavigationAware
     {
         #region 依赖服务
 
         private readonly IConsultationDataService _dataService;
+        private readonly IConsultationService _consultationService;
+        private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPrescriptionManager _prescriptionManager;
         private readonly IFormulaManager _formulaManager;
         private readonly IConsultationValidator _validator;
         private readonly IConsultationEventHandler _eventHandler;
+        private readonly IDialogService _dialogService;
+        private readonly IRegionManager _regionManager;
+        private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<ConsultationMainViewModel> _logger;
 
         #endregion
@@ -68,6 +80,27 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         {
             get => _currentConsultation;
             set => SetProperty(ref _currentConsultation, value);
+        }
+
+        private MedicalCaseInfo? _currentMedicalCase;
+        public MedicalCaseInfo? CurrentMedicalCase
+        {
+            get => _currentMedicalCase;
+            set => SetProperty(ref _currentMedicalCase, value);
+        }
+
+        private Guid? _medicalCaseId;
+        public Guid? MedicalCaseId
+        {
+            get => _medicalCaseId;
+            set => SetProperty(ref _medicalCaseId, value);
+        }
+
+        private bool _isNavigatedFromMedicalCase;
+        public bool IsNavigatedFromMedicalCase
+        {
+            get => _isNavigatedFromMedicalCase;
+            set => SetProperty(ref _isNavigatedFromMedicalCase, value);
         }
 
         public ObservableCollection<PrescriptionItemInfo> PrescriptionItems => 
@@ -113,17 +146,27 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 
         public ConsultationMainViewModel(
             IConsultationDataService dataService,
+            IConsultationService consultationService,
+            IMedicalCaseService medicalCaseService,
             IPrescriptionManager prescriptionManager,
             IFormulaManager formulaManager,
             IConsultationValidator validator,
             IConsultationEventHandler eventHandler,
+            IDialogService dialogService,
+            IRegionManager regionManager,
+            IEventAggregator eventAggregator,
             ILogger<ConsultationMainViewModel> logger)
         {
             _dataService = dataService;
+            _consultationService = consultationService;
+            _medicalCaseService = medicalCaseService;
             _prescriptionManager = prescriptionManager;
             _formulaManager = formulaManager;
             _validator = validator;
             _eventHandler = eventHandler;
+            _dialogService = dialogService;
+            _regionManager = regionManager;
+            _eventAggregator = eventAggregator;
             _logger = logger;
 
             RefreshCommand = new DelegateCommand(async () => await RefreshDataAsync());
@@ -218,9 +261,57 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 
             if (saved)
             {
+                // 如果从MedicalCase导航过来，更新MedicalCase状态
+                if (IsNavigatedFromMedicalCase && MedicalCaseId.HasValue)
+                {
+                    await UpdateMedicalCaseStatusAsync();
+                }
+
                 _eventHandler.PublishConsultationCompleted(CurrentConsultation);
-                CurrentConsultation = null;
-                SelectedPatient = null;
+                
+                // 提示用户
+                await _dialogService.ShowSuccessAsync("看诊已完成并保存", "操作成功");
+                
+                // 如果从MedicalCase导航过来，返回到MedicalCase详情
+                if (IsNavigatedFromMedicalCase)
+                {
+                    NavigateBackToMedicalCase();
+                }
+                else
+                {
+                    CurrentConsultation = null;
+                    SelectedPatient = null;
+                }
+            }
+        }
+
+        private async Task UpdateMedicalCaseStatusAsync()
+        {
+            if (!MedicalCaseId.HasValue) return;
+
+            try
+            {
+                // 更新医疗案例状态为已完成
+                var result = await _medicalCaseService.UpdateStatusAsync(
+                    MedicalCaseId.Value, 
+                    LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
+                
+                if (!result.IsSuccess)
+                {
+                    _logger.LogWarning("更新医疗案例状态失败: {Error}", result.ErrorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新医疗案例状态时发生错误");
+            }
+        }
+
+        private void NavigateBackToMedicalCase()
+        {
+            if (MedicalCaseId.HasValue)
+            {
+                _regionManager.RequestNavigate("MainContentRegion", $"MedicalCaseDetailView?MedicalCaseId={MedicalCaseId.Value}&EditMode=false");
             }
         }
 
@@ -266,6 +357,180 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                 if (args.RefreshType == DataRefreshType.All)
                     await RefreshDataAsync();
             });
+        }
+
+        #endregion
+
+        #region INavigationAware Implementation
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            // 检查是否从MedicalCase模块导航过来
+            if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
+            {
+                MedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
+                IsNavigatedFromMedicalCase = true;
+
+                // 加载医疗案例信息
+                Task.Run(async () => await LoadMedicalCaseAsync());
+            }
+
+            // 检查是否有患者ID
+            if (navigationContext.Parameters.ContainsKey("PatientId"))
+            {
+                var patientId = navigationContext.Parameters.GetValue<Guid>("PatientId");
+                Task.Run(async () => await LoadPatientAsync(patientId));
+            }
+
+            // 检查看诊模式
+            if (navigationContext.Parameters.ContainsKey("ConsultationMode"))
+            {
+                var mode = navigationContext.Parameters.GetValue<string>("ConsultationMode");
+                if (mode == "Start")
+                {
+                    Task.Run(async () => await StartConsultationFromMedicalCaseAsync());
+                }
+            }
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            // 如果有特定的医疗案例ID，检查是否匹配
+            if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
+            {
+                var targetMedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
+                return MedicalCaseId == targetMedicalCaseId;
+            }
+            return true;
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            // 如果看诊未完成，提示用户
+            if (CurrentConsultation != null && !CurrentConsultation.IsCompleted)
+            {
+                _dialogService.ShowInformationAsync("看诊尚未完成，数据已自动保存", "提示");
+            }
+        }
+
+        #endregion
+
+        #region MedicalCase Integration Methods
+
+        private async Task LoadMedicalCaseAsync()
+        {
+            if (!MedicalCaseId.HasValue) return;
+
+            try
+            {
+                IsLoading = true;
+                var result = await _medicalCaseService.GetByIdAsync(MedicalCaseId.Value);
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    var dto = result.Data;
+                    CurrentMedicalCase = new MedicalCaseInfo
+                    {
+                        Id = dto.Id,
+                        PatientId = dto.PatientId,
+                        PatientName = dto.PatientName,
+                        UserId = Guid.Empty, // 使用默认值
+                        Status = dto.Status,
+                        CreateTime = dto.CreateTime
+                    };
+                    Title = $"看诊工作台 - {CurrentMedicalCase?.PatientName}";
+                    
+                    // 加载或创建关联的看诊记录
+                    await LoadOrCreateConsultationAsync();
+                }
+                else
+                {
+                    await _dialogService.ShowErrorAsync($"加载医疗案例失败: {result.ErrorMessage}", "错误");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "加载医疗案例失败");
+                await _dialogService.ShowErrorAsync($"加载医疗案例失败: {ex.Message}", "错误");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task LoadOrCreateConsultationAsync()
+        {
+            if (!MedicalCaseId.HasValue) return;
+
+            try
+            {
+                // 尝试获取现有的看诊记录
+                var result = await _consultationService.GetByMedicalCaseIdAsync(MedicalCaseId.Value);
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    CurrentConsultation = result.Data;
+                }
+                else
+                {
+                    // 创建新的看诊记录
+                    await StartConsultationFromMedicalCaseAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "加载或创建看诊记录失败");
+            }
+        }
+
+        private async Task StartConsultationFromMedicalCaseAsync()
+        {
+            if (!MedicalCaseId.HasValue || CurrentMedicalCase == null) return;
+
+            try
+            {
+                var startDto = new ConsultationStartDto
+                {
+                    MedicalCaseId = MedicalCaseId.Value,
+                    PatientId = CurrentMedicalCase.PatientId
+                    // DoctorId已移除
+                };
+
+                var result = await _consultationService.StartConsultationAsync(startDto);
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    CurrentConsultation = result.Data;
+                    _eventHandler.PublishConsultationStarted(CurrentConsultation);
+                    await _dialogService.ShowSuccessAsync("看诊已开始", "提示");
+                }
+                else
+                {
+                    await _dialogService.ShowErrorAsync($"开始看诊失败: {result.ErrorMessage}", "错误");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "开始看诊失败");
+                await _dialogService.ShowErrorAsync($"开始看诊失败: {ex.Message}", "错误");
+            }
+        }
+
+        private async Task LoadPatientAsync(Guid patientId)
+        {
+            // 从患者列表中查找并选择患者
+            var patient = Patients.FirstOrDefault(p => p.Id == patientId);
+            if (patient != null)
+            {
+                SelectedPatient = patient;
+            }
+            else
+            {
+                // 如果列表中没有，重新加载
+                await RefreshDataAsync();
+                SelectedPatient = Patients.FirstOrDefault(p => p.Id == patientId);
+            }
         }
 
         #endregion

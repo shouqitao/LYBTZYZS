@@ -9,6 +9,8 @@ using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 {
     /// <summary>
@@ -17,7 +19,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
     public class TCMFourDiagnosisViewModel : BindableBase
     {
         private readonly IConsultationApiService _consultationApiService;
-        private readonly ICommonDialogService _dialogService;
+        private readonly IDialogService _dialogService;
         private readonly ITCMDiagnosisAnalyzer _diagnosisAnalyzer;
 
         private Guid _consultationId;
@@ -308,7 +310,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 
         public TCMFourDiagnosisViewModel(
             IConsultationApiService consultationApiService,
-            ICommonDialogService dialogService,
+            IDialogService dialogService,
             ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null)
         {
             _consultationApiService = consultationApiService;

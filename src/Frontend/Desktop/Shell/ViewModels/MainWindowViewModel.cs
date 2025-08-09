@@ -188,9 +188,6 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(CurrentUser.Username == "sysadmin" ? "管理员" : "用户");
             Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
 
-            // 获取对应的主界面视图名称
-            var mainViewName = RoleNavigationConfig.GetMainViewName(CurrentUser.Username == "sysadmin" ? "管理员" : "用户");
-
             if (_regionManager != null)
             {
                 try
@@ -207,14 +204,23 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                         _regionManager.Regions["LoginRegion"].RemoveAll();
                     }
 
-                    // 导航到主界面
-                    _regionManager.RequestNavigate("ContentRegion", mainViewName);
+                    // 导航到统一的主页，主页会根据角色显示不同内容
+                    _regionManager.RequestNavigate("ContentRegion", "HomeView");
                 }
                 catch (Exception ex)
                 {
-                    // 如果视图不存在，显示欢迎消息
-                    var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Username == "sysadmin" ? "管理员" : "用户", CurrentUser.RealName);
-                    _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：{mainViewName} 模块尚未实现。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
+                    // 如果主页视图不存在，尝试导航到旧的视图
+                    var mainViewName = RoleNavigationConfig.GetMainViewName(CurrentUser.Username == "sysadmin" ? "管理员" : "用户");
+                    try
+                    {
+                        _regionManager.RequestNavigate("ContentRegion", mainViewName);
+                    }
+                    catch
+                    {
+                        // 显示欢迎消息
+                        var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Username == "sysadmin" ? "管理员" : "用户", CurrentUser.RealName);
+                        _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：主页模块加载失败。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
+                    }
                 }
             }
             else

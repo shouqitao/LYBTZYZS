@@ -57,5 +57,10 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 获取今日处方列表
         /// </summary>
         Task<ServiceResult<List<PrescriptionDto>>> GetTodayPrescriptionsAsync();
+
+        /// <summary>
+        /// 根据医疗案例ID获取处方
+        /// </summary>
+        Task<ServiceResult<PrescriptionDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
     }
 }

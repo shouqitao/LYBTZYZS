@@ -95,5 +95,25 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 获取患者列表
         /// </summary>
         Task<List<PatientInfo>> GetListAsync();
+
+        /// <summary>
+        /// 创建患者
+        /// </summary>
+        Task<ServiceResult<PatientDetailDto>> CreateAsync(PatientDetailDto dto);
+
+        /// <summary>
+        /// 按姓名或拼音搜索患者
+        /// </summary>
+        Task<ServiceResult<List<PatientDetailDto>>> SearchByNameOrPinYinAsync(string keyword);
+
+        /// <summary>
+        /// 按电话号码搜索患者（支持后几位）
+        /// </summary>
+        Task<ServiceResult<List<PatientDetailDto>>> SearchByPhoneAsync(string phone);
+
+        /// <summary>
+        /// 按身份证号搜索患者（支持后几位）
+        /// </summary>
+        Task<ServiceResult<List<PatientDetailDto>>> SearchByIdCardAsync(string idCard);
     }
 }

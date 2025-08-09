@@ -11,6 +11,8 @@ using Prism.Commands;
 using Prism.Mvvm;
 
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 {
     /// <summary>
@@ -18,7 +20,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     /// </summary>
     public class EditPrescriptionDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IPrescriptionService _prescriptionService;
         // private readonly IHerbsApiService _herbService; // TODO: 等待IHerbsApiService实现
@@ -175,7 +177,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         public Action<object>? SaveSuccessCallback { get; set; } // TODO: 替换为实际的UpdatePrescriptionRequest类型
 
         public EditPrescriptionDialogViewModel(IPrescriptionService prescriptionService, Guid prescriptionId,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             _prescriptionService = prescriptionService;

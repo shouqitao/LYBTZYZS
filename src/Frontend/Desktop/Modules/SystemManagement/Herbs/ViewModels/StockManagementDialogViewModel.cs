@@ -8,6 +8,8 @@ using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 {
     /// <summary>
@@ -15,7 +17,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// </summary>
     public class StockManagementDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IHerbApiService _herbService;
 
@@ -94,7 +96,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         #region 构造函数
 
         public StockManagementDialogViewModel(IHerbApiService herbService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             _herbService = herbService;

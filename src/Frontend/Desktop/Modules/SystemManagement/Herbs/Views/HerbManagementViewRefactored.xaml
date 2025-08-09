@@ -5,6 +5,177 @@
              xmlns:base="clr-namespace:LYBT.WPF.Client.Core.Views.Base;assembly=LYBT.WPF.Client.Core"
              xmlns:controls="clr-namespace:LYBT.WPF.Client.Controls.Herbs;assembly=LYBT.WPF.Client.Core"
              prism:ViewModelLocator.AutoWireViewModel="True">
+
+<UserControl.Resources>
+    <!-- 优化的中药材项目模板 -->
+    <DataTemplate x:Key="OptimizedHerbItemTemplate">
+        <Border Background="White" 
+                BorderBrush="#E0E6ED" 
+                BorderThickness="0"
+                Padding="0"
+                MinHeight="68">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- 状态指示器 -->
+                    <ColumnDefinition Width="180"/> <!-- 药材名称 -->
+                    <ColumnDefinition Width="120"/> <!-- 规格 -->
+                    <ColumnDefinition Width="100"/> <!-- 价格 -->
+                    <ColumnDefinition Width="100"/> <!-- 库存 -->
+                    <ColumnDefinition Width="60"/>  <!-- 单位 -->
+                    <ColumnDefinition Width="*"/>   <!-- 描述/备注 -->
+                    <ColumnDefinition Width="Auto"/> <!-- 操作按钮 -->
+                </Grid.ColumnDefinitions>
+
+                <!-- 状态指示器 -->
+                <StackPanel Grid.Column="0" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Margin="16,0,12,0">
+                    <Ellipse Width="8" Height="8" 
+                             Fill="{Binding IsEnabled, Converter={StaticResource BooleanToBrushConverter}}"
+                             VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- 药材名称 -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Name}" 
+                               FontWeight="Bold"
+                               FontSize="14"
+                               Foreground="#2C3E50"/>
+                    <TextBlock Text="{Binding PinyinCode}" 
+                               FontSize="11"
+                               Foreground="#7F8C8D"
+                               Margin="0,2,0,0"
+                               Visibility="{Binding PinyinCode, Converter={StaticResource StringToVisibilityConverter}}"/>
+                </StackPanel>
+
+                <!-- 规格 -->
+                <TextBlock Grid.Column="2" 
+                           Text="{Binding Specification}" 
+                           VerticalAlignment="Center"
+                           FontSize="13"
+                           Foreground="#34495E"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding Specification}"/>
+
+                <!-- 价格 -->
+                <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                    <TextBlock FontSize="14" FontWeight="Bold" Foreground="#E74C3C">
+                        <Run Text="￥"/>
+                        <Run Text="{Binding Price, StringFormat='{}{0:F2}'}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding Unit, StringFormat='/ {0}'}" 
+                               FontSize="11"
+                               Foreground="#7F8C8D"/>
+                </StackPanel>
+
+                <!-- 库存 -->
+                <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                    <TextBlock FontSize="13" FontWeight="Bold" Foreground="#27AE60">
+                        <Run Text="{Binding CurrentStock, StringFormat='{}{0:F1}'}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding Unit}" 
+                               FontSize="11"
+                               Foreground="#7F8C8D"/>
+                </StackPanel>
+
+                <!-- 单位 -->
+                <TextBlock Grid.Column="5" 
+                           Text="{Binding Unit}" 
+                           VerticalAlignment="Center"
+                           FontSize="12"
+                           Foreground="#7F8C8D"
+                           HorizontalAlignment="Center"/>
+
+                <!-- 描述/备注 -->
+                <StackPanel Grid.Column="6" 
+                            VerticalAlignment="Center" 
+                            Margin="12,0">
+                    <TextBlock Text="{Binding Description}" 
+                               FontSize="12"
+                               Foreground="#5D6D7E"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="200"
+                               ToolTip="{Binding Description}"
+                               Visibility="{Binding Description, Converter={StaticResource StringToVisibilityConverter}}"/>
+                </StackPanel>
+
+                <!-- 操作按钮 -->
+                <StackPanel Grid.Column="7" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Margin="0,0,16,0">
+                    <Button Content="详情" 
+                            Padding="8,4"
+                            Margin="2"
+                            FontSize="12"
+                            BorderThickness="0"
+                            Background="#3498DB"
+                            Foreground="White"
+                            Cursor="Hand"
+                            Command="{Binding DataContext.ViewCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="3"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"
+                                                                  TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="编辑" 
+                            Padding="8,4"
+                            Margin="2"
+                            FontSize="12"
+                            BorderThickness="0"
+                            Background="#2ECC71"
+                            Foreground="White"
+                            Cursor="Hand"
+                            Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="3"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"
+                                                                  TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </DataTemplate>
+</UserControl.Resources>
     
 <base:BaseListView>
     
@@ -167,27 +338,86 @@
                 </Grid>
             </Border>
 
-            <!-- 中药材列表 -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding Herbs}">
-                    <ItemsControl.ItemTemplate>
+            <!-- 高性能虚拟化中药材列表 -->
+            <Border Grid.Row="1" Background="White">
+                <!-- 使用虚拟化ListBox替代低性能ItemsControl -->
+                <ListBox ItemsSource="{Binding Herbs}"
+                         SelectedItem="{Binding SelectedHerb}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.CanContentScroll="True"
+                         VirtualizingPanel.IsVirtualizing="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling"
+                         VirtualizingPanel.ScrollUnit="Item"
+                         VirtualizingPanel.CacheLengthUnit="Item"
+                         VirtualizingPanel.CacheLength="20,20">
+                    
+                    <!-- 虚拟化面板配置 -->
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel IsVirtualizing="True"
+                                                   VirtualizationMode="Recycling"
+                                                   IsItemsHost="True"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    
+                    <!-- 列表项容器样式 -->
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border Background="{TemplateBinding Background}"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#F8F9FA"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#E3F2FD"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    
+                    <!-- 优化的数据模板 -->
+                    <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="30"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
+                                
+                                <!-- 选择框 -->
                                 <CheckBox Grid.Column="0" 
                                           VerticalAlignment="Center"
                                           Margin="16,0,0,0"
                                           IsChecked="{Binding IsSelected}"/>
-                                <controls:HerbListItemControl Grid.Column="1" 
-                                                              Data="{Binding}"/>
+                                
+                                <!-- 使用优化的中药材列表项控件 -->
+                                <ContentPresenter Grid.Column="1" 
+                                                  Content="{Binding}"
+                                                  ContentTemplate="{StaticResource OptimizedHerbItemTemplate}"/>
                             </Grid>
                         </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
         </Grid>
     </base:BaseListView.ListContent>
 </base:BaseListView>

@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
-    <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
+    <PackageReference Include="Prism.Wpf" Version="9.0.537" />
   </ItemGroup>
 
   <ItemGroup>

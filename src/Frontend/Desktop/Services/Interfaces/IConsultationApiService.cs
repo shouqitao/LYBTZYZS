@@ -15,7 +15,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        [Get("/api/v1/consultation")]
+        [Get("/api/v1/Consultation")]
         Task<Refit.ApiResponse<PagedResult<ConsultationDto>>> GetConsultationsAsync(
             [Query] int page = 1,
             [Query] int pageSize = 10,

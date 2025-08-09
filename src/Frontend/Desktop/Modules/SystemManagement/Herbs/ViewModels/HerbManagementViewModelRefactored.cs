@@ -17,6 +17,7 @@ using Prism.Commands;
 
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 {
@@ -25,7 +26,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// </summary>
     public class HerbManagementViewModelRefactored : BaseServiceManagementViewModel<HerbInfo, IHerbService>
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
         private readonly IHerbApiService _herbApiService;
 
@@ -53,7 +54,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         public HerbManagementViewModelRefactored(
             IHerbService herbService,
             IHerbApiService herbApiService,
-            ICommonDialogService commonDialogService,
+            IDialogService commonDialogService,
             IDialogService dialogService,
             Prism.Events.IEventAggregator eventAggregator)
             : base(herbService, eventAggregator)

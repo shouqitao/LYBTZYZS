@@ -8,6 +8,8 @@ using LYBT.WPF.Client.Modules.SystemManagement.Common.ViewModels;
 using LYBT.Shared.Models.Common;
 using Prism.Commands;
 
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
 {
     /// <summary>
@@ -15,12 +17,12 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels
     /// </summary>
     public class PatientManagementViewModelRefactored : BaseManagementViewModel<PatientInfo, IPatientService>
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         protected override string ModuleName => "患者";
 
         public PatientManagementViewModelRefactored(IPatientService patientService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
             : base(patientService)
         {
             _commonDialogService = commonDialogService;

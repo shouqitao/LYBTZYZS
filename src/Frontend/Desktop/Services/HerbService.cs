@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Herbs;
+using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Services.Interfaces;
 using PagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.Herbs.HerbInfo>;
 
@@ -18,10 +20,42 @@ namespace LYBT.WPF.Client.Services
     public class HerbService : IHerbService
     {
         private readonly IHerbApiService _herbApiService;
+        private readonly ILogger<HerbService> _logger;
 
-        public HerbService(IHerbApiService herbApiService)
+        public HerbService(IHerbApiService herbApiService, ILogger<HerbService> logger)
         {
             _herbApiService = herbApiService;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// 获取药材列表（实现IHerbService接口方法）
+        /// </summary>
+        public async Task<ApiResult<List<HerbDto>>> GetListAsync(HerbPagedQueryDto? query = null)
+        {
+            try
+            {
+                // 调用API获取数据
+                var response = await _herbApiService.GetHerbsAsync(
+                    page: 1,
+                    pageSize: 1000,
+                    keyword: query?.SearchKeyword,
+                    name: query?.Name,
+                    origin: query?.Origin
+                );
+                
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    return ApiResult<List<HerbDto>>.Success(response.Content.Items.ToList());
+                }
+                
+                return ApiResult<List<HerbDto>>.Failure("获取药材列表失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取药材列表失败");
+                return ApiResult<List<HerbDto>>.Failure($"获取药材列表失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -31,7 +65,6 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 使用更新后的RESTful GET接口
                 var response = await _herbApiService.GetHerbsAsync(
                     page: query.CurrentPage,
                     pageSize: query.PageSize,
@@ -61,7 +94,6 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Refit.ApiException apiEx)
             {
-                // 返回空结果而不是抛出异常
                 return new PagedResult
                 {
                     Items = new List<HerbInfo>(),
@@ -73,7 +105,6 @@ namespace LYBT.WPF.Client.Services
             }
             catch (System.Net.Http.HttpRequestException)
             {
-                // 返回空结果而不是抛出异常
                 return new PagedResult
                 {
                     Items = new List<HerbInfo>(),
@@ -83,7 +114,6 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
-                // 返回空结果而不是抛出异常
                 return new PagedResult
                 {
                     Items = new List<HerbInfo>(),
@@ -100,7 +130,6 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 获取所有药材（大页面）
                 var response = await _herbApiService.GetHerbsAsync(page: 1, pageSize: 1000);
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
@@ -110,6 +139,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "获取药材列表失败");
                 throw new Exception($"获取药材列表失败: {ex.Message}", ex);
             }
         }
@@ -130,6 +160,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "获取药材详情失败");
                 throw new Exception($"获取药材详情失败: {ex.Message}", ex);
             }
         }
@@ -160,7 +191,6 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> DeleteHerbAsync(Guid id)
         {
-            // 本系统采用软删除策略，使用状态切换
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _herbApiService.ToggleStatusAsync(id)
             );
@@ -175,7 +205,6 @@ namespace LYBT.WPF.Client.Services
                 await _herbApiService.UpdateStatusAsync(dto)
             );
         }
-
 
         /// <summary>
         /// 获取可用药材列表
@@ -193,6 +222,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "获取可用药材失败");
                 throw new Exception($"获取可用药材失败: {ex.Message}", ex);
             }
         }
@@ -213,6 +243,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "获取缺货药材失败");
                 throw new Exception($"获取缺货药材失败: {ex.Message}", ex);
             }
         }
@@ -233,6 +264,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "获取即将过期药材失败");
                 throw new Exception($"获取即将过期药材失败: {ex.Message}", ex);
             }
         }
@@ -253,6 +285,7 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "获取药材统计失败");
                 throw new Exception($"获取药材统计失败: {ex.Message}", ex);
             }
         }
@@ -283,7 +316,36 @@ namespace LYBT.WPF.Client.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "导出药材数据失败");
                 throw new Exception($"导出药材数据失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 按名称搜索药材
+        /// </summary>
+        public async Task<ServiceResult<List<HerbInfo>>> SearchByNameAsync(string name)
+        {
+            try
+            {
+                var response = await _herbApiService.GetHerbsAsync(
+                    page: 1,
+                    pageSize: 100,
+                    keyword: name
+                );
+
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    var herbs = response.Content.Items?.Select(ConvertToHerbInfo).ToList() ?? new List<HerbInfo>();
+                    return ServiceResult<List<HerbInfo>>.Success(herbs);
+                }
+
+                return ServiceResult<List<HerbInfo>>.Failure("搜索药材失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索药材失败");
+                return ServiceResult<List<HerbInfo>>.Failure($"搜索药材时发生错误: {ex.Message}");
             }
         }
 

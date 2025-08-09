@@ -352,6 +352,141 @@ namespace LYBT.WPF.Client.Services
             }
         }
 
+        /// <summary>
+        /// 根据医疗案例ID获取四诊信息
+        /// </summary>
+        public async Task<ServiceResult<FourDiagnosisData>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.GetByMedicalCaseIdAsync(medicalCaseId)
+                );
+
+                if (apiResponse.IsSuccess && apiResponse.Data != null)
+                {
+                    var data = new FourDiagnosisData
+                    {
+                        Inspection = apiResponse.Data.Inspection,
+                        Auscultation = apiResponse.Data.AuscultationOlfaction,
+                        Inquiry = apiResponse.Data.Inquiry,
+                        Palpation = apiResponse.Data.Palpation
+                    };
+                    return ServiceResult<FourDiagnosisData>.Success(data);
+                }
+
+                return ServiceResult<FourDiagnosisData>.Failure(apiResponse.ErrorMessage ?? "获取四诊信息失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据医疗案例ID获取四诊信息失败: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<FourDiagnosisData>.Failure("获取四诊信息失败");
+            }
+        }
+
+        /// <summary>
+        /// 保存四诊信息
+        /// </summary>
+        public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid medicalCaseId, FourDiagnosisData data)
+        {
+            try
+            {
+                var dto = new ConsultationUpdateDto
+                {
+                    Inspection = data.Inspection,
+                    AuscultationOlfaction = data.Auscultation,
+                    Inquiry = data.Inquiry,
+                    Palpation = data.Palpation,
+                    Remark = data.ImportSource
+                };
+
+                // 先尝试获取现有的看诊记录
+                var existingResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.GetByMedicalCaseIdAsync(medicalCaseId)
+                );
+
+                if (existingResponse.IsSuccess && existingResponse.Data != null)
+                {
+                    // 更新现有记录
+                    var updateResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                        await _apiService.UpdateConsultationAsync(existingResponse.Data.Id, dto)
+                    );
+
+                    return updateResponse.IsSuccess 
+                        ? ServiceResult<bool>.Success(true) 
+                        : ServiceResult<bool>.Failure(updateResponse.ErrorMessage ?? "保存四诊信息失败");
+                }
+                else
+                {
+                    // 创建新记录
+                    var startDto = new ConsultationStartDto
+                    {
+                        MedicalCaseId = medicalCaseId,
+                        PatientId = Guid.Empty, // 需要从其他地方获取
+                        UserId = Guid.Empty, // 需要从其他地方获取当前医生ID
+                        Remark = data.ImportSource
+                    };
+
+                    var createResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                        await _apiService.StartConsultationAsync(startDto)
+                    );
+
+                    return createResponse.IsSuccess 
+                        ? ServiceResult<bool>.Success(true) 
+                        : ServiceResult<bool>.Failure(createResponse.ErrorMessage ?? "保存四诊信息失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "保存四诊信息失败: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<bool>.Failure("保存四诊信息失败");
+            }
+        }
+
+        /// <summary>
+        /// 保存整个诊疗数据
+        /// </summary>
+        public async Task<ServiceResult<bool>> SaveAsync(ConsultationData data)
+        {
+            try
+            {
+                var dto = new ConsultationUpdateDto
+                {
+                    Inspection = data.FourDiagnosis?.Inspection,
+                    AuscultationOlfaction = data.FourDiagnosis?.Auscultation,
+                    Inquiry = data.FourDiagnosis?.Inquiry,
+                    Palpation = data.FourDiagnosis?.Palpation,
+                    Diagnosis = data.Differentiation?.Syndrome,
+                    TCMDiagnosis = data.Differentiation?.Analysis,
+                    Remark = data.FourDiagnosis?.ImportSource
+                };
+
+                // 获取现有的看诊记录
+                var existingResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.GetByMedicalCaseIdAsync(data.MedicalCaseId)
+                );
+
+                if (existingResponse.IsSuccess && existingResponse.Data != null)
+                {
+                    // 更新现有记录
+                    var updateResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                        await _apiService.UpdateConsultationAsync(existingResponse.Data.Id, dto)
+                    );
+
+                    return updateResponse.IsSuccess 
+                        ? ServiceResult<bool>.Success(true) 
+                        : ServiceResult<bool>.Failure(updateResponse.ErrorMessage ?? "保存诊疗数据失败");
+                }
+
+                return ServiceResult<bool>.Failure("未找到对应的看诊记录");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "保存诊疗数据失败");
+                return ServiceResult<bool>.Failure("保存诊疗数据失败");
+            }
+        }
+
         #region 私有映射方法
 
         /// <summary>

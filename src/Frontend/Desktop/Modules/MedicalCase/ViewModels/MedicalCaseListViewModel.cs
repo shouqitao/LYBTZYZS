@@ -3,12 +3,14 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.ViewModels;
-using LYBT.WPF.Client.Services.Interfaces;
+using LYBT.WPF.Client.Core.Models.MedicalCase;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Events;
-using Refit;
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
+using Prism.Navigation.Regions;
 
 namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
 {
@@ -17,20 +19,22 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
     /// </summary>
     public class MedicalCaseListViewModel : BaseViewModel
     {
-        private readonly IMedicalCaseApiService _medicalCaseApiService;
-        private readonly ICommonDialogService _dialogService;
+        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly IDialogService _dialogService;
+        private readonly IDialogService _prismDialogService;
+        private readonly IRegionManager _regionManager;
 
         #region Properties
 
-        private ObservableCollection<MedicalCaseDisplayItem> _medicalCases = new();
-        public ObservableCollection<MedicalCaseDisplayItem> MedicalCases
+        private ObservableCollection<MedicalCaseInfo> _medicalCases = new();
+        public ObservableCollection<MedicalCaseInfo> MedicalCases
         {
             get => _medicalCases;
             set => SetProperty(ref _medicalCases, value);
         }
 
-        private MedicalCaseDisplayItem? _selectedMedicalCase;
-        public MedicalCaseDisplayItem? SelectedMedicalCase
+        private MedicalCaseInfo? _selectedMedicalCase;
+        public MedicalCaseInfo? SelectedMedicalCase
         {
             get => _selectedMedicalCase;
             set => SetProperty(ref _selectedMedicalCase, value);
@@ -86,35 +90,39 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
         public DelegateCommand SearchCommand { get; }
         public DelegateCommand AddCommand { get; }
         public new DelegateCommand RefreshCommand { get; }
-        public DelegateCommand<MedicalCaseDisplayItem> ViewDetailCommand { get; }
-        public DelegateCommand<MedicalCaseDisplayItem> StartConsultationCommand { get; }
-        public DelegateCommand<MedicalCaseDisplayItem> EditCommand { get; }
-        public DelegateCommand<MedicalCaseDisplayItem> DeleteCommand { get; }
+        public DelegateCommand<MedicalCaseInfo> ViewDetailCommand { get; }
+        public DelegateCommand<MedicalCaseInfo> StartConsultationCommand { get; }
+        public DelegateCommand<MedicalCaseInfo> EditCommand { get; }
+        public DelegateCommand<MedicalCaseInfo> DeleteCommand { get; }
         public DelegateCommand PreviousPageCommand { get; }
         public DelegateCommand NextPageCommand { get; }
 
         #endregion
 
         public MedicalCaseListViewModel(
-            IMedicalCaseApiService medicalCaseApiService,
-            ICommonDialogService dialogService,
+            IMedicalCaseService medicalCaseService,
+            IDialogService dialogService,
+            IDialogService prismDialogService,
+            IRegionManager regionManager,
             IEventAggregator eventAggregator)
             : base(eventAggregator)
         {
-            _medicalCaseApiService = medicalCaseApiService;
+            _medicalCaseService = medicalCaseService;
             _dialogService = dialogService;
+            _prismDialogService = prismDialogService;
+            _regionManager = regionManager;
 
-            MedicalCases = new ObservableCollection<MedicalCaseDisplayItem>();
+            MedicalCases = new ObservableCollection<MedicalCaseInfo>();
 
             // Initialize Commands
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
             AddCommand = new DelegateCommand(async () => await AddMedicalCaseAsync());
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
-            ViewDetailCommand = new DelegateCommand<MedicalCaseDisplayItem>(async (item) => await ViewDetailAsync(item));
-            StartConsultationCommand = new DelegateCommand<MedicalCaseDisplayItem>(async (item) => await StartConsultationAsync(item));
-            EditCommand = new DelegateCommand<MedicalCaseDisplayItem>(async (item) => await EditAsync(item));
-            DeleteCommand = new DelegateCommand<MedicalCaseDisplayItem>(async (item) => await DeleteAsync(item));
+            ViewDetailCommand = new DelegateCommand<MedicalCaseInfo>(async (item) => await ViewDetailAsync(item));
+            StartConsultationCommand = new DelegateCommand<MedicalCaseInfo>(async (item) => await StartConsultationAsync(item));
+            EditCommand = new DelegateCommand<MedicalCaseInfo>(async (item) => await EditAsync(item));
+            DeleteCommand = new DelegateCommand<MedicalCaseInfo>(async (item) => await DeleteAsync(item));
             PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync(), () => CurrentPage > 1);
             NextPageCommand = new DelegateCommand(async () => await NextPageAsync(), () => CurrentPage < TotalPages);
 
@@ -130,28 +138,39 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
             {
                 IsLoading = true;
 
-                var response = await _medicalCaseApiService.GetPagedAsync(CurrentPage, PageSize);
+                var result = await _medicalCaseService.GetPagedAsync(CurrentPage, PageSize);
 
-                if (response.IsSuccessStatusCode && response.Content != null)
+                if (!string.IsNullOrEmpty(result.ErrorMessage))
                 {
-                    var result = response.Content;
-                    TotalCount = result.TotalCount;
-                    TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+                    await _dialogService.ShowErrorAsync($"加载数据失败: {result.ErrorMessage}", "错误");
+                    return;
+                }
 
-                    MedicalCases.Clear();
-                    foreach (var dto in result.Items)
+                TotalCount = result.TotalCount;
+                TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+
+                MedicalCases.Clear();
+                foreach (var item in result.Items)
+                {
+                    // 应用搜索和筛选
+                    if (!string.IsNullOrEmpty(SearchKeyword) && 
+                        !item.PatientName.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) &&
+                        !item.DoctorName.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase))
                     {
-                        MedicalCases.Add(new MedicalCaseDisplayItem(dto));
+                        continue;
                     }
 
-                    // Update command states
-                    PreviousPageCommand.RaiseCanExecuteChanged();
-                    NextPageCommand.RaiseCanExecuteChanged();
+                    if (FilterStatus.HasValue && item.Status != FilterStatus.Value)
+                    {
+                        continue;
+                    }
+
+                    MedicalCases.Add(item);
                 }
-                else
-                {
-                    await HandleApiError(response);
-                }
+
+                // Update command states
+                PreviousPageCommand.RaiseCanExecuteChanged();
+                NextPageCommand.RaiseCanExecuteChanged();
             }
             catch (Exception ex)
             {
@@ -181,8 +200,16 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
         {
             try
             {
-                // TODO: 实现新增医疗案例对话框
-                await _dialogService.ShowInformationAsync("新增医疗案例功能开发中", "提示");
+                var dialogParameters = new DialogParameters();
+                
+                _prismDialogService.ShowDialog("CreateMedicalCaseDialog", dialogParameters, result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        // 刷新列表
+                        LoadDataCommand.Execute();
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -190,14 +217,14 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
             }
         }
 
-        private async Task ViewDetailAsync(MedicalCaseDisplayItem item)
+        private async Task ViewDetailAsync(MedicalCaseInfo item)
         {
             if (item == null) return;
 
             try
             {
-                // TODO: 打开医疗案例详情页面
-                await _dialogService.ShowInformationAsync($"查看案例详情: {item.CaseNumber}", "详情");
+                // 导航到详情界面 - 使用字符串参数方式
+                _regionManager.RequestNavigate("MainContentRegion", $"MedicalCaseDetailView?MedicalCaseId={item.Id}&ViewMode=Detail");
             }
             catch (Exception ex)
             {
@@ -205,22 +232,24 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
             }
         }
 
-        private async Task StartConsultationAsync(MedicalCaseDisplayItem item)
+        private async Task StartConsultationAsync(MedicalCaseInfo item)
         {
             if (item == null) return;
 
             try
             {
-                // 发布开始看诊事件，其他模块监听
-                EventAggregator.GetEvent<ConsultationStartedEvent>()
-                    .Publish(new ConsultationStartedEventArgs 
-                    { 
-                        MedicalCaseId = item.Id,
-                        PatientId = item.PatientId,
-                        PatientName = item.PatientName
-                    });
-
-                await _dialogService.ShowInformationAsync($"开始为 {item.PatientName} 看诊", "看诊");
+                // 更新状态为看诊中
+                var updateResult = await _medicalCaseService.UpdateStatusAsync(item.Id, MedicalCaseStatus.InConsultation);
+                
+                if (updateResult.IsSuccess)
+                {
+                    // 导航到看诊界面 - 使用字符串参数方式
+                    _regionManager.RequestNavigate("MainContentRegion", $"ConsultationMainView?MedicalCaseId={item.Id}&PatientId={item.PatientId}&ConsultationMode=Start");
+                }
+                else
+                {
+                    await _dialogService.ShowErrorAsync(updateResult.ErrorMessage ?? "无法开始看诊", "错误");
+                }
             }
             catch (Exception ex)
             {
@@ -228,14 +257,25 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
             }
         }
 
-        private async Task EditAsync(MedicalCaseDisplayItem item)
+        private async Task EditAsync(MedicalCaseInfo item)
         {
             if (item == null) return;
 
             try
             {
-                // TODO: 实现编辑医疗案例对话框
-                await _dialogService.ShowInformationAsync($"编辑案例: {item.CaseNumber}", "编辑");
+                var dialogParameters = new DialogParameters()
+                {
+                    { "MedicalCaseId", item.Id },
+                    { "EditMode", true }
+                };
+                
+                _prismDialogService.ShowDialog("CreateMedicalCaseDialog", dialogParameters, result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        LoadDataCommand.Execute();
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -243,33 +283,38 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
             }
         }
 
-        private async Task DeleteAsync(MedicalCaseDisplayItem item)
+        private async Task DeleteAsync(MedicalCaseInfo item)
         {
             if (item == null) return;
 
             try
             {
-                var result = await _dialogService.ShowConfirmationAsync(
-                    $"确定要删除案例 {item.CaseNumber} 吗？", 
+                var confirmed = await _dialogService.ShowConfirmationAsync(
+                    $"确定要删除患者 '{item.PatientName}' 的医疗案例吗？\n此操作不可恢复。", 
                     "确认删除");
 
-                if (result)
+                if (!confirmed) return;
+
+                IsLoading = true;
+                var result = await _medicalCaseService.DeleteAsync(item.Id);
+                
+                if (result.IsSuccess)
                 {
-                    var response = await _medicalCaseApiService.DeleteAsync(item.Id);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        await _dialogService.ShowInformationAsync("删除成功", "成功");
-                        await LoadDataAsync();
-                    }
-                    else
-                    {
-                        await HandleApiError(response);
-                    }
+                    await _dialogService.ShowSuccessAsync("删除成功!", "操作完成");
+                    await LoadDataAsync();
+                }
+                else
+                {
+                    await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "删除失败", "错误");
                 }
             }
             catch (Exception ex)
             {
                 await _dialogService.ShowErrorAsync($"删除失败: {ex.Message}", "错误");
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
@@ -291,98 +336,6 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
             }
         }
 
-        private async Task HandleApiError<T>(ApiResponse<T> response)
-        {
-            var errorMessage = $"API调用失败 (状态码: {response.StatusCode})";
-            
-            if (response.Error != null)
-            {
-                errorMessage += $"\n错误信息: {response.Error.Content}";
-            }
-
-            await _dialogService.ShowErrorAsync(errorMessage, "API错误");
-        }
-
         #endregion
     }
-
-    /// <summary>
-    /// 医疗案例显示项目
-    /// </summary>
-    public class MedicalCaseDisplayItem
-    {
-        public Guid Id { get; set; }
-        public string CaseNumber { get; set; } = string.Empty;
-        public Guid PatientId { get; set; }
-        public string PatientName { get; set; } = string.Empty;
-        public string PatientGender { get; set; } = "未知";
-        public int PatientAge { get; set; }
-        public string ChiefComplaint { get; set; } = string.Empty;
-        public string DoctorName { get; set; } = string.Empty;
-        public MedicalCaseStatus Status { get; set; }
-        public string StatusText { get; set; } = "未知";
-        public DateTime CreateTime { get; set; }
-        public string CreateTimeText { get; set; } = string.Empty;
-
-        public MedicalCaseDisplayItem() 
-        {
-            CreateTime = DateTime.Now;
-            CreateTimeText = CreateTime.ToString("yyyy-MM-dd HH:mm");
-        }
-
-        public MedicalCaseDisplayItem(MedicalCaseDto dto)
-        {
-            Id = dto.Id;
-            CaseNumber = $"MC{dto.Id.ToString().Substring(0, 8).ToUpper()}"; // 生成案例编号
-            PatientId = dto.PatientId;
-            PatientName = dto.PatientName ?? string.Empty;
-            PatientGender = "未知"; // DTO中无此字段，使用默认值
-            PatientAge = 0; // DTO中无此字段，使用默认值
-            ChiefComplaint = dto.DiagnosisSummary ?? string.Empty; // 使用诊断摘要作为主诉
-            DoctorName = dto.DoctorName ?? string.Empty;
-            Status = ParseStatus(dto.Status); // 解析字符串状态
-            StatusText = dto.Status ?? "未知";
-            CreateTime = dto.CreateTime;
-            CreateTimeText = dto.CreateTime.ToString("yyyy-MM-dd HH:mm");
-        }
-
-        private static MedicalCaseStatus ParseStatus(string status)
-        {
-            return status?.ToLower() switch
-            {
-                "registered" or "已挂号" => MedicalCaseStatus.Registered,
-                "inconsultation" or "看诊中" => MedicalCaseStatus.InConsultation,
-                "completed" or "已完成" => MedicalCaseStatus.Completed,
-                "cancelled" or "已取消" => MedicalCaseStatus.Cancelled,
-                _ => MedicalCaseStatus.Registered
-            };
-        }
-
-        private static string GetStatusText(MedicalCaseStatus status)
-        {
-            return status switch
-            {
-                MedicalCaseStatus.Registered => "已挂号",
-                MedicalCaseStatus.InConsultation => "看诊中",
-                MedicalCaseStatus.Completed => "已完成",
-                MedicalCaseStatus.Cancelled => "已取消",
-                _ => "未知"
-            };
-        }
-    }
-
-    /// <summary>
-    /// 开始看诊事件参数
-    /// </summary>
-    public class ConsultationStartedEventArgs
-    {
-        public Guid MedicalCaseId { get; set; }
-        public Guid PatientId { get; set; }
-        public string PatientName { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// 开始看诊事件
-    /// </summary>
-    public class ConsultationStartedEvent : PubSubEvent<ConsultationStartedEventArgs> { }
 }

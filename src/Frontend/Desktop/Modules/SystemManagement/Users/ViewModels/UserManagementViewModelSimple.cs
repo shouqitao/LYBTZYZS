@@ -14,6 +14,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Users;
 
@@ -24,7 +25,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
     /// </summary>
     public class UserManagementViewModelSimple : BaseServiceManagementViewModel<UserInfo, IUserService>
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
         private readonly IUserApiService _userApiService;
 
@@ -40,7 +41,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels
         public UserManagementViewModelSimple(
             IUserService userService,
             IUserApiService userApiService,
-            ICommonDialogService commonDialogService,
+            IDialogService commonDialogService,
             IDialogService dialogService,
             Prism.Events.IEventAggregator eventAggregator)
             : base(userService, eventAggregator)

@@ -12,6 +12,7 @@ using Prism.Mvvm;
 
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 {
     /// <summary>
@@ -27,7 +28,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         }
 
 
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IPrescriptionService _prescriptionService;
 
@@ -116,7 +117,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
         #endregion
 
         public ViewPrescriptionDialogViewModel(IPrescriptionService prescriptionService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             Title = "处方详情";
             _commonDialogService = commonDialogService;

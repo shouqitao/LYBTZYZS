@@ -17,5 +17,12 @@ namespace LYBT.WPF.Client.Core.Models.Patients
 
         /// <summary>是否激活（前端状态字段）</summary>
         public bool IsActive { get; set; } = true;
+        
+        /// <summary>电话号码（映射到PhoneNumber）</summary>
+        public string? Phone 
+        { 
+            get => PhoneNumber; 
+            set => PhoneNumber = value; 
+        }
     }
 }

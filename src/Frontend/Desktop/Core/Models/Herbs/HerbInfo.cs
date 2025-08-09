@@ -22,5 +22,14 @@ namespace LYBT.WPF.Client.Core.Models.Herbs
 
         /// <summary>操作人员（前端审计字段）</summary>
         public string? OperatorName { get; set; }
+        
+        /// <summary>分类</summary>
+        public string? Category { get; set; }
+        
+        /// <summary>库存数量</summary>
+        public decimal Stock { get; set; }
+        
+        /// <summary>是否激活</summary>
+        public bool IsActive { get; set; } = true;
     }
 }

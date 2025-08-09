@@ -69,5 +69,10 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 获取所有分类
         /// </summary>
         Task<ServiceResult<List<string>>> GetCategoriesAsync();
+
+        /// <summary>
+        /// 按名称搜索验方
+        /// </summary>
+        Task<ServiceResult<List<FormulaInfo>>> SearchByNameAsync(string name);
     }
 }

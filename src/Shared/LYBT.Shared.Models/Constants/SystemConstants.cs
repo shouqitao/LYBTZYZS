@@ -57,12 +57,12 @@ namespace LYBT.Shared.Models.Constants
         /// <summary>
         /// API版本
         /// </summary>
-        public const string ApiVersion = "v1.0";
+        public const string ApiVersion = "v1";
 
         /// <summary>
         /// API基础路径
         /// </summary>
-        public const string ApiBase = $"api/{ApiVersion}";
+        public const string ApiBase = $"/api/{ApiVersion}";
 
         /// <summary>
         /// 认证相关API
@@ -128,7 +128,7 @@ namespace LYBT.Shared.Models.Constants
         /// </summary>
         public static class Health
         {
-            public const string Base = "api/Health";
+            public const string Base = $"{ApiBase}/Health";
             public const string Database = $"{Base}/database";
             public const string Detailed = $"{Base}/detailed";
         }

@@ -7,6 +7,7 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Formulas;
 
 using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 {
     /// <summary>
@@ -22,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
         }
 
 
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IFormulaService _formulaService;
         private readonly Window _window;
@@ -103,7 +104,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
         #endregion
 
         public ViewFormulaDialogViewModel(IFormulaService formulaService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             Title = "验方模板详情";
             _commonDialogService = commonDialogService;

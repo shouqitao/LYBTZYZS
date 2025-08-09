@@ -274,5 +274,119 @@ namespace LYBT.WPF.Client.Services
                 throw new Exception($"获取患者列表失败: {ex.Message}", ex);
             }
         }
+
+        /// <summary>
+        /// 创建患者
+        /// </summary>
+        public async Task<ServiceResult<PatientDetailDto>> CreateAsync(PatientDetailDto dto)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _patientsApiService.CreatePatientAsync(dto)
+            );
+        }
+
+        /// <summary>
+        /// 按姓名或拼音搜索患者
+        /// </summary>
+        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByNameOrPinYinAsync(string keyword)
+        {
+            try
+            {
+                // 使用分页查询接口，传入keyword参数
+                var response = await _patientsApiService.GetPatientsAsync(
+                    page: 1,
+                    pageSize: 50,
+                    keyword: keyword,
+                    status: PatientStatus.Normal
+                );
+                
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    return ServiceResult<List<PatientDetailDto>>.Success(response.Content.Items.ToList());
+                }
+                
+                return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<PatientDetailDto>>.Failure($"搜索患者失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 按电话号码搜索患者（支持后几位）
+        /// </summary>
+        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByPhoneAsync(string phone)
+        {
+            try
+            {
+                // 如果输入的是后几位，使用模糊搜索
+                var response = await _patientsApiService.GetPatientsAsync(
+                    page: 1,
+                    pageSize: 50,
+                    phoneNumber: phone,
+                    status: PatientStatus.Normal
+                );
+                
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    // 如果是后几位搜索，进一步过滤
+                    var results = response.Content.Items.ToList();
+                    if (phone.Length < 11)
+                    {
+                        results = results.Where(p => 
+                            !string.IsNullOrEmpty(p.PhoneNumber) && 
+                            p.PhoneNumber.EndsWith(phone)
+                        ).ToList();
+                    }
+                    
+                    return ServiceResult<List<PatientDetailDto>>.Success(results);
+                }
+                
+                return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<PatientDetailDto>>.Failure($"按电话搜索患者失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 按身份证号搜索患者（支持后几位）
+        /// </summary>
+        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByIdCardAsync(string idCard)
+        {
+            try
+            {
+                // 使用分页查询接口，传入身份证参数
+                var response = await _patientsApiService.GetPatientsAsync(
+                    page: 1,
+                    pageSize: 50,
+                    idNumber: idCard,
+                    status: PatientStatus.Normal
+                );
+                
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    // 如果是后几位搜索，进一步过滤
+                    var results = response.Content.Items.ToList();
+                    if (idCard.Length < 18)
+                    {
+                        results = results.Where(p => 
+                            !string.IsNullOrEmpty(p.IDNumber) && 
+                            p.IDNumber.ToUpper().EndsWith(idCard.ToUpper())
+                        ).ToList();
+                    }
+                    
+                    return ServiceResult<List<PatientDetailDto>>.Success(results);
+                }
+                
+                return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<PatientDetailDto>>.Failure($"按身份证搜索患者失败: {ex.Message}");
+            }
+        }
     }
 }

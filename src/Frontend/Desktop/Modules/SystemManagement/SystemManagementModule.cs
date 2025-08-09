@@ -4,11 +4,14 @@ using LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.PrescriptionTemplates.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Patients.Views;
+using LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Consultations.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Consultations.ViewModels;
+using LYBT.WPF.Client.Modules.MedicalCase.Views;
+using LYBT.WPF.Client.Modules.MedicalCase.ViewModels;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
@@ -42,10 +45,15 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
 
             // 注册患者管理视图
             containerRegistry.RegisterForNavigation<PatientManagementView>();
+            
+            // 注册患者接待视图（整合原Registration功能）
+            containerRegistry.RegisterForNavigation<PatientReceptionView>();
+
+            // 注册医疗案例管理视图 (使用MedicalCase模块的实现)
+            containerRegistry.RegisterForNavigation<MedicalCaseListView>("MedicalCaseManagementView");
 
             // 注册看诊记录管理视图
             containerRegistry.RegisterForNavigation<ConsultationManagementView>();
-
 
             // 注册中药材管理视图
             containerRegistry.RegisterForNavigation<HerbManagementView>();

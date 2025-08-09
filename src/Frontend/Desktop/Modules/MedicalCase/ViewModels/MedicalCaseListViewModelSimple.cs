@@ -8,6 +8,8 @@ using Prism.Commands;
 using Prism.Events;
 using LYBT.WPF.Client.Core.Models.Common;
 
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
     public class MedicalCaseListViewModelSimple : BaseViewModel
     {
         private readonly IMedicalCaseService _medicalCaseService;
-        private readonly ICommonDialogService _dialogService;
+        private readonly IDialogService _dialogService;
 
         private ObservableCollection<MedicalCaseInfo> _medicalCases = new();
         public ObservableCollection<MedicalCaseInfo> MedicalCases
@@ -46,7 +48,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
 
         public MedicalCaseListViewModelSimple(
             IMedicalCaseService medicalCaseService,
-            ICommonDialogService dialogService,
+            IDialogService dialogService,
             IEventAggregator eventAggregator)
             : base(eventAggregator)
         {

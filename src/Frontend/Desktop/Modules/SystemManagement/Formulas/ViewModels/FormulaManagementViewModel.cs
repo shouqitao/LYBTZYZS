@@ -17,6 +17,7 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Services;
 using Prism.Ioc;
 using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 {
@@ -25,7 +26,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
     /// </summary>
     public class FormulaManagementViewModel : BaseServiceManagementViewModel<FormulaInfo, IFormulaService>
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
         private readonly IHerbService _herbService;
         private readonly IFormulaApiService _formulaApiService;
@@ -60,7 +61,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
         public FormulaManagementViewModel(
             IFormulaService formulaService,
             IFormulaApiService formulaApiService,
-            ICommonDialogService commonDialogService,
+            IDialogService commonDialogService,
             IDialogService dialogService,
             IHerbService herbService,
             Prism.Events.IEventAggregator eventAggregator)

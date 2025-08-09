@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 {
@@ -22,7 +23,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         }
 
 
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
         private readonly IHerbService _herbService;
 
         #region 属性
@@ -100,7 +101,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         #endregion
 
         public ViewHerbDialogViewModel(IHerbService herbService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             Title = "药材详情";
             _commonDialogService = commonDialogService;

@@ -200,6 +200,31 @@ namespace LYBT.WPF.Client.Services
             );
         }
 
+        /// <summary>
+        /// 按名称搜索验方
+        /// </summary>
+        public async Task<ServiceResult<List<FormulaInfo>>> SearchByNameAsync(string name)
+        {
+            try
+            {
+                var response = await _apiService.GetFormulasAsync(
+                    keyword: name
+                );
+
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    var formulas = response.Content.Items?.Select(ConvertToFormulaInfo).ToList() ?? new List<FormulaInfo>();
+                    return ServiceResult<List<FormulaInfo>>.Success(formulas);
+                }
+
+                return ServiceResult<List<FormulaInfo>>.Failure("搜索验方失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<FormulaInfo>>.Failure($"搜索验方时发生错误: {ex.Message}");
+            }
+        }
+
         #region Private Methods
 
         private FormulaInfo ConvertToFormulaInfo(FormulaDto dto)

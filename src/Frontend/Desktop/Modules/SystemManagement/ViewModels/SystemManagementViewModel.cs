@@ -4,6 +4,8 @@ using Prism.Navigation.Regions;
 using System.Windows;
 
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
 {
     /// <summary>
@@ -11,7 +13,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
     /// </summary>
     public class SystemManagementViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IRegionManager _regionManager;
 
@@ -27,7 +29,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.ViewModels
         public DelegateCommand NavigateToRecordManagementCommand { get; }
 
         public SystemManagementViewModel(IRegionManager regionManager,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             _regionManager = regionManager;

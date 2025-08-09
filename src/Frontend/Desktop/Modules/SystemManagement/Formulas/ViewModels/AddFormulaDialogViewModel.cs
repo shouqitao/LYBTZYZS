@@ -9,6 +9,8 @@ using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.Shared.Models.Contracts.Formula;
 
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
     /// </summary>
     public class AddFormulaDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IFormulaService _formulaService;
         private readonly IHerbService _herbService;
@@ -120,7 +122,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels
         #endregion
 
         public AddFormulaDialogViewModel(IFormulaService formulaService, IHerbService herbService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             _formulaService = formulaService;

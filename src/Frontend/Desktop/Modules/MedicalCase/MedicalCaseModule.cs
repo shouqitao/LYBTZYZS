@@ -10,19 +10,25 @@ namespace LYBT.WPF.Client.Modules.MedicalCase
     /// </summary>
     public class MedicalCaseModule : IModule
     {
-
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            // 模块初始化后的操作
+            // 模块初始化完成
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册视图和视图模型（使用简化版）
-            containerRegistry.RegisterForNavigation<MedicalCaseListView, MedicalCaseListViewModelSimple>();
-            // 暂时注释掉其他视图，待修复后再启用
-            // containerRegistry.RegisterForNavigation<MedicalCaseDetailView, MedicalCaseDetailViewModel>();
-            // containerRegistry.RegisterDialog<CreateMedicalCaseDialog, CreateMedicalCaseViewModel>();
+            // 注册视图导航
+            containerRegistry.RegisterForNavigation<MedicalCaseListView, MedicalCaseListViewModel>();
+            containerRegistry.RegisterForNavigation<MedicalCaseDetailView, MedicalCaseDetailViewModel>();
+
+            // 注册对话框
+            RegisterDialogs(containerRegistry);
+        }
+
+        private void RegisterDialogs(IContainerRegistry containerRegistry)
+        {
+            // 医疗案例创建对话框
+            // containerRegistry.RegisterDialog<CreateMedicalCaseDialog, CreateMedicalCaseViewModel>(); // Temporarily disabled - IDialogAware not implemented due to Prism 9 compatibility issues
         }
     }
 }

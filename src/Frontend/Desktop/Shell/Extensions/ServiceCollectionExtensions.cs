@@ -37,6 +37,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
             RegisterDialogs(containerRegistry);
+            RegisterViews(containerRegistry);
         }
 
         /// <summary>
@@ -226,6 +227,15 @@ namespace LYBT.WPF.Client.Shell.Extensions
 
             // 注册简单的对话框服务，使用 MessageBox 实现
             containerRegistry.RegisterSingleton<ICommonDialogService, SimpleDialogService>();
+        }
+        
+        /// <summary>
+        /// 注册视图
+        /// </summary>
+        private static void RegisterViews(IContainerRegistry containerRegistry)
+        {
+            // 注册主页视图
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.HomeView>();
         }
     }
 }

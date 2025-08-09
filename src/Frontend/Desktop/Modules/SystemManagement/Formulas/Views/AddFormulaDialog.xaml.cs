@@ -11,11 +11,13 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Herbs;
 using LYBT.Shared.Models.Contracts.Formula;
 
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
 {
     public partial class AddFormulaDialog : Window
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IHerbService _herbService;
         private readonly IFormulaService _formulaService;
@@ -25,7 +27,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views
         private bool _isLoadingHerbs = false;
 
         public AddFormulaDialog(IHerbService herbService, IFormulaService formulaService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             InitializeComponent();

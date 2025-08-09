@@ -1,0 +1,345 @@
+﻿<UserControl x:Class="LYBT.WPF.Client.Modules.SystemManagement.Patients.Views.PatientReceptionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:converters="clr-namespace:LYBT.WPF.Client.Modules.SystemManagement.Patients.Converters"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    
+    <UserControl.Resources>
+        <converters:GenderConverter x:Key="GenderConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="{Binding Title}" 
+                          FontSize="20" FontWeight="SemiBold"
+                          VerticalAlignment="Center" Margin="10,0"/>
+
+                <!-- 搜索栏 -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" 
+                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="16"/>
+                    <TextBox Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                            BorderBrush="Gray" BorderThickness="1" Padding="5"
+                            Width="400" VerticalAlignment="Center">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button Command="{Binding SearchCommand}" 
+                           Background="Transparent" BorderThickness="0" Padding="8"
+                           Margin="10,0">
+                        搜索
+                    </Button>
+                </StackPanel>
+
+                <!-- 操作按钮 -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="10,0">
+                    <Button Command="{Binding RegisterNewPatientCommand}"
+                           Background="#2196F3" Foreground="White" Padding="12,8" BorderThickness="0"
+                           Margin="5,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="👤+" Margin="0,0,5,0" FontSize="16" VerticalAlignment="Center"/>
+                            <TextBlock Text="新建患者"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding RefreshCommand}"
+                           Background="Transparent" BorderThickness="0" Padding="8"
+                           Margin="5,0">
+                        <TextBlock Text="🔄" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区 -->
+        <Grid Grid.Row="1" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧：快速接待面板 -->
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,5,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 快速接待标题 -->
+                    <Border Grid.Row="0" Background="{StaticResource PrimaryHueMidBrush}" Padding="10">
+                        <TextBlock Text="快速接待" Foreground="White"
+                                  FontSize="16" FontWeight="SemiBold"/>
+                    </Border>
+
+                    <!-- 接待表单 -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="15">
+                            <!-- 搜索结果列表 -->
+                            <Expander Header="搜索结果" IsExpanded="True" 
+                                     Visibility="{Binding SearchResults.Count, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ListBox ItemsSource="{Binding SearchResults}"
+                                        SelectedItem="{Binding SelectedPatient}"
+                                        MaxHeight="200">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource CardStyle}" Padding="10" Margin="0,2">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="👤" 
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,10,0"
+                                                               FontSize="16"/>
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                                        <TextBlock>
+                                                            <TextBlock.Text>
+                                                                <MultiBinding StringFormat="{}{0} | {1}岁 | {2}">
+                                                                    <Binding Path="Gender" Converter="{StaticResource GenderConverter}"/>
+                                                                    <Binding Path="Age"/>
+                                                                    <Binding Path="Phone"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Expander>
+
+                            <!-- 分隔线 -->
+                            <Separator Margin="0,10"/>
+
+                            <!-- 新患者信息输入 -->
+                            <TextBlock Text="或输入新患者信息" 
+                                      FontSize="14" FontWeight="Medium"
+                                      Margin="0,0,0,10"/>
+
+                            <TextBox Text="{Binding PatientName}"
+                                    BorderBrush="Gray" BorderThickness="1" Padding="5"
+                                    Margin="0,5"/>
+
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <ComboBox Grid.Column="0" SelectedItem="{Binding PatientGender}"
+                                                                                  BorderBrush="Gray" BorderThickness="1" Padding="5"
+                                         Margin="0,0,5,0">
+                                    <ComboBoxItem>男</ComboBoxItem>
+                                    <ComboBoxItem>女</ComboBoxItem>
+                                </ComboBox>
+
+                                <TextBox Grid.Column="1" Text="{Binding PatientAge}"
+                                                                                BorderBrush="Gray" BorderThickness="1" Padding="5"
+                                        Margin="5,0,0,0"/>
+                            </Grid>
+
+                            <TextBox Text="{Binding PatientPhone}"
+                                                                        BorderBrush="Gray" BorderThickness="1" Padding="5"
+                                    Margin="0,5"/>
+
+                            <TextBox Text="{Binding PatientIdCard}"
+                                                                        BorderBrush="Gray" BorderThickness="1" Padding="5"
+                                    Margin="0,5"/>
+
+                            <TextBox Text="{Binding ChiefComplaint}"
+                                                                        BorderBrush="Gray" BorderThickness="1" Padding="5"
+                                    TextWrapping="Wrap"
+                                    AcceptsReturn="True"
+                                    MinHeight="60"
+                                    Margin="0,5"/>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- 操作按钮 -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                               HorizontalAlignment="Center" Margin="10">
+                        <Button Command="{Binding QuickReceptionCommand}"
+                               Background="#2196F3" Foreground="White" Padding="12,8" BorderThickness="0"
+                               Margin="5">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="✓" Margin="0,0,5,0" Foreground="Green" FontSize="16" VerticalAlignment="Center"/>
+                                <TextBlock Text="快速接待"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding ClearFormCommand}"
+                               Background="Transparent" Foreground="Gray" Padding="12,8" BorderBrush="Gray" BorderThickness="1"
+                               Margin="5">
+                            清空
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 右侧：患者详情和医疗案例 -->
+            <Grid Grid.Column="1" Margin="5,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- 患者详情 -->
+                <Border Grid.Row="0" Style="{StaticResource CardStyle}" 
+                       Visibility="{Binding SelectedPatient, Converter={StaticResource NullVisibilityConverter}}"
+                       Margin="0,0,0,5">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="{StaticResource PrimaryHueLightBrush}" Padding="10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="患者信息" Foreground="White"
+                                          FontSize="16" FontWeight="SemiBold"/>
+                                <Button Grid.Column="1" 
+                                       Command="{Binding ViewPatientDetailsCommand}"
+                                       CommandParameter="{Binding SelectedPatient}"
+                                       Background="Transparent" BorderThickness="0" Padding="8"
+                                       Foreground="White">
+                                    查看详情
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <Grid Grid.Row="1" Margin="15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="姓名：" Margin="0,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedPatient.Name}" 
+                                      FontWeight="Bold" Margin="0,2"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="性别/年龄：" Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,2">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} / {1}岁">
+                                        <Binding Path="SelectedPatient.Gender" Converter="{StaticResource GenderConverter}"/>
+                                        <Binding Path="SelectedPatient.Age"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="电话：" Margin="0,2"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedPatient.Phone}" Margin="0,2"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="身份证：" Margin="0,2"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedPatient.IdCard}" Margin="0,2"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- 医疗案例列表 -->
+                <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="{StaticResource PrimaryHueLightBrush}" Padding="10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="今日接待记录" Foreground="White"
+                                          FontSize="16" FontWeight="SemiBold"/>
+                                <Button Grid.Column="1" 
+                                       Command="{Binding CreateMedicalCaseCommand}"
+                                       Background="Transparent" BorderThickness="0" Padding="8"
+                                       Foreground="White">
+                                    新建案例
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding RecentCases}"
+                                 AutoGenerateColumns="False"
+                                 CanUserAddRows="False"
+                                 GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="患者" 
+                                                   Binding="{Binding PatientName}" 
+                                                   Width="100"/>
+                                <DataGridTextColumn Header="医生" 
+                                                   Binding="{Binding DoctorName}" 
+                                                   Width="80"/>
+                                <DataGridTextColumn Header="主诉" 
+                                                   Binding="{Binding ChiefComplaint}" 
+                                                   Width="*"/>
+                                <DataGridTextColumn Header="状态" 
+                                                   Binding="{Binding Status}" 
+                                                   Width="80"/>
+                                <DataGridTextColumn Header="创建时间" 
+                                                   Binding="{Binding CreateTime, StringFormat='{}{0:HH:mm}'}" 
+                                                   Width="80"/>
+                                <DataGridTemplateColumn Header="操作" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="开始看诊"
+                                                   Command="{Binding DataContext.StartConsultationCommand, 
+                                                            RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   Background="Transparent" BorderThickness="0" Padding="8"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- 加载遮罩 -->
+        <Border Grid.RowSpan="2" 
+                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="Gray"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="20">
+            <StackPanel Orientation="Horizontal">
+                <ProgressBar IsIndeterminate="True" Value="0"/>
+                <TextBlock Text="加载中..." Margin="10,0,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

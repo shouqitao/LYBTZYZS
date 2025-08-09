@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1200">
@@ -26,11 +25,11 @@
                 
                 <Button Grid.Column="0" 
                         Command="{Binding BackCommand}"
-                        Style="{StaticResource MaterialDesignFlatButton}"
+                        Background="Transparent" BorderThickness="0" Padding="8"
                         Foreground="White"
                         Margin="0,0,16,0">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="ArrowLeft" VerticalAlignment="Center"/>
+                        <TextBlock Text="←" VerticalAlignment="Center" FontSize="16"/>
                         <TextBlock Text="返回" Margin="4,0,0,0"/>
                     </StackPanel>
                 </Button>
@@ -44,20 +43,20 @@
                 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button Command="{Binding StartConsultationCommand}"
-                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Background="Transparent" BorderThickness="0" Padding="8"
                             Foreground="White"
                             Margin="4">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Stethoscope" VerticalAlignment="Center"/>
+                            <TextBlock Text="🩺" VerticalAlignment="Center" FontSize="16"/>
                             <TextBlock Text="开始看诊" Margin="4,0,0,0"/>
                         </StackPanel>
                     </Button>
                     
                     <Button Command="{Binding PrintCommand}"
-                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Background="Transparent" BorderThickness="0" Padding="8"
                             Foreground="White"
                             Margin="4">
-                        <materialDesign:PackIcon Kind="Printer" />
+                        <TextBlock Text="🖨" FontSize="16" VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -74,19 +73,21 @@
                 </Grid.RowDefinitions>
 
                 <!-- 患者基本信息卡片 -->
-                <materialDesign:Card Grid.Row="0" Margin="0,0,0,16">
+                <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                     <Grid Margin="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         
-                        <materialDesign:PackIcon Grid.Column="0" 
-                                                  Kind="Account" 
-                                                  Width="48" 
-                                                  Height="48"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,16,0"/>
+                        <TextBlock Grid.Column="0" 
+                                   Text="👤" 
+                                   FontSize="32"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Width="48" 
+                                   Height="48"
+                                   Margin="0,0,16,0"/>
                         
                         <StackPanel Grid.Column="1">
                             <TextBlock FontSize="18" FontWeight="Bold">
@@ -113,10 +114,10 @@
                             </TextBlock>
                         </StackPanel>
                     </Grid>
-                </materialDesign:Card>
+                </Border>
 
                 <!-- 病历信息 -->
-                <materialDesign:Card Grid.Row="1" Margin="0,0,0,16">
+                <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                     <Expander Header="病历信息" IsExpanded="True">
                         <Grid Margin="16">
                             <Grid.RowDefinitions>
@@ -163,10 +164,10 @@
                             </StackPanel>
                         </Grid>
                     </Expander>
-                </materialDesign:Card>
+                </Border>
 
                 <!-- 诊疗记录时间线 -->
-                <materialDesign:Card Grid.Row="2" Margin="0,0,0,16">
+                <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                     <Expander Header="诊疗记录" IsExpanded="True">
                         <Grid Margin="16">
                             <TabControl>
@@ -194,7 +195,7 @@
                                                                          RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                                 CommandParameter="{Binding}"
                                                                 Content="查看"
-                                                                Style="{StaticResource MaterialDesignFlatButton}"/>
+                                                                Background="Transparent" BorderThickness="0" Padding="8"/>
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
@@ -229,7 +230,7 @@
                                                                          RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                                 CommandParameter="{Binding}"
                                                                 Content="查看"
-                                                                Style="{StaticResource MaterialDesignFlatButton}"/>
+                                                                Background="Transparent" BorderThickness="0" Padding="8"/>
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
@@ -239,7 +240,7 @@
                             </TabControl>
                         </Grid>
                     </Expander>
-                </materialDesign:Card>
+                </Border>
             </Grid>
         </ScrollViewer>
 
@@ -247,8 +248,7 @@
         <Grid Grid.Row="0" Grid.RowSpan="2" 
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
               Background="#80000000">
-            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                         Width="50" Height="50"
+            <ProgressBar Width="50" Height="50"
                          IsIndeterminate="True"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"/>

@@ -75,6 +75,11 @@ namespace LYBT.WPF.Client.Core.Models.Consultation
 
         /// <summary>症状描述（前端字段）</summary>
         public string? Symptoms { get; set; }
-    }
 
+        /// <summary>辨证分析过程（前端字段）</summary>
+        public string? DifferentiationAnalysis { get; set; }
+        
+        /// <summary>是否已完成</summary>
+        public bool IsCompleted { get; set; }
+    }
 }

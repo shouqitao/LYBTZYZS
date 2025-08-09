@@ -68,5 +68,20 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// 删除看诊记录（软删除）
         /// </summary>
         Task<ServiceResult<bool>> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 根据医疗案例ID获取四诊信息
+        /// </summary>
+        Task<ServiceResult<FourDiagnosisData>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 保存四诊信息
+        /// </summary>
+        Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid medicalCaseId, FourDiagnosisData data);
+
+        /// <summary>
+        /// 保存整个诊疗数据
+        /// </summary>
+        Task<ServiceResult<bool>> SaveAsync(ConsultationData data);
     }
 }

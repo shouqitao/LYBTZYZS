@@ -383,3 +383,4 @@ var mapper = config.CreateMapper();
 - 建议使用 Unicode 标准处理中文文本
 - 在文件头添加 BOM 头以确保正确识别编码
 - 注意跨平台兼容性和编码一致性
+- windows 10 中文版 开发环境

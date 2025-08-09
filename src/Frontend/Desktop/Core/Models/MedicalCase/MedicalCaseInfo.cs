@@ -37,6 +37,12 @@ namespace LYBT.WPF.Client.Core.Models.MedicalCase
         /// <summary>完成时间格式化（前端显示）</summary>
         public string? CompleteTimeText => CompleteTime?.ToString("yyyy-MM-dd HH:mm");
 
+        public string? Diagnosis { get; set; }
+        
+        public string? ChiefComplaint { get; set; }
+        
+        public Guid DoctorId { get; set; }
+
         private string GetStatusText()
         {
             return Status switch

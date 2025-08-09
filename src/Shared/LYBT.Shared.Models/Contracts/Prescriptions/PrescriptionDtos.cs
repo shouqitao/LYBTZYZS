@@ -35,6 +35,10 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? MissingDrugWarning { get; set; }
         public DateTime? UpdateTime { get; set; }
         public string? Remark { get; set; }
+        public string? PrescriptionNo { get; set; }
+        public string? Usage { get; set; }
+        public string? MedicalAdvice { get; set; }
+        public decimal Discount { get; set; } = 1.0m;
     }
 
     /// <summary>

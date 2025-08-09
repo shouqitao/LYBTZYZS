@@ -12,6 +12,8 @@ using Prism.Commands;
 using Prism.Mvvm;
 
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 {
     /// <summary>
@@ -19,7 +21,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
     /// </summary>
     public class AddPrescriptionDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
         private readonly IPrescriptionService _prescriptionService;
         private readonly IPrescriptionValidationService _validationService;
         // private readonly IHerbsApiService _herbService; // TODO: 等待IHerbsApiService实现
@@ -148,7 +150,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.ViewModels
 
         public AddPrescriptionDialogViewModel(
             IPrescriptionService prescriptionService,
-            ICommonDialogService commonDialogService,
+            IDialogService commonDialogService,
             IPrescriptionValidationService validationService)
         {
             _commonDialogService = commonDialogService;

@@ -9,6 +9,8 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 
+using Prism.Dialogs;
+using LYBT.WPF.Client.Core.Extensions;
 namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
     /// </summary>
     public class EditHerbDialogViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _commonDialogService;
 
         private readonly IHerbService _herbService;
         private readonly Window _window;
@@ -125,7 +127,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Herbs.ViewModels
         }
 
         public EditHerbDialogViewModel(IHerbService herbService,
-            ICommonDialogService commonDialogService)
+            IDialogService commonDialogService)
         {
             _commonDialogService = commonDialogService;
             _herbService = herbService;
