@@ -1,5 +1,7 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Web;
 using LYBT.Module.Consultation.Interfaces;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.AspNetCore.Authorization;
@@ -9,13 +11,13 @@ using Microsoft.Extensions.Caching.Memory;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 看诊管理控制器
+    /// 看诊管理控制器 - 统一API响应格式
     /// </summary>
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class ConsultationController : BaseController
+    public class ConsultationController : BaseApiController
     {
         private readonly IConsultationService _consultationService;
 
@@ -28,10 +30,10 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 分页查询看诊记录
+        /// 分页查询看诊记录 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetConsultations(
+        public async Task<ActionResult<ApiResponse<PagedResult<ConsultationDto>>>> GetConsultations(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? keyword = null,
@@ -43,6 +45,11 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
+                if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                {
+                    return ValidationFail<PagedResult<ConsultationDto>>("页码和页大小参数无效（页码>0，页大小1-100）");
+                }
+
                 var query = new ConsultationPagedQueryDto
                 {
                     PageIndex = page,
@@ -56,295 +63,274 @@ namespace LYBT.WebAPI.Controllers
                 };
 
                 var result = await _consultationService.GetPagedAsync(query);
-                return Ok(result);
+                return Success(result, "查询成功");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询看诊记录失败");
-                return Problem(
-                    detail: ex.Message,
-                    title: "查询看诊记录失败",
-                    statusCode: StatusCodes.Status400BadRequest);
+                return HandleException<PagedResult<ConsultationDto>>(ex, "分页查询看诊记录", new { page, pageSize, keyword });
             }
         }
 
         /// <summary>
-        /// 获取看诊详情
+        /// 获取看诊详情 - 统一API响应格式
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<ActionResult<ApiResponse<ConsultationDetailDto>>> GetById(Guid id)
         {
             try
             {
+                var validation = ValidateGuid<ConsultationDetailDto>(id, "看诊记录ID");
+                if (validation != null) return validation;
+
                 var result = await _consultationService.GetByIdAsync(id);
                 if (result == null)
                 {
-                    return NotFound(new { message = "看诊记录不存在" });
+                    return NotFound<ConsultationDetailDto>("看诊记录不存在", ApiErrorCodes.CONSULTATION_NOT_FOUND);
                 }
-                return Ok(result);
+                return Success(result, "查询成功");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取看诊详情失败: {Id}", id);
-                return Problem(
-                    detail: ex.Message,
-                    title: "获取看诊详情失败",
-                    statusCode: StatusCodes.Status400BadRequest);
+                return HandleException<ConsultationDetailDto>(ex, "获取看诊详情", id);
             }
         }
 
         /// <summary>
-        /// 根据医疗案例ID获取看诊信息
+        /// 根据医疗案例ID获取看诊信息 - 统一API响应格式
         /// </summary>
         [HttpGet("medical-case/{medicalCaseId}")]
-        public async Task<IActionResult> GetByMedicalCaseId(Guid medicalCaseId)
+        public async Task<ActionResult<ApiResponse<ConsultationDetailDto>>> GetByMedicalCaseId(Guid medicalCaseId)
         {
             try
             {
+                var validation = ValidateGuid<ConsultationDetailDto>(medicalCaseId, "医疗案例ID");
+                if (validation != null) return validation;
+
                 var result = await _consultationService.GetByMedicalCaseIdAsync(medicalCaseId);
                 if (result == null)
                 {
-                    return NotFound(new { message = "看诊记录不存在" });
+                    return NotFound<ConsultationDetailDto>("看诊记录不存在", ApiErrorCodes.CONSULTATION_NOT_FOUND);
                 }
-                return Ok(result);
+                return Success(result, "查询成功");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "根据医疗案例ID获取看诊信息失败: {MedicalCaseId}", medicalCaseId);
-                return Problem(
-                    detail: ex.Message,
-                    title: "获取看诊信息失败",
-                    statusCode: StatusCodes.Status400BadRequest);
+                return HandleException<ConsultationDetailDto>(ex, "根据医疗案例ID获取看诊信息", medicalCaseId);
             }
         }
 
         /// <summary>
-        /// 开始看诊
+        /// 开始看诊 - 统一API响应格式
         /// </summary>
         [HttpPost("start")]
-        public async Task<IActionResult> StartConsultation([FromBody] ConsultationStartDto dto)
+        public async Task<ActionResult<ApiResponse<ConsultationDetailDto>>> StartConsultation([FromBody] ConsultationStartDto dto)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                var validation = ValidateModel<ConsultationDetailDto>();
+                if (validation != null) return validation;
 
                 var result = await _consultationService.StartConsultationAsync(dto);
-                return Ok(result);
+                if (result == null)
+                {
+                    return BusinessFail<ConsultationDetailDto>("开始看诊失败", ApiErrorCodes.DATA_SAVE_FAILED);
+                }
+                return Success(result, "看诊已开始");
             }
             catch (InvalidOperationException ex)
             {
-                return Problem(
-                    detail: ex.Message,
-                    title: "操作无效",
-                    statusCode: StatusCodes.Status400BadRequest);
+                return BusinessFail<ConsultationDetailDto>(ex.Message, ApiErrorCodes.DATA_UPDATE_FAILED);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "开始看诊失败");
-                return Problem(
-                    detail: ex.Message,
-                    title: "开始看诊失败",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return HandleException<ConsultationDetailDto>(ex, "开始看诊", dto);
             }
         }
 
         /// <summary>
-        /// 更新看诊信息
+        /// 更新看诊信息 - 统一API响应格式
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateConsultation(Guid id, [FromBody] ConsultationUpdateDto dto)
+        public async Task<ActionResult<ApiResponse<ConsultationDetailDto>>> UpdateConsultation(Guid id, [FromBody] ConsultationUpdateDto dto)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                var idValidation = ValidateGuid<ConsultationDetailDto>(id, "看诊记录ID");
+                if (idValidation != null) return idValidation;
+
+                var modelValidation = ValidateModel<ConsultationDetailDto>();
+                if (modelValidation != null) return modelValidation;
 
                 var result = await _consultationService.UpdateConsultationAsync(id, dto);
-                return Ok(result);
+                if (result == null)
+                {
+                    return BusinessFail<ConsultationDetailDto>("更新看诊信息失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                }
+                return Success(result, "看诊信息更新成功");
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) when (ex.Message.Contains("不存在"))
             {
-                return Problem(
-                    detail: ex.Message,
-                    title: "看诊记录不存在",
-                    statusCode: StatusCodes.Status404NotFound);
+                return NotFound<ConsultationDetailDto>(ex.Message, ApiErrorCodes.CONSULTATION_NOT_FOUND);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新看诊信息失败: {Id}", id);
-                return Problem(
-                    detail: ex.Message,
-                    title: "更新看诊信息失败",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return HandleException<ConsultationDetailDto>(ex, "更新看诊信息", new { id, dto });
             }
         }
 
         /// <summary>
-        /// 完成看诊
+        /// 完成看诊 - 统一API响应格式
         /// </summary>
         [HttpPost("{id}/complete")]
-        public async Task<IActionResult> CompleteConsultation(Guid id, [FromBody] ConsultationCompleteDto dto)
+        public async Task<ActionResult<ApiResponse>> CompleteConsultation(Guid id, [FromBody] ConsultationCompleteDto dto)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                var idValidation = ValidateGuid(id, "看诊记录ID");
+                if (idValidation != null) return idValidation;
+
+                var modelValidation = ValidateModel();
+                if (modelValidation != null) return modelValidation;
 
                 var result = await _consultationService.CompleteConsultationAsync(id, dto);
-                if (result)
+                if (!result)
                 {
-                    return Ok(new { message = "看诊完成" });
+                    return BusinessFail("完成看诊操作失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
-                return Problem(
-                    detail: "完成看诊操作失败",
-                    title: "操作失败",
-                    statusCode: StatusCodes.Status400BadRequest);
+                
+                LogOperation("完成看诊", null, id);
+                return Success("看诊完成");
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) when (ex.Message.Contains("不存在"))
             {
-                return Problem(
-                    detail: ex.Message,
-                    title: "看诊记录不存在",
-                    statusCode: StatusCodes.Status404NotFound);
+                return NotFound(ex.Message, ApiErrorCodes.CONSULTATION_NOT_FOUND);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "完成看诊失败: {Id}", id);
-                return Problem(
-                    detail: ex.Message,
-                    title: "完成看诊失败",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return HandleException(ex, "完成看诊", new { id, dto });
             }
         }
 
         /// <summary>
-        /// 获取医生今日看诊列表
+        /// 获取医生今日看诊列表 - 统一API响应格式
         /// </summary>
         [HttpGet("doctor/{doctorId}/today")]
-        public async Task<IActionResult> GetTodayConsultationsByDoctor(Guid doctorId)
+        public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetTodayConsultationsByDoctor(Guid doctorId)
         {
             try
             {
+                var validation = ValidateGuid<List<ConsultationDto>>(doctorId, "医生ID");
+                if (validation != null) return validation;
+
                 var result = await _consultationService.GetTodayConsultationsByDoctorAsync(doctorId);
-                return Ok(result);
+                return Success(result, $"查询成功，共{result.Count}条今日看诊记录");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取医生今日看诊列表失败: {DoctorId}", doctorId);
-                return Problem(
-                    detail: ex.Message,
-                    title: "获取看诊列表失败",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return HandleException<List<ConsultationDto>>(ex, "获取医生今日看诊列表", doctorId);
             }
         }
 
         /// <summary>
-        /// 获取患者历史看诊记录
+        /// 获取患者历史看诊记录 - 统一API响应格式
         /// </summary>
         [HttpGet("patient/{patientId}/history")]
-        public async Task<IActionResult> GetPatientHistory(Guid patientId)
+        public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetPatientHistory(Guid patientId)
         {
             try
             {
+                var validation = ValidateGuid<List<ConsultationDto>>(patientId, "患者ID");
+                if (validation != null) return validation;
+
                 var result = await _consultationService.GetPatientHistoryAsync(patientId);
-                return Ok(result);
+                return Success(result, $"查询成功，共{result.Count}条历史看诊记录");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取患者历史看诊记录失败: {PatientId}", patientId);
-                return Problem(
-                    detail: ex.Message,
-                    title: "获取历史记录失败",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return HandleException<List<ConsultationDto>>(ex, "获取患者历史看诊记录", patientId);
             }
         }
 
         /// <summary>
-        /// 统计医生看诊数量
+        /// 统计医生看诊数量 - 统一API响应格式
         /// </summary>
         [HttpGet("doctor/{doctorId}/count")]
-        public async Task<IActionResult> GetDoctorConsultationCount(
+        public async Task<ActionResult<ApiResponse<object>>> GetDoctorConsultationCount(
             Guid doctorId,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate)
         {
             try
             {
+                var validation = ValidateGuid<object>(doctorId, "医生ID");
+                if (validation != null) return validation;
+
                 var count = await _consultationService.GetDoctorConsultationCountAsync(doctorId, startDate, endDate);
-                return Ok(new { count });
+                var result = new { count };
+                return Success<object>(result, $"看诊数量：{count}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "统计医生看诊数量失败: {DoctorId}", doctorId);
-                return Problem(
-                    detail: ex.Message,
-                    title: "统计失败",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return HandleException<object>(ex, "统计医生看诊数量", new { doctorId, startDate, endDate });
             }
         }
 
         /// <summary>
-        /// 更新看诊状态
+        /// 更新看诊状态 - 统一API响应格式
         /// </summary>
         [HttpPost("{id}/update-status")]
-        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusDto dto)
+        public async Task<ActionResult<ApiResponse<ConsultationDetailDto>>> UpdateStatus(Guid id, [FromBody] UpdateStatusDto dto)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                var idValidation = ValidateGuid<ConsultationDetailDto>(id, "看诊记录ID");
+                if (idValidation != null) return idValidation;
+
+                var modelValidation = ValidateModel<ConsultationDetailDto>();
+                if (modelValidation != null) return modelValidation;
 
                 var result = await _consultationService.UpdateStatusAsync(id, dto.Status, dto.Reason);
-                return Ok(result);
+                if (result == null)
+                {
+                    return BusinessFail<ConsultationDetailDto>("状态更新失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                }
+                
+                LogOperation("更新看诊状态", dto, id);
+                return Success(result, "状态更新成功");
             }
             catch (InvalidOperationException ex)
             {
-                return Problem(
-                    detail: ex.Message,
-                    title: "状态更新失败",
-                    statusCode: StatusCodes.Status400BadRequest);
+                return BusinessFail<ConsultationDetailDto>(ex.Message, ApiErrorCodes.DATA_UPDATE_FAILED);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新看诊状态失败: {Id}", id);
-                return Problem(
-                    detail: ex.Message,
-                    title: "更新状态失败",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return HandleException<ConsultationDetailDto>(ex, "更新看诊状态", new { id, dto });
             }
         }
 
         /// <summary>
-        /// 删除看诊记录（软删除）
+        /// 删除看诊记录（软删除） - 统一API响应格式
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
         {
             try
             {
+                var validation = ValidateGuid(id, "看诊记录ID");
+                if (validation != null) return validation;
+
                 var result = await _consultationService.DeleteAsync(id);
-                if (result)
+                if (!result)
                 {
-                    return Ok(new { message = "删除成功" });
+                    return NotFound("看诊记录不存在", ApiErrorCodes.CONSULTATION_NOT_FOUND);
                 }
-                return NotFound(new { message = "看诊记录不存在" });
+                
+                LogOperation("删除看诊记录", null, id);
+                return Success("删除成功");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除看诊记录失败: {Id}", id);
-                return Problem(
-                    detail: ex.Message,
-                    title: "删除失败",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return HandleException(ex, "删除看诊记录", id);
             }
         }
     }

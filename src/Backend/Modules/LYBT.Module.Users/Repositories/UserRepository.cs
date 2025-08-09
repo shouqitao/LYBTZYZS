@@ -1,4 +1,5 @@
 ﻿using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Models.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Enums;
@@ -9,48 +10,31 @@ namespace LYBT.Module.Users.Repositories
 {
 
     /// <summary>
-    /// 用户仓储实现类（基于EF Core统一数据库上下文）
+    /// 用户仓储实现类 - 数据层统一化重构
+    /// 继承BaseRepository提供通用CRUD，实现用户特定业务逻辑
     /// 实现软删除策略：用户只能禁用/启用，不能物理删除
     /// </summary>
-    public class UserRepository : IUserRepository
+    public class UserRepository : BaseRepository<UserModel>, IUserRepository
     {
-        private readonly AppDbContext _dbContext;
-
-        public UserRepository(AppDbContext dbContext)
+        public UserRepository(AppDbContext dbContext) : base(dbContext)
         {
-            _dbContext = dbContext;
+            // BaseRepository会处理基础的数据库操作
         }
 
-        /// <summary>
-        /// 新增用户
-        /// </summary>
-        public async Task<bool> AddAsync(UserModel user)
-        {
-            await _dbContext.Users.AddAsync(user);
-            return await _dbContext.SaveChangesAsync() > 0;
-        }
-
-        /// <summary>
-        /// 更新用户
-        /// </summary>
-        public async Task<bool> UpdateAsync(UserModel user)
-        {
-            _dbContext.Users.Update(user);
-            return await _dbContext.SaveChangesAsync() > 0;
-        }
+        // 注意：AddAsync, UpdateAsync等基础CRUD方法由BaseRepository提供
 
         /// <summary>
         /// 禁用用户（软删除）
         /// </summary>
         public async Task<bool> DisableAsync(Guid id)
         {
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
                 return false;
 
             user.Status = CommonStatus.Disabled;
-            _dbContext.Users.Update(user);
-            return await _dbContext.SaveChangesAsync() > 0;
+            _context.Users.Update(user);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
@@ -58,13 +42,13 @@ namespace LYBT.Module.Users.Repositories
         /// </summary>
         public async Task<bool> EnableAsync(Guid id)
         {
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
                 return false;
 
             user.Status = CommonStatus.Enabled;
-            _dbContext.Users.Update(user);
-            return await _dbContext.SaveChangesAsync() > 0;
+            _context.Users.Update(user);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
@@ -73,7 +57,7 @@ namespace LYBT.Module.Users.Repositories
         /// </summary>
         public async Task<(IList<UserModel> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false)
         {
-            var dbSet = _dbContext.Users.AsQueryable();
+            var dbSet = _context.Users.AsQueryable();
 
             // 隐藏内置的sysadmin用户
             dbSet = dbSet.Where(u => u.Username != "sysadmin");
@@ -162,7 +146,7 @@ namespace LYBT.Module.Users.Repositories
         /// </summary>
         public async Task<UserModel?> GetByUsernameAsync(string userName)
         {
-            return await _dbContext.Users
+            return await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == userName);
         }
 
@@ -172,7 +156,7 @@ namespace LYBT.Module.Users.Repositories
         /// </summary>
         public async Task<UserModel?> GetByIdAsync(Guid id, bool includeDisabled = false)
         {
-            var query = _dbContext.Users.AsQueryable();
+            var query = _context.Users.AsQueryable();
 
             if (!includeDisabled)
             {
@@ -199,7 +183,7 @@ namespace LYBT.Module.Users.Repositories
                 ? $"SELECT * FROM Users WHERE Id IN ('{idStrings}')"
                 : $"SELECT * FROM Users WHERE Id IN ('{idStrings}') AND Status = 0";
 
-            return await _dbContext.Users.FromSqlRaw(sql).ToListAsync();
+            return await _context.Users.FromSqlRaw(sql).ToListAsync();
         }
 
         /// <summary>
@@ -207,7 +191,7 @@ namespace LYBT.Module.Users.Repositories
         /// </summary>
         public async Task<bool> ExistsByUsernameAsync(string userName)
         {
-            return await _dbContext.Users.AnyAsync(u => u.Username == userName);
+            return await _context.Users.AnyAsync(u => u.Username == userName);
         }
 
         /// <summary>
@@ -215,13 +199,13 @@ namespace LYBT.Module.Users.Repositories
         /// </summary>
         public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash)
         {
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
                 return false;
 
             user.PasswordHash = passwordHash;
-            _dbContext.Users.Update(user);
-            return await _dbContext.SaveChangesAsync() > 0;
+            _context.Users.Update(user);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
@@ -238,7 +222,7 @@ namespace LYBT.Module.Users.Repositories
             var idStrings = string.Join("','", ids.Select(id => id.ToString()));
             var sql = $"UPDATE Users SET Status = {(isActive ? 0 : 1)} WHERE Id IN ('{idStrings}')";
 
-            return await _dbContext.Database.ExecuteSqlRawAsync(sql);
+            return await _context.Database.ExecuteSqlRawAsync(sql);
         }
 
         /// <summary>
@@ -246,16 +230,13 @@ namespace LYBT.Module.Users.Repositories
         /// </summary>
         public async Task<List<UserModel>> GetActiveUsersAsync()
         {
-            return await _dbContext.Users
+            return await _context.Users
                 .Where(u => u.Status == CommonStatus.Enabled && u.Username != "sysadmin")
                 .OrderBy(u => u.RealName)
                 .ToListAsync();
         }
 
 
-        public async Task<List<UserModel>> GetAllAsync()
-        {
-            return await _dbContext.Users.ToListAsync();
-        }
+        // 注意：GetAllAsync方法由BaseRepository提供
     }
 }

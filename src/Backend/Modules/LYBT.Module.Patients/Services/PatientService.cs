@@ -64,12 +64,12 @@ namespace LYBT.Module.Patients.Services
 
             var result = await _patientRepository.AddAsync(model);
 
-            if (result)
+            if (result != null)
             {
                 await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
-                    $"新增患者档案：{model.Name}", JsonSerializer.Serialize(model));
+                    $"新增患者档案：{result.Name}", JsonSerializer.Serialize(result));
 
-                return _mapper.Map<PatientDetailDto>(model);
+                return _mapper.Map<PatientDetailDto>(result);
             }
 
             return null;
@@ -97,22 +97,22 @@ namespace LYBT.Module.Patients.Services
 
             var result = await _patientRepository.UpdateAsync(model);
 
-            if (result)
+            if (result != null)
             {
                 await _logService.CreateLogAsync(new LogCreateDto
                 {
                     LogType = LogType.Operation,
                     ObjectType = ObjectType.Patient,
-                    ObjectId = model.Id,
+                    ObjectId = result.Id,
                     ActionType = ActionType.Edit,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
-                    Content = $"编辑患者档案：{model.Name}",
+                    Content = $"编辑患者档案：{result.Name}",
                     OldValue = oldJson,
                     NewValue = JsonSerializer.Serialize(dto)
                 });
 
-                return _mapper.Map<PatientDetailDto>(model);
+                return _mapper.Map<PatientDetailDto>(result);
             }
 
             return null;
@@ -133,8 +133,7 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<List<PatientDetailDto>> GetAllAsync()
         {
-            bool includeDisabled = true;
-            var list = await _patientRepository.GetListAsync(null, 1, 1000, includeDisabled);
+            var list = await _patientRepository.GetAllAsync();
             return list.Select(_mapper.Map<PatientDetailDto>).ToList();
         }
 
@@ -143,13 +142,19 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<PaginatedResult<PatientDetailDto>> GetPagedAsync(PatientPagedQueryDto query)
         {
-            bool includeDisabled = true;
-            var list = await _patientRepository.GetListAsync(query.Name, query.CurrentPage, query.PageSize, includeDisabled);
-            var total = await _patientRepository.GetCountAsync(query.Name, includeDisabled);
+            // 使用BaseRepository的分页方法
+            var pagedResult = await _patientRepository.GetPagedAsync(
+                p => string.IsNullOrEmpty(query.Name) || p.Name.Contains(query.Name),
+                query.CurrentPage, 
+                query.PageSize,
+                p => p.CreateTime,
+                false  // 按创建时间降序排列
+            );
+            
             return new PaginatedResult<PatientDetailDto>
             {
-                TotalCount = total,
-                Items = list.Select(_mapper.Map<PatientDetailDto>).ToList(),
+                TotalCount = pagedResult.TotalCount,
+                Items = pagedResult.Items.Select(_mapper.Map<PatientDetailDto>).ToList(),
                 CurrentPage = query.CurrentPage,
                 PageSize = query.PageSize
             };

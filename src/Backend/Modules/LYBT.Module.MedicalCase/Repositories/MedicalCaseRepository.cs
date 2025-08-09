@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Models.MedicalCase;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Common;
@@ -8,33 +9,40 @@ using System.Linq.Expressions;
 
 namespace LYBT.Module.MedicalCase.Repositories;
 
-public class MedicalCaseRepository : IMedicalCaseRepository
+/// <summary>
+/// 医疗案例仓储实现 - 数据层统一化重构
+/// 继承BaseRepository获得通用CRUD功能，覆盖部分方法以支持Include
+/// </summary>
+public class MedicalCaseRepository : BaseRepository<MedicalCaseModel>, IMedicalCaseRepository
 {
-    private readonly AppDbContext _context;
-
-    public MedicalCaseRepository(AppDbContext context)
+    public MedicalCaseRepository(AppDbContext context) : base(context)
     {
-        _context = context;
     }
 
-    public async Task<MedicalCaseModel?> GetByIdAsync(Guid id)
+    // 覆盖基类方法以支持Include
+    public override async Task<MedicalCaseModel?> GetByIdAsync(Guid id)
     {
-        return await _context.MedicalCases
+        return await _dbSet
             .Include(m => m.Consultation)
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
-    public async Task<List<MedicalCaseModel>> GetAllAsync()
+    public override async Task<IEnumerable<MedicalCaseModel>> GetAllAsync()
     {
-        return await _context.MedicalCases
+        return await _dbSet
             .Include(m => m.Consultation)
             .ToListAsync();
     }
 
-    public async Task<PaginatedResult<MedicalCaseModel>> GetPagedAsync(int page, int pageSize,
-        Expression<Func<MedicalCaseModel, bool>>? predicate = null)
+    // 覆盖基类方法以支持Include和默认排序
+    public override async Task<PaginatedResult<MedicalCaseModel>> GetPagedAsync(
+        Expression<Func<MedicalCaseModel, bool>>? predicate,
+        int pageNumber,
+        int pageSize,
+        Expression<Func<MedicalCaseModel, object>>? orderBy = null,
+        bool ascending = true)
     {
-        var query = _context.MedicalCases
+        var query = _dbSet
             .Include(m => m.Consultation)
             .AsQueryable();
 
@@ -43,10 +51,19 @@ public class MedicalCaseRepository : IMedicalCaseRepository
             query = query.Where(predicate);
         }
 
+        // 使用默认排序（按创建时间降序）如果没有指定排序
+        if (orderBy == null)
+        {
+            query = query.OrderByDescending(m => m.CreateTime);
+        }
+        else
+        {
+            query = ascending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
+        }
+
         var totalCount = await query.CountAsync();
         var items = await query
-            .OrderByDescending(m => m.CreateTime)
-            .Skip((page - 1) * pageSize)
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
@@ -54,54 +71,35 @@ public class MedicalCaseRepository : IMedicalCaseRepository
         {
             Items = items,
             TotalCount = totalCount,
-            CurrentPage = page,
+            CurrentPage = pageNumber,
             PageSize = pageSize
         };
     }
 
-    public async Task<MedicalCaseModel> CreateAsync(MedicalCaseModel entity)
-    {
-        _context.MedicalCases.Add(entity);
-        await _context.SaveChangesAsync();
-        return entity;
-    }
+    // 注意：基础CRUD方法（AddAsync, UpdateAsync, DeleteAsync）由BaseRepository提供
 
-    public async Task<bool> UpdateAsync(MedicalCaseModel entity)
-    {
-        _context.MedicalCases.Update(entity);
-        return await _context.SaveChangesAsync() > 0;
-    }
-
-    public async Task<bool> DeleteAsync(Guid id)
-    {
-        var entity = await GetByIdAsync(id);
-        if (entity == null) return false;
-
-        _context.MedicalCases.Remove(entity);
-        return await _context.SaveChangesAsync() > 0;
-    }
-
+    // 医疗案例特有的业务方法
     public async Task<List<MedicalCaseModel>> GetByPatientIdAsync(Guid patientId)
     {
-        return await _context.MedicalCases
+        return await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.PatientId == patientId)
             .OrderByDescending(m => m.CreateTime)
             .ToListAsync();
     }
 
-    public async Task<List<MedicalCaseModel>> GetByDoctorIdAsync(Guid doctorId)
+    public async Task<List<MedicalCaseModel>> GetByUserIdAsync(Guid userId)
     {
-        return await _context.MedicalCases
+        return await _dbSet
             .Include(m => m.Consultation)
-            .Where(m => m.UserId == doctorId)
+            .Where(m => m.UserId == userId)
             .OrderByDescending(m => m.CreateTime)
             .ToListAsync();
     }
 
     public async Task<List<MedicalCaseModel>> GetByStatusAsync(MedicalCaseStatus status)
     {
-        return await _context.MedicalCases
+        return await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.Status == status)
             .OrderByDescending(m => m.CreateTime)
@@ -110,7 +108,7 @@ public class MedicalCaseRepository : IMedicalCaseRepository
 
     public async Task<List<MedicalCaseModel>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
-        return await _context.MedicalCases
+        return await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.CreateTime >= startDate && m.CreateTime <= endDate)
             .OrderByDescending(m => m.CreateTime)
@@ -119,25 +117,12 @@ public class MedicalCaseRepository : IMedicalCaseRepository
 
     public async Task<MedicalCaseModel?> GetLatestByPatientIdAsync(Guid patientId)
     {
-        return await _context.MedicalCases
+        return await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.PatientId == patientId)
             .OrderByDescending(m => m.CreateTime)
             .FirstOrDefaultAsync();
     }
 
-    public async Task<MedicalCaseModel> AddAsync(MedicalCaseModel entity)
-    {
-        return await CreateAsync(entity);
-    }
-
-    public async Task<List<MedicalCaseModel>> GetListAsync()
-    {
-        return await GetAllAsync();
-    }
-
-    public async Task<List<MedicalCaseModel>> GetByUserIdAsync(Guid userId)
-    {
-        return await GetByDoctorIdAsync(userId);
-    }
+    // AddAsync和GetListAsync由BaseRepository提供，无需重复实现
 }

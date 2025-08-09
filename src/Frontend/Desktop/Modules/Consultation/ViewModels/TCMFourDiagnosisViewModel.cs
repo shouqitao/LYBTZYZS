@@ -8,719 +8,443 @@ using Prism.Mvvm;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.WPF.Client.Core.Interfaces.Services;
-
 using Prism.Dialogs;
 using LYBT.WPF.Client.Core.Extensions;
+using LYBT.WPF.Client.Modules.Consultation.Components;
+using Microsoft.Extensions.Logging;
+
 namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 {
     /// <summary>
-    /// 中医四诊视图模型 - 增强版（支持API集成和智能诊断）
+    /// 中医四诊视图模型 - UltraThink重构（协调器模式）
+    /// 保持向后兼容性，将所有职责委托给专门组件
     /// </summary>
     public class TCMFourDiagnosisViewModel : BindableBase
     {
-        private readonly IConsultationApiService _consultationApiService;
-        private readonly IDialogService _dialogService;
-        private readonly ITCMDiagnosisAnalyzer _diagnosisAnalyzer;
+        private readonly TCMFourDiagnosisCoordinator _coordinator;
 
-        private Guid _consultationId;
+        #region 委托属性（保持向后兼容）
+
         public Guid ConsultationId
         {
-            get => _consultationId;
-            set => SetProperty(ref _consultationId, value);
+            get => _coordinator.DataManager.ConsultationId;
+            set 
+            { 
+                _coordinator.DataManager.ConsultationId = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private bool _isLoading;
         public bool IsLoading
         {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            get => _coordinator.DataManager.IsLoading;
+            set 
+            { 
+                _coordinator.DataManager.IsLoading = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private ObservableCollection<string> _recommendedSyndromes = new();
-        public ObservableCollection<string> RecommendedSyndromes
-        {
-            get => _recommendedSyndromes;
-            set => SetProperty(ref _recommendedSyndromes, value);
-        }
-        #region 望诊属性
+        public ObservableCollection<string> RecommendedSyndromes => _coordinator.DataManager.RecommendedSyndromes;
 
-        private string _complexion = ""; // 面色
+        #endregion
+
+        #region 望诊属性（委托给DataManager）
+
         public string Complexion
         {
-            get => _complexion;
-            set => SetProperty(ref _complexion, value);
+            get => _coordinator.DataManager.Complexion;
+            set 
+            { 
+                _coordinator.DataManager.Complexion = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _spirit = ""; // 神态
         public string Spirit
         {
-            get => _spirit;
-            set => SetProperty(ref _spirit, value);
+            get => _coordinator.DataManager.Spirit;
+            set 
+            { 
+                _coordinator.DataManager.Spirit = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _bodyShape = ""; // 形态
         public string BodyShape
         {
-            get => _bodyShape;
-            set => SetProperty(ref _bodyShape, value);
+            get => _coordinator.DataManager.BodyShape;
+            set 
+            { 
+                _coordinator.DataManager.BodyShape = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _tongueBody = ""; // 舌质
         public string TongueBody
         {
-            get => _tongueBody;
-            set => SetProperty(ref _tongueBody, value);
+            get => _coordinator.DataManager.TongueBody;
+            set 
+            { 
+                _coordinator.DataManager.TongueBody = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _tongueCoating = ""; // 舌苔
         public string TongueCoating
         {
-            get => _tongueCoating;
-            set => SetProperty(ref _tongueCoating, value);
+            get => _coordinator.DataManager.TongueCoating;
+            set 
+            { 
+                _coordinator.DataManager.TongueCoating = value;
+                RaisePropertyChanged();
+            }
         }
 
         #endregion
 
-        #region 闻诊属性
+        #region 闻诊属性（委托给DataManager）
 
-        private string _voice = ""; // 声音
         public string Voice
         {
-            get => _voice;
-            set => SetProperty(ref _voice, value);
+            get => _coordinator.DataManager.Voice;
+            set 
+            { 
+                _coordinator.DataManager.Voice = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _breath = ""; // 呼吸
         public string Breath
         {
-            get => _breath;
-            set => SetProperty(ref _breath, value);
+            get => _coordinator.DataManager.Breath;
+            set 
+            { 
+                _coordinator.DataManager.Breath = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _cough = ""; // 咳嗽
         public string Cough
         {
-            get => _cough;
-            set => SetProperty(ref _cough, value);
+            get => _coordinator.DataManager.Cough;
+            set 
+            { 
+                _coordinator.DataManager.Cough = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _odor = ""; // 气味
         public string Odor
         {
-            get => _odor;
-            set => SetProperty(ref _odor, value);
+            get => _coordinator.DataManager.Odor;
+            set 
+            { 
+                _coordinator.DataManager.Odor = value;
+                RaisePropertyChanged();
+            }
         }
 
         #endregion
 
-        #region 问诊属性
+        #region 问诊属性（委托给DataManager）
 
-        private string _chiefComplaint = ""; // 主诉
         public string ChiefComplaint
         {
-            get => _chiefComplaint;
-            set => SetProperty(ref _chiefComplaint, value);
+            get => _coordinator.DataManager.ChiefComplaint;
+            set 
+            { 
+                _coordinator.DataManager.ChiefComplaint = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _presentIllness = ""; // 现病史
         public string PresentIllness
         {
-            get => _presentIllness;
-            set => SetProperty(ref _presentIllness, value);
+            get => _coordinator.DataManager.PresentIllness;
+            set 
+            { 
+                _coordinator.DataManager.PresentIllness = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _coldHeat = ""; // 寒热
         public string ColdHeat
         {
-            get => _coldHeat;
-            set => SetProperty(ref _coldHeat, value);
+            get => _coordinator.DataManager.ColdHeat;
+            set 
+            { 
+                _coordinator.DataManager.ColdHeat = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _sweat = ""; // 汗
         public string Sweat
         {
-            get => _sweat;
-            set => SetProperty(ref _sweat, value);
+            get => _coordinator.DataManager.Sweat;
+            set 
+            { 
+                _coordinator.DataManager.Sweat = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _headBody = ""; // 头身
         public string HeadBody
         {
-            get => _headBody;
-            set => SetProperty(ref _headBody, value);
+            get => _coordinator.DataManager.HeadBody;
+            set 
+            { 
+                _coordinator.DataManager.HeadBody = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _chestAbdomen = ""; // 胸腹
         public string ChestAbdomen
         {
-            get => _chestAbdomen;
-            set => SetProperty(ref _chestAbdomen, value);
+            get => _coordinator.DataManager.ChestAbdomen;
+            set 
+            { 
+                _coordinator.DataManager.ChestAbdomen = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _appetite = ""; // 饮食
         public string Appetite
         {
-            get => _appetite;
-            set => SetProperty(ref _appetite, value);
+            get => _coordinator.DataManager.Appetite;
+            set 
+            { 
+                _coordinator.DataManager.Appetite = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _stoolUrine = ""; // 二便
         public string StoolUrine
         {
-            get => _stoolUrine;
-            set => SetProperty(ref _stoolUrine, value);
+            get => _coordinator.DataManager.StoolUrine;
+            set 
+            { 
+                _coordinator.DataManager.StoolUrine = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _sleep = ""; // 睡眠
         public string Sleep
         {
-            get => _sleep;
-            set => SetProperty(ref _sleep, value);
+            get => _coordinator.DataManager.Sleep;
+            set 
+            { 
+                _coordinator.DataManager.Sleep = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _menstruation = ""; // 月经（女性）
         public string Menstruation
         {
-            get => _menstruation;
-            set => SetProperty(ref _menstruation, value);
+            get => _coordinator.DataManager.Menstruation;
+            set 
+            { 
+                _coordinator.DataManager.Menstruation = value;
+                RaisePropertyChanged();
+            }
         }
 
         #endregion
 
-        #region 切诊属性
+        #region 切诊属性（委托给DataManager）
 
-        private string _pulseRate = ""; // 脉率
         public string PulseRate
         {
-            get => _pulseRate;
-            set => SetProperty(ref _pulseRate, value);
+            get => _coordinator.DataManager.PulseRate;
+            set 
+            { 
+                _coordinator.DataManager.PulseRate = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _pulseRhythm = ""; // 脉律
         public string PulseRhythm
         {
-            get => _pulseRhythm;
-            set => SetProperty(ref _pulseRhythm, value);
+            get => _coordinator.DataManager.PulseRhythm;
+            set 
+            { 
+                _coordinator.DataManager.PulseRhythm = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _pulseStrength = ""; // 脉力
         public string PulseStrength
         {
-            get => _pulseStrength;
-            set => SetProperty(ref _pulseStrength, value);
+            get => _coordinator.DataManager.PulseStrength;
+            set 
+            { 
+                _coordinator.DataManager.PulseStrength = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _pulseShape = ""; // 脉形
         public string PulseShape
         {
-            get => _pulseShape;
-            set => SetProperty(ref _pulseShape, value);
+            get => _coordinator.DataManager.PulseShape;
+            set 
+            { 
+                _coordinator.DataManager.PulseShape = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _leftPulse = ""; // 左脉
         public string LeftPulse
         {
-            get => _leftPulse;
-            set => SetProperty(ref _leftPulse, value);
+            get => _coordinator.DataManager.LeftPulse;
+            set 
+            { 
+                _coordinator.DataManager.LeftPulse = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _rightPulse = ""; // 右脉
         public string RightPulse
         {
-            get => _rightPulse;
-            set => SetProperty(ref _rightPulse, value);
+            get => _coordinator.DataManager.RightPulse;
+            set 
+            { 
+                _coordinator.DataManager.RightPulse = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _palpation = ""; // 按诊
         public string Palpation
         {
-            get => _palpation;
-            set => SetProperty(ref _palpation, value);
+            get => _coordinator.DataManager.Palpation;
+            set 
+            { 
+                _coordinator.DataManager.Palpation = value;
+                RaisePropertyChanged();
+            }
         }
 
         #endregion
 
-        #region 综合诊断
+        #region 综合诊断（委托给DataManager）
 
-        private string _tcmSyndrome = ""; // 中医证型
         public string TCMSyndrome
         {
-            get => _tcmSyndrome;
-            set => SetProperty(ref _tcmSyndrome, value);
+            get => _coordinator.DataManager.TCMSyndrome;
+            set 
+            { 
+                _coordinator.DataManager.TCMSyndrome = value;
+                RaisePropertyChanged();
+            }
         }
 
-        private string _treatmentPrinciple = ""; // 治法
         public string TreatmentPrinciple
         {
-            get => _treatmentPrinciple;
-            set => SetProperty(ref _treatmentPrinciple, value);
+            get => _coordinator.DataManager.TreatmentPrinciple;
+            set 
+            { 
+                _coordinator.DataManager.TreatmentPrinciple = value;
+                RaisePropertyChanged();
+            }
         }
 
         #endregion
 
-        #region 常用选项集合
+        #region 常用选项集合（委托给DataManager）
 
-        // 面色选项
-        public ObservableCollection<string> ComplexionOptions { get; } = new ObservableCollection<string>
-        {
-            "红润", "苍白", "萎黄", "晦暗", "潮红", "青紫"
-        };
-
-        // 舌质选项
-        public ObservableCollection<string> TongueBodyOptions { get; } = new ObservableCollection<string>
-        {
-            "淡红", "淡白", "红", "绛", "紫暗", "有瘀斑"
-        };
-
-        // 舌苔选项
-        public ObservableCollection<string> TongueCoatingOptions { get; } = new ObservableCollection<string>
-        {
-            "薄白", "薄黄", "厚白", "厚黄", "白腻", "黄腻", "少苔", "无苔"
-        };
-
-        // 脉象选项
-        public ObservableCollection<string> PulseOptions { get; } = new ObservableCollection<string>
-        {
-            "浮", "沉", "迟", "数", "虚", "实", "滑", "涩", "弦", "紧", "缓", "洪", "细", "弱"
-        };
-
-        // 常见证型
-        public ObservableCollection<string> SyndromeOptions { get; } = new ObservableCollection<string>
-        {
-            "风寒感冒", "风热感冒", "暑湿感冒", "气虚感冒",
-            "肝郁气滞", "肝火上炎", "肝阳上亢", "肝风内动",
-            "脾胃虚寒", "脾胃湿热", "食积内停", "胃阴不足",
-            "肺热咳嗽", "肺寒咳嗽", "燥邪犯肺", "痰湿蕴肺",
-            "肾阳虚", "肾阴虚", "肾气不固", "肾精不足",
-            "心血虚", "心阴虚", "心火亢盛", "心脾两虚",
-            "气虚", "血虚", "阴虚", "阳虚", "气滞", "血瘀", "痰湿", "湿热"
-        };
+        public ObservableCollection<string> ComplexionOptions => _coordinator.DataManager.ComplexionOptions;
+        public ObservableCollection<string> TongueBodyOptions => _coordinator.DataManager.TongueBodyOptions;
+        public ObservableCollection<string> TongueCoatingOptions => _coordinator.DataManager.TongueCoatingOptions;
+        public ObservableCollection<string> PulseOptions => _coordinator.DataManager.PulseOptions;
+        public ObservableCollection<string> SyndromeOptions => _coordinator.DataManager.SyndromeOptions;
 
         #endregion
 
-        #region 命令
+        #region 命令（委托给协调器）
 
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand ClearCommand { get; }
-        public DelegateCommand<string> QuickInputCommand { get; }
-        public DelegateCommand AnalyzeSymptomsCommand { get; }
-        public DelegateCommand LoadDataCommand { get; }
+        public DelegateCommand SaveCommand => _coordinator.SaveCommand;
+        public DelegateCommand ClearCommand => _coordinator.ClearCommand;
+        public DelegateCommand<string> QuickInputCommand => _coordinator.QuickInputCommand;
+        public DelegateCommand AnalyzeSymptomsCommand => _coordinator.AnalyzeSymptomsCommand;
+        public DelegateCommand LoadDataCommand => _coordinator.LoadDataCommand;
 
         #endregion
+
+        #region 构造函数
 
         public TCMFourDiagnosisViewModel(
             IConsultationApiService consultationApiService,
             IDialogService dialogService,
-            ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null)
+            ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null,
+            ILogger<TCMFourDiagnosisCoordinator>? logger = null)
         {
-            _consultationApiService = consultationApiService;
-            _dialogService = dialogService;
-            _diagnosisAnalyzer = diagnosisAnalyzer ?? new DefaultTCMDiagnosisAnalyzer();
+            // 创建协调器，委托所有操作
+            _coordinator = new TCMFourDiagnosisCoordinator(
+                consultationApiService, 
+                dialogService, 
+                diagnosisAnalyzer,
+                logger);
 
-            SaveCommand = new DelegateCommand(async () => await SaveAsync(), () => !IsLoading);
-            ClearCommand = new DelegateCommand(Clear);
-            QuickInputCommand = new DelegateCommand<string>(QuickInput);
-            AnalyzeSymptomsCommand = new DelegateCommand(async () => await AnalyzeSymptomsAsync());
-            LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
+            // 监听数据管理器的属性变化以保持UI同步
+            _coordinator.DataManager.PropertyChanged += (s, e) => RaisePropertyChanged(e.PropertyName);
         }
 
-        #region 方法
+        #endregion
+
+        #region 公共方法（委托给协调器）
 
         /// <summary>
         /// 获取完整的望诊描述
         /// </summary>
-        public string GetInspectionDescription()
-        {
-            var parts = new[]
-            {
-                !string.IsNullOrWhiteSpace(Complexion) ? $"面色{Complexion}" : null,
-                !string.IsNullOrWhiteSpace(Spirit) ? $"神{Spirit}" : null,
-                !string.IsNullOrWhiteSpace(BodyShape) ? $"形态{BodyShape}" : null,
-                !string.IsNullOrWhiteSpace(TongueBody) ? $"舌质{TongueBody}" : null,
-                !string.IsNullOrWhiteSpace(TongueCoating) ? $"苔{TongueCoating}" : null
-            };
-
-            return string.Join("，", parts.Where(p => p != null));
-        }
+        public string GetInspectionDescription() => 
+            _coordinator.DescriptionGenerator.GetInspectionDescription(_coordinator.DataManager);
 
         /// <summary>
         /// 获取完整的闻诊描述
         /// </summary>
-        public string GetAuscultationDescription()
-        {
-            var parts = new[]
-            {
-                !string.IsNullOrWhiteSpace(Voice) ? $"声音{Voice}" : null,
-                !string.IsNullOrWhiteSpace(Breath) ? $"呼吸{Breath}" : null,
-                !string.IsNullOrWhiteSpace(Cough) ? $"咳嗽{Cough}" : null,
-                !string.IsNullOrWhiteSpace(Odor) ? $"气味{Odor}" : null
-            };
-
-            return string.Join("，", parts.Where(p => p != null));
-        }
+        public string GetAuscultationDescription() => 
+            _coordinator.DescriptionGenerator.GetAuscultationDescription(_coordinator.DataManager);
 
         /// <summary>
         /// 获取完整的问诊描述
         /// </summary>
-        public string GetInquiryDescription()
-        {
-            var parts = new[]
-            {
-                !string.IsNullOrWhiteSpace(ChiefComplaint) ? $"主诉：{ChiefComplaint}" : null,
-                !string.IsNullOrWhiteSpace(ColdHeat) ? $"寒热：{ColdHeat}" : null,
-                !string.IsNullOrWhiteSpace(Sweat) ? $"汗：{Sweat}" : null,
-                !string.IsNullOrWhiteSpace(HeadBody) ? $"头身：{HeadBody}" : null,
-                !string.IsNullOrWhiteSpace(ChestAbdomen) ? $"胸腹：{ChestAbdomen}" : null,
-                !string.IsNullOrWhiteSpace(Appetite) ? $"饮食：{Appetite}" : null,
-                !string.IsNullOrWhiteSpace(StoolUrine) ? $"二便：{StoolUrine}" : null,
-                !string.IsNullOrWhiteSpace(Sleep) ? $"睡眠：{Sleep}" : null,
-                !string.IsNullOrWhiteSpace(Menstruation) ? $"月经：{Menstruation}" : null
-            };
-
-            return string.Join("；", parts.Where(p => p != null));
-        }
+        public string GetInquiryDescription() => 
+            _coordinator.DescriptionGenerator.GetInquiryDescription(_coordinator.DataManager);
 
         /// <summary>
         /// 获取完整的切诊描述
         /// </summary>
-        public string GetPalpationDescription()
-        {
-            var parts = new[]
-            {
-                !string.IsNullOrWhiteSpace(LeftPulse) ? $"左脉{LeftPulse}" : null,
-                !string.IsNullOrWhiteSpace(RightPulse) ? $"右脉{RightPulse}" : null,
-                !string.IsNullOrWhiteSpace(PulseRate) ? $"脉率{PulseRate}" : null,
-                !string.IsNullOrWhiteSpace(PulseRhythm) ? $"脉律{PulseRhythm}" : null,
-                !string.IsNullOrWhiteSpace(PulseStrength) ? $"脉力{PulseStrength}" : null,
-                !string.IsNullOrWhiteSpace(PulseShape) ? $"脉形{PulseShape}" : null,
-                !string.IsNullOrWhiteSpace(Palpation) ? $"按诊：{Palpation}" : null
-            };
-
-            return string.Join("，", parts.Where(p => p != null));
-        }
-
-        private async Task SaveAsync()
-        {
-            if (ConsultationId == Guid.Empty)
-            {
-                await _dialogService.ShowWarningAsync("请先选择要更新的看诊记录", "警告");
-                return;
-            }
-
-            try
-            {
-                IsLoading = true;
-
-                var dto = MapToConsultationUpdateDto();
-                var response = await _consultationApiService.UpdateConsultationAsync(ConsultationId, dto);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    await _dialogService.ShowInformationAsync("四诊信息保存成功", "成功");
-                }
-                else
-                {
-                    await _dialogService.ShowErrorAsync($"保存失败：{response.Error?.Content}", "错误");
-                }
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"保存失败：{ex.Message}", "错误");
-            }
-            finally
-            {
-                IsLoading = false;
-                SaveCommand.RaiseCanExecuteChanged();
-            }
-        }
-
-        private void Clear()
-        {
-            // 清空所有输入
-            Complexion = "";
-            Spirit = "";
-            BodyShape = "";
-            TongueBody = "";
-            TongueCoating = "";
-            
-            Voice = "";
-            Breath = "";
-            Cough = "";
-            Odor = "";
-            
-            ChiefComplaint = "";
-            PresentIllness = "";
-            ColdHeat = "";
-            Sweat = "";
-            HeadBody = "";
-            ChestAbdomen = "";
-            Appetite = "";
-            StoolUrine = "";
-            Sleep = "";
-            Menstruation = "";
-            
-            PulseRate = "";
-            PulseRhythm = "";
-            PulseStrength = "";
-            PulseShape = "";
-            LeftPulse = "";
-            RightPulse = "";
-            Palpation = "";
-            
-            TCMSyndrome = "";
-            TreatmentPrinciple = "";
-        }
-
-        private void QuickInput(string template)
-        {
-            if (string.IsNullOrWhiteSpace(template)) return;
-
-            var templateData = TCMQuickTemplates.GetTemplate(template);
-            if (templateData != null)
-            {
-                // 望诊
-                Complexion = templateData.Complexion ?? Complexion;
-                Spirit = templateData.Spirit ?? Spirit;
-                TongueBody = templateData.TongueBody ?? TongueBody;
-                TongueCoating = templateData.TongueCoating ?? TongueCoating;
-                
-                // 闻诊
-                Voice = templateData.Voice ?? Voice;
-                Breath = templateData.Breath ?? Breath;
-                Cough = templateData.Cough ?? Cough;
-                
-                // 问诊
-                ChiefComplaint = templateData.ChiefComplaint ?? ChiefComplaint;
-                ColdHeat = templateData.ColdHeat ?? ColdHeat;
-                Sweat = templateData.Sweat ?? Sweat;
-                
-                // 切诊
-                LeftPulse = templateData.LeftPulse ?? LeftPulse;
-                RightPulse = templateData.RightPulse ?? RightPulse;
-                
-                // 诊断
-                TCMSyndrome = templateData.Syndrome ?? TCMSyndrome;
-                TreatmentPrinciple = templateData.TreatmentPrinciple ?? TreatmentPrinciple;
-            }
-        }
-
-        /// <summary>
-        /// 加载看诊数据
-        /// </summary>
-        private async Task LoadDataAsync()
-        {
-            if (ConsultationId == Guid.Empty) return;
-
-            try
-            {
-                IsLoading = true;
-
-                var response = await _consultationApiService.GetByIdAsync(ConsultationId);
-                if (response.IsSuccessStatusCode && response.Content != null)
-                {
-                    MapFromConsultationDetail(response.Content);
-                }
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"加载数据失败：{ex.Message}", "错误");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
+        public string GetPalpationDescription() => 
+            _coordinator.DescriptionGenerator.GetPalpationDescription(_coordinator.DataManager);
 
         /// <summary>
         /// 映射到更新DTO
         /// </summary>
-        private ConsultationUpdateDto MapToConsultationUpdateDto()
-        {
-            return new ConsultationUpdateDto
-            {
-                Inspection = GetInspectionDescription(),
-                AuscultationOlfaction = GetAuscultationDescription(),
-                Inquiry = GetInquiryDescription(),
-                Palpation = GetPalpationDescription(),
-                TongueInspection = $"舌质{TongueBody}，苔{TongueCoating}".Trim('，'),
-                PulseCondition = $"左脉{LeftPulse}，右脉{RightPulse}".Trim('，'),
-                TCMDiagnosis = TCMSyndrome,
-                TreatmentPrinciple = TreatmentPrinciple,
-                Remark = "由中医四诊系统生成"
-            };
-        }
+        public ConsultationUpdateDto MapToConsultationUpdateDto() => 
+            _coordinator.MapToConsultationUpdateDto();
 
         /// <summary>
         /// 从看诊详情中映射数据
         /// </summary>
-        private void MapFromConsultationDetail(ConsultationDetailDto detail)
-        {
-            // 基础解析逻辑，实际项目中可能需要更复杂的解析
-            if (!string.IsNullOrEmpty(detail.Inspection))
-            {
-                ParseInspectionData(detail.Inspection);
-            }
-
-            if (!string.IsNullOrEmpty(detail.AuscultationOlfaction))
-            {
-                ParseAuscultationData(detail.AuscultationOlfaction);
-            }
-
-            if (!string.IsNullOrEmpty(detail.Inquiry))
-            {
-                ParseInquiryData(detail.Inquiry);
-            }
-
-            if (!string.IsNullOrEmpty(detail.TongueInspection))
-            {
-                ParseTongueData(detail.TongueInspection);
-            }
-
-            if (!string.IsNullOrEmpty(detail.PulseCondition))
-            {
-                ParsePulseData(detail.PulseCondition);
-            }
-
-            TCMSyndrome = detail.TCMDiagnosis ?? "";
-            TreatmentPrinciple = detail.TreatmentPrinciple ?? "";
-        }
+        public void MapFromConsultationDetail(ConsultationDetailDto detail) => 
+            _coordinator.LoadFromConsultationDetail(detail);
 
         /// <summary>
-        /// 智能症状分析
+        /// 获取完整四诊数据
         /// </summary>
-        private async Task AnalyzeSymptomsAsync()
-        {
-            try
-            {
-                IsLoading = true;
+        public TCMFourDiagnosisData GetFourDiagnosisData() => 
+            _coordinator.GetFourDiagnosisData();
 
-                var currentData = new TCMFourDiagnosisData
-                {
-                    Inspection = GetInspectionDescription(),
-                    Auscultation = GetAuscultationDescription(),
-                    Inquiry = GetInquiryDescription(),
-                    Palpation = GetPalpationDescription(),
-                    TongueInspection = $"舌质{TongueBody}，苔{TongueCoating}",
-                    PulseCondition = $"左脉{LeftPulse}，右脉{RightPulse}"
-                };
-
-                var recommendations = await _diagnosisAnalyzer.AnalyzeSyndromeAsync(currentData);
-                
-                RecommendedSyndromes.Clear();
-                foreach (var syndrome in recommendations.Take(5))
-                {
-                    RecommendedSyndromes.Add(syndrome);
-                }
-
-                if (RecommendedSyndromes.Any())
-                {
-                    await _dialogService.ShowInformationAsync(
-                        $"基于当前症状，推荐证型：{string.Join("、", RecommendedSyndromes)}", 
-                        "智能诊断推荐");
-                }
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"智能分析失败：{ex.Message}", "错误");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-
-        #region 数据解析辅助方法
-
-        private void ParseInspectionData(string inspectionText)
-        {
-            // 简单的正则解析，实际可以使用更复杂的NLP
-            if (inspectionText.Contains("面色"))
-            {
-                foreach (var option in ComplexionOptions)
-                {
-                    if (inspectionText.Contains(option))
-                    {
-                        Complexion = option;
-                        break;
-                    }
-                }
-            }
-        }
-
-        private void ParseAuscultationData(string auscultationText)
-        {
-            if (auscultationText.Contains("声音"))
-            {
-                Voice = auscultationText;
-            }
-        }
-
-        private void ParseInquiryData(string inquiryText)
-        {
-            if (inquiryText.Contains("主诉"))
-            {
-                var parts = inquiryText.Split('；');
-                foreach (var part in parts)
-                {
-                    if (part.Contains("主诉"))
-                    {
-                        ChiefComplaint = part.Replace("主诉：", "").Trim();
-                    }
-                }
-            }
-        }
-
-        private void ParseTongueData(string tongueText)
-        {
-            foreach (var bodyOption in TongueBodyOptions)
-            {
-                if (tongueText.Contains(bodyOption))
-                {
-                    TongueBody = bodyOption;
-                    break;
-                }
-            }
-
-            foreach (var coatingOption in TongueCoatingOptions)
-            {
-                if (tongueText.Contains(coatingOption))
-                {
-                    TongueCoating = coatingOption;
-                    break;
-                }
-            }
-        }
-
-        private void ParsePulseData(string pulseText)
-        {
-            if (pulseText.Contains("左脉"))
-            {
-                var leftPart = pulseText.Substring(pulseText.IndexOf("左脉") + 2);
-                if (leftPart.Contains("、") || leftPart.Contains("，"))
-                {
-                    LeftPulse = leftPart.Split('、', '，')[0].Trim();
-                }
-            }
-
-            if (pulseText.Contains("右脉"))
-            {
-                var rightPart = pulseText.Substring(pulseText.IndexOf("右脉") + 2);
-                if (rightPart.Contains("、") || rightPart.Contains("，"))
-                {
-                    RightPulse = rightPart.Split('、', '，')[0].Trim();
-                }
-            }
-        }
-
-        #endregion
+        /// <summary>
+        /// 应用快速输入模板
+        /// </summary>
+        public void ApplyQuickTemplate(string templateName) => 
+            _coordinator.ApplyQuickTemplate(templateName);
 
         #endregion
     }
 
-    #region 支持类和接口
-
     /// <summary>
-    /// 中医四诊数据结构
+    /// 中医四诊数据结构（保持向后兼容）
     /// </summary>
     public class TCMFourDiagnosisData
     {
@@ -733,7 +457,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
     }
 
     /// <summary>
-    /// 中医诊断分析器接口
+    /// 中医诊断分析器接口（保持向后兼容）
     /// </summary>
     public interface ITCMDiagnosisAnalyzer
     {
@@ -742,7 +466,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
     }
 
     /// <summary>
-    /// 默认中医诊断分析器
+    /// 默认中医诊断分析器（保持向后兼容）
     /// </summary>
     public class DefaultTCMDiagnosisAnalyzer : ITCMDiagnosisAnalyzer
     {
@@ -792,54 +516,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
     }
 
     /// <summary>
-    /// 中医快速模板工具类
-    /// </summary>
-    public static class TCMQuickTemplates
-    {
-        private static readonly Dictionary<string, TCMTemplate> _templates = new()
-        {
-            ["风寒感冒"] = new TCMTemplate
-            {
-                ChiefComplaint = "恶寒重，发热轻，头痛，鼻塞，流清涕",
-                Complexion = "苍白",
-                Spirit = "精神疲惫",
-                Voice = "声音低微",
-                ColdHeat = "恶寒重，发热轻",
-                TongueBody = "淡红",
-                TongueCoating = "苔薄白",
-                LeftPulse = "浮紧",
-                RightPulse = "浮紧",
-                Syndrome = "风寒束表证",
-                TreatmentPrinciple = "辛温解表，宣肺散寒"
-            },
-            ["风热感冒"] = new TCMTemplate
-            {
-                ChiefComplaint = "发热重，恶寒轻，头痛，咽痛，口渴",
-                Complexion = "面色潮红",
-                Voice = "声音咳嗄",
-                ColdHeat = "发热重，恶寒轻",
-                TongueBody = "红",
-                TongueCoating = "苔薄黄",
-                LeftPulse = "浮数",
-                RightPulse = "浮数",
-                Syndrome = "风热犯表证",
-                TreatmentPrinciple = "辛凉解表，清热宣肺"
-            }
-        };
-
-        public static TCMTemplate? GetTemplate(string templateName)
-        {
-            return _templates.TryGetValue(templateName, out var template) ? template : null;
-        }
-
-        public static IEnumerable<string> GetAvailableTemplates()
-        {
-            return _templates.Keys;
-        }
-    }
-
-    /// <summary>
-    /// 中医模板数据结构
+    /// 中医模板数据结构（保持向后兼容）
     /// </summary>
     public class TCMTemplate
     {
@@ -854,11 +531,32 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         public string? Cough { get; set; }
         public string? ColdHeat { get; set; }
         public string? Sweat { get; set; }
+        public string? HeadBody { get; set; }
+        public string? ChestAbdomen { get; set; }
+        public string? Appetite { get; set; }
+        public string? Sleep { get; set; }
+        public string? StoolUrine { get; set; }
         public string? LeftPulse { get; set; }
         public string? RightPulse { get; set; }
         public string? Syndrome { get; set; }
         public string? TreatmentPrinciple { get; set; }
     }
 
-    #endregion
+    /// <summary>
+    /// 中医快速模板工具类（保持向后兼容）
+    /// </summary>
+    public static class TCMQuickTemplates
+    {
+        public static TCMTemplate? GetTemplate(string templateName)
+        {
+            var manager = new TCMFourDiagnosisTemplateManager();
+            return manager.GetTemplate(templateName);
+        }
+
+        public static IEnumerable<string> GetAvailableTemplates()
+        {
+            var manager = new TCMFourDiagnosisTemplateManager();
+            return manager.GetAvailableTemplates();
+        }
+    }
 }

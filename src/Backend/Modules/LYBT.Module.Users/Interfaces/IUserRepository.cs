@@ -1,24 +1,18 @@
 ﻿using LYBT.Models.Users;
+using LYBT.Infrastructure.Interfaces;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 
 namespace LYBT.Module.Users.Interfaces
 {
 
     /// <summary>
-    /// 用户仓储接口，定义用户数据的持久化操作
+    /// 用户仓储接口 - 数据层统一化重构
+    /// 继承BaseRepository提供通用CRUD，扩展用户特定业务方法
     /// </summary>
-    public interface IUserRepository
+    public interface IUserRepository : IBaseRepository<UserModel>
     {
-
-        /// <summary>
-        /// 新增用户
-        /// </summary>
-        Task<bool> AddAsync(UserModel user);
-
-        /// <summary>
-        /// 更新用户资料（通过ID）
-        /// </summary>
-        Task<bool> UpdateAsync(UserModel user);
+        // 注意：基础CRUD方法由IBaseRepository提供
+        // 这里只定义用户特有的业务方法
 
         /// <summary>
         /// 禁用用户（将用户状态设为禁用）
@@ -42,7 +36,7 @@ namespace LYBT.Module.Users.Interfaces
         Task<UserModel?> GetByUsernameAsync(string userName);
 
         /// <summary>
-        /// 根据用户ID查找（用于编辑、禁用等内部操作）
+        /// 根据用户ID查找（支持权限控制）
         /// 管理员可以查询所有用户，普通用户只能查询启用的用户
         /// </summary>
         Task<UserModel?> GetByIdAsync(Guid id, bool includeDisabled = false);
@@ -71,10 +65,5 @@ namespace LYBT.Module.Users.Interfaces
         /// 获取启用的用户列表
         /// </summary>
         Task<List<UserModel>> GetActiveUsersAsync();
-
-        /// <summary>
-        /// 获取所有用户
-        /// </summary>
-        Task<List<UserModel>> GetAllAsync();
     }
 }

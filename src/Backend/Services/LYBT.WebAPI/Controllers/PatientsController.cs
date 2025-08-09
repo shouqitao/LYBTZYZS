@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
+using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
-
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,16 +15,15 @@ using QuickPatientCreateDto = LYBT.Shared.Models.Contracts.Patients.QuickPatient
 
 namespace LYBT.WebAPI.Controllers
 {
-
     /// <summary>
-    /// 病人管理API接口
-    /// 实现软删除策略：患者档案档案只能禁用/启用，不提供删除接口
+    /// 患者管理API接口 - 统一API响应格式和错误处理
+    /// 实现软删除策略：患者档案只能禁用/启用，不提供删除接口
     /// </summary>
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class PatientsController : BaseController
+    public class PatientsController : BaseApiController
     {
         private readonly IPatientService _patientService;
 
@@ -37,178 +36,247 @@ namespace LYBT.WebAPI.Controllers
         // 移除重复的新增患者接口，统一使用RESTful POST接口
 
         /// <summary>
-        /// 快速创建患者档案（简化版本）
+        /// 快速创建患者档案（简化版本） - 统一API响应格式
         /// </summary>
         [HttpPost("quick")]
-        public async Task<IActionResult> QuickCreate([FromBody] QuickPatientCreateDto dto)
+        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> QuickCreate([FromBody] QuickPatientCreateDto dto)
         {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            // 将QuickPatientCreateDto转换为PatientDetailDto
-            var patientDto = new PatientDetailDto
+            try
             {
-                Name = dto.Name,
-                Gender = dto.Gender,
-                Age = dto.Age ?? 0,
-                PhoneNumber = dto.PhoneNumber ?? dto.Phone ?? string.Empty,
-                IDNumber = dto.IDNumber ?? string.Empty,
-                Address = dto.Address ?? string.Empty
-            };
+                var validation = ValidateModel<PatientDetailDto>();
+                if (validation != null) return validation;
 
-            var result = await _patientService.CreateAsync(patientDto, operatorId, operatorName);
-            if (result != null)
-            {
-                LogOperation("患者档案快速创建成功", result, result.Id);
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest(new ProblemDetails
+                var (operatorId, operatorName, operatorRole) = GetOperator();
+                // 将QuickPatientCreateDto转换为PatientDetailDto
+                var patientDto = new PatientDetailDto
                 {
-                    Title = "操作失败",
-                    Detail = "患者档案快速创建失败，必填项不完整或已存在",
-                    Status = 400
-                });
+                    Name = dto.Name,
+                    Gender = dto.Gender,
+                    Age = dto.Age ?? 0,
+                    PhoneNumber = dto.PhoneNumber ?? dto.Phone ?? string.Empty,
+                    IDNumber = dto.IDNumber ?? string.Empty,
+                    Address = dto.Address ?? string.Empty
+                };
+
+                var result = await _patientService.CreateAsync(patientDto, operatorId, operatorName);
+                if (result == null)
+                {
+                    return BusinessFail<PatientDetailDto>("患者档案快速创建失败，必填项不完整或已存在", ApiErrorCodes.DATA_SAVE_FAILED);
+                }
+
+                LogOperation("快速创建患者档案", result, result.Id);
+                return Success(result, "患者档案快速创建成功");
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("已存在"))
+            {
+                return BusinessFail<PatientDetailDto>(ex.Message, ApiErrorCodes.PHONE_EXISTS);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PatientDetailDto>(ex, "快速创建患者档案", dto);
             }
         }
 
         // 移除单独的Enable/Disable接口，统一使用ToggleStatus接口
 
         /// <summary>
-        /// 切换患者档案状态（启用/禁用）
+        /// 切换患者档案状态（启用/禁用） - 统一API响应格式
         /// </summary>
         [HttpPatch("{id}/toggle-status")]
-        public async Task<IActionResult> ToggleStatus(Guid id)
+        public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id)
         {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            // 先获取患者当前状态
-            var patient = await _patientService.GetByIdAsync(id);
-            if (patient == null)
+            try
             {
-                return NotFound(new ProblemDetails
-                {
-                    Title = "资源未找到"
-                });
-            }
+                var validation = ValidateGuid(id, "患者ID");
+                if (validation != null) return validation;
 
-            // 根据当前状态切换
-            bool result;
-            string message;
-            if (patient.Status == CommonStatus.Enabled)
-            {
-                result = await _patientService.SetStatusAsync(id, false, operatorId, operatorName);
-                message = "患者档案已禁用";
-            }
-            else
-            {
-                result = await _patientService.SetStatusAsync(id, true, operatorId, operatorName);
-                message = "患者档案已启用";
-            }
-
-            if (result)
-            {
-                return Ok(new { message });
-            }
-            else
-            {
-                return BadRequest(new ProblemDetails
+                var (operatorId, operatorName, operatorRole) = GetOperator();
+                // 先获取患者当前状态
+                var patient = await _patientService.GetByIdAsync(id);
+                if (patient == null)
                 {
-                    Title = "操作失败",
-                    Detail = "状态切换失败",
-                    Status = 400
-                });
+                    return NotFound("患者不存在", ApiErrorCodes.PATIENT_NOT_FOUND);
+                }
+
+                // 根据当前状态切换
+                bool result;
+                string message;
+                if (patient.Status == CommonStatus.Enabled)
+                {
+                    result = await _patientService.SetStatusAsync(id, false, operatorId, operatorName);
+                    message = "患者档案已禁用";
+                }
+                else
+                {
+                    result = await _patientService.SetStatusAsync(id, true, operatorId, operatorName);
+                    message = "患者档案已启用";
+                }
+
+                if (!result)
+                {
+                    return BusinessFail("状态切换失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                }
+
+                LogOperation(message, null, id);
+                return Success(message);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "切换患者状态", id);
             }
         }
 
         /// <summary>
-        /// 获取全部病人（小数据量场景，分页请用 /paged）
+        /// 获取全部患者（小数据量场景） - 统一API响应格式
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("all")]
-        public async Task<ActionResult<List<PatientDetailDto>>> GetAll()
+        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetAll()
         {
-            var (_, _, operatorRole) = GetOperator();
-            var cacheKey = $"patients:all:{operatorRole}";
-
-            if ((_cache?.TryGetValue(cacheKey, out List<PatientDetailDto>? data)) ?? false)
+            try
             {
-                return Ok(data);
-            }
+                var (_, _, operatorRole) = GetOperator();
+                var cacheKey = $"patients:all:{operatorRole}";
 
-            var result = await _patientService.GetAllAsync();
-            _cache?.Set(cacheKey, result, TimeSpan.FromMinutes(5));
-            return Ok(result);
+                if ((_cache?.TryGetValue(cacheKey, out List<PatientDetailDto>? data)) ?? false)
+                {
+                    return Success(data, "查询成功（缓存）");
+                }
+
+                var result = await _patientService.GetAllAsync();
+                _cache?.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+                return Success(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PatientDetailDto>>(ex, "获取全部患者列表", null);
+            }
         }
 
         /// <summary>
-        /// 分页条件查询
+        /// 分页条件查询 - 统一API响应格式
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<PaginatedResult<PatientDetailDto>>> GetPaged([FromBody] PatientPagedQueryDto query)
+        public async Task<ActionResult<PagedApiResponse<PatientDetailDto>>> GetPaged([FromBody] PatientPagedQueryDto query)
         {
-            var (_, _, operatorRole) = GetOperator();
-            var result = await _patientService.GetPagedAsync(query);
-            return Ok(result);
+            try
+            {
+                var validation = ValidateModelPaged<PatientDetailDto>();
+                if (validation != null) return validation;
+
+                if (query.CurrentPage <= 0 || query.PageSize <= 0 || query.PageSize > 100)
+                {
+                    return ValidationFailPaged<PatientDetailDto>("页码和页大小参数无效（页码>0，页大小1-100）");
+                }
+
+                var (_, _, operatorRole) = GetOperator();
+                var result = await _patientService.GetPagedAsync(query);
+                return Success(result, "分页查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleExceptionPaged<PatientDetailDto>(ex, "分页查询患者", query);
+            }
         }
 
         // 移除未实现的批量操作接口，避免误导用户
 
         /// <summary>
-        /// 搜索患者档案
+        /// 搜索患者档案 - 统一API响应格式
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("search")]
-        public async Task<ActionResult<List<PatientDetailDto>>> Search([FromQuery] string keyword = "")
+        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Search([FromQuery] string keyword = "")
         {
-            var (_, _, operatorRole) = GetOperator();
-            var list = await _patientService.SearchAsync(keyword);
-            return Ok(list);
+            try
+            {
+                var (_, _, operatorRole) = GetOperator();
+                var list = await _patientService.SearchAsync(keyword);
+                return Success(list, $"搜索完成，找到{list.Count}条记录");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PatientDetailDto>>(ex, "搜索患者档案", keyword);
+            }
         }
 
         /// <summary>
-        /// 导出患者档案数据
+        /// 导出患者档案数据 - 统一API响应格式
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("export")]
-        public async Task<ActionResult<List<PatientDetailDto>>> Export()
+        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Export()
         {
-            var (_, _, operatorRole) = GetOperator();
-            var data = await _patientService.GetAllAsync();
-            return Ok(data);
+            try
+            {
+                var (_, _, operatorRole) = GetOperator();
+                var data = await _patientService.GetAllAsync();
+                LogOperation("导出患者档案", new { count = data.Count });
+                return Success(data, $"成功导出{data.Count}条患者档案");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PatientDetailDto>>(ex, "导出患者档案", null);
+            }
         }
 
         // 移除未实现的导入和历史病历功能，避免误导用户
         // 这些功能可以在后续版本中根据实际需求添加
 
         /// <summary>
-        /// 获取启用的患者档案列表
+        /// 获取启用的患者档案列表 - 统一API响应格式
         /// </summary>
         [HttpGet("active")]
-        public async Task<ActionResult<List<PatientDetailDto>>> GetActivePatients()
+        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetActivePatients()
         {
-            var patients = await _patientService.GetActivePatientsAsync();
-            return Ok(patients);
+            try
+            {
+                var patients = await _patientService.GetActivePatientsAsync();
+                return Success(patients, $"查询成功，共{patients.Count}条启用的患者档案");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PatientDetailDto>>(ex, "获取启用的患者档案", null);
+            }
         }
 
         /// <summary>
-        /// 查询或创建患者档案（用于挂号/看诊场景）
+        /// 查询或创建患者档案（用于挂号/看诊场景） - 统一API响应格式
         /// 根据姓名和身份证号查询患者档案，如果不存在则创建新档案
         /// </summary>
         [HttpPost("find-or-create")]
-        public async Task<ActionResult<PatientDetailDto>> FindOrCreate([FromBody] PatientDetailDto dto)
+        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> FindOrCreate([FromBody] PatientDetailDto dto)
         {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var patient = await FindOrCreatePatientAsync(dto, operatorId, operatorName);
-            return Ok(patient);
+            try
+            {
+                var validation = ValidateModel<PatientDetailDto>();
+                if (validation != null) return validation;
+
+                var (operatorId, operatorName, operatorRole) = GetOperator();
+                var patient = await FindOrCreatePatientAsync(dto, operatorId, operatorName);
+                
+                if (patient == null)
+                {
+                    return BusinessFail<PatientDetailDto>("查询或创建患者档案失败", ApiErrorCodes.DATA_SAVE_FAILED);
+                }
+
+                LogOperation("查询或创建患者档案", patient, patient.Id);
+                return Success(patient, "操作成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PatientDetailDto>(ex, "查询或创建患者档案", dto);
+            }
         }
 
         // ======================== RESTful 标准接口 ========================
 
         /// <summary>
-        /// 获取所有患者列表 (RESTful GET /Patients) - 支持多字段模糊查询
+        /// 获取所有患者列表 (RESTful GET /Patients) - 支持多字段模糊查询 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<PaginatedResult<PatientDetailDto>>> GetPatients(
+        public async Task<ActionResult<PagedApiResponse<PatientDetailDto>>> GetPatients(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -221,114 +289,162 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int? maxAge = null,
             [FromQuery] PatientStatus? status = null)
         {
-            var (_, _, operatorRole) = GetOperator();
-            var query = new PatientPagedQueryDto
+            try
             {
-                CurrentPage = page,
-                PageSize = pageSize,
-                SearchKeyword = keyword,
-                Name = name,
-                PhoneNumber = phoneNumber,
-                IDNumber = idNumber,
-                Address = address,
-                Gender = gender,
-                MinAge = minAge,
-                MaxAge = maxAge
-            };
-            var result = await _patientService.GetPagedAsync(query);
-            return Ok(result);
+                if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                {
+                    return ValidationFailPaged<PatientDetailDto>("页码和页大小参数无效（页码>0，页大小1-100）");
+                }
+
+                var (_, _, operatorRole) = GetOperator();
+                var query = new PatientPagedQueryDto
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    SearchKeyword = keyword,
+                    Name = name,
+                    PhoneNumber = phoneNumber,
+                    IDNumber = idNumber,
+                    Address = address,
+                    Gender = gender,
+                    MinAge = minAge,
+                    MaxAge = maxAge
+                };
+                var result = await _patientService.GetPagedAsync(query);
+                return Success(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleExceptionPaged<PatientDetailDto>(ex, "获取患者列表", new { page, pageSize, keyword });
+            }
         }
 
         /// <summary>
-        /// 创建新患者 (RESTful POST /Patients)
+        /// 创建新患者 (RESTful POST /Patients) - 统一API响应格式
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> CreatePatient([FromBody] PatientDetailDto dto)
+        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> CreatePatient([FromBody] PatientDetailDto dto)
         {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var result = await _patientService.CreateAsync(dto, operatorId, operatorName);
-            if (result != null)
+            try
             {
-                LogOperation("患者创建成功", result, result.Id);
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest(new ProblemDetails
+                var validation = ValidateModel<PatientDetailDto>();
+                if (validation != null) return validation;
+
+                var (operatorId, operatorName, operatorRole) = GetOperator();
+                var result = await _patientService.CreateAsync(dto, operatorId, operatorName);
+                
+                if (result == null)
                 {
-                    Title = "操作失败",
-                    Detail = "患者创建失败",
-                    Status = 400
-                });
+                    return BusinessFail<PatientDetailDto>("患者创建失败，必填项不完整或已存在", ApiErrorCodes.DATA_SAVE_FAILED);
+                }
+
+                LogOperation("患者创建成功", result, result.Id);
+                return Success(result, "患者创建成功");
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("已存在"))
+            {
+                return BusinessFail<PatientDetailDto>(ex.Message, ApiErrorCodes.PHONE_EXISTS);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PatientDetailDto>(ex, "创建患者", dto);
             }
         }
 
         /// <summary>
-        /// 根据ID获取患者 (RESTful GET /Patients/{id})
+        /// 根据ID获取患者 (RESTful GET /Patients/{id}) - 统一API响应格式
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<PatientDetailDto>> GetPatient(Guid id)
+        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> GetPatient(Guid id)
         {
-            var (_, _, operatorRole) = GetOperator();
-            var patient = await _patientService.GetByIdAsync(id);
-            if (patient == null)
+            try
             {
-                return NotFound(new ProblemDetails
+                var validation = ValidateGuid<PatientDetailDto>(id, "患者ID");
+                if (validation != null) return validation;
+
+                var (_, _, operatorRole) = GetOperator();
+                var patient = await _patientService.GetByIdAsync(id);
+                if (patient == null)
                 {
-                    Title = "资源未找到"
-                });
+                    return NotFound<PatientDetailDto>("患者不存在", ApiErrorCodes.PATIENT_NOT_FOUND);
+                }
+                
+                return Success(patient, "查询成功");
             }
-            return Ok(patient);
+            catch (Exception ex)
+            {
+                return HandleException<PatientDetailDto>(ex, "获取患者信息", id);
+            }
         }
 
         /// <summary>
-        /// 更新患者信息 (RESTful PUT /Patients/{id})
+        /// 更新患者信息 (RESTful PUT /Patients/{id}) - 统一API响应格式
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<PatientDto>> UpdatePatient(Guid id, [FromBody] PatientDetailDto dto)
+        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> UpdatePatient(Guid id, [FromBody] PatientDetailDto dto)
         {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            // 确保DTO的ID与路由参数一致
-            dto.Id = id;
-            var result = await _patientService.UpdateAsync(id, dto, operatorId, operatorName);
-            if (result != null)
+            try
             {
+                var idValidation = ValidateGuid<PatientDetailDto>(id, "患者ID");
+                if (idValidation != null) return idValidation;
+
+                var modelValidation = ValidateModel<PatientDetailDto>();
+                if (modelValidation != null) return modelValidation;
+
+                // 检查ID一致性
+                if (dto.Id != id)
+                {
+                    return ValidationFail<PatientDetailDto>("URL中的ID与请求体中的ID不匹配");
+                }
+
+                var (operatorId, operatorName, operatorRole) = GetOperator();
+                var result = await _patientService.UpdateAsync(id, dto, operatorId, operatorName);
+                
+                if (result == null)
+                {
+                    return BusinessFail<PatientDetailDto>("患者信息更新失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                }
+
                 // 获取更新后的资源
                 var updated = await _patientService.GetByIdAsync(id);
-                LogOperation("更新患者信息成功");
-                return Ok(updated);
+                LogOperation("更新患者信息成功", updated, id);
+                return Success(updated, "患者信息更新成功");
             }
-            else
+            catch (InvalidOperationException ex) when (ex.Message.Contains("患者不存在"))
             {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "操作失败",
-                    Detail = "患者信息更新失败",
-                    Status = 400
-                });
+                return NotFound<PatientDetailDto>(ex.Message, ApiErrorCodes.PATIENT_NOT_FOUND);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PatientDetailDto>(ex, "更新患者信息", new { id, dto });
             }
         }
 
         /// <summary>
-        /// 删除患者 (RESTful DELETE /Patients/{id}) - 实际执行软删除
+        /// 删除患者 (RESTful DELETE /Patients/{id}) - 实际执行软删除 - 统一API响应格式
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePatient(Guid id)
+        public async Task<ActionResult<ApiResponse>> DeletePatient(Guid id)
         {
-            var (operatorId, operatorName, operatorRole) = GetOperator();
-            var result = await _patientService.SetStatusAsync(id, false, operatorId, operatorName);
-            if (result)
+            try
             {
-                return Ok(new { message = "患者已禁用" });
-            }
-            else
-            {
-                return BadRequest(new ProblemDetails
+                var validation = ValidateGuid(id, "患者ID");
+                if (validation != null) return validation;
+
+                var (operatorId, operatorName, operatorRole) = GetOperator();
+                var result = await _patientService.SetStatusAsync(id, false, operatorId, operatorName);
+                
+                if (!result)
                 {
-                    Title = "操作失败",
-                    Detail = "禁用患者失败",
-                    Status = 400
-                });
+                    return BusinessFail("禁用患者失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                }
+
+                LogOperation("患者已禁用", null, id);
+                return Success("患者已禁用");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "禁用患者", id);
             }
         }
 

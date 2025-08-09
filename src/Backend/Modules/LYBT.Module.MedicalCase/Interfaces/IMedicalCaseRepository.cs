@@ -1,37 +1,17 @@
 using LYBT.Models.MedicalCase;
 using LYBT.Shared.Models.Enums;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.MedicalCase.Interfaces
 {
     /// <summary>
-    /// 医疗案例仓储接口
+    /// 医疗案例仓储接口 - 数据层统一化重构
+    /// 继承BaseRepository提供通用CRUD，扩展医疗案例特定业务方法
     /// </summary>
-    public interface IMedicalCaseRepository
+    public interface IMedicalCaseRepository : IBaseRepository<MedicalCaseModel>
     {
-        /// <summary>
-        /// 获取所有医疗案例
-        /// </summary>
-        Task<List<MedicalCaseModel>> GetListAsync();
-
-        /// <summary>
-        /// 根据ID获取医疗案例
-        /// </summary>
-        Task<MedicalCaseModel?> GetByIdAsync(Guid id);
-
-        /// <summary>
-        /// 创建医疗案例
-        /// </summary>
-        Task<MedicalCaseModel> CreateAsync(MedicalCaseModel model);
-
-        /// <summary>
-        /// 更新医疗案例
-        /// </summary>
-        Task<bool> UpdateAsync(MedicalCaseModel model);
-
-        /// <summary>
-        /// 删除医疗案例
-        /// </summary>
-        Task<bool> DeleteAsync(Guid id);
+        // 注意：基础CRUD方法由IBaseRepository提供
+        // 这里只定义医疗案例特有的业务方法
 
         /// <summary>
         /// 根据患者ID获取医疗案例列表

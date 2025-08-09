@@ -41,8 +41,8 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
-                var models = await _repository.GetListAsync();
-                return _mapper.Map<List<MedicalCaseDto>>(models);
+                var models = await _repository.GetAllAsync();
+                return _mapper.Map<List<MedicalCaseDto>>(models.ToList());
             }
             catch (Exception ex)
             {
@@ -60,16 +60,16 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         public async Task<List<MedicalCaseDto>> GetAllAsync()
         {
-            var models = await _repository.GetListAsync();
-            return _mapper.Map<List<MedicalCaseDto>>(models);
+            var models = await _repository.GetAllAsync();
+            return _mapper.Map<List<MedicalCaseDto>>(models.ToList());
         }
 
         public async Task<PaginatedResult<MedicalCaseDto>> GetPagedAsync(PaginationRequest request)
         {
             try
             {
-                var models = await _repository.GetListAsync();
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(models);
+                var models = await _repository.GetAllAsync();
+                var dtos = _mapper.Map<List<MedicalCaseDto>>(models.ToList());
 
                 // 搜索过滤
                 if (!string.IsNullOrWhiteSpace(request.SearchKeyword))
@@ -136,7 +136,7 @@ namespace LYBT.Module.MedicalCase.Services
                 model.Status = LYBT.Shared.Models.Enums.MedicalCaseStatus.Registered;
                 model.IsActive = true;
 
-                var created = await _repository.CreateAsync(model);
+                var created = await _repository.AddAsync(model);
                 return _mapper.Map<MedicalCaseDetailDto>(created);
             }
             catch (Exception ex)
@@ -170,7 +170,8 @@ namespace LYBT.Module.MedicalCase.Services
 
                 model.UpdateTime = DateTime.Now;
 
-                return await _repository.UpdateAsync(model);
+                var result = await _repository.UpdateAsync(model);
+                return result != null;
             }
             catch (Exception ex)
             {
@@ -210,7 +211,8 @@ namespace LYBT.Module.MedicalCase.Services
                     model.CompleteTime = DateTime.Now;
                 }
 
-                return await _repository.UpdateAsync(model);
+                var result = await _repository.UpdateAsync(model);
+                return result != null;
             }
             catch (Exception ex)
             {
@@ -236,7 +238,8 @@ namespace LYBT.Module.MedicalCase.Services
                 model.IsActive = false;
                 model.UpdateTime = DateTime.Now;
 
-                return await _repository.UpdateAsync(model);
+                var result = await _repository.UpdateAsync(model);
+                return result != null;
             }
             catch (Exception ex)
             {

@@ -1,26 +1,27 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Auth.Repositories
 {
-
     /// <summary>
-    /// 登录验证仓储实现（使用统一数据库上下文）
+    /// 登录验证仓储实现 - 数据层统一化重构
+    /// 继承BaseRepository获得通用CRUD功能，扩展认证特有业务方法
     /// </summary>
-    public class AuthRepository : IAuthRepository
+    public class AuthRepository : BaseRepository<UserModel>, IAuthRepository
     {
-        private readonly AppDbContext _dbContext;
-
         /// <summary>
         /// 初始化仓储并注入统一数据库上下文
         /// </summary>
-        /// <param name="dbContext">统一数据库上下文</param>
-        public AuthRepository(AppDbContext dbContext)
+        /// <param name="context">统一数据库上下文</param>
+        public AuthRepository(AppDbContext context) : base(context)
         {
-            _dbContext = dbContext;
         }
+
+        // 注意：基础CRUD方法由BaseRepository提供
+        // 这里只实现认证特有的业务方法
 
         /// <summary>
         /// 通过用户名获取用户信息
@@ -29,7 +30,7 @@ namespace LYBT.Module.Auth.Repositories
         /// <returns>用户实体或 null</returns>
         public async Task<UserModel?> GetByUsernameAsync(string userName)
         {
-            return await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == userName);
+            return await _dbSet.FirstOrDefaultAsync(u => u.Username == userName);
         }
 
         /// <summary>
@@ -39,12 +40,12 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="loginTime">登录时间</param>
         public async Task UpdateLastLoginTimeAsync(Guid id, DateTime loginTime)
         {
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await _dbSet.FindAsync(id);
             if (user != null)
             {
                 user.LastLoginTime = loginTime;
-                _dbContext.Users.Update(user);
-                await _dbContext.SaveChangesAsync();
+                _dbSet.Update(user);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -55,7 +56,7 @@ namespace LYBT.Module.Auth.Repositories
         /// <returns>密码哈希或 null</returns>
         public async Task<string?> GetAdminPasswordHashAsync(string userName)
         {
-            var secret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
+            var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
             return secret?.PasswordHash;
         }
 
@@ -66,12 +67,12 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="passwordHash">新的密码哈希</param>
         public async Task UpdateAdminPasswordHashAsync(string userName, string passwordHash)
         {
-            var secret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
+            var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
             if (secret != null)
             {
                 secret.PasswordHash = passwordHash;
-                _dbContext.AdminSecrets.Update(secret);
-                await _dbContext.SaveChangesAsync();
+                _context.AdminSecrets.Update(secret);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -81,13 +82,13 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="user">包含最新登录保护信息的用户实体</param>
         public async Task UpdateUserLoginProtectionAsync(UserModel user)
         {
-            var dbUser = await _dbContext.Users.FindAsync(user.Id);
+            var dbUser = await _dbSet.FindAsync(user.Id);
             if (dbUser != null)
             {
                 dbUser.FailedLoginCount = user.FailedLoginCount;
                 dbUser.LockoutEnd = user.LockoutEnd;
-                _dbContext.Users.Update(dbUser);
-                await _dbContext.SaveChangesAsync();
+                _dbSet.Update(dbUser);
+                await _context.SaveChangesAsync();
             }
         }
     }

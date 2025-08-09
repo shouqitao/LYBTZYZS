@@ -86,7 +86,7 @@ namespace LYBT.Module.Users.Services
             var user = CreateUserFromDto(dto);
             var result = await _userRepository.AddAsync(user);
 
-            if (result)
+            if (result != null)
             {
                 await LogUserOperation(
                     user.Id, ActionType.Create, operatorId, operatorName,
@@ -112,7 +112,7 @@ namespace LYBT.Module.Users.Services
             UpdateUserFromDto(existingUser, dto);
             var result = await _userRepository.UpdateAsync(existingUser);
 
-            if (result)
+            if (result != null)
             {
                 await LogUserOperation(
                     existingUser.Id, ActionType.Update, operatorId, operatorName,
@@ -121,7 +121,7 @@ namespace LYBT.Module.Users.Services
                 );
             }
 
-            return result;
+            return result != null;
         }
 
         /// <summary>
@@ -272,7 +272,7 @@ namespace LYBT.Module.Users.Services
 
             var result = await _userRepository.UpdateAsync(user);
 
-            if (result)
+            if (result != null)
             {
                 await LogUserOperation(
                     id, ActionType.Edit, id, user.RealName,
@@ -281,7 +281,7 @@ namespace LYBT.Module.Users.Services
                 );
             }
 
-            return result;
+            return result != null;
         }
 
         /// <summary>

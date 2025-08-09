@@ -62,7 +62,7 @@ namespace LYBT.Module.Herbs.Services
         /// </summary>
         public async Task<List<HerbDto>> GetListAsync()
         {
-            var list = await _repository.GetListAsync();
+            var list = await _repository.GetAllAsync();
             var dtos = _mapper.Map<List<HerbDto>>(list);
             return dtos;
         }
@@ -157,8 +157,8 @@ namespace LYBT.Module.Herbs.Services
                 : dto.PinYinCode;
             model.Status = CommonStatus.Enabled; // 新增药材默认启用
 
-            var success = await _repository.AddAsync(model);
-            if (!success)
+            var result = await _repository.AddAsync(model);
+            if (result == null)
             {
                 return null;
             }
@@ -189,7 +189,8 @@ namespace LYBT.Module.Herbs.Services
             model.Remark = dto.Remark;
             model.Status = dto.Status;
 
-            return await _repository.UpdateAsync(model);
+            var result = await _repository.UpdateAsync(model);
+            return result != null;
         }
 
         /// <summary>
@@ -203,7 +204,8 @@ namespace LYBT.Module.Herbs.Services
 
             model.Status = CommonStatus.Disabled;
 
-            return await _repository.UpdateAsync(model);
+            var result = await _repository.UpdateAsync(model);
+            return result != null;
         }
 
         /// <summary>
@@ -255,7 +257,8 @@ namespace LYBT.Module.Herbs.Services
 
             model.Status = isActive ? CommonStatus.Enabled : CommonStatus.Disabled;
 
-            return await _repository.UpdateAsync(model);
+            var result = await _repository.UpdateAsync(model);
+            return result != null;
         }
 
         /// <summary>
@@ -282,7 +285,7 @@ namespace LYBT.Module.Herbs.Services
         /// </summary>
         public async Task<List<HerbDetailDto>> ExportAsync()
         {
-            var list = await _repository.GetListAsync();
+            var list = await _repository.GetAllAsync();
             var dtos = _mapper.Map<List<HerbDetailDto>>(list);
             return dtos;
         }
@@ -331,7 +334,8 @@ namespace LYBT.Module.Herbs.Services
             }
 
             // 仅更新时间戳，不再处理库存
-            return await _repository.UpdateAsync(herb);
+            var result = await _repository.UpdateAsync(herb);
+            return result != null;
         }
 
         /// <summary>
@@ -346,7 +350,8 @@ namespace LYBT.Module.Herbs.Services
                 if (herb != null)
                 {
                     // 仅更新时间戳，不再处理库存
-                    if (await _repository.UpdateAsync(herb))
+                    var result = await _repository.UpdateAsync(herb);
+                    if (result != null)
                     {
                         successCount++;
                     }
@@ -367,7 +372,8 @@ namespace LYBT.Module.Herbs.Services
             }
 
             // 库存预警字段已删除，仅更新时间戳（向后兼容）
-            return await _repository.UpdateAsync(herb);
+            var result = await _repository.UpdateAsync(herb);
+            return result != null;
         }
 
         /// <summary>
@@ -409,7 +415,8 @@ namespace LYBT.Module.Herbs.Services
             //     herb.MemberPrice = dto.MemberPrice.Value;
             // }
 
-            return await _repository.UpdateAsync(herb);
+            var result = await _repository.UpdateAsync(herb);
+            return result != null;
         }
 
         /// <summary>
@@ -440,7 +447,8 @@ namespace LYBT.Module.Herbs.Services
             }
 
             // 特价字段已删除，仅更新时间戳（向后兼容）
-            return await _repository.UpdateAsync(herb);
+            var result = await _repository.UpdateAsync(herb);
+            return result != null;
         }
 
         /// <summary>
@@ -455,7 +463,8 @@ namespace LYBT.Module.Herbs.Services
             }
 
             // 特价字段已删除，仅更新时间戳（向后兼容）
-            return await _repository.UpdateAsync(herb);
+            var result = await _repository.UpdateAsync(herb);
+            return result != null;
         }
 
         /// <summary>

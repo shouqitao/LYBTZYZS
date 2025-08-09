@@ -31,13 +31,13 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<PatientStatisticsDto> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
-            var allPatients = await _patientRepository.GetListAsync(null, 1, PatientConstants.MaxQueryLimit, true);
+            var allPatients = await _patientRepository.GetAllAsync();
             var now = DateTime.Now;
             var today = DateTime.Today;
 
             return new PatientStatisticsDto
             {
-                TotalPatients = allPatients.Count,
+                TotalPatients = allPatients.Count(),
                 ActivePatients = allPatients.Count(p => p.Status == CommonStatus.Enabled),
                 InactivePatients = allPatients.Count(p => p.Status == CommonStatus.Disabled),
                 MaleCount = allPatients.Count(p => p.Gender == Gender.Male),
@@ -61,7 +61,7 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<List<AgeDistributionDto>> GetAgeDistributionAsync()
         {
-            var patients = await _patientRepository.GetListAsync(null, 1, PatientConstants.MaxQueryLimit, false);
+            var patients = await _patientRepository.GetActivePatientsAsync();
             var total = patients.Count;
 
             return PatientConstants.AgeRanges.Select(range =>
@@ -85,7 +85,7 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<GenderDistributionDto> GetGenderDistributionAsync()
         {
-            var patients = await _patientRepository.GetListAsync(null, 1, PatientConstants.MaxQueryLimit, false);
+            var patients = await _patientRepository.GetActivePatientsAsync();
             var total = patients.Count;
 
             var maleCount = patients.Count(p => p.Gender == Gender.Male);
@@ -109,7 +109,7 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<List<PatientTrendDto>> GetNewPatientTrendAsync(int months = PatientConstants.DefaultStatisticsMonths)
         {
-            var patients = await _patientRepository.GetListAsync(null, 1, PatientConstants.MaxQueryLimit, true);
+            var patients = await _patientRepository.GetAllAsync();
             var startDate = DateTime.Now.AddMonths(-months);
 
             var monthlyData = patients
@@ -144,7 +144,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<List<PatientDetailDto>> GetRecentActivePatientsAsync(int days = PatientConstants.ActivePatientsDefaultDays)
         {
             var cutoffDate = DateTime.Now.AddDays(-days);
-            var patients = await _patientRepository.GetListAsync(null, 1, PatientConstants.MaxQueryLimit, false);
+            var patients = await _patientRepository.GetActivePatientsAsync();
             var activePatients = patients
                 .Where(p => p.LastVisitTime.HasValue && p.LastVisitTime.Value >= cutoffDate)
                 .OrderByDescending(p => p.LastVisitTime)
@@ -159,7 +159,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<List<PatientDetailDto>> GetInactivePatientsAsync(int days = PatientConstants.InactivePatientsDefaultDays)
         {
             var cutoffDate = DateTime.Now.AddDays(-days);
-            var patients = await _patientRepository.GetListAsync(null, 1, PatientConstants.MaxQueryLimit, false);
+            var patients = await _patientRepository.GetActivePatientsAsync();
             var inactivePatients = patients
                 .Where(p => !p.LastVisitTime.HasValue || p.LastVisitTime.Value < cutoffDate)
                 .OrderBy(p => p.LastVisitTime ?? DateTime.MinValue)
@@ -174,7 +174,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<List<PatientDetailDto>> GetTodayNewPatientsAsync()
         {
             var today = DateTime.Today;
-            var patients = await _patientRepository.GetListAsync(null, 1, PatientConstants.MaxQueryLimit, false);
+            var patients = await _patientRepository.GetActivePatientsAsync();
             var todayPatients = patients
                 .Where(p => p.CreateTime.Date == today)
                 .OrderByDescending(p => p.CreateTime)

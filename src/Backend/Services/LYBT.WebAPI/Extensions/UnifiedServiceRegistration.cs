@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Authentication;
 using LYBT.Infrastructure.Configuration;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Options;
@@ -57,8 +58,15 @@ public static class UnifiedServiceRegistration
         this IServiceCollection services, 
         IConfiguration configuration)
     {
-        // 统一数据库上下文
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        // =========== 统一配置管理系统 ===========
+        services.AddUnifiedConfiguration(configuration);
+        services.AddScoped<ISecretManager, SecretManager>();
+        services.AddScoped<IEnvironmentManager, EnvironmentManager>();
+
+        // =========== 统一数据库上下文 ===========
+        var configManager = services.BuildServiceProvider().GetRequiredService<LYBT.Infrastructure.Configuration.IConfigurationManager>();
+        var connectionString = configManager.GetConnectionString();
+        
         if (!string.IsNullOrEmpty(connectionString))
         {
             services.AddDbContext<AppDbContext>(options =>
@@ -68,30 +76,81 @@ public static class UnifiedServiceRegistration
                     sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
                     sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
                 });
-                options.EnableSensitiveDataLogging(false);
+                
+                var dbOptions = configManager.GetSection<LYBT.Infrastructure.Configuration.Options.DatabaseOptions>("DatabaseOptions");
+                options.EnableSensitiveDataLogging(dbOptions?.EnableSensitiveDataLogging ?? false);
+                options.EnableDetailedErrors(dbOptions?.EnableDetailedErrors ?? false);
                 options.EnableServiceProviderCaching();
+                
+                if (dbOptions?.CommandTimeout > 0)
+                {
+                    options.UseSqlServer(opt => opt.CommandTimeout(dbOptions.CommandTimeout));
+                }
             });
         }
 
-        // 缓存服务
-        services.AddMemoryCache();
-        services.Configure<CacheOptions>(configuration.GetSection("CacheOptions"));
+        // =========== 缓存服务 ===========
+        services.AddMemoryCache(options =>
+        {
+            var cacheOptions = configManager.GetSection<LYBT.Infrastructure.Configuration.Options.CacheOptions>("CacheOptions");
+            if (cacheOptions?.MemoryCache != null)
+            {
+                options.SizeLimit = cacheOptions.MemoryCache.SizeLimit;
+                options.CompactionPercentage = cacheOptions.MemoryCache.CompactionPercentage;
+                options.ExpirationScanFrequency = TimeSpan.FromSeconds(cacheOptions.MemoryCache.ExpirationScanFrequency);
+            }
+        });
         services.AddSingleton<ICacheService, CacheService>();
 
-        // 安全配置服务
-        services.Configure<SecurityOptions>(configuration.GetSection(SecurityOptions.SectionName));
+        // =========== 安全配置服务 ===========
         services.AddScoped<IPasswordValidationService, PasswordValidationService>();
         services.AddScoped<ISecurityConfigurationValidator, SecurityConfigurationValidator>();
 
-        // 监控和健康检查服务
+        // =========== 监控和健康检查服务 ===========
         services.AddScoped<ISystemHealthService, SystemHealthService>();
         services.AddSingleton<ISystemMetricsCollector, SystemMetricsCollector>();
 
-        // 统一服务
+        // =========== 统一服务 ===========
         services.AddScoped<IUnifiedLogService, UnifiedLogService>();
         
-        // 数据库初始化服务
+        // =========== 性能优化服务 ===========
+        services.RegisterPerformanceServices(configManager);
+        
+        // =========== 日志和监控服务 ===========
+        services.RegisterLoggingAndMonitoringServices(configManager);
+        
+        // =========== 数据库初始化服务 ===========
         services.AddScoped<LYBT.Infrastructure.Database.DatabaseInitializationService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// 注册性能优化服务
+    /// </summary>
+    private static IServiceCollection RegisterPerformanceServices(
+        this IServiceCollection services, 
+        LYBT.Infrastructure.Configuration.IConfigurationManager configManager)
+    {
+        // =========== 统一缓存管理 ===========
+        var cacheOptions = configManager.GetSection<LYBT.Infrastructure.Configuration.Options.CacheOptions>("CacheOptions");
+        var unifiedCacheOptions = new LYBT.Infrastructure.Performance.Cache.CacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMinutes(cacheOptions?.DefaultExpiryMinutes ?? 30),
+            EnableCompression = cacheOptions?.EnableCompression ?? true,
+            CompressionThreshold = cacheOptions?.CompressionThreshold ?? 1024
+        };
+        
+        services.AddSingleton(unifiedCacheOptions);
+        services.AddScoped<LYBT.Infrastructure.Performance.Cache.IUnifiedCacheManager, LYBT.Infrastructure.Performance.Cache.UnifiedCacheManager>();
+
+        // =========== 数据库性能优化 ===========
+        services.AddScoped<LYBT.Infrastructure.Performance.Database.IUnifiedDatabaseOptimizer, LYBT.Infrastructure.Performance.Database.UnifiedDatabaseOptimizer>();
+
+        // =========== 异步处理管理 ===========
+        services.AddSingleton<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor, LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor>();
+        services.AddHostedService(provider => 
+            (LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor)provider.GetRequiredService<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor>());
 
         return services;
     }
@@ -103,40 +162,84 @@ public static class UnifiedServiceRegistration
         this IServiceCollection services, 
         IConfiguration configuration)
     {
-        // JWT认证配置
-        var jwtSection = configuration.GetSection("JwtOptions");
-        services.Configure<JwtOptions>(jwtSection);
-        var jwtOptions = jwtSection.Get<JwtOptions>();
+        // =========== JWT认证配置（使用统一配置管理）===========
+        var serviceProvider = services.BuildServiceProvider();
+        var configManager = serviceProvider.GetRequiredService<LYBT.Infrastructure.Configuration.IConfigurationManager>();
+        var secretManager = serviceProvider.GetRequiredService<ISecretManager>();
         
-        if (jwtOptions != null)
+        try
         {
-            services.AddAuthentication(options =>
+            var jwtOptions = configManager.GetSection<LYBT.Infrastructure.Configuration.Options.JwtOptions>("JwtOptions");
+            
+            // 从秘钥管理器获取JWT密钥
+            if (string.IsNullOrEmpty(jwtOptions.Secret) || jwtOptions.Secret.Contains("${"))
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+                jwtOptions.Secret = secretManager.GetSecret("JWT_SECRET");
+            }
+            
+            if (!string.IsNullOrEmpty(jwtOptions.Secret))
             {
-                options.TokenValidationParameters = new TokenValidationParameters
+                services.AddAuthentication(options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtOptions.Issuer,
-                    ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
-                    ClockSkew = TimeSpan.FromSeconds(jwtOptions.ClockSkewSeconds)
-                };
-            });
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                }).AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtOptions.Issuer,
+                        ValidAudience = jwtOptions.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
+                        ClockSkew = TimeSpan.FromSeconds(jwtOptions.ClockSkewSeconds)
+                    };
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            // 如果是开发环境，使用配置文件中的值作为备用
+            if (configManager.IsDevelopment)
+            {
+                var fallbackJwtSection = configuration.GetSection("JwtOptions");
+                var fallbackJwtOptions = fallbackJwtSection.Get<LYBT.Infrastructure.Configuration.Options.JwtOptions>();
+                
+                if (fallbackJwtOptions != null && !string.IsNullOrEmpty(fallbackJwtOptions.Secret))
+                {
+                    services.AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    }).AddJwtBearer(options =>
+                    {
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidateAudience = true,
+                            ValidateLifetime = true,
+                            ValidateIssuerSigningKey = true,
+                            ValidIssuer = fallbackJwtOptions.Issuer,
+                            ValidAudience = fallbackJwtOptions.Audience,
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(fallbackJwtOptions.Secret)),
+                            ClockSkew = TimeSpan.FromSeconds(fallbackJwtOptions.ClockSkewSeconds)
+                        };
+                    });
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("JWT配置加载失败", ex);
+            }
         }
 
-        // 认证相关服务
+        // =========== 认证相关服务 ===========
         services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
         services.AddScoped<IAuthorizationService, AuthorizationService>();
-        
-        // 配置选项
-        services.Configure<AuthOptions>(configuration.GetSection("AuthOptions"));
 
         return services;
     }
@@ -255,6 +358,25 @@ public static class UnifiedServiceRegistration
             options.JsonSerializerOptions.WriteIndented = false;
             options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// 注册日志和监控服务
+    /// </summary>
+    private static IServiceCollection RegisterLoggingAndMonitoringServices(
+        this IServiceCollection services,
+        LYBT.Infrastructure.Configuration.IConfigurationManager configManager)
+    {
+        // =========== 统一日志管理 ===========
+        services.AddScoped<LYBT.Infrastructure.Logging.IUnifiedLogger, LYBT.Infrastructure.Logging.UnifiedLogger>();
+        services.AddHostedService(provider => 
+            (LYBT.Infrastructure.Logging.UnifiedLogger)provider.GetRequiredService<LYBT.Infrastructure.Logging.IUnifiedLogger>());
+
+        // =========== 监控管理 ===========
+        // 注意：IUnifiedMonitor的实现类需要在后续创建
+        // services.AddScoped<LYBT.Infrastructure.Monitoring.IUnifiedMonitor, LYBT.Infrastructure.Monitoring.UnifiedMonitor>();
 
         return services;
     }

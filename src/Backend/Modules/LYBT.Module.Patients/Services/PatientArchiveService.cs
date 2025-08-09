@@ -78,14 +78,14 @@ namespace LYBT.Module.Patients.Services
             patient.UpdateTime = DateTime.Now;
 
             var result = await _patientRepository.UpdateAsync(patient);
-            if (result)
+            if (result != null)
             {
                 await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Update,
-                    $"更新患者过敏史：{patient.Name}",
+                    $"更新患者过敏史：{result.Name}",
                     JsonSerializer.Serialize(new { OldValue = oldValue, NewValue = allergyHistory }));
             }
 
-            return result;
+            return result != null;
         }
 
         /// <summary>
@@ -115,7 +115,8 @@ namespace LYBT.Module.Patients.Services
                     // 创建患者
                     var model = CreatePatientModel(dto);
                     
-                    if (await _patientRepository.AddAsync(model))
+                    var addResult = await _patientRepository.AddAsync(model);
+                    if (addResult != null)
                     {
                         result.SuccessCount++;
                     }
@@ -144,7 +145,7 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<List<PatientExportDto>> ExportPatientsAsync(PatientExportQueryDto query)
         {
-            var patients = await _patientRepository.GetListAsync(null, 1, PatientConstants.MaxQueryLimit, query.IncludeInactive);
+            var patients = await _patientRepository.GetAllAsync();
 
             return patients.Select(p => new PatientExportDto
             {

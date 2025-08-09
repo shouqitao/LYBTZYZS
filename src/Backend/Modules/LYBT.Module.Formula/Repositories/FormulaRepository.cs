@@ -1,51 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Models.Formula;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Formula.Repositories
 {
-    public class FormulaRepository : IFormulaRepository
+    /// <summary>
+    /// 验方仓储实现 - 数据层统一化重构
+    /// 继承BaseRepository获得通用CRUD功能，只实现验方特有业务方法
+    /// </summary>
+    public class FormulaRepository : BaseRepository<FormulaModel>, IFormulaRepository
     {
-        private readonly AppDbContext _context;
-
-        public FormulaRepository(AppDbContext context)
+        public FormulaRepository(AppDbContext context) : base(context)
         {
-            _context = context;
         }
 
-        public async Task<List<FormulaModel>> GetAllAsync()
-        {
-            return await _context.Formulas.ToListAsync();
-        }
-
-        public async Task<FormulaModel?> GetByIdAsync(Guid id)
-        {
-            return await _context.Formulas
-                .FirstOrDefaultAsync(f => f.Id == id);
-        }
-
-        public async Task<bool> AddAsync(FormulaModel model)
-        {
-            _context.Formulas.Add(model);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<bool> UpdateAsync(FormulaModel model)
-        {
-            _context.Formulas.Update(model);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<bool> DeleteAsync(Guid id)
-        {
-            var formula = await GetByIdAsync(id);
-            if (formula == null) return false;
-
-            _context.Formulas.Remove(formula);
-            return await _context.SaveChangesAsync() > 0;
-        }
+        // 注意：基础CRUD方法由BaseRepository提供
+        // GetAllAsync, GetByIdAsync, AddAsync, UpdateAsync, DeleteAsync等都由基类实现
 
         public async Task<List<FormulaModel>> GetTemplatesAsync()
         {

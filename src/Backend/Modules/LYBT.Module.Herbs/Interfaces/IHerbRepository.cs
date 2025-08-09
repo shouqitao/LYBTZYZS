@@ -1,47 +1,31 @@
 ﻿using LYBT.Models.Herbs;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Herbs.Interfaces
 {
 
     /// <summary>
-    /// 药材仓储接口，定义药材相关数据库操作
+    /// 药材仓储接口 - 数据层统一化重构
+    /// 继承BaseRepository提供通用CRUD，扩展药材特定业务方法
     /// </summary>
-    public interface IHerbRepository
+    public interface IHerbRepository : IBaseRepository<HerbModel>
     {
+        // 注意：基础CRUD方法由IBaseRepository提供
+        // 这里只定义药材特有的业务方法
 
         /// <summary>
-        /// 根据ID获取药材详情
+        /// 检查药材名称是否存在
         /// </summary>
-        Task<HerbModel?> GetByIdAsync(Guid id);
+        Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null);
 
         /// <summary>
-        /// 获取所有药材列表
+        /// 根据拼音码搜索药材
         /// </summary>
-        Task<List<HerbModel>> GetListAsync();
-
-        /// <summary>
-        /// 新增药材
-        /// </summary>
-        Task<bool> AddAsync(HerbModel herb);
-
-        /// <summary>
-        /// 更新药材
-        /// </summary>
-        Task<bool> UpdateAsync(HerbModel herb);
-
-        /// <summary>
-        /// 删除药材
-        /// </summary>
-        Task<bool> DeleteAsync(Guid id);
+        Task<List<HerbModel>> SearchByPinyinAsync(string pinyin);
 
         /// <summary>
         /// 批量新增药材
         /// </summary>
         Task<bool> AddRangeAsync(List<HerbModel> herbs);
-
-        /// <summary>
-        /// 分页查询药材
-        /// </summary>
-        Task<(List<HerbModel> list, int total)> GetPagedAsync(string? keyword, int page, int pageSize);
     }
 }

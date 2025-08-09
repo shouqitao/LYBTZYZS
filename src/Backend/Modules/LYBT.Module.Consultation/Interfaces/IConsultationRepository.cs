@@ -1,36 +1,16 @@
 using LYBT.Models.Consultation;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Consultation.Interfaces
 {
     /// <summary>
-    /// 看诊仓储接口（替代IDiagnosisTreatmentRepository）
+    /// 看诊仓储接口 - 数据层统一化重构
+    /// 继承BaseRepository提供通用CRUD，扩展看诊特定业务方法
     /// </summary>
-    public interface IConsultationRepository
+    public interface IConsultationRepository : IBaseRepository<ConsultationModel>
     {
-        /// <summary>
-        /// 获取所有看诊记录
-        /// </summary>
-        Task<List<ConsultationModel>> GetListAsync();
-
-        /// <summary>
-        /// 根据ID获取看诊记录
-        /// </summary>
-        Task<ConsultationModel?> GetByIdAsync(Guid id);
-
-        /// <summary>
-        /// 创建看诊记录
-        /// </summary>
-        Task<ConsultationModel> CreateAsync(ConsultationModel model);
-
-        /// <summary>
-        /// 更新看诊记录
-        /// </summary>
-        Task<bool> UpdateAsync(ConsultationModel model);
-
-        /// <summary>
-        /// 删除看诊记录
-        /// </summary>
-        Task<bool> DeleteAsync(Guid id);
+        // 注意：基础CRUD方法由IBaseRepository提供
+        // 这里只定义看诊特有的业务方法
 
         /// <summary>
         /// 根据医疗案例ID获取看诊记录
