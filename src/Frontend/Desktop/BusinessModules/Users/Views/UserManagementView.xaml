@@ -18,7 +18,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ¹¤¾ßÀ¸ -->
+        <!-- å·¥å…·æ  -->
         <Border Grid.Row="0" Style="{StaticResource ToolBarBorder}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -26,35 +26,35 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- ËÑË÷ÇøÓò -->
+                <!-- æœç´¢åŒºåŸŸ -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Text="ËÑË÷£º" Style="{StaticResource LabelText}"/>
+                    <TextBlock Text="æœç´¢ï¼š" Style="{StaticResource LabelText}"/>
                     <TextBox Style="{StaticResource SearchTextBox}"
                              Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
                         </TextBox.InputBindings>
                     </TextBox>
-                    <Button Content="ËÑË÷" 
+                    <Button Content="æœç´¢" 
                             Margin="10,0,0,0"
                             Style="{StaticResource PrimaryButton}"
                             Command="{Binding SearchCommand}"/>
                 </StackPanel>
 
-                <!-- ²Ù×÷°´Å¥ÇøÓò -->
+                <!-- æ“ä½œæŒ‰é’®åŒºåŸŸ -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Content="+ ÐÂÔöÓÃ»§" 
+                    <Button Content="+ æ–°å¢žç”¨æˆ·" 
                             Margin="0,0,10,0"
                             Style="{StaticResource SuccessButton}"
                             Command="{Binding AddCommand}"/>
-                    <Button Content="Ë¢ÐÂ" 
+                    <Button Content="åˆ·æ–°" 
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding RefreshCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Êý¾Ý±í¸ñ -->
+        <!-- æ•°æ®è¡¨æ ¼ -->
         <DataGrid Grid.Row="1" 
                   ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem}"
@@ -62,33 +62,33 @@
                   RowStyle="{StaticResource DataGridRowStyle}"
                   ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
             <DataGrid.Columns>
-                <!-- ÓÃ»§Ãû -->
-                <DataGridTextColumn Header="ÓÃ»§Ãû" 
+                <!-- ç”¨æˆ·å -->
+                <DataGridTextColumn Header="ç”¨æˆ·å" 
                                     Binding="{Binding Username}" 
                                     Width="150"/>
                 
-                <!-- ÕæÊµÐÕÃû -->
-                <DataGridTextColumn Header="ÕæÊµÐÕÃû" 
+                <!-- çœŸå®žå§“å -->
+                <DataGridTextColumn Header="çœŸå®žå§“å" 
                                     Binding="{Binding RealName}" 
                                     Width="150"/>
                 
-                <!-- ½ÇÉ« -->
-                <DataGridTextColumn Header="½ÇÉ«" 
+                <!-- è§’è‰² -->
+                <DataGridTextColumn Header="è§’è‰²" 
                                     Binding="{Binding RoleDisplayName}" 
                                     Width="120"/>
                 
-                <!-- ÊÖ»úºÅ -->
-                <DataGridTextColumn Header="ÊÖ»úºÅ" 
+                <!-- æ‰‹æœºå· -->
+                <DataGridTextColumn Header="æ‰‹æœºå·" 
                                     Binding="{Binding PhoneNumber}" 
                                     Width="120"/>
                 
-                <!-- ÓÊÏä -->
-                <DataGridTextColumn Header="ÓÊÏä" 
+                <!-- é‚®ç®± -->
+                <DataGridTextColumn Header="é‚®ç®±" 
                                     Binding="{Binding Email}" 
                                     Width="200"/>
                 
-                <!-- ×´Ì¬ -->
-                <DataGridTemplateColumn Header="×´Ì¬" Width="80">
+                <!-- çŠ¶æ€ -->
+                <DataGridTemplateColumn Header="çŠ¶æ€" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border Background="{Binding StatusColor}" 
@@ -103,31 +103,31 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 
-                <!-- ´´½¨Ê±¼ä -->
-                <DataGridTextColumn Header="´´½¨Ê±¼ä" 
+                <!-- åˆ›å»ºæ—¶é—´ -->
+                <DataGridTextColumn Header="åˆ›å»ºæ—¶é—´" 
                                     Binding="{Binding CreateTime, StringFormat='{}{0:yyyy-MM-dd}'}" 
                                     Width="100"/>
                 
-                <!-- ²Ù×÷ -->
-                <DataGridTemplateColumn Header="²Ù×÷" Width="200">
+                <!-- æ“ä½œ -->
+                <DataGridTemplateColumn Header="æ“ä½œ" Width="200">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="²é¿´" 
+                                <Button Content="æŸ¥çœ‹" 
                                         Style="{StaticResource PrimaryButton}"
                                         Padding="8,4"
                                         FontSize="12"
                                         Margin="2"
                                         Command="{Binding DataContext.ViewCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"/>
-                                <Button Content="±à¼­" 
+                                <Button Content="ç¼–è¾‘" 
                                         Style="{StaticResource SuccessButton}"
                                         Padding="8,4"
                                         FontSize="12"
                                         Margin="2"
                                         Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"/>
-                                <Button Content="É¾³ý" 
+                                <Button Content="åˆ é™¤" 
                                         Style="{StaticResource DangerButton}"
                                         Padding="8,4"
                                         FontSize="12"
@@ -141,7 +141,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- ×´Ì¬À¸ºÍ·ÖÒ³ -->
+        <!-- çŠ¶æ€æ å’Œåˆ†é¡µ -->
         <Border Grid.Row="2" Style="{StaticResource StatusBarBorder}">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -149,20 +149,20 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Í³¼ÆÐÅÏ¢ -->
+                <!-- ç»Ÿè®¡ä¿¡æ¯ -->
                 <TextBlock Grid.Column="0" 
                            Style="{StaticResource StatusText}"
                            Text="{Binding StatusText}"/>
 
-                <!-- ·ÖÒ³¿Ø¼þ -->
+                <!-- åˆ†é¡µæŽ§ä»¶ -->
                 <StackPanel Grid.Column="1" 
                             Orientation="Horizontal" 
                             VerticalAlignment="Center">
-                    <Button Content="Ê×Ò³" 
+                    <Button Content="é¦–é¡µ" 
                             Style="{StaticResource PaginationButton}"
                             Command="{Binding FirstPageCommand}"/>
                     
-                    <Button Content="ÉÏÒ»Ò³" 
+                    <Button Content="ä¸Šä¸€é¡µ" 
                             Style="{StaticResource PaginationButton}"
                             Command="{Binding PreviousPageCommand}"/>
                     
@@ -177,11 +177,11 @@
                         </TextBlock>
                     </Border>
                     
-                    <Button Content="ÏÂÒ»Ò³" 
+                    <Button Content="ä¸‹ä¸€é¡µ" 
                             Style="{StaticResource PaginationButton}"
                             Command="{Binding NextPageCommand}"/>
                     
-                    <Button Content="Ä©Ò³" 
+                    <Button Content="æœ«é¡µ" 
                             Style="{StaticResource PaginationButton}"
                             Command="{Binding LastPageCommand}"/>
                 </StackPanel>

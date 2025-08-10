@@ -22,7 +22,7 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
 {
     /// <summary>
-    /// 患者管理视图模型（简化重构版�?
+    /// 患者管理视图模型（简化重构版�?
     /// </summary>
     public class PatientManagementViewModelSimple : BaseServiceManagementViewModel<PatientInfo, IPatientService>
     {
@@ -30,7 +30,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         private readonly IDialogService _dialogService;
         private readonly IPatientApiService _patientApiService;
 
-        protected override string ModuleName => "患者管�?;
+        protected override string ModuleName => "患者管�?;
 
         #region Commands
 
@@ -51,7 +51,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             _dialogService = dialogService;
             _patientApiService = patientApiService;
 
-            // 初始化命�?
+            // 初始化命�?
             ToggleStatusCommand = new DelegateCommand<PatientInfo>(async patient => await ToggleStatusAsync(patient));
             ViewDetailsCommand = new DelegateCommand<PatientInfo>(async patient => await ViewDetailsAsync(patient));
         }
@@ -74,7 +74,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>>.Failure($"加载患者列表失�? {ex.Message}");
+                return ServiceResult<LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>>.Failure($"加载患者列表失�? {ex.Message}");
             }
         }
 
@@ -84,7 +84,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             {
                 var dialog = new Views.PatientAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
-                dialog.Title = "新增患�?;
+                dialog.Title = "新增患�?;
 
                 // 创建ViewModel并设置为添加模式
                 var viewModel = new PatientAddEditDialogViewModel(_patientApiService, null); // null表示新增
@@ -103,12 +103,12 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                 if (dialog.ShowDialog() == true)
                 {
                     await RefreshAsync();
-                    await _commonDialogService.ShowInformationAsync("患者添加成�?, "成功");
+                    await _commonDialogService.ShowInformationAsync("患者添加成�?, "成功");
                 }
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"添加患者失�? {ex.Message}", "错误");
+                await _commonDialogService.ShowErrorAsync($"添加患者失�? {ex.Message}", "错误");
             }
         }
 
@@ -120,7 +120,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             {
                 var dialog = new Views.PatientAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
-                dialog.Title = "编辑患�?;
+                dialog.Title = "编辑患�?;
 
                 // 创建ViewModel并设置为编辑模式
                 var viewModel = new PatientAddEditDialogViewModel(_patientApiService, item);
@@ -139,12 +139,12 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                 if (dialog.ShowDialog() == true)
                 {
                     await RefreshAsync();
-                    await _commonDialogService.ShowInformationAsync("患者编辑成�?, "成功");
+                    await _commonDialogService.ShowInformationAsync("患者编辑成�?, "成功");
                 }
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"编辑患者失�? {ex.Message}", "错误");
+                await _commonDialogService.ShowErrorAsync($"编辑患者失�? {ex.Message}", "错误");
             }
         }
 
@@ -152,7 +152,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         {
             if (item == null) return;
 
-            // 患者信息不支持删除，只能禁�?
+            // 患者信息不支持删除，只能禁�?
             await ToggleStatusAsync(item);
         }
 
@@ -161,7 +161,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         #region 额外方法
 
         /// <summary>
-        /// 切换患者状�?
+        /// 切换患者状�?
         /// </summary>
         private async Task ToggleStatusAsync(PatientInfo patient)
         {
@@ -169,8 +169,8 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
 
             var action = patient.Status == CommonStatus.Enabled ? "禁用" : "启用";
             var confirm = await _commonDialogService.ShowConfirmationAsync(
-                $"确定要{action}患�?{patient.Name} 吗？",
-                $"{action}患�?);
+                $"确定要{action}患�?{patient.Name} 吗？",
+                $"{action}患�?);
 
             if (confirm)
             {
@@ -178,7 +178,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                 var statusDto = new CommonStatusUpdateDto
                 {
                     Status = newStatus,
-                    Reason = $"手动{action}患者档�?
+                    Reason = $"手动{action}患者档�?
                 };
                 
                 // 注意: 这里需要根据实际的服务方法调整
@@ -207,7 +207,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         }
 
         /// <summary>
-        /// 查看患者详�?
+        /// 查看患者详�?
         /// </summary>
         private async Task ViewDetailsAsync(PatientInfo patient)
         {
@@ -215,28 +215,28 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
 
             try
             {
-                // 获取患者详�?
+                // 获取患者详�?
                 var detailResult = await Service.GetByIdAsync(patient.Id);
                 if (detailResult.IsSuccess)
                 {
                     var detailInfo = $"姓名: {patient.Name}\n" +
                                    $"性别: {patient.GenderText}\n" +
                                    $"年龄: {patient.AgeDescription}\n" +
-                                   $"电话: {patient.Phone ?? "未填�?}\n" +
-                                   $"地址: {patient.Address ?? "未填�?}\n" +
+                                   $"电话: {patient.Phone ?? "未填写"}\n" +
+                                   $"地址: {patient.Address ?? "未填写"}\n" +
                                    $"就诊次数: {patient.VisitCount}次\n" +
-                                   $"最后就�? {(patient.LastVisitTime?.ToString("yyyy-MM-dd HH:mm") ?? "从未就诊")}";
+                                   $"最后就诊: {(patient.LastVisitTime?.ToString("yyyy-MM-dd HH:mm") ?? "从未就诊")}";
 
-                    await _commonDialogService.ShowInformationAsync(detailInfo, $"患者详�?- {patient.Name}");
+                    await _commonDialogService.ShowInformationAsync(detailInfo, $"患者详情 - {patient.Name}");
                 }
                 else
                 {
-                    await _commonDialogService.ShowErrorAsync("获取患者详情失�?, "错误");
+                    await _commonDialogService.ShowErrorAsync("获取患者详情失败", "错误");
                 }
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"查看患者详情失�? {ex.Message}", "错误");
+                await _commonDialogService.ShowErrorAsync($"查看患者详情失败: {ex.Message}", "错误");
             }
         }
 

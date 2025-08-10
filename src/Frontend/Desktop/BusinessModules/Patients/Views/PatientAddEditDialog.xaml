@@ -45,8 +45,8 @@
                             <TextBlock Grid.Column="0" Text="性别 *" FontWeight="Bold" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1" SelectedValue="{Binding Gender}" Height="30" Padding="5" Margin="0,0,10,0">
                                 <ComboBoxItem Tag="0" Content="未知"/>
-                                <ComboBoxItem Tag="1" Content="�?/>
-                                <ComboBoxItem Tag="2" Content="�?/>
+                                <ComboBoxItem Tag="1" Content="男"/>
+                                <ComboBoxItem Tag="2" Content="女"/>
                             </ComboBox>
                             <TextBlock Grid.Column="2" Text="年龄" FontWeight="Bold" VerticalAlignment="Center"/>
                             <TextBox Grid.Column="3" Text="{Binding Age}" Height="30" Padding="5"/>
@@ -67,13 +67,13 @@
                 <!-- 联系信息分组 -->
                 <GroupBox Header="联系信息" Padding="10" Margin="0,0,0,15">
                     <StackPanel>
-                        <!-- 手机�?-->
+                        <!-- 手机号 -->
                         <Grid Margin="0,0,0,15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="80"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="手机�?*" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="手机号 *" FontWeight="Bold" VerticalAlignment="Center"/>
                             <TextBox Grid.Column="1" Text="{Binding PhoneNumber}" Height="30" Padding="5"/>
                         </Grid>
 
@@ -100,9 +100,9 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="证件类型" FontWeight="Bold" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1" Text="{Binding IdType}" Height="30" Padding="5" IsEditable="True">
-                                <ComboBoxItem>身份�?/ComboBoxItem>
+                                <ComboBoxItem>身份证</ComboBoxItem>
                                 <ComboBoxItem>护照</ComboBoxItem>
-                                <ComboBoxItem>军官�?/ComboBoxItem>
+                                <ComboBoxItem>军官证</ComboBoxItem>
                                 <ComboBoxItem>其他</ComboBoxItem>
                             </ComboBox>
                         </Grid>
@@ -128,11 +128,11 @@
                                 <ColumnDefinition Width="80"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="联系�? FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="联系人" FontWeight="Bold" VerticalAlignment="Center"/>
                             <TextBox Grid.Column="1" Text="{Binding EmergencyContact}" Height="30" Padding="5"/>
                         </Grid>
 
-                        <!-- 紧急联系电�?-->
+                        <!-- 紧急联系电话 -->
                         <Grid Margin="0,0,0,15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="80"/>
@@ -147,13 +147,13 @@
                 <!-- 医疗信息分组 -->
                 <GroupBox Header="医疗信息" Padding="10" Margin="0,0,0,15">
                     <StackPanel>
-                        <!-- 过敏�?-->
+                        <!-- 过敏史 -->
                         <Grid Margin="0,0,0,15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="80"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="过敏�? FontWeight="Bold" VerticalAlignment="Top" Margin="0,5,0,0"/>
+                            <TextBlock Grid.Column="0" Text="过敏史" FontWeight="Bold" VerticalAlignment="Top" Margin="0,5,0,0"/>
                             <TextBox Grid.Column="1" Text="{Binding AllergyHistory}" Height="60" Padding="5" 
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"/>

@@ -12,7 +12,7 @@ using Prism.Mvvm;
 namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
 {
     /// <summary>
-    /// 患者新�?编辑对话框视图模�?
+    /// 患者新�?编辑对话框视图模�?
     /// </summary>
     public class PatientAddEditDialogViewModel : BindableBase
     {
@@ -22,7 +22,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
 
         #region Properties
 
-        private string _dialogTitle = "新增患�?;
+        private string _dialogTitle = "新增患�?;
         public string DialogTitle
         {
             get => _dialogTitle;
@@ -37,7 +37,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             {
                 if (SetProperty(ref _patientName, value))
                 {
-                    // 自动生成拼音码（仅新增时�?
+                    // 自动生成拼音码（仅新增时�?
                     if (!_isEditMode)
                     {
                         GeneratePinYinCode();
@@ -95,7 +95,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             set => SetProperty(ref _address, value);
         }
 
-        private string _idType = "身份�?;
+        private string _idType = "身份�?;
         public string IdType
         {
             get => _idType;
@@ -151,17 +151,17 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         #region Constructor
 
         /// <summary>
-        /// 构造函�?
+        /// 构造函�?
         /// </summary>
         /// <param name="patientApiService">患者API服务</param>
-        /// <param name="patient">要编辑的患者信息（null表示新增模式�?/param>
+        /// <param name="patient">要编辑的患者信息（null表示新增模式�?/param>
         public PatientAddEditDialogViewModel(IPatientApiService patientApiService, PatientInfo? patient = null)
         {
             _patientApiService = patientApiService ?? throw new ArgumentNullException(nameof(patientApiService));
             _originalPatient = patient;
             _isEditMode = patient != null;
 
-            // 初始化命�?
+            // 初始化命�?
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave)
                 .ObservesProperty(() => PatientName)
                 .ObservesProperty(() => PhoneNumber)
@@ -169,7 +169,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             
             CancelCommand = new DelegateCommand(ExecuteCancel);
 
-            // 如果是编辑模式，初始化数�?
+            // 如果是编辑模式，初始化数�?
             if (_isEditMode && patient != null)
             {
                 InitializeEditData(patient);
@@ -181,11 +181,11 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         #region Private Methods
 
         /// <summary>
-        /// 初始化编辑数�?
+        /// 初始化编辑数�?
         /// </summary>
         private void InitializeEditData(PatientInfo patient)
         {
-            DialogTitle = "编辑患�?;
+            DialogTitle = "编辑患�?;
             PatientName = patient.Name;
             PinYinCode = patient.PinYinCode ?? string.Empty;
             Gender = patient.Gender;
@@ -193,7 +193,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             BirthDate = patient.BirthDate;
             PhoneNumber = patient.PhoneNumber ?? string.Empty;
             Address = patient.Address ?? string.Empty;
-            IdType = patient.IdType ?? "身份�?;
+            IdType = patient.IdType ?? "身份�?;
             IdNumber = patient.IdNumber ?? string.Empty;
             EmergencyContact = patient.EmergencyContact ?? string.Empty;
             EmergencyPhone = patient.EmergencyPhone ?? string.Empty;
@@ -201,7 +201,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         }
 
         /// <summary>
-        /// 自动生成拼音�?
+        /// 自动生成拼音�?
         /// </summary>
         private void GeneratePinYinCode()
         {
@@ -260,7 +260,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                         BirthDate = BirthDate,
                         PhoneNumber = PhoneNumber.Trim(),
                         Address = Address?.Trim() ?? string.Empty,
-                        IDType = IdType?.Trim() ?? "身份�?,
+                        IDType = IdType?.Trim() ?? "身份�?,
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
                     };
@@ -270,7 +270,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                     
                     if (!result)
                     {
-                        MessageBox.Show($"编辑患者失�?, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"编辑患者失�?, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
@@ -284,7 +284,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                         BirthDate = BirthDate,
                         PhoneNumber = PhoneNumber.Trim(),
                         Address = Address?.Trim() ?? string.Empty,
-                        IDType = IdType?.Trim() ?? "身份�?,
+                        IDType = IdType?.Trim() ?? "身份�?,
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
                     };
@@ -294,7 +294,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                     
                     if (!result)
                     {
-                        MessageBox.Show($"新增患者失�?, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"新增患者失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
 

@@ -91,7 +91,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
             {
                 var updateDto = new MedicalCaseEditDto
                 {
-                    Status = status
+                    Status = status.ToString()
                     // 添加其他必要的字段
                 };
 

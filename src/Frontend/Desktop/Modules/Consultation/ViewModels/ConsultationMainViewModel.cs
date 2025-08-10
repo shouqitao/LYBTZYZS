@@ -435,7 +435,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                         PatientId = dto.PatientId,
                         PatientName = dto.PatientName,
                         UserId = Guid.Empty, // 使用默认值
-                        Status = dto.Status,
+                        Status = Enum.TryParse<MedicalCaseStatus>(dto.Status, out var status) ? status : MedicalCaseStatus.Registered,
                         CreateTime = dto.CreateTime
                     };
                     Title = $"看诊工作台 - {CurrentMedicalCase?.PatientName}";
