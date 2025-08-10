@@ -50,22 +50,22 @@ namespace LYBT.WPF.Client.Services
                     };
                 }
 
-                return new PagedResult<PrescriptionDto>
+                return new LYBT.WPF.Client.Core.Models.Common.PagedResult<PrescriptionDto>
                 {
                     Items = new List<PrescriptionDto>(),
                     TotalCount = 0,
-                    CurrentPage = request.CurrentPage,
+                    CurrentPage = request.PageIndex,
                     PageSize = request.PageSize,
                     ErrorMessage = "获取处方列表失败"
                 };
             }
             catch (Exception ex)
             {
-                return new PagedResult<PrescriptionDto>
+                return new LYBT.WPF.Client.Core.Models.Common.PagedResult<PrescriptionDto>
                 {
                     Items = new List<PrescriptionDto>(),
                     TotalCount = 0,
-                    CurrentPage = request.CurrentPage,
+                    CurrentPage = request.PageIndex,
                     PageSize = request.PageSize,
                     ErrorMessage = $"查询处方失败: {ex.Message}"
                 };

@@ -9,6 +9,7 @@ using LYBT.WPF.Client.Core.Configuration;
 using LYBT.WPF.Client.Modules.Authentication.Views;
 using LYBT.WPF.Client.Modules.Authentication.ViewModels;
 using LYBT.WPF.Client.Services;
+using LYBT.WPF.Client.Workbenches.Core;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
 using Prism.Dialogs;
@@ -31,6 +32,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         private readonly IEventAggregator _eventAggregator;
         private readonly IPermissionService _permissionService;
         private readonly IUserService _userService;
+        private readonly IWorkbenchRouter _workbenchRouter;
 
         private string _title = "凌隐宝堂中医诊所诊疗系统";
         private UserInfo? _currentUser;
@@ -45,7 +47,8 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             IAuthenticationService authService,
             IPermissionService permissionService,
             IUserService userService,
-            ICommonDialogService commonDialogService)
+            ICommonDialogService commonDialogService,
+            IWorkbenchRouter workbenchRouter)
         {
             _commonDialogService = commonDialogService;
             _regionManager = regionManager;
@@ -53,6 +56,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             _authService = authService;
             _permissionService = permissionService;
             _userService = userService;
+            _workbenchRouter = workbenchRouter;
 
             LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync());
             TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync(), () => _isLoggedIn);
@@ -174,7 +178,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         }
 
         /// <summary>
-        /// 加载主界面内容
+        /// 加载主界面内容 - 使用新的WorkbenchRouter系统
         /// </summary>
         private void LoadMainContent()
         {
@@ -193,16 +197,19 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             else if (!string.IsNullOrEmpty(CurrentUser.LicenseNumber) || !string.IsNullOrEmpty(CurrentUser.Specialty))
             {
                 // 有执业证书号或专长的是医生
-                userRole = "用户"; // RoleNavigationConfig中"用户"对应医生界面
+                userRole = "医生";
             }
             else
             {
                 // 默认为医生用户（看诊界面）
-                userRole = "用户";
+                userRole = "医生";
             }
 
-            // 使用配置类统一处理角色导航
-            var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(userRole);
+            // 使用WorkbenchRouter获取工作台信息
+            var workbenchView = _workbenchRouter.GetWorkbenchForRole(userRole);
+            var roleDisplay = _workbenchRouter.GetRoleDisplayName(userRole);
+            var welcomeMessage = _workbenchRouter.GetWelcomeMessage(userRole, CurrentUser.RealName);
+            
             Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
 
             if (_regionManager != null)
@@ -221,35 +228,33 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                         _regionManager.Regions["LoginRegion"].RemoveAll();
                     }
 
-                    // 根据角色导航到对应的主视图
-                    var mainViewName = RoleNavigationConfig.GetMainViewName(userRole);
-                    _regionManager.RequestNavigate("ContentRegion", mainViewName, navigationResult =>
+                    // 根据角色导航到对应的工作台主视图
+                    _regionManager.RequestNavigate("ContentRegion", workbenchView, navigationResult =>
                     {
                         if (!navigationResult.Success)
                         {
-                            // 如果导航失败，尝试SafeHomeView作为后备
-                            _regionManager.RequestNavigate("ContentRegion", "SafeHomeView", fallbackResult =>
-                            {
-                                if (!fallbackResult.Success)
-                                {
-                                    var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(userRole, CurrentUser.RealName);
-                                    _commonDialogService.ShowWarningAsync($"{welcomeMessage}\n\n注意：主页模块加载失败。", "登录成功").GetAwaiter().GetResult();
-                                }
-                            });
+                            // 如果导航失败，显示错误信息
+                            var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
+                            _commonDialogService.ShowWarningAsync(
+                                $"{welcomeMessage}\n\n注意：工作台模块加载失败。\n错误详情：{errorMessage}", 
+                                "登录成功").GetAwaiter().GetResult();
+                        }
+                        else
+                        {
+                            // 导航成功，显示欢迎消息（可选）
+                            System.Diagnostics.Debug.WriteLine($"成功导航到工作台：{workbenchView}");
                         }
                     });
                 }
                 catch (Exception ex)
                 {
                     // 显示欢迎消息和错误
-                    var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(userRole, CurrentUser.RealName);
-                    _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：主页模块加载失败。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
+                    _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：工作台模块加载失败。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
                 }
             }
             else
             {
-                // 显示欢迎消息
-                var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(userRole, CurrentUser.RealName);
+                // RegionManager为空的错误处理
                 _commonDialogService.ShowWarningAsync($"RegionManager为空\n{welcomeMessage}", "登录成功").GetAwaiter().GetResult();
             }
         }

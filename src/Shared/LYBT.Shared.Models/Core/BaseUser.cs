@@ -39,6 +39,10 @@ namespace LYBT.Shared.Models.Core
         [DisplayName("电话号码")]
         public string? PhoneNumber { get; set; }
 
+        /// <summary>用户角色</summary>
+        [DisplayName("角色")]
+        public string Role { get; set; } = "User";
+
         /// <summary>用户状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;

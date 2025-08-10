@@ -12,7 +12,6 @@ using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -73,7 +72,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     Items = new List<ConsultationInfo>(),
                     TotalCount = 0,
-                    CurrentPage = query.CurrentPage,
+                    CurrentPage = query.PageIndex,
                     PageSize = query.PageSize
                 };
             }
@@ -84,7 +83,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     Items = new List<ConsultationInfo>(),
                     TotalCount = 0,
-                    CurrentPage = query.CurrentPage,
+                    CurrentPage = query.PageIndex,
                     PageSize = query.PageSize
                 };
             }
@@ -305,7 +304,7 @@ namespace LYBT.WPF.Client.Services
             {
                 var dto = new UpdateStatusDto
                 {
-                    Status = status,
+                    Status = (LYBT.Shared.Models.Enums.ConsultationStatus)status,
                     Reason = reason
                 };
 
@@ -424,7 +423,7 @@ namespace LYBT.WPF.Client.Services
                     {
                         MedicalCaseId = medicalCaseId,
                         PatientId = Guid.Empty, // 需要从其他地方获取
-                        UserId = Guid.Empty, // 需要从其他地方获取当前医生ID
+                        // UserId = Guid.Empty, // UserId是只读属性，会自动设置
                         Remark = data.ImportSource
                     };
 

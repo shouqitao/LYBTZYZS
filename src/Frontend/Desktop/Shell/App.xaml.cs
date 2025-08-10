@@ -10,6 +10,11 @@ using LYBT.WPF.Client.Modules.Authentication;
 using LYBT.WPF.Client.Modules.SystemManagement;
 using LYBT.WPF.Client.Modules.Consultation;
 using LYBT.WPF.Client.Modules.MedicalCase;
+using LYBT.WPF.Client.BusinessModules.Users;
+using LYBT.WPF.Client.BusinessModules.Patients;
+using LYBT.WPF.Client.Workbenches.SystemWorkbench;
+using LYBT.WPF.Client.Workbenches.ConsultationWorkbench;
+using LYBT.WPF.Client.Workbenches.Core;
 using Prism.Modularity;
 using Prism.Mvvm;
 
@@ -29,6 +34,9 @@ namespace LYBT.WPF.Client.Shell
         {
             // 使用扩展方法统一注册所有服务
             containerRegistry.RegisterAllServices();
+            
+            // 注册工作台路由器
+            containerRegistry.RegisterSingleton<IWorkbenchRouter, WorkbenchRouter>();
             
             // 显式配置ViewModelLocator映射 - 解决ViewModelLocator.AutoWireViewModel失败的问题
             ConfigureViewModelLocator();
@@ -70,7 +78,24 @@ namespace LYBT.WPF.Client.Shell
 
         protected override void ConfigureModuleCatalog(Prism.Modularity.IModuleCatalog moduleCatalog)
         {
-            // 配置模块目录
+            // 配置模块目录 - 按依赖顺序注册
+            
+            // 1. 核心业务模块（独立，无依赖）
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(UsersModule),
+                ModuleType = typeof(UsersModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(PatientsModule),
+                ModuleType = typeof(PatientsModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+
+            // 2. 传统模块（保持向后兼容）
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(AuthenticationModule),
@@ -97,6 +122,23 @@ namespace LYBT.WPF.Client.Shell
                 ModuleName = nameof(MedicalCaseModule),
                 ModuleType = typeof(MedicalCaseModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
+            });
+
+            // 3. 工作台模块（依赖业务模块，最后初始化）
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(SystemWorkbenchModule),
+                ModuleType = typeof(SystemWorkbenchModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable,
+                DependsOn = new[] { nameof(UsersModule), nameof(PatientsModule) }
+            });
+
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(ConsultationWorkbenchModule),
+                ModuleType = typeof(ConsultationWorkbenchModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable,
+                DependsOn = new[] { nameof(PatientsModule), nameof(ConsultationModule), nameof(MedicalCaseModule) }
             });
 
             base.ConfigureModuleCatalog(moduleCatalog);

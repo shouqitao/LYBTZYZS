@@ -207,7 +207,14 @@
       "Bash(test:*)",
       "mcp__shrimp-task-manager__execute_task",
       "mcp__filesystem__create_directory",
-      "mcp__filesystem__write_file"
+      "mcp__filesystem__write_file",
+      "mcp__shrimp-task-manager__plan_task",
+      "mcp__shrimp-task-manager__analyze_task",
+      "mcp__shrimp-task-manager__reflect_task",
+      "mcp__shrimp-task-manager__split_tasks",
+      "mcp__shrimp-task-manager__verify_task",
+      "Bash(xcopy:*)",
+      "Bash(robocopy:*)"
     ],
     "deny": []
   }

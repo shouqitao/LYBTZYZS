@@ -39,7 +39,7 @@ namespace LYBT.WPF.Client.Services
                 var response = await _herbApiService.GetHerbsAsync(
                     page: 1,
                     pageSize: 1000,
-                    keyword: query?.SearchKeyword,
+                    keyword: query?.Keyword,
                     name: query?.Name,
                     origin: query?.Origin
                 );
@@ -66,9 +66,9 @@ namespace LYBT.WPF.Client.Services
             try
             {
                 var response = await _herbApiService.GetHerbsAsync(
-                    page: query.CurrentPage,
+                    page: query.PageIndex,
                     pageSize: query.PageSize,
-                    keyword: query.SearchKeyword,
+                    keyword: query.Keyword,
                     name: query.Name,
                     origin: query.Origin,
                     effect: null,

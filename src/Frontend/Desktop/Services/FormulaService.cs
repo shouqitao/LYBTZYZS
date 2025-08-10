@@ -52,7 +52,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     Items = new List<FormulaInfo>(),
                     TotalCount = 0,
-                    CurrentPage = query.CurrentPage,
+                    CurrentPage = query.PageIndex,
                     PageSize = query.PageSize,
                     ErrorMessage = "获取验方模板失败"
                 };
@@ -63,7 +63,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     Items = new List<FormulaInfo>(),
                     TotalCount = 0,
-                    CurrentPage = query.CurrentPage,
+                    CurrentPage = query.PageIndex,
                     PageSize = query.PageSize,
                     ErrorMessage = $"分页查询验方模板时发生错误：{ex.Message}"
                 };

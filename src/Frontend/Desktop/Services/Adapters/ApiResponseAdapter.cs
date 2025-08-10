@@ -101,7 +101,7 @@ namespace LYBT.WPF.Client.Services.Adapters
                 AllergyHistory = patientDto.AllergyHistory,
                 PinYinCode = patientDto.PinYinCode,
                 // 设置默认值（PatientDto中缺少的属性）
-                BirthDate = DateTime.Now.AddYears(-patientDto.Age), // 根据年龄估算出生日期
+                DateOfBirth = DateTime.Now.AddYears(-patientDto.Age), // 根据年龄估算出生日期
                 CreateTime = DateTime.Now, // 默认创建时间
                 UpdateTime = DateTime.Now, // 默认更新时间
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled, // 默认启用状态
@@ -129,7 +129,7 @@ namespace LYBT.WPF.Client.Services.Adapters
                 Name = patientDetail.Name,
                 Gender = patientDetail.Gender,
                 Age = patientDetail.Age,
-                BirthDate = patientDetail.BirthDate,
+                DateOfBirth = patientDetail.DateOfBirth,
                 PhoneNumber = patientDetail.PhoneNumber,
                 IDNumber = patientDetail.IDNumber ?? string.Empty,
                 Address = patientDetail.Address ?? string.Empty,
@@ -151,7 +151,7 @@ namespace LYBT.WPF.Client.Services.Adapters
                 Name = patientDetail.Name,
                 Gender = patientDetail.Gender,
                 Age = patientDetail.Age,
-                BirthDate = patientDetail.BirthDate,
+                DateOfBirth = patientDetail.DateOfBirth,
                 PhoneNumber = patientDetail.PhoneNumber,
                 IDNumber = patientDetail.IDNumber ?? string.Empty,
                 Address = patientDetail.Address ?? string.Empty,

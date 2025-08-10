@@ -38,9 +38,9 @@ namespace LYBT.WPF.Client.Services
             {
                 // 使用更新后的RESTful GET接口
                 var response = await _userApiService.GetUsersAsync(
-                    page: request.CurrentPage,
+                    page: request.PageIndex,
                     pageSize: request.PageSize,
-                    keyword: request.SearchKeyword,
+                    keyword: request.Keyword,
                     username: request.Username,
                     realName: request.RealName,
                     email: request.Email,
@@ -65,7 +65,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     Items = new List<UserInfo>(),
                     TotalCount = 0,
-                    CurrentPage = request.CurrentPage,
+                    CurrentPage = request.PageIndex,
                     PageSize = request.PageSize
                 };
             }
@@ -229,12 +229,12 @@ namespace LYBT.WPF.Client.Services
         {
             var parameters = new List<string>();
 
-            if (!string.IsNullOrEmpty(request.SearchKeyword))
-                parameters.Add($"keyword={Uri.EscapeDataString(request.SearchKeyword)}");
+            if (!string.IsNullOrEmpty(request.Keyword))
+                parameters.Add($"keyword={Uri.EscapeDataString(request.Keyword)}");
 
             // Role和IsActive已经被移除，不再需要这些参数
 
-            parameters.Add($"page={request.CurrentPage}");
+            parameters.Add($"page={request.PageIndex}");
             parameters.Add($"pageSize={request.PageSize}");
 
             return string.Join("&", parameters);

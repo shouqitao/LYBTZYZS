@@ -41,6 +41,19 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>单价（元/单位）</summary>
         [DisplayName("单价")]
         public decimal Price { get; set; }
+
+        /// <summary>功效</summary>
+        [DisplayName("功效")]
+        public string? Effect { get; set; }
+
+        /// <summary>用法</summary>
+        [DisplayName("用法")]
+        public string? Usage { get; set; }
+
+        /// <summary>备注</summary>
+        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
+        [DisplayName("备注")]
+        public string? Remark { get; set; }
     }
 
     /// <summary>

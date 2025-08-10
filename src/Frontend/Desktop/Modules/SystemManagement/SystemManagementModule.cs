@@ -1,10 +1,6 @@
 using LYBT.WPF.Client.Modules.SystemManagement.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Users.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Users.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.PrescriptionTemplates.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Patients.Views;
-using LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels;
 using LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views;
 using LYBT.WPF.Client.Modules.SystemManagement.Formulas.ViewModels;
@@ -28,10 +24,8 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
             // 模块初始化完成
 
             // 注册自定义的ViewModel映射
-            ViewModelLocationProvider.Register<UserManagementView, UserManagementViewModelSimple>();
             ViewModelLocationProvider.Register<FormulaManagementView, FormulaManagementViewModel>();
             ViewModelLocationProvider.Register<HerbManagementView, Herbs.ViewModels.HerbManagementViewModelRefactored>();
-            ViewModelLocationProvider.Register<PatientManagementView, Patients.ViewModels.PatientManagementViewModelRefactored>();
             ViewModelLocationProvider.Register<ConsultationManagementView, ConsultationManagementViewModel>();
         }
 
@@ -39,15 +33,6 @@ namespace LYBT.WPF.Client.Modules.SystemManagement
         {
             // 注册系统管理主视图
             containerRegistry.RegisterForNavigation<AdminMainView>();
-
-            // 注册用户管理视图
-            containerRegistry.RegisterForNavigation<UserManagementView>();
-
-            // 注册患者管理视图
-            containerRegistry.RegisterForNavigation<PatientManagementView>();
-            
-            // 注册患者接待视图（整合原Registration功能）
-            containerRegistry.RegisterForNavigation<PatientReceptionView>();
 
             // 注册医疗案例管理视图 (使用MedicalCase模块的实现)
             containerRegistry.RegisterForNavigation<MedicalCaseListView>("MedicalCaseManagementView");

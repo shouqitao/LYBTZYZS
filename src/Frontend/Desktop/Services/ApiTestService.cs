@@ -116,9 +116,9 @@ namespace LYBT.WPF.Client.Services
                 // 测试分页查询用户
                 var queryRequest = new UserPagedQueryDto
                 {
-                    CurrentPage = 1,
+                    PageIndex = 1,
                     PageSize = 10,
-                    SearchKeyword = null
+                    Keyword = null
                 };
 
                 var users = await _userService.SearchUsersAsync(queryRequest);

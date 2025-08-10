@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\LYBT.Shared.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.WPF.Client.Core.csproj" />
+    <ProjectReference Include="..\..\Services\LYBT.WPF.Client.Services.csproj" />
+    <ProjectReference Include="..\Shared\LYBT.WPF.Client.BusinessModules.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

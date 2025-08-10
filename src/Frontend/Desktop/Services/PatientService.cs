@@ -129,9 +129,9 @@ namespace LYBT.WPF.Client.Services
             {
                 // 使用更新后的RESTful GET接口
                 var apiResponse = await _patientApiService.GetPatientsAsync(
-                    pageIndex: query.CurrentPage,
+                    pageIndex: query.PageIndex,
                     pageSize: query.PageSize,
-                    searchTerm: query.SearchKeyword
+                    searchTerm: query.Keyword
                 );
                 var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
                 
@@ -151,7 +151,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     Items = new List<PatientInfo>(),
                     TotalCount = 0,
-                    CurrentPage = query.CurrentPage,
+                    CurrentPage = query.PageIndex,
                     PageSize = query.PageSize,
                     ErrorMessage = serviceResult.ErrorMessage ?? "获取患者列表失败"
                 };
@@ -162,7 +162,7 @@ namespace LYBT.WPF.Client.Services
                 {
                     Items = new List<PatientInfo>(),
                     TotalCount = 0,
-                    CurrentPage = query.CurrentPage,
+                    CurrentPage = query.PageIndex,
                     PageSize = query.PageSize,
                     ErrorMessage = $"分页查询患者失败: {ex.Message}"
                 };
@@ -338,7 +338,7 @@ namespace LYBT.WPF.Client.Services
                 IdNumber = dto.IDNumber,  // 注意大小写
                 Address = dto.Address,
                 AllergyHistory = dto.AllergyHistory,
-                BirthDate = dto.BirthDate,
+                BirthDate = dto.DateOfBirth,
                 CreateTime = dto.CreateTime,
                 UpdateTime = dto.UpdateTime,
                 Status = dto.Status  // 直接使用CommonStatus

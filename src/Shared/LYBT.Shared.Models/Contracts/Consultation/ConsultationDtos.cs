@@ -76,6 +76,10 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("医生姓名")]
         public string DoctorName { get; set; } = string.Empty;
 
+        /// <summary>看诊时间</summary>
+        [DisplayName("看诊时间")]
+        public DateTime ConsultationTime { get; set; }
+
         /// <summary>主诉</summary>
         [StringLength(500, ErrorMessage = "主诉长度不能超过500个字符")]
         [DisplayName("主诉")]
