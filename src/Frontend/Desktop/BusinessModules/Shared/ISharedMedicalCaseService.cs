@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models;
+using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.WPF.Client.BusinessModules.Shared

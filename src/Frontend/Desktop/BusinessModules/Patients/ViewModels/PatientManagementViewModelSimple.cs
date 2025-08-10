@@ -30,7 +30,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         private readonly IDialogService _dialogService;
         private readonly IPatientApiService _patientApiService;
 
-        protected override string ModuleName => "患者管�?;
+        protected override string ModuleName => "患者管理";
 
         #region Commands
 
@@ -84,7 +84,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             {
                 var dialog = new Views.PatientAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
-                dialog.Title = "新增患�?;
+                dialog.Title = "新增患者";
 
                 // 创建ViewModel并设置为添加模式
                 var viewModel = new PatientAddEditDialogViewModel(_patientApiService, null); // null表示新增
@@ -103,12 +103,12 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                 if (dialog.ShowDialog() == true)
                 {
                     await RefreshAsync();
-                    await _commonDialogService.ShowInformationAsync("患者添加成�?, "成功");
+                    await _commonDialogService.ShowInformationAsync("患者添加成功", "成功");
                 }
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"添加患者失�? {ex.Message}", "错误");
+                await _commonDialogService.ShowErrorAsync($"添加患者失败: {ex.Message}", "错误");
             }
         }
 
@@ -120,7 +120,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             {
                 var dialog = new Views.PatientAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
-                dialog.Title = "编辑患�?;
+                dialog.Title = "编辑患者";
 
                 // 创建ViewModel并设置为编辑模式
                 var viewModel = new PatientAddEditDialogViewModel(_patientApiService, item);
@@ -139,12 +139,12 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                 if (dialog.ShowDialog() == true)
                 {
                     await RefreshAsync();
-                    await _commonDialogService.ShowInformationAsync("患者编辑成�?, "成功");
+                    await _commonDialogService.ShowInformationAsync("患者编辑成功", "成功");
                 }
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"编辑患者失�? {ex.Message}", "错误");
+                await _commonDialogService.ShowErrorAsync($"编辑患者失败: {ex.Message}", "错误");
             }
         }
 
@@ -152,7 +152,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         {
             if (item == null) return;
 
-            // 患者信息不支持删除，只能禁�?
+            // 患者信息不支持删除，只能禁用
             await ToggleStatusAsync(item);
         }
 
@@ -161,7 +161,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         #region 额外方法
 
         /// <summary>
-        /// 切换患者状�?
+        /// 切换患者状态
         /// </summary>
         private async Task ToggleStatusAsync(PatientInfo patient)
         {
@@ -169,8 +169,8 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
 
             var action = patient.Status == CommonStatus.Enabled ? "禁用" : "启用";
             var confirm = await _commonDialogService.ShowConfirmationAsync(
-                $"确定要{action}患�?{patient.Name} 吗？",
-                $"{action}患�?);
+                $"确定要{action}患者 {patient.Name} 吗？",
+                $"{action}患者");
 
             if (confirm)
             {
@@ -178,7 +178,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                 var statusDto = new CommonStatusUpdateDto
                 {
                     Status = newStatus,
-                    Reason = $"手动{action}患者档�?
+                    Reason = $"手动{action}患者档案"
                 };
                 
                 // 注意: 这里需要根据实际的服务方法调整

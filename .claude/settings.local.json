@@ -216,7 +216,9 @@
       "Bash(xcopy:*)",
       "Bash(robocopy:*)",
       "Bash(echo $DOTNET_CLI_TELEMETRY_OPTOUT $MSBUILDLOADMICROSOFTTARGETSREADONLY $MSBuildSDKsPath)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(dotnet msbuild:*)"
     ],
     "deny": []
   }

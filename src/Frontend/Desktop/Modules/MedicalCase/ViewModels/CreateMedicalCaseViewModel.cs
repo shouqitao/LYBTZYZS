@@ -50,7 +50,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
                     PatientName = value.Name;
                     PatientPhone = value.PhoneNumber ?? "";
                     PatientGender = value.Gender.ToString();
-                    PatientAge = CalculateAge(value.DateOfBirth);
+                    PatientAge = CalculateAge(value.BirthDate);
                 }
                 SaveCommand.RaiseCanExecuteChanged();
             }

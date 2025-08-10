@@ -18,6 +18,7 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Modules.Consultation.Services;
 using LYBT.WPF.Client.Modules.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 using Prism.Dialogs;

@@ -22,7 +22,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
 
         #region Properties
 
-        private string _dialogTitle = "新增患�?;
+        private string _dialogTitle = "新增患者";
         public string DialogTitle
         {
             get => _dialogTitle;
@@ -95,7 +95,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             set => SetProperty(ref _address, value);
         }
 
-        private string _idType = "身份�?;
+        private string _idType = "身份证";
         public string IdType
         {
             get => _idType;
@@ -181,11 +181,11 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
         #region Private Methods
 
         /// <summary>
-        /// 初始化编辑数�?
+        /// 初始化编辑数据
         /// </summary>
         private void InitializeEditData(PatientInfo patient)
         {
-            DialogTitle = "编辑患�?;
+            DialogTitle = "编辑患者";
             PatientName = patient.Name;
             PinYinCode = patient.PinYinCode ?? string.Empty;
             Gender = patient.Gender;
@@ -193,7 +193,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
             BirthDate = patient.BirthDate;
             PhoneNumber = patient.PhoneNumber ?? string.Empty;
             Address = patient.Address ?? string.Empty;
-            IdType = patient.IdType ?? "身份�?;
+            IdType = patient.IdType ?? "身份证";
             IdNumber = patient.IdNumber ?? string.Empty;
             EmergencyContact = patient.EmergencyContact ?? string.Empty;
             EmergencyPhone = patient.EmergencyPhone ?? string.Empty;
@@ -260,7 +260,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                         BirthDate = BirthDate,
                         PhoneNumber = PhoneNumber.Trim(),
                         Address = Address?.Trim() ?? string.Empty,
-                        IDType = IdType?.Trim() ?? "身份�?,
+                        IDType = IdType?.Trim() ?? "身份证",
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
                     };
@@ -270,7 +270,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                     
                     if (!result)
                     {
-                        MessageBox.Show($"编辑患者失�?, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"编辑患者失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
@@ -284,7 +284,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                         BirthDate = BirthDate,
                         PhoneNumber = PhoneNumber.Trim(),
                         Address = Address?.Trim() ?? string.Empty,
-                        IDType = IdType?.Trim() ?? "身份�?,
+                        IDType = IdType?.Trim() ?? "身份证",
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
                     };
