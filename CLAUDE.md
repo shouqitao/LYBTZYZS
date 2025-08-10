@@ -29,6 +29,65 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 使用依赖注入：构造函数注入模式
 - 异步优先：所有数据库操作使用 async/await
 
+## 📁 文件组织规范（重要）
+
+### 强制性规则
+
+创建或修改文件时，**必须严格遵守**以下规则：
+
+1. **禁止在根目录创建文档文件** - 所有文档必须放在 `docs/` 相应子目录
+2. **必须使用英文文件名** - 避免中文造成的编码和跨平台问题
+3. **必须使用kebab-case命名** - 如 `user-guide.md`, `fix-report-20250131.md`
+4. **报告文件必须包含日期** - 格式：`name-YYYYMMDD.md`
+5. **临时文件放入temp/目录** - 并确保在 `.gitignore` 中忽略
+
+### 目录结构规范
+
+```
+docs/
+├── architecture/    # 架构设计文档
+├── api/            # API文档和规范
+├── development/    # 开发指南（包含FILE_ORGANIZATION.md）
+├── deployment/     # 部署和运维文档
+├── testing/        # 测试相关文档
+├── reports/        # 项目报告（带日期）
+├── guides/         # 用户指南
+├── ultrathink/     # UltraThink方法论文档
+├── design/         # UI/UX设计文档
+├── fixes/          # 问题修复记录
+├── progress/       # 进度跟踪
+└── legacy/         # 归档文档
+
+scripts/            # 开发和构建脚本
+tools/              # 用户工具和启动器
+temp/               # 临时文件（gitignored）
+```
+
+### 文件命名示例
+
+❌ **错误示例**:
+- `WPF登录问题修复报告.md`
+- `系统使用说明.md`
+- `创建桌面快捷方式.bat`
+
+✅ **正确示例**:
+- `docs/reports/wpf-login-fix-report-20250131.md`
+- `docs/guides/system-user-guide.md`
+- `tools/create-desktop-shortcut.bat`
+
+### 快速参考
+
+| 文件类型 | 位置 | 命名格式 | 示例 |
+|---------|------|---------|------|
+| 用户指南 | `docs/guides/` | `feature-guide.md` | `system-user-guide.md` |
+| API文档 | `docs/api/` | `api-name.md` | `auth-api.md` |
+| 项目报告 | `docs/reports/` | `name-YYYYMMDD.md` | `fix-report-20250131.md` |
+| UltraThink | `docs/ultrathink/` | `analysis-name.md` | `ui-design-system-report.md` |
+| 开发脚本 | `scripts/` | `action.bat` | `build-all.bat` |
+| 用户工具 | `tools/` | `tool-name.bat` | `start-system.bat` |
+
+> 📌 **重要**: 详细规范请查看 [文件组织标准](docs/development/FILE_ORGANIZATION.md)
+
 ## 常用开发命令
 
 ### 快速启动

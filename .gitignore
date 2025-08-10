@@ -1,3 +1,10 @@
+# Project specific temporary files
+temp/
+*.temp
+*.tmp
+*.local.md
+*.private.*
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/  

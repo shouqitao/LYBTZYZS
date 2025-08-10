@@ -199,7 +199,8 @@
       "Bash(start \"\" \"D:\\source\\repos\\LYBTZYZS\\src\\Frontend\\Desktop\\Shell\\bin\\Debug\\net8.0-windows\\LYBT.WPF.Client.Shell.exe\")",
       "Bash(msbuild:*)",
       "Bash(start dotnet run:*)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(git mv:*)"
     ],
     "deny": []
   }
