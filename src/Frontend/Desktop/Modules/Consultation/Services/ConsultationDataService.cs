@@ -196,7 +196,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                 {
                     PatientId = patientId,
                     MedicalCaseId = Guid.NewGuid(), // 应该先创建或获取医疗案例
-                    UserId = Guid.NewGuid(), // 应该从当前登录用户获取
+                    DoctorId = Guid.NewGuid(), // 应该从当前登录用户获取
                     Remark = string.Empty
                 };
 

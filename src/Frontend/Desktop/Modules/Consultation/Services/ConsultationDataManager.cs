@@ -174,7 +174,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
                         Name = result.Data.Name,
                         Gender = result.Data.Gender,
                         Age = result.Data.Age,
-                        BirthDate = result.Data.BirthDate,
+                        BirthDate = result.Data.DateOfBirth,
                         PhoneNumber = result.Data.PhoneNumber,
                         Address = result.Data.Address ?? ""
                         // 暂时省略不匹配的属性

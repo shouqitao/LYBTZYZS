@@ -275,7 +275,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
                     DoctorName = "";
                     
                     // 解析状态
-                    Status = result.Data.Status;
+                    Status = ParseStatus(result.Data.Status);
                     StatusText = GetStatusText(Status);
                     
                     CreateTime = result.Data.CreateTime;
@@ -374,7 +374,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
                     Id = MedicalCase.Id,
                     // 只包含后端DTO实际支持的属性
                     Remark = string.IsNullOrWhiteSpace(MedicalCase.Remark) ? null : MedicalCase.Remark.Trim(),
-                    Status = Status
+                    Status = Status.ToString()
                 };
 
                 var result = await _medicalCaseService.UpdateAsync(editDto);

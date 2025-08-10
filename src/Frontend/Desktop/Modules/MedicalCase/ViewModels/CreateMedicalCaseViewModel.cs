@@ -50,7 +50,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
                     PatientName = value.Name;
                     PatientPhone = value.PhoneNumber ?? "";
                     PatientGender = value.Gender.ToString();
-                    PatientAge = CalculateAge(value.BirthDate);
+                    PatientAge = CalculateAge(value.DateOfBirth);
                 }
                 SaveCommand.RaiseCanExecuteChanged();
             }
@@ -179,7 +179,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
                                 Name = patientDetail.Name,
                                 Phone = patientDetail.PhoneNumber,
                                 Gender = patientDetail.Gender,
-                                BirthDate = patientDetail.BirthDate
+                                BirthDate = patientDetail.DateOfBirth
                             };
                             Patients.Add(patientInfo);
                         }
@@ -217,7 +217,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
                             Name = result.Data.Name,
                             Phone = result.Data.PhoneNumber,
                             Gender = result.Data.Gender,
-                            BirthDate = result.Data.BirthDate
+                            BirthDate = result.Data.DateOfBirth
                         };
                         SelectedPatient = patientInfo;
                     });
@@ -255,7 +255,7 @@ namespace LYBT.WPF.Client.Modules.MedicalCase.ViewModels
                             Name = patientDetail.Name,
                             Phone = patientDetail.PhoneNumber,
                             Gender = patientDetail.Gender,
-                            BirthDate = patientDetail.BirthDate
+                            BirthDate = patientDetail.DateOfBirth
                         };
                         Patients.Add(patientInfo);
                     }
