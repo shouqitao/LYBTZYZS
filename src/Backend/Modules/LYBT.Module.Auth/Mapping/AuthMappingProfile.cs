@@ -26,10 +26,10 @@ namespace LYBT.Module.Auth.Mapping
                 .ForMember(dest => dest.Remark, opt => opt.MapFrom(src => src.Remark));
 
             // 密码修改相关映射
-            CreateMap<ChangePasswordRequestDto, ChangePasswordRequestDto>()
+            CreateMap<ChangePasswordRequest, ChangePasswordRequest>()
                 .ReverseMap();
 
-            CreateMap<ChangeSysAdminPasswordDto, ChangeSysAdminPasswordDto>()
+            CreateMap<ChangeSysAdminPassword, ChangeSysAdminPassword>()
                 .ReverseMap();
 
             // 系统管理员密钥映射

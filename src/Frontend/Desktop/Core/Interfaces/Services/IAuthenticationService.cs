@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Core;
-using LYBT.Shared.Models.Auth;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.Users;
 
@@ -16,7 +16,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// </summary>
         /// <param name="request">登录请求</param>
         /// <returns>登录响应</returns>
-        Task<ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync(LoginRequest request);
+        Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request);
 
         /// <summary>
         /// 用户登出

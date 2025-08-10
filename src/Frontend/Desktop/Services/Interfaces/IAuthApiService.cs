@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Refit;
-using LYBT.WPF.Client.Core.Models.Authentication;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Core;
 
@@ -15,7 +14,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 用户登录
         /// </summary>
         [Post("/api/v1/auth/login")]
-        Task<Refit.ApiResponse<LYBT.WPF.Client.Core.Models.ApiResponse<LoginResponseDto>>> LoginAsync([Body] LoginRequest loginRequest);
+        Task<Refit.ApiResponse<LYBT.WPF.Client.Core.Models.ApiResponse<LoginResponse>>> LoginAsync([Body] LoginRequest loginRequest);
 
         /// <summary>
         /// 用户登出

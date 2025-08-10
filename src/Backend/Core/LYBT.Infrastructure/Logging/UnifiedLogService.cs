@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Shared.Models.Contracts.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;

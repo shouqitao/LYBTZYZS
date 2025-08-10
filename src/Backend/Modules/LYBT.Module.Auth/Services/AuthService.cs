@@ -51,7 +51,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 验证用户名和密码，成功返回用户名，失败返回null
         /// </summary>
-        public async Task<string?> VerifyCredentialsAsync(LoginRequestDto dto)
+        public async Task<string?> VerifyCredentialsAsync(LoginRequest dto)
         {
             try
             {
@@ -113,7 +113,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 用户登出并写入日志
         /// </summary>
-        public async Task<bool> LogoutAsync(LogoutRequestDto dto)
+        public async Task<bool> LogoutAsync(LogoutRequest dto)
         {
             var user = await _authRepository.GetByUsernameAsync(dto.Username);
             var operatorName = GetOperatorName(user, dto.Username);
@@ -131,7 +131,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 修改系统管理员密码，先校验旧密码
         /// </summary>
-        public async Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPasswordDto dto)
+        public async Task<bool> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword dto)
         {
             var currentHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
             if (string.IsNullOrEmpty(currentHash))
@@ -162,7 +162,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 验证登录类型
         /// </summary>
-        private (bool IsValid, string ErrorMessage) ValidateLoginType(LoginRequestDto dto)
+        private (bool IsValid, string ErrorMessage) ValidateLoginType(LoginRequest dto)
         {
             if (string.IsNullOrEmpty(dto.LoginType))
             {
@@ -245,7 +245,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 处理登录失败
         /// </summary>
-        private async Task HandleFailedLoginAsync(UserModel user, LoginRequestDto dto, string reason)
+        private async Task HandleFailedLoginAsync(UserModel user, LoginRequest dto, string reason)
         {
             // 增加失败次数
             user.FailedLoginCount++;
@@ -274,7 +274,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 处理登录成功
         /// </summary>
-        private async Task<UserDto> HandleSuccessfulLoginAsync(UserModel user, LoginRequestDto dto)
+        private async Task<UserDto> HandleSuccessfulLoginAsync(UserModel user, LoginRequest dto)
         {
             // 重置失败计数和锁定状态
             user.FailedLoginCount = 0;
@@ -307,7 +307,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 记录登录失败日志
         /// </summary>
-        private async Task LogFailedLogin(Guid userId, string operatorName, string reason, LoginRequestDto dto)
+        private async Task LogFailedLogin(Guid userId, string operatorName, string reason, LoginRequest dto)
         {
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
@@ -328,7 +328,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 记录登录成功日志
         /// </summary>
-        private async Task LogSuccessfulLogin(UserModel user, LoginRequestDto dto)
+        private async Task LogSuccessfulLogin(UserModel user, LoginRequest dto)
         {
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
@@ -349,7 +349,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 记录登录异常日志
         /// </summary>
-        private async Task LogLoginException(string username, Exception ex, LoginRequestDto dto)
+        private async Task LogLoginException(string username, Exception ex, LoginRequest dto)
         {
             var content = $"登录异常: {ex.Message}";
             if (!string.IsNullOrEmpty(dto.ClientIp))

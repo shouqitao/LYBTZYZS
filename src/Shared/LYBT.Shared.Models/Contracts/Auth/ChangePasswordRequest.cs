@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Shared.Models.Contracts.Auth;
 
 /// <summary>
-/// 修改密码请求DTO
+/// 修改密码请求 - 前后端共享API契约
 /// </summary>
-public class ChangePasswordRequestDto
+public class ChangePasswordRequest
 {
 
     /// <summary>

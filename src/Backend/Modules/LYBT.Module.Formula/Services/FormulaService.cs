@@ -46,14 +46,14 @@ namespace LYBT.Module.Formula.Services
         {
             var formulas = _dbContext.Formulas.Where(f => f.Status == CommonStatus.Enabled);
 
-            if (!string.IsNullOrWhiteSpace(query.SearchKeyword))
+            if (!string.IsNullOrWhiteSpace(query.Keyword))
             {
-                formulas = formulas.Where(f => f.Name.Contains(query.SearchKeyword));
+                formulas = formulas.Where(f => f.Name.Contains(query.Keyword));
             }
 
             var total = await formulas.CountAsync();
             var items = await formulas
-                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Skip((query.PageIndex - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
 
@@ -61,7 +61,7 @@ namespace LYBT.Module.Formula.Services
             {
                 Items = _mapper.Map<List<FormulaDto>>(items),
                 TotalCount = total,
-                CurrentPage = query.CurrentPage,
+                CurrentPage = query.PageIndex,
                 PageSize = query.PageSize
             };
         }

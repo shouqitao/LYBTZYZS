@@ -7,8 +7,11 @@ using Polly.Extensions.Http;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Models;
+using LoginResponse = LYBT.Shared.Models.Contracts.Auth.LoginResponse;
+using LoginRequest = LYBT.Shared.Models.Contracts.Auth.LoginRequest;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Contracts.Auth;
 using UserInfo = LYBT.WPF.Client.Core.Models.Users.UserInfo;
 using Microsoft.Extensions.Logging;
 
@@ -89,11 +92,9 @@ namespace LYBT.WPF.Client.Services
             {
                 _logger?.LogInformation("开始登录，用户名: {Username}", request.Username);
                 
-                // 转换请求类型
-                var apiRequest = MapToApiRequest(request);
                 
                 // 调用API
-                var apiResponse = await CallLoginApiWithRetryAsync(apiRequest);
+                var apiResponse = await CallLoginApiWithRetryAsync(request);
                 
                 if (!apiResponse.IsSuccess)
                 {
@@ -202,17 +203,8 @@ namespace LYBT.WPF.Client.Services
         
         #region 私有方法
         
-        private Core.Models.Authentication.LoginRequest MapToApiRequest(LoginRequest request)
-        {
-            return new Core.Models.Authentication.LoginRequest
-            {
-                Username = request.Username,
-                Password = request.Password,
-                RememberMe = request.RememberMe
-            };
-        }
         
-        private async Task<ServiceResult<dynamic>> CallLoginApiWithRetryAsync(Core.Models.Authentication.LoginRequest request)
+        private async Task<ServiceResult<dynamic>> CallLoginApiWithRetryAsync(LoginRequest request)
         {
             try
             {

@@ -43,27 +43,13 @@ namespace LYBT.WebAPI.Controllers
             _sysAdminHandler = sysAdminHandler;
         }
 
-        /// <summary>
-        /// 映射共享LoginRequest到本地LoginRequestDto
-        /// </summary>
-        private LoginRequestDto MapToLocalDto(LYBT.Shared.Models.Auth.LoginRequest sharedDto)
-        {
-            return new LoginRequestDto
-            {
-                Username = sharedDto.Username,
-                Password = sharedDto.Password,
-                RememberMe = sharedDto.RememberMe,
-                ClientIp = sharedDto.ClientIp,
-                UserAgent = sharedDto.UserAgent
-            };
-        }
 
         /// <summary>
         /// 用户登录 - 统一API响应格式
         /// </summary>
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>>> Login([FromBody] LYBT.Shared.Models.Auth.LoginRequest dto)
+        public async Task<ActionResult<ApiResponse<LoginResponse>>> Login([FromBody] LoginRequest dto)
         {
             try
             {
@@ -71,13 +57,13 @@ namespace LYBT.WebAPI.Controllers
 
                 // 参数验证
                 if (dto == null)
-                    return ValidationFail<LYBT.Shared.Models.Auth.LoginResponse>("请求数据不能为空");
+                    return ValidationFail<LoginResponse>("请求数据不能为空");
 
                 if (string.IsNullOrWhiteSpace(dto.Username))
-                    return ValidationFail<LYBT.Shared.Models.Auth.LoginResponse>("用户名不能为空");
+                    return ValidationFail<LoginResponse>("用户名不能为空");
 
                 if (string.IsNullOrWhiteSpace(dto.Password))
-                    return ValidationFail<LYBT.Shared.Models.Auth.LoginResponse>("密码不能为空");
+                    return ValidationFail<LoginResponse>("密码不能为空");
 
                 // 设置客户端信息
                 dto.ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -90,14 +76,13 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 // 普通用户登录
-                var localDto = MapToLocalDto(dto);
                 
                 // 1. 先验证身份
-                var validatedUsername = await _authService.VerifyCredentialsAsync(localDto);
+                var validatedUsername = await _authService.VerifyCredentialsAsync(dto);
                 if (validatedUsername == null)
                 {
                     _logger.LogWarning("用户 {Username} 身份验证失败", dto.Username);
-                    return Unauthorized<LYBT.Shared.Models.Auth.LoginResponse>("用户名或密码错误", ApiErrorCodes.AUTHENTICATION_FAILED);
+                    return Unauthorized<LoginResponse>("用户名或密码错误", ApiErrorCodes.AUTHENTICATION_FAILED);
                 }
                 
                 // 2. 获取用户信息
@@ -105,7 +90,7 @@ namespace LYBT.WebAPI.Controllers
                 if (user == null)
                 {
                     _logger.LogError("身份验证成功但无法获取用户 {Username} 的详细信息", validatedUsername);
-                    return InternalError<LYBT.Shared.Models.Auth.LoginResponse>("系统错误，请联系管理员", ApiErrorCodes.SYSTEM_CONFIG_ERROR);
+                    return InternalError<LoginResponse>("系统错误，请联系管理员", ApiErrorCodes.SYSTEM_CONFIG_ERROR);
                 }
 
                 var token = _jwtService.GenerateToken(
@@ -115,7 +100,7 @@ namespace LYBT.WebAPI.Controllers
                     dto.RememberMe
                 );
 
-                var response = new LYBT.Shared.Models.Auth.LoginResponse
+                var response = new LoginResponse
                 {
                     Token = token,
                     User = new BaseUser
@@ -138,14 +123,14 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<LYBT.Shared.Models.Auth.LoginResponse>(ex, "用户登录", dto);
+                return HandleException<LoginResponse>(ex, "用户登录", dto);
             }
         }
 
         /// <summary>
         /// 专门处理sysadmin登录 - 统一错误处理
         /// </summary>
-        private async Task<ActionResult<ApiResponse<LYBT.Shared.Models.Auth.LoginResponse>>> HandleSysAdminLogin(LYBT.Shared.Models.Auth.LoginRequest dto)
+        private async Task<ActionResult<ApiResponse<LoginResponse>>> HandleSysAdminLogin(LoginRequest dto)
         {
             try
             {
@@ -154,14 +139,14 @@ namespace LYBT.WebAPI.Controllers
                 if (string.IsNullOrEmpty(storedHash))
                 {
                     _logger.LogError("sysadmin密码哈希未找到");
-                    return InternalError<LYBT.Shared.Models.Auth.LoginResponse>("系统配置错误", ApiErrorCodes.SYSTEM_CONFIG_ERROR);
+                    return InternalError<LoginResponse>("系统配置错误", ApiErrorCodes.SYSTEM_CONFIG_ERROR);
                 }
 
                 // 验证密码
                 if (!PasswordHelper.Verify(storedHash, dto.Password))
                 {
                     _logger.LogWarning("sysadmin密码验证失败");
-                    return Unauthorized<LYBT.Shared.Models.Auth.LoginResponse>("密码错误", ApiErrorCodes.AUTHENTICATION_FAILED);
+                    return Unauthorized<LoginResponse>("密码错误", ApiErrorCodes.AUTHENTICATION_FAILED);
                 }
 
                 // 创建用户信息
@@ -183,7 +168,7 @@ namespace LYBT.WebAPI.Controllers
                     dto.RememberMe
                 );
 
-                var response = new LYBT.Shared.Models.Auth.LoginResponse
+                var response = new LoginResponse
                 {
                     Token = token,
                     User = new BaseUser
@@ -205,7 +190,7 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "sysadmin登录处理异常");
-                return InternalError<LYBT.Shared.Models.Auth.LoginResponse>("登录处理异常", ApiErrorCodes.INTERNAL_ERROR);
+                return InternalError<LoginResponse>("登录处理异常", ApiErrorCodes.INTERNAL_ERROR);
             }
         }
 
@@ -224,7 +209,7 @@ namespace LYBT.WebAPI.Controllers
                     return Unauthorized("无效的用户身份", ApiErrorCodes.AUTHENTICATION_FAILED);
                 }
 
-                var dto = new LogoutRequestDto
+                var dto = new LogoutRequest
                 {
                     Username = username
                 };
@@ -244,7 +229,7 @@ namespace LYBT.WebAPI.Controllers
         /// 修改sysadmin密码 - 统一API响应格式
         /// </summary>
         [HttpPost("changeSysAdminPassword")]
-        public async Task<ActionResult<ApiResponse>> ChangeSysAdminPassword([FromBody] ChangeSysAdminPasswordDto dto)
+        public async Task<ActionResult<ApiResponse>> ChangeSysAdminPassword([FromBody] ChangeSysAdminPassword dto)
         {
             try
             {
@@ -338,7 +323,7 @@ namespace LYBT.WebAPI.Controllers
         /// 修改密码 (通用接口) - 统一API响应格式
         /// </summary>
         [HttpPost("change-password")]
-        public async Task<ActionResult<ApiResponse>> ChangePassword([FromBody] ChangePasswordRequestDto dto)
+        public async Task<ActionResult<ApiResponse>> ChangePassword([FromBody] ChangePasswordRequest dto)
         {
             try
             {
@@ -354,7 +339,7 @@ namespace LYBT.WebAPI.Controllers
                 // 如果是sysadmin，使用专用的修改密码方法
                 if (operatorName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
                 {
-                    var sysAdminDto = new ChangeSysAdminPasswordDto
+                    var sysAdminDto = new ChangeSysAdminPassword
                     {
                         OldPassword = dto.OldPassword,
                         NewPassword = dto.NewPassword

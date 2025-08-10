@@ -4,9 +4,9 @@ namespace LYBT.Shared.Models.Contracts.Auth
 {
 
     /// <summary>
-    /// 修改 sysadmin 密码 DTO
+    /// 修改 sysadmin 密码 - 前后端共享API契约
     /// </summary>
-    public class ChangeSysAdminPasswordDto
+    public class ChangeSysAdminPassword
     {
 
         /// <summary>

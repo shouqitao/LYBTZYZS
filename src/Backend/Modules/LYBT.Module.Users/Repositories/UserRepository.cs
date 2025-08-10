@@ -69,9 +69,9 @@ namespace LYBT.Module.Users.Repositories
             }
 
             // 通用搜索关键词（模糊搜索：用户名、真实姓名、拼音码）
-            if (!string.IsNullOrWhiteSpace(query.SearchKeyword))
+            if (!string.IsNullOrWhiteSpace(query.Keyword))
             {
-                var keyword = query.SearchKeyword.Trim();
+                var keyword = query.Keyword.Trim();
                 dbSet = dbSet.Where(u =>
                     u.Username.Contains(keyword) ||
                     u.RealName.Contains(keyword) ||
@@ -113,13 +113,13 @@ namespace LYBT.Module.Users.Repositories
             int total = await dbSet.CountAsync();
 
             // 日期范围筛选
-            if (query.CreateStartDate.HasValue)
+            if (query.StartDate.HasValue)
             {
-                dbSet = dbSet.Where(u => u.CreateTime >= query.CreateStartDate.Value);
+                dbSet = dbSet.Where(u => u.CreateTime >= query.StartDate.Value);
             }
-            if (query.CreateEndDate.HasValue)
+            if (query.EndDate.HasValue)
             {
-                dbSet = dbSet.Where(u => u.CreateTime <= query.CreateEndDate.Value);
+                dbSet = dbSet.Where(u => u.CreateTime <= query.EndDate.Value);
             }
             if (query.LoginStartDate.HasValue)
             {
@@ -131,7 +131,7 @@ namespace LYBT.Module.Users.Repositories
             }
 
             // 分页查询
-            int skip = (query.CurrentPage - 1) * query.PageSize;
+            int skip = (query.PageIndex - 1) * query.PageSize;
             var users = await dbSet
                 .OrderByDescending(u => u.CreateTime)
                 .Skip(skip)

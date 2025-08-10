@@ -5,9 +5,9 @@ namespace LYBT.Shared.Models.Contracts.Auth
 {
 
     /// <summary>
-    /// 登录成功返回 DTO
+    /// 登录成功返回响应 - 前后端共享API契约
     /// </summary>
-    public class LoginResponseDto
+    public class LoginResponse
     {
 
         /// <summary>JWT令牌</summary>

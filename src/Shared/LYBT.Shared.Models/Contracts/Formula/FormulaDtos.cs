@@ -1,22 +1,38 @@
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Common;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Contracts.Formula
 {
     /// <summary>
-    /// 验方基础DTO
+    /// 验方基础DTO - 继承审计DTO提供ID、创建时间、更新时间
     /// </summary>
-    public class FormulaDto
+    public class FormulaDto : AuditableDto, IRemarkable
     {
-        public Guid Id { get; set; }
+        [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
+        
+        [DisplayName("功效")]
         public string Effect { get; set; } = string.Empty;
+        
+        [DisplayName("用法")]
         public string Usage { get; set; } = string.Empty;
+        
+        [DisplayName("是否共享")]
         public bool IsShared { get; set; }
+        
+        [DisplayName("创建者ID")]
         public Guid? CreatedById { get; set; }
+        
+        [DisplayName("创建者姓名")]
         public string? CreatedByName { get; set; }
-        public DateTime CreateTime { get; set; }
-        public DateTime? UpdateTime { get; set; }
+        
+        [DisplayName("药材数量")]
         public int HerbCount { get; set; }
+        
+        [DisplayName("备注")]
+        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
     }
 
@@ -33,54 +49,84 @@ namespace LYBT.Shared.Models.Contracts.Formula
     }
 
     /// <summary>
-    /// 验方中药材组成项DTO
+    /// 验方中药材组成项DTO - 继承基础DTO提供ID
     /// </summary>
-    public class FormulaHerbItemDto
+    public class FormulaHerbItemDto : BaseDto
     {
-        public Guid Id { get; set; }
+        [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
+        
+        [DisplayName("中药材名称")]
         public string HerbName { get; set; } = string.Empty;
+        
+        [DisplayName("用量")]
         public decimal Quantity { get; set; }
+        
+        [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;
+        
+        [DisplayName("炮制方法")]
         public string? Preparation { get; set; }
+        
+        [DisplayName("用法")]
         public string? Usage { get; set; }
+        
+        [DisplayName("价格")]
         public decimal Price { get; set; }
+        
+        [DisplayName("排序")]
         public int SortOrder { get; set; }
     }
 
     /// <summary>
-    /// 创建验方DTO
+    /// 验方输入基础DTO - 提供验方基本信息的验证规则
     /// </summary>
-    public class FormulaCreateDto
+    public abstract class FormulaInputBaseDto : IRemarkable
     {
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "验方名称不能为空")]
+        [StringLength(100, ErrorMessage = "验方名称不能超过100个字符")]
+        [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
-        [StringLength(200)]
+        [StringLength(200, ErrorMessage = "功效描述不能超过200个字符")]
+        [DisplayName("功效")]
         public string Effect { get; set; } = string.Empty;
 
-        [StringLength(200)]
+        [StringLength(200, ErrorMessage = "用法描述不能超过200个字符")]
+        [DisplayName("用法")]
         public string Usage { get; set; } = string.Empty;
 
+        [DisplayName("是否共享")]
         public bool IsShared { get; set; } = false;
 
-        [StringLength(500)]
+        [StringLength(500, ErrorMessage = "用药指导不能超过500个字符")]
+        [DisplayName("用药指导")]
         public string? Instructions { get; set; }
 
-        [StringLength(500)]
+        [StringLength(500, ErrorMessage = "主治症状不能超过500个字符")]
+        [DisplayName("主治症状")]
         public string? Indications { get; set; }
 
-        [StringLength(500)]
+        [StringLength(500, ErrorMessage = "禁忌症不能超过500个字符")]
+        [DisplayName("禁忌症")]
         public string? Contraindications { get; set; }
 
-        [StringLength(200)]
+        [StringLength(200, ErrorMessage = "制备方法不能超过200个字符")]
+        [DisplayName("制备方法")]
         public string? Preparation { get; set; }
 
-        [StringLength(200)]
+        [StringLength(500, ErrorMessage = "备注不能超过500个字符")]
+        [DisplayName("备注")]
         public string? Remark { get; set; }
+    }
 
-        [Required]
+    /// <summary>
+    /// 创建验方DTO - 继承验方输入基础DTO
+    /// </summary>
+    public class FormulaCreateDto : FormulaInputBaseDto
+    {
+        [Required(ErrorMessage = "必须包含至少一味中药材")]
+        [DisplayName("中药材组成")]
         public List<FormulaHerbItemCreateDto> Herbs { get; set; } = new();
     }
 
@@ -106,41 +152,16 @@ namespace LYBT.Shared.Models.Contracts.Formula
     }
 
     /// <summary>
-    /// 更新验方DTO
+    /// 更新验方DTO - 继承验方输入基础DTO并添加ID字段
     /// </summary>
-    public class FormulaUpdateDto
+    public class FormulaUpdateDto : FormulaInputBaseDto, IIdentifiable<Guid>
     {
-        [Required]
+        [Required(ErrorMessage = "验方ID不能为空")]
+        [DisplayName("验方ID")]
         public Guid Id { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; } = string.Empty;
-
-        [StringLength(200)]
-        public string Effect { get; set; } = string.Empty;
-
-        [StringLength(200)]
-        public string Usage { get; set; } = string.Empty;
-
-        public bool IsShared { get; set; }
-
-        [StringLength(500)]
-        public string? Instructions { get; set; }
-
-        [StringLength(500)]
-        public string? Indications { get; set; }
-
-        [StringLength(500)]
-        public string? Contraindications { get; set; }
-
-        [StringLength(200)]
-        public string? Preparation { get; set; }
-
-        [StringLength(200)]
-        public string? Remark { get; set; }
-
-        [Required]
+        [Required(ErrorMessage = "必须包含至少一味中药材")]
+        [DisplayName("中药材组成")]
         public List<FormulaHerbItemUpdateDto> Herbs { get; set; } = new();
     }
 
@@ -168,72 +189,84 @@ namespace LYBT.Shared.Models.Contracts.Formula
     }
 
     /// <summary>
-    /// 验方查询DTO
+    /// 验方查询DTO - 继承完整分页查询DTO，提供分页、时间范围、关键词搜索功能
     /// </summary>
-    public class FormulaQueryDto
+    public class FormulaQueryDto : FullPagedQueryDto
     {
+        [DisplayName("验方名称")]
         public string? Name { get; set; }
+        
+        [DisplayName("功效")]
         public string? Effect { get; set; }
+        
+        [DisplayName("是否共享")]
         public bool? IsShared { get; set; }
+        
+        [DisplayName("创建者ID")]
         public Guid? CreatedById { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-        public string? SearchKeyword { get; set; }
-        public int CurrentPage { get; set; } = 1;
-        public int PageSize { get; set; } = 20;
+        
+        [DisplayName("排序字段")]
         public string OrderBy { get; set; } = "CreateTime";
+        
+        [DisplayName("升序排序")]
         public bool IsAscending { get; set; } = false;
     }
 
     /// <summary>
-    /// 从处方创建验方DTO
+    /// 从处方创建验方DTO - 继承验方输入基础DTO
     /// </summary>
-    public class CreateFormulaFromPrescriptionDto
+    public class CreateFormulaFromPrescriptionDto : FormulaInputBaseDto
     {
-        [Required]
+        [Required(ErrorMessage = "处方ID不能为空")]
+        [DisplayName("处方ID")]
         public Guid PrescriptionId { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; } = string.Empty;
-
-        [StringLength(200)]
-        public string Effect { get; set; } = string.Empty;
-
-        [StringLength(200)]
-        public string Usage { get; set; } = string.Empty;
-
-        public bool IsShared { get; set; } = false;
-
-        [StringLength(200)]
-        public string? Remark { get; set; }
     }
 
     /// <summary>
-    /// 验方统计DTO
+    /// 验方统计DTO - 继承统计DTO基础类
     /// </summary>
-    public class FormulaStatisticsDto
+    public class FormulaStatisticsDto : StatisticsDto
     {
-        public int TotalCount { get; set; }
+        [DisplayName("共享验方数量")]
         public int SharedCount { get; set; }
+        
+        [DisplayName("私有验方数量")]
         public int PrivateCount { get; set; }
+        
+        [DisplayName("已使用验方数量")]
         public int UsedCount { get; set; }
+        
+        [DisplayName("功效统计")]
         public Dictionary<string, int> EffectStats { get; set; } = new();
+        
+        [DisplayName("创建者统计")]
         public Dictionary<string, int> CreatorStats { get; set; } = new();
+        
+        [DisplayName("统计开始日期")]
         public DateTime StartDate { get; set; }
+        
+        [DisplayName("统计结束日期")]
         public DateTime EndDate { get; set; }
     }
 
     /// <summary>
-    /// 验方推荐DTO
+    /// 验方推荐DTO - 继承基础DTO提供ID支持
     /// </summary>
-    public class FormulaRecommendationDto
+    public class FormulaRecommendationDto : BaseDto
     {
-        public Guid FormulaId { get; set; }
+        [DisplayName("验方名称")]
         public string FormulaName { get; set; } = string.Empty;
+        
+        [DisplayName("功效")]
         public string Effect { get; set; } = string.Empty;
+        
+        [DisplayName("匹配得分")]
         public double MatchScore { get; set; }
+        
+        [DisplayName("使用次数")]
         public int UsageCount { get; set; }
+        
+        [DisplayName("推荐理由")]
         public string MatchReason { get; set; } = string.Empty;
     }
 }

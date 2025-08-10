@@ -59,7 +59,7 @@ namespace LYBT.Module.Users.Services
             {
                 TotalCount = total,
                 Items = users,
-                CurrentPage = query.CurrentPage,
+                CurrentPage = query.PageIndex,
                 PageSize = query.PageSize
             };
         }

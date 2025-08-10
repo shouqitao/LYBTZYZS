@@ -5,9 +5,9 @@ namespace LYBT.Shared.Models.Contracts.Auth
 {
 
     /// <summary>
-    /// 用户登录请求 DTO
+    /// 用户登录请求 - 前后端共享API契约
     /// </summary>
-    public class LoginRequestDto
+    public class LoginRequest
     {
 
         /// <summary>用户名</summary>

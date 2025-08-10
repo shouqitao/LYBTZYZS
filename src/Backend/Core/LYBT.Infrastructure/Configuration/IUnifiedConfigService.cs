@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Configuration;
 using LYBT.Infrastructure.Configuration.Dtos;
 using LYBT.Shared.Models.Common;
 
