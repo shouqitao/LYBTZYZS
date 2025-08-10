@@ -21,7 +21,7 @@ using LYBT.WPF.Client.Core.Models.Users;
 namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
 {
     /// <summary>
-    /// 用户管理视图模型（简化重构版�?    /// </summary>
+    /// 用户管理视图模型（简化重构版�?    /// </summary>
     public class UserManagementViewModelSimple : BaseServiceManagementViewModel<UserInfo, IUserService>
     {
         private readonly IDialogService _commonDialogService;
@@ -49,7 +49,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             _dialogService = dialogService;
             _userApiService = userApiService;
 
-            // 初始化命�?            ResetPasswordCommand = new DelegateCommand<UserInfo>(async user => await ResetPasswordAsync(user));
+            // 初始化命�?            ResetPasswordCommand = new DelegateCommand<UserInfo>(async user => await ResetPasswordAsync(user));
             ToggleStatusCommand = new DelegateCommand<UserInfo>(async user => await ToggleStatusAsync(user));
         }
 
@@ -61,9 +61,9 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             {
                 var query = new UserPagedQueryDto
                 {
-                    CurrentPage = request.CurrentPage,
+                    PageIndex = request.CurrentPage,
                     PageSize = request.PageSize,
-                    SearchKeyword = SearchKeyword
+                    Keyword = SearchKeyword
                 };
 
                 var result = await Service.SearchUsersAsync(query);
@@ -172,7 +172,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             if (user == null) return;
 
             var confirm = await _commonDialogService.ShowConfirmationAsync(
-                $"确定要重置用�?{user.RealName} 的密码吗�?,
+                $"确定要重置用�?{user.RealName} 的密码吗�?,
                 "重置密码");
 
             if (confirm)
@@ -192,7 +192,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
         }
 
         /// <summary>
-        /// 切换用户状�?        /// </summary>
+        /// 切换用户状�?        /// </summary>
         private async Task ToggleStatusAsync(UserInfo user)
         {
             if (user == null) return;

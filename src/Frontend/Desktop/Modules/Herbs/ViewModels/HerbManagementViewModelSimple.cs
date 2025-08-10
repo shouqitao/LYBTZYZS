@@ -63,9 +63,9 @@ namespace LYBT.WPF.Client.Modules.Herbs.ViewModels
             {
                 var query = new HerbPagedQueryDto
                 {
-                    CurrentPage = request.CurrentPage,
+                    PageIndex = request.CurrentPage,
                     PageSize = request.PageSize,
-                    SearchKeyword = SearchKeyword
+                    Keyword = SearchKeyword
                 };
 
                 var result = await Service.SearchHerbsAsync(query);

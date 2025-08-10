@@ -63,9 +63,9 @@ namespace LYBT.WPF.Client.Modules.Users.ViewModels
             {
                 var query = new UserPagedQueryDto
                 {
-                    CurrentPage = request.CurrentPage,
+                    PageIndex = request.CurrentPage,
                     PageSize = request.PageSize,
-                    SearchKeyword = SearchKeyword
+                    Keyword = SearchKeyword
                 };
 
                 var result = await Service.SearchUsersAsync(query);

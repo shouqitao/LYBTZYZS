@@ -64,9 +64,9 @@ namespace LYBT.WPF.Client.Modules.Patients.ViewModels
             {
                 var query = new PatientPagedQueryDto
                 {
-                    CurrentPage = request.CurrentPage,
+                    PageIndex = request.CurrentPage,
                     PageSize = request.PageSize,
-                    SearchKeyword = SearchKeyword
+                    Keyword = SearchKeyword
                 };
 
                 var result = await Service.GetPagedAsync(query);
