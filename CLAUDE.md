@@ -88,6 +88,44 @@ temp/               # 临时文件（gitignored）
 
 > 📌 **重要**: 详细规范请查看 [文件组织标准](docs/development/FILE_ORGANIZATION.md)
 
+## 🎨 资源管理规范（重要）
+
+### 强制性资源规则
+
+处理资源文件（图标、图片、字体等）时，**必须严格遵守**：
+
+1. **资源文件统一放置** - 所有资源必须放在 `Assets/` 目录及其子目录
+2. **遵循命名规范** - 图标: `icon-{purpose}-{size}.png`，图片: `img-{module}-{description}.jpg`
+3. **使用Pack URI引用** - `pack://application:,,,/Assets/Icons/icon-name.png`
+4. **Build Action设为Resource** - 所有图片资源的生成操作必须设为Resource
+5. **使用ResourcePaths常量** - 通过ResourcePaths.cs类引用资源路径
+
+### 资源目录结构
+
+```
+src/Frontend/Desktop/
+├── Assets/           # 静态资源（图片、图标等）
+│   ├── Images/      # 图片文件
+│   ├── Icons/       # 图标文件
+│   ├── Fonts/       # 字体文件
+│   └── Audio/       # 音频文件
+├── Themes/          # XAML样式资源
+│   ├── Design/      # 设计系统基础
+│   └── Controls/    # 控件模板
+└── Resources/       # 资源字典
+    └── Dictionaries/# 合并的资源字典
+```
+
+### 添加新资源步骤
+
+1. 将文件放入正确的Assets子目录
+2. 设置Build Action = Resource
+3. 在相应的ResourceDictionary中定义资源
+4. 更新ResourcePaths.cs添加路径常量
+5. 测试资源加载是否正常
+
+> 📌 **重要**: 详细规范请查看 [资源管理指南](src/Frontend/Desktop/Assets/RESOURCE_MANAGEMENT.md)
+
 ## 常用开发命令
 
 ### 快速启动

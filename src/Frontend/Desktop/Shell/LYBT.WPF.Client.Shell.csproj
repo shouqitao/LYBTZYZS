@@ -10,7 +10,7 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationIcon>..\Assets\Icons\App\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="app.ico" />
+    <Resource Include="..\Assets\Icons\App\app.ico" />
   </ItemGroup>
 
 </Project>
