@@ -60,7 +60,7 @@ namespace LYBT.WPF.Client.Core.Redux
     /// <summary>
     /// 模式匹配Reducer
     /// </summary>
-    public class PatternMatchingReducer<TState> : IReducer<TState>
+    public class PatternMatchingReducer<TState> : IReducer<TState> where TState : notnull
     {
         private readonly Dictionary<string, Func<TState, IAction, TState>> _handlers = new();
         private readonly Func<TState, IAction, TState>? _defaultHandler;
@@ -106,7 +106,7 @@ namespace LYBT.WPF.Client.Core.Redux
             }
 
             // 使用默认处理器或返回原状态
-            return _defaultHandler?.Invoke(state, action) ?? state;
+            return _defaultHandler != null ? _defaultHandler.Invoke(state, action) : state;
         }
     }
 
@@ -158,7 +158,7 @@ namespace LYBT.WPF.Client.Core.Redux
     /// <summary>
     /// Reducer构建器
     /// </summary>
-    public class ReducerBuilder<TState>
+    public class ReducerBuilder<TState> where TState : notnull
     {
         private readonly List<IReducer<TState>> _reducers = new();
 

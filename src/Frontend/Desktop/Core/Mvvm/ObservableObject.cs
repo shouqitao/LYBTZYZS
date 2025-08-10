@@ -24,7 +24,7 @@ namespace LYBT.WPF.Client.Core.Mvvm
         /// <summary>
         /// 属性值缓存，用于脏检查
         /// </summary>
-        private readonly Dictionary<string, object?> _propertyValues = new();
+        protected readonly Dictionary<string, object?> _propertyValues = new();
         
         /// <summary>
         /// 属性更改跟踪

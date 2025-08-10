@@ -14,17 +14,7 @@ namespace LYBT.WPF.Client.Shell.Views
             // InitializeComponent(); // XAML编译后会生成此方法
         }
     }
-    
-    /// <summary>
-    /// 主页视图
-    /// </summary>
-    public partial class HomeView : UserControl
-    {
-        public HomeView()
-        {
-            // InitializeComponent();
-        }
-    }
+    // HomeView 已在 HomeView.xaml.cs 中定义
     
     /// <summary>
     /// 患者列表视图

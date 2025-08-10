@@ -118,9 +118,9 @@ namespace LYBT.WPF.Client.Core.Memory
             _eventAggregator.GetEvent<PatientSelectedEvent>()
                 .Subscribe(
                     OnPatientSelected,
-                    ThreadOption.UIThread,
+                    LYBT.WPF.Client.Core.Events.ThreadOption.UIThread,
                     keepSubscriberReferenceAlive: false, // 弱引用
-                    filter: p => p.PatientId != Guid.Empty, // 过滤无效消息
+                    filter: (PatientSelectedPayload p) => p.PatientId != Guid.Empty, // 过滤无效消息
                     priority: 10); // 高优先级
 
             // 发布事件

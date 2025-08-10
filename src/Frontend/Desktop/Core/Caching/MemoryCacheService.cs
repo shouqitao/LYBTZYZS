@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
+using Microsoft.Extensions.Caching.Memory;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
@@ -43,7 +43,7 @@ namespace LYBT.WPF.Client.Core.Caching
         /// <summary>
         /// 优先级
         /// </summary>
-        public CacheItemPriority Priority { get; set; } = CacheItemPriority.Default;
+        public CacheItemPriority Priority { get; set; } = CacheItemPriority.Normal;
 
         /// <summary>
         /// 大小（用于内存限制计算）
@@ -63,7 +63,7 @@ namespace LYBT.WPF.Client.Core.Caching
         /// <summary>
         /// 移除回调
         /// </summary>
-        public Action<string, object, CacheEntryRemovedReason>? RemovedCallback { get; set; }
+        public Action<string, object, EvictionReason>? RemovedCallback { get; set; }
 
         /// <summary>
         /// 预设配置：短期缓存（5分钟）
@@ -71,7 +71,7 @@ namespace LYBT.WPF.Client.Core.Caching
         public static CacheOptions ShortTerm => new()
         {
             AbsoluteExpiration = TimeSpan.FromMinutes(5),
-            Priority = CacheItemPriority.Default
+            Priority = CacheItemPriority.Normal
         };
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace LYBT.WPF.Client.Core.Caching
         public static CacheOptions MediumTerm => new()
         {
             AbsoluteExpiration = TimeSpan.FromMinutes(30),
-            Priority = CacheItemPriority.Default
+            Priority = CacheItemPriority.Normal
         };
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace LYBT.WPF.Client.Core.Caching
         public static CacheOptions LongTerm => new()
         {
             AbsoluteExpiration = TimeSpan.FromHours(2),
-            Priority = CacheItemPriority.Default
+            Priority = CacheItemPriority.Normal
         };
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace LYBT.WPF.Client.Core.Caching
         public static CacheOptions Sliding => new()
         {
             SlidingExpiration = TimeSpan.FromMinutes(10),
-            Priority = CacheItemPriority.Default
+            Priority = CacheItemPriority.Normal
         };
     }
 
@@ -145,9 +145,10 @@ namespace LYBT.WPF.Client.Core.Caching
     /// </summary>
     public class MemoryCacheService : IMemoryCacheService, IDisposable
     {
-        private readonly MemoryCache _l1Cache;
+        private readonly IMemoryCache _l1Cache;
         private readonly ConcurrentDictionary<string, WeakReference> _weakCache;
         private readonly ConcurrentDictionary<string, CacheStatisticsEntry> _statistics;
+        private readonly ConcurrentDictionary<string, object> _cacheKeys; // 用于跟踪所有缓存键
         private readonly ILogger<MemoryCacheService>? _logger;
         private readonly Timer _cleanupTimer;
         private readonly object _lockObject = new();
@@ -159,21 +160,20 @@ namespace LYBT.WPF.Client.Core.Caching
         /// <summary>
         /// 构造函数
         /// </summary>
-        public MemoryCacheService(ILogger<MemoryCacheService>? logger = null)
+        public MemoryCacheService(ILogger<MemoryCacheService>? logger = null, IMemoryCache? memoryCache = null)
         {
             _logger = logger;
             
-            // 配置L1缓存
-            var config = new NameValueCollection
+            // 使用提供的缓存或创建新的
+            _l1Cache = memoryCache ?? new MemoryCache(new MemoryCacheOptions
             {
-                { "CacheMemoryLimitMegabytes", "100" }, // 100MB限制
-                { "PhysicalMemoryLimitPercentage", "10" }, // 物理内存10%
-                { "PollingInterval", "00:01:00" } // 1分钟轮询
-            };
+                SizeLimit = 100 * 1024 * 1024, // 100MB限制
+                CompactionPercentage = 0.1 // 压缩10%
+            });
             
-            _l1Cache = new MemoryCache("LYBT_L1", config);
             _weakCache = new ConcurrentDictionary<string, WeakReference>();
             _statistics = new ConcurrentDictionary<string, CacheStatisticsEntry>();
+            _cacheKeys = new ConcurrentDictionary<string, object>();
             
             // 启动清理定时器
             _cleanupTimer = new Timer(CleanupCallback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
@@ -188,8 +188,7 @@ namespace LYBT.WPF.Client.Core.Caching
                 throw new ArgumentNullException(nameof(key));
 
             // 先查L1缓存
-            var item = _l1Cache.Get(key) as T;
-            if (item != null)
+            if (_l1Cache.TryGetValue(key, out T? item))
             {
                 RecordHit(key);
                 return item;
@@ -203,7 +202,12 @@ namespace LYBT.WPF.Client.Core.Caching
                 {
                     RecordHit(key);
                     // 提升到L1缓存
-                    _l1Cache.Set(key, item, DateTimeOffset.Now.AddMinutes(5));
+                    var options = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+                        Size = 1
+                    };
+                    _l1Cache.Set(key, item, options);
                     return item;
                 }
             }
@@ -284,38 +288,42 @@ namespace LYBT.WPF.Client.Core.Caching
 
             options ??= CacheOptions.MediumTerm;
 
-            // 创建缓存策略
-            var policy = new CacheItemPolicy();
+            // 创建缓存选项
+            var entryOptions = new MemoryCacheEntryOptions();
             
             if (options.AbsoluteExpiration.HasValue)
             {
-                policy.AbsoluteExpiration = DateTimeOffset.Now.Add(options.AbsoluteExpiration.Value);
+                entryOptions.AbsoluteExpirationRelativeToNow = options.AbsoluteExpiration.Value;
             }
             
             if (options.SlidingExpiration.HasValue)
             {
-                policy.SlidingExpiration = options.SlidingExpiration.Value;
+                entryOptions.SlidingExpiration = options.SlidingExpiration.Value;
             }
             
-            policy.Priority = options.Priority;
+            entryOptions.Priority = options.Priority;
+            entryOptions.Size = options.Size;
             
             if (options.RemovedCallback != null)
             {
-                policy.RemovedCallback = args =>
+                entryOptions.RegisterPostEvictionCallback((evictedKey, evictedValue, reason, state) =>
                 {
-                    options.RemovedCallback(args.CacheItem.Key, args.CacheItem.Value, args.RemovedReason);
-                    if (args.RemovedReason == CacheEntryRemovedReason.Evicted)
+                    options.RemovedCallback(evictedKey.ToString()!, evictedValue!, reason);
+                    if (reason == EvictionReason.Capacity || reason == EvictionReason.Replaced)
                     {
                         Interlocked.Increment(ref _evictions);
                     }
-                };
+                    // 从跟踪列表中移除
+                    _cacheKeys.TryRemove(evictedKey.ToString()!, out _);
+                });
             }
 
             // 根据缓存级别处理
             switch (options.Level)
             {
                 case CacheLevel.L1:
-                    _l1Cache.Set(key, value, policy);
+                    _l1Cache.Set(key, value, entryOptions);
+                    _cacheKeys.TryAdd(key, value);
                     break;
                     
                 case CacheLevel.L2:
@@ -347,10 +355,11 @@ namespace LYBT.WPF.Client.Core.Caching
             if (string.IsNullOrEmpty(key))
                 return false;
 
-            var removed = _l1Cache.Remove(key) != null;
+            _l1Cache.Remove(key);
             _weakCache.TryRemove(key, out _);
+            _cacheKeys.TryRemove(key, out _);
             
-            return removed;
+            return true;
         }
 
         /// <summary>
@@ -358,13 +367,13 @@ namespace LYBT.WPF.Client.Core.Caching
         /// </summary>
         public void Clear()
         {
-            // 获取所有键
-            var keys = _l1Cache.Select(kvp => kvp.Key).ToList();
-            foreach (var key in keys)
+            // 清除所有已知的键
+            foreach (var key in _cacheKeys.Keys.ToList())
             {
                 _l1Cache.Remove(key);
             }
             
+            _cacheKeys.Clear();
             _weakCache.Clear();
             _statistics.Clear();
             
@@ -383,10 +392,7 @@ namespace LYBT.WPF.Client.Core.Caching
             if (string.IsNullOrEmpty(prefix))
                 return;
 
-            var keys = _l1Cache
-                .Where(kvp => kvp.Key.StartsWith(prefix))
-                .Select(kvp => kvp.Key)
-                .ToList();
+            var keys = _cacheKeys.Keys.Where(k => k.StartsWith(prefix)).ToList();
             
             foreach (var key in keys)
             {
@@ -411,8 +417,8 @@ namespace LYBT.WPF.Client.Core.Caching
             {
                 TotalHits = _totalHits,
                 TotalMisses = _totalMisses,
-                CurrentItemCount = _l1Cache.GetCount() + _weakCache.Count,
-                EstimatedSize = _l1Cache.GetCount() * 1024, // 估算值
+                CurrentItemCount = _cacheKeys.Count + _weakCache.Count,
+                EstimatedSize = _cacheKeys.Count * 1024, // 估算值
                 Evictions = _evictions,
                 LastCompaction = _lastCompaction
             };
@@ -436,7 +442,7 @@ namespace LYBT.WPF.Client.Core.Caching
         /// </summary>
         public void Compact(double percentage = 0.1)
         {
-            var itemsToRemove = (int)(_l1Cache.GetCount() * percentage);
+            var itemsToRemove = (int)(_cacheKeys.Count * percentage);
             if (itemsToRemove <= 0)
                 return;
 
@@ -461,6 +467,12 @@ namespace LYBT.WPF.Client.Core.Caching
             foreach (var key in deadWeakRefs)
             {
                 _weakCache.TryRemove(key, out _);
+            }
+
+            // 触发内存缓存压缩
+            if (_l1Cache is MemoryCache memCache)
+            {
+                memCache.Compact(percentage);
             }
 
             _lastCompaction = DateTime.UtcNow;
@@ -547,7 +559,10 @@ namespace LYBT.WPF.Client.Core.Caching
         public void Dispose()
         {
             _cleanupTimer?.Dispose();
-            _l1Cache?.Dispose();
+            if (_l1Cache is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
             Clear();
         }
 

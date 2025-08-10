@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
@@ -47,10 +48,11 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .Enrich.WithThreadId()
-                .Enrich.WithProcessId()
-                .Enrich.WithMachineName()
-                .Enrich.WithEnvironmentUserName()
+                // 以下enrichers需要额外的NuGet包
+                // .Enrich.WithThreadId() // 需要 Serilog.Enrichers.Thread 包
+                // .Enrich.WithProcessId() // 需要 Serilog.Enrichers.Process 包
+                // .Enrich.WithMachineName() // 需要 Serilog.Enrichers.Environment 包
+                // .Enrich.WithEnvironmentUserName() // 需要 Serilog.Enrichers.Environment 包
                 // 控制台输出（开发环境）
                 .WriteTo.Console(
                     outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}")
@@ -61,21 +63,24 @@ namespace LYBT.WPF.Client.Shell.Extensions
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 30,
                     fileSizeLimitBytes: 10485760) // 10MB
-                // 调试输出
-                #if DEBUG
-                .WriteTo.Debug()
-                #endif
-                // Windows事件日志（仅错误和严重）
-                .WriteTo.EventLog("LYBT", 
-                    restrictedToMinimumLevel: LogEventLevel.Error)
+                // 调试输出 (需要 Serilog.Sinks.Debug 包)
+                // #if DEBUG
+                // .WriteTo.Debug()
+                // #endif
+                // Windows事件日志（仅错误和严重）- 需要 Serilog.Sinks.EventLog 包
+                // .WriteTo.EventLog("LYBT", 
+                //     restrictedToMinimumLevel: LogEventLevel.Error)
                 .CreateLogger();
         }
         
         private static void RegisterLoggingServices(IContainerRegistry container)
         {
             // 注册Serilog日志工厂
-            var loggerFactory = new LoggerFactory()
-                .AddSerilog(Log.Logger);
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddDebug();
+                builder.AddConsole();
+            });
                 
             container.RegisterInstance<ILoggerFactory>(loggerFactory);
             container.Register(typeof(ILogger<>), typeof(Logger<>));
@@ -95,8 +100,8 @@ namespace LYBT.WPF.Client.Shell.Extensions
             // 注册全局异常处理器
             container.RegisterSingleton<IGlobalExceptionHandler, GlobalExceptionHandler>();
             
-            // 注册错误处理服务（兼容旧代码）
-            container.RegisterSingleton<IErrorHandlingService, ErrorHandlingServiceAdapter>();
+            // 注册错误处理服务
+            container.RegisterSingleton<IErrorHandlingService, Services.ErrorHandlingService>();
         }
         
         private static void RegisterNotificationServices(IContainerRegistry container)
@@ -106,6 +111,9 @@ namespace LYBT.WPF.Client.Shell.Extensions
         }
     }
     
+    // ErrorHandlingServiceAdapter 临时禁用 - 需要实现完整的IErrorHandlingService接口
+    // TODO: 完成接口实现或使用已有的ErrorHandlingService
+    /*
     /// <summary>
     /// 错误处理服务适配器 - 兼容旧的IErrorHandlingService接口
     /// </summary>
@@ -163,4 +171,5 @@ namespace LYBT.WPF.Client.Shell.Extensions
             await _notificationService.ShowErrorAsync(message, LYBT.WPF.Client.Core.Exceptions.ErrorSeverity.Error);
         }
     }
+    */
 }

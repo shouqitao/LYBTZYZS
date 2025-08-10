@@ -101,7 +101,7 @@ namespace LYBT.WPF.Client.Core.Http
             handler = new RequestIdHandler { InnerHandler = handler };
             
             // 添加自定义处理器
-            foreach (var additionalHandler in config.AdditionalHandlers.Reverse())
+            foreach (var additionalHandler in config.AdditionalHandlers.AsEnumerable().Reverse())
             {
                 additionalHandler.InnerHandler = handler;
                 handler = additionalHandler;
@@ -303,8 +303,8 @@ namespace LYBT.WPF.Client.Core.Http
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     onRetry: (outcome, timespan, retryCount, context) =>
                     {
-                        var requestId = context.Values.ContainsKey("RequestId") 
-                            ? context.Values["RequestId"] 
+                        var requestId = context.TryGetValue("RequestId", out var id) 
+                            ? id 
                             : "unknown";
                         _logger?.LogWarning($"[{requestId}] 重试 {retryCount} 次，等待 {timespan}");
                     });

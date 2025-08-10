@@ -88,20 +88,10 @@ namespace LYBT.WPF.Client.Core.Security
             }
             finally
             {
-                // 清除临时字符串（尽管CLR可能会保留副本）
-                if (!string.IsNullOrEmpty(password))
-                {
-                    unsafe
-                    {
-                        fixed (char* ptr = password)
-                        {
-                            for (int i = 0; i < password.Length; i++)
-                            {
-                                ptr[i] = '\0';
-                            }
-                        }
-                    }
-                }
+                // 注意：由于.NET字符串的不可变性，无法真正清除内存中的密码
+                // SecureString已经提供了必要的安全保护
+                // 避免使用unsafe代码以简化编译配置
+                password = null;
             }
         }
         

@@ -16,13 +16,13 @@ namespace LYBT.WPF.Client.Core.Http
     /// </summary>
     public interface IApiService
     {
-        Task<TResponse?> GetAsync<TResponse>(string endpoint, object? parameters = null, CancellationToken cancellationToken = default);
-        Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default);
-        Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default);
-        Task<TResponse?> PatchAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default);
+        Task<TResponse?> GetAsync<TResponse>(string endpoint, object? parameters = null, CancellationToken cancellationToken = default) where TResponse : class;
+        Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default) where TResponse : class;
+        Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default) where TResponse : class;
+        Task<TResponse?> PatchAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default) where TResponse : class;
         Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken = default);
         Task<Stream> DownloadAsync(string endpoint, CancellationToken cancellationToken = default);
-        Task<TResponse?> UploadAsync<TResponse>(string endpoint, Stream file, string fileName, Dictionary<string, string>? metadata = null, CancellationToken cancellationToken = default);
+        Task<TResponse?> UploadAsync<TResponse>(string endpoint, Stream file, string fileName, Dictionary<string, string>? metadata = null, CancellationToken cancellationToken = default) where TResponse : class;
     }
 
     /// <summary>
@@ -61,6 +61,7 @@ namespace LYBT.WPF.Client.Core.Http
             string endpoint,
             object? parameters = null,
             CancellationToken cancellationToken = default)
+            where TResponse : class
         {
             var url = BuildUrl(endpoint, parameters);
             
@@ -100,6 +101,7 @@ namespace LYBT.WPF.Client.Core.Http
             string endpoint,
             TRequest request,
             CancellationToken cancellationToken = default)
+            where TResponse : class
         {
             var content = CreateJsonContent(request);
             
@@ -114,6 +116,7 @@ namespace LYBT.WPF.Client.Core.Http
             string endpoint,
             TRequest request,
             CancellationToken cancellationToken = default)
+            where TResponse : class
         {
             var content = CreateJsonContent(request);
             
@@ -128,6 +131,7 @@ namespace LYBT.WPF.Client.Core.Http
             string endpoint,
             TRequest request,
             CancellationToken cancellationToken = default)
+            where TResponse : class
         {
             var content = CreateJsonContent(request);
             
@@ -168,6 +172,7 @@ namespace LYBT.WPF.Client.Core.Http
             string fileName,
             Dictionary<string, string>? metadata = null,
             CancellationToken cancellationToken = default)
+            where TResponse : class
         {
             using var content = new MultipartFormDataContent();
             
@@ -366,15 +371,19 @@ namespace LYBT.WPF.Client.Core.Http
 
         // IApiService implementation
         public Task<TResponse?> GetAsync<TResponse>(string endpoint, object? parameters = null, CancellationToken cancellationToken = default)
+            where TResponse : class
             => _apiService.GetAsync<TResponse>(endpoint, parameters, cancellationToken);
 
         public Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
+            where TResponse : class
             => _apiService.PostAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
 
         public Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
+            where TResponse : class
             => _apiService.PutAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
 
         public Task<TResponse?> PatchAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
+            where TResponse : class
             => _apiService.PatchAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
 
         public Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
@@ -384,6 +393,7 @@ namespace LYBT.WPF.Client.Core.Http
             => _apiService.DownloadAsync(endpoint, cancellationToken);
 
         public Task<TResponse?> UploadAsync<TResponse>(string endpoint, Stream file, string fileName, Dictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
+            where TResponse : class
             => _apiService.UploadAsync<TResponse>(endpoint, file, fileName, metadata, cancellationToken);
     }
 }

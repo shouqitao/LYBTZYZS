@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
+using Polly.CircuitBreaker;
+using LYBT.WPF.Client.Core.Models;
 
 namespace LYBT.WPF.Client.Core.Services
 {

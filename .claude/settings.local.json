@@ -200,7 +200,11 @@
       "Bash(msbuild:*)",
       "Bash(start dotnet run:*)",
       "mcp__sequential-thinking__sequentialthinking",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "mcp__shrimp-task-manager__list_tasks",
+      "mcp__shrimp-task-manager__init_project_rules",
+      "mcp__shrimp-task-manager__process_thought",
+      "Bash(test:*)"
     ],
     "deny": []
   }

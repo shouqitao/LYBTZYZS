@@ -6,7 +6,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
     /// <summary>
     /// 认证状态
     /// </summary>
-    public class AuthState
+    public record AuthState
     {
         public bool IsAuthenticated { get; init; }
         public bool IsLoading { get; init; }
@@ -47,7 +47,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
     /// <summary>
     /// 用户信息
     /// </summary>
-    public class UserInfo
+    public record UserInfo
     {
         public Guid Id { get; init; }
         public string UserName { get; init; } = string.Empty;

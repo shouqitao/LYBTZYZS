@@ -26,10 +26,10 @@ namespace LYBT.WPF.Client.Core.Services
         /// <summary>
         /// 分类异常
         /// </summary>
-        public ApplicationException ClassifyException(Exception exception)
+        public AppException ClassifyException(Exception exception)
         {
-            // 如果已经是ApplicationException，直接返回
-            if (exception is ApplicationException appEx)
+            // 如果已经是AppException，直接返回
+            if (exception is AppException appEx)
             {
                 _logger?.LogDebug("异常已分类: {Category} - {Severity}", appEx.Category, appEx.Severity);
                 return appEx;
@@ -42,19 +42,19 @@ namespace LYBT.WPF.Client.Core.Services
                 HttpRequestException httpEx => ClassifyHttpException(httpEx),
                 WebException webEx => ClassifyWebException(webEx),
                 SocketException socketEx => ClassifySocketException(socketEx),
-                TaskCanceledException when IsTimeout(exception) => new TimeoutException(
+                TaskCanceledException when IsTimeout(exception) => new Exceptions.TimeoutException(
                     "操作超时", TimeSpan.FromSeconds(30), "HTTP请求"),
                 
                 // 数据访问相关
                 SqlException sqlEx => ClassifySqlException(sqlEx),
                 
-                // 文件系统相关
-                IOException ioEx => ClassifyIOException(ioEx),
-                DirectoryNotFoundException => new ApplicationException(
+                // 文件系统相关（更具体的异常先匹配）
+                DirectoryNotFoundException => new AppException(
                     "目录不存在", ErrorCategory.FileSystem, ErrorSeverity.Warning, exception),
-                FileNotFoundException => new ApplicationException(
+                FileNotFoundException => new AppException(
                     "文件不存在", ErrorCategory.FileSystem, ErrorSeverity.Warning, exception),
-                UnauthorizedAccessException => new ApplicationException(
+                IOException ioEx => ClassifyIOException(ioEx),
+                UnauthorizedAccessException => new AppException(
                     "文件访问被拒绝", ErrorCategory.FileSystem, ErrorSeverity.Warning, exception),
                 
                 // 安全相关
@@ -80,7 +80,7 @@ namespace LYBT.WPF.Client.Core.Services
                     "配置错误: " + exception.Message),
                 
                 // 默认
-                _ => new ApplicationException(
+                _ => new AppException(
                     exception.Message ?? "未知错误",
                     ErrorCategory.Unknown,
                     DetermineSeverity(exception),
@@ -180,11 +180,11 @@ namespace LYBT.WPF.Client.Core.Services
         /// <summary>
         /// 分类IO异常
         /// </summary>
-        private ApplicationException ClassifyIOException(IOException exception)
+        private AppException ClassifyIOException(IOException exception)
         {
             if (exception.Message.Contains("正在被另一个进程使用"))
             {
-                return new ApplicationException(
+                return new AppException(
                     "文件被占用",
                     ErrorCategory.FileSystem,
                     ErrorSeverity.Warning,
@@ -196,14 +196,14 @@ namespace LYBT.WPF.Client.Core.Services
             
             if (exception.Message.Contains("磁盘空间不足"))
             {
-                return new ApplicationException(
+                return new AppException(
                     "磁盘空间不足",
                     ErrorCategory.FileSystem,
                     ErrorSeverity.Critical,
                     exception);
             }
             
-            return new ApplicationException(
+            return new AppException(
                 "文件操作失败",
                 ErrorCategory.FileSystem,
                 ErrorSeverity.Error,
@@ -280,6 +280,6 @@ namespace LYBT.WPF.Client.Core.Services
     /// </summary>
     public interface IErrorClassifier
     {
-        ApplicationException ClassifyException(Exception exception);
+        AppException ClassifyException(Exception exception);
     }
 }

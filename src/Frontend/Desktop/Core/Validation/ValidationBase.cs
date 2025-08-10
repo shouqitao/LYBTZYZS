@@ -1,4 +1,5 @@
 using FluentValidation;
+using FluentValidation.Internal;
 using FluentValidation.Results;
 using System;
 using System.Collections;
@@ -172,7 +173,8 @@ namespace LYBT.WPF.Client.Core.Validation
                     return true;
                 }
 
-                var validationResult = await _validator.ValidateAsync(this);
+                var context = new ValidationContext<ValidationBase>(this);
+                var validationResult = await _validator.ValidateAsync(context);
                 
                 if (!validationResult.IsValid)
                 {
@@ -210,7 +212,8 @@ namespace LYBT.WPF.Client.Core.Validation
             if (_validator == null)
                 return new ValidationResult();
             
-            return await _validator.ValidateAsync(this);
+            var context = new ValidationContext<ValidationBase>(this);
+            return await _validator.ValidateAsync(context);
         }
 
         /// <summary>

@@ -9,6 +9,9 @@ using Refit;
 using LYBT.WPF.Client.Core.Exceptions;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Common;
+using ErrorCategory = LYBT.WPF.Client.Core.Models.Common.ErrorCategory;
+using ErrorSeverity = LYBT.WPF.Client.Core.Models.Common.ErrorSeverity;
+using TimeoutException = System.TimeoutException;
 
 namespace LYBT.WPF.Client.Services
 {
@@ -135,10 +138,10 @@ namespace LYBT.WPF.Client.Services
             // 检查自定义异常类型
             return exception switch
             {
-                BusinessException businessEx => businessEx.UserMessage,
-                ValidationException validationEx => validationEx.UserMessage,
-                NetworkException networkEx => networkEx.UserMessage,
-                AuthenticationException authEx => authEx.UserMessage,
+                BusinessException businessEx => businessEx.UserFriendlyMessage,
+                ValidationException validationEx => validationEx.UserFriendlyMessage,
+                NetworkException networkEx => networkEx.UserFriendlyMessage,
+                AuthenticationException authEx => authEx.UserFriendlyMessage,
                 _ => GetMappedMessage(exception) ?? defaultMessage ?? "发生未知错误"
             };
         }
@@ -147,7 +150,7 @@ namespace LYBT.WPF.Client.Services
         {
             return exception switch
             {
-                NetworkException networkEx => networkEx.CanRetry,
+                NetworkException networkEx => true, // 网络异常通常可以重试
                 BusinessException => false,
                 ValidationException => false,
                 AuthenticationException => false,
@@ -191,14 +194,27 @@ namespace LYBT.WPF.Client.Services
 
             return exception switch
             {
-                BusinessException businessEx => businessEx.Severity,
-                NetworkException networkEx => networkEx.Severity,
-                AuthenticationException authEx => authEx.Severity,
+                BusinessException businessEx => ConvertSeverity(businessEx.Severity),
+                NetworkException networkEx => ConvertSeverity(networkEx.Severity),
+                AuthenticationException authEx => ConvertSeverity(authEx.Severity),
                 ValidationException => ErrorSeverity.Warning,
                 OutOfMemoryException => ErrorSeverity.Fatal,
                 StackOverflowException => ErrorSeverity.Fatal,
                 AccessViolationException => ErrorSeverity.Fatal,
                 _ => _severityMapping.TryGetValue(exception.GetType(), out var severity) ? severity : ErrorSeverity.Error
+            };
+        }
+        
+        private ErrorSeverity ConvertSeverity(Core.Exceptions.ErrorSeverity severity)
+        {
+            return severity switch
+            {
+                Core.Exceptions.ErrorSeverity.Info => ErrorSeverity.Info,
+                Core.Exceptions.ErrorSeverity.Warning => ErrorSeverity.Warning,
+                Core.Exceptions.ErrorSeverity.Error => ErrorSeverity.Error,
+                Core.Exceptions.ErrorSeverity.Critical => ErrorSeverity.Critical,
+                Core.Exceptions.ErrorSeverity.Fatal => ErrorSeverity.Fatal,
+                _ => ErrorSeverity.Error
             };
         }
 

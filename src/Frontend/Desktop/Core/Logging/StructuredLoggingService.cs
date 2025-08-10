@@ -214,7 +214,7 @@ namespace LYBT.WPF.Client.Core.Logging
             var logEntry = CreateLogEntry(level, message, args);
             
             // 添加异常信息
-            if (exception is ApplicationException appEx)
+            if (exception is AppException appEx)
             {
                 logEntry.ExceptionInfo = new ExceptionInfo
                 {

@@ -7,7 +7,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 应用程序异常基类 - 所有自定义异常的基类
     /// </summary>
     [Serializable]
-    public class ApplicationException : Exception
+    public class AppException : Exception
     {
         /// <summary>
         /// 错误类别
@@ -59,22 +59,22 @@ namespace LYBT.WPF.Client.Core.Exceptions
         /// </summary>
         public bool IsRetryable { get; set; }
         
-        public ApplicationException()
+        public AppException()
             : this("应用程序发生错误")
         {
         }
         
-        public ApplicationException(string message)
+        public AppException(string message)
             : this(message, ErrorCategory.Unknown, ErrorSeverity.Error)
         {
         }
         
-        public ApplicationException(string message, Exception innerException)
+        public AppException(string message, Exception innerException)
             : this(message, ErrorCategory.Unknown, ErrorSeverity.Error, innerException)
         {
         }
         
-        public ApplicationException(string message, ErrorCategory category, ErrorSeverity severity)
+        public AppException(string message, ErrorCategory category, ErrorSeverity severity)
             : base(message)
         {
             Category = category;
@@ -85,7 +85,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
             IsRetryable = DetermineRetryability(category);
         }
         
-        public ApplicationException(string message, ErrorCategory category, ErrorSeverity severity, Exception innerException)
+        public AppException(string message, ErrorCategory category, ErrorSeverity severity, Exception innerException)
             : base(message, innerException)
         {
             Category = category;
@@ -96,7 +96,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
             IsRetryable = DetermineRetryability(category);
         }
         
-        protected ApplicationException(SerializationInfo info, StreamingContext context)
+        protected AppException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             Category = (ErrorCategory)info.GetValue(nameof(Category), typeof(ErrorCategory));
@@ -169,9 +169,9 @@ namespace LYBT.WPF.Client.Core.Exceptions
         /// <summary>
         /// 创建带错误代码的异常
         /// </summary>
-        public static ApplicationException WithErrorCode(string errorCode, string message, ErrorCategory category, ErrorSeverity severity)
+        public static AppException WithErrorCode(string errorCode, string message, ErrorCategory category, ErrorSeverity severity)
         {
-            return new ApplicationException(message, category, severity)
+            return new AppException(message, category, severity)
             {
                 ErrorCode = errorCode
             };

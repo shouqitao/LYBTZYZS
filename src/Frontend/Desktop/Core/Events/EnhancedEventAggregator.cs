@@ -212,7 +212,7 @@ namespace LYBT.WPF.Client.Core.Events
         {
             lock (_lock)
             {
-                var token = new SubscriptionToken(Interlocked.Increment(ref _subscriptionIdCounter));
+                var token = new SubscriptionToken(t => Unsubscribe(t));
                 _subscriptions[token] = subscription;
                 
                 if (_debugMode)
@@ -460,8 +460,12 @@ namespace LYBT.WPF.Client.Core.Events
         {
             if (typeof(EnhancedEventBase).IsAssignableFrom(typeof(TEventType)))
             {
-                return GetEvent<TEventType>() as TEventType 
-                    ?? throw new InvalidOperationException($"无法获取事件类型: {typeof(TEventType).Name}");
+                // 使用反射调用泛型方法
+                var method = GetType().GetMethod(nameof(GetEvent), Type.EmptyTypes);
+                var genericMethod = method?.MakeGenericMethod(typeof(TEventType));
+                var result = genericMethod?.Invoke(this, null);
+                
+                return (TEventType)(result ?? throw new InvalidOperationException($"无法获取事件类型: {typeof(TEventType).Name}"));
             }
             
             // 对于非增强事件，创建包装器

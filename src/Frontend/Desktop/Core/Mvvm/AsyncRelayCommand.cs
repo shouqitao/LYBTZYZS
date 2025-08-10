@@ -212,6 +212,11 @@ namespace LYBT.WPF.Client.Core.Mvvm
             await ExecuteAsync((T?)parameter);
         }
         
+        public async Task ExecuteAsync(object? parameter)
+        {
+            await ExecuteAsync((T?)parameter);
+        }
+        
         public async Task ExecuteAsync(T? parameter = default)
         {
             if (!CanExecute(parameter))

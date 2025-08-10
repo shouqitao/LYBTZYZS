@@ -225,7 +225,7 @@ namespace LYBT.WPF.Client.Core.Memory
     /// <summary>
     /// 泛型弱事件管理器（支持任意委托类型）
     /// </summary>
-    public class WeakEventManager<TDelegate> where TDelegate : Delegate
+    public class GenericWeakEventManager<TDelegate> where TDelegate : Delegate
     {
         private readonly List<WeakDelegate> _delegates = new();
         private readonly object _lock = new();

@@ -44,28 +44,5 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         {
         }
     }
-    
-    /// <summary>
-    /// 测试主页视图模型
-    /// </summary>
-    public class TestHomeViewModel : BaseViewModel
-    {
-        public string Title { get; set; } = "测试主页";
-        
-        public TestHomeViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
-        {
-        }
-    }
-    
-    /// <summary>
-    /// 诊断主页视图模型
-    /// </summary>
-    public class DiagnosticHomeViewModel : BaseViewModel
-    {
-        public string Title { get; set; } = "诊断主页";
-        
-        public DiagnosticHomeViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
-        {
-        }
-    }
+    // TestHomeViewModel 和 DiagnosticHomeViewModel 已在单独的文件中定义
 }

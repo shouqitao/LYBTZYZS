@@ -131,5 +131,21 @@ namespace LYBT.WPF.Client.Services
             
             return entropy;
         }
+        
+        public void DeleteCredentials()
+        {
+            try
+            {
+                if (File.Exists(_credentialFilePath))
+                {
+                    File.Delete(_credentialFilePath);
+                    _logger?.LogDebug("凭据已删除");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "删除凭据失败");
+            }
+        }
     }
 }

@@ -104,21 +104,36 @@ namespace LYBT.WPF.Client.Core.Extensions
             Action<string> logAction,
             Func<T, bool> resultPredicate = null)
         {
-            var policyBuilder = resultPredicate != null
-                ? Policy.HandleResult(resultPredicate)
-                : Policy.Handle<Exception>();
-                
-            return policyBuilder
-                .WaitAndRetryAsync(
-                    retryCount,
-                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                    onRetry: (outcome, timespan, retryNumber, context) =>
-                    {
-                        var message = outcome.Exception != null
-                            ? $"重试 {retryNumber}/{retryCount}，异常: {outcome.Exception.Message}"
-                            : $"重试 {retryNumber}/{retryCount}，结果不满足条件";
-                        logAction(message);
-                    });
+            if (resultPredicate != null)
+            {
+                return Policy
+                    .HandleResult(resultPredicate)
+                    .WaitAndRetryAsync(
+                        retryCount,
+                        retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                        onRetry: (outcome, timespan, retryNumber, context) =>
+                        {
+                            var message = outcome.Exception != null
+                                ? $"重试 {retryNumber}/{retryCount}，异常: {outcome.Exception.Message}"
+                                : $"重试 {retryNumber}/{retryCount}，结果不满足条件";
+                            logAction(message);
+                        });
+            }
+            else
+            {
+                return Policy<T>
+                    .Handle<Exception>()
+                    .WaitAndRetryAsync(
+                        retryCount,
+                        retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                        onRetry: (outcome, timespan, retryNumber, context) =>
+                        {
+                            var message = outcome.Exception != null
+                                ? $"重试 {retryNumber}/{retryCount}，异常: {outcome.Exception.Message}"
+                                : $"重试 {retryNumber}/{retryCount}";
+                            logAction(message);
+                        });
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 网络异常
     /// </summary>
     [Serializable]
-    public class NetworkException : ApplicationException
+    public class NetworkException : AppException
     {
         public int? HttpStatusCode { get; set; }
         public string Endpoint { get; set; }
@@ -36,7 +36,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 认证异常
     /// </summary>
     [Serializable]
-    public class AuthenticationException : ApplicationException
+    public class AuthenticationException : AppException
     {
         public string Username { get; set; }
         public string FailureReason { get; set; }
@@ -59,7 +59,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 授权异常
     /// </summary>
     [Serializable]
-    public class AuthorizationException : ApplicationException
+    public class AuthorizationException : AppException
     {
         public string RequiredPermission { get; set; }
         public string CurrentRole { get; set; }
@@ -77,7 +77,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 验证异常
     /// </summary>
     [Serializable]
-    public class ValidationException : ApplicationException
+    public class ValidationException : AppException
     {
         public string FieldName { get; set; }
         public object InvalidValue { get; set; }
@@ -97,7 +97,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 业务逻辑异常
     /// </summary>
     [Serializable]
-    public class BusinessException : ApplicationException
+    public class BusinessException : AppException
     {
         public string BusinessRule { get; set; }
         public object Context { get; set; }
@@ -115,7 +115,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 数据访问异常
     /// </summary>
     [Serializable]
-    public class DataAccessException : ApplicationException
+    public class DataAccessException : AppException
     {
         public string EntityType { get; set; }
         public string Operation { get; set; }
@@ -140,7 +140,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 配置异常
     /// </summary>
     [Serializable]
-    public class ConfigurationException : ApplicationException
+    public class ConfigurationException : AppException
     {
         public string ConfigurationKey { get; set; }
         public string ExpectedValue { get; set; }
@@ -160,7 +160,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 超时异常
     /// </summary>
     [Serializable]
-    public class TimeoutException : ApplicationException
+    public class TimeoutException : AppException
     {
         public TimeSpan Timeout { get; set; }
         public string Operation { get; set; }
@@ -179,7 +179,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 并发冲突异常
     /// </summary>
     [Serializable]
-    public class ConcurrencyException : ApplicationException
+    public class ConcurrencyException : AppException
     {
         public string EntityType { get; set; }
         public object EntityId { get; set; }
@@ -199,7 +199,7 @@ namespace LYBT.WPF.Client.Core.Exceptions
     /// 资源未找到异常
     /// </summary>
     [Serializable]
-    public class ResourceNotFoundException : ApplicationException
+    public class ResourceNotFoundException : AppException
     {
         public string ResourceType { get; set; }
         public object ResourceId { get; set; }

@@ -375,7 +375,7 @@ namespace LYBT.WPF.Client.Core.Redux
     /// <summary>
     /// 状态订阅实现
     /// </summary>
-    internal class StateSubscription<TState> : IStateSubscription
+    internal class StateSubscription<TState> : IStateSubscription where TState : class, new()
     {
         private readonly StateStore<TState> _store;
         private readonly Action<TState> _listener;

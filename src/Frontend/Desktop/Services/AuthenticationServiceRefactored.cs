@@ -112,7 +112,7 @@ namespace LYBT.WPF.Client.Services
                 // 更新认证状态
                 UpdateAuthenticationState(loginResponse);
                 
-                _logger?.LogInformation("登录成功，用户ID: {UserId}", loginResponse.User?.Id);
+                _logger?.LogInformation($"登录成功，用户ID: {loginResponse.User?.Id}");
                 return ServiceResult<LoginResponse>.Success(loginResponse);
             }
             catch (Exception ex)
@@ -268,7 +268,7 @@ namespace LYBT.WPF.Client.Services
             {
                 return new UserInfo
                 {
-                    Id = Guid.TryParse(userObj.Id?.ToString(), out var id) ? id : Guid.Empty,
+                    Id = Guid.TryParse(userObj.Id?.ToString(), out Guid id) ? id : Guid.Empty,
                     Username = userObj.Username?.ToString() ?? string.Empty,
                     RealName = userObj.RealName?.ToString() ?? string.Empty,
                     PhoneNumber = userObj.PhoneNumber?.ToString()

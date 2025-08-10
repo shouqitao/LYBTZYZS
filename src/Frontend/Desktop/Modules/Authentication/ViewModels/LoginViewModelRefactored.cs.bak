@@ -5,10 +5,11 @@ using LYBT.WPF.Client.Core.Mvvm;
 using LYBT.WPF.Client.Core.Security;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Validation;
+using LYBT.WPF.Client.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Auth;
 using Prism.Events;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using System;
 using System.ComponentModel;
 using System.Security;
@@ -27,7 +28,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
 
         private readonly IAuthenticationService _authService;
         private readonly IApiHealthMonitor _apiHealthMonitor;
-        private readonly ISecurePasswordManager _passwordManager;
+        private readonly ICredentialService _passwordManager;
         private readonly IStructuredLoggingService _logger;
         private readonly IUserNotificationService _notification;
         private readonly IEventAggregator _eventAggregator;
@@ -140,7 +141,7 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         public LoginViewModelRefactored(
             IAuthenticationService authService,
             IApiHealthMonitor apiHealthMonitor,
-            ISecurePasswordManager passwordManager,
+            ICredentialService passwordManager,
             IStructuredLoggingService logger,
             IUserNotificationService notification,
             IEventAggregator eventAggregator,
@@ -421,9 +422,9 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         /// </summary>
         private class LoginViewModelValidator : AbstractValidator<LoginViewModelRefactored>
         {
-            private readonly ISecurePasswordManager _passwordManager;
+            private readonly ICredentialService _passwordManager;
 
-            public LoginViewModelValidator(ISecurePasswordManager passwordManager)
+            public LoginViewModelValidator(ICredentialService passwordManager)
             {
                 _passwordManager = passwordManager;
 

@@ -215,7 +215,7 @@ namespace LYBT.WPF.Client.Core.Redux
             Select(state => state.Auth.Error,
                 error => OnPropertyChanged(nameof(ErrorMessage)));
             
-            Select(state => state.Auth.CurrentUser?.RealName,
+            Select(state => state.Auth.CurrentUser != null ? state.Auth.CurrentUser.RealName : null,
                 name => OnPropertyChanged(nameof(CurrentUserName)));
         }
 

@@ -6,7 +6,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
     /// <summary>
     /// 应用根状态
     /// </summary>
-    public class AppState
+    public record AppState
     {
         public AuthState Auth { get; init; } = AuthState.Initial;
         public PatientState Patients { get; init; } = PatientState.Initial;
@@ -22,7 +22,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
     /// <summary>
     /// 患者状态
     /// </summary>
-    public class PatientState
+    public record PatientState
     {
         public ImmutableList<PatientInfo> PatientList { get; init; } = ImmutableList<PatientInfo>.Empty;
         public PatientInfo? CurrentPatient { get; init; }
@@ -38,7 +38,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
     /// <summary>
     /// 看诊状态
     /// </summary>
-    public class ConsultationState
+    public record ConsultationState
     {
         public Guid? CurrentConsultationId { get; init; }
         public ConsultationStatus Status { get; init; }
@@ -53,7 +53,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
     /// <summary>
     /// UI状态
     /// </summary>
-    public class UIState
+    public record UIState
     {
         public bool IsGlobalLoading { get; init; }
         public string? GlobalMessage { get; init; }
@@ -67,7 +67,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
 
     #region DTOs
 
-    public class PatientInfo
+    public record PatientInfo
     {
         public Guid Id { get; init; }
         public string Name { get; init; } = string.Empty;
@@ -78,7 +78,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
         public DateTimeOffset LastVisit { get; init; }
     }
 
-    public class DiagnosisData
+    public record DiagnosisData
     {
         public string ChiefComplaint { get; init; } = string.Empty;
         public string PresentIllness { get; init; } = string.Empty;
@@ -88,7 +88,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
         public string TreatmentPrinciple { get; init; } = string.Empty;
     }
 
-    public class PrescriptionData
+    public record PrescriptionData
     {
         public Guid Id { get; init; }
         public ImmutableList<HerbItem> Herbs { get; init; } = ImmutableList<HerbItem>.Empty;
@@ -97,7 +97,7 @@ namespace LYBT.WPF.Client.Core.Redux.States
         public decimal TotalPrice { get; init; }
     }
 
-    public class HerbItem
+    public record HerbItem
     {
         public Guid HerbId { get; init; }
         public string Name { get; init; } = string.Empty;

@@ -227,7 +227,7 @@ namespace LYBT.WPF.Client.Core.Services
         private void OnFirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
         {
             // 仅在调试模式下记录第一次机会异常
-            if (e.Exception is ApplicationException appEx)
+            if (e.Exception is AppException appEx)
             {
                 _loggingService.LogTrace("第一次机会异常: {Type} - {Message}", 
                     appEx.Category, appEx.Message);
@@ -238,7 +238,7 @@ namespace LYBT.WPF.Client.Core.Services
         
         #region 私有方法
         
-        private void LogException(ApplicationException exception, ExceptionSource source)
+        private void LogException(AppException exception, ExceptionSource source)
         {
             var logLevel = exception.Severity switch
             {
@@ -255,7 +255,7 @@ namespace LYBT.WPF.Client.Core.Services
                 source, exception.Category, exception.Severity, exception.ErrorCode);
         }
         
-        private bool ShouldNotifyUser(ApplicationException exception, ExceptionSource source)
+        private bool ShouldNotifyUser(AppException exception, ExceptionSource source)
         {
             // 不通知用户的情况
             if (exception.IsHandled)
@@ -274,7 +274,7 @@ namespace LYBT.WPF.Client.Core.Services
             return true;
         }
         
-        private async Task NotifyUserAsync(ApplicationException exception)
+        private async Task NotifyUserAsync(AppException exception)
         {
             try
             {
@@ -288,7 +288,7 @@ namespace LYBT.WPF.Client.Core.Services
             }
         }
         
-        private bool DetermineRecoverability(ApplicationException exception, ExceptionSource source)
+        private bool DetermineRecoverability(AppException exception, ExceptionSource source)
         {
             // 致命错误不可恢复
             if (exception.Severity == ErrorSeverity.Fatal)
@@ -310,7 +310,7 @@ namespace LYBT.WPF.Client.Core.Services
             return false;
         }
         
-        private async Task ExecuteRecoveryStrategyAsync(ApplicationException exception)
+        private async Task ExecuteRecoveryStrategyAsync(AppException exception)
         {
             _loggingService.LogInformation("执行恢复策略: {Category}", exception.Category);
             
@@ -341,7 +341,7 @@ namespace LYBT.WPF.Client.Core.Services
             }
         }
         
-        private bool ShouldShutdownApplication(ApplicationException exception)
+        private bool ShouldShutdownApplication(AppException exception)
         {
             // 致命错误需要关闭应用
             if (exception.Severity == ErrorSeverity.Fatal)
@@ -360,7 +360,7 @@ namespace LYBT.WPF.Client.Core.Services
             return false;
         }
         
-        private async Task InitiateGracefulShutdownAsync(ApplicationException exception)
+        private async Task InitiateGracefulShutdownAsync(AppException exception)
         {
             _loggingService.LogCritical(exception, "启动优雅关闭流程");
             

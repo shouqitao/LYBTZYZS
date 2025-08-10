@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -121,12 +122,12 @@ namespace LYBT.WPF.Client.Core.Async
 
         public AsyncLazy(Func<Task<T>> taskFactory)
         {
-            _lazy = new Lazy<Task<T>>(() => Task.Run(taskFactory));
+            _lazy = new Lazy<Task<T>>(() => System.Threading.Tasks.Task.Run(taskFactory));
         }
 
         public AsyncLazy(Func<T> valueFactory)
         {
-            _lazy = new Lazy<Task<T>>(() => Task.Run(valueFactory));
+            _lazy = new Lazy<Task<T>>(() => System.Threading.Tasks.Task.Run(valueFactory));
         }
 
         public TaskAwaiter<T> GetAwaiter()
@@ -386,24 +387,28 @@ namespace LYBT.WPF.Client.Core.Async
         public class OperationStatistics
         {
             public string Name { get; set; } = string.Empty;
-            public long TotalCalls { get; private set; }
-            public long SuccessCount { get; private set; }
-            public long FailureCount { get; private set; }
+            private long _totalCalls;
+            private long _successCount;
+            private long _failureCount;
+            
+            public long TotalCalls => _totalCalls;
+            public long SuccessCount => _successCount;
+            public long FailureCount => _failureCount;
             public double AverageMs { get; private set; }
             public double MaxMs { get; private set; }
             public double MinMs { get; private set; } = double.MaxValue;
 
             public void RecordSuccess(double elapsedMs)
             {
-                Interlocked.Increment(ref TotalCalls);
-                Interlocked.Increment(ref SuccessCount);
+                Interlocked.Increment(ref _totalCalls);
+                Interlocked.Increment(ref _successCount);
                 UpdateStatistics(elapsedMs);
             }
 
             public void RecordFailure(double elapsedMs)
             {
-                Interlocked.Increment(ref TotalCalls);
-                Interlocked.Increment(ref FailureCount);
+                Interlocked.Increment(ref _totalCalls);
+                Interlocked.Increment(ref _failureCount);
                 UpdateStatistics(elapsedMs);
             }
 
