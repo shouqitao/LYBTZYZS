@@ -15,56 +15,60 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **查看 `CLAUDE.local.md`** 了解用户特定的开发环境配置
 - **使用一致的命名约定、文件结构和架构模式**
 
-## 🚀 Serena工具初始化
+## 🚀 Serena MCP Server 初始化
 
-### initial_instructions 命令
+### 关于Serena
 
-在开始新的开发会话时，如果需要使用Serena工具，请执行初始化命令：
+Serena是一个MCP (Model Context Protocol) 服务器，提供增强的开发工具支持。为了正确使用Serena的工具，Claude需要读取其指令文本。
 
+### 初始化方法
+
+#### 自动初始化（v1.0.52+）
+从v1.0.52版本开始，Claude Code会自动读取MCP服务器的指令，无需手动操作。
+
+#### 手动初始化（旧版本或自动失败时）
+如果使用旧版本或自动读取失败，可以通过以下方式手动初始化：
+
+1. **方法一：显式请求**
+   ```
+   请求："read Serena's initial instructions"
+   或中文："读取Serena的初始化指令"
+   ```
+
+2. **方法二：运行命令**
+   ```
+   /mcp__serena__initial_instructions
+   ```
+
+### 配置要求
+
+要启用initial_instructions工具，需要在配置文件中添加：
+
+```json
+{
+  "included_optional_tools": [
+    "initial_instructions"
+  ]
+}
 ```
-initial_instructions
-```
 
-### Serena工具功能
+### 重要时机
 
-Serena是一个智能开发辅助工具，提供以下功能：
-- **代码分析**: 深度分析项目代码结构和依赖关系
-- **智能建议**: 基于上下文提供代码优化建议
-- **自动重构**: 协助进行代码重构和优化
-- **文档生成**: 自动生成技术文档和API文档
+**必须重新读取Serena指令的情况**：
+- 🔄 开始新对话时
+- 🗜️ 执行压缩操作后（compacting operation）
+- ❌ Serena工具使用异常时
 
-### 使用场景
+### 使用验证
 
-1. **开始新功能开发时**
-   ```
-   initial_instructions
-   # 初始化Serena工具环境
-   # 加载项目上下文
-   # 准备智能辅助功能
-   ```
-
-2. **进行代码重构时**
-   ```
-   initial_instructions --refactor
-   # 启用重构模式
-   # 分析代码质量
-   # 提供重构建议
-   ```
-
-3. **生成文档时**
-   ```
-   initial_instructions --docs
-   # 扫描代码注释
-   # 生成API文档
-   # 更新技术文档
-   ```
+初始化成功后，可以通过以下方式验证：
+- 检查Serena工具是否可用
+- 尝试调用Serena的基础功能
+- 查看工具列表中是否包含Serena相关工具
 
 ### 注意事项
 
-- 首次使用时需要初始化Serena环境
-- 初始化会加载项目配置和历史上下文
-- 建议在每个新会话开始时执行初始化
-- 初始化完成后，Serena功能将在整个会话中可用
+> ⚠️ **重要**: 每次新会话开始时，建议主动执行初始化命令，确保Claude正确配置了Serena工具。这是保证Serena功能正常工作的关键步骤。
 
 ## 🧱 代码结构与模块化
 
