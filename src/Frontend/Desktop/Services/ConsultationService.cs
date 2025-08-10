@@ -57,13 +57,13 @@ namespace LYBT.WPF.Client.Services
 
                 if (apiResponse.IsSuccess && apiResponse.Data != null)
                 {
-                    var consultations = apiResponse.Data.Data?.Select(MapToConsultationInfo).ToList() ?? new List<ConsultationInfo>();
+                    var consultations = apiResponse.Data.Items?.Select(MapToConsultationInfo).ToList() ?? new List<ConsultationInfo>();
 
                     return new LYBT.WPF.Client.Core.Models.Common.PagedResult<ConsultationInfo>
                     {
                         Items = consultations,
-                        TotalCount = apiResponse.Data.TotalCount,
-                        CurrentPage = apiResponse.Data.PageIndex,
+                        TotalCount = (int)apiResponse.Data.TotalCount,
+                        CurrentPage = apiResponse.Data.CurrentPage,
                         PageSize = apiResponse.Data.PageSize
                     };
                 }

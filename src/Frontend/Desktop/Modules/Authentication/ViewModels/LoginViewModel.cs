@@ -12,7 +12,6 @@ using LYBT.Shared.Models.Extensions;
 using LYBT.WPF.Client.Services;
 using Prism.Commands;
 using Prism.Events;
-using ThreadOption = Prism.Events.ThreadOption;
 
 
 namespace LYBT.WPF.Client.Modules.Authentication.ViewModels

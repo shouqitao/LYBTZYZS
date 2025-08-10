@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models.Backup;
 using LYBT.Shared.Models.Common;
 using Refit;
+using LYBT.WPF.Client.Core.Models;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {
@@ -16,7 +17,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 获取备份历史列表
         /// </summary>
         [Get("/api/Backup/history")]
-        Task<ApiResponse<PaginatedResult<BackupInfo>>> GetBackupHistoryAsync(
+        Task<Refit.ApiResponse<PagedData<BackupInfo>>> GetBackupHistoryAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null,
@@ -29,73 +30,73 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 创建手动备份
         /// </summary>
         [Post("/api/Backup/manual")]
-        Task<ApiResponse<BackupInfo>> CreateManualBackupAsync([Body] CreateBackupRequest request);
+        Task<Refit.ApiResponse<BackupInfo>> CreateManualBackupAsync([Body] CreateBackupRequest request);
 
         /// <summary>
         /// 恢复备份
         /// </summary>
         [Post("/api/Backup/{backupId}/restore")]
-        Task<ApiResponse<bool>> RestoreBackupAsync(Guid backupId);
+        Task<Refit.ApiResponse<bool>> RestoreBackupAsync(Guid backupId);
 
         /// <summary>
         /// 删除备份
         /// </summary>
         [Delete("/api/Backup/{backupId}")]
-        Task<ApiResponse<bool>> DeleteBackupAsync(Guid backupId);
+        Task<Refit.ApiResponse<bool>> DeleteBackupAsync(Guid backupId);
 
         /// <summary>
         /// 验证备份文件
         /// </summary>
         [Post("/api/Backup/{backupId}/verify")]
-        Task<ApiResponse<bool>> VerifyBackupAsync(Guid backupId);
+        Task<Refit.ApiResponse<bool>> VerifyBackupAsync(Guid backupId);
 
         /// <summary>
         /// 获取备份计划列表
         /// </summary>
         [Get("/api/Backup/schedules")]
-        Task<ApiResponse<List<BackupScheduleInfo>>> GetBackupSchedulesAsync();
+        Task<Refit.ApiResponse<List<BackupScheduleInfo>>> GetBackupSchedulesAsync();
 
         /// <summary>
         /// 创建备份计划
         /// </summary>
         [Post("/api/Backup/schedules")]
-        Task<ApiResponse<BackupScheduleInfo>> CreateBackupScheduleAsync([Body] BackupScheduleInfo schedule);
+        Task<Refit.ApiResponse<BackupScheduleInfo>> CreateBackupScheduleAsync([Body] BackupScheduleInfo schedule);
 
         /// <summary>
         /// 更新备份计划
         /// </summary>
         [Put("/api/Backup/schedules/{scheduleId}")]
-        Task<ApiResponse<BackupScheduleInfo>> UpdateBackupScheduleAsync(Guid scheduleId, [Body] BackupScheduleInfo schedule);
+        Task<Refit.ApiResponse<BackupScheduleInfo>> UpdateBackupScheduleAsync(Guid scheduleId, [Body] BackupScheduleInfo schedule);
 
         /// <summary>
         /// 删除备份计划
         /// </summary>
         [Delete("/api/Backup/schedules/{scheduleId}")]
-        Task<ApiResponse<bool>> DeleteBackupScheduleAsync(Guid scheduleId);
+        Task<Refit.ApiResponse<bool>> DeleteBackupScheduleAsync(Guid scheduleId);
 
         /// <summary>
         /// 启用/禁用备份计划
         /// </summary>
         [Patch("/api/Backup/schedules/{scheduleId}/toggle")]
-        Task<ApiResponse<bool>> ToggleBackupScheduleAsync(Guid scheduleId, [Body] bool isEnabled);
+        Task<Refit.ApiResponse<bool>> ToggleBackupScheduleAsync(Guid scheduleId, [Body] bool isEnabled);
 
         /// <summary>
         /// 获取备份统计信息
         /// </summary>
         [Get("/api/Backup/statistics")]
-        Task<ApiResponse<BackupStatistics>> GetBackupStatisticsAsync();
+        Task<Refit.ApiResponse<BackupStatistics>> GetBackupStatisticsAsync();
 
         /// <summary>
         /// 获取备份配置
         /// </summary>
         [Get("/api/Backup/configuration")]
-        Task<ApiResponse<BackupConfiguration>> GetBackupConfigurationAsync();
+        Task<Refit.ApiResponse<BackupConfiguration>> GetBackupConfigurationAsync();
 
         /// <summary>
         /// 更新备份配置
         /// </summary>
         [Put("/api/Backup/configuration")]
-        Task<ApiResponse<bool>> UpdateBackupConfigurationAsync([Body] BackupConfiguration configuration);
+        Task<Refit.ApiResponse<bool>> UpdateBackupConfigurationAsync([Body] BackupConfiguration configuration);
     }
 
     /// <summary>

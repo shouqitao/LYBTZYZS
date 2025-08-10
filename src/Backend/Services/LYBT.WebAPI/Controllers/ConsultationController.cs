@@ -14,7 +14,7 @@ namespace LYBT.WebAPI.Controllers
     /// 看诊管理控制器 - 统一API响应格式
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class ConsultationController : BaseApiController

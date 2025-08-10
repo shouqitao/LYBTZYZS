@@ -9,8 +9,7 @@ using Refit;
 using LYBT.WPF.Client.Core.Exceptions;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Common;
-using ErrorCategory = LYBT.WPF.Client.Core.Models.Common.ErrorCategory;
-using ErrorSeverity = LYBT.WPF.Client.Core.Models.Common.ErrorSeverity;
+using ErrorSeverity = LYBT.WPF.Client.Core.Exceptions.ErrorSeverity;
 using TimeoutException = System.TimeoutException;
 
 namespace LYBT.WPF.Client.Services
@@ -178,9 +177,9 @@ namespace LYBT.WPF.Client.Services
                 HttpRequestException => ErrorCategory.Network,
                 UnauthorizedAccessException => ErrorCategory.Authentication,
                 ArgumentException => ErrorCategory.Validation,
-                InvalidOperationException => ErrorCategory.System,
-                NotSupportedException => ErrorCategory.System,
-                OutOfMemoryException => ErrorCategory.System,
+                InvalidOperationException => ErrorCategory.Internal,
+                NotSupportedException => ErrorCategory.Internal,
+                OutOfMemoryException => ErrorCategory.Internal,
                 _ => _categoryMapping.TryGetValue(exception.GetType(), out var mapped) ? mapped : ErrorCategory.Unknown
             };
 
@@ -500,15 +499,15 @@ namespace LYBT.WPF.Client.Services
             return new Dictionary<Type, ErrorCategory>
             {
                 { typeof(HttpRequestException), ErrorCategory.Network },
-                { typeof(TaskCanceledException), ErrorCategory.System },
+                { typeof(TaskCanceledException), ErrorCategory.Internal },
                 { typeof(TimeoutException), ErrorCategory.Network },
                 { typeof(UnauthorizedAccessException), ErrorCategory.Authentication },
                 { typeof(ArgumentException), ErrorCategory.Validation },
                 { typeof(ArgumentNullException), ErrorCategory.Validation },
-                { typeof(InvalidOperationException), ErrorCategory.System },
-                { typeof(NotSupportedException), ErrorCategory.System },
-                { typeof(OutOfMemoryException), ErrorCategory.System },
-                { typeof(StackOverflowException), ErrorCategory.System },
+                { typeof(InvalidOperationException), ErrorCategory.Internal },
+                { typeof(NotSupportedException), ErrorCategory.Internal },
+                { typeof(OutOfMemoryException), ErrorCategory.Internal },
+                { typeof(StackOverflowException), ErrorCategory.Internal },
                 { typeof(FormatException), ErrorCategory.Validation },
                 { typeof(OverflowException), ErrorCategory.Validation }
             };

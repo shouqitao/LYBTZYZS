@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LYBT.WPF.Client.Core.Exceptions;
 
 namespace LYBT.WPF.Client.Core.Models.Common
 {
@@ -159,7 +160,7 @@ namespace LYBT.WPF.Client.Core.Models.Common
         {
             return new HandledError
             {
-                Category = ErrorCategory.System,
+                Category = ErrorCategory.Internal,
                 Severity = ErrorSeverity.Critical,
                 UserMessage = userMessage,
                 TechnicalDetails = exception?.ToString() ?? string.Empty,

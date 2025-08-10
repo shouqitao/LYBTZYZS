@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Patients;
 using LYBT.WPF.Client.Services.Interfaces;
+using LYBT.WPF.Client.Services.Adapters;
 using System.Linq;
 
 namespace LYBT.WPF.Client.Services
@@ -19,12 +20,12 @@ namespace LYBT.WPF.Client.Services
     public class PatientService : IPatientService
     {
         private readonly IApiService _apiService;
-        private readonly IPatientsApiService _patientsApiService;
+        private readonly IPatientApiService _patientApiService;
 
-        public PatientService(IApiService apiService, IPatientsApiService patientsApiService)
+        public PatientService(IApiService apiService, IPatientApiService patientApiService)
         {
             _apiService = apiService;
-            _patientsApiService = patientsApiService;
+            _patientApiService = patientApiService;
         }
 
         /// <summary>
@@ -32,8 +33,9 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> AddAsync(PatientDetailDto dto)
         {
+            var createDto = ApiResponseAdapter.ToPatientCreateDto(dto);
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.CreatePatientAsync(dto)
+                await _patientApiService.CreatePatientAsync(createDto)
             );
             return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
         }
@@ -43,8 +45,9 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult> UpdateAsync(PatientDetailDto dto)
         {
+            var updateDto = ApiResponseAdapter.ToPatientUpdateDto(dto);
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.UpdatePatientAsync(dto.Id, dto)
+                await _patientApiService.UpdatePatientAsync(dto.Id, updateDto)
             );
             return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
         }
@@ -55,7 +58,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> EnableAsync(Guid id)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
-                await _patientsApiService.ToggleStatusAsync(id)
+                await _patientApiService.ToggleStatusAsync(id)
             );
         }
 
@@ -65,7 +68,7 @@ namespace LYBT.WPF.Client.Services
         public async Task<ServiceResult> DisableAsync(Guid id)
         {
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
-                await _patientsApiService.ToggleStatusAsync(id)
+                await _patientApiService.ToggleStatusAsync(id)
             );
         }
 
@@ -74,9 +77,23 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.GetPatientAsync(id)
-            );
+            try
+            {
+                var apiResponse = await _patientApiService.GetPatientByIdAsync(id);
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+                
+                if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
+                {
+                    var patientDetail = ApiResponseAdapter.ToPatientDetailDto(serviceResult.Data.Data);
+                    return ServiceResult<PatientDetailDto>.Success(patientDetail);
+                }
+                
+                return ServiceResult<PatientDetailDto>.Failure(serviceResult.ErrorMessage ?? "获取患者详情失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<PatientDetailDto>.Failure($"获取患者详情失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -84,9 +101,23 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDetailDto>>> GetAllAsync()
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.GetAllAsync()
-            );
+            try
+            {
+                var apiResponse = await _patientApiService.GetPatientsAsync(pageIndex: 1, pageSize: 1000);
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+                
+                if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
+                {
+                    var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
+                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                }
+                
+                return ServiceResult<List<PatientDetailDto>>.Failure(serviceResult.ErrorMessage ?? "获取患者列表失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<PatientDetailDto>>.Failure($"获取所有患者失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -97,28 +128,22 @@ namespace LYBT.WPF.Client.Services
             try
             {
                 // 使用更新后的RESTful GET接口
-                var response = await _patientsApiService.GetPatientsAsync(
-                    page: query.CurrentPage,
+                var apiResponse = await _patientApiService.GetPatientsAsync(
+                    pageIndex: query.CurrentPage,
                     pageSize: query.PageSize,
-                    keyword: query.SearchKeyword,
-                    name: query.Name,
-                    phoneNumber: query.PhoneNumber,
-                    idNumber: query.IDNumber,
-                    address: query.Address,
-                    gender: query.Gender,
-                    minAge: query.MinAge,
-                    maxAge: query.MaxAge,
-                    status: query.Status.HasValue ? (PatientStatus)(int)query.Status.Value : null
+                    searchTerm: query.SearchKeyword
                 );
-                if (response.IsSuccessStatusCode && response.Content != null)
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+                
+                if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
                 {
-                    var patientInfos = response.Content.Items.Select(ConvertToPatientInfo).ToList();
+                    var patientInfos = serviceResult.Data.Data.Items.Select(dto => ConvertToPatientInfo(ApiResponseAdapter.ToPatientDetailDto(dto))).ToList();
                     return new LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>
                     {
                         Items = patientInfos,
-                        TotalCount = response.Content.TotalCount,
-                        CurrentPage = response.Content.CurrentPage,
-                        PageSize = response.Content.PageSize
+                        TotalCount = (int)serviceResult.Data.Data.TotalCount,
+                        CurrentPage = serviceResult.Data.Data.CurrentPage,
+                        PageSize = serviceResult.Data.Data.PageSize
                     };
                 }
 
@@ -128,7 +153,7 @@ namespace LYBT.WPF.Client.Services
                     TotalCount = 0,
                     CurrentPage = query.CurrentPage,
                     PageSize = query.PageSize,
-                    ErrorMessage = "获取患者列表失败"
+                    ErrorMessage = serviceResult.ErrorMessage ?? "获取患者列表失败"
                 };
             }
             catch (Exception ex)
@@ -169,9 +194,23 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDetailDto>>> SearchAsync(string keyword)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.SearchAsync(keyword)
-            );
+            try
+            {
+                var apiResponse = await _patientApiService.GetPatientsAsync(pageIndex: 1, pageSize: 100, searchTerm: keyword);
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+                
+                if (serviceResult.IsSuccess && serviceResult.Data?.Data != null)
+                {
+                    var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
+                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                }
+                
+                return ServiceResult<List<PatientDetailDto>>.Failure(serviceResult.ErrorMessage ?? "搜索患者失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<PatientDetailDto>>.Failure($"搜索患者失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -189,9 +228,23 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDetailDto>>> ExportAsync()
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.ExportAsync()
-            );
+            try
+            {
+                var apiResponse = await _patientApiService.GetPatientsAsync(pageIndex: 1, pageSize: 10000);
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+                
+                if (serviceResult.IsSuccess && serviceResult.Data?.Data != null)
+                {
+                    var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
+                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                }
+                
+                return ServiceResult<List<PatientDetailDto>>.Failure(serviceResult.ErrorMessage ?? "导出患者数据失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<PatientDetailDto>>.Failure($"导出患者数据失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -209,9 +262,23 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDetailDto>>> GetActivePatientsAsync()
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.GetActivePatientsAsync()
-            );
+            try
+            {
+                var apiResponse = await _patientApiService.GetActivePatientsAsync();
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+                
+                if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
+                {
+                    var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data);
+                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                }
+                
+                return ServiceResult<List<PatientDetailDto>>.Failure(serviceResult.ErrorMessage ?? "获取活跃患者列表失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<PatientDetailDto>>.Failure($"获取活跃患者列表失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -219,9 +286,33 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PatientDetailDto>> FindOrCreateAsync(PatientDetailDto dto)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.FindOrCreateAsync(dto)
-            );
+            // 先尝试查找患者，如果不存在则创建  
+            var searchResult = await SearchAsync(dto.Name);
+            if (searchResult.IsSuccess && searchResult.Data != null && searchResult.Data.Any())
+            {
+                return ServiceResult<PatientDetailDto>.Success(searchResult.Data.First());
+            }
+            
+            // 如果找不到，创建新患者
+            var createDto = ApiResponseAdapter.ToPatientCreateDto(dto);
+            
+            try
+            {
+                var apiResponse = await _patientApiService.CreatePatientAsync(createDto);
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+                
+                if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
+                {
+                    var patientDetail = ApiResponseAdapter.ToPatientDetailDto(serviceResult.Data.Data);
+                    return ServiceResult<PatientDetailDto>.Success(patientDetail);
+                }
+                
+                return ServiceResult<PatientDetailDto>.Failure(serviceResult.ErrorMessage ?? "创建患者失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<PatientDetailDto>.Failure($"创建患者失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -262,10 +353,13 @@ namespace LYBT.WPF.Client.Services
             try
             {
                 // 使用现有的GetActivePatientsAsync方法获取启用的患者列表
-                var response = await _patientsApiService.GetActivePatientsAsync();
-                if (response.IsSuccessStatusCode && response.Content != null)
+                var apiResponse = await _patientApiService.GetActivePatientsAsync();
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+                
+                if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
                 {
-                    return response.Content.Select(ConvertToPatientInfo).ToList();
+                    var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data);
+                    return patientDetails.Select(ConvertToPatientInfo).ToList();
                 }
                 return new List<PatientInfo>();
             }
@@ -280,9 +374,17 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<PatientDetailDto>> CreateAsync(PatientDetailDto dto)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientsApiService.CreatePatientAsync(dto)
-            );
+            var createDto = ApiResponseAdapter.ToPatientCreateDto(dto);
+            var apiResponse = await _patientApiService.CreatePatientAsync(createDto);
+            var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
+            
+            if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
+            {
+                var patientDetail = ApiResponseAdapter.ToPatientDetailDto(serviceResult.Data.Data);
+                return ServiceResult<PatientDetailDto>.Success(patientDetail);
+            }
+            
+            return ServiceResult<PatientDetailDto>.Failure(serviceResult.ErrorMessage ?? "创建患者失败");
         }
 
         /// <summary>
@@ -292,17 +394,18 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 使用分页查询接口，传入keyword参数
-                var response = await _patientsApiService.GetPatientsAsync(
-                    page: 1,
+                // 使用分页查询接口，传入searchTerm参数
+                var apiResponse = await _patientApiService.GetPatientsAsync(
+                    pageIndex: 1,
                     pageSize: 50,
-                    keyword: keyword,
-                    status: PatientStatus.Normal
+                    searchTerm: keyword
                 );
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
                 
-                if (response.IsSuccessStatusCode && response.Content != null)
+                if (serviceResult.IsSuccess && serviceResult.Data?.Data != null)
                 {
-                    return ServiceResult<List<PatientDetailDto>>.Success(response.Content.Items.ToList());
+                    var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
+                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
                 }
                 
                 return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");
@@ -320,27 +423,27 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 如果输入的是后几位，使用模糊搜索
-                var response = await _patientsApiService.GetPatientsAsync(
-                    page: 1,
+                // 使用搜索接口进行电话号码查询
+                var apiResponse = await _patientApiService.GetPatientsAsync(
+                    pageIndex: 1,
                     pageSize: 50,
-                    phoneNumber: phone,
-                    status: PatientStatus.Normal
+                    searchTerm: phone
                 );
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
                 
-                if (response.IsSuccessStatusCode && response.Content != null)
+                if (serviceResult.IsSuccess && serviceResult.Data?.Data != null)
                 {
-                    // 如果是后几位搜索，进一步过滤
-                    var results = response.Content.Items.ToList();
+                    // 转换为PatientDetailDto并进行后几位过滤
+                    var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
                     if (phone.Length < 11)
                     {
-                        results = results.Where(p => 
+                        patientDetails = patientDetails.Where(p => 
                             !string.IsNullOrEmpty(p.PhoneNumber) && 
                             p.PhoneNumber.EndsWith(phone)
                         ).ToList();
                     }
                     
-                    return ServiceResult<List<PatientDetailDto>>.Success(results);
+                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
                 }
                 
                 return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");
@@ -358,27 +461,27 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 使用分页查询接口，传入身份证参数
-                var response = await _patientsApiService.GetPatientsAsync(
-                    page: 1,
+                // 使用搜索接口进行身份证查询
+                var apiResponse = await _patientApiService.GetPatientsAsync(
+                    pageIndex: 1,
                     pageSize: 50,
-                    idNumber: idCard,
-                    status: PatientStatus.Normal
+                    searchTerm: idCard
                 );
+                var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
                 
-                if (response.IsSuccessStatusCode && response.Content != null)
+                if (serviceResult.IsSuccess && serviceResult.Data?.Data != null)
                 {
-                    // 如果是后几位搜索，进一步过滤
-                    var results = response.Content.Items.ToList();
+                    // 转换为PatientDetailDto并进行后几位过滤
+                    var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
                     if (idCard.Length < 18)
                     {
-                        results = results.Where(p => 
+                        patientDetails = patientDetails.Where(p => 
                             !string.IsNullOrEmpty(p.IDNumber) && 
                             p.IDNumber.ToUpper().EndsWith(idCard.ToUpper())
                         ).ToList();
                     }
                     
-                    return ServiceResult<List<PatientDetailDto>>.Success(results);
+                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
                 }
                 
                 return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");

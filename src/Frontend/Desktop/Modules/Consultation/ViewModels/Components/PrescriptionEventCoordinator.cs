@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Prism.Events;
 using LYBT.WPF.Client.Core.Events;
 using LYBT.WPF.Client.Core.Models.Consultation;
-using ThreadOption = Prism.Events.ThreadOption;
 
 namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
 {

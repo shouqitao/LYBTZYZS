@@ -4,21 +4,20 @@ using System.Threading.Tasks;
 using Refit;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.WPF.Client.Core.Models;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {
     /// <summary>
-    /// 药材API服务接口
+    /// 药材API服务接口 - 统一标准
     /// </summary>
     public interface IHerbApiService
     {
-        // 移除重复的分页查询接口，统一使用RESTful GET接口
-
         /// <summary>
         /// 获取药材列表（支持分页和查询）
         /// </summary>
         [Get("/api/v1/herbs")]
-        Task<Refit.ApiResponse<PaginatedResult<HerbDto>>> GetHerbsAsync(
+        Task<Refit.ApiResponse<PagedData<HerbDto>>> GetHerbsAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null,

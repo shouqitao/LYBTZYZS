@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Core;
 namespace LYBT.WPF.Client.Services.Interfaces
 {
     /// <summary>
-    /// 认证API服务接口 - Refit实现
+    /// 认证API服务接口 - 统一标准
     /// </summary>
     public interface IAuthApiService
     {

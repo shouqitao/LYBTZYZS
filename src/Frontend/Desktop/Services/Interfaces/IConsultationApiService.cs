@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Refit;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.WPF.Client.Core.Models;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {
@@ -16,7 +17,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 分页查询看诊记录
         /// </summary>
         [Get("/api/v1/Consultation")]
-        Task<Refit.ApiResponse<PagedResult<ConsultationDto>>> GetConsultationsAsync(
+        Task<Refit.ApiResponse<PagedData<ConsultationDto>>> GetConsultationsAsync(
             [Query] int page = 1,
             [Query] int pageSize = 10,
             [Query] string? keyword = null,

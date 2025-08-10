@@ -157,15 +157,15 @@ namespace LYBT.WPF.Client.Core.Exceptions
     }
     
     /// <summary>
-    /// 超时异常
+    /// 操作超时异常
     /// </summary>
     [Serializable]
-    public class TimeoutException : AppException
+    public class OperationTimeoutException : AppException
     {
         public TimeSpan Timeout { get; set; }
         public string Operation { get; set; }
         
-        public TimeoutException(string message, TimeSpan timeout, string operation = null)
+        public OperationTimeoutException(string message, TimeSpan timeout, string operation = null)
             : base(message, ErrorCategory.Timeout, ErrorSeverity.Warning)
         {
             Timeout = timeout;

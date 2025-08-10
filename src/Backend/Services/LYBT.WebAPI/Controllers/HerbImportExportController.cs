@@ -11,7 +11,7 @@ namespace LYBT.WebAPI.Controllers
     /// 药材导入导出 API 控制器 - UltraThink重构：专门负责导入导出功能
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/herbs")]
     [Authorize]
     public class HerbImportExportController : BaseController

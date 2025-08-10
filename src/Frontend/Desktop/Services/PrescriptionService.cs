@@ -32,22 +32,20 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                    await _prescriptionApiService.GetListAsync(
-                        page: request.CurrentPage,
-                        pageSize: request.PageSize,
-                        keyword: request.SearchKeyword
-                    )
+                var response = await _prescriptionApiService.GetListAsync(
+                    page: request.CurrentPage,
+                    pageSize: request.PageSize,
+                    keyword: request.SearchKeyword
                 );
 
-                if (result.IsSuccess && result.Data != null)
+                if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     return new PagedResult<PrescriptionDto>
                     {
-                        Items = result.Data.Items.ToList(),
-                        TotalCount = result.Data.TotalCount,
-                        CurrentPage = result.Data.CurrentPage,
-                        PageSize = result.Data.PageSize
+                        Items = response.Content.Items.ToList(),
+                        TotalCount = (int)response.Content.TotalCount,
+                        CurrentPage = response.Content.CurrentPage,
+                        PageSize = response.Content.PageSize
                     };
                 }
 
@@ -57,7 +55,7 @@ namespace LYBT.WPF.Client.Services
                     TotalCount = 0,
                     CurrentPage = request.CurrentPage,
                     PageSize = request.PageSize,
-                    ErrorMessage = result.ErrorMessage ?? "获取处方列表失败"
+                    ErrorMessage = "获取处方列表失败"
                 };
             }
             catch (Exception ex)

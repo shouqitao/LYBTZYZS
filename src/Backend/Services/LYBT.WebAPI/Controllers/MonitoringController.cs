@@ -9,7 +9,7 @@ namespace LYBT.WebAPI.Controllers
     /// 系统监控 API 控制器
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Roles = "Admin")]
     public class MonitoringController : BaseController

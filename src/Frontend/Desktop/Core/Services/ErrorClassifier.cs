@@ -42,7 +42,7 @@ namespace LYBT.WPF.Client.Core.Services
                 HttpRequestException httpEx => ClassifyHttpException(httpEx),
                 WebException webEx => ClassifyWebException(webEx),
                 SocketException socketEx => ClassifySocketException(socketEx),
-                TaskCanceledException when IsTimeout(exception) => new Exceptions.TimeoutException(
+                TaskCanceledException when IsTimeout(exception) => new Exceptions.OperationTimeoutException(
                     "操作超时", TimeSpan.FromSeconds(30), "HTTP请求"),
                 
                 // 数据访问相关

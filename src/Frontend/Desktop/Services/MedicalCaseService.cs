@@ -39,7 +39,7 @@ namespace LYBT.WPF.Client.Services
                     return new PagedResult<MedicalCaseInfo>
                     {
                         Items = medicalCaseInfos,
-                        TotalCount = response.Content.TotalCount,
+                        TotalCount = (int)response.Content.TotalCount,
                         CurrentPage = response.Content.CurrentPage,
                         PageSize = response.Content.PageSize
                     };

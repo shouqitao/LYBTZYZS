@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Prescriptions.Services;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
@@ -16,7 +17,7 @@ namespace LYBT.WebAPI.Controllers
     /// 处方管理 API - 统一API响应格式
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class PrescriptionsController : BaseApiController

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>LYBT.WPF.Client.Modules.Patients</AssemblyName>
+		<RootNamespace>LYBT.WPF.Client.Modules.Patients</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Core\LYBT.WPF.Client.Core.csproj" />
+		<ProjectReference Include="..\..\Services\LYBT.WPF.Client.Services.csproj" />
+		<ProjectReference Include="..\..\Infrastructure\LYBT.WPF.Client.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+	</ItemGroup>
+
+</Project>

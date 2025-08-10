@@ -17,7 +17,7 @@ namespace LYBT.WebAPI.Controllers
     /// 认证相关接口 - 统一API响应格式和错误处理
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize] // 默认需要认证
     public class AuthController : BaseApiController

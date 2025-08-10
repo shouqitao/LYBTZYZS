@@ -13,7 +13,7 @@ namespace LYBT.WebAPI.Controllers
     /// 演示标准化API响应格式、错误处理和DTO使用规范
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/standardized/[controller]")]
     [Authorize]
     public class StandardizedUsersController : BaseApiController

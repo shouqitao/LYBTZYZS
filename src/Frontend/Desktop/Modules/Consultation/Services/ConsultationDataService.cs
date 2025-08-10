@@ -34,7 +34,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
 
         #region 依赖服务
         
-        private readonly IPatientsApiService _patientsApiService;
+        private readonly IPatientApiService _patientsApiService;
         private readonly IConsultationApiService _consultationApiService;
         private readonly IFormulaApiService _formulaApiService;
         private readonly IHerbService _herbService;
@@ -45,7 +45,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.Services
         #endregion
 
         public ConsultationDataService(
-            IPatientsApiService patientsApiService,
+            IPatientApiService patientsApiService,
             IConsultationApiService consultationApiService,
             IFormulaApiService formulaApiService,
             IHerbService herbService,

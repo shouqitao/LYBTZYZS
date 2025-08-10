@@ -5,6 +5,14 @@ namespace LYBT.WPF.Client.Core.Models.Authentication
     /// </summary>
     public class ChangePasswordRequest
     {
-        // TODO: 实现修改密码请求模型
+        /// <summary>
+        /// 当前密码
+        /// </summary>
+        public string CurrentPassword { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 新密码
+        /// </summary>
+        public string NewPassword { get; set; } = string.Empty;
     }
 }

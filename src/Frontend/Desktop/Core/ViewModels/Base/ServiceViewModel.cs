@@ -6,6 +6,7 @@ using Prism.Events;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.WPF.Client.Core.Exceptions;
 
 namespace LYBT.WPF.Client.Core.ViewModels.Base
 {

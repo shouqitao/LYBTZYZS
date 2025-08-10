@@ -41,7 +41,7 @@ namespace LYBT.WPF.Client.Services
                     return new FormulaPagedResult
                     {
                         Items = templateInfos,
-                        TotalCount = response.Content.TotalCount,
+                        TotalCount = (int)response.Content.TotalCount,
                         CurrentPage = response.Content.CurrentPage,
                         PageSize = response.Content.PageSize
                     };

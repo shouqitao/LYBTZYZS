@@ -20,7 +20,7 @@ namespace LYBT.WebAPI.Controllers
     /// 实现软删除策略：患者档案只能禁用/启用，不提供删除接口
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class PatientsController : BaseApiController

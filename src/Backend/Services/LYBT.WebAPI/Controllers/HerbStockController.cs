@@ -11,7 +11,7 @@ namespace LYBT.WebAPI.Controllers
     /// 药材库存管理 API 控制器 - UltraThink重构：专门负责库存管理功能
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/herbs")]
     [Authorize]
     public class HerbStockController : BaseController

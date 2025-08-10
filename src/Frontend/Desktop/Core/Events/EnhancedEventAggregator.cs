@@ -75,7 +75,7 @@ namespace LYBT.WPF.Client.Core.Events
         /// </summary>
         public virtual SubscriptionToken Subscribe(
             Action action,
-            ThreadOption threadOption = ThreadOption.PublisherThread,
+            EnhancedThreadOption threadOption = EnhancedThreadOption.PublisherThread,
             bool keepSubscriberReferenceAlive = false,
             Predicate<object>? filter = null,
             int priority = 0)
@@ -162,11 +162,11 @@ namespace LYBT.WPF.Client.Core.Events
         {
             switch (subscription.ThreadOption)
             {
-                case ThreadOption.PublisherThread:
+                case EnhancedThreadOption.PublisherThread:
                     subscription.InvokeAction(argument);
                     break;
                     
-                case ThreadOption.UIThread:
+                case EnhancedThreadOption.UIThread:
                     if (SynchronizationContext.Current != null)
                     {
                         SynchronizationContext.Current.Post(_ => subscription.InvokeAction(argument), null);
@@ -177,7 +177,7 @@ namespace LYBT.WPF.Client.Core.Events
                     }
                     break;
                     
-                case ThreadOption.BackgroundThread:
+                case EnhancedThreadOption.BackgroundThread:
                     Task.Run(() => subscription.InvokeAction(argument));
                     break;
             }
@@ -267,7 +267,7 @@ namespace LYBT.WPF.Client.Core.Events
         /// </summary>
         public SubscriptionToken Subscribe(
             Action<TPayload> action,
-            ThreadOption threadOption = ThreadOption.PublisherThread,
+            EnhancedThreadOption threadOption = EnhancedThreadOption.PublisherThread,
             bool keepSubscriberReferenceAlive = false,
             Predicate<TPayload>? filter = null,
             int priority = 0)
@@ -298,7 +298,7 @@ namespace LYBT.WPF.Client.Core.Events
     {
         bool IsAlive { get; }
         bool KeepAlive { get; }
-        ThreadOption ThreadOption { get; }
+        EnhancedThreadOption ThreadOption { get; }
         Predicate<object>? Filter { get; }
         int Priority { get; }
         void InvokeAction(object? argument);
@@ -314,7 +314,7 @@ namespace LYBT.WPF.Client.Core.Events
 
         public ActionSubscription(
             Action action,
-            ThreadOption threadOption,
+            EnhancedThreadOption threadOption,
             bool keepAlive,
             Predicate<object>? filter,
             int priority)
@@ -338,7 +338,7 @@ namespace LYBT.WPF.Client.Core.Events
 
         public bool IsAlive => _strongAction != null || (_weakAction?.IsAlive ?? false);
         public bool KeepAlive { get; }
-        public ThreadOption ThreadOption { get; }
+        public EnhancedThreadOption ThreadOption { get; }
         public Predicate<object>? Filter { get; }
         public int Priority { get; }
 
@@ -366,7 +366,7 @@ namespace LYBT.WPF.Client.Core.Events
 
         public ActionSubscription(
             Action<TPayload> action,
-            ThreadOption threadOption,
+            EnhancedThreadOption threadOption,
             bool keepAlive,
             Predicate<TPayload>? filter,
             int priority)
@@ -391,7 +391,7 @@ namespace LYBT.WPF.Client.Core.Events
 
         public bool IsAlive => _strongAction != null || (_weakAction?.IsAlive ?? false);
         public bool KeepAlive { get; }
-        public ThreadOption ThreadOption { get; }
+        public EnhancedThreadOption ThreadOption { get; }
         public Predicate<object>? Filter { get; }
         public int Priority { get; }
 
@@ -549,9 +549,9 @@ namespace LYBT.WPF.Client.Core.Events
     }
 
     /// <summary>
-    /// 线程选项
+    /// 增强事件线程选项
     /// </summary>
-    public enum ThreadOption
+    public enum EnhancedThreadOption
     {
         /// <summary>
         /// 发布者线程

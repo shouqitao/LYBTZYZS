@@ -16,7 +16,7 @@ namespace LYBT.WebAPI.Controllers;
 /// 实现软删除策略：用户只能禁用/启用，不提供删除接口
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[ApiVersion("1")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize] // 全部接口必须登录
 public class UsersController : BaseApiController
@@ -144,7 +144,7 @@ public class UsersController : BaseApiController
     /// <summary>
     /// 管理员重置密码，恢复为默认值 - 统一API响应格式
     /// </summary>
-    [HttpPost("resetPassword/{id}")]
+    [HttpPost("reset-password/{id}")]
     public async Task<ActionResult<ApiResponse>> ResetPassword(Guid id)
     {
         try
@@ -240,7 +240,7 @@ public class UsersController : BaseApiController
     /// <summary>
     /// 获取所有角色 - 统一API响应格式
     /// </summary>
-    [HttpGet("getRoles")]
+    [HttpGet("roles")]
     public ActionResult<ApiResponse<IEnumerable<object>>> GetRoles()
     {
         try

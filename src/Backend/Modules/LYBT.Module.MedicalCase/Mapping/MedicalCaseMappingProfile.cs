@@ -23,25 +23,14 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
                 .ForMember(dest => dest.IsActive, opt => opt.Ignore())
-                // .ForMember(dest => dest.Registration, opt => opt.Ignore()) // Field deleted
-                .ForMember(dest => dest.Consultation, opt => opt.Ignore())
-                // .ForMember(dest => dest.TreatmentPlan, opt => opt.Ignore()) // Field deleted
-                // .ForMember(dest => dest.Cashier, opt => opt.Ignore()) // Field deleted
-                // .ForMember(dest => dest.Pharmacy, opt => opt.Ignore()) // Field deleted
-                // .ForMember(dest => dest.TreatmentRoom, opt => opt.Ignore()); // Field deleted
-                ;
+                .ForMember(dest => dest.Consultation, opt => opt.Ignore());
 
             CreateMap<MedicalCaseUpdateDto, MedicalCaseModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
                 .ForMember(dest => dest.IsActive, opt => opt.Ignore())
-                // .ForMember(dest => dest.Registration, opt => opt.Ignore()) // Field deleted
                 .ForMember(dest => dest.Consultation, opt => opt.Ignore())
-                // .ForMember(dest => dest.TreatmentPlan, opt => opt.Ignore()) // Field deleted
-                // .ForMember(dest => dest.Cashier, opt => opt.Ignore()) // Field deleted
-                // .ForMember(dest => dest.Pharmacy, opt => opt.Ignore()) // Field deleted
-                // .ForMember(dest => dest.TreatmentRoom, opt => opt.Ignore()) // Field deleted
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }

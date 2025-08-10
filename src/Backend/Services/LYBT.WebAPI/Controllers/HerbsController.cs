@@ -13,7 +13,7 @@ namespace LYBT.WebAPI.Controllers
     /// 药材基础管理 API 控制器 - UltraThink重构：仅保留核心CRUD操作
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class HerbsController : BaseController

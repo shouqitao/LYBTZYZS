@@ -48,16 +48,16 @@ namespace LYBT.WPF.Client.Services
                     isActive: request.Status == CommonStatus.Enabled ? true : (request.Status == CommonStatus.Disabled ? false : null)
                 );
 
-                if (response.IsSuccessStatusCode && response.Content != null)
+                if (response.IsSuccessStatusCode && response.Content?.Data != null)
                 {
-                    var users = response.Content.Items.Select(ConvertToUserInfo).ToList();
+                    var users = response.Content.Data.Items.Select(ConvertToUserInfo).ToList();
 
                     return new LYBT.WPF.Client.Core.Models.Common.PagedResult<UserInfo>
                     {
                         Items = users,
-                        TotalCount = response.Content.TotalCount,
-                        CurrentPage = response.Content.CurrentPage,
-                        PageSize = response.Content.PageSize
+                        TotalCount = (int)response.Content.Data.TotalCount,
+                        CurrentPage = response.Content.Data.CurrentPage,
+                        PageSize = response.Content.Data.PageSize
                     };
                 }
 
@@ -156,17 +156,22 @@ namespace LYBT.WPF.Client.Services
         /// </summary>
         public async Task<ServiceResult<List<UserInfo>>> GetActiveUsersAsync()
         {
-            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _userApiService.GetActiveUsersAsync()
-            );
-
-            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            try
             {
-                var users = apiResponse.Data.Select(ConvertToUserInfo).ToList();
-                return ServiceResult<List<UserInfo>>.Success(users);
-            }
+                var apiResponse = await _userApiService.GetActiveUsersAsync();
+                
+                if (apiResponse.IsSuccessStatusCode && apiResponse.Content != null)
+                {
+                    var users = apiResponse.Content.Select(ConvertToUserInfo).ToList();
+                    return ServiceResult<List<UserInfo>>.Success(users);
+                }
 
-            return ServiceResult<List<UserInfo>>.Failure(apiResponse.ErrorMessage ?? "获取活跃用户失败", apiResponse.Exception);
+                return ServiceResult<List<UserInfo>>.Failure("获取活跃用户失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<UserInfo>>.Failure($"获取活跃用户失败: {ex.Message}", ex);
+            }
         }
 
         /// <summary>

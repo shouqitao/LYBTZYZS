@@ -5,6 +5,7 @@ using Refit;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.WPF.Client.Core.Models;
 
 namespace LYBT.WPF.Client.Services.Interfaces
 {
@@ -17,7 +18,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 分页查询医疗案例
         /// </summary>
         [Get("/api/v1/MedicalCase")]
-        Task<Refit.ApiResponse<PaginatedResult<MedicalCaseDto>>> GetPagedAsync(
+        Task<Refit.ApiResponse<PagedData<MedicalCaseDto>>> GetPagedAsync(
             [Query] int pageIndex = 1,
             [Query] int pageSize = 20);
 

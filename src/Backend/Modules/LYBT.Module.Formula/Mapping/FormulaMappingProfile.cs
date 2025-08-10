@@ -41,15 +41,6 @@ namespace LYBT.Module.Formula.Mapping
                 .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
                 .ForMember(dest => dest.Unit, opt => opt.Ignore());
 
-            // FormulaModel -> FormulaDto (添加缺失的映射)
-            CreateMap<FormulaModel, FormulaDto>();
-
-            // FormulaCreateDto -> FormulaModel
-            CreateMap<FormulaCreateDto, FormulaModel>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled));
         }
     }
 }

@@ -27,14 +27,14 @@ namespace LYBT.WPF.Client.Tests.Services
     public class PatientServiceTests
     {
         private readonly Mock<IApiService> _mockApiService;
-        private readonly Mock<IPatientsApiService> _mockPatientsApiService;
+        private readonly Mock<IPatientApiService> _mockPatientApiService;
         private readonly PatientService _service;
 
         public PatientServiceTests()
         {
             _mockApiService = new Mock<IApiService>();
-            _mockPatientsApiService = new Mock<IPatientsApiService>();
-            _service = new PatientService(_mockApiService.Object, _mockPatientsApiService.Object);
+            _mockPatientApiService = new Mock<IPatientApiService>();
+            _service = new PatientService(_mockApiService.Object, _mockPatientApiService.Object);
         }
 
         #region Test Data Factory Methods
@@ -115,7 +115,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var dto = CreateTestPatientDto();
             var apiResponse = CreateSuccessApiResponse(dto);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.CreatePatientAsync(It.IsAny<PatientDetailDto>()))
                 .ReturnsAsync(apiResponse);
 
@@ -124,7 +124,7 @@ namespace LYBT.WPF.Client.Tests.Services
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _mockPatientsApiService.Verify(x => x.CreatePatientAsync(dto), Times.Once);
+            _mockPatientApiService.Verify(x => x.CreatePatientAsync(dto), Times.Once);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace LYBT.WPF.Client.Tests.Services
         {
             // Arrange
             var dto = CreateTestPatientDto();
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.CreatePatientAsync(It.IsAny<PatientDetailDto>()))
                 .ThrowsAsync(new Exception("API错误"));
 
@@ -155,7 +155,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var dto = CreateTestPatientDto();
             var apiResponse = CreateSuccessApiResponse(dto);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.UpdatePatientAsync(It.IsAny<Guid>(), It.IsAny<PatientDetailDto>()))
                 .ReturnsAsync(apiResponse);
 
@@ -164,7 +164,7 @@ namespace LYBT.WPF.Client.Tests.Services
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _mockPatientsApiService.Verify(x => x.UpdatePatientAsync(dto.Id, dto), Times.Once);
+            _mockPatientApiService.Verify(x => x.UpdatePatientAsync(dto.Id, dto), Times.Once);
         }
 
         [Fact]
@@ -172,7 +172,7 @@ namespace LYBT.WPF.Client.Tests.Services
         {
             // Arrange
             var dto = CreateTestPatientDto();
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.UpdatePatientAsync(It.IsAny<Guid>(), It.IsAny<PatientDetailDto>()))
                 .ThrowsAsync(new Exception("更新失败"));
 
@@ -195,7 +195,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var patientId = Guid.NewGuid();
             var apiResponse = CreateSuccessApiResponse(new object());
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.ToggleStatusAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(apiResponse);
 
@@ -204,7 +204,7 @@ namespace LYBT.WPF.Client.Tests.Services
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _mockPatientsApiService.Verify(x => x.ToggleStatusAsync(patientId), Times.Once);
+            _mockPatientApiService.Verify(x => x.ToggleStatusAsync(patientId), Times.Once);
         }
 
         #endregion
@@ -218,7 +218,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var patientId = Guid.NewGuid();
             var apiResponse = CreateSuccessApiResponse(new object());
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.ToggleStatusAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(apiResponse);
 
@@ -227,7 +227,7 @@ namespace LYBT.WPF.Client.Tests.Services
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _mockPatientsApiService.Verify(x => x.ToggleStatusAsync(patientId), Times.Once);
+            _mockPatientApiService.Verify(x => x.ToggleStatusAsync(patientId), Times.Once);
         }
 
         #endregion
@@ -242,7 +242,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var expectedDto = CreateTestPatientDto(patientId);
             var apiResponse = CreateSuccessApiResponse(expectedDto);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetPatientAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(apiResponse);
 
@@ -261,7 +261,7 @@ namespace LYBT.WPF.Client.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetPatientAsync(It.IsAny<Guid>()))
                 .ThrowsAsync(new Exception("患者不存在"));
 
@@ -284,7 +284,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var expectedPatients = new List<PatientDetailDto> { CreateTestPatientDto(), CreateTestPatientDto() };
             var apiResponse = CreateSuccessApiResponse(expectedPatients);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetAllAsync())
                 .ReturnsAsync(apiResponse);
 
@@ -301,7 +301,7 @@ namespace LYBT.WPF.Client.Tests.Services
         public async Task GetAllAsync_WhenApiCallFails_ReturnsFailure()
         {
             // Arrange
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetAllAsync())
                 .ThrowsAsync(new Exception("获取失败"));
 
@@ -325,7 +325,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var paginatedResult = CreateTestPaginatedResult();
             var apiResponse = CreateSuccessApiResponse(paginatedResult);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetPatientsAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(),
                     It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Gender?>(),
@@ -350,7 +350,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var query = CreateTestQueryDto();
             var apiResponse = CreateFailureApiResponse<PaginatedResult<PatientDetailDto>>();
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetPatientsAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(),
                     It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Gender?>(),
@@ -379,7 +379,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var expectedPatients = new List<PatientDetailDto> { CreateTestPatientDto() };
             var apiResponse = CreateSuccessApiResponse(expectedPatients);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.SearchAsync(It.IsAny<string>()))
                 .ReturnsAsync(apiResponse);
 
@@ -390,7 +390,7 @@ namespace LYBT.WPF.Client.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Should().HaveCount(1);
-            _mockPatientsApiService.Verify(x => x.SearchAsync(keyword), Times.Once);
+            _mockPatientApiService.Verify(x => x.SearchAsync(keyword), Times.Once);
         }
 
         [Fact]
@@ -401,7 +401,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var expectedPatients = new List<PatientDetailDto>();
             var apiResponse = CreateSuccessApiResponse(expectedPatients);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.SearchAsync(It.IsAny<string>()))
                 .ReturnsAsync(apiResponse);
 
@@ -461,7 +461,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var expectedPatients = new List<PatientDetailDto> { CreateTestPatientDto(), CreateTestPatientDto() };
             var apiResponse = CreateSuccessApiResponse(expectedPatients);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.ExportAsync())
                 .ReturnsAsync(apiResponse);
 
@@ -503,7 +503,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var expectedPatients = new List<PatientDetailDto> { CreateTestPatientDto() };
             var apiResponse = CreateSuccessApiResponse(expectedPatients);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetActivePatientsAsync())
                 .ReturnsAsync(apiResponse);
 
@@ -527,7 +527,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var dto = CreateTestPatientDto();
             var apiResponse = CreateSuccessApiResponse(dto);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.FindOrCreateAsync(It.IsAny<PatientDetailDto>()))
                 .ReturnsAsync(apiResponse);
 
@@ -538,7 +538,7 @@ namespace LYBT.WPF.Client.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Id.Should().Be(dto.Id);
-            _mockPatientsApiService.Verify(x => x.FindOrCreateAsync(dto), Times.Once);
+            _mockPatientApiService.Verify(x => x.FindOrCreateAsync(dto), Times.Once);
         }
 
         #endregion
@@ -553,7 +553,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var expectedPatients = new List<PatientDetailDto> { CreateTestPatientDto() };
             var apiResponse = CreateSuccessApiResponse(expectedPatients);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.SearchAsync(It.IsAny<string>()))
                 .ReturnsAsync(apiResponse);
 
@@ -564,7 +564,7 @@ namespace LYBT.WPF.Client.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Should().HaveCount(1);
-            _mockPatientsApiService.Verify(x => x.SearchAsync(keyword), Times.Once);
+            _mockPatientApiService.Verify(x => x.SearchAsync(keyword), Times.Once);
         }
 
         #endregion
@@ -578,7 +578,7 @@ namespace LYBT.WPF.Client.Tests.Services
             var expectedPatients = new List<PatientDetailDto> { CreateTestPatientDto() };
             var apiResponse = CreateSuccessApiResponse(expectedPatients);
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetActivePatientsAsync())
                 .ReturnsAsync(apiResponse);
 
@@ -597,7 +597,7 @@ namespace LYBT.WPF.Client.Tests.Services
             // Arrange
             var apiResponse = CreateFailureApiResponse<List<PatientDetailDto>>();
             
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetActivePatientsAsync())
                 .ReturnsAsync(apiResponse);
 
@@ -613,7 +613,7 @@ namespace LYBT.WPF.Client.Tests.Services
         public async Task GetListAsync_WhenApiCallThrowsException_ThrowsException()
         {
             // Arrange
-            _mockPatientsApiService
+            _mockPatientApiService
                 .Setup(x => x.GetActivePatientsAsync())
                 .ThrowsAsync(new Exception("网络错误"));
 

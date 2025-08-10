@@ -12,7 +12,6 @@ using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Modules.Consultation.Services;
 using Prism.Navigation.Regions;
 using CoreWorkflowStep = LYBT.WPF.Client.Core.Models.Consultation.WorkflowStep;
-using ThreadOption = Prism.Events.ThreadOption;
 
 namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
 {

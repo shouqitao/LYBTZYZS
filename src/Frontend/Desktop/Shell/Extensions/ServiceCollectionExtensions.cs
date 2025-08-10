@@ -127,7 +127,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             RegisterAuthenticatedApiService<IUserApiService>(containerRegistry);
             RegisterAuthenticatedApiService<IHerbApiService>(containerRegistry);
             RegisterAuthenticatedApiService<IFormulaApiService>(containerRegistry);
-            RegisterAuthenticatedApiService<IPatientsApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<IPatientApiService>(containerRegistry);
             RegisterAuthenticatedApiService<ISystemSettingsApiService>(containerRegistry);
             RegisterAuthenticatedApiService<IBackupApiService>(containerRegistry);
             RegisterAuthenticatedApiService<IConsultationApiService>(containerRegistry);

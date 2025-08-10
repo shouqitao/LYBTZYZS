@@ -12,7 +12,7 @@ namespace LYBT.WebAPI.Controllers
     /// 统一日志管理API控制器
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class UnifiedLogsController : ControllerBase

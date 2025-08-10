@@ -9,7 +9,7 @@ namespace LYBT.WebAPI.Controllers
     /// 缓存管理 API 控制器
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Roles = "Admin")]
     public class CacheController : BaseController

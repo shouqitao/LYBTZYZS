@@ -13,7 +13,7 @@ namespace LYBT.WebAPI.Controllers
     /// 注意：此控制器仅应在开发环境中启用
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [AllowAnonymous] // 临时允许匿名访问以便调试
     public class DebugController : ControllerBase

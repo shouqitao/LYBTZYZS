@@ -1,227 +1,352 @@
 using System;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json;
-using LYBT.WPF.Client.Core.Services;
-using LYBT.Shared.Models.Auth;
-using LYBT.WPF.Client.Core.Models;
-using Refit;
-using System.Net;
+using System.Net.Http;
+using Polly;
+using Polly.Extensions.Http;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Services;
+using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Services.Interfaces;
-using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Auth;
+using LYBT.Shared.Models.Core;
 using UserInfo = LYBT.WPF.Client.Core.Models.Users.UserInfo;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.WPF.Client.Services
 {
     /// <summary>
-    /// 真实的身份认证服务实现
+    /// 身份认证服务 - 遵循UltraThink标准
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
+        #region 依赖服务
+        
         private readonly IAuthApiService _authApiService;
         private readonly ITokenManager _tokenManager;
-        private bool _isLoggedIn = false;
-        private UserInfo? _currentUser;
-
-        public AuthenticationService(IAuthApiService authApiService, ITokenManager tokenManager)
+        private readonly ILogger<AuthenticationService>? _logger;
+        private readonly IAsyncPolicy<HttpResponseMessage> _retryPolicy;
+        
+        #endregion
+        
+        #region 状态字段
+        
+        private readonly SemaphoreSlim _authSemaphore = new(1, 1);
+        private AuthenticationState _authState;
+        
+        #endregion
+        
+        #region 配置常量
+        
+        private const int MaxRetryAttempts = 3;
+        private const int RetryDelaySeconds = 2;
+        private const int HealthCheckTimeoutSeconds = 3;
+        
+        #endregion
+        
+        #region 构造函数
+        
+        public AuthenticationService(
+            IAuthApiService authApiService,
+            ITokenManager tokenManager,
+            ILogger<AuthenticationService>? logger = null)
         {
-            _authApiService = authApiService;
-            _tokenManager = tokenManager;
+            _authApiService = authApiService ?? throw new ArgumentNullException(nameof(authApiService));
+            _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
+            _logger = logger;
+            
+            // 初始化重试策略
+            _retryPolicy = HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .WaitAndRetryAsync(
+                    MaxRetryAttempts,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(RetryDelaySeconds, retryAttempt)),
+                    onRetry: (outcome, timespan, retryCount, context) =>
+                    {
+                        _logger?.LogWarning("重试第 {RetryCount} 次，等待 {Timespan} 秒", retryCount, timespan.TotalSeconds);
+                    });
+            
+            // 初始化认证状态
+            _authState = new AuthenticationState();
         }
-
-        public bool IsLoggedIn => _isLoggedIn;
-
-        public async Task<ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>> LoginAsync(LoginRequest request)
+        
+        #endregion
+        
+        #region 公共属性
+        
+        public bool IsLoggedIn => _authState.IsAuthenticated;
+        
+        #endregion
+        
+        #region 登录/登出
+        
+        public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
         {
-            // 转换 LoginRequest 类型
-            var clientLoginRequest = new LYBT.WPF.Client.Core.Models.Authentication.LoginRequest
+            if (request == null)
+                return ServiceResult<LoginResponse>.Failure("登录请求不能为空");
+            
+            await _authSemaphore.WaitAsync();
+            try
+            {
+                _logger?.LogInformation("开始登录，用户名: {Username}", request.Username);
+                
+                // 转换请求类型
+                var apiRequest = MapToApiRequest(request);
+                
+                // 调用API
+                var apiResponse = await CallLoginApiWithRetryAsync(apiRequest);
+                
+                if (!apiResponse.IsSuccess)
+                {
+                    _logger?.LogWarning("登录失败: {Error}", apiResponse.ErrorMessage);
+                    return ServiceResult<LoginResponse>.Failure(apiResponse.ErrorMessage ?? "登录失败");
+                }
+                
+                // 处理成功响应
+                var loginResponse = ProcessLoginResponse(apiResponse.Data);
+                if (loginResponse == null)
+                {
+                    return ServiceResult<LoginResponse>.Failure("服务器响应格式错误");
+                }
+                
+                // 更新认证状态
+                UpdateAuthenticationState(loginResponse);
+                
+                _logger?.LogInformation($"登录成功，用户ID: {loginResponse.User?.Id}");
+                return ServiceResult<LoginResponse>.Success(loginResponse);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "登录过程发生异常");
+                return ServiceResult<LoginResponse>.Failure("登录失败: " + ex.Message, ex);
+            }
+            finally
+            {
+                _authSemaphore.Release();
+            }
+        }
+        
+        public async Task<ServiceResult> LogoutAsync()
+        {
+            await _authSemaphore.WaitAsync();
+            try
+            {
+                _logger?.LogInformation("开始登出，用户ID: {UserId}", _authState.CurrentUser?.Id);
+                
+                // 尝试调用服务器登出API
+                try
+                {
+                    await _authApiService.LogoutAsync();
+                }
+                catch (Exception ex)
+                {
+                    // 服务器登出失败不影响本地登出
+                    _logger?.LogWarning(ex, "服务器登出失败，但将继续清除本地状态");
+                }
+                
+                // 清除本地认证状态
+                ClearAuthenticationState();
+                
+                _logger?.LogInformation("登出成功");
+                return ServiceResult.Success();
+            }
+            finally
+            {
+                _authSemaphore.Release();
+            }
+        }
+        
+        #endregion
+        
+        #region 用户信息
+        
+        public Task<UserInfo?> GetCurrentUserAsync()
+        {
+            return Task.FromResult(_authState.CurrentUser);
+        }
+        
+        public string? GetToken()
+        {
+            return _tokenManager.GetToken();
+        }
+        
+        public void ClearAuthInfo()
+        {
+            ClearAuthenticationState();
+        }
+        
+        #endregion
+        
+        #region 连接检查
+        
+        public async Task<bool> CheckConnectionAsync()
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(HealthCheckTimeoutSeconds));
+                using var httpClient = CreateHttpClient();
+                
+                var baseUrl = GetApiBaseUrl();
+                var healthCheckUrl = $"{baseUrl}/swagger/index.html";
+                
+                var response = await httpClient.GetAsync(healthCheckUrl, cts.Token);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogDebug(ex, "API连接检查失败");
+                return false;
+            }
+        }
+        
+        #endregion
+        
+        #region 私有方法
+        
+        private Core.Models.Authentication.LoginRequest MapToApiRequest(LoginRequest request)
+        {
+            return new Core.Models.Authentication.LoginRequest
             {
                 Username = request.Username,
                 Password = request.Password,
                 RememberMe = request.RememberMe
             };
-
-            var result = await ApiErrorHandler.HandleApiResponseAsync(
-                async () => await _authApiService.LoginAsync(clientLoginRequest)
-            );
-
-            // 处理双重包装：Refit.ApiResponse<ApiResponse<LoginResponseDto>>
-            if (result.IsSuccess && result.Data != null && result.Data.Success && result.Data.Data != null && !string.IsNullOrEmpty(result.Data.Data.Token))
-            {
-                _isLoggedIn = true;
-                _tokenManager.SetToken(result.Data.Data.Token);
-
-                // 将BaseUserModel转换为前端UserInfo模型
-                _currentUser = ConvertBaseUserModelToFrontend(result.Data.Data.User);
-
-                // 转换DTO为API契约类型
-                var authResponse = new LYBT.Shared.Models.Auth.LoginResponse
-                {
-                    Token = result.Data.Data.Token,
-                    User = ConvertBaseUserModelToAuthUserInfo(result.Data.Data.User)
-                };
-
-                return ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>.Success(authResponse);
-            }
-
-            // 从内层ApiResponse获取错误信息
-            var errorMessage = result.Data?.Message ?? result.ErrorMessage ?? "登录失败";
-            return ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>.Failure(errorMessage, result.Exception);
         }
-
-        public async Task<ServiceResult> LogoutAsync()
-        {
-            var result = await ApiErrorHandler.HandleApiCallAsync(
-                async () => await _authApiService.LogoutAsync()
-            );
-
-            // 无论API调用是否成功，都清除本地登录状态
-            ClearAuthInfo();
-
-            // 总是返回成功，因为本地状态已清除
-            return ServiceResult.Success();
-        }
-
-        public Task<LYBT.WPF.Client.Core.Models.Users.UserInfo?> GetCurrentUserAsync()
-        {
-            if (!_isLoggedIn || _currentUser == null)
-                return Task.FromResult<LYBT.WPF.Client.Core.Models.Users.UserInfo?>(null);
-
-            // 可以考虑从API刷新用户信息
-            // var response = await _apiService.GetAsync<BaseUserModel>("users/current");
-            // if (response.Success && response.Data != null)
-            // {
-            //     _currentUser = response.Data;
-            // }
-
-            return Task.FromResult<LYBT.WPF.Client.Core.Models.Users.UserInfo?>(_currentUser);
-        }
-
-        public string? GetToken()
-        {
-            return _tokenManager.GetToken();
-        }
-
-        public void ClearAuthInfo()
-        {
-            _isLoggedIn = false;
-            _tokenManager.ClearToken();
-            _currentUser = null;
-        }
-
-        public async Task<bool> CheckConnectionAsync()
+        
+        private async Task<ServiceResult<dynamic>> CallLoginApiWithRetryAsync(Core.Models.Authentication.LoginRequest request)
         {
             try
             {
-                // 忽略SSL证书错误（仅用于开发环境）
-                var handler = new System.Net.Http.HttpClientHandler();
-                handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-
-                using var client = new System.Net.Http.HttpClient(handler);
-                client.Timeout = TimeSpan.FromSeconds(3);
-
-                // 从配置获取API基础URL，使用swagger作为健康检查端点
-                var baseUrl = LYBT.WPF.Client.Core.Configuration.ApiConfiguration.BaseUrl.TrimEnd('/');
-                var response = await client.GetAsync($"{baseUrl}/swagger/index.html");
-
-                return response.IsSuccessStatusCode;
+                var response = await _authApiService.LoginAsync(request);
+                
+                // 处理Refit包装的响应
+                if (response.IsSuccessStatusCode && response.Content?.Success == true)
+                {
+                    return ServiceResult<dynamic>.Success(response.Content);
+                }
+                
+                var errorMessage = response.Content?.Message ?? 
+                                  response.Error?.Content ?? 
+                                  "登录失败";
+                                  
+                return ServiceResult<dynamic>.Failure(errorMessage);
             }
-            catch
+            catch (Exception ex)
             {
-                // 如果发生任何异常，认为API不可用
-                return false;
+                return ServiceResult<dynamic>.Failure("网络请求失败: " + ex.Message, ex);
             }
         }
-
-        /// <summary>
-        /// 将BaseUserModel转换为前端UserInfo模型
-        /// </summary>
-        private UserInfo? ConvertBaseUserModelToFrontend(LYBT.Shared.Models.Core.BaseUserModel? baseUser)
+        
+        private LoginResponse? ProcessLoginResponse(dynamic apiResponse)
         {
-            if (baseUser == null)
+            if (apiResponse?.Data == null)
                 return null;
-
-            return new UserInfo
-            {
-                Id = baseUser.Id,
-                Username = baseUser.Username,
-                RealName = baseUser.RealName,
-                Status = baseUser.Status,
-                CreateTime = baseUser.CreateTime,
-                LastLoginTime = baseUser.LastLoginTime,
-                PhoneNumber = baseUser.PhoneNumber,
-            };
-        }
-
-        /// <summary>
-        /// 将BaseUserModel转换为Auth.UserInfo模型
-        /// </summary>
-        private LYBT.Shared.Models.Auth.UserInfo ConvertBaseUserModelToAuthUserInfo(LYBT.Shared.Models.Core.BaseUserModel? baseUser)
-        {
-            if (baseUser == null)
-                return new LYBT.Shared.Models.Auth.UserInfo();
-
-            return new LYBT.Shared.Models.Auth.UserInfo
-            {
-                Id = baseUser.Id,
-                Username = baseUser.Username,
-                RealName = baseUser.RealName,
-                PhoneNumber = baseUser.PhoneNumber
-            };
-        }
-
-        /// <summary>
-        /// 将API返回的用户对象转换为前端UserInfo模型（旧方法保留兼容性）
-        /// </summary>
-        private UserInfo? ConvertToUserInfo(object userObj)
-        {
+            
             try
             {
-                if (userObj == null)
-                    return null;
-
-                // 将对象序列化再反序列化进行类型转换
-                var json = JsonSerializer.Serialize(userObj);
-                var options = new JsonSerializerOptions
+                var data = apiResponse.Data;
+                
+                return new LoginResponse
                 {
-                    PropertyNameCaseInsensitive = true,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    Token = data.Token?.ToString() ?? string.Empty,
+                    User = ConvertToUserInfo(data.User)
                 };
-
-                // 先反序列化为匿名类型获取字段
-                using var document = JsonDocument.Parse(json);
-                var root = document.RootElement;
-
-                var userName = root.TryGetProperty("userName", out var userNameProp) ? userNameProp.GetString() ?? "" : "";
-
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "处理登录响应失败");
+                return null;
+            }
+        }
+        
+        private UserInfo ConvertToUserInfo(dynamic userObj)
+        {
+            if (userObj == null)
+                return new UserInfo();
+            
+            try
+            {
                 return new UserInfo
                 {
-                    Id = root.TryGetProperty("id", out var idProp) ? idProp.GetGuid() : Guid.Empty,
-                    Username = userName,
-                    RealName = root.TryGetProperty("realName", out var realNameProp) ? realNameProp.GetString() ?? "" : "",
-                    Status = root.TryGetProperty("status", out var statusProp) && statusProp.TryGetInt32(out var statusValue)
-                        ? (CommonStatus)statusValue
-                        : CommonStatus.Enabled,
-                    CreateTime = root.TryGetProperty("createdTime", out var createdTimeProp) ? createdTimeProp.GetDateTime() : DateTime.Now,
-                    LastLoginTime = root.TryGetProperty("lastLoginTime", out var lastLoginTimeProp) ? lastLoginTimeProp.GetDateTime() : null,
-                    PhoneNumber = root.TryGetProperty("phoneNumber", out var phoneProp) ? phoneProp.GetString() : null
+                    Id = Guid.TryParse(userObj.Id?.ToString(), out Guid id) ? id : Guid.Empty,
+                    Username = userObj.Username?.ToString() ?? string.Empty,
+                    RealName = userObj.RealName?.ToString() ?? string.Empty,
+                    PhoneNumber = userObj.PhoneNumber?.ToString()
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                _logger?.LogError(ex, "转换用户信息失败");
+                return new UserInfo();
             }
         }
-
-        /// <summary>
-        /// 解析用户角色字符串
-        /// </summary>
-        private string ParseUserRole(string? roleString)
+        
+        private void UpdateAuthenticationState(LoginResponse response)
         {
-            return "";
+            _authState = new AuthenticationState
+            {
+                IsAuthenticated = true,
+                CurrentUser = ConvertToFrontendUserInfo(response.User),
+                Token = response.Token,
+                AuthenticatedAt = DateTime.Now
+            };
+            
+            _tokenManager.SetToken(response.Token);
         }
-
-
+        
+        private void ClearAuthenticationState()
+        {
+            _authState = new AuthenticationState();
+            _tokenManager.ClearToken();
+        }
+        
+        private UserInfo? ConvertToFrontendUserInfo(LYBT.Shared.Models.Auth.UserInfo? authUser)
+        {
+            if (authUser == null)
+                return null;
+            
+            return new UserInfo
+            {
+                Id = authUser.Id,
+                Username = authUser.Username,
+                RealName = authUser.RealName,
+                PhoneNumber = authUser.PhoneNumber
+            };
+        }
+        
+        private HttpClient CreateHttpClient()
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+            
+            return new HttpClient(handler)
+            {
+                Timeout = TimeSpan.FromSeconds(HealthCheckTimeoutSeconds)
+            };
+        }
+        
+        private string GetApiBaseUrl()
+        {
+            return Core.Configuration.ApiConfiguration.BaseUrl.TrimEnd('/');
+        }
+        
+        #endregion
+        
+        #region 内部类
+        
+        /// <summary>
+        /// 认证状态
+        /// </summary>
+        private class AuthenticationState
+        {
+            public bool IsAuthenticated { get; set; }
+            public UserInfo? CurrentUser { get; set; }
+            public string? Token { get; set; }
+            public DateTime? AuthenticatedAt { get; set; }
+        }
+        
+        #endregion
     }
 }

@@ -6,6 +6,7 @@ using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.WPF.Client.Core.Exceptions;
 
 namespace LYBT.WPF.Client.Shell.Dialogs.ViewModels
 {
