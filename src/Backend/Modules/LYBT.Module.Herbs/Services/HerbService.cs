@@ -130,7 +130,7 @@ namespace LYBT.Module.Herbs.Services
             // 分页查询
             var models = await dbQuery
                 .OrderBy(h => h.Name)
-                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Skip((query.PageIndex - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
 
@@ -140,7 +140,7 @@ namespace LYBT.Module.Herbs.Services
             {
                 TotalCount = total,
                 Items = dtos,
-                CurrentPage = query.CurrentPage,
+                CurrentPage = query.PageIndex,
                 PageSize = query.PageSize
             };
         }

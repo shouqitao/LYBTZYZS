@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
@@ -16,7 +17,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
 
         Task<List<PrescriptionDto>> GetAllAsync();
 
-        Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest query);
+        Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto query);
 
         Task<PrescriptionDetailDto?> GetByIdAsync(string id);
 

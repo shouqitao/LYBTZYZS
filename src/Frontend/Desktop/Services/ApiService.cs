@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Services;
-using LYBT.WPF.Client.Core.Models.Authentication;
+using LYBT.WPF.Client.Core.Models.Auth;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.Shared.Models.Core;
 using LYBT.WPF.Client.Core.Interfaces.Services;

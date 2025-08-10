@@ -117,7 +117,19 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>合规违规</summary>
         [Description("合规违规")]
-        ComplianceViolation = 13
+        ComplianceViolation = 13,
+
+        /// <summary>令牌撤销</summary>
+        [Description("令牌撤销")]
+        TokenRevoked = 14,
+
+        /// <summary>账户解锁</summary>
+        [Description("账户解锁")]
+        AccountUnlocked = 15,
+
+        /// <summary>数据修改</summary>
+        [Description("数据修改")]
+        DataModification = 16
     }
 
     /// <summary>

@@ -254,9 +254,9 @@ public class UsersController : BaseApiController {
 
             var (_, _, operatorRole) = GetOperator();
             var query = new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto {
-                CurrentPage = page,
+                PageIndex = page,
                 PageSize = pageSize,
-                SearchKeyword = keyword,
+                Keyword = keyword,
                 Username = username,
                 RealName = realName,
                 Email = email,

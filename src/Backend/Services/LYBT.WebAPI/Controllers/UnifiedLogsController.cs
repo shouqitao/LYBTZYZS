@@ -2,6 +2,7 @@ using Asp.Versioning;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

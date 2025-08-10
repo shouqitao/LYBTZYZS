@@ -29,19 +29,19 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询处方
         /// </summary>
-        public async Task<PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request)
+        public async Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request)
         {
             try
             {
                 var response = await _prescriptionApiService.GetListAsync(
-                    page: request.CurrentPage,
+                    page: request.PageIndex,
                     pageSize: request.PageSize,
-                    keyword: request.SearchKeyword
+                    keyword: request.Keyword
                 );
 
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    return new PagedResult<PrescriptionDto>
+                    return new LYBT.WPF.Client.Core.Models.Common.PagedResult<PrescriptionDto>
                     {
                         Items = response.Content.Items.ToList(),
                         TotalCount = (int)response.Content.TotalCount,

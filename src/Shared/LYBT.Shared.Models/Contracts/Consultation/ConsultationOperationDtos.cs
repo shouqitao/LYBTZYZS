@@ -27,6 +27,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("医生ID")]
         public Guid DoctorId { get; set; }
 
+        /// <summary>用户ID（兼容旧属性）</summary>
+        public Guid UserId => DoctorId;
+
         /// <summary>预计看诊时长（分钟）</summary>
         [Range(5, 480, ErrorMessage = "预计看诊时长必须在5-480分钟之间")]
         [DisplayName("预计时长")]
@@ -63,6 +66,21 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [StringLength(500, ErrorMessage = "诊断结果长度不能超过500个字符")]
         [DisplayName("诊断")]
         public string Diagnosis { get; set; } = string.Empty;
+
+        /// <summary>中医辨证</summary>
+        [StringLength(500, ErrorMessage = "中医辨证长度不能超过500个字符")]
+        [DisplayName("中医辨证")]
+        public string? TCMDiagnosis { get; set; }
+
+        /// <summary>治疗原则</summary>
+        [StringLength(500, ErrorMessage = "治疗原则长度不能超过500个字符")]
+        [DisplayName("治疗原则")]
+        public string? TreatmentPrinciple { get; set; }
+
+        /// <summary>医噢</summary>
+        [StringLength(1000, ErrorMessage = "医噢长度不能超过1000个字符")]
+        [DisplayName("医噢")]
+        public string? MedicalAdvice { get; set; }
 
         /// <summary>治疗建议</summary>
         [StringLength(1000, ErrorMessage = "治疗建议长度不能超过1000个字符")]

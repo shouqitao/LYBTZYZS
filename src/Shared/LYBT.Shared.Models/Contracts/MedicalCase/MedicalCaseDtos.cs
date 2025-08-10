@@ -135,6 +135,12 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [StringLength(1000, ErrorMessage = "治疗方案长度不能超过1000个字符")]
         [DisplayName("治疗方案")]
         public string? TreatmentPlan { get; set; }
+
+        [DisplayName("状态")]
+        public string? Status { get; set; }
+
+        [DisplayName("完成时间")]
+        public DateTime? CompleteTime { get; set; }
     }
 
     /// <summary>
@@ -142,11 +148,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// </summary>
     public class MedicalCaseUpdateDto : MedicalCaseEditDto
     {
-        [DisplayName("状态")]
-        public string? Status { get; set; }
-
-        [DisplayName("完成时间")]
-        public DateTime? CompleteTime { get; set; }
 
         [StringLength(1000, ErrorMessage = "体格检查长度不能超过1000个字符")]
         [DisplayName("体格检查")]

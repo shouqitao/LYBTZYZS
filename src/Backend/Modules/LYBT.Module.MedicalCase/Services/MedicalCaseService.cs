@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Models.MedicalCase;
 using LYBT.Shared.Models.Enums;
@@ -64,7 +65,7 @@ namespace LYBT.Module.MedicalCase.Services
             return _mapper.Map<List<MedicalCaseDto>>(models.ToList());
         }
 
-        public async Task<PaginatedResult<MedicalCaseDto>> GetPagedAsync(PaginationRequest request)
+        public async Task<PaginatedResult<MedicalCaseDto>> GetPagedAsync(PagedQueryBaseDto request)
         {
             try
             {
@@ -72,12 +73,12 @@ namespace LYBT.Module.MedicalCase.Services
                 var dtos = _mapper.Map<List<MedicalCaseDto>>(models.ToList());
 
                 // 搜索过滤
-                if (!string.IsNullOrWhiteSpace(request.SearchKeyword))
+                if (!string.IsNullOrWhiteSpace(request.Keyword))
                 {
                     dtos = dtos.Where(x =>
-                        x.PatientName.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ||
-                        x.DoctorName.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase) ||
-                        x.DiagnosisSummary.Contains(request.SearchKeyword, StringComparison.OrdinalIgnoreCase)
+                        x.PatientName.Contains(request.Keyword, StringComparison.OrdinalIgnoreCase) ||
+                        x.DoctorName.Contains(request.Keyword, StringComparison.OrdinalIgnoreCase) ||
+                        x.DiagnosisSummary.Contains(request.Keyword, StringComparison.OrdinalIgnoreCase)
                     ).ToList();
                 }
 
@@ -87,7 +88,7 @@ namespace LYBT.Module.MedicalCase.Services
                 // 分页
                 var total = dtos.Count;
                 var items = dtos
-                    .Skip((request.CurrentPage - 1) * request.PageSize)
+                    .Skip((request.PageIndex - 1) * request.PageSize)
                     .Take(request.PageSize)
                     .ToList();
 
@@ -95,7 +96,7 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     Items = items,
                     TotalCount = total,
-                    CurrentPage = request.CurrentPage,
+                    CurrentPage = request.PageIndex,
                     PageSize = request.PageSize
                 };
             }
@@ -161,8 +162,11 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 更新字段
-                if (dto.Status.HasValue)
-                    model.Status = (LYBT.Shared.Models.Enums.MedicalCaseStatus)dto.Status.Value;
+                if (!string.IsNullOrWhiteSpace(dto.Status))
+                {
+                    if (Enum.TryParse<LYBT.Shared.Models.Enums.MedicalCaseStatus>(dto.Status, out var status))
+                        model.Status = status;
+                }
                 if (!string.IsNullOrWhiteSpace(dto.Remark))
                     model.Remark = dto.Remark;
                 if (dto.CompleteTime.HasValue)
@@ -189,7 +193,13 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         public async Task<bool> UpdateAsync(MedicalCaseEditDto dto)
         {
-            return await UpdateAsync(dto.Id, dto);
+            var updateDto = new MedicalCaseUpdateDto
+            {
+                Status = dto.Status,
+                Remark = dto.Remark,
+                CompleteTime = dto.CompleteTime
+            };
+            return await UpdateAsync(dto.Id, updateDto);
         }
 
         public async Task<bool> UpdateStatusAsync(Guid id, LYBT.Shared.Models.Enums.MedicalCaseStatus status)

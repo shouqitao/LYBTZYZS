@@ -146,6 +146,14 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>拼音码</summary>
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
+
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 
     /// <summary>

@@ -13,13 +13,13 @@ namespace LYBT.WPF.Client.Controls.Auth
         public static readonly DependencyProperty UserProperty =
             DependencyProperty.Register(
                 nameof(User),
-                typeof(LoginResponseDto),
+                typeof(LoginResponse),
                 typeof(LoginStatusControl),
                 new PropertyMetadata(null));
 
-        public LoginResponseDto User
+        public LoginResponse User
         {
-            get => (LoginResponseDto)GetValue(UserProperty);
+            get => (LoginResponse)GetValue(UserProperty);
             set => SetValue(UserProperty, value);
         }
 

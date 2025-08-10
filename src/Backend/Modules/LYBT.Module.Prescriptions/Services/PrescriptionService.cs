@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using System.Text.Json;
 
@@ -46,7 +47,7 @@ namespace LYBT.Module.Prescriptions.Services
         /// <param name="query">分页查询参数</param>
         /// <param name="operatorRole">操作者角色</param>
         /// <returns>分页结果</returns>
-        public async Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest query)
+        public async Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto query)
         {
             var allList = await _repository.GetListAsync();
             var dtoList = _mapper.Map<List<PrescriptionDto>>(allList);
@@ -55,22 +56,22 @@ namespace LYBT.Module.Prescriptions.Services
             var filteredList = dtoList.AsQueryable();
 
             // 如果有搜索关键字，进行搜索过滤
-            if (!string.IsNullOrEmpty(query.SearchKeyword))
+            if (!string.IsNullOrEmpty(query.Keyword))
             {
                 filteredList = filteredList.Where(x =>
-                    x.Id.ToString().Contains(query.SearchKeyword) ||
-                    x.PatientId.ToString().Contains(query.SearchKeyword) ||
-                    x.DoctorId.ToString().Contains(query.SearchKeyword)
+                    x.Id.ToString().Contains(query.Keyword) ||
+                    x.PatientId.ToString().Contains(query.Keyword) ||
+                    x.DoctorId.ToString().Contains(query.Keyword)
                 );
             }
 
             var total = filteredList.Count();
             var pagedList = filteredList
-                .Skip((query.CurrentPage - 1) * query.PageSize)
+                .Skip((query.PageIndex - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToList();
 
-            return new PaginatedResult<PrescriptionDto>(pagedList, total, query.CurrentPage, query.PageSize);
+            return new PaginatedResult<PrescriptionDto>(pagedList, total, query.PageIndex, query.PageSize);
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
@@ -17,7 +18,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        Task<PagedResult<ConsultationInfo>> SearchConsultationsAsync(PaginationRequest query);
+        Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<ConsultationInfo>> SearchConsultationsAsync(PagedQueryBaseDto query);
 
         /// <summary>
         /// 获取看诊详情

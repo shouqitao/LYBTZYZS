@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Services.Interfaces;
@@ -37,16 +38,16 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        public async Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<ConsultationInfo>> SearchConsultationsAsync(PaginationRequest query)
+        public async Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<ConsultationInfo>> SearchConsultationsAsync(PagedQueryBaseDto query)
         {
             try
             {
                 // 如果需要更高级的查询，应该传入特定的查询对象而不是使用ExtensionData
                 var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                     await _apiService.GetConsultationsAsync(
-                        page: query.CurrentPage,
+                        page: query.PageIndex,
                         pageSize: query.PageSize,
-                        keyword: query.SearchKeyword,
+                        keyword: query.Keyword,
                         doctorId: null,
                         patientId: null,
                         startDate: null,

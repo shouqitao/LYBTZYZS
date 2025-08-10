@@ -40,19 +40,18 @@ namespace LYBT.Module.Patients.Services
                 TotalPatients = allPatients.Count(),
                 ActivePatients = allPatients.Count(p => p.Status == CommonStatus.Enabled),
                 InactivePatients = allPatients.Count(p => p.Status == CommonStatus.Disabled),
-                MaleCount = allPatients.Count(p => p.Gender == Gender.Male),
-                FemaleCount = allPatients.Count(p => p.Gender == Gender.Female),
-                AverageAge = allPatients.Any() ? allPatients.Average(p => p.Age) : 0,
+                MalePatients = allPatients.Count(p => p.Gender == Gender.Male),
+                FemalePatients = allPatients.Count(p => p.Gender == Gender.Female),
+                AverageAge = allPatients.Any() ? (decimal)allPatients.Average(p => p.Age) : 0,
                 TotalVisits = allPatients.Sum(p => p.VisitCount),
-                AverageVisits = allPatients.Any() ? allPatients.Average(p => p.VisitCount) : 0,
+                AverageVisits = allPatients.Any() ? (decimal)allPatients.Average(p => p.VisitCount) : 0,
                 PatientsWithAllergy = allPatients.Count(p => !string.IsNullOrEmpty(p.AllergyHistory)),
                 TodayNewPatients = allPatients.Count(p => p.CreateTime.Date == today),
-                MonthNewPatients = allPatients.Count(p => p.CreateTime.Year == now.Year && p.CreateTime.Month == now.Month),
-                LostPatients = allPatients.Count(p => p.LastVisitTime.HasValue &&
-                    (now - p.LastVisitTime.Value).TotalDays > PatientConstants.InactivePatientsDefaultDays),
                 NewPatients = allPatients.Count(p =>
                     (!startDate.HasValue || p.CreateTime >= startDate) &&
-                    (!endDate.HasValue || p.CreateTime <= endDate))
+                    (!endDate.HasValue || p.CreateTime <= endDate)),
+                LostPatients = allPatients.Count(p => p.LastVisitTime.HasValue &&
+                    (now - p.LastVisitTime.Value).TotalDays > PatientConstants.InactivePatientsDefaultDays)
             };
         }
 
@@ -72,8 +71,8 @@ namespace LYBT.Module.Patients.Services
                     AgeRange = range.Range,
                     MinAge = range.Min,
                     MaxAge = range.Max == int.MaxValue ? 100 : range.Max,
-                    Count = patientsInRange.Count,
-                    Percentage = total > 0 ? (double)patientsInRange.Count / total * 100 : 0,
+                    PatientCount = patientsInRange.Count,
+                    Percentage = total > 0 ? (decimal)patientsInRange.Count / total * 100 : 0,
                     MaleCount = patientsInRange.Count(p => p.Gender == Gender.Male),
                     FemaleCount = patientsInRange.Count(p => p.Gender == Gender.Female)
                 };
@@ -95,11 +94,11 @@ namespace LYBT.Module.Patients.Services
             return new GenderDistributionDto
             {
                 MaleCount = maleCount,
-                MalePercentage = total > 0 ? (double)maleCount / total * 100 : 0,
+                MalePercentage = total > 0 ? (decimal)maleCount / total * 100 : 0,
                 FemaleCount = femaleCount,
-                FemalePercentage = total > 0 ? (double)femaleCount / total * 100 : 0,
+                FemalePercentage = total > 0 ? (decimal)femaleCount / total * 100 : 0,
                 UnknownCount = unknownCount,
-                UnknownPercentage = total > 0 ? (double)unknownCount / total * 100 : 0,
+                UnknownPercentage = total > 0 ? (decimal)unknownCount / total * 100 : 0,
                 TotalCount = total
             };
         }
@@ -121,8 +120,7 @@ namespace LYBT.Module.Patients.Services
                     var monthPatients = g.ToList();
                     return new PatientTrendDto
                     {
-                        Year = g.Key.Year,
-                        Month = g.Key.Month,
+                        Date = new DateTime(g.Key.Year, g.Key.Month, 1),
                         MonthName = $"{g.Key.Year}年{g.Key.Month}月",
                         NewPatients = monthPatients.Count,
                         VisitCount = monthPatients.Sum(p => p.VisitCount),
@@ -193,7 +191,7 @@ namespace LYBT.Module.Patients.Services
                 if (monthlyData[i - 1].NewPatients > 0)
                 {
                     monthlyData[i].GrowthRate =
-                        (double)(monthlyData[i].NewPatients - monthlyData[i - 1].NewPatients) /
+                        (decimal)(monthlyData[i].NewPatients - monthlyData[i - 1].NewPatients) /
                         monthlyData[i - 1].NewPatients * 100;
                 }
             }

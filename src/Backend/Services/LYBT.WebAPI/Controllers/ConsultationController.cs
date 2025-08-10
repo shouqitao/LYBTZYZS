@@ -55,7 +55,7 @@ namespace LYBT.WebAPI.Controllers
                     PageIndex = page,
                     PageSize = pageSize,
                     Keyword = keyword,
-                    UserId = doctorId,
+                    DoctorId = doctorId,
                     PatientId = patientId,
                     StartDate = startDate,
                     EndDate = endDate,
@@ -289,7 +289,7 @@ namespace LYBT.WebAPI.Controllers
                 var modelValidation = ValidateModel<ConsultationDetailDto>();
                 if (modelValidation != null) return modelValidation;
 
-                var result = await _consultationService.UpdateStatusAsync(id, dto.Status, dto.Reason);
+                var result = await _consultationService.UpdateStatusAsync(id, (int)dto.Status, dto.Reason);
                 if (result == null)
                 {
                     return BusinessFail<ConsultationDetailDto>("状态更新失败", ApiErrorCodes.DATA_UPDATE_FAILED);

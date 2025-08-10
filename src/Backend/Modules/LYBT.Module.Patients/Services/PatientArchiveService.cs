@@ -57,8 +57,8 @@ namespace LYBT.Module.Patients.Services
                 TotalVisits = patient.VisitCount,
                 LastVisitDate = patient.LastVisitTime,
                 FirstVisitDate = patient.CreateTime,
-                VisitRecords = new List<VisitRecordDto>(),
-                AverageVisitInterval = 0
+                VisitRecords = new List<VisitRecordDto>()
+                // AverageVisitInterval 是计算属性，会自动计算
             };
         }
 
@@ -152,13 +152,13 @@ namespace LYBT.Module.Patients.Services
                 Name = p.Name,
                 Gender = p.Gender.ToString(),
                 Age = p.Age,
-                IdNumber = p.IdNumber,
+                IdCardNumber = p.IdNumber,
                 PhoneNumber = p.PhoneNumber,
                 Address = p.Address,
                 AllergyHistory = p.AllergyHistory,
                 VisitCount = p.VisitCount,
-                LastVisitTime = p.LastVisitTime,
-                CreateTime = p.CreateTime
+                LastVisitDate = p.LastVisitTime?.ToString("yyyy-MM-dd"),
+                CreateTime = p.CreateTime.ToString("yyyy-MM-dd HH:mm:ss")
             }).ToList();
         }
 
@@ -225,11 +225,11 @@ namespace LYBT.Module.Patients.Services
         {
             var messages = new List<string>();
             
-            if (!string.IsNullOrEmpty(dto.IdNumber))
+            if (!string.IsNullOrEmpty(dto.IdCardNumber))
             {
-                if (await _patientRepository.IsIdNumberExistsAsync(dto.IdNumber))
+                if (await _patientRepository.IsIdNumberExistsAsync(dto.IdCardNumber))
                 {
-                    messages.Add($"{dto.Name} - 身份证号重复：{dto.IdNumber}");
+                    messages.Add($"{dto.Name} - 身份证号重复：{dto.IdCardNumber}");
                 }
             }
 

@@ -53,9 +53,9 @@ namespace LYBT.Module.Consultation.Services
                     consultationsQuery = consultationsQuery.Where(c => c.PatientId == query.PatientId.Value);
                 }
 
-                if (query.UserId.HasValue)
+                if (query.DoctorId.HasValue)
                 {
-                    consultationsQuery = consultationsQuery.Where(c => c.UserId == query.UserId.Value);
+                    consultationsQuery = consultationsQuery.Where(c => c.UserId == query.DoctorId.Value);
                 }
 
                 if (query.StartDate.HasValue)
@@ -68,17 +68,17 @@ namespace LYBT.Module.Consultation.Services
                     consultationsQuery = consultationsQuery.Where(c => c.ConsultationTime <= query.EndDate.Value);
                 }
 
-                if (!string.IsNullOrWhiteSpace(query.DiagnosisKeyword))
+                if (!string.IsNullOrWhiteSpace(query.Diagnosis))
                 {
                     consultationsQuery = consultationsQuery.Where(c =>
-                        c.Diagnosis.Contains(query.DiagnosisKeyword) ||
-                        c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(query.DiagnosisKeyword));
+                        c.Diagnosis.Contains(query.Diagnosis) ||
+                        c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(query.Diagnosis));
                 }
 
-                if (!string.IsNullOrWhiteSpace(query.SearchKeyword))
+                if (!string.IsNullOrWhiteSpace(query.Keyword))
                 {
                     consultationsQuery = consultationsQuery.Where(c =>
-                        c.Diagnosis.Contains(query.SearchKeyword));
+                        c.Diagnosis.Contains(query.Keyword));
                 }
 
                 // 排序
@@ -87,7 +87,7 @@ namespace LYBT.Module.Consultation.Services
                 // 分页
                 var totalCount = await consultationsQuery.CountAsync();
                 var consultations = await consultationsQuery
-                    .Skip((query.CurrentPage - 1) * query.PageSize)
+                    .Skip((query.PageIndex - 1) * query.PageSize)
                     .Take(query.PageSize)
                     .ToListAsync();
 
@@ -121,7 +121,7 @@ namespace LYBT.Module.Consultation.Services
                 {
                     Data = items,
                     TotalCount = totalCount,
-                    PageIndex = query.CurrentPage,
+                    PageIndex = query.PageIndex,
                     PageSize = query.PageSize
                 };
             }
@@ -251,22 +251,14 @@ namespace LYBT.Module.Consultation.Services
                 // 更新中医四诊
                 if (dto.Inspection != null)
                     consultation.Inspection = dto.Inspection;
-                if (dto.AuscultationOlfaction != null)
-                    consultation.AuscultationOlfaction = dto.AuscultationOlfaction;
                 if (dto.Inquiry != null)
                     consultation.Inquiry = dto.Inquiry;
                 if (dto.Palpation != null)
                     consultation.Palpation = dto.Palpation;
-                if (dto.TongueInspection != null)
-                    consultation.TongueInspection = dto.TongueInspection;
-                if (dto.PulseCondition != null)
-                    consultation.PulseCondition = dto.PulseCondition;
 
                 // 生命体征字段已移除，跳过
 
                 // 更新诊断信息
-                if (dto.TCMDiagnosis != null)
-                    consultation.TCMDiagnosis = dto.TCMDiagnosis;
                 if (!string.IsNullOrEmpty(dto.Diagnosis))
                     consultation.Diagnosis = dto.Diagnosis;
                 if (dto.TreatmentPrinciple != null)
@@ -307,7 +299,6 @@ namespace LYBT.Module.Consultation.Services
 
                 // 更新诊断信息
                 consultation.Diagnosis = dto.Diagnosis;
-                consultation.TCMDiagnosis = dto.TCMDiagnosis;
                 consultation.TreatmentPrinciple = dto.TreatmentPrinciple;
                 consultation.MedicalAdvice = dto.MedicalAdvice;
                 consultation.Duration = (int)(DateTime.Now - consultation.ConsultationTime).TotalMinutes;
@@ -529,7 +520,7 @@ namespace LYBT.Module.Consultation.Services
                 MedicalCaseId = consultation.MedicalCaseId,
                 PatientId = consultation.PatientId,
                 PatientName = patient?.Name ?? "",
-                UserId = consultation.UserId,
+                DoctorId = consultation.UserId,
                 DoctorName = doctor?.RealName ?? "",
                 Inspection = consultation.Inspection,
                 AuscultationOlfaction = consultation.AuscultationOlfaction,
@@ -541,7 +532,7 @@ namespace LYBT.Module.Consultation.Services
                 Diagnosis = consultation.Diagnosis,
                 TreatmentPrinciple = consultation.TreatmentPrinciple,
                 MedicalAdvice = consultation.MedicalAdvice,
-                ConsultationTime = consultation.ConsultationTime,
+                StartTime = consultation.ConsultationTime,
                 CreateTime = consultation.CreateTime,
                 UpdateTime = consultation.UpdateTime,
                 Remark = consultation.Remark

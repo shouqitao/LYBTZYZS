@@ -52,10 +52,11 @@ namespace LYBT.WebAPI.Controllers
                 {
                     Name = dto.Name,
                     Gender = dto.Gender,
-                    Age = dto.Age ?? 0,
-                    PhoneNumber = dto.PhoneNumber ?? dto.Phone ?? string.Empty,
-                    IDNumber = dto.IDNumber ?? string.Empty,
-                    Address = dto.Address ?? string.Empty
+                    Age = dto.Age,
+                    PhoneNumber = dto.PhoneNumber ?? string.Empty,
+                    IDNumber = string.Empty,
+                    Address = string.Empty,
+                    AllergyHistory = dto.AllergyHistory
                 };
 
                 var result = await _patientService.CreateAsync(patientDto, operatorId, operatorName);
@@ -165,7 +166,7 @@ namespace LYBT.WebAPI.Controllers
                 var validation = ValidateModelPaged<PatientDetailDto>();
                 if (validation != null) return validation;
 
-                if (query.CurrentPage <= 0 || query.PageSize <= 0 || query.PageSize > 100)
+                if (query.PageIndex <= 0 || query.PageSize <= 0 || query.PageSize > 100)
                 {
                     return ValidationFailPaged<PatientDetailDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
@@ -299,9 +300,9 @@ namespace LYBT.WebAPI.Controllers
                 var (_, _, operatorRole) = GetOperator();
                 var query = new PatientPagedQueryDto
                 {
-                    CurrentPage = page,
+                    PageIndex = page,
                     PageSize = pageSize,
-                    SearchKeyword = keyword,
+                    Keyword = keyword,
                     Name = name,
                     PhoneNumber = phoneNumber,
                     IDNumber = idNumber,

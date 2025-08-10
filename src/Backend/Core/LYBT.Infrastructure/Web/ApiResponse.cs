@@ -1,15 +1,13 @@
 using System.Text.Json.Serialization;
 
-namespace LYBT.Infrastructure.Web
-{
+namespace LYBT.Infrastructure.Web {
 
     /// <summary>
     /// 统一API响应格式 - 前后端契约标准化
     /// 所有API都应使用此格式包装响应数据
     /// </summary>
     /// <typeparam name="T">响应数据类型</typeparam>
-    public class ApiResponse<T>
-    {
+    public class ApiResponse<T> {
         /// <summary>
         /// 操作是否成功
         /// </summary>
@@ -51,10 +49,8 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 创建成功响应
         /// </summary>
-        public static ApiResponse<T> Ok(T data, string message = "操作成功")
-        {
-            return new ApiResponse<T>
-            {
+        public static ApiResponse<T> Ok(T data, string message = "操作成功") {
+            return new ApiResponse<T> {
                 Success = true,
                 Data = data,
                 Message = message
@@ -64,10 +60,8 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 创建失败响应
         /// </summary>
-        public static ApiResponse<T> Fail(string message, string? errorCode = null)
-        {
-            return new ApiResponse<T>
-            {
+        public static ApiResponse<T> Fail(string message, string? errorCode = null) {
+            return new ApiResponse<T> {
                 Success = false,
                 Data = default,
                 Message = message,
@@ -79,15 +73,12 @@ namespace LYBT.Infrastructure.Web
     /// <summary>
     /// 无数据的API响应格式
     /// </summary>
-    public class ApiResponse : ApiResponse<object>
-    {
+    public class ApiResponse : ApiResponse<object> {
         /// <summary>
         /// 创建成功响应（无数据）
         /// </summary>
-        public static ApiResponse Ok(string message = "操作成功")
-        {
-            return new ApiResponse
-            {
+        public static ApiResponse Ok(string message = "操作成功") {
+            return new ApiResponse {
                 Success = true,
                 Data = null,
                 Message = message
@@ -97,10 +88,8 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 创建失败响应（无数据）
         /// </summary>
-        public static new ApiResponse Fail(string message, string? errorCode = null)
-        {
-            return new ApiResponse
-            {
+        public static new ApiResponse Fail(string message, string? errorCode = null) {
+            return new ApiResponse {
                 Success = false,
                 Data = null,
                 Message = message,
@@ -112,18 +101,14 @@ namespace LYBT.Infrastructure.Web
     /// <summary>
     /// 分页响应格式
     /// </summary>
-    public class PagedApiResponse<T> : ApiResponse<PagedData<T>>
-    {
+    public class PagedApiResponse<T> : ApiResponse<PagedData<T>> {
         /// <summary>
         /// 创建分页成功响应
         /// </summary>
-        public static PagedApiResponse<T> Ok(IList<T> items, long totalCount, int currentPage, int pageSize, string message = "查询成功")
-        {
-            return new PagedApiResponse<T>
-            {
+        public static PagedApiResponse<T> Ok(IList<T> items, long totalCount, int currentPage, int pageSize, string message = "查询成功") {
+            return new PagedApiResponse<T> {
                 Success = true,
-                Data = new PagedData<T>
-                {
+                Data = new PagedData<T> {
                     Items = items,
                     TotalCount = totalCount,
                     CurrentPage = currentPage,
@@ -138,8 +123,7 @@ namespace LYBT.Infrastructure.Web
     /// <summary>
     /// 分页数据格式
     /// </summary>
-    public class PagedData<T>
-    {
+    public class PagedData<T> {
         /// <summary>
         /// 数据项
         /// </summary>

@@ -69,6 +69,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("医生ID")]
         public Guid DoctorId { get; set; }
 
+        /// <summary>用户ID（兼容旧属性）</summary>
+        public Guid UserId => DoctorId;
+
         /// <summary>医生姓名</summary>
         [DisplayName("医生姓名")]
         public string DoctorName { get; set; } = string.Empty;
@@ -91,7 +94,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>闻诊结果</summary>
         [StringLength(500, ErrorMessage = "闻诊结果长度不能超过500个字符")]
         [DisplayName("闻诊")]
-        public string? Auscultation { get; set; }
+        public string? AuscultationOlfaction { get; set; }
 
         /// <summary>问诊结果</summary>
         [StringLength(500, ErrorMessage = "问诊结果长度不能超过500个字符")]
@@ -103,10 +106,25 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("切诊")]
         public string? Palpation { get; set; }
 
+        /// <summary>舌诊结果</summary>
+        [StringLength(500, ErrorMessage = "舌诊结果长度不能超过500个字符")]
+        [DisplayName("舌诊")]
+        public string? TongueInspection { get; set; }
+
+        /// <summary>脉诊结果</summary>
+        [StringLength(500, ErrorMessage = "脉诊结果长度不能超过500个字符")]
+        [DisplayName("脉诊")]
+        public string? PulseCondition { get; set; }
+
         /// <summary>辨证分析</summary>
         [StringLength(800, ErrorMessage = "辨证分析长度不能超过800个字符")]
         [DisplayName("辨证分析")]
         public string? PatternDifferentiation { get; set; }
+
+        /// <summary>中医辨证</summary>
+        [StringLength(500, ErrorMessage = "中医辨证长度不能超过500个字符")]
+        [DisplayName("中医辨证")]
+        public string? TCMDiagnosis { get; set; }
 
         /// <summary>诊断结果</summary>
         [Required(ErrorMessage = "诊断结果不能为空")]
@@ -207,7 +225,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>闻诊结果</summary>
         [StringLength(500, ErrorMessage = "闻诊结果长度不能超过500个字符")]
         [DisplayName("闻诊")]
-        public string? Auscultation { get; set; }
+        public string? AuscultationOlfaction { get; set; }
 
         /// <summary>问诊结果</summary>
         [StringLength(500, ErrorMessage = "问诊结果长度不能超过500个字符")]
@@ -219,10 +237,25 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("切诊")]
         public string? Palpation { get; set; }
 
+        /// <summary>舌诊结果</summary>
+        [StringLength(500, ErrorMessage = "舌诊结果长度不能超过500个字符")]
+        [DisplayName("舌诊")]
+        public string? TongueInspection { get; set; }
+
+        /// <summary>脉诊结果</summary>
+        [StringLength(500, ErrorMessage = "脉诊结果长度不能超过500个字符")]
+        [DisplayName("脉诊")]
+        public string? PulseCondition { get; set; }
+
         /// <summary>辨证分析</summary>
         [StringLength(800, ErrorMessage = "辨证分析长度不能超过800个字符")]
         [DisplayName("辨证分析")]
         public string? PatternDifferentiation { get; set; }
+
+        /// <summary>中医辨证</summary>
+        [StringLength(500, ErrorMessage = "中医辨证长度不能超过500个字符")]
+        [DisplayName("中医辨证")]
+        public string? TCMDiagnosis { get; set; }
 
         /// <summary>诊断结果</summary>
         [StringLength(500, ErrorMessage = "诊断结果长度不能超过500个字符")]

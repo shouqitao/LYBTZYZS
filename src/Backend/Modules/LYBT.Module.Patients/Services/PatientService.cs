@@ -145,7 +145,7 @@ namespace LYBT.Module.Patients.Services
             // 使用BaseRepository的分页方法
             var pagedResult = await _patientRepository.GetPagedAsync(
                 p => string.IsNullOrEmpty(query.Name) || p.Name.Contains(query.Name),
-                query.CurrentPage, 
+                query.PageIndex, 
                 query.PageSize,
                 p => p.CreateTime,
                 false  // 按创建时间降序排列
@@ -155,7 +155,7 @@ namespace LYBT.Module.Patients.Services
             {
                 TotalCount = pagedResult.TotalCount,
                 Items = pagedResult.Items.Select(_mapper.Map<PatientDetailDto>).ToList(),
-                CurrentPage = query.CurrentPage,
+                CurrentPage = query.PageIndex,
                 PageSize = query.PageSize
             };
         }
@@ -262,7 +262,7 @@ namespace LYBT.Module.Patients.Services
             var basicQuery = new PatientPagedQueryDto
             {
                 Name = query.Name,
-                CurrentPage = query.CurrentPage,
+                PageIndex = query.PageIndex,
                 PageSize = query.PageSize
             };
             return await GetPagedAsync(basicQuery);

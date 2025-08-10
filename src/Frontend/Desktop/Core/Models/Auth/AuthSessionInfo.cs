@@ -180,14 +180,14 @@ namespace LYBT.WPF.Client.Core.Models.Auth
         {
             get
             {
-                if (string.IsNullOrEmpty(IpAddress))
+                if (string.IsNullOrEmpty(ClientIp))
                     return "未知";
 
-                var parts = IpAddress.Split('.');
+                var parts = ClientIp.Split('.');
                 if (parts.Length == 4)
                     return $"{parts[0]}.{parts[1]}.xxx.xxx";
 
-                return IpAddress.Length > 8 ? $"{IpAddress[..4]}****" : IpAddress;
+                return ClientIp.Length > 8 ? $"{ClientIp[..4]}****" : ClientIp;
             }
         }
 

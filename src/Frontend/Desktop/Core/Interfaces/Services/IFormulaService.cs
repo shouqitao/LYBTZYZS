@@ -5,6 +5,7 @@ using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using FormulaPagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.WPF.Client.Core.Models.Formulas.FormulaInfo>;
 
@@ -18,7 +19,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 分页查询验方模板
         /// </summary>
-        Task<FormulaPagedResult> SearchFormulasAsync(PaginationRequest query);
+        Task<FormulaPagedResult> SearchFormulasAsync(PagedQueryBaseDto query);
 
         /// <summary>
         /// 获取验方模板列表

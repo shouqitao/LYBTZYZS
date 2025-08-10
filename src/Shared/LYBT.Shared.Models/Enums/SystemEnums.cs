@@ -61,7 +61,15 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>未授权</summary>
         [Description("未授权")]
-        Unauthorized = 5
+        Unauthorized = 5,
+
+        /// <summary>已取消</summary>
+        [Description("已取消")]
+        Cancelled = 6,
+
+        /// <summary>超时</summary>
+        [Description("超时")]
+        Timeout = 7
     }
 
     /// <summary>

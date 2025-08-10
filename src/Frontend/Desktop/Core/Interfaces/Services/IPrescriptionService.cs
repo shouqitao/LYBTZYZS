@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.WPF.Client.Core.Interfaces.Services
@@ -16,7 +17,7 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         /// <summary>
         /// 分页查询处方
         /// </summary>
-        Task<PagedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest request);
+        Task<LYBT.WPF.Client.Core.Models.Common.PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request);
 
         /// <summary>
         /// 获取处方详情

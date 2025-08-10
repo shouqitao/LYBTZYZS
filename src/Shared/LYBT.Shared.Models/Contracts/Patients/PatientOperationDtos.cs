@@ -161,14 +161,44 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>活跃患者数（近3个月有就诊记录）</summary>
         public int ActivePatients { get; set; }
 
+        /// <summary>非活跃患者数</summary>
+        public int InactivePatients { get; set; }
+
         /// <summary>新增患者数（当月）</summary>
         public int NewPatients { get; set; }
+
+        /// <summary>今日新增患者数</summary>
+        public int TodayNewPatients { get; set; }
+
+        /// <summary>当月新增患者数</summary>
+        public int MonthNewPatients => NewPatients;
 
         /// <summary>男性患者数</summary>
         public int MalePatients { get; set; }
 
+        /// <summary>男性患者数（兼容别名）</summary>
+        public int MaleCount => MalePatients;
+
         /// <summary>女性患者数</summary>
         public int FemalePatients { get; set; }
+
+        /// <summary>女性患者数（兼容别名）</summary>
+        public int FemaleCount => FemalePatients;
+
+        /// <summary>平均年龄</summary>
+        public decimal AverageAge { get; set; }
+
+        /// <summary>总就诊次数</summary>
+        public int TotalVisits { get; set; }
+
+        /// <summary>平均就诊次数</summary>
+        public decimal AverageVisits { get; set; }
+
+        /// <summary>有过敏史的患者数</summary>
+        public int PatientsWithAllergy { get; set; }
+
+        /// <summary>流失患者数（超6个月未就诊）</summary>
+        public int LostPatients { get; set; }
 
         /// <summary>年龄分布统计</summary>
         public Dictionary<string, int> AgeGroupDistribution { get; set; } = new();

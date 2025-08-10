@@ -76,7 +76,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     PageIndex = page,
                     PageSize = pageSize,
-                    SearchKeyword = keyword
+                    Keyword = keyword
                 };
 
                 var (_, _, operatorRole) = GetOperator();

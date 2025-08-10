@@ -77,9 +77,9 @@ namespace LYBT.WebAPI.Controllers
             // 使用分页查询服务，带缓存
             var query = new HerbPagedQueryDto
             {
-                CurrentPage = page,
+                PageIndex = page,
                 PageSize = pageSize,
-                SearchKeyword = keyword,
+                Keyword = keyword,
                 Name = name,
                 Origin = origin,
                 Status = status,
