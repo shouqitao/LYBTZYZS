@@ -7,7 +7,7 @@ namespace LYBT.Models.Formula
     /// <summary>
     /// 验方实体 - 继承共享基础模型，数据库映射
     /// </summary>
-    public class FormulaModel : BaseFormulaModel
+    public class FormulaModel : BaseFormula
     {
 
         /// <summary>

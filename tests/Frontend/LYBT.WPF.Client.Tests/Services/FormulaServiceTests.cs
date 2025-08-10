@@ -12,6 +12,7 @@ using LYBT.WPF.Client.Core.Models.Formulas;
 using LYBT.WPF.Client.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -162,13 +163,13 @@ namespace LYBT.WPF.Client.Tests.Services
             };
         }
 
-        private PaginationRequest CreateTestPaginationRequest()
+        private PagedQueryBaseDto CreateTestPagedQueryBaseDto()
         {
-            return new PaginationRequest
+            return new PagedQueryBaseDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 20,
-                SearchKeyword = "感冒"
+                Keyword = "感冒"
             };
         }
 
@@ -213,12 +214,12 @@ namespace LYBT.WPF.Client.Tests.Services
         public async Task SearchFormulasAsync_WithValidQuery_ReturnsPagedResult()
         {
             // Arrange
-            var query = CreateTestPaginationRequest();
+            var query = CreateTestPagedQueryBaseDto();
             var paginatedResult = CreateTestPaginatedResult();
             var apiResponse = CreateSuccessApiResponse(paginatedResult);
 
             _mockApiService
-                .Setup(x => x.GetPagedFormulasAsync(It.IsAny<PaginationRequest>()))
+                .Setup(x => x.GetPagedFormulasAsync(It.IsAny<PagedQueryBaseDto>()))
                 .ReturnsAsync(apiResponse);
 
             // Act
@@ -237,11 +238,11 @@ namespace LYBT.WPF.Client.Tests.Services
         public async Task SearchFormulasAsync_WhenApiCallFails_ReturnsEmptyResultWithError()
         {
             // Arrange
-            var query = CreateTestPaginationRequest();
+            var query = CreateTestPagedQueryBaseDto();
             var apiResponse = CreateFailureApiResponse<PaginatedResult<FormulaDto>>();
 
             _mockApiService
-                .Setup(x => x.GetPagedFormulasAsync(It.IsAny<PaginationRequest>()))
+                .Setup(x => x.GetPagedFormulasAsync(It.IsAny<PagedQueryBaseDto>()))
                 .ReturnsAsync(apiResponse);
 
             // Act
@@ -258,10 +259,10 @@ namespace LYBT.WPF.Client.Tests.Services
         public async Task SearchFormulasAsync_WhenExceptionThrown_ReturnsErrorMessage()
         {
             // Arrange
-            var query = CreateTestPaginationRequest();
+            var query = CreateTestPagedQueryBaseDto();
 
             _mockApiService
-                .Setup(x => x.GetPagedFormulasAsync(It.IsAny<PaginationRequest>()))
+                .Setup(x => x.GetPagedFormulasAsync(It.IsAny<PagedQueryBaseDto>()))
                 .ThrowsAsync(new Exception("网络错误"));
 
             // Act

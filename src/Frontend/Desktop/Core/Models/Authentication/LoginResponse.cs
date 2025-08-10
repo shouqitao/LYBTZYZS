@@ -11,6 +11,6 @@ namespace LYBT.WPF.Client.Core.Models.Authentication
         public string Token { get; set; } = string.Empty;
 
         /// <summary>用户信息</summary>
-        public BaseUserModel User { get; set; } = new();
+        public BaseUser User { get; set; } = new();
     }
 }

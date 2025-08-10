@@ -9,7 +9,7 @@ namespace LYBT.WPF.Client.Core.Models.Formulas
     /// <summary>
     /// 验方信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class FormulaInfo : BaseFormulaModel
+    public class FormulaInfo : BaseFormula
     {
         /// <summary>分类</summary>
         public string Category { get; set; } = string.Empty;

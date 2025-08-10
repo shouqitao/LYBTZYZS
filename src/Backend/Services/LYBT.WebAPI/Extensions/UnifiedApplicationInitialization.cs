@@ -1,4 +1,3 @@
-using LYBT.Infrastructure.Authentication;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Logging;
 using LYBT.WebAPI.Services;

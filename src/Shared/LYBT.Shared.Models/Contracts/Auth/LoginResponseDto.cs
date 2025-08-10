@@ -16,6 +16,6 @@ namespace LYBT.Shared.Models.Contracts.Auth
 
         /// <summary>用户信息</summary>
         [DisplayName("用户信息")]
-        public BaseUserModel User { get; set; } = new();
+        public BaseUser User { get; set; } = new();
     }
 }

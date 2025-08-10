@@ -78,6 +78,15 @@ namespace LYBT.Module.Users.Services
         }
 
         /// <summary>
+        /// 根据用户名获取用户信息（用于登录验证后获取用户详情）
+        /// </summary>
+        public async Task<SharedUserDto?> GetByUsernameAsync(string username)
+        {
+            var model = await _userRepository.GetByUsernameAsync(username);
+            return model != null ? _mapper.Map<SharedUserDto>(model) : null;
+        }
+
+        /// <summary>
         /// 新增用户
         /// </summary>
         public async Task<SharedUserDto?> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName)

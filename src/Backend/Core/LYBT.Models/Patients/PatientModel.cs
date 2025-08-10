@@ -9,7 +9,7 @@ namespace LYBT.Models.Patients
     /// <summary>
     /// 患者档案信息实体 - 继承共享基础模型，数据库映射
     /// </summary>
-    public class PatientModel : BasePatientModel
+    public class PatientModel : BasePatient
     {
 
         /// <summary>

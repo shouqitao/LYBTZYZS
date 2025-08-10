@@ -1,6 +1,6 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Configuration;
-using LYBT.Infrastructure.Configuration.Dtos;
+using LYBT.Shared.Models.Contracts.Configuration;
 using LYBT.Shared.Models.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

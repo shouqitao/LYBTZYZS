@@ -9,7 +9,7 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions
     /// <summary>
     /// 处方信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class PrescriptionInfo : BasePrescriptionModel
+    public class PrescriptionInfo : BasePrescription
     {
         /// <summary>医疗案例ID</summary>
         public Guid MedicalCaseId { get; set; }

@@ -1,10 +1,11 @@
 using Asp.Versioning;
-using LYBT.Infrastructure.Authentication;
-using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Module.Users.Interfaces;
+using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.AspNetCore.Authorization;
@@ -23,11 +24,13 @@ namespace LYBT.WebAPI.Controllers
     public class AuthController : BaseApiController
     {
         private readonly IAuthService _authService;
+        private readonly IUserService _userService;
         private readonly IJwtAuthenticationService _jwtService;
         private readonly SysAdminHandler _sysAdminHandler;
 
         public AuthController(
             IAuthService authService,
+            IUserService userService,
             IJwtAuthenticationService jwtService,
             SysAdminHandler sysAdminHandler,
             ILogger<AuthController> logger,
@@ -35,6 +38,7 @@ namespace LYBT.WebAPI.Controllers
             : base(logger, cache)
         {
             _authService = authService;
+            _userService = userService;
             _jwtService = jwtService;
             _sysAdminHandler = sysAdminHandler;
         }
@@ -87,11 +91,21 @@ namespace LYBT.WebAPI.Controllers
 
                 // 普通用户登录
                 var localDto = MapToLocalDto(dto);
-                var user = await _authService.LoginAsync(localDto);
+                
+                // 1. 先验证身份
+                var validatedUsername = await _authService.VerifyCredentialsAsync(localDto);
+                if (validatedUsername == null)
+                {
+                    _logger.LogWarning("用户 {Username} 身份验证失败", dto.Username);
+                    return Unauthorized<LYBT.Shared.Models.Auth.LoginResponse>("用户名或密码错误", ApiErrorCodes.AUTHENTICATION_FAILED);
+                }
+                
+                // 2. 获取用户信息
+                var user = await _userService.GetByUsernameAsync(validatedUsername);
                 if (user == null)
                 {
-                    _logger.LogWarning("用户 {Username} 登录失败", dto.Username);
-                    return Unauthorized<LYBT.Shared.Models.Auth.LoginResponse>("用户名或密码错误", ApiErrorCodes.AUTHENTICATION_FAILED);
+                    _logger.LogError("身份验证成功但无法获取用户 {Username} 的详细信息", validatedUsername);
+                    return InternalError<LYBT.Shared.Models.Auth.LoginResponse>("系统错误，请联系管理员", ApiErrorCodes.SYSTEM_CONFIG_ERROR);
                 }
 
                 var token = _jwtService.GenerateToken(
@@ -104,14 +118,17 @@ namespace LYBT.WebAPI.Controllers
                 var response = new LYBT.Shared.Models.Auth.LoginResponse
                 {
                     Token = token,
-                    User = new LYBT.Shared.Models.Auth.UserInfo
+                    User = new BaseUser
                     {
                         Id = user.Id,
                         Username = user.Username,
                         RealName = user.RealName,
-                        Role = "Admin", // Role字段已移除
                         PhoneNumber = user.PhoneNumber,
-                        IsActive = user.Status == CommonStatus.Enabled
+                        Status = user.Status,
+                        CreateTime = user.CreateTime,
+                        LastLoginTime = user.LastLoginTime,
+                        UpdateTime = user.UpdateTime,
+                        Remark = user.Remark
                     }
                 };
 
@@ -169,14 +186,15 @@ namespace LYBT.WebAPI.Controllers
                 var response = new LYBT.Shared.Models.Auth.LoginResponse
                 {
                     Token = token,
-                    User = new LYBT.Shared.Models.Auth.UserInfo
+                    User = new BaseUser
                     {
                         Id = adminUser.Id,
                         Username = adminUser.Username,
                         RealName = adminUser.RealName,
-                        Role = "Admin", // Role字段已移除
                         PhoneNumber = adminUser.PhoneNumber,
-                        IsActive = adminUser.Status == CommonStatus.Enabled
+                        Status = adminUser.Status,
+                        CreateTime = adminUser.CreateTime,
+                        LastLoginTime = adminUser.LastLoginTime
                     }
                 };
 
@@ -252,32 +270,32 @@ namespace LYBT.WebAPI.Controllers
         /// 获取当前用户信息 - 统一API响应格式
         /// </summary>
         [HttpGet("current-user")]
-        public ActionResult<ApiResponse<LYBT.Shared.Models.Auth.UserInfo>> GetCurrentUser()
+        public ActionResult<ApiResponse<BaseUser>> GetCurrentUser()
         {
             try
             {
                 var (operatorId, operatorName, _) = GetOperator();
                 if (operatorId == Guid.Empty || string.IsNullOrEmpty(operatorName))
                 {
-                    return Unauthorized<LYBT.Shared.Models.Auth.UserInfo>("无效的用户身份", ApiErrorCodes.AUTHENTICATION_FAILED);
+                    return Unauthorized<BaseUser>("无效的用户身份", ApiErrorCodes.AUTHENTICATION_FAILED);
                 }
 
                 var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "User";
 
-                var userInfo = new LYBT.Shared.Models.Auth.UserInfo
+                var userInfo = new BaseUser
                 {
                     Id = operatorId,
                     Username = operatorName,
                     RealName = operatorName == "sysadmin" ? "系统管理员" : operatorName,
-                    Role = role,
-                    IsActive = true
+                    Status = CommonStatus.Enabled,
+                    CreateTime = DateTime.Now
                 };
 
                 return Success(userInfo, "获取用户信息成功");
             }
             catch (Exception ex)
             {
-                return HandleException<LYBT.Shared.Models.Auth.UserInfo>(ex, "获取当前用户信息", null);
+                return HandleException<BaseUser>(ex, "获取当前用户信息", null);
             }
         }
 

@@ -38,11 +38,7 @@ public static class ServiceCollectionExtension
     /// <returns>服务集合</returns>
     public static IServiceCollection AddAllModules(this IServiceCollection services)
     {
-        // 认证模块
-        services.AddScoped<IAuthRepository, AuthRepository>();
-        services.AddScoped<SysAdminHandler>();
-        services.AddSingleton<ILoginAttemptService, LoginAttemptService>();  // 单例，跨请求共享
-        services.AddScoped<IAuthService, AuthService>();
+        // 认证模块 - 已迁移到AuthModule.AddAuthModule()统一管理
 
         // 用户模块
         services.AddScoped<IUserService, UserService>();

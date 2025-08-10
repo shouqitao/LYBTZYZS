@@ -49,16 +49,16 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 用户登录并校验凭据，成功后返回用户信息并记录登录日志
+        /// 验证用户名和密码，成功返回用户名，失败返回null
         /// </summary>
-        public async Task<UserDto?> LoginAsync(LoginRequestDto dto)
+        public async Task<string?> VerifyCredentialsAsync(LoginRequestDto dto)
         {
             try
             {
                 // 1. 检查账户是否被锁定（防暴力破解）
-                if (_loginAttemptService.IsAccountLocked(dto.Username))
+                if (await _loginAttemptService.IsAccountLockedAsync(dto.Username))
                 {
-                    var remainingSeconds = _loginAttemptService.GetRemainingLockTime(dto.Username);
+                    var remainingSeconds = await _loginAttemptService.GetRemainingLockTimeAsync(dto.Username);
                     var remainingMinutes = Math.Ceiling(remainingSeconds / 60.0);
                     await LogFailedLogin(Guid.Empty, dto.Username, $"账户已被锁定，请{remainingMinutes}分钟后再试", dto);
                     return null;
@@ -76,7 +76,7 @@ namespace LYBT.Module.Auth.Services
                 var user = await GetUserForAuthentication(dto.Username);
                 if (user == null)
                 {
-                    _loginAttemptService.RecordFailedAttempt(dto.Username);
+                    await _loginAttemptService.RecordLoginAttemptAsync(dto.Username, false, "用户不存在或未启用");
                     await LogFailedLogin(Guid.Empty, dto.Username, "用户不存在或未启用", dto);
                     return null;
                 }
@@ -93,14 +93,15 @@ namespace LYBT.Module.Auth.Services
                 var passwordValidation = await ValidatePasswordAsync(user, dto.Password);
                 if (!passwordValidation.IsValid)
                 {
-                    _loginAttemptService.RecordFailedAttempt(dto.Username);
+                    await _loginAttemptService.RecordLoginAttemptAsync(dto.Username, false, passwordValidation.ErrorMessage, user.Id);
                     await HandleFailedLoginAsync(user, dto, passwordValidation.ErrorMessage);
                     return null;
                 }
 
-                // 6. 登录成功，清除失败尝试记录
-                _loginAttemptService.ClearAttempts(dto.Username);
-                return await HandleSuccessfulLoginAsync(user, dto);
+                // 6. 身份验证成功，清除失败尝试记录并记录登录日志
+                await _loginAttemptService.ClearFailedAttemptsAsync(dto.Username);
+                await LogSuccessfulLogin(user, dto);
+                return dto.Username; // 返回用户名而不是用户详情
             }
             catch (Exception ex)
             {

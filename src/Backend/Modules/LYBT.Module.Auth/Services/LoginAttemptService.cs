@@ -1,148 +1,463 @@
-using System.Threading.Tasks;
-using System.Linq;
-using System;
+using AutoMapper;
+using LYBT.Models.Auth;
+using LYBT.Module.Auth.Interfaces;
+using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Caching.Memory;
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace LYBT.Module.Auth.Services
 {
-
     /// <summary>
-    /// 登录尝试跟踪服务 - 用于防暴力破解
+    /// 登录尝试服务实现 - 跟踪和分析所有登录尝试
+    /// 提供登录尝试记录、风险评估、暴力破解检测等功能
     /// </summary>
-    public interface ILoginAttemptService
-    {
-        /// <summary>
-        /// 记录失败的登录尝试
-        /// </summary>
-        void RecordFailedAttempt(string username);
-
-        /// <summary>
-        /// 检查账户是否被锁定
-        /// </summary>
-        bool IsAccountLocked(string username);
-
-        /// <summary>
-        /// 清除登录尝试记录（登录成功后调用）
-        /// </summary>
-        void ClearAttempts(string username);
-
-        /// <summary>
-        /// 获取剩余锁定时间（秒）
-        /// </summary>
-        int GetRemainingLockTime(string username);
-    }
-
     public class LoginAttemptService : ILoginAttemptService
     {
+        private readonly ILoginAttemptRepository _attemptRepository;
+        private readonly IMapper _mapper;
         private readonly IMemoryCache _cache;
-        private readonly int _maxAttempts = 3;
-        private readonly int _lockoutDurationMinutes = 15;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<LoginAttemptService> _logger;
 
-        // 用于跟踪失败次数
-        private readonly ConcurrentDictionary<string, LoginAttemptInfo> _attempts = new();
+        // 配置参数
+        private readonly TimeSpan _lockoutDuration;
+        private readonly int _maxFailedAttempts;
+        private readonly TimeSpan _attemptWindow;
+        private readonly TimeSpan _bruteForceWindow;
+        private readonly int _bruteForceThreshold;
 
-        public LoginAttemptService(IMemoryCache cache)
+        public LoginAttemptService(
+            ILoginAttemptRepository attemptRepository,
+            IMapper mapper,
+            IMemoryCache cache,
+            IConfiguration configuration,
+            ILogger<LoginAttemptService> logger)
         {
+            _attemptRepository = attemptRepository;
+            _mapper = mapper;
             _cache = cache;
+            _configuration = configuration;
+            _logger = logger;
+
+            // 从配置读取参数，提供默认值
+            _lockoutDuration = TimeSpan.FromMinutes(_configuration.GetValue("Auth:LockoutDurationMinutes", 15));
+            _maxFailedAttempts = _configuration.GetValue("Auth:MaxFailedAttempts", 5);
+            _attemptWindow = TimeSpan.FromMinutes(_configuration.GetValue("Auth:AttemptWindowMinutes", 30));
+            _bruteForceWindow = TimeSpan.FromHours(_configuration.GetValue("Auth:BruteForceWindowHours", 1));
+            _bruteForceThreshold = _configuration.GetValue("Auth:BruteForceThreshold", 10);
         }
 
-        public void RecordFailedAttempt(string username)
+        /// <summary>
+        /// 记录登录尝试
+        /// </summary>
+        public async Task<BaseLoginAttempt> RecordLoginAttemptAsync(string username, bool isSuccess, 
+                                                                   string? failureReason = null, Guid? userId = null,
+                                                                   string? clientIp = null, string? userAgent = null, 
+                                                                   LoginType loginType = LoginType.Password,
+                                                                   string? location = null, string? deviceFingerprint = null)
         {
-            var key = GetNormalizedKey(username);
-            var now = DateTime.UtcNow;
+            var riskLevel = await AssessLoginRiskAsync(username, clientIp, userAgent, location, deviceFingerprint);
 
-            _attempts.AddOrUpdate(key,
-                new LoginAttemptInfo
-                {
-                    FailedAttempts = 1,
-                    FirstAttemptTime = now,
-                    LastAttemptTime = now
-                },
-                (k, existing) =>
-                {
-                    existing.FailedAttempts++;
-                    existing.LastAttemptTime = now;
-
-                    // 如果达到最大尝试次数，设置锁定时间
-                    if (existing.FailedAttempts >= _maxAttempts)
-                    {
-                        existing.LockedUntil = now.AddMinutes(_lockoutDurationMinutes);
-
-                        // 同时在缓存中设置锁定标记
-                        var cacheKey = $"login_lockout_{key}";
-                        _cache.Set(cacheKey, true, TimeSpan.FromMinutes(_lockoutDurationMinutes));
-                    }
-
-                    return existing;
-                });
-        }
-
-        public bool IsAccountLocked(string username)
-        {
-            var key = GetNormalizedKey(username);
-
-            // 先检查缓存
-            var cacheKey = $"login_lockout_{key}";
-            if (_cache.TryGetValue<bool>(cacheKey, out _))
+            var attemptModel = new LoginAttemptModel
             {
-                return true;
+                Id = Guid.NewGuid(),
+                Username = username,
+                UserId = userId,
+                AttemptTime = DateTime.Now,
+                IsSuccess = isSuccess,
+                FailureReason = failureReason,
+                ClientIp = clientIp,
+                UserAgent = userAgent,
+                LoginType = loginType,
+                RiskLevel = riskLevel,
+                Location = location,
+                DeviceFingerprint = deviceFingerprint,
+                IsSuspicious = riskLevel >= SecurityLevel.High,
+                ServerInfo = Environment.MachineName,
+                ProcessingNode = Environment.MachineName,
+                CreateTime = DateTime.Now
+            };
+
+            // 如果是失败的尝试，添加额外的分析数据
+            if (!isSuccess)
+            {
+                attemptModel.SecurityScore = CalculateSecurityScore(username, clientIp, userAgent, riskLevel);
+                attemptModel.RequiresReview = riskLevel >= SecurityLevel.High || attemptModel.SecurityScore < 30;
             }
 
-            // 再检查内存字典
-            if (_attempts.TryGetValue(key, out var attemptInfo))
+            var savedAttempt = await _attemptRepository.RecordAttemptAsync(attemptModel);
+
+            // 更新缓存中的失败计数
+            if (!isSuccess)
             {
-                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil > DateTime.UtcNow)
+                await UpdateFailureCountInCache(username, clientIp);
+            }
+            else
+            {
+                // 成功登录时清除缓存中的失败计数
+                await ClearFailedAttemptsAsync(username);
+            }
+
+            _logger.LogInformation("记录登录尝试 - 用户: {Username}, 成功: {IsSuccess}, 风险: {RiskLevel}, IP: {ClientIp}", 
+                username, isSuccess, riskLevel, clientIp);
+
+            return _mapper.Map<BaseLoginAttempt>(savedAttempt);
+        }
+
+        /// <summary>
+        /// 检查账户是否被锁定（暴力破解保护）
+        /// </summary>
+        public async Task<bool> IsAccountLockedAsync(string username)
+        {
+            var cacheKey = $"lockout:{username}";
+            if (_cache.TryGetValue(cacheKey, out DateTime lockoutEnd))
+            {
+                if (lockoutEnd > DateTime.Now)
                 {
                     return true;
                 }
-
-                // 如果锁定已过期，清理记录
-                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil <= DateTime.UtcNow)
+                else
                 {
-                    _attempts.TryRemove(key, out _);
+                    _cache.Remove(cacheKey);
                 }
+            }
+
+            // 检查最近的失败尝试次数
+            var failureCount = await _attemptRepository.GetFailureCountByUsernameAsync(username, _attemptWindow);
+            if (failureCount >= _maxFailedAttempts)
+            {
+                // 锁定账户
+                var lockoutEndTime = DateTime.Now.Add(_lockoutDuration);
+                _cache.Set(cacheKey, lockoutEndTime, _lockoutDuration);
+                
+                _logger.LogWarning("账户被锁定 - 用户: {Username}, 失败次数: {FailureCount}, 锁定至: {LockoutEnd}", 
+                    username, failureCount, lockoutEndTime);
+                
+                return true;
             }
 
             return false;
         }
 
-        public void ClearAttempts(string username)
+        /// <summary>
+        /// 获取账户剩余锁定时间（秒）
+        /// </summary>
+        public async Task<int> GetRemainingLockTimeAsync(string username)
         {
-            var key = GetNormalizedKey(username);
-            _attempts.TryRemove(key, out _);
-
-            // 同时清除缓存中的锁定标记
-            var cacheKey = $"login_lockout_{key}";
-            _cache.Remove(cacheKey);
-        }
-
-        public int GetRemainingLockTime(string username)
-        {
-            var key = GetNormalizedKey(username);
-
-            if (_attempts.TryGetValue(key, out var attemptInfo))
+            var cacheKey = $"lockout:{username}";
+            if (_cache.TryGetValue(cacheKey, out DateTime lockoutEnd))
             {
-                if (attemptInfo.LockedUntil.HasValue && attemptInfo.LockedUntil > DateTime.UtcNow)
-                {
-                    return (int)(attemptInfo.LockedUntil.Value - DateTime.UtcNow).TotalSeconds;
-                }
+                var remaining = lockoutEnd - DateTime.Now;
+                return remaining.TotalSeconds > 0 ? (int)remaining.TotalSeconds : 0;
             }
-
             return 0;
         }
 
-        private string GetNormalizedKey(string username)
+        /// <summary>
+        /// 清除用户的失败尝试记录
+        /// </summary>
+        public async Task ClearFailedAttemptsAsync(string username)
         {
-            return username?.ToLowerInvariant() ?? string.Empty;
+            var cacheKey = $"lockout:{username}";
+            _cache.Remove(cacheKey);
+            
+            var failureCacheKey = $"failures:{username}";
+            _cache.Remove(failureCacheKey);
+            
+            _logger.LogDebug("清除失败尝试记录 - 用户: {Username}", username);
         }
 
-        private class LoginAttemptInfo
+        /// <summary>
+        /// 获取用户最近的登录尝试
+        /// </summary>
+        public async Task<List<BaseLoginAttempt>> GetUserRecentAttemptsAsync(string username, TimeSpan timeSpan)
         {
-            public int FailedAttempts { get; set; }
-            public DateTime FirstAttemptTime { get; set; }
-            public DateTime LastAttemptTime { get; set; }
-            public DateTime? LockedUntil { get; set; }
+            var attempts = await _attemptRepository.GetRecentAttemptsByUsernameAsync(username, timeSpan);
+            return _mapper.Map<List<BaseLoginAttempt>>(attempts);
         }
+
+        /// <summary>
+        /// 获取IP地址最近的登录尝试
+        /// </summary>
+        public async Task<List<BaseLoginAttempt>> GetIpRecentAttemptsAsync(string ipAddress, TimeSpan timeSpan)
+        {
+            var attempts = await _attemptRepository.GetRecentAttemptsByIpAsync(ipAddress, timeSpan);
+            return _mapper.Map<List<BaseLoginAttempt>>(attempts);
+        }
+
+        /// <summary>
+        /// 获取可疑的登录尝试
+        /// </summary>
+        public async Task<List<BaseLoginAttempt>> GetSuspiciousAttemptsAsync(TimeSpan timeSpan, SecurityLevel minRiskLevel = SecurityLevel.High)
+        {
+            var attempts = await _attemptRepository.GetSuspiciousAttemptsAsync(timeSpan, minRiskLevel);
+            return _mapper.Map<List<BaseLoginAttempt>>(attempts);
+        }
+
+        /// <summary>
+        /// 获取需要审查的登录尝试
+        /// </summary>
+        public async Task<List<BaseLoginAttempt>> GetAttemptsRequiringReviewAsync()
+        {
+            var attempts = await _attemptRepository.GetAttemptsRequiringReviewAsync();
+            return _mapper.Map<List<BaseLoginAttempt>>(attempts);
+        }
+
+        /// <summary>
+        /// 标记尝试为已审查
+        /// </summary>
+        public async Task MarkAttemptAsReviewedAsync(Guid attemptId, Guid reviewedBy, string? notes = null)
+        {
+            await _attemptRepository.MarkAsReviewedAsync(attemptId, reviewedBy, notes);
+            _logger.LogInformation("标记登录尝试已审查 - 尝试ID: {AttemptId}, 审查人: {ReviewedBy}", attemptId, reviewedBy);
+        }
+
+        /// <summary>
+        /// 批量审查登录尝试
+        /// </summary>
+        public async Task BatchReviewAttemptsAsync(List<Guid> attemptIds, Guid reviewedBy, string? notes = null)
+        {
+            await _attemptRepository.MarkBatchAsReviewedAsync(attemptIds, reviewedBy, notes);
+            _logger.LogInformation("批量审查登录尝试 - 数量: {Count}, 审查人: {ReviewedBy}", attemptIds.Count, reviewedBy);
+        }
+
+        /// <summary>
+        /// 评估登录尝试风险级别
+        /// </summary>
+        public async Task<SecurityLevel> AssessLoginRiskAsync(string username, string? clientIp, string? userAgent = null, 
+                                                              string? location = null, string? deviceFingerprint = null)
+        {
+            var riskScore = 0;
+
+            // 基于IP地址的风险评估
+            if (!string.IsNullOrEmpty(clientIp))
+            {
+                // 检查IP是否在黑名单中
+                if (await IsIpBlacklistedAsync(clientIp))
+                {
+                    riskScore += 50;
+                }
+
+                // 检查该IP最近的失败尝试
+                var ipFailures = await _attemptRepository.GetFailureCountByIpAsync(clientIp, TimeSpan.FromHours(1));
+                if (ipFailures > 5) riskScore += 30;
+                else if (ipFailures > 2) riskScore += 15;
+            }
+
+            // 基于用户的风险评估
+            var userFailures = await _attemptRepository.GetFailureCountByUsernameAsync(username, TimeSpan.FromHours(1));
+            if (userFailures > 3) riskScore += 20;
+            else if (userFailures > 1) riskScore += 10;
+
+            // 基于时间的风险评估（非工作时间登录）
+            var currentHour = DateTime.Now.Hour;
+            if (currentHour < 6 || currentHour > 22)
+            {
+                riskScore += 10;
+            }
+
+            // 基于User-Agent的风险评估
+            if (string.IsNullOrEmpty(userAgent) || userAgent.Length < 20)
+            {
+                riskScore += 15;
+            }
+
+            // 根据总分数确定风险级别
+            return riskScore switch
+            {
+                >= 80 => SecurityLevel.Emergency,
+                >= 60 => SecurityLevel.Critical,
+                >= 40 => SecurityLevel.High,
+                >= 20 => SecurityLevel.Medium,
+                _ => SecurityLevel.Low
+            };
+        }
+
+        /// <summary>
+        /// 检测暴力破解攻击
+        /// </summary>
+        public async Task<bool> DetectBruteForceAttackAsync(string username, string? clientIp)
+        {
+            return await _attemptRepository.IsBruteForceAttackAsync(username, clientIp, _bruteForceWindow, _bruteForceThreshold);
+        }
+
+        /// <summary>
+        /// 获取登录统计信息
+        /// </summary>
+        public async Task<(int TotalAttempts, int SuccessfulAttempts, double SuccessRate)> GetLoginStatisticsAsync(TimeSpan timeSpan)
+        {
+            return await _attemptRepository.GetLoginStatsAsync(timeSpan);
+        }
+
+        /// <summary>
+        /// 获取攻击者TOP列表
+        /// </summary>
+        public async Task<List<(string IpAddress, int AttemptCount, int FailureCount)>> GetTopAttackingIpsAsync(TimeSpan timeSpan, int topCount = 10)
+        {
+            return await _attemptRepository.GetTopAttackingIpsAsync(timeSpan, topCount);
+        }
+
+        /// <summary>
+        /// 获取风险级别分布
+        /// </summary>
+        public async Task<Dictionary<SecurityLevel, int>> GetRiskLevelDistributionAsync(TimeSpan timeSpan)
+        {
+            return await _attemptRepository.GetRiskLevelStatsAsync(timeSpan);
+        }
+
+        /// <summary>
+        /// 获取登录方式统计
+        /// </summary>
+        public async Task<Dictionary<LoginType, int>> GetLoginTypeStatisticsAsync(TimeSpan timeSpan)
+        {
+            return await _attemptRepository.GetLoginTypeStatsAsync(timeSpan);
+        }
+
+        /// <summary>
+        /// 获取按小时统计的登录尝试
+        /// </summary>
+        public async Task<Dictionary<DateTime, int>> GetHourlyLoginAttemptsAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _attemptRepository.GetAttemptsByHourAsync(startDate, endDate);
+        }
+
+        /// <summary>
+        /// 获取用户登录历史分析
+        /// </summary>
+        public async Task<List<BaseLoginAttempt>> GetUserLoginHistoryAsync(string username, DateTime startDate, DateTime endDate)
+        {
+            var attempts = await _attemptRepository.GetUserLoginHistoryAsync(username, startDate, endDate);
+            return _mapper.Map<List<BaseLoginAttempt>>(attempts);
+        }
+
+        /// <summary>
+        /// 清理过期的登录尝试记录
+        /// </summary>
+        public async Task CleanupOldAttemptsAsync(TimeSpan retentionPeriod)
+        {
+            await _attemptRepository.CleanupOldAttemptsAsync(retentionPeriod);
+            _logger.LogInformation("清理过期登录尝试记录完成 - 保留期限: {RetentionPeriod}", retentionPeriod);
+        }
+
+        /// <summary>
+        /// 检查IP地址是否在黑名单中
+        /// </summary>
+        public async Task<bool> IsIpBlacklistedAsync(string ipAddress)
+        {
+            var cacheKey = $"blacklist:{ipAddress}";
+            return _cache.TryGetValue(cacheKey, out _);
+        }
+
+        /// <summary>
+        /// 将IP地址添加到临时黑名单
+        /// </summary>
+        public async Task BlacklistIpTemporarilyAsync(string ipAddress, TimeSpan duration, string reason)
+        {
+            var cacheKey = $"blacklist:{ipAddress}";
+            _cache.Set(cacheKey, reason, duration);
+            
+            _logger.LogWarning("IP地址加入临时黑名单 - IP: {IpAddress}, 时长: {Duration}, 原因: {Reason}", 
+                ipAddress, duration, reason);
+        }
+
+        /// <summary>
+        /// 生成登录尝试安全报告
+        /// </summary>
+        public async Task<string> GenerateSecurityReportAsync(DateTime startDate, DateTime endDate)
+        {
+            var timeSpan = endDate - startDate;
+            var stats = await GetLoginStatisticsAsync(timeSpan);
+            var riskDistribution = await GetRiskLevelDistributionAsync(timeSpan);
+            var topAttackers = await GetTopAttackingIpsAsync(timeSpan, 5);
+
+            var report = new
+            {
+                Period = new { Start = startDate, End = endDate },
+                Statistics = stats,
+                RiskDistribution = riskDistribution,
+                TopAttackingIPs = topAttackers,
+                GeneratedAt = DateTime.Now
+            };
+
+            return JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true });
+        }
+
+        /// <summary>
+        /// 分析登录模式异常
+        /// </summary>
+        public async Task<List<string>> AnalyzeLoginAnomaliesAsync(TimeSpan analysisWindow)
+        {
+            var anomalies = new List<string>();
+
+            // 检测异常高峰时段
+            var hourlyStats = await GetHourlyLoginAttemptsAsync(
+                DateTime.Now - analysisWindow, 
+                DateTime.Now);
+
+            var avgAttempts = hourlyStats.Values.Average();
+            var highTrafficHours = hourlyStats
+                .Where(kvp => kvp.Value > avgAttempts * 2)
+                .Select(kvp => kvp.Key.ToString("HH:mm"));
+
+            if (highTrafficHours.Any())
+            {
+                anomalies.Add($"异常登录高峰时段: {string.Join(", ", highTrafficHours)}");
+            }
+
+            // 检测可疑IP地址模式
+            var topAttackers = await GetTopAttackingIpsAsync(analysisWindow, 10);
+            var suspiciousIps = topAttackers.Where(ip => ip.FailureCount > ip.AttemptCount * 0.8);
+
+            if (suspiciousIps.Any())
+            {
+                anomalies.Add($"检测到 {suspiciousIps.Count()} 个可疑攻击IP地址");
+            }
+
+            return anomalies;
+        }
+
+        #region 私有辅助方法
+
+        /// <summary>
+        /// 计算安全评分
+        /// </summary>
+        private int CalculateSecurityScore(string username, string? clientIp, string? userAgent, SecurityLevel riskLevel)
+        {
+            var baseScore = 100;
+
+            // 根据风险级别扣分
+            baseScore -= (int)riskLevel * 10;
+
+            // 根据User-Agent质量扣分
+            if (string.IsNullOrEmpty(userAgent)) baseScore -= 20;
+            else if (userAgent.Length < 50) baseScore -= 10;
+
+            // 根据IP地址质量扣分
+            if (string.IsNullOrEmpty(clientIp)) baseScore -= 30;
+
+            return Math.Max(0, baseScore);
+        }
+
+        /// <summary>
+        /// 更新缓存中的失败计数
+        /// </summary>
+        private async Task UpdateFailureCountInCache(string username, string? clientIp)
+        {
+            var userKey = $"failures:{username}";
+            var currentCount = _cache.Get<int>(userKey);
+            _cache.Set(userKey, currentCount + 1, _attemptWindow);
+
+            if (!string.IsNullOrEmpty(clientIp))
+            {
+                var ipKey = $"failures:ip:{clientIp}";
+                var ipCount = _cache.Get<int>(ipKey);
+                _cache.Set(ipKey, ipCount + 1, _attemptWindow);
+            }
+        }
+
+        #endregion
     }
 }

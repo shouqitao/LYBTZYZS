@@ -8,6 +8,7 @@ using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
@@ -28,7 +29,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询处方
         /// </summary>
-        public async Task<PagedResult<PrescriptionDto>> GetPagedAsync(PaginationRequest request)
+        public async Task<PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request)
         {
             try
             {

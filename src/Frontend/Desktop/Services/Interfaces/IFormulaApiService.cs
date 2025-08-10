@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Refit;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.WPF.Client.Core.Models;
 
 namespace LYBT.WPF.Client.Services.Interfaces
@@ -17,7 +18,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 分页查询验方模板
         /// </summary>
         [Post("/api/v1/Formulas/paged")]
-        Task<Refit.ApiResponse<PagedData<FormulaDto>>> GetPagedFormulasAsync([Body] PaginationRequest query);
+        Task<Refit.ApiResponse<PagedData<FormulaDto>>> GetPagedFormulasAsync([Body] PagedQueryBaseDto query);
 
         /// <summary>
         /// 获取验方模板列表

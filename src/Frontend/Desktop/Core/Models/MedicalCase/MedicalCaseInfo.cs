@@ -8,7 +8,7 @@ namespace LYBT.WPF.Client.Core.Models.MedicalCase
     /// <summary>
     /// 医疗案例信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class MedicalCaseInfo : BaseMedicalCaseModel
+    public class MedicalCaseInfo : BaseMedicalCase
     {
         /// <summary>患者姓名（前端显示字段）</summary>
         public string PatientName { get; set; } = string.Empty;

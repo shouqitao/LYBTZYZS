@@ -13,13 +13,13 @@ namespace LYBT.WPF.Client.Controls.Users
         public static readonly DependencyProperty DataProperty =
             DependencyProperty.Register(
                 nameof(Data),
-                typeof(BaseUserModel),
+                typeof(BaseUser),
                 typeof(UserListItemControl),
                 new PropertyMetadata(null));
 
-        public BaseUserModel Data
+        public BaseUser Data
         {
-            get => (BaseUserModel)GetValue(DataProperty);
+            get => (BaseUser)GetValue(DataProperty);
             set => SetValue(DataProperty, value);
         }
 

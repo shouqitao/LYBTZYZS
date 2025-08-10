@@ -8,7 +8,7 @@ namespace LYBT.WPF.Client.Core.Models.Users
     /// <summary>
     /// 用户信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class UserInfo : BaseUserModel
+    public class UserInfo : BaseUser
     {
         /// <summary>是否选中（用于批量操作）</summary>
         public bool IsSelected { get; set; }

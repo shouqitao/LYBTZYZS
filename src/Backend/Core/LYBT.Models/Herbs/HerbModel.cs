@@ -7,9 +7,9 @@ namespace LYBT.Models.Herbs
 
     /// <summary>
     /// 药材信息实体 - 中药材基础信息管理，支持软删除策略和快速检索
-    /// 继承BaseHerbModel，添加后端特有字段
+    /// 继承BaseHerb，添加后端特有字段
     /// </summary>
-    public class HerbModel : BaseHerbModel
+    public class HerbModel : BaseHerb
     {
 
         /// <summary>

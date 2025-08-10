@@ -10,7 +10,7 @@ namespace LYBT.Models.Prescriptions
     /// <summary>
     /// 处方实体 - 继承共享基础模型，数据库映射
     /// </summary>
-    public class PrescriptionModel : BasePrescriptionModel
+    public class PrescriptionModel : BasePrescription
     {
 
         /// <summary>

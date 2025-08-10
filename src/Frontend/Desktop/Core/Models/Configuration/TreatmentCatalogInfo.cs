@@ -7,7 +7,7 @@ namespace LYBT.WPF.Client.Core.Models.Configuration
     /// <summary>
     /// 治疗目录信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class TreatmentCatalogInfo : BaseTreatmentCatalogModel
+    public class TreatmentCatalogInfo : BaseTreatmentCatalog
     {
         /// <summary>父级名称（前端显示字段）</summary>
         public string ParentName { get; set; } = string.Empty;

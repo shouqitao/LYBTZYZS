@@ -6,7 +6,7 @@ namespace LYBT.WPF.Client.Core.Models.Herbs
     /// <summary>
     /// 药材信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class HerbInfo : BaseHerbModel
+    public class HerbInfo : BaseHerb
     {
         /// <summary>总价（前端计算字段）</summary>
         public decimal TotalPrice { get; set; }

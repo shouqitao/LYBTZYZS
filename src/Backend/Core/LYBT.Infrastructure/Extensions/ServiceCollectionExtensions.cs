@@ -1,4 +1,3 @@
-using LYBT.Infrastructure.Authentication;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
@@ -80,9 +79,7 @@ namespace LYBT.Infrastructure.Extensions
                 };
             });
 
-            // 注册认证相关服务
-            services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
-            services.AddScoped<IAuthorizationService, AuthorizationService>();
+            // JWT服务已移至AuthModule中注册
 
             return services;
         }

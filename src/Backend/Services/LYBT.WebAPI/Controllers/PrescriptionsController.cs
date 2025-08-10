@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -71,9 +72,9 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 // 使用分页查询服务 (简化版本，只保留基本搜索功能)
-                var query = new LYBT.Shared.Models.Common.PaginationRequest
+                var query = new PagedQueryBaseDto
                 {
-                    CurrentPage = page,
+                    PageIndex = page,
                     PageSize = pageSize,
                     SearchKeyword = keyword
                 };

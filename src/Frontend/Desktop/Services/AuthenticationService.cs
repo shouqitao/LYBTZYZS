@@ -8,7 +8,6 @@ using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Services;
 using LYBT.WPF.Client.Core.Models;
 using LYBT.WPF.Client.Services.Interfaces;
-using LYBT.Shared.Models.Auth;
 using LYBT.Shared.Models.Core;
 using UserInfo = LYBT.WPF.Client.Core.Models.Users.UserInfo;
 using Microsoft.Extensions.Logging;
@@ -300,7 +299,7 @@ namespace LYBT.WPF.Client.Services
             _tokenManager.ClearToken();
         }
         
-        private UserInfo? ConvertToFrontendUserInfo(LYBT.Shared.Models.Auth.UserInfo? authUser)
+        private UserInfo? ConvertToFrontendUserInfo(BaseUser? authUser)
         {
             if (authUser == null)
                 return null;

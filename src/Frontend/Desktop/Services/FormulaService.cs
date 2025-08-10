@@ -11,6 +11,7 @@ using FormulaPagedResult = LYBT.WPF.Client.Core.Models.Common.PagedResult<LYBT.W
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WPF.Client.Services
@@ -30,7 +31,7 @@ namespace LYBT.WPF.Client.Services
         /// <summary>
         /// 分页查询验方模板
         /// </summary>
-        public async Task<FormulaPagedResult> SearchFormulasAsync(PaginationRequest query)
+        public async Task<FormulaPagedResult> SearchFormulasAsync(PagedQueryBaseDto query)
         {
             try
             {

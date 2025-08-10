@@ -7,7 +7,7 @@ namespace LYBT.WPF.Client.Core.Models.Consultation
     /// <summary>
     /// 看诊信息模型 - 前端专用，继承共享基础模型
     /// </summary>
-    public class ConsultationInfo : BaseConsultationModel
+    public class ConsultationInfo : BaseConsultation
     {
         /// <summary>患者姓名（前端显示字段）</summary>
         public string PatientName { get; set; } = string.Empty;

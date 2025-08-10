@@ -33,7 +33,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 获取当前用户信息
         /// </summary>
         [Get("/api/v1/auth/current-user")]
-        Task<Refit.ApiResponse<BaseUserModel>> GetCurrentUserAsync();
+        Task<Refit.ApiResponse<BaseUser>> GetCurrentUserAsync();
 
         /// <summary>
         /// 刷新JWT令牌

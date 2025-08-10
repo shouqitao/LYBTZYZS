@@ -27,6 +27,11 @@ namespace LYBT.Module.Users.Interfaces
         Task<SharedUserDto?> GetByIdAsync(Guid id);
 
         /// <summary>
+        /// 根据用户名获取用户信息（用于登录验证后获取用户详情）
+        /// </summary>
+        Task<SharedUserDto?> GetByUsernameAsync(string username);
+
+        /// <summary>
         /// 新增用户
         /// </summary>
         Task<SharedUserDto?> AddAsync(SharedUserCreateDto dto, Guid operatorId, string operatorName);

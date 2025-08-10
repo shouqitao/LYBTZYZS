@@ -18,7 +18,7 @@ namespace LYBT.Module.Herbs.Mapping
 
             // 药材实体转HerbDetailDto（API响应）
             CreateMap<HerbModel, HerbDetailDto>()
-                .IncludeBase<LYBT.Shared.Models.Core.BaseHerbModel, HerbDetailDto>();
+                .IncludeBase<LYBT.Shared.Models.Core.BaseHerb, HerbDetailDto>();
 
             // HerbCreateDto转药材实体
             CreateMap<HerbCreateDto, HerbModel>()
@@ -36,7 +36,7 @@ namespace LYBT.Module.Herbs.Mapping
 
             // 药材实体转HerbDto（列表显示）
             CreateMap<HerbModel, HerbDto>()
-                .IncludeBase<LYBT.Shared.Models.Core.BaseHerbModel, HerbDto>();
+                .IncludeBase<LYBT.Shared.Models.Core.BaseHerb, HerbDto>();
 
             // HerbImportDto转药材实体
             CreateMap<HerbImportDto, HerbModel>()
@@ -48,11 +48,11 @@ namespace LYBT.Module.Herbs.Mapping
 
             // ==================== 基础模型映射 ====================
 
-            // BaseHerbModel转HerbDetailDto
-            CreateMap<LYBT.Shared.Models.Core.BaseHerbModel, HerbDetailDto>();
+            // BaseHerb转HerbDetailDto
+            CreateMap<LYBT.Shared.Models.Core.BaseHerb, HerbDetailDto>();
 
-            // BaseHerbModel转HerbDto（列表显示）
-            CreateMap<LYBT.Shared.Models.Core.BaseHerbModel, HerbDto>();
+            // BaseHerb转HerbDto（列表显示）
+            CreateMap<LYBT.Shared.Models.Core.BaseHerb, HerbDto>();
         }
     }
 }

@@ -1,42 +1,6 @@
 namespace LYBT.Shared.Models.Common
 {
 
-    /// <summary>
-    /// 分页请求模型 - 前后端统一
-    /// </summary>
-    public class PaginationRequest
-    {
-
-        /// <summary>
-        /// 当前页码（从1开始）
-        /// </summary>
-        public int CurrentPage { get; set; } = 1;
-
-        /// <summary>
-        /// 每页大小
-        /// </summary>
-        public int PageSize { get; set; } = 10;
-
-        /// <summary>
-        /// 搜索关键词
-        /// </summary>
-        public string? SearchKeyword { get; set; }
-
-        /// <summary>
-        /// 排序字段
-        /// </summary>
-        public string? SortField { get; set; }
-
-        /// <summary>
-        /// 是否升序排列
-        /// </summary>
-        public bool SortAscending { get; set; } = true;
-
-        /// <summary>
-        /// 计算跳过的记录数
-        /// </summary>
-        public int SkipCount => (CurrentPage - 1) * PageSize;
-    }
 
     /// <summary>
     /// 分页结果模型 - 前后端统一

@@ -8,7 +8,7 @@ namespace LYBT.Models.Users
     /// <summary>
     /// 用户实体类，数据库映射，继承共享基础模型
     /// </summary>
-    public class UserModel : BaseUserModel
+    public class UserModel : BaseUser
     {
 
         /// <summary>

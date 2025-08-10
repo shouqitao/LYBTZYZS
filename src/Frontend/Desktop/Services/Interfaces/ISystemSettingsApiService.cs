@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Infrastructure.Configuration.Dtos;
+using LYBT.Shared.Models.Contracts.Configuration;
 using LYBT.Shared.Models.Common;
 using Refit;
 using LYBT.WPF.Client.Core.Models;

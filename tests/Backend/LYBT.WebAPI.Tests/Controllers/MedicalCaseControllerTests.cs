@@ -42,7 +42,7 @@ namespace LYBT.WebAPI.Tests.Controllers
         public async Task GetPaged_WithDefaultParameters_ShouldReturnPagedData()
         {
             // Arrange
-            var expectedResult = new PagedResultDto<MedicalCaseDetailDto>
+            var expectedResult = new PaginatedResult<MedicalCaseDetailDto>
             {
                 Items = new List<MedicalCaseDetailDto>
                 {
@@ -66,7 +66,7 @@ namespace LYBT.WebAPI.Tests.Controllers
             okResult.Should().NotBeNull();
             okResult!.StatusCode.Should().Be(200);
 
-            var pagedResult = okResult.Value as PagedResultDto<MedicalCaseDetailDto>;
+            var pagedResult = okResult.Value as PaginatedResult<MedicalCaseDetailDto>;
             pagedResult.Should().NotBeNull();
             pagedResult!.Items.Should().HaveCount(2);
             pagedResult.TotalCount.Should().Be(10);
@@ -79,7 +79,7 @@ namespace LYBT.WebAPI.Tests.Controllers
         public async Task GetPaged_WithCustomParameters_ShouldReturnCorrectPage(int pageIndex, int pageSize)
         {
             // Arrange
-            var expectedResult = new PagedResultDto<MedicalCaseDetailDto>
+            var expectedResult = new PaginatedResult<MedicalCaseDetailDto>
             {
                 Items = new List<MedicalCaseDetailDto>(),
                 TotalCount = 100,
@@ -98,7 +98,7 @@ namespace LYBT.WebAPI.Tests.Controllers
             var okResult = result as OkObjectResult;
             okResult.Should().NotBeNull();
 
-            var pagedResult = okResult!.Value as PagedResultDto<MedicalCaseDetailDto>;
+            var pagedResult = okResult!.Value as PaginatedResult<MedicalCaseDetailDto>;
             pagedResult!.PageIndex.Should().Be(pageIndex);
             pagedResult.PageSize.Should().Be(pageSize);
         }

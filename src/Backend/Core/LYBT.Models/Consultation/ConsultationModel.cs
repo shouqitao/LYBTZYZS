@@ -13,7 +13,7 @@ namespace LYBT.Models.Consultation
     /// 看诊实体 - 继承共享基础模型，数据库映射
     /// </summary>
     [Table("Consultations")]
-    public class ConsultationModel : BaseConsultationModel
+    public class ConsultationModel : BaseConsultation
     {
         // 导航属性
         /// <summary>

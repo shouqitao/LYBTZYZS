@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Logging;
+using LYBT.Models.Auth;
 using LYBT.Models.Consultation;
 using LYBT.Models.Formula;
 using LYBT.Models.Herbs;
@@ -31,6 +32,11 @@ namespace LYBT.Infrastructure.Data
 
         // 管理员密钥
         public DbSet<AdminSecretModel> AdminSecrets { get; set; }
+
+        // 认证管理
+        public DbSet<AuthSessionModel> AuthSessions { get; set; }
+        public DbSet<LoginAttemptModel> LoginAttempts { get; set; }
+        public DbSet<SecurityLogModel> SecurityLogs { get; set; }
 
         // 患者管理
         public DbSet<PatientModel> Patients { get; set; }
@@ -151,6 +157,7 @@ namespace LYBT.Infrastructure.Data
             // 配置各个实体的映射关系
             ConfigureUsers(modelBuilder);
             ConfigureAdminSecrets(modelBuilder);
+            ConfigureAuth(modelBuilder);
             ConfigurePatients(modelBuilder);
             // ConfigureDoctors(modelBuilder); // 功能已整合到Users
             // ConfigureRegistrations(modelBuilder); // 模块已删除
@@ -211,6 +218,100 @@ namespace LYBT.Infrastructure.Data
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Username = "sysadmin",
                 PasswordHash = "AQAAAAIAAYagAAAAEBZtKH/jLrWSCIstrn4KyQtIopjqYQNrjJ8ZTIZxjKrpJ1l0obDU19hLQMSNwBjbeQ=="
+            });
+        }
+
+        /// <summary>
+        /// 配置认证相关实体
+        /// </summary>
+        private static void ConfigureAuth(ModelBuilder modelBuilder)
+        {
+            // 认证会话配置
+            modelBuilder.Entity<AuthSessionModel>(entity =>
+            {
+                entity.ToTable("AuthSessions");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).HasMaxLength(32).IsRequired();
+                entity.Property(e => e.LoginType).HasConversion<string>();
+                entity.Property(e => e.Status).HasConversion<string>();
+                entity.Property(e => e.ClientIp).HasMaxLength(45);
+                entity.Property(e => e.UserAgent).HasMaxLength(512);
+                entity.Property(e => e.JwtTokenHash).HasMaxLength(256);
+                entity.Property(e => e.RevokeReason).HasMaxLength(200);
+                entity.Property(e => e.RefreshTokenHash).HasMaxLength(256);
+                entity.Property(e => e.ExtendedData).HasMaxLength(1000);
+                entity.Property(e => e.ServerInfo).HasMaxLength(100);
+                entity.Property(e => e.GeoLocation).HasMaxLength(200);
+                entity.Property(e => e.DeviceInfo).HasMaxLength(200);
+                entity.Property(e => e.AnomaliesDescription).HasMaxLength(500);
+                entity.HasIndex(e => e.Username);
+                entity.HasIndex(e => e.LoginTime);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.UserId);
+            });
+
+            // 登录尝试配置
+            modelBuilder.Entity<LoginAttemptModel>(entity =>
+            {
+                entity.ToTable("LoginAttempts");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).HasMaxLength(32).IsRequired();
+                entity.Property(e => e.FailureReason).HasMaxLength(200);
+                entity.Property(e => e.ClientIp).HasMaxLength(45);
+                entity.Property(e => e.UserAgent).HasMaxLength(512);
+                entity.Property(e => e.LoginType).HasConversion<string>();
+                entity.Property(e => e.RiskLevel).HasConversion<string>();
+                entity.Property(e => e.Location).HasMaxLength(100);
+                entity.Property(e => e.DeviceFingerprint).HasMaxLength(100);
+                entity.Property(e => e.ServerInfo).HasMaxLength(100);
+                entity.Property(e => e.ProcessingNode).HasMaxLength(50);
+                entity.Property(e => e.DetailedError).HasMaxLength(1000);
+                entity.Property(e => e.AdditionalData).HasMaxLength(2000);
+                entity.Property(e => e.RequestId).HasMaxLength(64);
+                entity.Property(e => e.GeoLocationDetails).HasMaxLength(300);
+                entity.Property(e => e.ThreatIndicators).HasMaxLength(500);
+                entity.Property(e => e.BlockReason).HasMaxLength(200);
+                entity.Property(e => e.UserAgentParsed).HasMaxLength(300);
+                entity.Property(e => e.ReviewNotes).HasMaxLength(500);
+                entity.HasIndex(e => e.Username);
+                entity.HasIndex(e => e.AttemptTime);
+                entity.HasIndex(e => e.IsSuccess);
+                entity.HasIndex(e => e.ClientIp);
+                entity.HasIndex(e => e.RiskLevel);
+            });
+
+            // 安全日志配置
+            modelBuilder.Entity<SecurityLogModel>(entity =>
+            {
+                entity.ToTable("SecurityLogs");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.EventType).HasConversion<string>();
+                entity.Property(e => e.Description).HasMaxLength(500).IsRequired();
+                entity.Property(e => e.Username).HasMaxLength(32);
+                entity.Property(e => e.ClientIp).HasMaxLength(45);
+                entity.Property(e => e.UserAgent).HasMaxLength(512);
+                entity.Property(e => e.Level).HasConversion<string>();
+                entity.Property(e => e.AffectedResource).HasMaxLength(200);
+                entity.Property(e => e.Result).HasConversion<string>();
+                entity.Property(e => e.Details).HasMaxLength(2000);
+                entity.Property(e => e.StackTrace).HasMaxLength(4000);
+                entity.Property(e => e.RequestData).HasMaxLength(2000);
+                entity.Property(e => e.ResponseData).HasMaxLength(2000);
+                entity.Property(e => e.HttpMethod).HasMaxLength(10);
+                entity.Property(e => e.RequestPath).HasMaxLength(500);
+                entity.Property(e => e.RequestId).HasMaxLength(64);
+                entity.Property(e => e.ProcessingNotes).HasMaxLength(1000);
+                entity.Property(e => e.NotificationMethod).HasMaxLength(50);
+                entity.Property(e => e.CategoryTags).HasMaxLength(200);
+                entity.Property(e => e.AutoAnalysisResult).HasMaxLength(1000);
+                entity.Property(e => e.RemediationSuggestions).HasMaxLength(1000);
+                entity.Property(e => e.ComplianceFlags).HasMaxLength(200);
+                entity.HasIndex(e => e.EventType);
+                entity.HasIndex(e => e.EventTime);
+                entity.HasIndex(e => e.Level);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.RequiresNotification);
+                entity.HasIndex(e => e.IsProcessed);
             });
         }
 

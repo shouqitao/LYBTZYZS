@@ -5,15 +5,15 @@ namespace LYBT.Module.Auth.Interfaces
 {
 
     /// <summary>
-    /// 登录验证服务接口
+    /// 身份认证服务接口 - 只负责身份验证，不涉及用户信息管理
     /// </summary>
     public interface IAuthService
     {
 
         /// <summary>
-        /// 验证用户名和密码
+        /// 验证用户名和密码，成功返回用户名，失败返回null
         /// </summary>
-        Task<UserDto?> LoginAsync(LoginRequestDto dto);
+        Task<string?> VerifyCredentialsAsync(LoginRequestDto dto);
 
         /// <summary>
         /// 用户登出

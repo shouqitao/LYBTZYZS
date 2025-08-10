@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using LYBT.Shared.Models.Core;
 
 namespace LYBT.Shared.Models.Auth
 {
@@ -15,6 +16,6 @@ namespace LYBT.Shared.Models.Auth
 
         /// <summary>用户信息</summary>
         [DisplayName("用户信息")]
-        public UserInfo User { get; set; } = new();
+        public BaseUser User { get; set; } = new();
     }
 }

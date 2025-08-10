@@ -1,9 +1,9 @@
-using LYBT.Infrastructure.Authentication;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
 using LYBT.Module.Users;
+using LYBT.Module.Auth;
 using LYBT.WebAPI.Services;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -232,8 +232,7 @@ public static class UnifiedServiceRegistration
         }
 
         // =========== 认证相关服务 ===========
-        services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
-        services.AddScoped<IAuthorizationService, AuthorizationService>();
+        // JWT和认证服务现已移至AuthModule中注册
 
         return services;
     }
@@ -246,13 +245,11 @@ public static class UnifiedServiceRegistration
         // 注册Users模块服务
         services.AddUsersModuleServices();
         
+        // 注册认证模块服务（UltraThink统一管理）
+        services.AddAuthModule();
+        
         // 注册所有LYBT业务模块服务
         services.AddAllModules();
-        
-        // 注册认证模块服务
-        services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthRepository, LYBT.Module.Auth.Repositories.AuthRepository>();
-        services.AddScoped<LYBT.Module.Auth.Services.SysAdminHandler>();
-        services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthService, LYBT.Module.Auth.Services.AuthService>();
 
         // 注册验方模块服务
         services.AddScoped<LYBT.Module.Formula.Interfaces.IFormulaService, LYBT.Module.Formula.Services.FormulaService>();

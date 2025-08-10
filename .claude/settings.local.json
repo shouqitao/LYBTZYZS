@@ -206,7 +206,8 @@
       "mcp__shrimp-task-manager__process_thought",
       "Bash(test:*)",
       "mcp__shrimp-task-manager__execute_task",
-      "mcp__filesystem__create_directory"
+      "mcp__filesystem__create_directory",
+      "mcp__filesystem__write_file"
     ],
     "deny": []
   }

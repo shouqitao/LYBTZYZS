@@ -11,6 +11,7 @@ using LYBT.WPF.Client.Core.Models.Common;
 using LYBT.WPF.Client.Services;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Moq;
@@ -193,11 +194,11 @@ namespace LYBT.WPF.Client.Tests.Services
         public async Task GetPagedAsync_WithValidRequest_ReturnsPagedResult()
         {
             // Arrange
-            var request = new PaginationRequest
+            var request = new PagedQueryBaseDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 20,
-                SearchKeyword = "感冒"
+                Keyword = "感冒"
             };
             var paginatedResult = CreateTestPaginatedResult();
             var apiResponse = CreateSuccessApiResponse(paginatedResult);
@@ -226,9 +227,9 @@ namespace LYBT.WPF.Client.Tests.Services
         public async Task GetPagedAsync_WhenApiCallFails_ReturnsEmptyResultWithError()
         {
             // Arrange
-            var request = new PaginationRequest
+            var request = new PagedQueryBaseDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 20
             };
             var apiResponse = CreateFailureApiResponse<PaginatedResult<PrescriptionDto>>();
@@ -255,7 +256,7 @@ namespace LYBT.WPF.Client.Tests.Services
         public async Task GetPagedAsync_WhenExceptionThrown_ReturnsEmptyResultWithError()
         {
             // Arrange
-            var request = new PaginationRequest { CurrentPage = 2, PageSize = 10 };
+            var request = new PagedQueryBaseDto { PageIndex = 2, PageSize = 10 };
 
             _mockApiService
                 .Setup(x => x.GetListAsync(
