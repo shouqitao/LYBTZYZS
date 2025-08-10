@@ -34,6 +34,11 @@ namespace LYBT.WPF.Client.Core.Interfaces.Services
         Task<ServiceResult<PrescriptionDto>> UpdateAsync(PrescriptionEditDto dto);
 
         /// <summary>
+        /// 创建或更新处方
+        /// </summary>
+        Task<ServiceResult<PrescriptionDto>> CreateOrUpdateAsync(PrescriptionCreateDto dto);
+
+        /// <summary>
         /// 删除处方
         /// </summary>
         Task<ServiceResult> DeleteAsync(Guid id);

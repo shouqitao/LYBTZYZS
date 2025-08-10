@@ -1,5 +1,6 @@
-using Bogus;
 using LYBT.Infrastructure.Options;
+using Bogus;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Models.Users;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Enums;

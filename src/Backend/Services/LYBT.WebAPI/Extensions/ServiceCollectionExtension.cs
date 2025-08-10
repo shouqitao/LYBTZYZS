@@ -51,6 +51,9 @@ public static class ServiceCollectionExtension
         // 患者模块
         services.AddScoped<IPatientService, PatientService>();
         services.AddScoped<IPatientRepository, PatientRepository>();
+        services.AddScoped<PatientValidationService>();
+        services.AddScoped<PatientArchiveService>();
+        services.AddScoped<PatientStatisticsService>();
 
         // 医生模块
         // 挂号模块

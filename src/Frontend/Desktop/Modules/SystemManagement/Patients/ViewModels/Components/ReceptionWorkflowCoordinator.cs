@@ -5,6 +5,7 @@ using Prism.Navigation.Regions;
 using Prism.Dialogs;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.MedicalCase;
+using LYBT.WPF.Client.Core.Extensions;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
@@ -107,11 +108,11 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels.Component
                 }
 
                 // 步骤3：创建医疗案例
-                var medicalCase = await CreateMedicalCaseAsync(patient.Id);
-                if (medicalCase == null)
+                var medicalCaseResult = await CreateMedicalCaseAsync(patient.Id);
+                if (medicalCaseResult == null || !medicalCaseResult.IsSuccess)
                 {
                     result.IsSuccess = false;
-                    result.Message = "创建医疗案例失败";
+                    result.Message = medicalCaseResult?.Message ?? "创建医疗案例失败";
                     return result;
                 }
 
@@ -128,7 +129,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels.Component
                 result.IsSuccess = true;
                 result.Message = "快速接待完成";
                 result.Patient = patient;
-                result.MedicalCase = medicalCase;
+                result.MedicalCase = medicalCaseResult.MedicalCase;
                 result.ShouldStartConsultation = startConsultation;
 
                 _logger.LogInformation("快速接待工作流完成：患者 {PatientName}", patient.Name);

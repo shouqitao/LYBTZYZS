@@ -3,7 +3,6 @@ using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Options;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Services;
 using LYBT.WebAPI.Middleware;
@@ -137,8 +136,8 @@ public static class UnifiedServiceRegistration
         var unifiedCacheOptions = new LYBT.Infrastructure.Performance.Cache.CacheOptions
         {
             DefaultExpiration = TimeSpan.FromMinutes(cacheOptions?.DefaultExpiryMinutes ?? 30),
-            EnableCompression = cacheOptions?.EnableCompression ?? true,
-            CompressionThreshold = cacheOptions?.CompressionThreshold ?? 1024
+            EnableCompression = cacheOptions?.Performance?.EnableCompression ?? true,
+            CompressionThreshold = cacheOptions?.Performance?.CompressionThreshold ?? 1024
         };
         
         services.AddSingleton(unifiedCacheOptions);
@@ -169,13 +168,36 @@ public static class UnifiedServiceRegistration
         
         try
         {
-            var jwtOptions = configManager.GetSection<LYBT.Infrastructure.Configuration.Options.JwtOptions>("JwtOptions");
+            // 获取JWT配置
+            var jwtSection = configuration.GetSection("JwtOptions");
+            var jwtOptions = jwtSection.Get<LYBT.Infrastructure.Configuration.Options.JwtOptions>() 
+                ?? new LYBT.Infrastructure.Configuration.Options.JwtOptions();
             
             // 从秘钥管理器获取JWT密钥
             if (string.IsNullOrEmpty(jwtOptions.Secret) || jwtOptions.Secret.Contains("${"))
             {
-                jwtOptions.Secret = secretManager.GetSecret("JWT_SECRET");
+                var jwtSecret = secretManager.GetSecret("JWT_SECRET");
+                if (!string.IsNullOrEmpty(jwtSecret))
+                {
+                    jwtOptions.Secret = jwtSecret;
+                }
+                else
+                {
+                    // 在开发环境中，如果没有找到JWT_SECRET，使用配置文件中的值
+                    if (configManager.IsDevelopment && !string.IsNullOrEmpty(jwtOptions.Secret))
+                    {
+                        // 使用配置文件中的值
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("JWT密钥配置错误：无法获取有效的JWT密钥");
+                    }
+                }
             }
+            
+            // 注册处理过的JwtOptions到DI容器
+            services.AddSingleton<Microsoft.Extensions.Options.IOptions<LYBT.Infrastructure.Configuration.Options.JwtOptions>>(
+                new Microsoft.Extensions.Options.OptionsWrapper<LYBT.Infrastructure.Configuration.Options.JwtOptions>(jwtOptions));
             
             if (!string.IsNullOrEmpty(jwtOptions.Secret))
             {
@@ -199,42 +221,14 @@ public static class UnifiedServiceRegistration
                     };
                 });
             }
+            else
+            {
+                throw new InvalidOperationException("JWT密钥为空，无法配置认证");
+            }
         }
         catch (Exception ex)
         {
-            // 如果是开发环境，使用配置文件中的值作为备用
-            if (configManager.IsDevelopment)
-            {
-                var fallbackJwtSection = configuration.GetSection("JwtOptions");
-                var fallbackJwtOptions = fallbackJwtSection.Get<LYBT.Infrastructure.Configuration.Options.JwtOptions>();
-                
-                if (fallbackJwtOptions != null && !string.IsNullOrEmpty(fallbackJwtOptions.Secret))
-                {
-                    services.AddAuthentication(options =>
-                    {
-                        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                    }).AddJwtBearer(options =>
-                    {
-                        options.TokenValidationParameters = new TokenValidationParameters
-                        {
-                            ValidateIssuer = true,
-                            ValidateAudience = true,
-                            ValidateLifetime = true,
-                            ValidateIssuerSigningKey = true,
-                            ValidIssuer = fallbackJwtOptions.Issuer,
-                            ValidAudience = fallbackJwtOptions.Audience,
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(fallbackJwtOptions.Secret)),
-                            ClockSkew = TimeSpan.FromSeconds(fallbackJwtOptions.ClockSkewSeconds)
-                        };
-                    });
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("JWT配置加载失败", ex);
-            }
+            throw new InvalidOperationException("JWT认证配置失败", ex);
         }
 
         // =========== 认证相关服务 ===========
@@ -370,7 +364,7 @@ public static class UnifiedServiceRegistration
         LYBT.Infrastructure.Configuration.IConfigurationManager configManager)
     {
         // =========== 统一日志管理 ===========
-        services.AddScoped<LYBT.Infrastructure.Logging.IUnifiedLogger, LYBT.Infrastructure.Logging.UnifiedLogger>();
+        services.AddSingleton<LYBT.Infrastructure.Logging.IUnifiedLogger, LYBT.Infrastructure.Logging.UnifiedLogger>();
         services.AddHostedService(provider => 
             (LYBT.Infrastructure.Logging.UnifiedLogger)provider.GetRequiredService<LYBT.Infrastructure.Logging.IUnifiedLogger>());
 

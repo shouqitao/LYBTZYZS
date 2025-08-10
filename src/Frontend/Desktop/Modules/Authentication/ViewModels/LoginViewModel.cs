@@ -266,22 +266,54 @@ namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
         {
             try
             {
+                // 检查_authService是否为null
+                if (_authService == null)
+                {
+                    UpdateApiStatus(false, "❌ 认证服务未初始化");
+                    return;
+                }
+
                 // 调用认证服务的健康检查接口
                 var isOnline = await _authService.CheckConnectionAsync();
 
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    IsApiOnline = isOnline;
-                    ApiStatus = isOnline ? "✅ API连接正常" : "❌ API服务不可用";
-                });
+                // 安全地更新UI
+                UpdateApiStatus(isOnline, isOnline ? "✅ API连接正常" : "❌ API服务不可用");
             }
             catch (Exception ex)
             {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                UpdateApiStatus(false, $"❌ 连接失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 安全地更新API状态
+        /// </summary>
+        private void UpdateApiStatus(bool isOnline, string statusMessage)
+        {
+            // 检查是否在UI线程
+            if (Application.Current?.Dispatcher != null)
+            {
+                if (Application.Current.Dispatcher.CheckAccess())
                 {
-                    IsApiOnline = false;
-                    ApiStatus = $"❌ 连接失败: {ex.Message}";
-                });
+                    // 已在UI线程，直接更新
+                    IsApiOnline = isOnline;
+                    ApiStatus = statusMessage;
+                }
+                else
+                {
+                    // 不在UI线程，使用Dispatcher
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        IsApiOnline = isOnline;
+                        ApiStatus = statusMessage;
+                    }));
+                }
+            }
+            else
+            {
+                // 如果Application.Current为null（设计时或单元测试），直接设置
+                IsApiOnline = isOnline;
+                ApiStatus = statusMessage;
             }
         }
 

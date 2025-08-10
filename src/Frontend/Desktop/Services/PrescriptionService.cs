@@ -257,5 +257,22 @@ namespace LYBT.WPF.Client.Services
                 return ServiceResult<PrescriptionDetailDto>.Failure($"根据医疗案例ID获取处方失败: {ex.Message}", ex);
             }
         }
+
+        /// <summary>
+        /// 创建或更新处方
+        /// </summary>
+        public async Task<ServiceResult<PrescriptionDto>> CreateOrUpdateAsync(PrescriptionCreateDto dto)
+        {
+            try
+            {
+                // 简单实现：始终创建新处方
+                // 实际应用中可能需要检查是否存在同一医疗案例的处方，然后决定创建或更新
+                return await CreateAsync(dto);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<PrescriptionDto>.Failure($"创建或更新处方失败: {ex.Message}", ex);
+            }
+        }
     }
 }

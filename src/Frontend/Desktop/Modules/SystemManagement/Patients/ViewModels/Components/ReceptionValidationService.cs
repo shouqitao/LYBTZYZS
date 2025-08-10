@@ -57,7 +57,7 @@ namespace LYBT.WPF.Client.Modules.SystemManagement.Patients.ViewModels.Component
                 Warnings.Add(warning);
             }
 
-            private void UpdateErrorMessage()
+            public void UpdateErrorMessage()
             {
                 if (Errors.Any())
                 {

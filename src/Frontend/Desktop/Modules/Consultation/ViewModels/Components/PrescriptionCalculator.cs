@@ -169,12 +169,9 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
 
             try
             {
-                foreach (var item in items)
-                {
-                    item.Subtotal = CalculateItemSubtotal(item.Quantity, item.UnitPrice);
-                }
-
-                _logger.LogDebug("批量更新处方项小计完成");
+                // Subtotal是计算属性，会自动根据Quantity和UnitPrice计算
+                // 无需手动更新，属性变更会自动触发UI更新
+                _logger.LogDebug("批量更新处方项小计完成，共{Count}项", items.Count());
             }
             catch (Exception ex)
             {

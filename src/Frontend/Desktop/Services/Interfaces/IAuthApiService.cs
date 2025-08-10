@@ -15,7 +15,7 @@ namespace LYBT.WPF.Client.Services.Interfaces
         /// 用户登录
         /// </summary>
         [Post("/api/v1/auth/login")]
-        Task<Refit.ApiResponse<LoginResponseDto>> LoginAsync([Body] LoginRequest loginRequest);
+        Task<Refit.ApiResponse<LYBT.WPF.Client.Core.Models.ApiResponse<LoginResponseDto>>> LoginAsync([Body] LoginRequest loginRequest);
 
         /// <summary>
         /// 用户登出

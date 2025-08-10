@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Options;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Caching.Memory;
 using FluentAssertions;
 using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;

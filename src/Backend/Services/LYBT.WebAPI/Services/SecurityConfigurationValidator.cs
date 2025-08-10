@@ -1,4 +1,6 @@
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
+using AuthOptions = LYBT.Infrastructure.Options.AuthOptions;
+using SecurityOptions = LYBT.Infrastructure.Configuration.Options.SecurityOptions;
 using Microsoft.Extensions.Options;
 using System.Net;
 

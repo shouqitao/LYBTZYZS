@@ -46,25 +46,28 @@ namespace LYBT.WPF.Client.Services
                 async () => await _authApiService.LoginAsync(clientLoginRequest)
             );
 
-            if (result.IsSuccess && result.Data != null && !string.IsNullOrEmpty(result.Data.Token))
+            // 处理双重包装：Refit.ApiResponse<ApiResponse<LoginResponseDto>>
+            if (result.IsSuccess && result.Data != null && result.Data.Success && result.Data.Data != null && !string.IsNullOrEmpty(result.Data.Data.Token))
             {
                 _isLoggedIn = true;
-                _tokenManager.SetToken(result.Data.Token);
+                _tokenManager.SetToken(result.Data.Data.Token);
 
                 // 将BaseUserModel转换为前端UserInfo模型
-                _currentUser = ConvertBaseUserModelToFrontend(result.Data.User);
+                _currentUser = ConvertBaseUserModelToFrontend(result.Data.Data.User);
 
                 // 转换DTO为API契约类型
                 var authResponse = new LYBT.Shared.Models.Auth.LoginResponse
                 {
-                    Token = result.Data.Token,
-                    User = ConvertBaseUserModelToAuthUserInfo(result.Data.User)
+                    Token = result.Data.Data.Token,
+                    User = ConvertBaseUserModelToAuthUserInfo(result.Data.Data.User)
                 };
 
                 return ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>.Success(authResponse);
             }
 
-            return ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>.Failure(result.ErrorMessage ?? "登录失败", result.Exception);
+            // 从内层ApiResponse获取错误信息
+            var errorMessage = result.Data?.Message ?? result.ErrorMessage ?? "登录失败";
+            return ServiceResult<LYBT.Shared.Models.Auth.LoginResponse>.Failure(errorMessage, result.Exception);
         }
 
         public async Task<ServiceResult> LogoutAsync()
@@ -111,10 +114,6 @@ namespace LYBT.WPF.Client.Services
         {
             try
             {
-                // 使用简单的HTTP客户端进行健康检查，避免Refit的复杂性
-                using var httpClient = new System.Net.Http.HttpClient();
-                httpClient.Timeout = TimeSpan.FromSeconds(3); // 3秒超时
-
                 // 忽略SSL证书错误（仅用于开发环境）
                 var handler = new System.Net.Http.HttpClientHandler();
                 handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;

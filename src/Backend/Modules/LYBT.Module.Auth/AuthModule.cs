@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;

@@ -1,10 +1,11 @@
+using LYBT.Infrastructure.Options;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
 using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Shared.Models.Enums;
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Models.Users;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;

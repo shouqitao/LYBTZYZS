@@ -10,6 +10,7 @@ using Refit;
 using AutoMapper;
 using LYBT.WPF.Client.Services.Interfaces;
 using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Interfaces;
 using LYBT.WPF.Client.Services;
 using LYBT.WPF.Client.Core.Configuration;
 using LYBT.WPF.Client.Core.Mapping;
@@ -36,6 +37,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
             RegisterDialogs(containerRegistry);
+            RegisterViewModels(containerRegistry);
             RegisterViews(containerRegistry);
         }
 
@@ -54,8 +56,8 @@ namespace LYBT.WPF.Client.Shell.Extensions
             // 注册日志工厂
             containerRegistry.RegisterSingleton<ILoggerFactory>(() => loggerFactory);
 
-            // 注册泛型日志器
-            containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
+            // 注册泛型日志器 - 简单注册，让DI容器自动解析依赖
+            containerRegistry.RegisterSingleton(typeof(ILogger<>), typeof(Logger<>));
         }
 
         /// <summary>
@@ -98,8 +100,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             });
 
             // 注册缓存服务
-            // TODO: 实现MemoryCacheService或使用替代方案
-            // containerRegistry.RegisterSingleton<ICacheService, MemoryCacheService>();
+            containerRegistry.RegisterSingleton<ICacheService, MemoryCacheService>();
         }
 
         /// <summary>
@@ -131,6 +132,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             RegisterAuthenticatedApiService<IBackupApiService>(containerRegistry);
             RegisterAuthenticatedApiService<IConsultationApiService>(containerRegistry);
             RegisterAuthenticatedApiService<IPrescriptionApiService>(containerRegistry);
+            RegisterAuthenticatedApiService<IMedicalCaseApiService>(containerRegistry);
 
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.WPF.Client.Core.Services.IApiService, LYBT.WPF.Client.Services.ApiService>();
@@ -199,7 +201,8 @@ namespace LYBT.WPF.Client.Shell.Extensions
                 (typeof(IHerbService), typeof(HerbService)),
                 (typeof(IFormulaService), typeof(FormulaService)),
                 (typeof(IConsultationService), typeof(ConsultationService)),
-                (typeof(IPrescriptionService), typeof(PrescriptionService))
+                (typeof(IPrescriptionService), typeof(PrescriptionService)),
+                (typeof(IMedicalCaseService), typeof(MedicalCaseService))
             };
 
             foreach (var (interfaceType, implementationType) in domainServices)
@@ -216,6 +219,7 @@ namespace LYBT.WPF.Client.Shell.Extensions
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, SimplePrescriptionPrintService>();
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
             containerRegistry.RegisterSingleton<IPrescriptionValidationService, PrescriptionValidationService>();
+            containerRegistry.RegisterSingleton<IIDCardReaderService, MockIDCardReaderService>();
         }
 
         /// <summary>
@@ -230,12 +234,47 @@ namespace LYBT.WPF.Client.Shell.Extensions
         }
         
         /// <summary>
+        /// 注册ViewModels - 关键：让ViewModelLocator能自动装配
+        /// </summary>
+        private static void RegisterViewModels(IContainerRegistry containerRegistry)
+        {
+            // 注册Shell ViewModels
+            containerRegistry.Register<LYBT.WPF.Client.Shell.ViewModels.HomeViewModel>();
+            containerRegistry.Register<LYBT.WPF.Client.Shell.ViewModels.TestHomeViewModel>();
+            containerRegistry.Register<LYBT.WPF.Client.Shell.ViewModels.DiagnosticHomeViewModel>();
+            
+            // 注册其他ViewModels（如果需要）
+            // 注意：MainWindowViewModel通过构造函数注入，已经在App.xaml.cs中处理
+        }
+        
+        /// <summary>
         /// 注册视图
         /// </summary>
         private static void RegisterViews(IContainerRegistry containerRegistry)
         {
-            // 注册主页视图
-            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.HomeView>();
+            // 注册主页视图，明确指定导航名称为"HomeView"
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.HomeView>("HomeView");
+            
+            // 注册诊断版主页（用于调试ViewModelLocator）
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.DiagnosticHomeView>("DiagnosticHomeView");
+            
+            // 注册安全版主页（防故障，确保能显示）
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.SafeHomeView>("SafeHomeView");
+            
+            // 注册测试主页用于调试DI问题
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.TestHomeView>("TestHomeView");
+            
+            // 注册完整功能主页（无任何依赖，保证显示）
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.FullHomeView>("FullHomeView");
+            
+            // 注册临时工作版主页（无DI问题）
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.WorkingHomeView>("WorkingHomeView");
+            
+            // 注册极简版HomeView用于排查
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.SimpleHomeView>("SimpleHomeView");
+            
+            // 注册测试视图
+            containerRegistry.RegisterForNavigation<LYBT.WPF.Client.Shell.Views.TestView>("TestView");
         }
     }
 }

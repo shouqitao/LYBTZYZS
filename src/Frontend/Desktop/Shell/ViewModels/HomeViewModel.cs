@@ -88,7 +88,7 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             set => SetProperty(ref _statusMessage, value);
         }
 
-        private string _currentDateTime;
+        private string _currentDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         public string CurrentDateTime
         {
             get => _currentDateTime;
@@ -180,6 +180,10 @@ namespace LYBT.WPF.Client.Shell.ViewModels
         {
             try
             {
+                // 先设置默认值，确保界面能显示
+                WelcomeMessage = "欢迎使用系统";
+                SubTitle = "加载中...";
+                
                 // 获取当前用户信息
                 var currentUser = await _authService.GetCurrentUserAsync();
                 if (currentUser != null)
@@ -199,9 +203,31 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                         IsAdminRole = false;
                         SubTitle = "医生工作台";
                         
-                        // 加载今日统计
-                        await LoadTodayStatisticsAsync();
+                        // 尝试加载今日统计，但不让它阻塞界面显示
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await LoadTodayStatisticsAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "加载今日统计失败");
+                                // 设置默认统计值
+                                TodayCompletedCount = 0;
+                                TodayInProgressCount = 0;
+                                TodayTotalAmount = 0;
+                            }
+                        });
                     }
+                }
+                else
+                {
+                    // 如果无法获取用户信息，设置默认显示
+                    WelcomeMessage = "用户信息获取失败";
+                    IsAdminRole = true; // 默认显示管理员界面
+                    IsDoctorRole = false;
+                    SubTitle = "系统管理工作台（默认）";
                 }
 
                 UpdateDateTime();
@@ -209,6 +235,12 @@ namespace LYBT.WPF.Client.Shell.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "初始化主页失败");
+                // 即使出错也要设置基本的界面状态
+                WelcomeMessage = "初始化失败，请重试";
+                IsAdminRole = true; // 默认显示管理员界面
+                IsDoctorRole = false;
+                SubTitle = "系统管理工作台（错误恢复）";
+                UpdateDateTime();
             }
         }
 

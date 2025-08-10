@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 

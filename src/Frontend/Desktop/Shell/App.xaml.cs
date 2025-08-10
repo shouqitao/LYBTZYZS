@@ -4,12 +4,14 @@ using System;
 using System.Windows;
 using System.Net.Http;
 using LYBT.WPF.Client.Shell.Views;
+using LYBT.WPF.Client.Shell.ViewModels;
 using LYBT.WPF.Client.Shell.Extensions;
 using LYBT.WPF.Client.Modules.Authentication;
 using LYBT.WPF.Client.Modules.SystemManagement;
 using LYBT.WPF.Client.Modules.Consultation;
 using LYBT.WPF.Client.Modules.MedicalCase;
 using Prism.Modularity;
+using Prism.Mvvm;
 
 namespace LYBT.WPF.Client.Shell
 {
@@ -27,6 +29,25 @@ namespace LYBT.WPF.Client.Shell
         {
             // 使用扩展方法统一注册所有服务
             containerRegistry.RegisterAllServices();
+            
+            // 显式配置ViewModelLocator映射 - 解决ViewModelLocator.AutoWireViewModel失败的问题
+            ConfigureViewModelLocator();
+        }
+        
+        protected override void ConfigureViewModelLocator()
+        {
+            base.ConfigureViewModelLocator();
+            
+            // 显式注册View和ViewModel的映射关系
+            ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
+            ViewModelLocationProvider.Register<TestHomeView, TestHomeViewModel>();
+            ViewModelLocationProvider.Register<DiagnosticHomeView, DiagnosticHomeViewModel>();
+            
+            // 也可以使用类型字符串注册（备用方案）
+            ViewModelLocationProvider.Register(
+                typeof(HomeView).ToString(),
+                () => Container.Resolve<HomeViewModel>()
+            );
         }
 
         protected override void OnInitialized()

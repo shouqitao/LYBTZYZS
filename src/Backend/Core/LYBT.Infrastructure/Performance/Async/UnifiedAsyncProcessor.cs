@@ -475,8 +475,18 @@ namespace LYBT.Infrastructure.Performance.Async
             await _cleanupTimer.DisposeAsync();
             await _statisticsTimer.DisposeAsync();
             
-            // 取消所有任务
-            _globalCancellationSource.Cancel();
+            // 安全取消所有任务
+            try
+            {
+                if (!_globalCancellationSource.IsCancellationRequested)
+                {
+                    _globalCancellationSource.Cancel();
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                // CancellationTokenSource已经被释放，忽略异常
+            }
             
             // 等待所有任务完成或取消
             try
@@ -728,7 +738,19 @@ namespace LYBT.Infrastructure.Performance.Async
 
         public void Dispose()
         {
-            _globalCancellationSource?.Cancel();
+            try
+            {
+                // 防止重复调用Cancel导致ObjectDisposedException
+                if (_globalCancellationSource != null && !_globalCancellationSource.IsCancellationRequested)
+                {
+                    _globalCancellationSource.Cancel();
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                // CancellationTokenSource已经被释放，忽略异常
+            }
+            
             _globalCancellationSource?.Dispose();
             _workerSemaphore?.Dispose();
             _cleanupTimer?.Dispose();

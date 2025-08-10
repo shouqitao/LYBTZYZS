@@ -1,10 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.WPF.Client.Core.Interfaces.Services;
 using LYBT.WPF.Client.Core.Models.Consultation;
 using LYBT.WPF.Client.Core.Models.Prescriptions;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
 {
@@ -84,10 +86,11 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
         {
             try
             {
-                var existingPrescription = await _prescriptionService.GetByMedicalCaseIdAsync(MedicalCaseId);
+                var result = await _prescriptionService.GetByMedicalCaseIdAsync(MedicalCaseId);
                 
-                if (existingPrescription != null)
+                if (result.IsSuccess && result.Data != null)
                 {
+                    var existingPrescription = result.Data;
                     _logger.LogDebug("找到现有处方数据，开始加载");
                     
                     // 加载基础信息
@@ -111,7 +114,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
                                 Quantity = item.Quantity,
                                 Unit = item.Unit,
                                 UnitPrice = item.UnitPrice,
-                                Subtotal = item.Subtotal,
+                                // Subtotal会自动计算，无需手动赋值
                                 Remark = item.Remark ?? string.Empty
                             };
                             
@@ -155,29 +158,30 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
                 IsLoading = true;
                 _logger.LogInformation("开始保存处方数据");
 
-                var prescription = new PrescriptionInfo
+                var prescriptionCreateDto = new PrescriptionCreateDto
                 {
-                    Id = Guid.NewGuid(),
-                    MedicalCaseId = MedicalCaseId,
-                    PrescriptionNo = PrescriptionNo,
+                    PatientId = Guid.Empty, // 暂时使用空值，需要从MedicalCaseId获取
+                    DoctorId = Guid.Empty,  // 暂时使用空值，需要获取当前医生
+                    ConsultationId = MedicalCaseId, // 假设MedicalCaseId是看诊ID
+                    Diagnosis = "中医诊断", // 需要从医疗案例获取
                     DosageCount = DosageCount,
+                    Quantity = DosageCount,
                     Usage = Usage,
-                    MedicalAdvice = MedicalAdvice,
+                    TotalAmount = PrescriptionItems.Sum(x => x.Quantity * x.UnitPrice) * DosageCount * Discount,
+                    Advice = MedicalAdvice,
                     Remark = Remark,
-                    Discount = Discount,
-                    Items = PrescriptionItems.Select(item => new PrescriptionItemInfo
+                    Items = PrescriptionItems.Select(item => new PrescriptionItemCreateDto
                     {
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,
                         Quantity = item.Quantity,
                         Unit = item.Unit,
                         UnitPrice = item.UnitPrice,
-                        Subtotal = item.Subtotal,
                         Remark = item.Remark
                     }).ToList()
                 };
 
-                var result = await _prescriptionService.CreateOrUpdateAsync(prescription);
+                var result = await _prescriptionService.CreateAsync(prescriptionCreateDto);
                 if (result != null)
                 {
                     HasChanges = false;

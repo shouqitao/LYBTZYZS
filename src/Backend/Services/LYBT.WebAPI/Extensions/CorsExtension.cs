@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace LYBT.WebAPI.Extensions;

@@ -104,6 +104,15 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
         }
         
         /// <summary>
+        /// 备注信息
+        /// </summary>
+        public string Remark 
+        { 
+            get => _item.Remark; 
+            set { _item.Remark = value; RaisePropertyChanged(); }
+        }
+        
+        /// <summary>
         /// 显示文本（药材名 + 剂量）
         /// </summary>
         public string DisplayText => _item.DisplayText;
@@ -154,6 +163,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
             Unit = "g";
             UnitPrice = 0;
             Source = "";
+            Remark = "";
         }
 
         /// <summary>
@@ -179,7 +189,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels
                 Quantity = Quantity,
                 Unit = Unit,
                 UnitPrice = UnitPrice,
-                ImportSource = Source
+                ImportSource = Source,
+                Remark = Remark
             });
         }
 

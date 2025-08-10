@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.WebAPI.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;

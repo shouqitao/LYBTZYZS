@@ -184,8 +184,25 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                 return;
             }
 
+            // 判断用户角色
+            string userRole;
+            if (CurrentUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                userRole = "管理员";
+            }
+            else if (!string.IsNullOrEmpty(CurrentUser.LicenseNumber) || !string.IsNullOrEmpty(CurrentUser.Specialty))
+            {
+                // 有执业证书号或专长的是医生
+                userRole = "用户"; // RoleNavigationConfig中"用户"对应医生界面
+            }
+            else
+            {
+                // 默认为医生用户（看诊界面）
+                userRole = "用户";
+            }
+
             // 使用配置类统一处理角色导航
-            var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(CurrentUser.Username == "sysadmin" ? "管理员" : "用户");
+            var roleDisplay = RoleNavigationConfig.GetRoleDisplayName(userRole);
             Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
 
             if (_regionManager != null)
@@ -204,29 +221,35 @@ namespace LYBT.WPF.Client.Shell.ViewModels
                         _regionManager.Regions["LoginRegion"].RemoveAll();
                     }
 
-                    // 导航到统一的主页，主页会根据角色显示不同内容
-                    _regionManager.RequestNavigate("ContentRegion", "HomeView");
+                    // 根据角色导航到对应的主视图
+                    var mainViewName = RoleNavigationConfig.GetMainViewName(userRole);
+                    _regionManager.RequestNavigate("ContentRegion", mainViewName, navigationResult =>
+                    {
+                        if (!navigationResult.Success)
+                        {
+                            // 如果导航失败，尝试SafeHomeView作为后备
+                            _regionManager.RequestNavigate("ContentRegion", "SafeHomeView", fallbackResult =>
+                            {
+                                if (!fallbackResult.Success)
+                                {
+                                    var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(userRole, CurrentUser.RealName);
+                                    _commonDialogService.ShowWarningAsync($"{welcomeMessage}\n\n注意：主页模块加载失败。", "登录成功").GetAwaiter().GetResult();
+                                }
+                            });
+                        }
+                    });
                 }
                 catch (Exception ex)
                 {
-                    // 如果主页视图不存在，尝试导航到旧的视图
-                    var mainViewName = RoleNavigationConfig.GetMainViewName(CurrentUser.Username == "sysadmin" ? "管理员" : "用户");
-                    try
-                    {
-                        _regionManager.RequestNavigate("ContentRegion", mainViewName);
-                    }
-                    catch
-                    {
-                        // 显示欢迎消息
-                        var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Username == "sysadmin" ? "管理员" : "用户", CurrentUser.RealName);
-                        _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：主页模块加载失败。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
-                    }
+                    // 显示欢迎消息和错误
+                    var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(userRole, CurrentUser.RealName);
+                    _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：主页模块加载失败。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
                 }
             }
             else
             {
                 // 显示欢迎消息
-                var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(CurrentUser.Username == "sysadmin" ? "管理员" : "用户", CurrentUser.RealName);
+                var welcomeMessage = RoleNavigationConfig.GetWelcomeMessage(userRole, CurrentUser.RealName);
                 _commonDialogService.ShowWarningAsync($"RegionManager为空\n{welcomeMessage}", "登录成功").GetAwaiter().GetResult();
             }
         }

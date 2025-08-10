@@ -128,6 +128,12 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public decimal TotalPrice { get; set; }
         public decimal TotalWeight { get; set; }
         public string? Remark { get; set; }
+        
+        /// <summary>小计金额</summary>
+        public decimal Subtotal { get; set; }
+        
+        /// <summary>用法说明</summary>
+        public string? Usage { get; set; }
     }
 
     /// <summary>

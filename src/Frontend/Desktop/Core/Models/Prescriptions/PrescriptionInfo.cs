@@ -11,6 +11,9 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions
     /// </summary>
     public class PrescriptionInfo : BasePrescriptionModel
     {
+        /// <summary>医疗案例ID</summary>
+        public Guid MedicalCaseId { get; set; }
+
         /// <summary>患者姓名（前端显示字段）</summary>
         public string PatientName { get; set; } = string.Empty;
 
@@ -19,6 +22,23 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions
 
         /// <summary>处方编号（前端业务字段）</summary>
         public string PrescriptionNumber { get; set; } = string.Empty;
+
+        /// <summary>处方编号别名（兼容性）</summary>
+        public string PrescriptionNo 
+        { 
+            get => PrescriptionNumber; 
+            set => PrescriptionNumber = value; 
+        }
+
+        /// <summary>医嘱别名（兼容性）</summary>
+        public string? MedicalAdvice 
+        { 
+            get => Advice; 
+            set => Advice = value; 
+        }
+
+        /// <summary>折扣率（1.0表示无折扣）</summary>
+        public decimal Discount { get; set; } = 1.0m;
 
         /// <summary>处方项目（药材明细）</summary>
         public List<PrescriptionItemInfo> Items { get; set; } = new();

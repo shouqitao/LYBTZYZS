@@ -26,6 +26,7 @@ namespace LYBT.WPF.Client.Core.Models.Prescriptions
         public string Unit { get; set; } = "g";
         public decimal UnitPrice { get; set; }
         public string? ImportSource { get; set; }
+        public string Remark { get; set; } = "";
         
         // 计算属性
         public decimal Subtotal => Quantity * UnitPrice;

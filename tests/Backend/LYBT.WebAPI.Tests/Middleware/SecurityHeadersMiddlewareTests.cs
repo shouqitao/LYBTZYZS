@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using LYBT.WebAPI.Middleware;
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using FluentAssertions;
 
 namespace LYBT.WebAPI.Tests.Middleware

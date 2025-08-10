@@ -1,0 +1,192 @@
+using Prism.Ioc;
+using Prism.DryIoc;
+using System;
+using System.Windows;
+using System.Net.Http;
+using LYBT.WPF.Client.Shell.Views;
+using LYBT.WPF.Client.Shell.ViewModels;
+using LYBT.WPF.Client.Shell.Extensions;
+using LYBT.WPF.Client.Modules.Authentication;
+using LYBT.WPF.Client.Modules.SystemManagement;
+using LYBT.WPF.Client.Modules.Consultation;
+using LYBT.WPF.Client.Modules.MedicalCase;
+using LYBT.WPF.Client.Core.Services;
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using Prism.Modularity;
+using Prism.Mvvm;
+using Serilog;
+
+namespace LYBT.WPF.Client.Shell
+{
+    /// <summary>
+    /// App.xaml 的交互逻辑 - 集成UltraThink错误处理系统
+    /// </summary>
+    public partial class App : PrismApplication
+    {
+        private IGlobalExceptionHandler? _globalExceptionHandler;
+        private IUserNotificationService? _userNotificationService;
+        
+        protected override Window CreateShell()
+        {
+            var mainWindow = Container.Resolve<MainWindow>();
+            
+            // 初始化用户通知服务
+            _userNotificationService = Container.Resolve<IUserNotificationService>();
+            _userNotificationService.Initialize(mainWindow);
+            
+            return mainWindow;
+        }
+
+        protected override void RegisterTypes(IContainerRegistry containerRegistry)
+        {
+            // 首先注册错误处理和日志系统
+            containerRegistry.RegisterErrorHandlingAndLogging();
+            
+            // 使用重构版本的服务注册（如果存在）
+            try
+            {
+                containerRegistry.RegisterAllServicesRefactored();
+            }
+            catch
+            {
+                // 回退到旧版本
+                containerRegistry.RegisterAllServices();
+            }
+            
+            // 显式配置ViewModelLocator映射
+            ConfigureViewModelLocator();
+        }
+        
+        protected override void ConfigureViewModelLocator()
+        {
+            base.ConfigureViewModelLocator();
+            
+            // 显式注册View和ViewModel的映射关系
+            ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
+            ViewModelLocationProvider.Register<TestHomeView, TestHomeViewModel>();
+            ViewModelLocationProvider.Register<DiagnosticHomeView, DiagnosticHomeViewModel>();
+            
+            // 也可以使用类型字符串注册（备用方案）
+            ViewModelLocationProvider.Register(
+                typeof(HomeView).ToString(),
+                () => Container.Resolve<HomeViewModel>()
+            );
+        }
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+            
+            // 初始化全局异常处理器
+            InitializeGlobalExceptionHandling();
+            
+            // 记录应用启动
+            var loggingService = Container.Resolve<IStructuredLoggingService>();
+            loggingService.LogBusinessEvent("ApplicationStarted", new
+            {
+                Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(),
+                Environment = Environment.MachineName,
+                User = Environment.UserName,
+                StartTime = DateTime.Now
+            });
+        }
+        
+        protected override void OnExit(ExitEventArgs e)
+        {
+            try
+            {
+                // 记录应用退出
+                var loggingService = Container.Resolve<IStructuredLoggingService>();
+                loggingService?.LogBusinessEvent("ApplicationShutdown", new
+                {
+                    ExitCode = e.ApplicationExitCode,
+                    ShutdownTime = DateTime.Now
+                });
+                
+                // 注销全局异常处理器
+                _globalExceptionHandler?.UnregisterGlobalHandlers();
+                
+                // 刷新日志
+                Log.CloseAndFlush();
+            }
+            catch
+            {
+                // 忽略关闭时的错误
+            }
+            
+            base.OnExit(e);
+        }
+
+        protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+        {
+            // 配置模块目录
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(AuthenticationModule),
+                ModuleType = typeof(AuthenticationModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(SystemManagementModule),
+                ModuleType = typeof(SystemManagementModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(ConsultationModule),
+                ModuleType = typeof(ConsultationModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(MedicalCaseModule),
+                ModuleType = typeof(MedicalCaseModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+
+            base.ConfigureModuleCatalog(moduleCatalog);
+        }
+        
+        private void InitializeGlobalExceptionHandling()
+        {
+            try
+            {
+                // 获取全局异常处理器
+                _globalExceptionHandler = Container.Resolve<IGlobalExceptionHandler>();
+                _globalExceptionHandler.RegisterGlobalHandlers();
+                
+                // 记录初始化成功
+                var loggingService = Container.Resolve<IStructuredLoggingService>();
+                loggingService.LogInformation("全局异常处理系统初始化成功");
+            }
+            catch (Exception ex)
+            {
+                // 如果错误处理服务初始化失败，使用基本的错误处理
+                System.Diagnostics.Debug.WriteLine($"初始化错误处理服务失败: {ex.Message}");
+                
+                // 使用基本的MessageBox显示错误
+                MessageBox.Show(
+                    $"系统初始化失败: {ex.Message}\n\n请联系技术支持。", 
+                    "严重错误", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+                
+                // 记录到Windows事件日志
+                try
+                {
+                    System.Diagnostics.EventLog.WriteEntry("LYBT", 
+                        $"应用初始化失败: {ex}", 
+                        System.Diagnostics.EventLogEntryType.Error);
+                }
+                catch
+                {
+                    // 忽略事件日志写入失败
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,544 @@
+using FluentValidation;
+using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.WPF.Client.Core.Logging;
+using LYBT.WPF.Client.Core.Mvvm;
+using LYBT.WPF.Client.Core.Security;
+using LYBT.WPF.Client.Core.Services;
+using LYBT.WPF.Client.Core.Validation;
+using LYBT.WPF.Client.Services.Interfaces;
+using LYBT.Shared.Models.Auth;
+using Prism.Events;
+using Prism.Regions;
+using System;
+using System.ComponentModel;
+using System.Security;
+using System.Threading.Tasks;
+using System.Windows.Input;
+
+namespace LYBT.WPF.Client.Modules.Authentication.ViewModels
+{
+    /// <summary>
+    /// 重构后的登录视图模型 - 遵循UltraThink标准
+    /// 展示了ObservableObject、AsyncRelayCommand、FluentValidation的综合使用
+    /// </summary>
+    public class LoginViewModelRefactored : ValidationBase<LoginViewModelRefactored>
+    {
+        #region 依赖注入的服务
+
+        private readonly IAuthenticationService _authService;
+        private readonly IApiHealthMonitor _apiHealthMonitor;
+        private readonly ISecurePasswordManager _passwordManager;
+        private readonly IStructuredLoggingService _logger;
+        private readonly IUserNotificationService _notification;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IRegionManager _regionManager;
+
+        #endregion
+        
+        #region 私有字段
+
+        private string? _username;
+        private bool _rememberMe;
+        private bool _isApiAvailable;
+        private string? _apiStatusMessage;
+        private string? _loginMessage;
+        private bool _isLoginInProgress;
+
+        #endregion
+        
+        #region 属性
+
+        /// <summary>
+        /// 用户名
+        /// </summary>
+        public string? Username
+        {
+            get => _username;
+            set => SetProperty(ref _username, value);
+        }
+
+        /// <summary>
+        /// 记住我
+        /// </summary>
+        public bool RememberMe
+        {
+            get => _rememberMe;
+            set => SetProperty(ref _rememberMe, value);
+        }
+
+        /// <summary>
+        /// API是否可用
+        /// </summary>
+        public bool IsApiAvailable
+        {
+            get => _isApiAvailable;
+            private set
+            {
+                if (SetProperty(ref _isApiAvailable, value))
+                {
+                    // 通知命令状态变化
+                    (LoginCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// API状态消息
+        /// </summary>
+        public string? ApiStatusMessage
+        {
+            get => _apiStatusMessage;
+            private set => SetProperty(ref _apiStatusMessage, value);
+        }
+
+        /// <summary>
+        /// 登录消息
+        /// </summary>
+        public string? LoginMessage
+        {
+            get => _loginMessage;
+            private set => SetProperty(ref _loginMessage, value);
+        }
+
+        /// <summary>
+        /// 是否正在登录
+        /// </summary>
+        public bool IsLoginInProgress
+        {
+            get => _isLoginInProgress;
+            private set => SetProperty(ref _isLoginInProgress, value);
+        }
+
+        #endregion
+        
+        #region 命令
+
+        /// <summary>
+        /// 登录命令
+        /// </summary>
+        public ICommand LoginCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 取消命令
+        /// </summary>
+        public ICommand CancelCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 刷新API状态命令
+        /// </summary>
+        public ICommand RefreshApiStatusCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 清除凭据命令
+        /// </summary>
+        public ICommand ClearCredentialsCommand { get; private set; } = null!;
+
+        #endregion
+        
+        #region 构造函数
+
+        public LoginViewModelRefactored(
+            IAuthenticationService authService,
+            IApiHealthMonitor apiHealthMonitor,
+            ISecurePasswordManager passwordManager,
+            IStructuredLoggingService logger,
+            IUserNotificationService notification,
+            IEventAggregator eventAggregator,
+            IRegionManager regionManager)
+        {
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _apiHealthMonitor = apiHealthMonitor ?? throw new ArgumentNullException(nameof(apiHealthMonitor));
+            _passwordManager = passwordManager ?? throw new ArgumentNullException(nameof(passwordManager));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _notification = notification ?? throw new ArgumentNullException(nameof(notification));
+            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+
+            // 初始化命令
+            InitializeCommands();
+
+            // 订阅API健康状态变化
+            SubscribeToApiHealth();
+
+            // 加载保存的凭据
+            LoadSavedCredentials();
+
+            _logger.LogInformation("登录视图模型初始化完成");
+        }
+
+        #endregion
+        
+        #region 初始化方法
+
+        private void InitializeCommands()
+        {
+            // 登录命令 - 带防抖功能
+            LoginCommand = new AsyncRelayCommand(
+                ExecuteLoginAsync,
+                CanExecuteLogin,
+                HandleLoginError)
+                .Debounce(TimeSpan.FromMilliseconds(500));
+
+            // 取消命令
+            CancelCommand = new RelayCommand(ExecuteCancel);
+
+            // 刷新API状态命令
+            RefreshApiStatusCommand = new AsyncRelayCommand(
+                ExecuteRefreshApiStatusAsync,
+                errorHandler: HandleApiStatusError);
+
+            // 清除凭据命令
+            ClearCredentialsCommand = new RelayCommand(ExecuteClearCredentials);
+        }
+
+        private void SubscribeToApiHealth()
+        {
+            _apiHealthMonitor.StatusChanged += OnApiHealthStatusChanged;
+            
+            // 启动初始检查
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(500); // 短暂延迟避免UI初始化冲突
+                await _apiHealthMonitor.CheckHealthAsync();
+            });
+        }
+
+        private void LoadSavedCredentials()
+        {
+            try
+            {
+                // 从安全存储加载凭据
+                var savedUsername = SecureCredentialManager.GetSavedUsername();
+                if (!string.IsNullOrEmpty(savedUsername))
+                {
+                    Username = savedUsername;
+                    RememberMe = true;
+                    _logger.LogTrace("加载保存的用户名: {Username}", savedUsername);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "加载保存的凭据失败");
+            }
+        }
+
+        #endregion
+        
+        #region 命令执行方法
+
+        private async Task ExecuteLoginAsync()
+        {
+            try
+            {
+                // 验证输入
+                if (!await ValidateAsync())
+                {
+                    var error = GetFirstError();
+                    await _notification.ShowWarningAsync(error ?? "请检查输入信息");
+                    return;
+                }
+
+                IsLoginInProgress = true;
+                LoginMessage = "正在登录...";
+
+                using (_logger.BeginPerformanceLog("UserLogin"))
+                {
+                    // 执行登录
+                    var loginResult = await _passwordManager.UsePasswordAsync(async password =>
+                    {
+                        var loginRequest = new LoginRequest
+                        {
+                            Username = Username!,
+                            Password = password,
+                            RememberMe = RememberMe
+                        };
+                        return await _authService.LoginAsync(loginRequest);
+                    });
+
+                    if (loginResult.IsSuccess && loginResult.Data != null)
+                    {
+                        // 记录成功登录
+                        _logger.LogAudit("Login", "User", Username!, null, new { RememberMe });
+                        _logger.LogBusinessEvent("UserLoggedIn", new 
+                        { 
+                            Username = Username,
+                            Timestamp = DateTime.Now 
+                        });
+
+                        // 保存凭据（如果选择记住）
+                        if (RememberMe)
+                        {
+                            SecureCredentialManager.SaveUsername(Username!);
+                        }
+
+                        // 导航到主界面
+                        await NavigateToMainView();
+
+                        // 显示成功通知
+                        await _notification.ShowSuccessAsync($"欢迎，{loginResult.Data.User?.RealName ?? Username}！");
+                    }
+                    else
+                    {
+                        // 记录失败
+                        _logger.LogWarning("登录失败: {Username}, 原因: {Reason}", 
+                            Username, loginResult.ErrorMessage);
+
+                        // 显示错误
+                        LoginMessage = loginResult.ErrorMessage;
+                        await _notification.ShowErrorAsync(
+                            loginResult.ErrorMessage ?? "登录失败，请检查用户名和密码",
+                            Core.Exceptions.ErrorSeverity.Warning);
+
+                        // 清除密码
+                        _passwordManager.ClearPassword();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "登录过程发生异常");
+                throw; // 让全局处理器处理
+            }
+            finally
+            {
+                IsLoginInProgress = false;
+                LoginMessage = null;
+            }
+        }
+
+        private bool CanExecuteLogin()
+        {
+            return IsApiAvailable && 
+                   !IsLoginInProgress && 
+                   !string.IsNullOrWhiteSpace(Username) &&
+                   _passwordManager.HasPassword();
+        }
+
+        private void HandleLoginError(Exception ex)
+        {
+            _logger.LogError(ex, "登录命令执行失败");
+            
+            var userMessage = ex switch
+            {
+                TimeoutException => "登录超时，请检查网络连接",
+                UnauthorizedAccessException => "认证失败，请检查用户名和密码",
+                _ => "登录失败，请稍后重试"
+            };
+            
+            _ = _notification.ShowErrorAsync(userMessage, Core.Exceptions.ErrorSeverity.Error);
+        }
+
+        private async Task ExecuteRefreshApiStatusAsync()
+        {
+            ApiStatusMessage = "正在检查服务器状态...";
+            await _apiHealthMonitor.CheckHealthAsync();
+        }
+
+        private void HandleApiStatusError(Exception ex)
+        {
+            _logger.LogWarning(ex, "API状态检查失败");
+            ApiStatusMessage = "无法连接到服务器";
+            IsApiAvailable = false;
+        }
+
+        private void ExecuteCancel()
+        {
+            if (IsLoginInProgress)
+            {
+                // 取消正在进行的登录
+                (LoginCommand as AsyncRelayCommand)?.Cancel();
+            }
+            else
+            {
+                // 退出应用
+                _eventAggregator.GetEvent<ApplicationExitEvent>().Publish();
+            }
+        }
+
+        private void ExecuteClearCredentials()
+        {
+            Username = null;
+            RememberMe = false;
+            _passwordManager.ClearPassword();
+            SecureCredentialManager.ClearSavedCredentials();
+            
+            _logger.LogInformation("用户凭据已清除");
+            _ = _notification.ShowInfoAsync("保存的登录信息已清除");
+        }
+
+        #endregion
+        
+        #region 导航方法
+
+        private async Task NavigateToMainView()
+        {
+            await Task.Run(() =>
+            {
+                _regionManager.RequestNavigate("ContentRegion", "MainView");
+            });
+        }
+
+        #endregion
+
+        #region 事件处理
+
+        private void OnApiHealthStatusChanged(object? sender, ApiHealthStatusChangedEventArgs e)
+        {
+            IsApiAvailable = e.IsHealthy;
+            ApiStatusMessage = e.IsHealthy 
+                ? "服务器连接正常" 
+                : $"服务器不可用: {e.ErrorMessage}";
+            
+            if (!e.IsHealthy)
+            {
+                _logger.LogWarning("API健康检查失败: {Error}", e.ErrorMessage);
+            }
+        }
+
+        /// <summary>
+        /// 处理密码输入（从View调用）
+        /// </summary>
+        public void SetPassword(SecureString securePassword)
+        {
+            _passwordManager.SetSecurePassword(securePassword);
+            (LoginCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        }
+
+        #endregion
+
+        #region 验证
+
+        /// <summary>
+        /// 创建验证器
+        /// </summary>
+        protected override IValidator<LoginViewModelRefactored>? CreateTypedValidator()
+        {
+            return new LoginViewModelValidator(_passwordManager);
+        }
+
+        /// <summary>
+        /// 登录视图模型验证器
+        /// </summary>
+        private class LoginViewModelValidator : AbstractValidator<LoginViewModelRefactored>
+        {
+            private readonly ISecurePasswordManager _passwordManager;
+
+            public LoginViewModelValidator(ISecurePasswordManager passwordManager)
+            {
+                _passwordManager = passwordManager;
+
+                RuleFor(x => x.Username)
+                    .NotEmpty().WithMessage("用户名不能为空")
+                    .Length(3, 20).WithMessage("用户名长度应在3-20个字符之间")
+                    .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("用户名只能包含字母、数字和下划线");
+
+                // 密码验证通过PasswordManager处理
+                RuleFor(x => x)
+                    .Must(vm => _passwordManager.HasPassword())
+                    .WithMessage("密码不能为空")
+                    .WithName("Password");
+            }
+        }
+
+        #endregion
+
+        #region IDisposable
+
+        private bool _disposed;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // 取消订阅
+                    _apiHealthMonitor.StatusChanged -= OnApiHealthStatusChanged;
+                    
+                    // 清理密码
+                    _passwordManager.ClearPassword();
+                    
+                    // 取消正在进行的操作
+                    if (LoginCommand is IAsyncCommand asyncCommand && asyncCommand.IsExecuting)
+                    {
+                        asyncCommand.Cancel();
+                    }
+                }
+                
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+    }
+
+    #region 辅助类
+
+    /// <summary>
+    /// 安全凭据管理器
+    /// </summary>
+    internal static class SecureCredentialManager
+    {
+        private const string UsernameKey = "LYBT_SavedUsername";
+        
+        public static void SaveUsername(string username)
+        {
+            // 实际应该使用Windows Credential Manager或其他安全存储
+            Microsoft.Win32.Registry.CurrentUser
+                .CreateSubKey(@"Software\LYBT")
+                ?.SetValue(UsernameKey, username);
+        }
+        
+        public static string? GetSavedUsername()
+        {
+            return Microsoft.Win32.Registry.CurrentUser
+                .OpenSubKey(@"Software\LYBT")
+                ?.GetValue(UsernameKey) as string;
+        }
+        
+        public static void ClearSavedCredentials()
+        {
+            Microsoft.Win32.Registry.CurrentUser
+                .OpenSubKey(@"Software\LYBT", true)
+                ?.DeleteValue(UsernameKey, false);
+        }
+    }
+
+    /// <summary>
+    /// 应用退出事件
+    /// </summary>
+    public class ApplicationExitEvent : PubSubEvent { }
+
+    /// <summary>
+    /// 基础中继命令（同步版本）
+    /// </summary>
+    public class RelayCommand : ICommand
+    {
+        private readonly Action _execute;
+        private readonly Func<bool>? _canExecute;
+        
+        public RelayCommand(Action execute, Func<bool>? canExecute = null)
+        {
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute;
+        }
+        
+        public event EventHandler? CanExecuteChanged
+        {
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
+        }
+        
+        public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
+        
+        public void Execute(object? parameter) => _execute();
+    }
+
+    #endregion
+}

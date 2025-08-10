@@ -1,9 +1,10 @@
+using LYBT.Infrastructure.Options;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Caching.Memory;
 using FluentAssertions;
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Services;
 using LYBT.Module.Auth.Tests.Base;
 using LYBT.Shared.Models.Contracts.Auth;

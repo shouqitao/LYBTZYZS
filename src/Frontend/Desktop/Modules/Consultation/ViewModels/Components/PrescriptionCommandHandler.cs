@@ -233,16 +233,9 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
                         HerbName = herbItem.Name,
                         Quantity = 10m, // 默认数量
                         Unit = herbItem.Unit ?? "g",
-                        UnitPrice = herbItem.Price,
-                        Subtotal = 0m // 将由计算器更新
+                        UnitPrice = herbItem.Price
+                        // Subtotal会自动计算，无需手动赋值
                     };
-
-                    // 使用计算器更新小计
-                    if (_calculator != null)
-                    {
-                        prescriptionItem.Subtotal = _calculator.CalculateItemSubtotal(
-                            prescriptionItem.Quantity, prescriptionItem.UnitPrice);
-                    }
 
                     _dataManager.AddPrescriptionItem(prescriptionItem);
                 }
@@ -319,15 +312,15 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
                         HerbName = item.HerbName,
                         Quantity = item.Quantity,
                         Unit = item.Unit,
-                        UnitPrice = item.UnitPrice,
-                        Subtotal = _calculator?.CalculateItemSubtotal(item.Quantity, item.UnitPrice) ?? 0m
+                        UnitPrice = item.UnitPrice
+                        // Subtotal会自动计算，无需手动赋值
                     };
 
                     _dataManager.AddPrescriptionItem(prescriptionItem);
                 }
 
                 RecalculatePrice();
-                _logger.LogInformation("成功导入验方: {FormulaName}", formula.Name);
+                _logger.LogInformation("成功导入验方: {FormulaName}", (string)formula.Name);
             }
             catch (Exception ex)
             {
@@ -396,8 +389,8 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
                         HerbName = item.HerbName,
                         Quantity = item.Quantity,
                         Unit = item.Unit,
-                        UnitPrice = item.UnitPrice,
-                        Subtotal = item.Subtotal
+                        UnitPrice = item.UnitPrice
+                        // Subtotal会自动计算，无需手动赋值
                     };
 
                     _dataManager.AddPrescriptionItem(prescriptionItem);
@@ -654,7 +647,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
                 { "Title", title },
                 { "Message", message }
             };
-            _dialogService.ShowDialog("ErrorDialog", parameters, null);
+            _dialogService.ShowDialog("ErrorDialog", parameters, (Action<IDialogResult>)null!);
         }
 
         /// <summary>
@@ -667,7 +660,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
                 { "Title", title },
                 { "Message", message }
             };
-            _dialogService.ShowDialog("WarningDialog", parameters, null);
+            _dialogService.ShowDialog("WarningDialog", parameters, (Action<IDialogResult>)null!);
         }
 
         /// <summary>
@@ -680,7 +673,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
                 { "Title", title },
                 { "Message", message }
             };
-            _dialogService.ShowDialog("InfoDialog", parameters, null);
+            _dialogService.ShowDialog("InfoDialog", parameters, (Action<IDialogResult>)null!);
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.ComponentModel.DataAnnotations;

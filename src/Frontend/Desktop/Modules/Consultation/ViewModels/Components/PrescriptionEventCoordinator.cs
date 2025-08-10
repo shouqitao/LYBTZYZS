@@ -67,7 +67,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
 
                 // 订阅导航事件
                 _eventAggregator.GetEvent<NavigationEvent>()
-                    .Subscribe(OnNavigation, ThreadOption.UIThread);
+                    .Subscribe(OnNavigation, ThreadOption.UIThread, false, null);
 
                 // 订阅处方相关的专门事件
                 _eventAggregator.GetEvent<PrescriptionChangedEvent>()
@@ -98,7 +98,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
         {
             try
             {
-                if (step.StepType != StepType.Prescription || _dataManager == null)
+                if (step != WorkflowStep.Prescription || _dataManager == null)
                     return;
 
                 _logger.LogDebug("处理处方步骤保存事件");
@@ -122,17 +122,17 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
         /// <summary>
         /// 处理数据变更事件
         /// </summary>
-        private void OnDataChanged(DataChangeInfo changeInfo)
+        private void OnDataChanged(DataChangedEventArgs changeInfo)
         {
             try
             {
-                if (changeInfo.SourceType != "Prescription")
+                if (changeInfo.Source != "Prescription")
                     return;
 
-                _logger.LogDebug("处理处方数据变更事件: {ChangeType}", changeInfo.ChangeType);
+                _logger.LogDebug("处理处方数据变更事件: {DataType}", changeInfo.DataType);
 
                 // 根据变更类型执行相应操作
-                switch (changeInfo.ChangeType)
+                switch (changeInfo.DataType)
                 {
                     case "ItemAdded":
                     case "ItemRemoved":
@@ -420,6 +420,30 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
             }
         }
 
+        /// <summary>
+        /// 发布处方导入事件
+        /// </summary>
+        public void PublishPrescriptionImported()
+        {
+            try
+            {
+                _eventAggregator.GetEvent<PrescriptionImportedEvent>()
+                    .Publish(new PrescriptionImportedInfo
+                    {
+                        MedicalCaseId = _dataManager?.MedicalCaseId ?? Guid.Empty,
+                        ImportType = "Formula",
+                        ImportedAt = DateTime.Now,
+                        ItemCount = _dataManager?.PrescriptionItems.Count ?? 0
+                    });
+
+                _logger.LogDebug("发布处方导入事件");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布处方导入事件失败");
+            }
+        }
+
         #endregion
 
         #region 辅助方法
@@ -513,13 +537,6 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
         public DateTime ChangedAt { get; set; } = DateTime.Now;
     }
 
-    public class NavigationInfo
-    {
-        public string FromStep { get; set; } = string.Empty;
-        public string ToStep { get; set; } = string.Empty;
-        public Guid MedicalCaseId { get; set; }
-        public DateTime NavigatedAt { get; set; } = DateTime.Now;
-    }
 
     public class PrescriptionChangeInfo
     {
@@ -591,6 +608,14 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
         public DateTime ImportedAt { get; set; } = DateTime.Now;
     }
 
+    public class PrescriptionImportedInfo
+    {
+        public Guid MedicalCaseId { get; set; }
+        public string ImportType { get; set; } = string.Empty;
+        public int ItemCount { get; set; }
+        public DateTime ImportedAt { get; set; } = DateTime.Now;
+    }
+
     #endregion
 
     #region 事件定义（需要在事件聚合器中注册）
@@ -604,6 +629,7 @@ namespace LYBT.WPF.Client.Modules.Consultation.ViewModels.Components
     public class HerbAddedCompleteEvent : PubSubEvent<HerbAddedCompleteInfo> { }
     public class FormulaImportedEvent : PubSubEvent<FormulaImportedInfo> { }
     public class FormulaImportedCompleteEvent : PubSubEvent<FormulaImportedCompleteInfo> { }
+    public class PrescriptionImportedEvent : PubSubEvent<PrescriptionImportedInfo> { }
 
     #endregion
 }
