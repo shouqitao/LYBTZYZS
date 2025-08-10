@@ -15,6 +15,57 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **查看 `CLAUDE.local.md`** 了解用户特定的开发环境配置
 - **使用一致的命名约定、文件结构和架构模式**
 
+## 🚀 Serena工具初始化
+
+### initial_instructions 命令
+
+在开始新的开发会话时，如果需要使用Serena工具，请执行初始化命令：
+
+```
+initial_instructions
+```
+
+### Serena工具功能
+
+Serena是一个智能开发辅助工具，提供以下功能：
+- **代码分析**: 深度分析项目代码结构和依赖关系
+- **智能建议**: 基于上下文提供代码优化建议
+- **自动重构**: 协助进行代码重构和优化
+- **文档生成**: 自动生成技术文档和API文档
+
+### 使用场景
+
+1. **开始新功能开发时**
+   ```
+   initial_instructions
+   # 初始化Serena工具环境
+   # 加载项目上下文
+   # 准备智能辅助功能
+   ```
+
+2. **进行代码重构时**
+   ```
+   initial_instructions --refactor
+   # 启用重构模式
+   # 分析代码质量
+   # 提供重构建议
+   ```
+
+3. **生成文档时**
+   ```
+   initial_instructions --docs
+   # 扫描代码注释
+   # 生成API文档
+   # 更新技术文档
+   ```
+
+### 注意事项
+
+- 首次使用时需要初始化Serena环境
+- 初始化会加载项目配置和历史上下文
+- 建议在每个新会话开始时执行初始化
+- 初始化完成后，Serena功能将在整个会话中可用
+
 ## 🧱 代码结构与模块化
 
 ### 文件大小限制
