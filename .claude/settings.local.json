@@ -235,7 +235,8 @@
       "Bash(if [ -f \"$file\" ])",
       "Bash(then)",
       "Bash(git tag:*)",
-      "Bash(git merge-base:*)"
+      "Bash(git merge-base:*)",
+      "Bash(tree:*)"
     ],
     "deny": []
   }
