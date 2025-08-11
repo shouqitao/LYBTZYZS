@@ -13,9 +13,9 @@ namespace LYBT.Desktop.Shell.Views
     /// </summary>
     public partial class SafeHomeView : UserControl
     {
-        private readonly IRegionManager _regionManager;
-        private readonly IAuthenticationService _authService;
-        private readonly ICommonDialogService _dialogService;
+        private readonly IRegionManager _regionManager = null!;
+        private readonly IAuthenticationService _authService = null!;
+        private readonly ICommonDialogService _dialogService = null!;
         private readonly DispatcherTimer _timer;
 
         public SafeHomeView()
