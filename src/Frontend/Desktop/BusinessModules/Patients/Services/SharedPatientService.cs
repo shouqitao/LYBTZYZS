@@ -6,6 +6,7 @@ using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Desktop.Shared;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Patients.Shared.Services
 {
@@ -96,7 +97,7 @@ namespace LYBT.Desktop.Patients.Shared.Services
             // 验证必填字段
             bool isComplete = !string.IsNullOrEmpty(patient.Name) &&
                              !string.IsNullOrEmpty(patient.PhoneNumber) &&
-                             patient.Gender != null &&
+                             patient.Gender != Gender.Unknown &&
                              patient.Age > 0;
 
             return new ServiceResult<bool> 

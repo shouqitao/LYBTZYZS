@@ -139,7 +139,7 @@ namespace LYBT.Desktop.Users.Shared.ViewModels
                 // 新增模式固定为普通用户角�?                SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生�? };
             }
 
-            SaveCommand = DelegateCommand.FromAsyncHandler(ExecuteSave, CanExecuteSave);
+            SaveCommand = new DelegateCommand(async () => await ExecuteSave(), CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
 
             // 监听属性变化以更新命令状态

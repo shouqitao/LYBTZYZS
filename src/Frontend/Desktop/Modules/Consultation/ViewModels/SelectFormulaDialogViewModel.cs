@@ -229,7 +229,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
         }
 
-        private async Task ExecuteSearchAsync()
+        private Task ExecuteSearchAsync()
         {
             try
             {
@@ -265,6 +265,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 IsLoading = false;
             }
+
+            return Task.CompletedTask;
         }
 
         private void FilterByCategory()
