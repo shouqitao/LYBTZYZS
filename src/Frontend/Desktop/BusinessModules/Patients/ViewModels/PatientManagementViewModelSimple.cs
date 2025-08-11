@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Services.Interfaces;
-using LYBT.Desktop.BusinessModules.Patients.Base;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;

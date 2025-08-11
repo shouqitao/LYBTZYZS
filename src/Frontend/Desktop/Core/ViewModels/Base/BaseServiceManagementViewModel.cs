@@ -4,18 +4,17 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.Desktop.Core.ViewModels;
-using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Users.Base
+namespace LYBT.Desktop.Core.ViewModels.Base
 {
     /// <summary>
     /// 系统管理模块基础视图模型（使用服务层）
+    /// 统一的基类，所有管理模块都应该继承此类
     /// </summary>
     /// <typeparam name="TModel">数据模型类型</typeparam>
     /// <typeparam name="TService">服务接口类型</typeparam>
