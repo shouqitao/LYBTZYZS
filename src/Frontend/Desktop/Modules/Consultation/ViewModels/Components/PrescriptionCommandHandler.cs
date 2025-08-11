@@ -184,7 +184,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// <summary>
         /// 添加药材
         /// </summary>
-        private async Task AddHerbAsync()
+        private Task AddHerbAsync()
         {
             try
             {
@@ -201,7 +201,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                     if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedHerbs"))
                     {
                         var selectedHerbs = result.Parameters.GetValue<dynamic>("SelectedHerbs");
-                        Task.Run(async () => await AddHerbItems(selectedHerbs));
+                        Task.Run(() => AddHerbItems(selectedHerbs));
                     }
                 });
             }
@@ -210,12 +210,14 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                 _logger.LogError(ex, "添加药材时发生错误");
                 ShowErrorMessage("添加失败", "添加药材失败，请重试");
             }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 添加药材项
         /// </summary>
-        private async Task AddHerbItems(dynamic herbItems)
+        private void AddHerbItems(dynamic herbItems)
         {
             if (herbItems == null) return;
 
@@ -268,7 +270,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// <summary>
         /// 导入验方
         /// </summary>
-        private async Task ImportFormulaAsync()
+        private Task ImportFormulaAsync()
         {
             try
             {
@@ -289,6 +291,8 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                 _logger.LogError(ex, "导入验方时发生错误");
                 ShowErrorMessage("导入失败", "导入验方失败，请重试");
             }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -328,7 +332,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// <summary>
         /// 导入历史处方
         /// </summary>
-        private async Task ImportHistoryAsync()
+        private Task ImportHistoryAsync()
         {
             try
             {
@@ -354,6 +358,8 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                 _logger.LogError(ex, "导入历史处方时发生错误");
                 ShowErrorMessage("导入失败", "导入历史处方失败");
             }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

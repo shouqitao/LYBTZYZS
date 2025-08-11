@@ -128,7 +128,7 @@ namespace LYBT.Desktop.Admin.Formulas.ViewModels
             _formulaService = formulaService;
             _herbService = herbService;
 
-            SaveCommand = DelegateCommand.FromAsyncHandler(ExecuteSave, CanExecuteSave)
+            SaveCommand = new DelegateCommand(async () => await ExecuteSave(), CanExecuteSave)
                 .ObservesProperty(() => TemplateName)
                 .ObservesProperty(() => Category)
                 .ObservesProperty(() => Indications)

@@ -132,7 +132,7 @@ namespace LYBT.Desktop.Admin.Herbs.ViewModels
             _commonDialogService = commonDialogService;
             _herbService = herbService;
 
-            SaveCommand = DelegateCommand.FromAsyncHandler(ExecuteSave, CanExecuteSave);
+            SaveCommand = new DelegateCommand(async () => await ExecuteSave(), CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
             RegeneratePinYinCommand = new DelegateCommand(ExecuteRegeneratePinYin);
             RegenerateWuBiCommand = new DelegateCommand(ExecuteRegenerateWuBi);

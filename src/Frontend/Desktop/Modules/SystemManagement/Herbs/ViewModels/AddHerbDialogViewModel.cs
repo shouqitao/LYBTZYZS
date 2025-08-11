@@ -127,7 +127,7 @@ namespace LYBT.Desktop.Admin.Herbs.ViewModels
             _commonDialogService = commonDialogService;
             _herbService = herbService;
 
-            SaveCommand = DelegateCommand.FromAsyncHandler(ExecuteSave, CanExecuteSave)
+            SaveCommand = new DelegateCommand(async () => await ExecuteSave(), CanExecuteSave)
                 .ObservesProperty(() => HerbName)
                 .ObservesProperty(() => Unit)
                 .ObservesProperty(() => Price)
