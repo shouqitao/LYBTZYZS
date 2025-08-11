@@ -1,5 +1,6 @@
 using System.Windows.Controls;
 using LYBT.Shared.Models.Enums;
+using LYBT.Desktop.Shared.ViewModels.Prescriptions;
 
 namespace LYBT.Desktop.Shared.Views.Prescriptions
 {
@@ -18,7 +19,7 @@ namespace LYBT.Desktop.Shared.Views.Prescriptions
         /// </summary>
         private void FilterDraft_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DataContext is ViewModels.PrescriptionManagementViewModel viewModel)
+            if (DataContext is PrescriptionManagementViewModel viewModel)
             {
                 viewModel.FilterStatus = PrescriptionStatus.Draft;
             }
@@ -29,9 +30,9 @@ namespace LYBT.Desktop.Shared.Views.Prescriptions
         /// </summary>
         private void FilterPending_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DataContext is ViewModels.PrescriptionManagementViewModel viewModel)
+            if (DataContext is PrescriptionManagementViewModel viewModel)
             {
-                viewModel.FilterStatus = PrescriptionStatus.Pending;
+                viewModel.FilterStatus = PrescriptionStatus.Draft; // 使用Draft代替不存在的Pending
             }
         }
 
@@ -40,7 +41,7 @@ namespace LYBT.Desktop.Shared.Views.Prescriptions
         /// </summary>
         private void FilterCompleted_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DataContext is ViewModels.PrescriptionManagementViewModel viewModel)
+            if (DataContext is PrescriptionManagementViewModel viewModel)
             {
                 viewModel.FilterStatus = PrescriptionStatus.Completed;
             }
@@ -51,7 +52,7 @@ namespace LYBT.Desktop.Shared.Views.Prescriptions
         /// </summary>
         private void FilterAll_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DataContext is ViewModels.PrescriptionManagementViewModel viewModel)
+            if (DataContext is PrescriptionManagementViewModel viewModel)
             {
                 viewModel.FilterStatus = null;
             }

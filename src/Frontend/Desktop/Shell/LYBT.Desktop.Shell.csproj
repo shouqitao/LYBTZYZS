@@ -41,6 +41,8 @@
     <ProjectReference Include="..\Modules\SystemManagement\LYBT.Desktop.Admin.csproj" />
     <ProjectReference Include="..\Modules\Consultation\LYBT.Desktop.Consultation.csproj" />
     <ProjectReference Include="..\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+    <ProjectReference Include="..\Modules\Users\LYBT.Desktop.Users.csproj" />
+    <ProjectReference Include="..\Modules\Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj" />
     <ProjectReference Include="..\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj" />

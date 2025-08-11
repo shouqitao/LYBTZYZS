@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Shared.ViewModels.Users
         {
             try
             {
-                var dialog = new Views.UserAddEditDialog();
+                var dialog = new Views.Users.UserAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Title = "新增用户";
 
@@ -115,7 +115,7 @@ namespace LYBT.Desktop.Shared.ViewModels.Users
 
             try
             {
-                var dialog = new Views.UserAddEditDialog();
+                var dialog = new Views.Users.UserAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Title = "编辑用户";
 

@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Shared.ViewModels.Patients
         {
             try
             {
-                var dialog = new Views.PatientAddEditDialog();
+                var dialog = new Views.Patients.PatientAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Title = "新增患者";
 
@@ -118,7 +118,7 @@ namespace LYBT.Desktop.Shared.ViewModels.Patients
 
             try
             {
-                var dialog = new Views.PatientAddEditDialog();
+                var dialog = new Views.Patients.PatientAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Title = "编辑患者";
 

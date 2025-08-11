@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Shared;
 using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;

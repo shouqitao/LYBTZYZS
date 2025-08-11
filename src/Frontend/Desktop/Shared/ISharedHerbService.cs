@@ -92,7 +92,7 @@ namespace LYBT.Desktop.Shared
         /// <param name="pageSize">页大小</param>
         /// <param name="keyword">搜索关键词</param>
         /// <returns>分页的药材列表</returns>
-        Task<ServiceResult<PaginationResponse<HerbDto>>> GetHerbsAsync(int page, int pageSize, string keyword = null);
+        Task<ServiceResult<PagedResult<HerbDto>>> GetHerbsAsync(int page, int pageSize, string keyword = null);
 
         /// <summary>
         /// 创建新药材
