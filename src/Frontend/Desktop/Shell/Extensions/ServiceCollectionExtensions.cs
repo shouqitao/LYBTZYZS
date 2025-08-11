@@ -240,8 +240,6 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // 注册Shell ViewModels
             containerRegistry.Register<LYBT.Desktop.Shell.ViewModels.HomeViewModel>();
-            containerRegistry.Register<LYBT.Desktop.Shell.ViewModels.TestHomeViewModel>();
-            containerRegistry.Register<LYBT.Desktop.Shell.ViewModels.DiagnosticHomeViewModel>();
             
             // 注册其他ViewModels（如果需要）
             // 注意：MainWindowViewModel通过构造函数注入，已经在App.xaml.cs中处理
@@ -252,26 +250,8 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterViews(IContainerRegistry containerRegistry)
         {
-            // 注册主页视图，明确指定导航名称为"HomeView"
+            // 注册主页视图
             containerRegistry.RegisterForNavigation<LYBT.Desktop.Shell.Views.HomeView>("HomeView");
-            
-            // 注册诊断版主页（用于调试ViewModelLocator）
-            containerRegistry.RegisterForNavigation<LYBT.Desktop.Shell.Views.DiagnosticHomeView>("DiagnosticHomeView");
-            
-            // 注册安全版主页（防故障，确保能显示）
-            containerRegistry.RegisterForNavigation<LYBT.Desktop.Shell.Views.SafeHomeView>("SafeHomeView");
-            
-            // 注册测试主页用于调试DI问题
-            containerRegistry.RegisterForNavigation<LYBT.Desktop.Shell.Views.TestHomeView>("TestHomeView");
-            
-            // 注册完整功能主页（无任何依赖，保证显示）
-            containerRegistry.RegisterForNavigation<LYBT.Desktop.Shell.Views.FullHomeView>("FullHomeView");
-            
-            // 注册临时工作版主页（无DI问题）
-            containerRegistry.RegisterForNavigation<LYBT.Desktop.Shell.Views.WorkingHomeView>("WorkingHomeView");
-            
-            // 注册极简版HomeView用于排查
-            containerRegistry.RegisterForNavigation<LYBT.Desktop.Shell.Views.SimpleHomeView>("SimpleHomeView");
             
             // 注册测试视图
             containerRegistry.RegisterForNavigation<LYBT.Desktop.Shell.Views.TestView>("TestView");

@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\BusinessModules\Shared\LYBT.Desktop.Shared.csproj" />
+		<ProjectReference Include="..\..\Shared\LYBT.Desktop.Shared.csproj" />
 		<ProjectReference Include="..\Core\LYBT.Desktop.Workbench.Core.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
 		<ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />

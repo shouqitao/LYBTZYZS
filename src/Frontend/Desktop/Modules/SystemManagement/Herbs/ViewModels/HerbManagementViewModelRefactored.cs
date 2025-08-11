@@ -7,7 +7,7 @@ using System.Windows;
 using Microsoft.Win32;
 using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Desktop.Services.Interfaces;
-using LYBT.Desktop.Admin.Common.ViewModels;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;

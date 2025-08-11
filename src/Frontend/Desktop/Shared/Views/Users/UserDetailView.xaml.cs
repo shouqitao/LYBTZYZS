@@ -1,0 +1,15 @@
+using System.Windows.Controls;
+
+namespace LYBT.Desktop.Shared.Views.Users
+{
+    /// <summary>
+    /// UserDetailView.xaml 的交互逻辑
+    /// </summary>
+    public partial class UserDetailView : UserControl
+    {
+        public UserDetailView()
+        {
+            InitializeComponent();
+        }
+    }
+}

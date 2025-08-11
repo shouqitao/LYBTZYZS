@@ -10,8 +10,9 @@ using LYBT.Desktop.Auth;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.MedicalCase;
-using LYBT.Desktop.Users.Shared;
-using LYBT.Desktop.Patients.Shared;
+using LYBT.Desktop.Shared;
+using LYBT.Desktop.Users;
+using LYBT.Desktop.Patients;
 using LYBT.Desktop.Workbench.Admin;
 using LYBT.Desktop.Workbench.Consultation;
 using LYBT.Desktop.Workbench.Core;
@@ -48,14 +49,6 @@ namespace LYBT.Desktop.Shell
             
             // 显式注册View和ViewModel的映射关系
             ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
-            ViewModelLocationProvider.Register<TestHomeView, TestHomeViewModel>();
-            ViewModelLocationProvider.Register<DiagnosticHomeView, DiagnosticHomeViewModel>();
-            
-            // 也可以使用类型字符串注册（备用方案）
-            ViewModelLocationProvider.Register(
-                typeof(HomeView).ToString(),
-                () => Container.Resolve<HomeViewModel>()
-            );
         }
 
         protected override void OnInitialized()
