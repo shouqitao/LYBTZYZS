@@ -1,4 +1,23 @@
-# Development Guidelines
+# LYBTZYZS 项目AI Agent开发规则
+
+## 项目概述
+凌隐宝堂中医诊所管理系统 - .NET 8 Web API + WPF桌面客户端
+
+## 强制性规则
+
+### 数据库迁移
+- **必须** 在 `src/Backend/Core/LYBT.Infrastructure` 项目中添加所有迁移
+- **禁止** 在任何Module项目中执行 `dotnet ef migrations add`
+- **必须** 使用命令：`dotnet ef migrations add [Name] --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI`
+
+### API响应格式
+- **必须** 使用 `ApiResponse<T>` 包装所有API响应
+- **必须** 使用BaseController的Success/BusinessFail/NotFound方法
+- **禁止** 直接返回Ok()或BadRequest()
+
+### 文件大小限制
+- **禁止** 创建超过500行的文件
+- **必须** 接近限制时立即重构为多个文件
 
 ## Project Architecture
 

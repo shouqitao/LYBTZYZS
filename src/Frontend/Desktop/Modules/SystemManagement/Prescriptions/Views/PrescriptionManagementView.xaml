@@ -2,24 +2,102 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../../Styles/ManagementViewStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            
+            <!-- 动画样式 -->
+            <Storyboard x:Key="LoadingAnimation">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                From="0.3" To="1" Duration="0:0:0.5"
+                                AutoReverse="True" RepeatBehavior="Forever"/>
+            </Storyboard>
         </ResourceDictionary>
     </UserControl.Resources>
     
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- 统计卡片区域 -->
+        <Border Grid.Row="0" Background="#F8F9FA" Padding="15" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- 今日处方数 -->
+                <Border Grid.Column="0" Margin="5" Background="White" CornerRadius="8">
+                    <StackPanel Padding="15">
+                        <TextBlock Text="今日处方" FontSize="12" Foreground="#666"/>
+                        <TextBlock Text="{Binding TodayPrescriptionCount}" 
+                                  FontSize="28" FontWeight="Bold" Foreground="#2196F3"/>
+                        <TextBlock FontSize="11" Foreground="#999">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}较昨日 {0:+#;-#;0} ({1:P0})">
+                                    <Binding Path="TodayChange"/>
+                                    <Binding Path="TodayChangePercent"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 本周处方数 -->
+                <Border Grid.Column="1" Margin="5" Background="White" CornerRadius="8">
+                    <StackPanel Padding="15">
+                        <TextBlock Text="本周处方" FontSize="12" Foreground="#666"/>
+                        <TextBlock Text="{Binding WeekPrescriptionCount}" 
+                                  FontSize="28" FontWeight="Bold" Foreground="#4CAF50"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 本月处方数 -->
+                <Border Grid.Column="2" Margin="5" Background="White" CornerRadius="8">
+                    <StackPanel Padding="15">
+                        <TextBlock Text="本月处方" FontSize="12" Foreground="#666"/>
+                        <TextBlock Text="{Binding MonthPrescriptionCount}" 
+                                  FontSize="28" FontWeight="Bold" Foreground="#FF9800"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 待审核 -->
+                <Border Grid.Column="3" Margin="5" Background="White" CornerRadius="8">
+                    <StackPanel Padding="15">
+                        <TextBlock Text="待审核" FontSize="12" Foreground="#666"/>
+                        <TextBlock Text="{Binding PendingCount}" 
+                                  FontSize="28" FontWeight="Bold" Foreground="#FFC107"/>
+                        <Button Content="立即处理" FontSize="11" Padding="5,2" Margin="0,5,0,0"
+                                Background="#FFC107" Foreground="White" BorderThickness="0"
+                                Command="{Binding ProcessPendingCommand}"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 今日营收 -->
+                <Border Grid.Column="4" Margin="5" Background="White" CornerRadius="8">
+                    <StackPanel Padding="15">
+                        <TextBlock Text="今日营收" FontSize="12" Foreground="#666"/>
+                        <TextBlock Text="{Binding TodayRevenue, StringFormat='¥{0:F2}'}" 
+                                  FontSize="24" FontWeight="Bold" Foreground="#E91E63"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
         <!-- 工具栏 -->
-        <Border Grid.Row="0" Style="{StaticResource ToolBarBorder}">
+        <Border Grid.Row="1" Style="{StaticResource ToolBarBorder}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -82,7 +160,7 @@
         </Border>
 
         <!-- 数据表格 -->
-        <DataGrid Grid.Row="1" 
+        <DataGrid Grid.Row="2" 
                   ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem}"
                   Style="{StaticResource ManagementDataGrid}"
@@ -196,7 +274,7 @@
         </DataGrid>
 
         <!-- 状态栏和分页 -->
-        <Border Grid.Row="2" Style="{StaticResource StatusBarBorder}">
+        <Border Grid.Row="3" Style="{StaticResource StatusBarBorder}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

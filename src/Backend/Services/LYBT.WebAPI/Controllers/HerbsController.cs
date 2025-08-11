@@ -183,6 +183,15 @@ namespace LYBT.WebAPI.Controllers
 
             // 获取更新后的资源
             var updated = await _herbService.GetByIdAsync(dto.Id);
+            if (updated == null)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "操作失败",
+                    Detail = "药材更新后查询失败",
+                    Status = 400
+                });
+            }
             LogOperation("编辑药材成功", updated, dto.Id);
             return Ok(updated);
         }

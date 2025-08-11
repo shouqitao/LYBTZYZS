@@ -14,6 +14,7 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Admin.Prescriptions.Services;
 using Prism.Dialogs;
 using LYBT.Desktop.Core.Extensions;
 namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
@@ -25,6 +26,64 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
     {
         private readonly IDialogService _commonDialogService;
         private readonly IPrescriptionValidationService _validationService;
+        private readonly IHerbService _herbService;
+        private readonly IUserSessionManager _userSessionManager;
+        private readonly IPatientService _patientService;
+        private readonly IPrescriptionPrintService _printService;
+        
+        #region 统计属性
+        
+        private int _todayPrescriptionCount;
+        private int _weekPrescriptionCount;
+        private int _monthPrescriptionCount;
+        private int _pendingCount;
+        private decimal _todayRevenue;
+        private int _todayChange;
+        private double _todayChangePercent;
+        
+        public int TodayPrescriptionCount
+        {
+            get => _todayPrescriptionCount;
+            set => SetProperty(ref _todayPrescriptionCount, value);
+        }
+        
+        public int WeekPrescriptionCount
+        {
+            get => _weekPrescriptionCount;
+            set => SetProperty(ref _weekPrescriptionCount, value);
+        }
+        
+        public int MonthPrescriptionCount
+        {
+            get => _monthPrescriptionCount;
+            set => SetProperty(ref _monthPrescriptionCount, value);
+        }
+        
+        public int PendingCount
+        {
+            get => _pendingCount;
+            set => SetProperty(ref _pendingCount, value);
+        }
+        
+        public decimal TodayRevenue
+        {
+            get => _todayRevenue;
+            set => SetProperty(ref _todayRevenue, value);
+        }
+        
+        public int TodayChange
+        {
+            get => _todayChange;
+            set => SetProperty(ref _todayChange, value);
+        }
+        
+        public double TodayChangePercent
+        {
+            get => _todayChangePercent;
+            set => SetProperty(ref _todayChangePercent, value);
+        }
+        
+        #endregion
 
         #region 搜索条件
 
@@ -89,6 +148,13 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
         public DelegateCommand<PrescriptionInfo> VoidCommand { get; }
         public DelegateCommand ClearFiltersCommand { get; }
         public DelegateCommand ExportCommand { get; }
+        public DelegateCommand ProcessPendingCommand { get; }
+        public DelegateCommand BatchPrintCommand { get; }
+        public DelegateCommand StatisticsCommand { get; }
+        public DelegateCommand BatchPrintSelectedCommand { get; }
+        public DelegateCommand BatchExportSelectedCommand { get; }
+        public DelegateCommand BatchVoidSelectedCommand { get; }
+        public DelegateCommand ClearSelectionCommand { get; }
 
         #endregion
 
@@ -97,11 +163,19 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
         public PrescriptionManagementViewModel(
             IPrescriptionService service,
             IDialogService commonDialogService,
-            IPrescriptionValidationService validationService)
+            IPrescriptionValidationService validationService,
+            IHerbService herbService,
+            IUserSessionManager userSessionManager,
+            IPatientService patientService,
+            IPrescriptionPrintService printService)
             : base(service)
         {
             _commonDialogService = commonDialogService;
             _validationService = validationService;
+            _herbService = herbService;
+            _userSessionManager = userSessionManager;
+            _patientService = patientService;
+            _printService = printService;
             // 初始化状态选项
             StatusOptions = new List<PrescriptionStatusOption>
             {
@@ -117,10 +191,20 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
             VoidCommand = new DelegateCommand<PrescriptionInfo>(async p => await ExecuteVoidAsync(p));
             ClearFiltersCommand = new DelegateCommand(ExecuteClearFilters);
             ExportCommand = new DelegateCommand(ExecuteExport);
+            ProcessPendingCommand = new DelegateCommand(ExecuteProcessPending);
+            BatchPrintCommand = new DelegateCommand(ExecuteBatchPrint);
+            StatisticsCommand = new DelegateCommand(ExecuteStatistics);
+            BatchPrintSelectedCommand = new DelegateCommand(ExecuteBatchPrintSelected);
+            BatchExportSelectedCommand = new DelegateCommand(ExecuteBatchExportSelected);
+            BatchVoidSelectedCommand = new DelegateCommand(async () => await ExecuteBatchVoidSelectedAsync());
+            ClearSelectionCommand = new DelegateCommand(ExecuteClearSelection);
 
             // 设置默认时间范围（最近30天）
             EndDate = DateTime.Today;
             StartDate = DateTime.Today.AddDays(-30);
+            
+            // 加载统计数据
+            _ = LoadStatisticsAsync();
         }
 
         protected override async Task<ServiceResult<PagedResult<PrescriptionInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
@@ -139,6 +223,9 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
 
                 // 使用服务层的分页查询方法
                 var pagedResult = await Service.GetPagedAsync(queryDto);
+                
+                // 同步加载统计数据
+                _ = LoadStatisticsAsync();
 
                 if (!string.IsNullOrEmpty(pagedResult.ErrorMessage))
                 {
@@ -209,10 +296,19 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
                 UserId = dto.DoctorId, // 医生ID（UserId）
                 CreateTime = dto.CreateTime,
                 Status = dto.Status,
+                Diagnosis = dto.Diagnosis,
+                DosageCount = dto.DosageCount,
+                TotalPrice = dto.TotalPrice,
+                Usage = dto.Usage,
+                Remark = dto.Remark,
                 // TODO: 从其他服务获取患者和医生姓名
-                PatientName = "患者" + dto.PatientId.ToString()[..8],
-                DoctorName = "医生" + dto.DoctorId.ToString()[..8],
-                PrescriptionNumber = GeneratePrescriptionNumber(dto.Id, dto.CreateTime)
+                PatientName = dto.PatientName ?? "患者" + dto.PatientId.ToString()[..8],
+                DoctorName = dto.DoctorName ?? "医生" + dto.DoctorId.ToString()[..8],
+                PrescriptionNumber = GeneratePrescriptionNumber(dto.Id, dto.CreateTime),
+                HerbCount = dto.Items?.Count ?? 0,
+                // 设置可编辑和可作废状态
+                CanEdit = dto.Status == PrescriptionStatus.Draft,
+                CanVoid = dto.Status != PrescriptionStatus.Completed && dto.Status != PrescriptionStatus.Canceled
             };
         }
 
@@ -241,17 +337,47 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
             }
         }
 
-        private void ExecutePrint(PrescriptionInfo prescription)
+        private async void ExecutePrint(PrescriptionInfo prescription)
         {
             if (prescription == null) return;
 
             try
             {
-                _commonDialogService.ShowInformationAsync($"处方打印功能开发中...\n处方编号：{prescription.PrescriptionNumber}", "提示").GetAwaiter().GetResult();
+                // 加载完整处方数据
+                var result = await Service.GetByIdAsync(prescription.Id);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    await _commonDialogService.ShowErrorAsync("获取处方详情失败", "错误");
+                    return;
+                }
+
+                // 映射到PrescriptionInfo
+                var fullPrescription = ConvertToPrescriptionInfo(result.Data);
+                fullPrescription.Items = result.Data.Items?.Select(item => new PrescriptionItemInfo
+                {
+                    Id = item.Id,
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName,
+                    Quantity = item.Quantity,
+                    Unit = item.Unit,
+                    Price = item.UnitPrice,
+                    Subtotal = item.Subtotal
+                }).ToList() ?? new List<PrescriptionItemInfo>();
+
+                // 打开打印预览对话框
+                var previewDialog = new Views.PrescriptionPrintPreviewDialog(_printService, fullPrescription)
+                {
+                    Owner = Application.Current.MainWindow
+                };
+
+                if (previewDialog.ShowDialog() == true)
+                {
+                    await _commonDialogService.ShowInformationAsync("打印成功", "提示");
+                }
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"打印处方失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync($"打印处方失败: {ex.Message}", "错误");
             }
         }
 
@@ -332,7 +458,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
                 dialog.Title = "新增处方";
 
                 // 创建 ViewModel
-                var viewModel = new AddPrescriptionDialogViewModel(Service, _commonDialogService, _validationService);
+                var viewModel = new AddPrescriptionDialogViewModel(Service, _commonDialogService, _validationService, _herbService, _userSessionManager, _patientService);
                 dialog.DataContext = viewModel;
 
                 // 设置回调已移除
@@ -367,7 +493,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
                 dialog.Title = "编辑处方";
 
                 // 创建 ViewModel
-                var viewModel = new EditPrescriptionDialogViewModel(Service, item.Id, _commonDialogService);
+                var viewModel = new EditPrescriptionDialogViewModel(Service, item.Id, _commonDialogService, _herbService);
                 dialog.DataContext = viewModel;
 
                 // 设置回调已移除
@@ -383,6 +509,205 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
                 _commonDialogService.ShowErrorAsync($"打开编辑处方对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
+        
+        #region 新增命令实现
+        
+        private void ExecuteProcessPending()
+        {
+            // 处理待审核处方（草稿状态）
+            SelectedStatus = PrescriptionStatus.Draft;
+            RefreshCommand.Execute();
+        }
+        
+        private async void ExecuteBatchPrint()
+        {
+            try
+            {
+                // 获取选中的处方
+                var selectedItems = Items.Where(i => i.IsSelected).ToList();
+                if (!selectedItems.Any())
+                {
+                    await _commonDialogService.ShowWarningAsync("请先选择要批量打印的处方", "提示");
+                    return;
+                }
+
+                var result = await _commonDialogService.ShowConfirmationAsync(
+                    $"确定要批量打印{selectedItems.Count}个处方吗？",
+                    "确认批量打印");
+
+                if (result)
+                {
+                    IsLoading = true;
+                    int successCount = await _printService.BatchPrintPrescriptions(selectedItems);
+                    await _commonDialogService.ShowInformationAsync(
+                        $"批量打印完成\n成功：{successCount}个\n失败：{selectedItems.Count - successCount}个",
+                        "打印结果");
+                }
+            }
+            catch (Exception ex)
+            {
+                await _commonDialogService.ShowErrorAsync($"批量打印失败: {ex.Message}", "错误");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+        
+        private void ExecuteStatistics()
+        {
+            // 统计分析功能
+            _commonDialogService.ShowInformationAsync("统计分析功能正在开发中...", "提示").GetAwaiter().GetResult();
+        }
+        
+        private async void ExecuteBatchPrintSelected()
+        {
+            var selectedItems = Items.Where(i => i.IsSelected).ToList();
+            if (!selectedItems.Any())
+            {
+                await _commonDialogService.ShowWarningAsync("请先选择要打印的处方", "提示");
+                return;
+            }
+            
+            try
+            {
+                IsLoading = true;
+                int successCount = await _printService.BatchPrintPrescriptions(selectedItems);
+                await _commonDialogService.ShowInformationAsync(
+                    $"批量打印完成\n成功：{successCount}个\n失败：{selectedItems.Count - successCount}个",
+                    "打印结果");
+            }
+            catch (Exception ex)
+            {
+                await _commonDialogService.ShowErrorAsync($"批量打印失败: {ex.Message}", "错误");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+        
+        private void ExecuteBatchExportSelected()
+        {
+            var selectedItems = Items.Where(i => i.IsSelected).ToList();
+            if (!selectedItems.Any())
+            {
+                _commonDialogService.ShowWarningAsync("请先选择要导出的处方", "提示").GetAwaiter().GetResult();
+                return;
+            }
+            
+            // 批量导出选中项
+            _commonDialogService.ShowInformationAsync($"正在导出{selectedItems.Count}个处方...", "导出").GetAwaiter().GetResult();
+        }
+        
+        private async Task ExecuteBatchVoidSelectedAsync()
+        {
+            var selectedItems = Items.Where(i => i.IsSelected && i.CanVoid).ToList();
+            if (!selectedItems.Any())
+            {
+                await _commonDialogService.ShowWarningAsync("请选择可作废的处方", "提示");
+                return;
+            }
+            
+            var result = await _commonDialogService.ShowConfirmationAsync(
+                $"确定要作废选中的{selectedItems.Count}个处方吗？",
+                "确认作废");
+            
+            if (result)
+            {
+                foreach (var item in selectedItems)
+                {
+                    await ExecuteVoidAsync(item);
+                }
+            }
+        }
+        
+        private void ExecuteClearSelection()
+        {
+            foreach (var item in Items)
+            {
+                item.IsSelected = false;
+            }
+            RaisePropertyChanged(nameof(HasSelectedItems));
+            RaisePropertyChanged(nameof(SelectedItemsCount));
+        }
+        
+        private async Task LoadStatisticsAsync()
+        {
+            try
+            {
+                var today = DateTime.Today;
+                var weekStart = today.AddDays(-(int)today.DayOfWeek);
+                var monthStart = new DateTime(today.Year, today.Month, 1);
+                var yesterday = today.AddDays(-1);
+
+                // 构建查询条件获取今日处方
+                var todayQuery = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto
+                {
+                    PageIndex = 1,
+                    PageSize = 1,
+                    SortField = "CreateTime",
+                    IsDescending = true
+                };
+
+                // 获取今日数据
+                var todayResult = await Service.GetPagedAsync(todayQuery);
+                if (todayResult != null)
+                {
+                    // 筛选今日的处方
+                    var todayItems = todayResult.Items.Where(p => p.CreateTime.Date == today).ToList();
+                    TodayPrescriptionCount = todayItems.Count;
+                    
+                    // 计算今日营收（处方总价）
+                    TodayRevenue = todayItems.Sum(p => p.TotalPrice ?? 0);
+                    
+                    // 获取本周数据
+                    var weekItems = todayResult.Items.Where(p => p.CreateTime.Date >= weekStart).ToList();
+                    WeekPrescriptionCount = weekItems.Count;
+                    
+                    // 获取本月数据
+                    var monthItems = todayResult.Items.Where(p => p.CreateTime.Date >= monthStart).ToList();
+                    MonthPrescriptionCount = monthItems.Count;
+                    
+                    // 待审核数量（草稿状态）
+                    PendingCount = todayResult.Items.Count(p => p.Status == PrescriptionStatus.Draft);
+                    
+                    // 计算较昨日变化
+                    var yesterdayItems = todayResult.Items.Where(p => p.CreateTime.Date == yesterday).ToList();
+                    var yesterdayCount = yesterdayItems.Count;
+                    TodayChange = TodayPrescriptionCount - yesterdayCount;
+                    TodayChangePercent = yesterdayCount > 0 ? (double)TodayChange / yesterdayCount : 0;
+                }
+                else
+                {
+                    // 如果获取失败，使用默认值
+                    TodayPrescriptionCount = 0;
+                    WeekPrescriptionCount = 0;
+                    MonthPrescriptionCount = 0;
+                    PendingCount = 0;
+                    TodayRevenue = 0;
+                    TodayChange = 0;
+                    TodayChangePercent = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载统计数据失败: {ex.Message}");
+                // 错误时使用默认值
+                TodayPrescriptionCount = 0;
+                WeekPrescriptionCount = 0;
+                MonthPrescriptionCount = 0;
+                PendingCount = 0;
+                TodayRevenue = 0;
+                TodayChange = 0;
+                TodayChangePercent = 0;
+            }
+        }
+        
+        public bool HasSelectedItems => Items?.Any(i => i.IsSelected) ?? false;
+        public int SelectedItemsCount => Items?.Count(i => i.IsSelected) ?? 0;
+        
+        #endregion
     }
 
     /// <summary>

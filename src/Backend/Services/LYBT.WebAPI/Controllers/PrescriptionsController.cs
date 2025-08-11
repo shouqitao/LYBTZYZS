@@ -167,6 +167,10 @@ namespace LYBT.WebAPI.Controllers
 
                 // 获取更新后的资源
                 var updated = await _service.GetByIdAsync(dto.Id.ToString());
+                if (updated == null)
+                {
+                    return BusinessFail<PrescriptionDetailDto>("处方更新后查询失败", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
+                }
                 LogOperation("编辑处方成功", updated, dto.Id);
                 return Success(updated, "处方更新成功");
             }
@@ -223,6 +227,10 @@ namespace LYBT.WebAPI.Controllers
 
                 // 获取更新后的资源
                 var updated = await _service.GetByIdAsync(id.ToString());
+                if (updated == null)
+                {
+                    return BusinessFail<PrescriptionDetailDto>("处方作废后查询失败", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
+                }
                 LogOperation("作废处方成功", updated, id);
                 return Success(updated, "处方已作废");
             }

@@ -24,11 +24,14 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
         private readonly IDialogService _commonDialogService;
         private readonly IPrescriptionService _prescriptionService;
         private readonly IPrescriptionValidationService _validationService;
-        // private readonly IHerbsApiService _herbService; // TODO: 等待IHerbsApiService实现
+        private readonly IHerbService _herbService;
+        private readonly IUserSessionManager _userSessionManager;
+        private readonly IPatientService _patientService;
 
         #region 属性
 
         private string _patientName = string.Empty;
+        private Guid? _patientId = null;
         private string _doctorName = string.Empty;
         private string _diagnosis = string.Empty;
         private int _dosageCount = 1;
@@ -124,7 +127,8 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
         public decimal TotalPrice => Items.Sum(item => item.Subtotal);
 
         /// <summary>是否可以保存</summary>
-        public bool CanSave => !string.IsNullOrWhiteSpace(PatientName) &&
+        public bool CanSave => _patientId.HasValue &&
+                               !string.IsNullOrWhiteSpace(PatientName) &&
                                !string.IsNullOrWhiteSpace(DoctorName) &&
                                !string.IsNullOrWhiteSpace(Diagnosis) &&
                                Items.Any() &&
@@ -139,24 +143,31 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
         public DelegateCommand SaveAndContinueCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand AddItemCommand { get; }
+        public DelegateCommand UseTemplateCommand { get; }
         public DelegateCommand<PrescriptionItemEditModel> RemoveItemCommand { get; }
         public DelegateCommand<PrescriptionItemEditModel> SelectHerbCommand { get; }
         public DelegateCommand ValidatePrescriptionCommand { get; }
+        public DelegateCommand SelectPatientCommand { get; }
 
         #endregion
 
         public Action? CloseDialogCallback { get; set; }
-        public Action<object>? SaveSuccessCallback { get; set; } // TODO: 替换为实际的CreatePrescriptionRequest类型
+        public Action<PrescriptionDto>? SaveSuccessCallback { get; set; }
 
         public AddPrescriptionDialogViewModel(
             IPrescriptionService prescriptionService,
             IDialogService commonDialogService,
-            IPrescriptionValidationService validationService)
+            IPrescriptionValidationService validationService,
+            IHerbService herbService,
+            IUserSessionManager userSessionManager,
+            IPatientService patientService)
         {
             _commonDialogService = commonDialogService;
             _prescriptionService = prescriptionService;
             _validationService = validationService;
-            // _herbService = herbService; // TODO: 等待IHerbsApiService实现
+            _herbService = herbService;
+            _userSessionManager = userSessionManager;
+            _patientService = patientService;
 
             Items = new ObservableCollection<PrescriptionItemEditModel>();
 
@@ -165,9 +176,11 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
             SaveAndContinueCommand = new DelegateCommand(async () => await ExecuteSaveAndContinueAsync(), () => CanSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
             AddItemCommand = new DelegateCommand(ExecuteAddItem);
+            UseTemplateCommand = new DelegateCommand(ExecuteUseTemplate);
             RemoveItemCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteRemoveItem);
             SelectHerbCommand = new DelegateCommand<PrescriptionItemEditModel>(ExecuteSelectHerb);
             ValidatePrescriptionCommand = new DelegateCommand(async () => await ExecuteValidatePrescriptionAsync(), () => Items.Any());
+            SelectPatientCommand = new DelegateCommand(ExecuteSelectPatient);
 
             // 然后添加事件处理器
             Items.CollectionChanged += (s, e) =>
@@ -206,31 +219,58 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
             {
                 IsSaving = true;
 
-                // TODO: 实现实际的CreatePrescriptionRequest
-                var requestData = new
+                // 获取当前用户（医生）信息
+                var currentUser = _userSessionManager.CurrentUser;
+                if (currentUser == null)
                 {
-                    PatientId = Guid.NewGuid(), // TODO: 实际应从患者选择获取
-                    UserId = Guid.NewGuid(),  // TODO: 实际应从医生选择获取
+                    await _commonDialogService.ShowErrorAsync("无法获取当前用户信息", "错误");
+                    return false;
+                }
+
+                // 检查是否选择了患者
+                if (!_patientId.HasValue)
+                {
+                    await _commonDialogService.ShowWarningAsync("请先选择患者", "提示");
+                    return false;
+                }
+
+                // 创建处方请求对象
+                var request = new PrescriptionCreateDto
+                {
+                    PatientId = _patientId.Value, // 使用选中的患者ID
+                    DoctorId = currentUser.Id,  // 使用当前登录用户作为医生
                     Diagnosis = Diagnosis,
                     DosageCount = DosageCount,
                     Usage = Usage,
                     Remark = Remark,
-                    Items = Items.Select(item => new
+                    Items = Items.Where(item => item.IsValid).Select(item => new PrescriptionItemCreateDto
                     {
                         HerbId = item.HerbId,
+                        HerbName = item.HerbName,
                         Quantity = item.Quantity,
-                        Price = item.Price
+                        Unit = item.Unit,
+                        UnitPrice = item.Price,
+                        Subtotal = item.Subtotal,
+                        Usage = null, // 单项用法，可选
+                        Note = null   // 单项备注，可选
                     }).ToList()
                 };
 
-                // TODO: 实现实际的API调用
-                // var response = await _prescriptionService.CreateAsync(request);
+                // 调用实际的API
+                var response = await _prescriptionService.CreateAsync(request);
 
-                // 暂时模拟成功响应
-                await Task.Delay(1000); // 模拟网络延迟
-                SaveSuccessCallback?.Invoke(requestData);
-                _commonDialogService.ShowInformationAsync("处方保存成功（模拟）", "成功").GetAwaiter().GetResult();
-                return true;
+                if (response.IsSuccess && response.Data != null)
+                {
+                    SaveSuccessCallback?.Invoke(response.Data);
+                    await _commonDialogService.ShowInformationAsync("处方保存成功", "成功");
+                    return true;
+                }
+                else
+                {
+                    var errorMsg = response.ErrorMessage ?? "保存处方失败";
+                    await _commonDialogService.ShowErrorAsync(errorMsg, "错误");
+                    return false;
+                }
             }
             catch (Exception ex)
             {
@@ -280,18 +320,151 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
             }
         }
 
-        private void ExecuteSelectHerb(PrescriptionItemEditModel item)
+        /// <summary>
+        /// 使用模板创建处方
+        /// </summary>
+        private void ExecuteUseTemplate()
+        {
+            try
+            {
+                // 创建模板管理对话框
+                var templateDialog = new Views.PrescriptionTemplateManagementDialog
+                {
+                    Owner = System.Windows.Application.Current.MainWindow
+                };
+
+                if (templateDialog.ShowDialog() == true && templateDialog.SelectedTemplate != null)
+                {
+                    var template = templateDialog.SelectedTemplate;
+
+                    // 询问是否清空现有药材
+                    var clearExisting = false;
+                    if (Items.Any())
+                    {
+                        clearExisting = _commonDialogService.ShowConfirmationAsync(
+                            "应用模板会替换当前的药材配方，是否继续？", "确认应用模板").GetAwaiter().GetResult();
+                        
+                        if (!clearExisting)
+                            return;
+                    }
+
+                    // 清空现有项目
+                    if (clearExisting || !Items.Any())
+                    {
+                        Items.Clear();
+                    }
+
+                    // 应用模板数据
+                    ApplyTemplateToForm(template);
+
+                    // 添加药材项目
+                    foreach (var templateItem in template.Items)
+                    {
+                        var newItem = new PrescriptionItemEditModel
+                        {
+                            HerbId = templateItem.HerbId,
+                            HerbName = templateItem.HerbName,
+                            Quantity = templateItem.Quantity,
+                            Unit = templateItem.Unit,
+                            Price = templateItem.EstimatedPrice
+                        };
+
+                        // 绑定属性变化事件
+                        newItem.PropertyChanged += (sender, e) =>
+                        {
+                            if (e.PropertyName == nameof(PrescriptionItemEditModel.Quantity) ||
+                                e.PropertyName == nameof(PrescriptionItemEditModel.Price))
+                            {
+                                RaisePropertyChanged(nameof(TotalPrice));
+                            }
+                        };
+
+                        Items.Add(newItem);
+                    }
+
+                    // 增加模板使用次数（这里应该调用服务更新）
+                    // TODO: 调用模板服务增加使用次数
+
+                    _commonDialogService.ShowInformationAsync($"成功应用模板【{template.Name}】", "模板应用成功").GetAwaiter().GetResult();
+                }
+            }
+            catch (Exception ex)
+            {
+                _commonDialogService.ShowErrorAsync($"应用模板失败：{ex.Message}", "错误").GetAwaiter().GetResult();
+            }
+        }
+
+        /// <summary>
+        /// 应用模板数据到表单
+        /// </summary>
+        private void ApplyTemplateToForm(PrescriptionTemplate template)
+        {
+            // 应用诊断信息
+            if (!string.IsNullOrWhiteSpace(template.Diagnosis))
+            {
+                Diagnosis = template.Diagnosis;
+            }
+
+            // 应用用法用量
+            if (!string.IsNullOrWhiteSpace(template.Usage))
+            {
+                Usage = template.Usage;
+            }
+
+            // 应用剂数
+            if (template.DosageCount > 0)
+            {
+                DosageCount = template.DosageCount;
+            }
+
+            // 应用备注
+            if (!string.IsNullOrWhiteSpace(template.Remark))
+            {
+                Remark = template.Remark;
+            }
+        }
+
+        private async void ExecuteSelectHerb(PrescriptionItemEditModel item)
         {
             if (item == null) return;
 
             try
             {
-                // TODO: 实现药材选择对话框
-                _commonDialogService.ShowInformationAsync("药材选择功能开发中...", "提示").GetAwaiter().GetResult();
+                // 获取可用药材列表
+                var availableHerbs = await _herbService.GetAvailableHerbsAsync();
+                if (availableHerbs == null || !availableHerbs.Any())
+                {
+                    await _commonDialogService.ShowInformationAsync("暂无可用药材", "提示");
+                    return;
+                }
+
+                // 创建并显示药材选择对话框
+                var dialog = new Views.HerbSelectionDialog();
+                var viewModel = new HerbSelectionDialogViewModel();
+                viewModel.Initialize(availableHerbs, Items.Select(i => i.HerbId).ToList());
+                dialog.DataContext = viewModel;
+                dialog.Owner = System.Windows.Application.Current.MainWindow;
+                
+                if (dialog.ShowDialog() == true)
+                {
+                    var selectedHerb = viewModel.GetSelectedHerb();
+                    if (selectedHerb != null)
+                    {
+                        // 更新当前项的药材信息
+                        item.HerbId = selectedHerb.Id;
+                        item.HerbName = selectedHerb.Name;
+                        item.Unit = selectedHerb.Unit ?? "g";
+                        item.Price = selectedHerb.Price;
+                        
+                        // 刷新界面
+                        RaisePropertyChanged(nameof(Items));
+                        RaisePropertyChanged(nameof(TotalPrice));
+                    }
+                }
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"选择药材失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync($"选择药材失败: {ex.Message}", "错误");
             }
         }
 
@@ -433,8 +606,31 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
             };
         }
 
+        private void ExecuteSelectPatient()
+        {
+            // 创建并显示患者选择对话框
+            var dialog = new Views.PatientSelectionDialog();
+            var viewModel = new PatientSelectionDialogViewModel(_patientService);
+            dialog.DataContext = viewModel;
+            dialog.Owner = System.Windows.Application.Current.MainWindow;
+            
+            if (dialog.ShowDialog() == true)
+            {
+                var selectedPatient = viewModel.GetSelectedPatient();
+                if (selectedPatient != null)
+                {
+                    _patientId = selectedPatient.Id;
+                    PatientName = selectedPatient.Name;
+                    
+                    // 更新可保存状态
+                    UpdateCanSaveState();
+                }
+            }
+        }
+
         private void ClearForm()
         {
+            _patientId = null;
             PatientName = string.Empty;
             DoctorName = string.Empty;
             Diagnosis = string.Empty;

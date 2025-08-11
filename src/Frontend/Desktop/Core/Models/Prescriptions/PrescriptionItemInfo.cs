@@ -1,140 +1,49 @@
-using Prism.Mvvm;
 using System;
+using LYBT.Shared.Models.Core;
 
 namespace LYBT.Desktop.Core.Models.Prescriptions
 {
     /// <summary>
-    /// 处方药材项信息模型 - 前端专用，支持MVVM属性通知
+    /// 处方项目信息 - 前端显示模型
     /// </summary>
-    public class PrescriptionItemInfo : BindableBase
+    public class PrescriptionItemInfo : BasePrescriptionItem
     {
-        private Guid _id;
-        /// <summary>处方项ID</summary>
-        public Guid Id
+        /// <summary>
+        /// 药材名称（冗余字段，提高显示性能）
+        /// </summary>
+        public string HerbName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 单价
+        /// </summary>
+        public decimal Price { get; set; }
+
+        /// <summary>
+        /// 小计金额
+        /// </summary>
+        public decimal Subtotal { get; set; }
+
+        /// <summary>
+        /// 是否选中（用于批量操作）
+        /// </summary>
+        public bool IsSelected { get; set; }
+
+        /// <summary>
+        /// 是否有效（用于验证）
+        /// </summary>
+        public bool IsValid => Quantity > 0 && Price >= 0;
+
+        /// <summary>
+        /// 显示文本
+        /// </summary>
+        public string DisplayText => $"{HerbName} {Quantity}{Unit} × ¥{Price:F2} = ¥{Subtotal:F2}";
+
+        /// <summary>
+        /// 计算小计
+        /// </summary>
+        public void CalculateSubtotal()
         {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
-
-        private Guid _prescriptionId;
-        /// <summary>处方ID</summary>
-        public Guid PrescriptionId
-        {
-            get => _prescriptionId;
-            set => SetProperty(ref _prescriptionId, value);
-        }
-
-        private Guid _herbId;
-        /// <summary>药材ID</summary>
-        public Guid HerbId
-        {
-            get => _herbId;
-            set => SetProperty(ref _herbId, value);
-        }
-
-        private string _herbName = string.Empty;
-        /// <summary>药材名称</summary>
-        public string HerbName
-        {
-            get => _herbName;
-            set => SetProperty(ref _herbName, value);
-        }
-
-        private decimal _quantity;
-        /// <summary>用量</summary>
-        public decimal Quantity
-        {
-            get => _quantity;
-            set
-            {
-                if (SetProperty(ref _quantity, value))
-                {
-                    RaisePropertyChanged(nameof(Amount)); // 用量变化时通知金额更新
-                }
-            }
-        }
-
-        private string _unit = "g";
-        /// <summary>单位</summary>
-        public string Unit
-        {
-            get => _unit;
-            set => SetProperty(ref _unit, value);
-        }
-
-        private decimal _unitPrice = 0;
-        /// <summary>单价</summary>
-        public decimal UnitPrice
-        {
-            get => _unitPrice;
-            set
-            {
-                if (SetProperty(ref _unitPrice, value))
-                {
-                    RaisePropertyChanged(nameof(Amount)); // 单价变化时通知金额更新
-                }
-            }
-        }
-
-        /// <summary>小计金额</summary>
-        public decimal Amount => UnitPrice * Quantity;
-
-        /// <summary>小计金额（Subtotal别名，与Amount相同）</summary>
-        public decimal Subtotal => Amount;
-
-        private string? _usage;
-        /// <summary>用法说明</summary>
-        public string? Usage
-        {
-            get => _usage;
-            set => SetProperty(ref _usage, value);
-        }
-
-        private string? _remark;
-        /// <summary>备注信息</summary>
-        public string? Remark
-        {
-            get => _remark;
-            set => SetProperty(ref _remark, value);
-        }
-
-        /// <summary>备注（Note别名，与Remark相同）</summary>
-        public string? Note
-        {
-            get => _remark;
-            set => Remark = value;
-        }
-
-        private string? _origin;
-        /// <summary>产地（前端显示字段）</summary>
-        public string? Origin
-        {
-            get => _origin;
-            set => SetProperty(ref _origin, value);
-        }
-
-        private string? _specification;
-        /// <summary>规格（前端显示字段）</summary>
-        public string? Specification
-        {
-            get => _specification;
-            set => SetProperty(ref _specification, value);
-        }
-
-        private bool _isOutOfStock;
-        /// <summary>是否缺货（前端状态字段）</summary>
-        public bool IsOutOfStock
-        {
-            get => _isOutOfStock;
-            set => SetProperty(ref _isOutOfStock, value);
-        }
-
-        private bool _isSelected;
-        /// <summary>是否选中（用于批量操作）</summary>
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
+            Subtotal = Quantity * Price;
         }
     }
 }

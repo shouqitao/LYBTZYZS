@@ -1,109 +1,139 @@
 using System;
 using Prism.Events;
-using LYBT.Desktop.Core.Models.Consultation;
+using LYBT.Desktop.Core.Models.Patients;
 
 namespace LYBT.Desktop.Core.Events
 {
     /// <summary>
-    /// 诊疗数据更新事件
+    /// 患者选择事件
     /// </summary>
-    public class ConsultationDataUpdatedEvent : PubSubEvent<ConsultationData>
+    public class PatientSelectedEvent : PubSubEvent<PatientInfo>
     {
     }
 
     /// <summary>
-    /// 导入历史数据事件
+    /// 诊疗会话开始事件
     /// </summary>
-    public class ImportHistoryDataEvent : PubSubEvent<ImportHistoryDataEventArgs>
+    public class ConsultationSessionStartedEvent : PubSubEvent<ConsultationSessionData>
     {
     }
 
     /// <summary>
-    /// 导入历史数据事件参数
+    /// 中医四诊完成事件
     /// </summary>
-    public class ImportHistoryDataEventArgs
-    {
-        public Guid SourceMedicalCaseId { get; set; }
-        public string DataType { get; set; } = "";  // FourDiagnosis, Diagnosis, Prescription
-        public WorkflowStep TargetStep { get; set; }
-    }
-
-    /// <summary>
-    /// 工作流导航事件
-    /// </summary>
-    public class WorkflowNavigationEvent : PubSubEvent<WorkflowNavigationEventArgs>
+    public class TCMFourDiagnosisCompletedEvent : PubSubEvent<TCMFourDiagnosisData>
     {
     }
 
     /// <summary>
-    /// 工作流导航事件参数
+    /// 处方创建事件
     /// </summary>
-    public class WorkflowNavigationEventArgs
-    {
-        public WorkflowStep FromStep { get; set; }
-        public WorkflowStep ToStep { get; set; }
-        public bool IsForward { get; set; }
-    }
-
-    /// <summary>
-    /// 患者选择完成事件
-    /// </summary>
-    public class PatientSelectedEvent : PubSubEvent<PatientSelectedEventArgs>
+    public class PrescriptionCreatedEvent : PubSubEvent<PrescriptionCreatedData>
     {
     }
 
     /// <summary>
-    /// 患者选择事件参数
+    /// 诊疗完成事件
     /// </summary>
-    public class PatientSelectedEventArgs
+    public class ConsultationCompletedEvent : PubSubEvent<ConsultationCompletedData>
+    {
+    }
+
+    /// <summary>
+    /// 诊疗流程导航事件
+    /// </summary>
+    public class ConsultationNavigationEvent : PubSubEvent<ConsultationNavigationData>
+    {
+    }
+
+    #region 事件数据模型
+
+    /// <summary>
+    /// 诊疗会话数据
+    /// </summary>
+    public class ConsultationSessionData
     {
         public Guid PatientId { get; set; }
-        public string PatientName { get; set; } = "";
-        public string Gender { get; set; } = "";
-        public int Age { get; set; }
         public Guid MedicalCaseId { get; set; }
+        public Guid ConsultationId { get; set; }
+        public DateTime SessionStartTime { get; set; } = DateTime.Now;
     }
 
     /// <summary>
-    /// 四诊数据保存事件
+    /// 中医四诊数据
     /// </summary>
-    public class FourDiagnosisSavedEvent : PubSubEvent<FourDiagnosisData>
+    public class TCMFourDiagnosisData
     {
+        public string Diagnosis { get; set; } = string.Empty;
+        public string InspectionResult { get; set; } = string.Empty;
+        public string AuscultationResult { get; set; } = string.Empty;
+        public string InquiryResult { get; set; } = string.Empty;
+        public string PalpationResult { get; set; } = string.Empty;
+        public string Syndrome { get; set; } = string.Empty;
+        public string TreatmentPrinciple { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// 诊断保存事件
+    /// 处方创建数据
     /// </summary>
-    public class DiagnosisSavedEvent : PubSubEvent<DiagnosisSavedEventArgs>
+    public class PrescriptionCreatedData
     {
-    }
-
-    /// <summary>
-    /// 诊断保存事件参数
-    /// </summary>
-    public class DiagnosisSavedEventArgs
-    {
-        public string Diagnosis { get; set; } = "";
-        public string DifferentiationAnalysis { get; set; } = "";
-        public DateTime DiagnosisTime { get; set; }
-    }
-
-    /// <summary>
-    /// 处方保存事件
-    /// </summary>
-    public class PrescriptionSavedEvent : PubSubEvent<PrescriptionData>
-    {
-    }
-
-    /// <summary>
-    /// 工作流完成事件参数
-    /// </summary>
-    public class WorkflowCompletedEventArgs
-    {
-        public Guid MedicalCaseId { get; set; }
+        public Guid PrescriptionId { get; set; }
         public Guid PatientId { get; set; }
-        public DateTime CompletedTime { get; set; }
-        public bool IsSuccess { get; set; }
+        public Guid MedicalCaseId { get; set; }
+        public Guid ConsultationId { get; set; }
+        public string PrescriptionNumber { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+    }
+
+    /// <summary>
+    /// 诊疗完成数据
+    /// </summary>
+    public class ConsultationCompletedData
+    {
+        public Guid ConsultationId { get; set; }
+        public Guid PrescriptionId { get; set; }
+        public Guid PatientId { get; set; }
+        public DateTime CompletedTime { get; set; } = DateTime.Now;
+        public bool IsSuccessful { get; set; }
         public string? ErrorMessage { get; set; }
     }
+
+    /// <summary>
+    /// 诊疗流程导航数据
+    /// </summary>
+    public class ConsultationNavigationData
+    {
+        public ConsultationStep CurrentStep { get; set; }
+        public ConsultationStep? NextStep { get; set; }
+        public bool CanGoBack { get; set; }
+        public bool CanGoForward { get; set; }
+    }
+
+    #endregion
+
+    #region 枚举
+
+    /// <summary>
+    /// 诊疗流程步骤
+    /// </summary>
+    public enum ConsultationStep
+    {
+        /// <summary>患者选择</summary>
+        PatientSelection,
+        
+        /// <summary>中医四诊</summary>
+        TCMFourDiagnosis,
+        
+        /// <summary>辨证论治</summary>
+        Differentiation,
+        
+        /// <summary>处方开具</summary>
+        Prescription,
+        
+        /// <summary>完成确认</summary>
+        Completion
+    }
+
+    #endregion
 }

@@ -180,6 +180,7 @@
                         <Grid Margin="0,0,0,10">
                             <TextBlock Text="药材清单" Style="{StaticResource TitleTextStyle}"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="使用模板" Command="{Binding UseTemplateCommand}" Style="{StaticResource ActionButtonStyle}" Background="#9C27B0" Margin="0,0,5,0"/>
                                 <Button Content="添加药材" Command="{Binding AddItemCommand}" Style="{StaticResource ActionButtonStyle}" Background="#28A745"/>
                             </StackPanel>
                         </Grid>

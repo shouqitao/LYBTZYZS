@@ -24,5 +24,19 @@ namespace LYBT.Desktop.Core.Models.Patients
             get => PhoneNumber; 
             set => PhoneNumber = value; 
         }
+        
+        /// <summary>性别显示文本</summary>
+        public string GenderDisplay 
+        {
+            get
+            {
+                return Gender switch
+                {
+                    Gender.Male => "男",
+                    Gender.Female => "女",
+                    _ => "未知"
+                };
+            }
+        }
     }
 }

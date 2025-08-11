@@ -141,7 +141,7 @@ namespace LYBT.WebAPI.Controllers
 
                 if ((_cache?.TryGetValue(cacheKey, out List<PatientDetailDto>? data)) ?? false)
                 {
-                    return Success(data, "查询成功（缓存）");
+                    return Success(data!, "查询成功（缓存）");
                 }
 
                 var result = await _patientService.GetAllAsync();
@@ -408,6 +408,10 @@ namespace LYBT.WebAPI.Controllers
 
                 // 获取更新后的资源
                 var updated = await _patientService.GetByIdAsync(id);
+                if (updated == null)
+                {
+                    return BusinessFail<PatientDetailDto>("患者更新后查询失败", ApiErrorCodes.PATIENT_NOT_FOUND);
+                }
                 LogOperation("更新患者信息成功", updated, id);
                 return Success(updated, "患者信息更新成功");
             }
