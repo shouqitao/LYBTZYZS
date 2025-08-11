@@ -233,7 +233,8 @@
       "Bash(scriptsquick-fix.bat)",
       "Bash(do)",
       "Bash(if [ -f \"$file\" ])",
-      "Bash(then)"
+      "Bash(then)",
+      "Bash(git tag:*)"
     ],
     "deny": []
   }
