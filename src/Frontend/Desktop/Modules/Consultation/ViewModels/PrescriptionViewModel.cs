@@ -313,10 +313,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     }
                     
                     DosageCount = prescription.DosageCount;
-                    Usage = prescription.Usage;
+                    Usage = prescription.Usage ?? "水煎服，一日三次，饭后服用";
                     MedicalAdvice = prescription.MedicalAdvice ?? "";
                     Discount = prescription.Discount;
-                    PrescriptionNo = prescription.PrescriptionNo;
+                    PrescriptionNo = prescription.PrescriptionNo ?? $"CF{DateTime.Now:yyyyMMddHHmmss}";
                     
                     // 重置更改标记
                     HasChanges = false;

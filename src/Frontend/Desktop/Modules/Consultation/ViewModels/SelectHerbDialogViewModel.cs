@@ -24,8 +24,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private bool _isLoading;
         private string _searchKeyword = string.Empty;
         private HerbInfo? _selectedHerb;
-        private ObservableCollection<HerbInfo> _herbs;
-        private ObservableCollection<HerbSelectionItem> _selectedItems;
+        private ObservableCollection<HerbInfo> _herbs = new ObservableCollection<HerbInfo>();
+        private ObservableCollection<HerbSelectionItem> _selectedItems = new ObservableCollection<HerbSelectionItem>();
         private decimal _defaultQuantity = 10;
         private string _quantityUnit = "g";
         
@@ -110,7 +110,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <summary>
         /// 是否显示空状态
         /// </summary>
-        public bool ShowEmptyState => !IsLoading && (_herbs == null || !_herbs.Any());
+        public bool ShowEmptyState => !IsLoading && !_herbs.Any();
 
         /// <summary>
         /// 空状态消息
@@ -128,12 +128,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <summary>
         /// 选择总价
         /// </summary>
-        public decimal TotalPrice => SelectedItems?.Sum(i => i.Subtotal) ?? 0;
+        public decimal TotalPrice => SelectedItems.Sum(i => i.Subtotal);
 
         /// <summary>
         /// 选择数量
         /// </summary>
-        public int SelectionCount => SelectedItems?.Count ?? 0;
+        public int SelectionCount => SelectedItems.Count;
 
         #endregion
 
@@ -166,16 +166,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             _herbService = herbService;
             _dialogService = dialogService;
-            
-            _herbs = new ObservableCollection<HerbInfo>();
-            _selectedItems = new ObservableCollection<HerbSelectionItem>();
 
             // 监听选择项变化
             _selectedItems.CollectionChanged += (s, e) =>
             {
                 RaisePropertyChanged(nameof(TotalPrice));
                 RaisePropertyChanged(nameof(SelectionCount));
-                ConfirmCommand.RaiseCanExecuteChanged();
+                ConfirmCommand?.RaiseCanExecuteChanged();
             };
 
             // 初始化命令
@@ -207,7 +204,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     {
                         Id = dto.Id,
                         Name = dto.Name,
-                        Category = "", // 默认值
+                        Category = string.Empty, // 默认值
                         Price = dto.Price,
                         Unit = dto.Unit,
                         Stock = 0, // 默认值
@@ -236,7 +233,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
         }
 
-        private async Task ExecuteSearchAsync()
+        private Task ExecuteSearchAsync()
         {
             try
             {
@@ -266,6 +263,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 IsLoading = false;
             }
+            
+            return Task.CompletedTask;
         }
 
         private bool CanAddToSelection()

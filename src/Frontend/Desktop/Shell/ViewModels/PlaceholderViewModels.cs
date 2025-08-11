@@ -1,4 +1,5 @@
 using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.ViewModels.Base;
 using Prism.Events;
 
 namespace LYBT.Desktop.Shell.ViewModels
@@ -8,7 +9,7 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// <summary>
     /// 患者列表视图模型
     /// </summary>
-    public class PatientListViewModel : BaseViewModel
+    public class PatientListViewModel : ServiceViewModel
     {
         public PatientListViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
         {
@@ -18,7 +19,7 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// <summary>
     /// 患者详情视图模型
     /// </summary>
-    public class PatientDetailViewModel : BaseViewModel
+    public class PatientDetailViewModel : ServiceViewModel
     {
         public PatientDetailViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
         {
@@ -28,7 +29,7 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// <summary>
     /// 处方视图模型
     /// </summary>
-    public class PrescriptionViewModel : BaseViewModel
+    public class PrescriptionViewModel : ServiceViewModel
     {
         public PrescriptionViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
         {
@@ -38,7 +39,7 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// <summary>
     /// 诊疗视图模型
     /// </summary>
-    public class ConsultationViewModel : BaseViewModel
+    public class ConsultationViewModel : ServiceViewModel
     {
         public ConsultationViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
         {

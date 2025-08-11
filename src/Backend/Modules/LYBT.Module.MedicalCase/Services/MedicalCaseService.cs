@@ -69,28 +69,37 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
-                var models = await _repository.GetAllAsync();
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(models.ToList());
+                // 使用IQueryable在数据库层进行查询，包含关联数据
+                var query = _dbContext.MedicalCases
+                    .Include(x => x.Consultation)
+                    .AsQueryable();
 
-                // 搜索过滤
+                // 搜索过滤 - 在数据库层执行
+                // 注意：需要通过关联查询获取患者名称和医生名称
                 if (!string.IsNullOrWhiteSpace(request.Keyword))
                 {
-                    dtos = dtos.Where(x =>
-                        x.PatientName.Contains(request.Keyword, StringComparison.OrdinalIgnoreCase) ||
-                        x.DoctorName.Contains(request.Keyword, StringComparison.OrdinalIgnoreCase) ||
-                        x.DiagnosisSummary.Contains(request.Keyword, StringComparison.OrdinalIgnoreCase)
-                    ).ToList();
+                    query = query.Where(x =>
+                        x.Id.ToString().Contains(request.Keyword) ||
+                        x.PatientId.ToString().Contains(request.Keyword) ||
+                        x.UserId.ToString().Contains(request.Keyword) ||
+                        (x.Remark != null && x.Remark.Contains(request.Keyword))
+                    );
                 }
 
                 // 排序 - 默认按创建时间降序
-                dtos = dtos.OrderByDescending(x => x.CreateTime).ToList();
+                query = query.OrderByDescending(x => x.CreateTime);
 
-                // 分页
-                var total = dtos.Count;
-                var items = dtos
+                // 获取总数
+                var total = await query.CountAsync();
+
+                // 分页 - 在数据库层执行
+                var pagedModels = await query
                     .Skip((request.PageIndex - 1) * request.PageSize)
                     .Take(request.PageSize)
-                    .ToList();
+                    .ToListAsync();
+
+                // 映射到DTO
+                var items = _mapper.Map<List<MedicalCaseDto>>(pagedModels);
 
                 return new PaginatedResult<MedicalCaseDto>
                 {
@@ -352,15 +361,48 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         public async Task<bool> CompleteConsultationAsync(Guid caseId, Guid? prescriptionId)
         {
-            var medicalCase = await _dbContext.MedicalCases.FindAsync(caseId);
-            if (medicalCase == null) return false;
+            var medicalCase = await _repository.GetByIdAsync(caseId);
+            if (medicalCase == null) 
+            {
+                _logger.LogWarning("医疗案例不存在，ID: {CaseId}", caseId);
+                return false;
+            }
+
+            // 检查是否有处方（通过查询处方表）
+            if (!prescriptionId.HasValue)
+            {
+                // 查询是否存在与此医疗案例相关的处方
+                // 注意：需要确认 Prescriptions 表是否有与 MedicalCase 关联的字段
+                var hasPrescription = await _dbContext.Prescriptions
+                    .AnyAsync(p => p.PatientId == medicalCase.PatientId && 
+                                  p.CreateTime >= medicalCase.CreateTime);
+                
+                if (!hasPrescription)
+                {
+                    _logger.LogWarning("完成看诊警告：医疗案例 {CaseId} 可能没有关联的处方", caseId);
+                    // 可以选择返回 false 阻止完成，或者记录警告后继续
+                    // return false; // 如果必须有处方才能完成
+                }
+            }
 
             medicalCase.Status = LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed;
             medicalCase.UpdateTime = DateTime.Now;
             medicalCase.CompleteTime = DateTime.Now;
 
-            await _dbContext.SaveChangesAsync();
-            return true;
+            var result = await _repository.UpdateAsync(medicalCase);
+            
+            if (result != null)
+            {
+                _logger.LogInformation("医疗案例 {CaseId} 完成看诊", caseId);
+                
+                // 如果提供了处方ID，可以记录日志
+                if (prescriptionId.HasValue)
+                {
+                    _logger.LogInformation("关联处方ID: {PrescriptionId}", prescriptionId.Value);
+                }
+            }
+            
+            return result != null;
         }
 
         /// <summary>

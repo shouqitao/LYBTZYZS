@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
@@ -18,7 +19,7 @@ namespace LYBT.Desktop.Users.Base
     /// </summary>
     /// <typeparam name="TModel">数据模型类型</typeparam>
     /// <typeparam name="TService">服务接口类型</typeparam>
-    public abstract class BaseServiceManagementViewModel<TModel, TService> : NavigationViewModel
+    public abstract class BaseServiceManagementViewModel<TModel, TService> : NavigationViewModelBase
         where TModel : class, new()
         where TService : class
     {
@@ -202,7 +203,7 @@ namespace LYBT.Desktop.Users.Base
 
         #region Navigation
 
-        public override void OnNavigatedTo(LYBT.Desktop.Core.ViewModels.NavigationParameters parameters)
+        public override void OnNavigatedTo(Dictionary<string, object>? parameters = null)
         {
             base.OnNavigatedTo(parameters);
             _ = LoadDataAsync();

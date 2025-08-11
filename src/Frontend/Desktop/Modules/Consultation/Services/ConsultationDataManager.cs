@@ -60,21 +60,21 @@ namespace LYBT.Desktop.Consultation.Services
             }
         }
 
-        private string _patientName = "";
+        private string _patientName = string.Empty;
         public string PatientName
         {
             get => _patientName;
             set => SetProperty(ref _patientName, value);
         }
 
-        private string _patientGenderAge = "";
+        private string _patientGenderAge = string.Empty;
         public string PatientGenderAge
         {
             get => _patientGenderAge;
             set => SetProperty(ref _patientGenderAge, value);
         }
 
-        private string _patientPhone = "";
+        private string _patientPhone = string.Empty;
         public string PatientPhone
         {
             get => _patientPhone;
@@ -176,7 +176,7 @@ namespace LYBT.Desktop.Consultation.Services
                         Age = result.Data.Age,
                         BirthDate = result.Data.DateOfBirth,
                         PhoneNumber = result.Data.PhoneNumber,
-                        Address = result.Data.Address ?? ""
+                        Address = result.Data.Address ?? string.Empty
                         // 暂时省略不匹配的属性
                     };
                     HasSelectedPatient = true;
@@ -202,7 +202,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 保存诊疗数据
         /// </summary>
-        public async Task<bool> SaveConsultationDataAsync(ConsultationData data)
+        public Task<bool> SaveConsultationDataAsync(ConsultationData data)
         {
             try
             {
@@ -211,18 +211,18 @@ namespace LYBT.Desktop.Consultation.Services
                 if (MedicalCaseId == Guid.Empty)
                 {
                     _logger.LogWarning("医疗案例ID无效，无法保存诊疗数据");
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 // 简化保存逻辑，暂时直接返回成功
                 _logger.LogInformation("保存诊疗数据（暂时简化实现）");
                 ConsultationData = data;
-                return true; // 暂时简化
+                return Task.FromResult(true); // 暂时简化
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "保存诊疗数据时发生错误");
-                return false;
+                return Task.FromResult(false);
             }
             finally
             {
@@ -233,7 +233,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 保存处方数据
         /// </summary>
-        public async Task<bool> SavePrescriptionDataAsync(PrescriptionData prescriptionData)
+        public Task<bool> SavePrescriptionDataAsync(PrescriptionData prescriptionData)
         {
             try
             {
@@ -242,17 +242,17 @@ namespace LYBT.Desktop.Consultation.Services
                 if (MedicalCaseId == Guid.Empty)
                 {
                     _logger.LogWarning("医疗案例ID无效，无法保存处方数据");
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 // 简化处方保存逻辑
                 _logger.LogInformation("保存处方数据（暂时简化实现）");
-                return true; // 暂时简化
+                return Task.FromResult(true); // 暂时简化
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "保存处方数据时发生错误");
-                return false;
+                return Task.FromResult(false);
             }
             finally
             {
@@ -268,9 +268,9 @@ namespace LYBT.Desktop.Consultation.Services
             MedicalCaseId = Guid.Empty;
             MedicalCase = null;
             Patient = null;
-            PatientName = "";
-            PatientGenderAge = "";
-            PatientPhone = "";
+            PatientName = string.Empty;
+            PatientGenderAge = string.Empty;
+            PatientPhone = string.Empty;
             HasSelectedPatient = false;
             ConsultationData = null;
         }
@@ -340,15 +340,15 @@ namespace LYBT.Desktop.Consultation.Services
         {
             if (Patient != null)
             {
-                PatientName = Patient.Name ?? "";
+                PatientName = Patient.Name ?? string.Empty;
                 PatientGenderAge = $"{Patient.Gender} | {CalculateAge(Patient.BirthDate)}岁";
-                PatientPhone = Patient.PhoneNumber ?? "";
+                PatientPhone = Patient.PhoneNumber ?? string.Empty;
             }
             else
             {
-                PatientName = "";
-                PatientGenderAge = "";
-                PatientPhone = "";
+                PatientName = string.Empty;
+                PatientGenderAge = string.Empty;
+                PatientPhone = string.Empty;
             }
         }
 

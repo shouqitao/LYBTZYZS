@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
@@ -14,11 +15,11 @@ using Prism.Events;
 namespace LYBT.Desktop.BusinessModules.Users.Base
 {
     /// <summary>
-    /// 系统管理模块基础视图模型（使用服务层�?
+    /// 系统管理模块基础视图模型（使用服务层�?
     /// </summary>
     /// <typeparam name="TModel">数据模型类型</typeparam>
     /// <typeparam name="TService">服务接口类型</typeparam>
-    public abstract class BaseServiceManagementViewModel<TModel, TService> : NavigationViewModel
+    public abstract class BaseServiceManagementViewModel<TModel, TService> : NavigationViewModelBase
         where TModel : class, new()
         where TService : class
     {
@@ -38,7 +39,7 @@ namespace LYBT.Desktop.BusinessModules.Users.Base
 
         private TModel? _selectedItem;
         /// <summary>
-        /// 选中�?
+        /// 选中�?
         /// </summary>
         public TModel? SelectedItem
         {
@@ -48,7 +49,7 @@ namespace LYBT.Desktop.BusinessModules.Users.Base
 
         private string _searchKeyword = string.Empty;
         /// <summary>
-        /// 搜索关键�?
+        /// 搜索关键�?
         /// </summary>
         public string SearchKeyword
         {
@@ -98,7 +99,7 @@ namespace LYBT.Desktop.BusinessModules.Users.Base
 
         private int _totalPages;
         /// <summary>
-        /// 总页�?
+        /// 总页�?
         /// </summary>
         public int TotalPages
         {
@@ -141,22 +142,22 @@ namespace LYBT.Desktop.BusinessModules.Users.Base
         public DelegateCommand<TModel> DeleteCommand { get; }
 
         /// <summary>
-        /// 第一页命�?
+        /// 第一页命�?
         /// </summary>
         public DelegateCommand FirstPageCommand { get; }
 
         /// <summary>
-        /// 上一页命�?
+        /// 上一页命�?
         /// </summary>
         public DelegateCommand PreviousPageCommand { get; }
 
         /// <summary>
-        /// 下一页命�?
+        /// 下一页命�?
         /// </summary>
         public DelegateCommand NextPageCommand { get; }
 
         /// <summary>
-        /// 最后一页命�?
+        /// 最后一页命�?
         /// </summary>
         public DelegateCommand LastPageCommand { get; }
 
@@ -169,7 +170,7 @@ namespace LYBT.Desktop.BusinessModules.Users.Base
         {
             Service = service ?? throw new ArgumentNullException(nameof(service));
 
-            // 初始化命�?
+            // 初始化命�?
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
             AddCommand = new DelegateCommand(async () => await AddAsync());
@@ -202,7 +203,7 @@ namespace LYBT.Desktop.BusinessModules.Users.Base
 
         #region Navigation
 
-        public override void OnNavigatedTo(LYBT.Desktop.Core.ViewModels.NavigationParameters parameters)
+        public override void OnNavigatedTo(Dictionary<string, object>? parameters = null)
         {
             base.OnNavigatedTo(parameters);
             _ = LoadDataAsync();
@@ -277,17 +278,17 @@ namespace LYBT.Desktop.BusinessModules.Users.Base
         }
 
         /// <summary>
-        /// 添加（由子类实现�?
+        /// 添加（由子类实现�?
         /// </summary>
         protected abstract Task AddAsync();
 
         /// <summary>
-        /// 编辑（由子类实现�?
+        /// 编辑（由子类实现�?
         /// </summary>
         protected abstract Task EditAsync(TModel item);
 
         /// <summary>
-        /// 删除（由子类实现�?
+        /// 删除（由子类实现�?
         /// </summary>
         protected abstract Task DeleteAsync(TModel item);
 
@@ -320,7 +321,7 @@ namespace LYBT.Desktop.BusinessModules.Users.Base
         }
 
         /// <summary>
-        /// 显示确认对话�?
+        /// 显示确认对话�?
         /// </summary>
         protected virtual bool ShowConfirm(string message)
         {

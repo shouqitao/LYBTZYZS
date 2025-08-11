@@ -2,6 +2,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Models.Users;
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Database
@@ -15,11 +16,16 @@ namespace LYBT.Infrastructure.Database
     {
         private readonly AppDbContext _dbContext;
         private readonly ILogger<DatabaseInitializationService> _logger;
+        private readonly IConfiguration _configuration;
 
-        public DatabaseInitializationService(AppDbContext dbContext, ILogger<DatabaseInitializationService> logger)
+        public DatabaseInitializationService(
+            AppDbContext dbContext, 
+            ILogger<DatabaseInitializationService> logger,
+            IConfiguration configuration)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -401,8 +407,8 @@ namespace LYBT.Infrastructure.Database
                 {
                     _logger.LogInformation("正在创建默认超级管理员密码...");
 
-                    // 默认密码
-                    var defaultPassword = "Admin@123456";
+                    // 从配置读取默认密码
+                    var defaultPassword = _configuration.GetValue<string>("SysAdminOptions:DefaultPassword") ?? "Admin@123456";
                     var passwordHash = PasswordHelper.Hash(defaultPassword);
 
                     // 创建AdminSecret记录
@@ -417,7 +423,7 @@ namespace LYBT.Infrastructure.Database
                     await _dbContext.SaveChangesAsync();
 
                     _logger.LogInformation("✅ 默认超级管理员密码已创建");
-                    _logger.LogInformation("默认登录信息: 用户名=sysadmin, 密码=Admin@123456");
+                    _logger.LogInformation($"默认登录信息: 用户名=sysadmin, 密码={defaultPassword}");
                 }
                 else
                 {

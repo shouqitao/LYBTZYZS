@@ -128,48 +128,48 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 获取四诊历史数据用于导入
         /// </summary>
-        public async Task<ConsultationData?> GetFourDiagnosisDataAsync(HistoryRecord historyRecord)
+        public Task<ConsultationData?> GetFourDiagnosisDataAsync(HistoryRecord historyRecord)
         {
             try
             {
                 if (historyRecord.Type != HistoryRecordType.Consultation)
                 {
-                    return null;
+                    return Task.FromResult<ConsultationData?>(null);
                 }
 
                 // 简化获取四诊数据，暂时返回空
                 _logger.LogInformation("获取四诊历史数据（暂时简化实现）: {RecordId}", historyRecord.RecordId);
                 _logger.LogWarning("获取四诊历史数据失败: {RecordId}", historyRecord.RecordId);
-                return null;
+                return Task.FromResult<ConsultationData?>(null);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取四诊历史数据时发生错误: {RecordId}", historyRecord.RecordId);
-                return null;
+                return Task.FromResult<ConsultationData?>(null);
             }
         }
 
         /// <summary>
         /// 获取处方历史数据用于导入
         /// </summary>
-        public async Task<PrescriptionData?> GetPrescriptionDataAsync(HistoryRecord historyRecord)
+        public Task<PrescriptionData?> GetPrescriptionDataAsync(HistoryRecord historyRecord)
         {
             try
             {
                 if (historyRecord.Type != HistoryRecordType.Prescription)
                 {
-                    return null;
+                    return Task.FromResult<PrescriptionData?>(null);
                 }
 
                 // 简化获取处方数据，暂时返回空
                 _logger.LogInformation("获取处方历史数据（暂时简化实现）: {RecordId}", historyRecord.RecordId);
                 _logger.LogWarning("获取处方历史数据失败: {RecordId}", historyRecord.RecordId);
-                return null;
+                return Task.FromResult<PrescriptionData?>(null);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取处方历史数据时发生错误: {RecordId}", historyRecord.RecordId);
-                return null;
+                return Task.FromResult<PrescriptionData?>(null);
             }
         }
 
@@ -295,8 +295,8 @@ namespace LYBT.Desktop.Consultation.Services
         public Guid RecordId { get; set; }
         public HistoryRecordType Type { get; set; }
         public DateTime Date { get; set; }
-        public string Title { get; set; } = "";
-        public string Summary { get; set; } = "";
-        public string DoctorName { get; set; } = "";
+        public string Title { get; set; } = string.Empty;
+        public string Summary { get; set; } = string.Empty;
+        public string DoctorName { get; set; } = string.Empty;
     }
 }

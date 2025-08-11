@@ -41,30 +41,14 @@ namespace LYBT.Infrastructure.Data
         // 患者管理
         public DbSet<PatientModel> Patients { get; set; }
 
-        // 医生管理
-        // public DbSet<DoctorModel> Doctors { get; set; } // 医生功能已整合到Users
-
-        // 挂号管理
-        // public DbSet<RegistrationModel> Registrations { get; set; } // 模块已删除
-
-        // 排队管理
-        // public DbSet<QueueingModel> Queueings { get; set; } // 模块已删除
-
         // 医疗案例
         public DbSet<MedicalCaseModel> MedicalCases { get; set; }
 
         // 看诊
         public DbSet<ConsultationModel> Consultations { get; set; }
 
-        // 治疗方案
-        // public DbSet<TreatmentPlanModel> TreatmentPlans { get; set; } // 模块已删除
-
-        // 诊断治疗（已删除，使用Consultation替代）
-        // public DbSet<DiagnosisTreatmentModel> DiagnosisTreatments { get; set; }
-
         // 处方管理
         public DbSet<PrescriptionModel> Prescriptions { get; set; }
-
         public DbSet<PrescriptionItemModel> PrescriptionItems { get; set; }
 
         // 药材管理
@@ -72,29 +56,6 @@ namespace LYBT.Infrastructure.Data
 
         // 验方管理
         public DbSet<FormulaModel> Formulas { get; set; }
-
-        // 药房管理
-        // public DbSet<PharmacyModel> Pharmacies { get; set; } // 模块已删除
-
-        // public DbSet<PharmacyHerbModel> PharmacyHerbs { get; set; } // 模块已删除
-
-        // 收银管理
-        // public DbSet<CashierRecord> CashierRecords { get; set; } // 模块已删除
-        // public DbSet<CashierItem> CashierItems { get; set; } // 模块已删除
-        // public DbSet<CashierPayment> CashierPayments { get; set; } // 模块已删除
-        // public DbSet<DailySettlement> DailySettlements { get; set; } // 模块已删除
-        // public DbSet<Invoice> Invoices { get; set; } // 模块已删除
-
-        // 病历管理（已删除，使用MedicalCase和Consultation替代）
-        // public DbSet<RecordModel> Records { get; set; }
-
-        // 治疗室管理
-        // public DbSet<TreatmentRoomModel> TreatmentRooms { get; set; } // 模块已删除
-        // public DbSet<TreatmentTaskModel> TreatmentTasks { get; set; } // 模块已删除
-
-        // 同步管理（MVP阶段暂不需要）
-        // public DbSet<SyncTaskModel> SyncTasks { get; set; }
-        // public DbSet<SyncLogModel> SyncLogs { get; set; }
 
         // ==================== 日志相关实体 ====================
 

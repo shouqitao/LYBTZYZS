@@ -40,9 +40,7 @@ public static class ServiceCollectionExtension
     {
         // 认证模块 - 已迁移到AuthModule.AddAuthModule()统一管理
 
-        // 用户模块
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IUserRepository, UserRepository>();
+        // 用户模块 - 已通过AddUsersModuleServices()在UnifiedServiceRegistration中注册
 
         // 患者模块
         services.AddScoped<IPatientService, PatientService>();

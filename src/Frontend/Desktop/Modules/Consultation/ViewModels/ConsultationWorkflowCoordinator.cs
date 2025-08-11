@@ -67,13 +67,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 命令
 
-        public ICommand PreviousStepCommand { get; private set; }
-        public ICommand NextStepCommand { get; private set; }
-        public ICommand SaveDraftCommand { get; private set; }
-        public ICommand CompleteWorkflowCommand { get; private set; }
-        public ICommand ExitWorkflowCommand { get; private set; }
-        public ICommand ToggleHistoryCommand { get; private set; }
-        public ICommand RefreshCommand { get; private set; }
+        public ICommand PreviousStepCommand { get; private set; } = null!;
+        public ICommand NextStepCommand { get; private set; } = null!;
+        public ICommand SaveDraftCommand { get; private set; } = null!;
+        public ICommand CompleteWorkflowCommand { get; private set; } = null!;
+        public ICommand ExitWorkflowCommand { get; private set; } = null!;
+        public ICommand ToggleHistoryCommand { get; private set; } = null!;
+        public ICommand RefreshCommand { get; private set; } = null!;
 
         #endregion
 
@@ -249,7 +249,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
         }
 
-        private async Task ExitWorkflowAsync()
+        private Task ExitWorkflowAsync()
         {
             var hasUnsavedChanges = CheckForUnsavedChanges();
             
@@ -260,7 +260,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     
                 if (result != true)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
             }
 
@@ -272,6 +272,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
             StatusMessage = "已退出工作流";
             _logger.LogInformation("用户退出诊疗工作流");
+            return Task.CompletedTask;
         }
 
         private async Task RefreshAsync()

@@ -27,9 +27,9 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         private readonly ILogger<PrescriptionCommandHandler> _logger;
 
         // 关联的数据管理器和验证器
-        private PrescriptionDataManager? _dataManager;
-        private PrescriptionValidator? _validator;
-        private PrescriptionCalculator? _calculator;
+        private PrescriptionDataManager _dataManager = null!;
+        private PrescriptionValidator _validator = null!;
+        private PrescriptionCalculator _calculator = null!;
 
         public PrescriptionCommandHandler(
             IHerbService herbService,
@@ -136,8 +136,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private async Task SaveAsync()
         {
-            if (_dataManager == null) return;
-
             try
             {
                 _logger.LogInformation("开始保存处方");
@@ -167,8 +165,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void Clear()
         {
-            if (_dataManager == null) return;
-
             try
             {
                 var result = ShowConfirmDialog("确认清空", "确定要清空当前处方吗？此操作不可撤销。");
@@ -221,7 +217,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private async Task AddHerbItems(dynamic herbItems)
         {
-            if (_dataManager == null || herbItems == null) return;
+            if (herbItems == null) return;
 
             try
             {
@@ -255,7 +251,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void RemoveHerb(PrescriptionItemViewModel? item)
         {
-            if (_dataManager == null || item == null) return;
+            if (item == null) return;
 
             try
             {
@@ -300,7 +296,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void ImportFormulaItems(dynamic formula)
         {
-            if (_dataManager == null || formula?.Items == null) return;
+            if (formula?.Items == null) return;
 
             try
             {
@@ -334,8 +330,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private async Task ImportHistoryAsync()
         {
-            if (_dataManager == null) return;
-
             try
             {
                 _logger.LogDebug("开始选择历史处方");
@@ -367,7 +361,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void ImportHistoryItems(dynamic prescription)
         {
-            if (_dataManager == null || prescription?.Items == null) return;
+            if (prescription?.Items == null) return;
 
             try
             {
@@ -411,7 +405,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void SetDiscount(string? discountStr)
         {
-            if (_dataManager == null || _validator == null) return;
 
             try
             {
@@ -439,7 +432,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void SetDosage(string? dosageStr)
         {
-            if (_dataManager == null || _validator == null) return;
 
             try
             {
@@ -467,8 +459,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void GeneratePrescriptionNo()
         {
-            if (_dataManager == null) return;
-
             try
             {
                 _dataManager.GeneratePrescriptionNo();
@@ -483,10 +473,8 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// <summary>
         /// 打印预览
         /// </summary>
-        private async Task PrintPreviewAsync()
+        private Task PrintPreviewAsync()
         {
-            if (_dataManager == null) return;
-
             try
             {
                 _logger.LogInformation("开始打印预览");
@@ -500,11 +488,14 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                 {
                     _logger.LogDebug("打印预览对话框关闭");
                 });
+                
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "打印预览时发生错误");
                 ShowErrorMessage("打印预览失败", "无法打开打印预览");
+                return Task.CompletedTask;
             }
         }
 
@@ -513,7 +504,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void ValidatePrescription()
         {
-            if (_dataManager == null || _validator == null) return;
 
             try
             {
@@ -548,7 +538,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private void RecalculatePrice()
         {
-            if (_dataManager == null || _calculator == null) return;
 
             try
             {
@@ -570,12 +559,12 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
 
         private bool CanExecuteSave()
         {
-            return _dataManager != null && !_dataManager.IsLoading && _dataManager.PrescriptionItems.Count > 0;
+            return !_dataManager.IsLoading && _dataManager.PrescriptionItems.Count > 0;
         }
 
         private bool CanExecuteClear()
         {
-            return _dataManager != null && !_dataManager.IsLoading;
+            return !_dataManager.IsLoading;
         }
 
         #endregion
@@ -619,8 +608,6 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         /// </summary>
         private object CreatePrintData()
         {
-            if (_dataManager == null || _calculator == null)
-                return new { };
 
             var calculation = _calculator.CalculatePrescriptionPrice(
                 _dataManager.PrescriptionItems, _dataManager.DosageCount, _dataManager.Discount);

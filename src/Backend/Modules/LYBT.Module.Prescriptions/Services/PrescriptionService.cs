@@ -11,6 +11,8 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace LYBT.Module.Prescriptions.Services
 {
@@ -21,13 +23,22 @@ namespace LYBT.Module.Prescriptions.Services
     public class PrescriptionService : IPrescriptionService
     {
         private readonly IPrescriptionRepository _repository;
+        private readonly LYBT.Infrastructure.Data.AppDbContext _dbContext;
         private readonly IUnifiedLogService _logService;
+        private readonly IIntelligentPrescriptionService _intelligentService;
         private readonly IMapper _mapper;
 
-        public PrescriptionService(IPrescriptionRepository repository, IUnifiedLogService logService, IMapper mapper)
+        public PrescriptionService(
+            IPrescriptionRepository repository, 
+            LYBT.Infrastructure.Data.AppDbContext dbContext,
+            IUnifiedLogService logService,
+            IIntelligentPrescriptionService intelligentService,
+            IMapper mapper)
         {
             _repository = repository;
+            _dbContext = dbContext;
             _logService = logService;
+            _intelligentService = intelligentService;
             _mapper = mapper;
         }
 
@@ -49,27 +60,35 @@ namespace LYBT.Module.Prescriptions.Services
         /// <returns>分页结果</returns>
         public async Task<PaginatedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto query)
         {
-            var allList = await _repository.GetListAsync();
-            var dtoList = _mapper.Map<List<PrescriptionDto>>(allList);
+            // 使用IQueryable在数据库层进行查询
+            var dbQuery = _dbContext.Prescriptions
+                .Include(p => p.Items)
+                .AsQueryable();
 
-            // 在内存中进行搜索和分页
-            var filteredList = dtoList.AsQueryable();
-
-            // 如果有搜索关键字，进行搜索过滤
+            // 如果有搜索关键字，在数据库层进行搜索过滤
             if (!string.IsNullOrEmpty(query.Keyword))
             {
-                filteredList = filteredList.Where(x =>
+                dbQuery = dbQuery.Where(x =>
                     x.Id.ToString().Contains(query.Keyword) ||
                     x.PatientId.ToString().Contains(query.Keyword) ||
-                    x.DoctorId.ToString().Contains(query.Keyword)
+                    x.UserId.ToString().Contains(query.Keyword)
                 );
             }
 
-            var total = filteredList.Count();
-            var pagedList = filteredList
+            // 排序 - 默认按创建时间降序
+            dbQuery = dbQuery.OrderByDescending(x => x.CreateTime);
+
+            // 获取总数
+            var total = await dbQuery.CountAsync();
+
+            // 分页 - 在数据库层执行
+            var pagedModels = await dbQuery
                 .Skip((query.PageIndex - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .ToList();
+                .ToListAsync();
+
+            // 映射到DTO
+            var pagedList = _mapper.Map<List<PrescriptionDto>>(pagedModels);
 
             return new PaginatedResult<PrescriptionDto>(pagedList, total, query.PageIndex, query.PageSize);
         }
@@ -98,6 +117,58 @@ namespace LYBT.Module.Prescriptions.Services
         {
             var model = _mapper.Map<LYBT.Models.Prescriptions.PrescriptionModel>(dto);
             model.Id = Guid.NewGuid();
+            
+            // 执行智能检查
+            if (dto.Items != null && dto.Items.Any())
+            {
+                // 先将PrescriptionItemCreateDto转换为PrescriptionItemModel
+                var prescriptionItems = dto.Items.Select(item => new LYBT.Models.Prescriptions.PrescriptionItemModel
+                {
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName,
+                    Quantity = item.Quantity,
+                    Unit = item.Unit,
+                    UnitPrice = item.UnitPrice,
+                    // Amount属性是计算属性，不需要设置
+                    Usage = item.Usage,
+                    Remark = item.Remark ?? item.Note
+                }).ToList();
+
+                // 检测重复药材
+                var duplicateResult = _intelligentService.DetectDuplicateHerbs(prescriptionItems);
+                if (duplicateResult.HasDuplicates && duplicateResult.DuplicateHerbs.Any())
+                {
+                    await _logService.CreateLogAsync(new LogCreateDto
+                    {
+                        LogType = LogType.Business,
+                        ObjectType = ObjectType.Prescription,
+                        ObjectId = model.Id,
+                        ActionType = ActionType.Other,
+                        OperatorId = operatorId,
+                        OperatorName = operatorName,
+                        Content = $"处方包含重复药材: {string.Join(", ", duplicateResult.DuplicateHerbs)}",
+                        NewValue = JsonSerializer.Serialize(duplicateResult.DuplicateHerbs)
+                    });
+                }
+
+                // 检查药材可用性
+                var availabilityResult = await _intelligentService.CheckHerbAvailabilityAsync(prescriptionItems);
+                if (!availabilityResult.IsAvailable && availabilityResult.UnavailableHerbs.Any())
+                {
+                    await _logService.CreateLogAsync(new LogCreateDto
+                    {
+                        LogType = LogType.Business,
+                        ObjectType = ObjectType.Prescription,
+                        ObjectId = model.Id,
+                        ActionType = ActionType.Other,
+                        OperatorId = operatorId,
+                        OperatorName = operatorName,
+                        Content = $"药材可用性警告: {string.Join(", ", availabilityResult.UnavailableHerbs)} 不可用",
+                        NewValue = JsonSerializer.Serialize(availabilityResult.UnavailableHerbs)
+                    });
+                }
+            }
+            
             var success = await _repository.AddAsync(model);
             if (!success)
                 return null;
