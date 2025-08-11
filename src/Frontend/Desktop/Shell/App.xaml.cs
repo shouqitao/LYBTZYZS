@@ -49,14 +49,6 @@ namespace LYBT.Desktop.Shell
             
             // 显式注册View和ViewModel的映射关系
             ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
-            ViewModelLocationProvider.Register<TestHomeView, TestHomeViewModel>();
-            ViewModelLocationProvider.Register<DiagnosticHomeView, DiagnosticHomeViewModel>();
-            
-            // 也可以使用类型字符串注册（备用方案）
-            ViewModelLocationProvider.Register(
-                typeof(HomeView).ToString(),
-                () => Container.Resolve<HomeViewModel>()
-            );
         }
 
         protected override void OnInitialized()
