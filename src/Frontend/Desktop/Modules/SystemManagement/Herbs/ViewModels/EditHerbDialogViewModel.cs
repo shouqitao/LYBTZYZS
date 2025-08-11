@@ -132,7 +132,7 @@ namespace LYBT.Desktop.Admin.Herbs.ViewModels
             _commonDialogService = commonDialogService;
             _herbService = herbService;
 
-            SaveCommand = new DelegateCommand(ExecuteSaveWrapper, CanExecuteSave);
+            SaveCommand = DelegateCommand.FromAsyncHandler(ExecuteSave, CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
             RegeneratePinYinCommand = new DelegateCommand(ExecuteRegeneratePinYin);
             RegenerateWuBiCommand = new DelegateCommand(ExecuteRegenerateWuBi);
@@ -189,11 +189,6 @@ namespace LYBT.Desktop.Admin.Herbs.ViewModels
             return !string.IsNullOrWhiteSpace(HerbName) &&
                    !string.IsNullOrWhiteSpace(Unit) &&
                    Price > 0;
-        }
-
-        private async void ExecuteSaveWrapper()
-        {
-            await ExecuteSave();
         }
 
         private async Task ExecuteSave()
