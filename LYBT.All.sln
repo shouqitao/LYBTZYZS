@@ -36,7 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop", "Desktop", "{F4A5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop.Core", "Desktop.Core", "{22222222-2222-2222-2222-222222222222}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop.Shared", "Desktop.Shared", "{33333333-3333-3333-3333-333333333333}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop.BusinessModules", "Desktop.BusinessModules", "{33333333-3333-3333-3333-333333333333}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop.Workbenches", "Desktop.Workbenches", "{44444444-4444-4444-4444-444444444444}"
 EndProject
@@ -48,7 +48,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Services", "src\Frontend\Desktop\Services\LYBT.Desktop.Services.csproj", "{C7D8E9F0-A1B2-0C1D-4E5F-6A7B8C9D0E1F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{088967DC-D878-4BE2-9A6E-B9A9BF72FC98}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedResources", "SharedResources", "{088967DC-D878-4BE2-9A6E-B9A9BF72FC98}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Shared.Models", "src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj", "{31BCA8A0-E33A-419F-B261-9E72E913F4F6}"
 EndProject
