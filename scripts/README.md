@@ -1,10 +1,54 @@
 # LYBTZYZS 脚本目录
 
-本目录包含项目的所有管理脚本，统一使用 Python 编写。
+本目录包含项目的所有管理脚本，包括 Python 脚本和批处理脚本。
+
+## 🚀 快速开始 - 编译管理
+
+最常用的编译命令：
+```batch
+# 主编译管理器（推荐）
+scripts\build.bat
+
+# 快速编译检查
+scripts\build-check.bat
+```
 
 ## 核心脚本列表
 
-### 1. 开发环境管理
+### 1. 编译管理脚本（批处理）
+
+#### build.bat - 🎯 主编译管理器
+统一的编译工具入口，提供图形化菜单界面
+- **功能**：快速编译、错误分析、自动修复、清理重建
+- **使用**：`scripts\build.bat`
+
+#### build-check.bat - ⚡ 快速编译检查
+日常开发最常用的编译工具
+- **功能**：选择性编译（后端/前端/全部）、错误统计
+- **使用**：
+  ```batch
+  scripts\build-check.bat      # 交互式
+  scripts\build-check.bat 1    # 编译后端
+  scripts\build-check.bat 2    # 编译前端
+  scripts\build-check.bat 3    # 编译全部
+  ```
+
+#### build-analyze.bat - 🔍 深度错误分析
+详细分析编译错误并生成报告
+- **功能**：错误分类、统计分析、生成报告
+- **输出**：`build-report.txt`、`temp\*.log`
+- **使用**：`scripts\build-analyze.bat`
+
+#### quick-fix.bat - 🔧 自动修复工具
+自动修复常见编译错误
+- **功能**：
+  1. 修复属性名不匹配
+  2. 修复中文编码问题
+  3. 修复命名空间引用
+  4. 清理和重建
+- **使用**：`scripts\quick-fix.bat`
+
+### 2. 开发环境管理（Python）
 
 #### start_dev.py
 启动开发服务器

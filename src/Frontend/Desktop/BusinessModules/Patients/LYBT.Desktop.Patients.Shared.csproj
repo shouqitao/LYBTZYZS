@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>LYBT.Desktop.Patients.Shared</AssemblyName>
+		<RootNamespace>LYBT.Desktop.Patients.Shared</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
+		<ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+		<ProjectReference Include="..\..\Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+		<ProjectReference Include="..\Shared\LYBT.Desktop.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

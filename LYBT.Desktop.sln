@@ -1,4 +1,4 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -12,43 +12,43 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workbenches", "Workbenches"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Shell", "src\Frontend\Desktop\Shell\LYBT.WPF.Client.Shell.csproj", "{A1234567-1234-1234-1234-123456789001}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shell", "src\Frontend\Desktop\Shell\LYBT.Desktop.Shell.csproj", "{A1234567-1234-1234-1234-123456789001}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Core", "src\Frontend\Desktop\Core\LYBT.WPF.Client.Core.csproj", "{A1234567-1234-1234-1234-123456789002}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Core", "src\Frontend\Desktop\Core\LYBT.Desktop.Core.csproj", "{A1234567-1234-1234-1234-123456789002}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Services", "src\Frontend\Desktop\Services\LYBT.WPF.Client.Services.csproj", "{A1234567-1234-1234-1234-123456789003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Services", "src\Frontend\Desktop\Services\LYBT.Desktop.Services.csproj", "{A1234567-1234-1234-1234-123456789003}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Infrastructure", "src\Frontend\Desktop\Infrastructure\LYBT.WPF.Client.Infrastructure.csproj", "{A1234567-1234-1234-1234-123456789004}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure", "src\Frontend\Desktop\Infrastructure\LYBT.Desktop.Infrastructure.csproj", "{A1234567-1234-1234-1234-123456789004}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.Authentication", "src\Frontend\Desktop\Modules\Authentication\LYBT.WPF.Client.Modules.Authentication.csproj", "{A1234567-1234-1234-1234-123456789011}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Auth", "src\Frontend\Desktop\Modules\Authentication\LYBT.Desktop.Auth.csproj", "{A1234567-1234-1234-1234-123456789011}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.SystemManagement", "src\Frontend\Desktop\Modules\SystemManagement\LYBT.WPF.Client.Modules.SystemManagement.csproj", "{A1234567-1234-1234-1234-123456789012}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Admin", "src\Frontend\Desktop\Modules\SystemManagement\LYBT.Desktop.Admin.csproj", "{A1234567-1234-1234-1234-123456789012}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.Consultation", "src\Frontend\Desktop\Modules\Consultation\LYBT.WPF.Client.Modules.Consultation.csproj", "{A1234567-1234-1234-1234-123456789018}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Consultation", "src\Frontend\Desktop\Modules\Consultation\LYBT.Desktop.Consultation.csproj", "{A1234567-1234-1234-1234-123456789018}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.Users", "src\Frontend\Desktop\Modules\Users\LYBT.WPF.Client.Modules.Users.csproj", "{A1234567-1234-1234-1234-123456789013}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Users", "src\Frontend\Desktop\Modules\Users\LYBT.Desktop.Users.csproj", "{A1234567-1234-1234-1234-123456789013}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.Herbs", "src\Frontend\Desktop\Modules\Herbs\LYBT.WPF.Client.Modules.Herbs.csproj", "{A1234567-1234-1234-1234-123456789014}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Herbs", "src\Frontend\Desktop\Modules\Herbs\LYBT.Desktop.Herbs.csproj", "{A1234567-1234-1234-1234-123456789014}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.Patients", "src\Frontend\Desktop\Modules\Patients\LYBT.WPF.Client.Modules.Patients.csproj", "{A1234567-1234-1234-1234-123456789015}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Patients", "src\Frontend\Desktop\Modules\Patients\LYBT.Desktop.Patients.csproj", "{A1234567-1234-1234-1234-123456789015}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.MedicalCase", "src\Frontend\Desktop\Modules\MedicalCase\LYBT.WPF.Client.Modules.MedicalCase.csproj", "{A1234567-1234-1234-1234-123456789017}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.MedicalCase", "src\Frontend\Desktop\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csproj", "{A1234567-1234-1234-1234-123456789017}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.Formula", "src\Frontend\Desktop\Modules\Formula\LYBT.WPF.Client.Modules.Formula.csproj", "{A1234567-1234-1234-1234-123456789019}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Formula", "src\Frontend\Desktop\Modules\Formula\LYBT.Desktop.Formula.csproj", "{A1234567-1234-1234-1234-123456789019}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.Prescriptions", "src\Frontend\Desktop\Modules\Prescriptions\LYBT.WPF.Client.Modules.Prescriptions.csproj", "{A1234567-1234-1234-1234-123456789020}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Prescriptions", "src\Frontend\Desktop\Modules\Prescriptions\LYBT.Desktop.Prescriptions.csproj", "{A1234567-1234-1234-1234-123456789020}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.BusinessModules.Users", "src\Frontend\Desktop\BusinessModules\Users\LYBT.WPF.Client.BusinessModules.Users.csproj", "{B1234567-1234-1234-1234-123456789001}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Users.Shared", "src\Frontend\Desktop\BusinessModules\Users\LYBT.Desktop.Users.Shared.csproj", "{B1234567-1234-1234-1234-123456789001}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.BusinessModules.Patients", "src\Frontend\Desktop\BusinessModules\Patients\LYBT.WPF.Client.BusinessModules.Patients.csproj", "{B1234567-1234-1234-1234-123456789002}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Patients.Shared", "src\Frontend\Desktop\BusinessModules\Patients\LYBT.Desktop.Patients.Shared.csproj", "{B1234567-1234-1234-1234-123456789002}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.BusinessModules.Shared", "src\Frontend\Desktop\BusinessModules\Shared\LYBT.WPF.Client.BusinessModules.Shared.csproj", "{B1234567-1234-1234-1234-123456789003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shared", "src\Frontend\Desktop\BusinessModules\Shared\LYBT.Desktop.Shared.csproj", "{B1234567-1234-1234-1234-123456789003}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Workbenches.Core", "src\Frontend\Desktop\Workbenches\Core\LYBT.WPF.Client.Workbenches.Core.csproj", "{C1234567-1234-1234-1234-123456789001}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Core", "src\Frontend\Desktop\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj", "{C1234567-1234-1234-1234-123456789001}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Workbenches.SystemWorkbench", "src\Frontend\Desktop\Workbenches\SystemWorkbench\LYBT.WPF.Client.Workbenches.SystemWorkbench.csproj", "{C1234567-1234-1234-1234-123456789002}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Admin", "src\Frontend\Desktop\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj", "{C1234567-1234-1234-1234-123456789002}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Workbenches.ConsultationWorkbench", "src\Frontend\Desktop\Workbenches\ConsultationWorkbench\LYBT.WPF.Client.Workbenches.ConsultationWorkbench.csproj", "{C1234567-1234-1234-1234-123456789003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Consultation", "src\Frontend\Desktop\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj", "{C1234567-1234-1234-1234-123456789003}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Models", "src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj", "{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}"
 EndProject

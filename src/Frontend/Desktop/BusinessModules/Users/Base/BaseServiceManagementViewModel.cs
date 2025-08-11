@@ -4,14 +4,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.WPF.Client.Core.ViewModels;
-using LYBT.WPF.Client.Core.Models;
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.Models;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.WPF.Client.BusinessModules.Users.Base
+namespace LYBT.Desktop.BusinessModules.Users.Base
 {
     /// <summary>
     /// 系统管理模块基础视图模型（使用服务层�?
@@ -202,7 +202,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.Base
 
         #region Navigation
 
-        public override void OnNavigatedTo(LYBT.WPF.Client.Core.ViewModels.NavigationParameters parameters)
+        public override void OnNavigatedTo(LYBT.Desktop.Core.ViewModels.NavigationParameters parameters)
         {
             base.OnNavigatedTo(parameters);
             _ = LoadDataAsync();

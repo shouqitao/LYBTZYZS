@@ -3,15 +3,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.WPF.Client.BusinessModules.Shared;
-using LYBT.WPF.Client.Core.ViewModels;
+using LYBT.Desktop.Shared;
+using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Navigation.Regions;
 using Prism.Services.Dialogs;
 
-namespace LYBT.WPF.Client.BusinessModules.Herbs.ViewModels
+namespace LYBT.Desktop.Herbs.Shared.ViewModels
 {
     /// <summary>
     /// 中药材管理视图模型

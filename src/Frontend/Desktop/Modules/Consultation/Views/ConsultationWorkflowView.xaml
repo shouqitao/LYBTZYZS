@@ -1,9 +1,9 @@
-﻿<UserControl x:Class="LYBT.WPF.Client.Modules.Consultation.Views.ConsultationWorkflowView"
+<UserControl x:Class="LYBT.Desktop.Consultation.Views.ConsultationWorkflowView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:local="clr-namespace:LYBT.WPF.Client.Modules.Consultation.Views"
-             xmlns:converters="clr-namespace:LYBT.WPF.Client.Core.Converters;assembly=LYBT.WPF.Client.Core"
+             xmlns:local="clr-namespace:LYBT.Desktop.Consultation.Views"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core"
              prism:ViewModelLocator.AutoWireViewModel="True">
     
     <Grid>

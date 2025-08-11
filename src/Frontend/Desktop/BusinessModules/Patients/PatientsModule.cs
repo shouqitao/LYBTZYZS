@@ -1,14 +1,12 @@
-using Prism.Ioc;
-using Prism.Modularity;
-using LYBT.WPF.Client.BusinessModules.Patients.ViewModels;
-using LYBT.WPF.Client.BusinessModules.Patients.Views;
-using LYBT.WPF.Client.BusinessModules.Patients.Services;
-using LYBT.WPF.Client.BusinessModules.Shared;
+using LYBT.Desktop.Patients.Shared.ViewModels;
+using LYBT.Desktop.Patients.Shared.Views;
+using LYBT.Desktop.Patients.Shared.Services;
+using LYBT.Desktop.Shared;
 
-namespace LYBT.WPF.Client.BusinessModules.Patients
+namespace LYBT.Desktop.Patients.Shared
 {
     /// <summary>
-    /// 患者管理模�?- 独立业务模块
+    /// 患者管理模模块 - 独立业务模块
     /// 对应后端: LYBT.Module.Patients  
     /// 遵循原始设计：前后端模块一一对应
     /// </summary>
@@ -16,7 +14,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            // 模块初始化完成后的操�?
+            // 模块初始化完成后的操作
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)

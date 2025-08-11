@@ -1,4 +1,4 @@
-<Window x:Class="LYBT.WPF.Client.BusinessModules.Users.Views.UserProfileDialog"
+<Window x:Class="LYBT.Desktop.Users.Shared.Views.UserProfileDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
@@ -165,9 +165,9 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- 用户名（只读�?-->
+                    <!-- 用户名（只读） -->
                     <TextBlock Grid.Row="0" Grid.Column="0" 
-                               Text="用户�? 
+                               Text="用户名：" 
                                VerticalAlignment="Center"
                                Margin="0,0,0,15"/>
                     <TextBox Grid.Row="0" Grid.Column="1" 

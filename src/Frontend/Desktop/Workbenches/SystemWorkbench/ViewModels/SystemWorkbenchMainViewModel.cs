@@ -1,15 +1,8 @@
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Navigation.Regions;
-using Prism.Events;
-using LYBT.WPF.Client.Workbenches.Core;
-using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.BusinessModules.Shared;
+using LYBT.Desktop.Shared;
+using LYBT.Desktop.Workbench.Core;
 
-namespace LYBT.WPF.Client.Workbenches.SystemWorkbench.ViewModels
+namespace LYBT.Desktop.Workbench.Admin.ViewModels
 {
     /// <summary>
     /// 系统管理工作台主视图模型
@@ -171,11 +164,11 @@ namespace LYBT.WPF.Client.Workbenches.SystemWorkbench.ViewModels
             if (_sharedPatientService != null)
             {
                 // 使用共享服务创建患者
-                var patientDto = new Shared.Models.Contracts.Patients.PatientDetailDto
+                var patientDto = new LYBT.Shared.Models.Contracts.Patients.PatientDetailDto
                 {
                     Name = "测试患者",
-                    Phone = "13800138000",
-                    Gender = Shared.Models.Enums.Gender.Male,
+                    PhoneNumber = "13800138000",
+                    Gender = LYBT.Shared.Models.Enums.Gender.Male,
                     Age = 30
                 };
 

@@ -1,9 +1,9 @@
 using System.Windows;
 
-namespace LYBT.WPF.Client.BusinessModules.Patients.Views
+namespace LYBT.Desktop.Patients.Shared.Views
 {
     /// <summary>
-    /// 患者新�?编辑对话�?
+    /// 患者新�?编辑对话�?
     /// </summary>
     public partial class PatientAddEditDialog : Window
     {

@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace LYBT.WPF.Client.BusinessModules.Users.Views
+namespace LYBT.Desktop.Users.Shared.Views
 {
     /// <summary>
     /// ChangePasswordDialog.xaml 的交互逻辑

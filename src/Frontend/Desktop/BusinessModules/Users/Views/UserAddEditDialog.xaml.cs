@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace LYBT.WPF.Client.BusinessModules.Users.Views
+namespace LYBT.Desktop.Users.Shared.Views
 {
     /// <summary>
     /// UserAddEditDialog.xaml 的交互逻辑

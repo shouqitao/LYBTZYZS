@@ -1,7 +1,7 @@
-﻿<UserControl x:Class="LYBT.WPF.Client.Shell.Views.WorkingHomeView"
+<UserControl x:Class="LYBT.Desktop.Shell.Views.WorkingHomeView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:LYBT.WPF.Client.Shell.ViewModels"
+             xmlns:vm="clr-namespace:LYBT.Desktop.Shell.ViewModels"
              Background="LightBlue">
     
     <UserControl.DataContext>

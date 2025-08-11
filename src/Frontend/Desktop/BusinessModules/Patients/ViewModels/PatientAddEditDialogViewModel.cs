@@ -1,15 +1,15 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.WPF.Client.Core.Models.Patients;
-using LYBT.WPF.Client.Services.Interfaces;
+using LYBT.Desktop.Core.Models.Patients;
+using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using Prism.Commands;
 using Prism.Mvvm;
 
-namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
+namespace LYBT.Desktop.Patients.Shared.ViewModels
 {
     /// <summary>
     /// 患者新�?编辑对话框视图模�?
@@ -257,10 +257,9 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                         Name = PatientName.Trim(),
                         Gender = Gender,
                         Age = Age,
-                        BirthDate = BirthDate,
+                        DateOfBirth = BirthDate,
                         PhoneNumber = PhoneNumber.Trim(),
                         Address = Address?.Trim() ?? string.Empty,
-                        IDType = IdType?.Trim() ?? "身份证",
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
                     };
@@ -281,10 +280,9 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                         Name = PatientName.Trim(),
                         Gender = Gender,
                         Age = Age,
-                        BirthDate = BirthDate,
+                        DateOfBirth = BirthDate,
                         PhoneNumber = PhoneNumber.Trim(),
                         Address = Address?.Trim() ?? string.Empty,
-                        IDType = IdType?.Trim() ?? "身份证",
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
                     };

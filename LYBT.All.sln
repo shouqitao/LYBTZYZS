@@ -40,17 +40,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop.BusinessModules", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop.Workbenches", "Desktop.Workbenches", "{44444444-4444-4444-4444-444444444444}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Shell", "src\Frontend\Desktop\Shell\LYBT.WPF.Client.Shell.csproj", "{D8E9F0A1-B2C3-1D2E-5F6A-7B8C9D0E1F2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shell", "src\Frontend\Desktop\Shell\LYBT.Desktop.Shell.csproj", "{D8E9F0A1-B2C3-1D2E-5F6A-7B8C9D0E1F2A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Core", "src\Frontend\Desktop\Core\LYBT.WPF.Client.Core.csproj", "{A5B6C7D8-E9F0-8A9B-2C3D-4E5F6A7B8C9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Core", "src\Frontend\Desktop\Core\LYBT.Desktop.Core.csproj", "{A5B6C7D8-E9F0-8A9B-2C3D-4E5F6A7B8C9D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Infrastructure", "src\Frontend\Desktop\Infrastructure\LYBT.WPF.Client.Infrastructure.csproj", "{B6C7D8E9-F0A1-9B0C-3D4E-5F6A7B8C9D0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure", "src\Frontend\Desktop\Infrastructure\LYBT.Desktop.Infrastructure.csproj", "{B6C7D8E9-F0A1-9B0C-3D4E-5F6A7B8C9D0E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Services", "src\Frontend\Desktop\Services\LYBT.WPF.Client.Services.csproj", "{C7D8E9F0-A1B2-0C1D-4E5F-6A7B8C9D0E1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Services", "src\Frontend\Desktop\Services\LYBT.Desktop.Services.csproj", "{C7D8E9F0-A1B2-0C1D-4E5F-6A7B8C9D0E1F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.Authentication", "src\Frontend\Desktop\Modules\Authentication\LYBT.WPF.Client.Modules.Authentication.csproj", "{F0A1B2C3-D4E5-3F4A-7B8C-9D0E1F2A3B4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Auth", "src\Frontend\Desktop\Modules\Authentication\LYBT.Desktop.Auth.csproj", "{F0A1B2C3-D4E5-3F4A-7B8C-9D0E1F2A3B4C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Modules.SystemManagement", "src\Frontend\Desktop\Modules\SystemManagement\LYBT.WPF.Client.Modules.SystemManagement.csproj", "{70A1C21B-2799-4A98-9559-AE9CE8C24208}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Admin", "src\Frontend\Desktop\Modules\SystemManagement\LYBT.Desktop.Admin.csproj", "{70A1C21B-2799-4A98-9559-AE9CE8C24208}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{088967DC-D878-4BE2-9A6E-B9A9BF72FC98}"
 EndProject
@@ -58,27 +58,27 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Shared.Models", "src\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Shared.Utilities", "src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj", "{899B6BAA-0ADF-4417-B6A7-B7A0947FF71A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WPF.Client.Modules.Consultation", "src\Frontend\Desktop\Modules\Consultation\LYBT.WPF.Client.Modules.Consultation.csproj", "{49015F0C-1D02-5249-75A0-8B811D61DDC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Consultation", "src\Frontend\Desktop\Modules\Consultation\LYBT.Desktop.Consultation.csproj", "{49015F0C-1D02-5249-75A0-8B811D61DDC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WPF.Client.Modules.MedicalCase", "src\Frontend\Desktop\Modules\MedicalCase\LYBT.WPF.Client.Modules.MedicalCase.csproj", "{65C625DF-E28F-91E2-1A97-E7EE2DE35B6D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.MedicalCase", "src\Frontend\Desktop\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csproj", "{65C625DF-E28F-91E2-1A97-E7EE2DE35B6D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.BusinessModules.Users", "src\Frontend\Desktop\BusinessModules\Users\LYBT.WPF.Client.BusinessModules.Users.csproj", "{55555555-5555-5555-5555-555555555555}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Users.Shared", "src\Frontend\Desktop\BusinessModules\Users\LYBT.Desktop.Users.Shared.csproj", "{55555555-5555-5555-5555-555555555555}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.BusinessModules.Patients", "src\Frontend\Desktop\BusinessModules\Patients\LYBT.WPF.Client.BusinessModules.Patients.csproj", "{66666666-6666-6666-6666-666666666666}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Patients.Shared", "src\Frontend\Desktop\BusinessModules\Patients\LYBT.Desktop.Patients.Shared.csproj", "{66666666-6666-6666-6666-666666666666}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.BusinessModules.Shared", "src\Frontend\Desktop\BusinessModules\Shared\LYBT.WPF.Client.BusinessModules.Shared.csproj", "{77777777-7777-7777-7777-777777777777}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Core", "src\Frontend\Desktop\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj", "{88888888-8888-8888-8888-888888888888}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Workbenches.Core", "src\Frontend\Desktop\Workbenches\Core\LYBT.WPF.Client.Workbenches.Core.csproj", "{88888888-8888-8888-8888-888888888888}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Admin", "src\Frontend\Desktop\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj", "{99999999-9999-9999-9999-999999999999}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Workbenches.SystemWorkbench", "src\Frontend\Desktop\Workbenches\SystemWorkbench\LYBT.WPF.Client.Workbenches.SystemWorkbench.csproj", "{99999999-9999-9999-9999-999999999999}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Consultation", "src\Frontend\Desktop\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj", "{AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WPF.Client.Workbenches.ConsultationWorkbench", "src\Frontend\Desktop\Workbenches\ConsultationWorkbench\LYBT.WPF.Client.Workbenches.ConsultationWorkbench.csproj", "{AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Formula", "src\Frontend\Desktop\Modules\Formula\LYBT.Desktop.Formula.csproj", "{06BBA735-0974-0AF1-8B64-C32C4AA69DC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WPF.Client.Modules.Formula", "src\Frontend\Desktop\Modules\Formula\LYBT.WPF.Client.Modules.Formula.csproj", "{06BBA735-0974-0AF1-8B64-C32C4AA69DC0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Herbs", "src\Frontend\Desktop\Modules\Herbs\LYBT.Desktop.Herbs.csproj", "{DE98B311-D83D-271C-BA2D-EFC5B81CB74E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WPF.Client.Modules.Herbs", "src\Frontend\Desktop\Modules\Herbs\LYBT.WPF.Client.Modules.Herbs.csproj", "{DE98B311-D83D-271C-BA2D-EFC5B81CB74E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Prescriptions", "src\Frontend\Desktop\Modules\Prescriptions\LYBT.Desktop.Prescriptions.csproj", "{D55D5375-801F-36A8-0BBB-4EB0E53B2B48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WPF.Client.Modules.Prescriptions", "src\Frontend\Desktop\Modules\Prescriptions\LYBT.WPF.Client.Modules.Prescriptions.csproj", "{D55D5375-801F-36A8-0BBB-4EB0E53B2B48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Shared", "src\Frontend\Desktop\BusinessModules\Shared\LYBT.Desktop.Shared.csproj", "{40D090EA-641D-B278-A0DE-9249427BAC8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -178,10 +178,6 @@ Global
 		{66666666-6666-6666-6666-666666666666}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66666666-6666-6666-6666-666666666666}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66666666-6666-6666-6666-666666666666}.Release|Any CPU.Build.0 = Release|Any CPU
-		{77777777-7777-7777-7777-777777777777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77777777-7777-7777-7777-777777777777}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77777777-7777-7777-7777-777777777777}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77777777-7777-7777-7777-777777777777}.Release|Any CPU.Build.0 = Release|Any CPU
 		{88888888-8888-8888-8888-888888888888}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{88888888-8888-8888-8888-888888888888}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88888888-8888-8888-8888-888888888888}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -206,6 +202,10 @@ Global
 		{D55D5375-801F-36A8-0BBB-4EB0E53B2B48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D55D5375-801F-36A8-0BBB-4EB0E53B2B48}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D55D5375-801F-36A8-0BBB-4EB0E53B2B48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40D090EA-641D-B278-A0DE-9249427BAC8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40D090EA-641D-B278-A0DE-9249427BAC8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40D090EA-641D-B278-A0DE-9249427BAC8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40D090EA-641D-B278-A0DE-9249427BAC8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -240,13 +240,13 @@ Global
 		{65C625DF-E28F-91E2-1A97-E7EE2DE35B6D} = {33333333-3333-3333-3333-333333333333}
 		{55555555-5555-5555-5555-555555555555} = {33333333-3333-3333-3333-333333333333}
 		{66666666-6666-6666-6666-666666666666} = {33333333-3333-3333-3333-333333333333}
-		{77777777-7777-7777-7777-777777777777} = {33333333-3333-3333-3333-333333333333}
 		{88888888-8888-8888-8888-888888888888} = {44444444-4444-4444-4444-444444444444}
 		{99999999-9999-9999-9999-999999999999} = {44444444-4444-4444-4444-444444444444}
 		{AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA} = {44444444-4444-4444-4444-444444444444}
 		{06BBA735-0974-0AF1-8B64-C32C4AA69DC0} = {33333333-3333-3333-3333-333333333333}
 		{DE98B311-D83D-271C-BA2D-EFC5B81CB74E} = {33333333-3333-3333-3333-333333333333}
 		{D55D5375-801F-36A8-0BBB-4EB0E53B2B48} = {33333333-3333-3333-3333-333333333333}
+		{40D090EA-641D-B278-A0DE-9249427BAC8B} = {33333333-3333-3333-3333-333333333333}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0E1F2A3-B4C5-4D6E-7F8A-9B0C1D2E3F4A}

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-using LYBT.WPF.Client.Core.Models;
-using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Models;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.WPF.Client.BusinessModules.Shared;
+using LYBT.Desktop.Shared;
 
-namespace LYBT.WPF.Client.BusinessModules.Patients.Services
+namespace LYBT.Desktop.Patients.Shared.Services
 {
     /// <summary>
     /// 共享患者服务实现
@@ -95,7 +95,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.Services
             
             // 验证必填字段
             bool isComplete = !string.IsNullOrEmpty(patient.Name) &&
-                             !string.IsNullOrEmpty(patient.Phone) &&
+                             !string.IsNullOrEmpty(patient.PhoneNumber) &&
                              patient.Gender != null &&
                              patient.Age > 0;
 

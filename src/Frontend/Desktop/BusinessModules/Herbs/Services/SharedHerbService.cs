@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.WPF.Client.BusinessModules.Shared;
-using LYBT.WPF.Client.Core.Models;
+using LYBT.Desktop.Shared;
+using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.WPF.Client.BusinessModules.Herbs.Services
+namespace LYBT.Desktop.Herbs.Shared.Services
 {
     /// <summary>
     /// 共享中药材服务实现

@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.WPF.Client.BusinessModules.Shared;
-using LYBT.WPF.Client.Core.Models;
+using LYBT.Desktop.Shared;
+using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.WPF.Client.BusinessModules.Prescriptions.Services
+namespace LYBT.Desktop.Prescriptions.Shared.Services
 {
     /// <summary>
     /// 共享处方服务实现

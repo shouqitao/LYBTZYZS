@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="LYBT.WPF.Client.Modules.Patients.Views.PatientManagementView"
+<UserControl x:Class="LYBT.Desktop.Patients.Views.PatientManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"

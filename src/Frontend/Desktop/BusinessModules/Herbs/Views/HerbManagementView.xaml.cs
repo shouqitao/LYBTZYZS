@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.WPF.Client.BusinessModules.Herbs.Views
+namespace LYBT.Desktop.Herbs.Shared.Views
 {
     /// <summary>
     /// 中药材管理视图

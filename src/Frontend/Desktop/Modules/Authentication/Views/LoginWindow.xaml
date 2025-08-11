@@ -1,4 +1,4 @@
-<Window x:Class="LYBT.WPF.Client.Modules.Authentication.Views.LoginWindow"
+<Window x:Class="LYBT.Desktop.Auth.Views.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="用户登录" 

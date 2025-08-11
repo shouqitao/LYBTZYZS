@@ -218,7 +218,19 @@
       "Bash(echo $DOTNET_CLI_TELEMETRY_OPTOUT $MSBUILDLOADMICROSOFTTARGETSREADONLY $MSBuildSDKsPath)",
       "Bash(cat:*)",
       "Bash(echo:*)",
-      "Bash(dotnet msbuild:*)"
+      "Bash(dotnet msbuild:*)",
+      "Bash(scripts\\build-check.bat:*)",
+      "Bash(for file in src/Frontend/Desktop/BusinessModules/{Consultations,Formula,MedicalCase,Prescriptions}/*.csproj)",
+      "Bash(do sed -i 's|\\.\\.\\\\src\\\\Shared\\\\LYBT\\.WPF\\.Client\\.BusinessModules\\.Shared\\.csproj|..\\\\Shared\\\\LYBT.WPF.Client.BusinessModules.Shared.csproj|g' \"$file\")",
+      "Bash(done)",
+      "Bash(for:*)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then sed -i 's|\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\src\\\\\\\\Shared\\\\\\\\|..\\\\\\\\..\\\\\\\\..\\\\\\\\..\\\\\\\\src\\\\\\\\Shared\\\\\\\\|g' \"$file\")",
+      "Bash(fi)",
+      "Bash(then sed -i 's|\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\src\\\\\\\\Shared\\\\\\\\|..\\\\\\\\..\\\\\\\\..\\\\\\\\..\\\\\\\\Shared\\\\\\\\|g; s|\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\src\\\\\\\\Shared\\\\\\\\|..\\\\\\\\..\\\\\\\\..\\\\\\\\..\\\\\\\\Shared\\\\\\\\|g' \"$file\")",
+      "Bash(then sed -i 's|\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\\\\\.\\\\.\\\\\\\\Shared\\\\\\\\|..\\\\\\\\..\\\\\\\\..\\\\\\\\Shared\\\\\\\\|g' \"$file\")",
+      "Bash(then sed -i 's/LYBT\\\\.Shared\\\\.\\\\\\\\1/LYBT.Shared.Models/g' \"$file\")",
+      "Bash(scriptsquick-fix.bat)"
     ],
     "deny": []
   }

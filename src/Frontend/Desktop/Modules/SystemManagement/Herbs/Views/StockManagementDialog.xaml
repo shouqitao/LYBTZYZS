@@ -1,4 +1,4 @@
-<Window x:Class="LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views.StockManagementDialog"
+<Window x:Class="LYBT.Desktop.Admin.Herbs.Views.StockManagementDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="库存管理" 

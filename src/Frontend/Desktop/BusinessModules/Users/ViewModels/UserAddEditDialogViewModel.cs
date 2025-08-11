@@ -4,20 +4,20 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Services.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Desktop.Core.Models.Users;
 
-namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
+namespace LYBT.Desktop.Users.Shared.ViewModels
 {
     /// <summary>
-    /// 用户新增/编辑对话框视图模�?    /// </summary>
+    /// 用户新增/编辑对话框视图模�?    /// </summary>
     public class UserAddEditDialogViewModel : BindableBase
     {
         private readonly IUserApiService _userService;
@@ -44,7 +44,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
 
-        /// <summary>用户�?/summary>
+        /// <summary>用户�?/summary>
         public string UserName
         {
             get => _userName;
@@ -79,7 +79,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             set => SetProperty(ref _isActive, value);
         }
 
-        /// <summary>选中的角�?/summary>
+        /// <summary>选中的角�?/summary>
         public RoleItem? SelectedRole
         {
             get => _selectedRole;
@@ -103,13 +103,13 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
         /// <summary>窗口标题</summary>
         public string WindowTitle => IsNewUser ? "新增用户" : "编辑用户";
 
-        /// <summary>对话框结�?/summary>
+        /// <summary>对话框结�?/summary>
         public bool? DialogResult { get; private set; }
 
         /// <summary>保存完成回调</summary>
         public Action<bool>? SaveCompleteCallback { get; set; }
 
-        /// <summary>关闭对话框回�?/summary>
+        /// <summary>关闭对话框回�?/summary>
         public Action? CloseDialogCallback { get; set; }
 
         public UserAddEditDialogViewModel(IUserApiService userService, UserInfo? user = null)
@@ -118,14 +118,16 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             _originalUser = user;
             _isNewUser = user == null;
 
-            // 角色列表 - 只允许创建普通用�?            // 管理员只限sysadmin，不能通过用户管理创建
+            // 角色列表 - 只允许创建普通用户
+            // 管理员只限sysadmin，不能通过用户管理创建
             Roles = new List<RoleItem>
             {
-                new RoleItem { Value = "用户", DisplayName = "普通用户（医生�? }
+                new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" }
             };
 
             // 新建用户时角色选择禁用（固定为普通用户）
-            // 编辑用户时也禁用（不允许修改角色�?            IsRoleSelectionEnabled = false;
+            // 编辑用户时也禁用（不允许修改角色）
+            IsRoleSelectionEnabled = false;
 
             // 如果是编辑模式，加载用户数据
             if (user != null)
@@ -134,13 +136,14 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             }
             else
             {
-                // 新增模式固定为普通用户角�?                SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生�? };
+                // 新增模式固定为普通用户角�?                SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生�? };
             }
 
             SaveCommand = new DelegateCommand(ExecuteSaveWrapper, CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
 
-            // 监听属性变化以更新命令状�?            PropertyChanged += (s, e) =>
+            // 监听属性变化以更新命令状态
+            PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(UserName) || e.PropertyName == nameof(RealName))
                 {
@@ -155,8 +158,8 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             RealName = user.RealName;
             Email = string.Empty; // Email字段已按优化标准移除
             PhoneNumber = user.PhoneNumber ?? string.Empty;
-            IsActive = user.Status == CommonStatus.Enabled; // 使用Status属�?
-            // 角色固定：sysadmin是管理员（但不能修改），其他都是普通用�?            // 编辑时角色不可更改，固定显示为普通用�?            SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生�? };
+            IsActive = user.Status == CommonStatus.Enabled; // 使用Status属�?
+            // 角色固定：sysadmin是管理员（但不能修改），其他都是普通用�?            // 编辑时角色不可更改，固定显示为普通用�?            SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生�? };
         }
 
         private bool CanExecuteSave()
@@ -237,7 +240,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
                     }
                 }
 
-                // 成功后调用回调并关闭对话�?                DialogResult = true;
+                // 成功后调用回调并关闭对话�?                DialogResult = true;
                 SaveCompleteCallback?.Invoke(true);
                 // 注意：不要在这里调用 CloseDialog()，让回调处理关闭
             }
@@ -273,13 +276,13 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
 
             if (string.IsNullOrWhiteSpace(UserName))
             {
-                ValidationMessage = "用户名不能为�?;
+                ValidationMessage = "用户名不能为空";
                 return false;
             }
 
             if (UserName.Length > 32)
             {
-                ValidationMessage = "用户名长度不能超�?2个字�?;
+                ValidationMessage = "用户名长度不能超过32个字符";
                 return false;
             }
 
@@ -291,7 +294,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
 
             if (RealName.Length > 50)
             {
-                ValidationMessage = "真实姓名长度不能超过50个字�?;
+                ValidationMessage = "真实姓名长度不能超过50个字符";
                 return false;
             }
 
@@ -300,14 +303,14 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
                 var emailAttribute = new EmailAddressAttribute();
                 if (!emailAttribute.IsValid(Email))
                 {
-                    ValidationMessage = "邮箱格式不正�?;
+                    ValidationMessage = "邮箱格式不正确";
                     return false;
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(PhoneNumber) && PhoneNumber.Length > 20)
             {
-                ValidationMessage = "电话号码长度不能超过20个字�?;
+                ValidationMessage = "电话号码长度不能超过20个字符";
                 return false;
             }
 
@@ -322,7 +325,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
     }
 
     /// <summary>
-    /// 角色�?    /// </summary>
+    /// 角色�?    /// </summary>
     public class RoleItem
     {
         public string Value { get; set; } = string.Empty;

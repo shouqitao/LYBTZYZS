@@ -1,9 +1,9 @@
-<UserControl x:Class="LYBT.WPF.Client.Modules.SystemManagement.Herbs.Views.HerbManagementViewRefactored"
+<UserControl x:Class="LYBT.Desktop.Admin.Herbs.Views.HerbManagementViewRefactored"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:base="clr-namespace:LYBT.WPF.Client.Core.Views.Base;assembly=LYBT.WPF.Client.Core"
-             xmlns:controls="clr-namespace:LYBT.WPF.Client.Controls.Herbs;assembly=LYBT.WPF.Client.Core"
+             xmlns:base="clr-namespace:LYBT.Desktop.Core.Views.Base;assembly=LYBT.Desktop.Core"
+             xmlns:controls="clr-namespace:LYBT.WPF.Client.Controls.Herbs;assembly=LYBT.Desktop.Core"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
 <UserControl.Resources>

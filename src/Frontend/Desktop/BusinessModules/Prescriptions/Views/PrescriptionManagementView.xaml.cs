@@ -1,7 +1,7 @@
 using System.Windows.Controls;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.WPF.Client.BusinessModules.Prescriptions.Views
+namespace LYBT.Desktop.Prescriptions.Shared.Views
 {
     /// <summary>
     /// 处方管理视图

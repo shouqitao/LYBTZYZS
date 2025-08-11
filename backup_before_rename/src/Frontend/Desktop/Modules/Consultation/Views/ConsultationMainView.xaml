@@ -1,0 +1,227 @@
+<UserControl x:Class="LYBT.WPF.Client.Modules.Consultation.Views.ConsultationMainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:local="clr-namespace:LYBT.WPF.Client.Modules.Consultation.Views"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d" 
+             d:DesignHeight="768" d:DesignWidth="1366">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Height="50">
+            <Grid>
+                <TextBlock Text="{Binding Title}" 
+                          Foreground="White" 
+                          FontSize="20" 
+                          VerticalAlignment="Center" 
+                          Margin="20,0"/>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,0">
+                    <Button Content="刷新" 
+                           Command="{Binding RefreshCommand}"
+                                                      Foreground="White"
+                           Margin="5,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区 -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="350"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧：患者列表 -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- 搜索框 -->
+                <Border Grid.Row="0" Background="White" Padding="10">
+                    <TextBox Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                            Tag="搜索患者..."/>
+                </Border>
+
+                <!-- 患者列表 -->
+                <ListBox Grid.Row="1" 
+                        ItemsSource="{Binding Patients}"
+                        SelectedItem="{Binding SelectedPatient}"
+                        Background="White">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="10" BorderBrush="LightGray" BorderThickness="0,0,0,1">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding GenderText}" Opacity="0.7"/>
+                                    <TextBlock Text="{Binding PhoneNumber}" Opacity="0.7"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+
+            <!-- 中间：诊疗信息 -->
+            <Grid Grid.Column="1" Margin="5">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="20">
+                        <!-- 患者基本信息 -->
+                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                                    <TextBlock Text="当前患者" FontSize="14" Opacity="0.7"/>
+                                    <TextBlock Text="{Binding SelectedPatient.Name}" FontSize="18" FontWeight="Bold"/>
+                                </StackPanel>
+                                
+                                <Button Grid.Column="1" 
+                                       Content="开始看诊" 
+                                       Command="{Binding NewConsultationCommand}"
+                                       HorizontalAlignment="Right"
+                                       Padding="10,5"
+                                       Margin="5"/>
+                            </Grid>
+                        </Border>
+
+
+                        <!-- 集成的中医四诊控件 -->
+                        <Border Background="White" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                            <local:TCMFourDiagnosisView DataContext="{Binding}" />
+                        </Border>
+
+                        <!-- 操作按钮 -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10">
+                            <Button Content="保存" 
+                                   Command="{Binding SaveConsultationCommand}"
+                                                                      Margin="5,0"/>
+                            <Button Content="打印处方" 
+                                   Command="{Binding PrintPrescriptionCommand}"
+                                                                      Margin="5,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- 右侧：处方开具 -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- 标题 -->
+                <Border Grid.Row="0" Background="White" Padding="10">
+                    <TextBlock Text="处方开具" FontSize="16" FontWeight="Bold"/>
+                </Border>
+
+                <!-- 处方项列表 -->
+                <DataGrid Grid.Row="1" 
+                         ItemsSource="{Binding PrescriptionItems}"
+                         AutoGenerateColumns="False"
+                         CanUserAddRows="False"
+                         Background="White">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="药材" Binding="{Binding HerbName}" Width="*" IsReadOnly="True"/>
+                        <DataGridTemplateColumn Header="数量" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="-" Width="20" Height="20" 
+                                               Command="{Binding DataContext.DecreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"/>
+                                        <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" 
+                                                Width="30" Height="20" TextAlignment="Center"
+                                                Margin="2,0"/>
+                                        <Button Content="+" Width="20" Height="20" 
+                                               Command="{Binding DataContext.IncreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="40" IsReadOnly="True"/>
+                        <DataGridTemplateColumn Header="操作" Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="删" 
+                                           Command="{Binding DataContext.RemovePrescriptionItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                           CommandParameter="{Binding}"
+                                           Width="30" Height="20"
+                                           Padding="2"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 处方组成操作 -->
+                <Border Grid.Row="2" Background="White" Padding="10">
+                    <StackPanel>
+                        <!-- 验方快速应用 -->
+                        <TextBlock Text="验方快速应用" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding AvailableFormulas}"
+                                 DisplayMemberPath="Name"
+                                 Tag="选择验方一键应用..."
+                                 Margin="0,0,0,10">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem">
+                                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnFormulaSelected"/>
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+                        
+                        <!-- 分割线 -->
+                        <Separator Margin="0,5"/>
+                        
+                        <!-- 手动添加药材 -->
+                        <TextBlock Text="手动添加药材" FontWeight="Bold" Margin="0,5,0,5"/>
+                        <!-- 药材搜索框 -->
+                        <TextBox x:Name="HerbSearchBox" 
+                                Tag="搜索药材名称..." 
+                                Text="{Binding HerbSearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                                Margin="0,0,0,5"/>
+                        <!-- 药材选择列表 -->
+                        <ComboBox x:Name="HerbComboBox"
+                                 ItemsSource="{Binding AvailableHerbs}"
+                                 DisplayMemberPath="Name"
+                                 Tag="选择药材添加到处方..."
+                                 MaxDropDownHeight="150">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem">
+                                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnHerbSelected"/>
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- 加载指示器 -->
+        <Grid Grid.Row="1" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border Background="#80000000">
+                <ProgressBar                             IsIndeterminate="True"
+                            Width="50" Height="50"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

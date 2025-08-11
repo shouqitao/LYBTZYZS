@@ -4,15 +4,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.WPF.Client.Core.ViewModels;
-using LYBT.WPF.Client.Core.ViewModels.Base;
-using LYBT.WPF.Client.Core.Models;
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Models;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.WPF.Client.BusinessModules.Patients.Base
+namespace LYBT.Desktop.BusinessModules.Patients.Base
 {
     /// <summary>
     /// 患者管理模块基础视图模型（使用服务层�?
@@ -258,7 +258,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.Base
         /// <summary>
         /// 从服务加载数据（由子类实现）
         /// </summary>
-        protected abstract Task<ServiceResult<LYBT.WPF.Client.Core.Models.Common.PagedResult<TModel>>> LoadDataFromServiceAsync(PaginationRequest request);
+        protected abstract Task<ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<TModel>>> LoadDataFromServiceAsync(PaginationRequest request);
 
         /// <summary>
         /// 搜索

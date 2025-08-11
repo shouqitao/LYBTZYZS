@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.WPF.Client.BusinessModules.Formula.Views
+namespace LYBT.Desktop.Formula.Shared.Views
 {
     /// <summary>
     /// 验方管理视图

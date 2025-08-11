@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.WPF.Client.BusinessModules.Consultations.Views
+namespace LYBT.Desktop.Consultation.Shared.Views
 {
     /// <summary>
     /// 看诊管理视图

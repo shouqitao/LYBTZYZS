@@ -1,4 +1,4 @@
-<Window x:Class="LYBT.WPF.Client.Modules.SystemManagement.Formulas.Views.AddFormulaDialog"
+<Window x:Class="LYBT.Desktop.Admin.Formulas.Views.AddFormulaDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="新增验方模板" Height="700" Width="800"

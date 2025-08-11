@@ -4,11 +4,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.WPF.Client.Core.Models.Patients;
-using LYBT.WPF.Client.Services.Interfaces;
-using LYBT.WPF.Client.BusinessModules.Patients.Base;
-using LYBT.WPF.Client.Core.Models;
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Desktop.Core.Models.Patients;
+using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.BusinessModules.Patients.Base;
+using LYBT.Desktop.Core.Models;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Common;
@@ -16,10 +16,10 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Dialogs;
-using LYBT.WPF.Client.Core.Extensions;
-using LYBT.WPF.Client.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Extensions;
+using LYBT.Desktop.Core.Interfaces.Services;
 
-namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
+namespace LYBT.Desktop.Patients.Shared.ViewModels
 {
     /// <summary>
     /// 患者管理视图模型（简化重构版�?
@@ -58,7 +58,7 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
+        protected override async Task<ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
         {
             try
             {
@@ -70,11 +70,11 @@ namespace LYBT.WPF.Client.BusinessModules.Patients.ViewModels
                 };
 
                 var result = await Service.GetPagedAsync(query);
-                return ServiceResult<LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>>.Success(result);
+                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.WPF.Client.Core.Models.Common.PagedResult<PatientInfo>>.Failure($"加载患者列表失�? {ex.Message}");
+                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>>.Failure($"加载患者列表失�? {ex.Message}");
             }
         }
 

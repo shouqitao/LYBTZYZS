@@ -5,20 +5,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Shared.Models.Core;
-using LYBT.WPF.Client.Services.Interfaces;
-using LYBT.WPF.Client.BusinessModules.Users.Base;
-using LYBT.WPF.Client.Core.Models;
-using LYBT.WPF.Client.Core.Models.Common;
+using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.BusinessModules.Users.Base;
+using LYBT.Desktop.Core.Models;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Dialogs;
-using LYBT.WPF.Client.Core.Extensions;
-using LYBT.WPF.Client.Core.Interfaces.Services;
-using LYBT.WPF.Client.Core.Models.Users;
+using LYBT.Desktop.Core.Extensions;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Models.Users;
 
-namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
+namespace LYBT.Desktop.Users.Shared.ViewModels
 {
     /// <summary>
     /// 用户管理视图模型（简化重构版�?    /// </summary>
@@ -172,7 +172,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             if (user == null) return;
 
             var confirm = await _commonDialogService.ShowConfirmationAsync(
-                $"确定要重置用�?{user.RealName} 的密码吗�?,
+                $"确定要重置用户 {user.RealName} 的密码吗？",
                 "重置密码");
 
             if (confirm)
@@ -197,7 +197,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
         {
             if (user == null) return;
 
-            var action = user.Status == Shared.Models.Enums.CommonStatus.Enabled ? "禁用" : "启用";
+            var action = user.Status == LYBT.Shared.Models.Enums.CommonStatus.Enabled ? "禁用" : "启用";
             var confirm = await _commonDialogService.ShowConfirmationAsync(
                 $"确定要{action}用户 {user.RealName} 吗？",
                 $"{action}用户");
@@ -205,7 +205,7 @@ namespace LYBT.WPF.Client.BusinessModules.Users.ViewModels
             if (confirm)
             {
                 ServiceResult result;
-                if (user.Status == Shared.Models.Enums.CommonStatus.Enabled)
+                if (user.Status == LYBT.Shared.Models.Enums.CommonStatus.Enabled)
                 {
                     result = await Service.DisableUserAsync(user.Id);
                 }

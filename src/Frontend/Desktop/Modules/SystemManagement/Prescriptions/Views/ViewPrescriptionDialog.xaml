@@ -1,4 +1,4 @@
-<UserControl x:Class="LYBT.WPF.Client.Modules.SystemManagement.Prescriptions.Views.ViewPrescriptionDialog"
+<UserControl x:Class="LYBT.Desktop.Admin.Prescriptions.Views.ViewPrescriptionDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"

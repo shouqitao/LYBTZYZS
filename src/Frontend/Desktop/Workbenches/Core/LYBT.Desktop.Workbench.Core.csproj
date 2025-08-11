@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>LYBT.Desktop.Workbench.Core</AssemblyName>
+		<RootNamespace>LYBT.Desktop.Workbench.Core</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
+		<ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+	</ItemGroup>
+
+</Project>
