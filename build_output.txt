@@ -1,6 +1,23 @@
-MSBUILD : error MSB1008: 只能指定一个项目。
-    完整命令行:“C:\Program Files\dotnet\sdk\9.0.304\MSBuild.dll -maxcpucount -verbosity:m -tlp:default=auto -nologo -consoleloggerparameters:Summary -restore:false LYBT.Desktop.sln 2 -distributedlogger:Microsoft.DotNet.Tools.MSBuild.MSBuildLogger,C:\Program Files\dotnet\sdk\9.0.304\dotnet.dll*Microsoft.DotNet.Tools.MSBuild.MSBuildForwardingLogger,C:\Program Files\dotnet\sdk\9.0.304\dotnet.dll”
-  响应文件追加的开关: 
-开关:2
+D:\source\repos\LYBTZYZS\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj : warning NU1603: LYBT.Module.Auth 依赖于 Microsoft.IdentityModel.Tokens (>= 8.2.2)，但没有找到 Microsoft.IdentityModel.Tokens 8.2.2。已改为解析 Microsoft.IdentityModel.Tokens 8.3.0。 [D:\source\repos\LYBTZYZS\LYBT.All.sln]
+D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj : warning NU1603: LYBT.Module.Auth 依赖于 Microsoft.IdentityModel.Tokens (>= 8.2.2)，但没有找到 Microsoft.IdentityModel.Tokens 8.2.2。已改为解析 Microsoft.IdentityModel.Tokens 8.3.0。 [D:\source\repos\LYBTZYZS\LYBT.All.sln]
+D:\source\repos\LYBTZYZS\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj : warning NU1603: LYBT.Module.Auth 依赖于 System.IdentityModel.Tokens.Jwt (>= 8.2.2)，但没有找到 System.IdentityModel.Tokens.Jwt 8.2.2。已改为解析 System.IdentityModel.Tokens.Jwt 8.3.0。 [D:\source\repos\LYBTZYZS\LYBT.All.sln]
+D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj : warning NU1603: LYBT.Module.Auth 依赖于 System.IdentityModel.Tokens.Jwt (>= 8.2.2)，但没有找到 System.IdentityModel.Tokens.Jwt 8.2.2。已改为解析 System.IdentityModel.Tokens.Jwt 8.3.0。 [D:\source\repos\LYBTZYZS\LYBT.All.sln]
+D:\source\repos\LYBTZYZS\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj : warning NU1603: LYBT.Module.Auth 依赖于 Microsoft.IdentityModel.Tokens (>= 8.2.2)，但没有找到 Microsoft.IdentityModel.Tokens 8.2.2。已改为解析 Microsoft.IdentityModel.Tokens 8.3.0。
+D:\source\repos\LYBTZYZS\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj : warning NU1603: LYBT.Module.Auth 依赖于 System.IdentityModel.Tokens.Jwt (>= 8.2.2)，但没有找到 System.IdentityModel.Tokens.Jwt 8.2.2。已改为解析 System.IdentityModel.Tokens.Jwt 8.3.0。
+D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj : warning NU1603: LYBT.Module.Auth 依赖于 Microsoft.IdentityModel.Tokens (>= 8.2.2)，但没有找到 Microsoft.IdentityModel.Tokens 8.2.2。已改为解析 Microsoft.IdentityModel.Tokens 8.3.0。
+D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj : warning NU1603: LYBT.Module.Auth 依赖于 System.IdentityModel.Tokens.Jwt (>= 8.2.2)，但没有找到 System.IdentityModel.Tokens.Jwt 8.2.2。已改为解析 System.IdentityModel.Tokens.Jwt 8.3.0。
 
-若要显示开关的语法，请键入“MSBuild -help”
+已成功生成。
+
+D:\source\repos\LYBTZYZS\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj : warning NU1603: LYBT.Module.Auth 依赖于 Microsoft.IdentityModel.Tokens (>= 8.2.2)，但没有找到 Microsoft.IdentityModel.Tokens 8.2.2。已改为解析 Microsoft.IdentityModel.Tokens 8.3.0。 [D:\source\repos\LYBTZYZS\LYBT.All.sln]
+D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj : warning NU1603: LYBT.Module.Auth 依赖于 Microsoft.IdentityModel.Tokens (>= 8.2.2)，但没有找到 Microsoft.IdentityModel.Tokens 8.2.2。已改为解析 Microsoft.IdentityModel.Tokens 8.3.0。 [D:\source\repos\LYBTZYZS\LYBT.All.sln]
+D:\source\repos\LYBTZYZS\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj : warning NU1603: LYBT.Module.Auth 依赖于 System.IdentityModel.Tokens.Jwt (>= 8.2.2)，但没有找到 System.IdentityModel.Tokens.Jwt 8.2.2。已改为解析 System.IdentityModel.Tokens.Jwt 8.3.0。 [D:\source\repos\LYBTZYZS\LYBT.All.sln]
+D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj : warning NU1603: LYBT.Module.Auth 依赖于 System.IdentityModel.Tokens.Jwt (>= 8.2.2)，但没有找到 System.IdentityModel.Tokens.Jwt 8.2.2。已改为解析 System.IdentityModel.Tokens.Jwt 8.3.0。 [D:\source\repos\LYBTZYZS\LYBT.All.sln]
+D:\source\repos\LYBTZYZS\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj : warning NU1603: LYBT.Module.Auth 依赖于 Microsoft.IdentityModel.Tokens (>= 8.2.2)，但没有找到 Microsoft.IdentityModel.Tokens 8.2.2。已改为解析 Microsoft.IdentityModel.Tokens 8.3.0。
+D:\source\repos\LYBTZYZS\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj : warning NU1603: LYBT.Module.Auth 依赖于 System.IdentityModel.Tokens.Jwt (>= 8.2.2)，但没有找到 System.IdentityModel.Tokens.Jwt 8.2.2。已改为解析 System.IdentityModel.Tokens.Jwt 8.3.0。
+D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj : warning NU1603: LYBT.Module.Auth 依赖于 Microsoft.IdentityModel.Tokens (>= 8.2.2)，但没有找到 Microsoft.IdentityModel.Tokens 8.2.2。已改为解析 Microsoft.IdentityModel.Tokens 8.3.0。
+D:\source\repos\LYBTZYZS\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj : warning NU1603: LYBT.Module.Auth 依赖于 System.IdentityModel.Tokens.Jwt (>= 8.2.2)，但没有找到 System.IdentityModel.Tokens.Jwt 8.2.2。已改为解析 System.IdentityModel.Tokens.Jwt 8.3.0。
+    8 个警告
+    0 个错误
+
+已用时间 00:00:04.33

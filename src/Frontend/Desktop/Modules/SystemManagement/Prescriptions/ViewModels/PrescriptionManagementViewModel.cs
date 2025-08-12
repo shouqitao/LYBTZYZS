@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
         private readonly IHerbService _herbService;
         private readonly IUserSessionManager _userSessionManager;
         private readonly IPatientService _patientService;
-        private readonly IPrescriptionPrintService _printService;
+        private readonly IAdvancedPrescriptionPrintService _printService;
         
         #region 统计属性
         
@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
             IHerbService herbService,
             IUserSessionManager userSessionManager,
             IPatientService patientService,
-            IPrescriptionPrintService printService)
+            IAdvancedPrescriptionPrintService printService)
             : base(service)
         {
             _commonDialogService = commonDialogService;
@@ -299,8 +299,8 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
                 Diagnosis = dto.Diagnosis,
                 DosageCount = dto.DosageCount,
                 TotalPrice = dto.TotalPrice,
-                Usage = dto.Usage,
-                Remark = dto.Remark,
+                Usage = (dto as PrescriptionDetailDto)?.Usage ?? "",
+                Remark = (dto as PrescriptionDetailDto)?.Remark ?? "",
                 // TODO: 从其他服务获取患者和医生姓名
                 PatientName = dto.PatientName ?? "患者" + dto.PatientId.ToString()[..8],
                 DoctorName = dto.DoctorName ?? "医生" + dto.DoctorId.ToString()[..8],
@@ -308,7 +308,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
                 HerbCount = dto.Items?.Count ?? 0,
                 // 设置可编辑和可作废状态
                 CanEdit = dto.Status == PrescriptionStatus.Draft,
-                CanVoid = dto.Status != PrescriptionStatus.Completed && dto.Status != PrescriptionStatus.Canceled
+                CanVoid = dto.Status != PrescriptionStatus.Completed
             };
         }
 
@@ -659,7 +659,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
                     TodayPrescriptionCount = todayItems.Count;
                     
                     // 计算今日营收（处方总价）
-                    TodayRevenue = todayItems.Sum(p => p.TotalPrice ?? 0);
+                    TodayRevenue = todayItems.Sum(p => p.TotalPrice);
                     
                     // 获取本周数据
                     var weekItems = todayResult.Items.Where(p => p.CreateTime.Date >= weekStart).ToList();

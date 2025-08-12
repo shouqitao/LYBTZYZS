@@ -375,7 +375,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             Quantity = item.Quantity,
                             Unit = item.Unit,
                             UnitPrice = item.UnitPrice,
-                            Subtotal = item.Amount,
+                            Subtotal = item.Subtotal,
                             Usage = item.Usage,
                             Remark = item.Remark
                         }).ToList()
@@ -410,7 +410,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             Quantity = item.Quantity,
                             Unit = item.Unit,
                             UnitPrice = item.UnitPrice,
-                            Subtotal = item.Amount,
+                            Subtotal = item.Subtotal,
                             Usage = item.Usage,
                             Remark = item.Remark
                         }).ToList()

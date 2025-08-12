@@ -44,6 +44,29 @@ namespace LYBT.Infrastructure.Common
         public bool HasNextPage => PageNumber < TotalPages;
 
         /// <summary>
+        /// 无参构造函数
+        /// </summary>
+        public PagedResult()
+        {
+        }
+
+        /// <summary>
+        /// 带参数构造函数
+        /// </summary>
+        /// <param name="items">数据项</param>
+        /// <param name="totalCount">总记录数</param>
+        /// <param name="pageIndex">页面索引（从0开始）</param>
+        /// <param name="pageSize">每页大小</param>
+        public PagedResult(IEnumerable<T> items, int totalCount, int pageIndex, int pageSize)
+        {
+            Items = items ?? new List<T>();
+            TotalCount = totalCount;
+            PageNumber = pageIndex + 1; // 转换为从1开始的页码
+            PageSize = pageSize;
+            TotalPages = pageSize > 0 ? (int)Math.Ceiling((double)totalCount / pageSize) : 0;
+        }
+
+        /// <summary>
         /// 创建空分页结果
         /// </summary>
         public static PagedResult<T> Empty()

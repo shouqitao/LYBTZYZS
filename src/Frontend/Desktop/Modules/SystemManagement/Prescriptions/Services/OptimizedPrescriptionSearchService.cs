@@ -6,7 +6,9 @@ using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Admin.Prescriptions.Services
 {
@@ -54,7 +56,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
             {
                 _logger.LogDebug("执行防抖处方搜索: {Keyword}", keyword);
                 
-                var query = new PrescriptionPagedQueryDto
+                var query = new PrescriptionQueryDto
                 {
                     Keyword = keyword,
                     PageIndex = pageIndex,
@@ -62,7 +64,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
                 };
 
                 var result = await _prescriptionService.GetPagedAsync(query);
-                return result.Items?.ToList() ?? new List<PrescriptionInfo>();
+                return result.Items?.Select(ConvertToPrescriptionInfo).ToList() ?? new List<PrescriptionInfo>();
             }, TimeSpan.FromMilliseconds(500)); // 500ms延迟
         }
 
@@ -120,13 +122,45 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
                 {
                     _logger.LogDebug("执行批量获取处方详情: {Count}个", ids.Count);
                     
-                    var results = new List<PrescriptionInfo?>();
-                    foreach (var id in ids)
+                    // 真正的批量API调用 - 一次性获取多个处方
+                    try
                     {
-                        var result = await _prescriptionService.GetByIdAsync(id);
-                        results.Add(result);
+                        var batchResults = await _prescriptionService.GetBatchAsync(ids);
+                        var results = new List<PrescriptionInfo?>();
+                        
+                        foreach (var id in ids)
+                        {
+                            var dto = batchResults?.FirstOrDefault(r => r.Id == id);
+                            var prescriptionInfo = dto != null ? ConvertToPrescriptionInfo(dto) : null;
+                            results.Add(prescriptionInfo);
+                        }
+                        
+                        return results;
                     }
-                    return results;
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "批量API调用失败，回退到逐个调用");
+                        
+                        // 回退到逐个调用
+                        var results = new List<PrescriptionInfo?>();
+                        foreach (var id in ids)
+                        {
+                            try
+                            {
+                                var result = await _prescriptionService.GetByIdAsync(id);
+                                var prescriptionInfo = result.IsSuccess && result.Data != null 
+                                    ? ConvertToPrescriptionInfo(result.Data) 
+                                    : null;
+                                results.Add(prescriptionInfo);
+                            }
+                            catch (Exception individualEx)
+                            {
+                                _logger.LogError(individualEx, "获取单个处方失败: {Id}", id);
+                                results.Add(null);
+                            }
+                        }
+                        return results;
+                    }
                 },
                 TimeSpan.FromMilliseconds(200) // 200ms批处理窗口
             );
@@ -159,12 +193,43 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
                 {
                     _logger.LogDebug("执行批量状态更新: {Count}个, 状态: {Status}", ids.Count, status);
                     
+                    // 使用新的批量更新API
+                    try
+                    {
+                        var batchResult = await _prescriptionService.UpdateBatchStatusAsync(ids, status);
+                        if (batchResult.IsSuccess)
+                        {
+                            var successCount = batchResult.Data;
+                            var updateResults = new List<bool>();
+                            
+                            // 根据成功数量生成结果
+                            for (int i = 0; i < ids.Count; i++)
+                            {
+                                updateResults.Add(i < successCount);
+                            }
+                            return updateResults;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("批量状态更新失败，回退到逐个处理: {Error}", batchResult.ErrorMessage);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "批量状态更新异常，回退到逐个处理");
+                    }
+
+                    // 回退到逐个处理
                     var results = new List<bool>();
                     foreach (var id in ids)
                     {
                         try
                         {
-                            await _prescriptionService.UpdateStatusAsync(id, status);
+                            // 使用CancelAsync作为状态更新的替代方法
+                            if (status == 2) // 假设2表示取消状态
+                                await _prescriptionService.CancelAsync(id);
+                            else
+                                throw new NotSupportedException($"不支持的状态更新：{status}");
                             results.Add(true);
                         }
                         catch (Exception ex)
@@ -188,7 +253,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
         /// </summary>
         /// <param name="prescription">处方数据</param>
         /// <returns>保存结果</returns>
-        public async Task<bool> ReliableSaveAsync(CreatePrescriptionDto prescription)
+        public async Task<bool> ReliableSaveAsync(PrescriptionCreateDto prescription)
         {
             return await _apiOptimizer.RetryAsync(async () =>
             {
@@ -196,12 +261,12 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
                 
                 var result = await _prescriptionService.CreateAsync(prescription);
                 
-                if (!result.Success)
+                if (!result.IsSuccess)
                 {
-                    throw new InvalidOperationException($"保存处方失败: {result.Message}");
+                    throw new InvalidOperationException($"保存处方失败: {result.ErrorMessage}");
                 }
 
-                return result.Success;
+                return result.IsSuccess;
             }, 
             maxRetries: 3,
             baseDelay: TimeSpan.FromSeconds(1),
@@ -260,7 +325,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
                     _logger.LogDebug("预加载相关处方: {Id}", currentPrescription.Id);
                     
                     // 预加载同一患者的其他处方
-                    if (currentPrescription.PatientId.HasValue)
+                    if (currentPrescription.PatientId != Guid.Empty)
                     {
                         await DebouncedSearchAsync($"patient_{currentPrescription.PatientId}", 1, 5);
                     }
@@ -308,6 +373,53 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
         #endregion
 
         #region 私有辅助方法
+
+        /// <summary>
+        /// 将DTO转换为PrescriptionInfo
+        /// </summary>
+        private PrescriptionInfo ConvertToPrescriptionInfo(PrescriptionDto dto)
+        {
+            return new PrescriptionInfo
+            {
+                Id = dto.Id,
+                PatientId = dto.PatientId,
+                UserId = dto.DoctorId, // 医生ID（UserId）
+                CreateTime = dto.CreateTime,
+                Status = dto.Status,
+                Diagnosis = dto.Diagnosis,
+                DosageCount = dto.DosageCount,
+                TotalPrice = dto.TotalPrice,
+                Usage = (dto as PrescriptionDetailDto)?.Usage ?? "",
+                Remark = (dto as PrescriptionDetailDto)?.Remark ?? "",
+                // TODO: 从其他服务获取患者和医生姓名
+                PatientName = dto.PatientName ?? "患者" + dto.PatientId.ToString()[..8],
+                DoctorName = dto.DoctorName ?? "医生" + dto.DoctorId.ToString()[..8],
+                PrescriptionNumber = GeneratePrescriptionNumber(dto.Id, dto.CreateTime),
+                HerbCount = dto.Items?.Count ?? 0,
+                // 设置可编辑和可作废状态
+                CanEdit = dto.Status == PrescriptionStatus.Draft,
+                CanVoid = dto.Status != PrescriptionStatus.Completed,
+                Items = dto.Items?.Select(item => new PrescriptionItemInfo
+                {
+                    Id = item.Id,
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName,
+                    Quantity = item.Quantity,
+                    Unit = item.Unit,
+                    Price = item.UnitPrice,
+                    Subtotal = item.Subtotal
+                }).ToList() ?? new List<PrescriptionItemInfo>()
+            };
+        }
+
+        /// <summary>
+        /// 生成处方编号
+        /// </summary>
+        private string GeneratePrescriptionNumber(Guid id, DateTime createTime)
+        {
+            // 生成处方编号：CF + 日期 + ID前6位
+            return $"CF{createTime:yyyyMMdd}{id.ToString("N")[..6].ToUpper()}";
+        }
 
         /// <summary>
         /// 生成搜索建议

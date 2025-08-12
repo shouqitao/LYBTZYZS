@@ -1,0 +1,118 @@
+# 凌隐宝堂Kibana配置 - UltraThink重构日志分析界面
+
+# 服务器配置
+server.name: lybt-kibana
+server.host: "0.0.0.0"
+server.port: 5601
+server.basePath: ""
+server.rewriteBasePath: false
+server.publicBaseUrl: "http://localhost:5601"
+
+# Elasticsearch配置
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.username: ""
+elasticsearch.password: ""
+elasticsearch.requestTimeout: 30000
+elasticsearch.shardTimeout: 30000
+elasticsearch.pingTimeout: 1500
+
+# Kibana索引
+kibana.index: ".kibana"
+
+# 默认应用
+kibana.defaultAppId: "discover"
+
+# 日志配置
+logging.appenders:
+  console:
+    type: console
+    layout:
+      type: json
+      
+logging.root:
+  level: info
+
+# 国际化
+i18n.locale: "zh-CN"
+
+# 监控
+monitoring.ui.container.elasticsearch.enabled: false
+monitoring.ui.container.logstash.enabled: false
+monitoring.kibana.collection.enabled: false
+monitoring.kibana.collection.interval: 10000
+
+# 安全配置
+xpack.security.enabled: false
+xpack.encryptedSavedObjects.encryptionKey: "lybt-encryption-key-32-characters"
+
+# 告警和通知
+xpack.actions.enabled: true
+xpack.alerting.enabled: true
+xpack.notification.email.account:
+  system_email:
+    profile: standard
+    email_defaults:
+      from: lybt-system@qq.com
+    smtp:
+      host: smtp.qq.com
+      port: 587
+      secure: false
+      auth:
+        username: lybt-system@qq.com
+        password: your-email-password
+
+# Maps配置
+map.includeElasticMapsService: false
+map.tilemap.url: ""
+
+# 新功能
+newsfeed.enabled: false
+telemetry.enabled: false
+telemetry.optIn: false
+
+# Reporting配置
+xpack.reporting.enabled: true
+xpack.reporting.encryptionKey: "lybt-reporting-key-32-characters"
+xpack.reporting.kibanaServer.hostname: "localhost"
+xpack.reporting.kibanaServer.port: 5601
+
+# Canvas
+xpack.canvas.enabled: true
+
+# 仪表板
+dashboard.defaultDarkMode: false
+
+# 控制台
+console.enabled: true
+
+# 数据增强
+data.autocomplete.valueSuggestions.enabled: true
+data.autocomplete.valueSuggestions.terminateAfter: 100000
+data.autocomplete.valueSuggestions.timeout: 1000
+
+# 搜索会话
+data.search.sessions.enabled: true
+
+# UI设置
+uiSettings.overrides:
+  "dateFormat": "YYYY-MM-DD HH:mm:ss"
+  "dateFormat:tz": "Asia/Shanghai"
+  "defaultIndex": "lybt-*"
+  "timepicker:timeDefaults": |
+    {
+      "from": "now-1h",
+      "to": "now"
+    }
+  "discover:sampleSize": 500
+  "discover:maxDocFieldsDisplayed": 50
+  "histogram:barTarget": 50
+  "visualization:tileMap:maxPrecision": 7
+  "csv:separator": ","
+  "csv:quoteValues": true
+  "history:limit": 10
+  "shortDots:enable": false
+  "truncate:maxHeight": 250
+  "indexPattern:placeholder": "lybt-*"
+  
+# 内存管理
+node.max_old_space_size: 1536

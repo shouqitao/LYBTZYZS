@@ -68,5 +68,15 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// 根据医疗案例ID获取处方
         /// </summary>
         Task<ServiceResult<PrescriptionDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 批量获取处方详情（性能优化）
+        /// </summary>
+        Task<List<PrescriptionDto>> GetBatchAsync(IEnumerable<Guid> ids);
+
+        /// <summary>
+        /// 批量更新处方状态（性能优化）
+        /// </summary>
+        Task<ServiceResult<int>> UpdateBatchStatusAsync(IEnumerable<Guid> ids, int status, string? reason = null);
     }
 }

@@ -11,6 +11,8 @@ using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.Caching;
+using LYBT.Shared.Models.Common;
+using static LYBT.Desktop.Core.Caching.CacheKeyGenerator;
 using PagedResult = LYBT.Desktop.Core.Models.Common.PagedResult<LYBT.Desktop.Core.Models.Herbs.HerbInfo>;
 
 namespace LYBT.Desktop.Services
@@ -24,10 +26,10 @@ namespace LYBT.Desktop.Services
         private readonly IMemoryCacheService _cacheService;
         private readonly ILogger<CachedHerbService> _logger;
 
-        // 缓存键前缀
+        // 缓存键前缀（使用标准化生成器）
         private const string CACHE_PREFIX = "herbs";
-        private const string ALL_HERBS_KEY = "herbs:all";
-        private const string AVAILABLE_HERBS_KEY = "herbs:available";
+        private readonly string ALL_HERBS_KEY = Generate<HerbService>("all");
+        private readonly string AVAILABLE_HERBS_KEY = Generate<HerbService>("available");
 
         // 缓存策略配置
         private static readonly CacheOptions DefaultCacheOptions = CacheOptions.MediumTerm; // 30分钟
@@ -121,18 +123,39 @@ namespace LYBT.Desktop.Services
             }
         }
 
+
         /// <summary>
-        /// 获取药材详情（带缓存）
+        /// 获取药材列表（带缓存）
         /// </summary>
-        public async Task<HerbInfo?> GetHerbByIdAsync(Guid id)
+        public async Task<List<HerbInfo>> GetHerbsAsync()
         {
             try
             {
-                var cacheKey = $"{CACHE_PREFIX}:detail:{id}";
+                return await _cacheService.GetAsync(ALL_HERBS_KEY, async () =>
+                {
+                    _logger.LogDebug("药材列表缓存未命中，调用API获取数据");
+                    return await _decoratedService.GetHerbsAsync();
+                }, LongCacheOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取药材列表失败（带缓存）");
+                return new List<HerbInfo>();
+            }
+        }
+
+        /// <summary>
+        /// 获取药材详情（通过ID）
+        /// </summary>
+        public async Task<HerbInfo?> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                var cacheKey = Generate<HerbService>("detail", id);
                 return await _cacheService.GetAsync(cacheKey, async () =>
                 {
                     _logger.LogDebug("药材详情缓存未命中，调用API获取数据: {HerbId}", id);
-                    return await _decoratedService.GetHerbByIdAsync(id);
+                    return await _decoratedService.GetByIdAsync(id);
                 }, LongCacheOptions);
             }
             catch (Exception ex)
@@ -143,25 +166,172 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 获取药材分类统计（带缓存）
+        /// 创建药材
         /// </summary>
-        public async Task<Dictionary<string, int>> GetCategoryStatisticsAsync()
+        public async Task<ServiceResult> CreateHerbAsync(HerbCreateDto dto)
+        {
+            var result = await _decoratedService.CreateHerbAsync(dto);
+            if (result.IsSuccess)
+            {
+                ClearCache();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 更新药材
+        /// </summary>
+        public async Task<ServiceResult> UpdateHerbAsync(HerbUpdateDto dto)
+        {
+            var result = await _decoratedService.UpdateHerbAsync(dto);
+            if (result.IsSuccess)
+            {
+                ClearHerbCache(dto.Id);
+                ClearCache();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 删除药材
+        /// </summary>
+        public async Task<ServiceResult> DeleteHerbAsync(Guid id)
+        {
+            var result = await _decoratedService.DeleteHerbAsync(id);
+            if (result.IsSuccess)
+            {
+                ClearHerbCache(id);
+                ClearCache();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 更新药材状态
+        /// </summary>
+        public async Task<ServiceResult> UpdateStatusAsync(Guid id, CommonStatusUpdateDto dto)
+        {
+            var result = await _decoratedService.UpdateStatusAsync(id, dto);
+            if (result.IsSuccess)
+            {
+                ClearHerbCache(id);
+                ClearCache();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取缺货药材列表（带缓存）
+        /// </summary>
+        public async Task<List<HerbInfo>> GetOutOfStockHerbsAsync()
         {
             try
             {
-                var cacheKey = $"{CACHE_PREFIX}:statistics:category";
+                var cacheKey = Generate<HerbService>("outofstock");
                 return await _cacheService.GetAsync(cacheKey, async () =>
                 {
-                    _logger.LogDebug("药材分类统计缓存未命中，调用API获取数据");
-                    return await _decoratedService.GetCategoryStatisticsAsync();
+                    _logger.LogDebug("缺货药材缓存未命中，调用API获取数据");
+                    return await _decoratedService.GetOutOfStockHerbsAsync();
+                }, ShortCacheOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取缺货药材失败（带缓存）");
+                return new List<HerbInfo>();
+            }
+        }
+
+        /// <summary>
+        /// 获取即将过期的药材（带缓存）
+        /// </summary>
+        public async Task<List<HerbInfo>> GetExpiringHerbsAsync(int days = 30)
+        {
+            try
+            {
+                var cacheKey = Generate<HerbService>("expiring", days);
+                return await _cacheService.GetAsync(cacheKey, async () =>
+                {
+                    _logger.LogDebug("即将过期药材缓存未命中，调用API获取数据");
+                    return await _decoratedService.GetExpiringHerbsAsync(days);
+                }, ShortCacheOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取即将过期药材失败（带缓存）");
+                return new List<HerbInfo>();
+            }
+        }
+
+        /// <summary>
+        /// 获取药材统计信息（带缓存）
+        /// </summary>
+        public async Task<Dictionary<int, int>> GetStatisticsAsync()
+        {
+            try
+            {
+                var cacheKey = Generate<HerbService>("statistics", "status");
+                return await _cacheService.GetAsync(cacheKey, async () =>
+                {
+                    _logger.LogDebug("药材统计信息缓存未命中，调用API获取数据");
+                    return await _decoratedService.GetStatisticsAsync();
                 }, DefaultCacheOptions);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取药材分类统计失败（带缓存）");
-                return new Dictionary<string, int>();
+                _logger.LogError(ex, "获取药材统计信息失败（带缓存）");
+                return new Dictionary<int, int>();
             }
         }
+
+        /// <summary>
+        /// 批量导入药材
+        /// </summary>
+        public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
+        {
+            var result = await _decoratedService.ImportHerbsAsync(herbs);
+            if (result.IsSuccess)
+            {
+                ClearCache();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 导出药材数据
+        /// </summary>
+        public async Task<List<HerbInfo>> ExportHerbsAsync()
+        {
+            return await _decoratedService.ExportHerbsAsync();
+        }
+
+        /// <summary>
+        /// 按名称搜索药材（带缓存）
+        /// </summary>
+        public async Task<ServiceResult<List<HerbInfo>>> SearchByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return ServiceResult<List<HerbInfo>>.Success(new List<HerbInfo>());
+            }
+
+            try
+            {
+                var cacheKey = Generate<HerbService>("search", "name", name);
+                var result = await _cacheService.GetAsync(cacheKey, async () =>
+                {
+                    _logger.LogDebug("按名称搜索药材缓存未命中，调用API获取数据: {Name}", name);
+                    return await _decoratedService.SearchByNameAsync(name);
+                }, ShortCacheOptions);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "按名称搜索药材失败（带缓存）: {Name}", name);
+                return ServiceResult<List<HerbInfo>>.Failure($"搜索药材失败: {ex.Message}");
+            }
+        }
+
 
         #endregion
 
@@ -190,7 +360,7 @@ namespace LYBT.Desktop.Services
         {
             try
             {
-                var cacheKey = $"{CACHE_PREFIX}:detail:{herbId}";
+                var cacheKey = Generate<HerbService>("detail", herbId);
                 _cacheService.Remove(cacheKey);
                 _logger.LogDebug("已清除药材详情缓存: {HerbId}", herbId);
             }
@@ -230,45 +400,55 @@ namespace LYBT.Desktop.Services
         #region 私有辅助方法
 
         /// <summary>
-        /// 生成列表查询的缓存键
+        /// 生成列表查询的缓存键（使用标准化缓存键生成器）
         /// </summary>
         private string GenerateListCacheKey(HerbPagedQueryDto? query)
         {
             if (query == null)
-                return $"{CACHE_PREFIX}:list:all";
+                return Generate<HerbService>("list", "all");
 
-            var keyParts = new List<string> { CACHE_PREFIX, "list" };
+            var parameters = new List<object> { "list" };
             
             if (!string.IsNullOrEmpty(query.Keyword))
-                keyParts.Add($"kw:{query.Keyword}");
+                parameters.Add($"kw:{query.Keyword}");
             if (!string.IsNullOrEmpty(query.Name))
-                keyParts.Add($"name:{query.Name}");
+                parameters.Add($"name:{query.Name}");
             if (!string.IsNullOrEmpty(query.Origin))
-                keyParts.Add($"origin:{query.Origin}");
+                parameters.Add($"origin:{query.Origin}");
             if (query.Status.HasValue)
-                keyParts.Add($"status:{query.Status.Value}");
+                parameters.Add($"status:{query.Status.Value}");
+            if (query.MinPrice.HasValue)
+                parameters.Add($"minPrice:{query.MinPrice.Value}");
+            if (query.MaxPrice.HasValue)
+                parameters.Add($"maxPrice:{query.MaxPrice.Value}");
 
-            return string.Join(":", keyParts);
+            return Generate<HerbService>("list", parameters.ToArray());
         }
 
         /// <summary>
-        /// 生成搜索查询的缓存键
+        /// 生成搜索查询的缓存键（使用标准化缓存键生成器）
         /// </summary>
         private string GenerateSearchCacheKey(HerbPagedQueryDto query)
         {
-            var keyParts = new List<string> { CACHE_PREFIX, "search" };
-            
-            keyParts.Add($"page:{query.PageIndex}");
-            keyParts.Add($"size:{query.PageSize}");
+            var parameters = new List<object>
+            {
+                "search",
+                $"page:{query.PageIndex}",
+                $"size:{query.PageSize}"
+            };
             
             if (!string.IsNullOrEmpty(query.Keyword))
-                keyParts.Add($"kw:{query.Keyword}");
+                parameters.Add($"kw:{query.Keyword}");
             if (!string.IsNullOrEmpty(query.Name))
-                keyParts.Add($"name:{query.Name}");
+                parameters.Add($"name:{query.Name}");
             if (query.Status.HasValue)
-                keyParts.Add($"status:{query.Status.Value}");
+                parameters.Add($"status:{query.Status.Value}");
+            if (query.MinPrice.HasValue)
+                parameters.Add($"minPrice:{query.MinPrice.Value}");
+            if (query.MaxPrice.HasValue)
+                parameters.Add($"maxPrice:{query.MaxPrice.Value}");
 
-            return string.Join(":", keyParts);
+            return Generate<HerbService>("search", parameters.ToArray());
         }
 
         /// <summary>

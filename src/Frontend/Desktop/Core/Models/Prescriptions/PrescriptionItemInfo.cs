@@ -1,12 +1,13 @@
 using System;
 using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Core.Models.Prescriptions
 {
     /// <summary>
     /// 处方项目信息 - 前端显示模型
     /// </summary>
-    public class PrescriptionItemInfo : BasePrescriptionItem
+    public class PrescriptionItemInfo : PrescriptionItemDto
     {
         /// <summary>
         /// 药材名称（冗余字段，提高显示性能）

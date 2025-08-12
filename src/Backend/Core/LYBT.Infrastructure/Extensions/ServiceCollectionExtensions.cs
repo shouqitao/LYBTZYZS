@@ -11,6 +11,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+// DDD相关引用
+using LYBT.Domain.SeedWork;
+using LYBT.Domain.Aggregates.PatientAggregate;
+using LYBT.Domain.Aggregates.ConsultationAggregate;
+using LYBT.Domain.Aggregates.MedicalCaseAggregate;
+using LYBT.Domain.Aggregates.HerbAggregate;
+using LYBT.Domain.Aggregates.FormulaAggregate;
+using LYBT.Infrastructure.Repositories.DDD;
+using LYBT.Infrastructure.UnitOfWork;
+
 namespace LYBT.Infrastructure.Extensions
 {
 
@@ -210,6 +220,30 @@ namespace LYBT.Infrastructure.Extensions
         }
 
         /// <summary>
+        /// 添加DDD Repository和UnitOfWork服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddDomainServices(this IServiceCollection services)
+        {
+            // 注册Domain层的UnitOfWork接口
+            services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+            
+            // 注册Infrastructure层扩展的UnitOfWork接口（包含Repository访问）
+            services.AddScoped<IUnitOfWorkWithRepositories, UnitOfWork.UnitOfWork>();
+
+            // 注册DDD Repository接口和实现
+            // 所有Repository都使用Scoped生命周期，确保在同一请求中共享DbContext
+            services.AddScoped<IPatientRepository, PatientRepository>();
+            services.AddScoped<IConsultationRepository, ConsultationRepository>();
+            services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
+            services.AddScoped<IHerbRepository, HerbRepository>();
+            services.AddScoped<IFormulaRepository, FormulaRepository>();
+
+            return services;
+        }
+
+        /// <summary>
         /// 添加所有基础设施服务
         /// </summary>
         /// <param name="services">服务集合</param>
@@ -219,6 +253,9 @@ namespace LYBT.Infrastructure.Extensions
         {
             // 添加数据库上下文
             services.AddInfrastructureDbContext(configuration);
+
+            // 添加DDD Repository和UnitOfWork服务
+            services.AddDomainServices();
 
             // 添加缓存服务
             services.AddCachingServices(configuration);

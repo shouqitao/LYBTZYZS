@@ -1608,6 +1608,10 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Specialty")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");

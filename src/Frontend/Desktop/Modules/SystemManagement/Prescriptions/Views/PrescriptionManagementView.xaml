@@ -39,8 +39,8 @@
                 </Grid.ColumnDefinitions>
                 
                 <!-- 今日处方数 -->
-                <Border Grid.Column="0" Margin="5" Background="White" CornerRadius="8">
-                    <StackPanel Padding="15">
+                <Border Grid.Column="0" Margin="5" Background="White" CornerRadius="8" Padding="15">
+                    <StackPanel>
                         <TextBlock Text="今日处方" FontSize="12" Foreground="#666"/>
                         <TextBlock Text="{Binding TodayPrescriptionCount}" 
                                   FontSize="28" FontWeight="Bold" Foreground="#2196F3"/>
@@ -56,8 +56,8 @@
                 </Border>
                 
                 <!-- 本周处方数 -->
-                <Border Grid.Column="1" Margin="5" Background="White" CornerRadius="8">
-                    <StackPanel Padding="15">
+                <Border Grid.Column="1" Margin="5" Background="White" CornerRadius="8" Padding="15">
+                    <StackPanel>
                         <TextBlock Text="本周处方" FontSize="12" Foreground="#666"/>
                         <TextBlock Text="{Binding WeekPrescriptionCount}" 
                                   FontSize="28" FontWeight="Bold" Foreground="#4CAF50"/>
@@ -65,8 +65,8 @@
                 </Border>
                 
                 <!-- 本月处方数 -->
-                <Border Grid.Column="2" Margin="5" Background="White" CornerRadius="8">
-                    <StackPanel Padding="15">
+                <Border Grid.Column="2" Margin="5" Background="White" CornerRadius="8" Padding="15">
+                    <StackPanel>
                         <TextBlock Text="本月处方" FontSize="12" Foreground="#666"/>
                         <TextBlock Text="{Binding MonthPrescriptionCount}" 
                                   FontSize="28" FontWeight="Bold" Foreground="#FF9800"/>
@@ -74,8 +74,8 @@
                 </Border>
                 
                 <!-- 待审核 -->
-                <Border Grid.Column="3" Margin="5" Background="White" CornerRadius="8">
-                    <StackPanel Padding="15">
+                <Border Grid.Column="3" Margin="5" Background="White" CornerRadius="8" Padding="15">
+                    <StackPanel>
                         <TextBlock Text="待审核" FontSize="12" Foreground="#666"/>
                         <TextBlock Text="{Binding PendingCount}" 
                                   FontSize="28" FontWeight="Bold" Foreground="#FFC107"/>
@@ -86,8 +86,8 @@
                 </Border>
                 
                 <!-- 今日营收 -->
-                <Border Grid.Column="4" Margin="5" Background="White" CornerRadius="8">
-                    <StackPanel Padding="15">
+                <Border Grid.Column="4" Margin="5" Background="White" CornerRadius="8" Padding="15">
+                    <StackPanel>
                         <TextBlock Text="今日营收" FontSize="12" Foreground="#666"/>
                         <TextBlock Text="{Binding TodayRevenue, StringFormat='¥{0:F2}'}" 
                                   FontSize="24" FontWeight="Bold" Foreground="#E91E63"/>

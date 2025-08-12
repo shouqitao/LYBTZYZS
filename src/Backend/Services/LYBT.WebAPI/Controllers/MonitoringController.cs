@@ -2,6 +2,8 @@ using Asp.Versioning;
 using LYBT.WebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.Runtime;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -290,6 +292,156 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Prometheus健康检查端点 - UltraThink重构监控集成
+        /// </summary>
+        /// <returns>系统健康状态</returns>
+        [HttpGet("health")]
+        [AllowAnonymous]
+        public IActionResult GetHealth()
+        {
+            var healthCheck = new
+            {
+                Status = "Healthy",
+                Timestamp = DateTime.UtcNow,
+                Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+                Version = GetType().Assembly.GetName().Version?.ToString(),
+                ServerName = Environment.MachineName,
+                ProcessId = Environment.ProcessId,
+                WorkingSet = GC.GetTotalMemory(false),
+                GCCount = new
+                {
+                    Gen0 = GC.CollectionCount(0),
+                    Gen1 = GC.CollectionCount(1),
+                    Gen2 = GC.CollectionCount(2)
+                },
+                ThreadCount = Process.GetCurrentProcess().Threads.Count
+            };
+
+            return Ok(healthCheck);
+        }
+
+        /// <summary>
+        /// Prometheus指标端点 - UltraThink重构监控集成
+        /// </summary>
+        /// <returns>Prometheus格式指标</returns>
+        [HttpGet("metrics")]
+        [AllowAnonymous]
+        public IActionResult GetPrometheusMetrics()
+        {
+            var process = Process.GetCurrentProcess();
+            var metrics = new[]
+            {
+                "# HELP lybt_process_cpu_seconds_total Total user and system CPU time spent in seconds",
+                "# TYPE lybt_process_cpu_seconds_total counter",
+                $"lybt_process_cpu_seconds_total {process.TotalProcessorTime.TotalSeconds}",
+                
+                "# HELP lybt_process_memory_bytes Current memory usage in bytes",
+                "# TYPE lybt_process_memory_bytes gauge",
+                $"lybt_process_memory_bytes {process.WorkingSet64}",
+                
+                "# HELP lybt_process_threads_total Current number of threads",
+                "# TYPE lybt_process_threads_total gauge",
+                $"lybt_process_threads_total {process.Threads.Count}",
+                
+                "# HELP lybt_gc_collections_total Number of garbage collections",
+                "# TYPE lybt_gc_collections_total counter",
+                $"lybt_gc_collections_total{{generation=\"0\"}} {GC.CollectionCount(0)}",
+                $"lybt_gc_collections_total{{generation=\"1\"}} {GC.CollectionCount(1)}",
+                $"lybt_gc_collections_total{{generation=\"2\"}} {GC.CollectionCount(2)}",
+                
+                "# HELP lybt_gc_memory_bytes Current managed memory usage",
+                "# TYPE lybt_gc_memory_bytes gauge",
+                $"lybt_gc_memory_bytes {GC.GetTotalMemory(false)}",
+                
+                "# HELP lybt_uptime_seconds Application uptime in seconds",
+                "# TYPE lybt_uptime_seconds gauge",
+                $"lybt_uptime_seconds {(DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime()).TotalSeconds}"
+            };
+
+            return Content(string.Join("\n", metrics), "text/plain; version=0.0.4; charset=utf-8");
+        }
+
+        /// <summary>
+        /// 接收AlertManager告警通知 - UltraThink重构监控集成
+        /// </summary>
+        /// <param name="webhook">告警数据</param>
+        /// <returns>处理结果</returns>
+        [HttpPost("webhooks/alertmanager")]
+        [AllowAnonymous]
+        public IActionResult ReceiveAlertManagerWebhook([FromBody] AlertManagerWebhook webhook)
+        {
+            try
+            {
+                Logger.LogInformation("收到AlertManager告警通知: {@Webhook}", webhook);
+
+                // 处理告警逻辑
+                foreach (var alert in webhook.Alerts)
+                {
+                    ProcessAlert(alert);
+                }
+
+                return Ok(new { Message = "告警处理成功", ProcessedCount = webhook.Alerts.Count });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "处理AlertManager告警时发生错误");
+                return StatusCode(500, new { Error = "告警处理失败", Details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 接收严重告警通知
+        /// </summary>
+        /// <param name="webhook">严重告警数据</param>
+        /// <returns>处理结果</returns>
+        [HttpPost("webhooks/critical")]
+        public IActionResult ReceiveCriticalAlert([FromBody] AlertManagerWebhook webhook)
+        {
+            try
+            {
+                Logger.LogCritical("收到严重告警通知: {@Webhook}", webhook);
+
+                foreach (var alert in webhook.Alerts)
+                {
+                    ProcessCriticalAlert(alert);
+                }
+
+                return Ok(new { Message = "严重告警处理成功", ProcessedCount = webhook.Alerts.Count });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "处理严重告警时发生错误");
+                return StatusCode(500, new { Error = "严重告警处理失败", Details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 接收安全告警通知
+        /// </summary>
+        /// <param name="webhook">安全告警数据</param>
+        /// <returns>处理结果</returns>
+        [HttpPost("webhooks/security")]
+        public IActionResult ReceiveSecurityAlert([FromBody] AlertManagerWebhook webhook)
+        {
+            try
+            {
+                Logger.LogWarning("收到安全告警通知: {@Webhook}", webhook);
+
+                foreach (var alert in webhook.Alerts)
+                {
+                    ProcessSecurityAlert(alert);
+                }
+
+                return Ok(new { Message = "安全告警处理成功", ProcessedCount = webhook.Alerts.Count });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "处理安全告警时发生错误");
+                return StatusCode(500, new { Error = "安全告警处理失败", Details = ex.Message });
+            }
+        }
+
         private static TimeSpan? ParsePeriod(string period)
         {
             return period.ToLower() switch
@@ -326,6 +478,52 @@ namespace LYBT.WebAPI.Controllers
                 return "Warning";
 
             return "Healthy";
+        }
+
+        /// <summary>
+        /// 处理一般告警 - UltraThink重构监控集成
+        /// </summary>
+        private void ProcessAlert(PrometheusAlert alert)
+        {
+            Logger.LogWarning("处理告警: {AlertName}, 严重程度: {Severity}, 状态: {Status}",
+                alert.Labels.GetValueOrDefault("alertname", "Unknown"),
+                alert.Labels.GetValueOrDefault("severity", "Unknown"),
+                alert.Status);
+
+            // 可以添加更多的告警处理逻辑：
+            // - 发送通知到企业微信
+            // - 更新数据库记录
+            // - 触发自动恢复机制
+        }
+
+        /// <summary>
+        /// 处理严重告警
+        /// </summary>
+        private void ProcessCriticalAlert(PrometheusAlert alert)
+        {
+            Logger.LogCritical("严重告警处理: {AlertName}, 描述: {Description}",
+                alert.Labels.GetValueOrDefault("alertname", "Unknown"),
+                alert.Annotations.GetValueOrDefault("description", "无描述"));
+
+            // 严重告警可能需要：
+            // - 立即通知管理员
+            // - 自动扩容
+            // - 启用降级服务
+        }
+
+        /// <summary>
+        /// 处理安全告警
+        /// </summary>
+        private void ProcessSecurityAlert(PrometheusAlert alert)
+        {
+            Logger.LogWarning("安全告警处理: {AlertName}, 服务: {Service}",
+                alert.Labels.GetValueOrDefault("alertname", "Unknown"),
+                alert.Labels.GetValueOrDefault("service", "Unknown"));
+
+            // 安全告警可能需要：
+            // - 记录安全日志
+            // - 更新防火墙规则
+            // - 通知安全团队
         }
     }
 
@@ -386,5 +584,36 @@ namespace LYBT.WebAPI.Controllers
         Info,
         Warning,
         Critical
+    }
+
+    /// <summary>
+    /// AlertManager Webhook数据模型 - UltraThink重构监控集成
+    /// </summary>
+    public class AlertManagerWebhook
+    {
+        public string Receiver { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public List<PrometheusAlert> Alerts { get; set; } = new();
+        public Dictionary<string, string> GroupLabels { get; set; } = new();
+        public Dictionary<string, string> CommonLabels { get; set; } = new();
+        public Dictionary<string, string> CommonAnnotations { get; set; } = new();
+        public string ExternalURL { get; set; } = string.Empty;
+        public string Version { get; set; } = string.Empty;
+        public string GroupKey { get; set; } = string.Empty;
+        public int TruncatedAlerts { get; set; }
+    }
+
+    /// <summary>
+    /// Prometheus告警数据模型
+    /// </summary>
+    public class PrometheusAlert
+    {
+        public string Status { get; set; } = string.Empty;
+        public Dictionary<string, string> Labels { get; set; } = new();
+        public Dictionary<string, string> Annotations { get; set; } = new();
+        public DateTime StartsAt { get; set; }
+        public DateTime EndsAt { get; set; }
+        public string GeneratorURL { get; set; } = string.Empty;
+        public string Fingerprint { get; set; } = string.Empty;
     }
 }

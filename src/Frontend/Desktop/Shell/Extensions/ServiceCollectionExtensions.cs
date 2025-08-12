@@ -17,6 +17,9 @@ using LYBT.Desktop.Core.Mapping;
 using LYBT.Desktop.Core.Models.Cache;
 using LYBT.Desktop.Infrastructure;
 using LYBT.Desktop.Services.Handlers;
+using LYBT.Desktop.Core.Caching;
+using LYBT.Desktop.Core.Services;
+using LYBT.Desktop.Admin.Prescriptions.Services;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -101,6 +104,9 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // 注册缓存服务
             containerRegistry.RegisterSingleton<ICacheService, MemoryCacheService>();
+            
+            // 注册内存缓存服务（阶段3新增）
+            containerRegistry.RegisterSingleton<IMemoryCacheService, LYBT.Desktop.Core.Caching.MemoryCacheService>();
         }
 
         /// <summary>
@@ -198,7 +204,6 @@ namespace LYBT.Desktop.Shell.Extensions
                 (typeof(IAuthenticationService), typeof(AuthenticationService)),
                 (typeof(IUserService), typeof(UserService)),
                 (typeof(IPatientService), typeof(PatientService)),
-                (typeof(IHerbService), typeof(HerbService)),
                 (typeof(IFormulaService), typeof(FormulaService)),
                 (typeof(IConsultationService), typeof(ConsultationService)),
                 (typeof(IPrescriptionService), typeof(PrescriptionService)),
@@ -209,6 +214,14 @@ namespace LYBT.Desktop.Shell.Extensions
             {
                 containerRegistry.RegisterSingleton(interfaceType, implementationType);
             }
+
+            // 特殊处理：药材服务使用缓存装饰器（阶段3优化）
+            containerRegistry.RegisterSingleton<HerbService>();  // 原始服务
+            containerRegistry.RegisterSingleton<IHerbService>(container => 
+                new CachedHerbService(
+                    container.Resolve<HerbService>(),
+                    container.Resolve<IMemoryCacheService>(),
+                    container.Resolve<ILogger<CachedHerbService>>()));
         }
 
         /// <summary>
@@ -216,10 +229,50 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterSupportingServices(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterSingleton<IPrescriptionPrintService, SimplePrescriptionPrintService>();
+            // 原有服务
             containerRegistry.RegisterSingleton<ICredentialService, CredentialService>();
             containerRegistry.RegisterSingleton<IPrescriptionValidationService, PrescriptionValidationService>();
             containerRegistry.RegisterSingleton<IIDCardReaderService, MockIDCardReaderService>();
+
+            // 阶段3新增服务
+            containerRegistry.RegisterSingleton<ApiOptimizationService>();
+            
+            // 注册处方打印服务 - 支持两个不同的接口
+            containerRegistry.RegisterSingleton<PrescriptionPrintService>(); // Services项目中的实现
+            containerRegistry.RegisterSingleton<IPrescriptionPrintService>(container => container.Resolve<PrescriptionPrintService>());
+            
+            // SystemManagement模块的高级打印服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Admin.Prescriptions.Services.PrescriptionPrintService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Admin.Prescriptions.Services.IAdvancedPrescriptionPrintService>(
+                container => container.Resolve<LYBT.Desktop.Admin.Prescriptions.Services.PrescriptionPrintService>());
+            
+            containerRegistry.RegisterSingleton<PrescriptionTemplateService>();
+            containerRegistry.RegisterSingleton<OptimizedPrescriptionSearchService>();
+
+            // 缓存和性能优化服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.ICacheWarmupService, LYBT.Desktop.Core.Services.CacheWarmupService>();
+
+            // 错误处理服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IUserFriendlyErrorService, LYBT.Desktop.Core.Services.UserFriendlyErrorService>();
+
+            // 智能加载管理器 - UltraThink创新组件
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.ISmartLoadingManager, LYBT.Desktop.Core.Services.SmartLoadingManager>();
+
+            // 性能优化服务 - UltraThink Stage 5.2.3
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IUserBehaviorAnalyzer, LYBT.Desktop.Core.Services.Performance.UserBehaviorAnalyzer>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IPredictivePreloadService, LYBT.Desktop.Core.Services.Performance.PredictivePreloadService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.ISmartConcurrencyManager, LYBT.Desktop.Core.Services.Performance.SmartConcurrencyManager>();
+            
+            // 日志监控服务 - UltraThink Stage 5.3.1
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Monitoring.IStructuredLoggingService, LYBT.Desktop.Core.Services.Monitoring.StructuredLoggingService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Monitoring.IPerformanceMonitoringService, LYBT.Desktop.Core.Services.Monitoring.PerformanceMonitoringService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Monitoring.IBusinessMetricsService, LYBT.Desktop.Core.Services.Monitoring.BusinessMetricsService>();
+            
+            // 配置管理服务 - UltraThink Stage 5.3.2
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Configuration.IConfigurationManagerService, LYBT.Desktop.Core.Services.Configuration.ConfigurationManagerService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Configuration.IFeatureToggleService, LYBT.Desktop.Core.Services.Configuration.FeatureToggleService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Configuration.IHotReloadService, LYBT.Desktop.Core.Services.Configuration.HotReloadService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Configuration.ISecureConfigurationService, LYBT.Desktop.Core.Services.Configuration.SecureConfigurationService>();
         }
 
         /// <summary>

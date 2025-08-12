@@ -493,4 +493,14 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #endregion
     }
+
+    /// <summary>
+    /// 导入历史数据事件参数
+    /// </summary>
+    public class ImportHistoryDataEventArgs
+    {
+        public string DataType { get; set; } = string.Empty;
+        public WorkflowStep TargetStep { get; set; }
+        public Guid SourceMedicalCaseId { get; set; }
+    }
 }

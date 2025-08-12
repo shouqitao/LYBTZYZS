@@ -1,0 +1,142 @@
+# 凌隐宝堂Prometheus监控配置 - UltraThink重构监控架构
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'lybt-cluster'
+    env: 'production'
+
+# 规则文件
+rule_files:
+  - "rules/*.yml"
+
+# 告警管理器配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# 抓取配置
+scrape_configs:
+  # ==================== Prometheus自监控 ====================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # ==================== LYBT Web API监控 ====================
+  - job_name: 'lybt-webapi'
+    static_configs:
+      - targets: ['lybt-webapi:5000']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__address__]
+        regex: '([^:]+):.*'
+        target_label: host
+        replacement: '${1}'
+    metric_relabel_configs:
+      # 重命名指标
+      - source_labels: [__name__]
+        regex: 'http_requests_total'
+        target_label: __name__
+        replacement: 'lybt_http_requests_total'
+
+  # ==================== LYBT性能API监控 ====================
+  - job_name: 'lybt-performance-api'
+    static_configs:
+      - targets: ['lybt-webapi:5000']
+    scrape_interval: 30s
+    metrics_path: /api/v1/performance/metrics
+    scrape_timeout: 15s
+    basic_auth:
+      username: 'prometheus'
+      password: 'LYBT@Prometheus2024'
+
+  # ==================== 数据库监控 ====================
+  - job_name: 'lybt-database'
+    static_configs:
+      - targets: ['lybt-database:1433']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    honor_labels: true
+
+  # ==================== Redis监控 ====================
+  - job_name: 'lybt-redis'
+    static_configs:
+      - targets: ['lybt-redis:6379']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    scrape_timeout: 5s
+
+  # ==================== Nginx监控 ====================
+  - job_name: 'lybt-nginx'
+    static_configs:
+      - targets: ['lybt-nginx:8080']
+    scrape_interval: 15s
+    metrics_path: /nginx_status
+    scrape_timeout: 5s
+    params:
+      format: ['prometheus']
+
+  # ==================== 容器监控 ====================
+  - job_name: 'docker-containers'
+    static_configs:
+      - targets: ['host.docker.internal:9323']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'host.docker.internal:9323'
+
+  # ==================== 系统监控 ====================
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['host.docker.internal:9100']
+    scrape_interval: 15s
+    honor_labels: true
+
+  # ==================== 自定义业务指标 ====================
+  - job_name: 'lybt-business-metrics'
+    static_configs:
+      - targets: ['lybt-webapi:5000']
+    scrape_interval: 60s
+    metrics_path: /api/v1/metrics/business
+    honor_labels: true
+    params:
+      format: ['prometheus']
+
+# ==================== 存储配置 ====================
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 30d
+    retention.size: 10GB
+    wal-compression: true
+
+# ==================== 远程写入配置 ====================
+# remote_write:
+#   - url: "http://your-remote-prometheus:9090/api/v1/write"
+#     queue_config:
+#       max_samples_per_send: 1000
+#       max_shards: 200
+#       capacity: 500
+
+# ==================== 服务发现配置 ====================
+# scrape_config_files:
+#   - "file_sd/*.yml"

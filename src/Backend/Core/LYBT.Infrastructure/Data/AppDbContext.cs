@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure.Security;
 using LYBT.Models.Auth;
 using LYBT.Models.Consultation;
 using LYBT.Models.Formula;
@@ -13,6 +14,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Text.Json;
+
+// DDD聚合根引用
+using LYBT.Domain.Aggregates.PatientAggregate;
+using LYBT.Domain.Aggregates.ConsultationAggregate;
+using LYBT.Domain.Aggregates.HerbAggregate;
+using LYBT.Domain.Aggregates.FormulaAggregate;
+using LYBT.Domain.Aggregates.MedicalCaseAggregate;
+using LYBT.Domain.Aggregates.PrescriptionAggregate;
+using LYBT.Domain.Aggregates.UserAggregate;
 
 namespace LYBT.Infrastructure.Data
 {
@@ -38,6 +48,9 @@ namespace LYBT.Infrastructure.Data
         public DbSet<LoginAttemptModel> LoginAttempts { get; set; }
         public DbSet<SecurityLogModel> SecurityLogs { get; set; }
 
+        // 安全审计 - UltraThink重构安全架构
+        public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }
+
         // 患者管理
         public DbSet<PatientModel> Patients { get; set; }
 
@@ -56,6 +69,44 @@ namespace LYBT.Infrastructure.Data
 
         // 验方管理
         public DbSet<FormulaModel> Formulas { get; set; }
+
+        // ==================== DDD聚合根实体 ====================
+        // 注意：这些是新的DDD聚合根，与上面的Model类并存但使用不同表名
+
+        /// <summary>
+        /// DDD聚合根 - 用户
+        /// </summary>
+        public DbSet<User> DomainUsers { get; set; }
+
+        /// <summary>
+        /// DDD聚合根 - 患者
+        /// </summary>
+        public DbSet<Patient> DomainPatients { get; set; }
+
+        /// <summary>
+        /// DDD聚合根 - 看诊
+        /// </summary>
+        public DbSet<Consultation> DomainConsultations { get; set; }
+
+        /// <summary>
+        /// DDD聚合根 - 中药材
+        /// </summary>
+        public DbSet<Herb> DomainHerbs { get; set; }
+
+        /// <summary>
+        /// DDD聚合根 - 验方
+        /// </summary>
+        public DbSet<Formula> DomainFormulas { get; set; }
+
+        /// <summary>
+        /// DDD聚合根 - 病案
+        /// </summary>
+        public DbSet<MedicalCase> DomainMedicalCases { get; set; }
+
+        /// <summary>
+        /// DDD聚合根 - 处方
+        /// </summary>
+        public DbSet<Prescription> DomainPrescriptions { get; set; }
 
         // ==================== 日志相关实体 ====================
 
@@ -109,8 +160,6 @@ namespace LYBT.Infrastructure.Data
         /// <summary>
         /// 治疗目录
         /// </summary>
-    // public DbSet<LYBT.Models.TreatmentRoom.TreatmentCatalogModel> TreatmentCatalogs { get; set; } // 模块已删除
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -120,23 +169,29 @@ namespace LYBT.Infrastructure.Data
             ConfigureAdminSecrets(modelBuilder);
             ConfigureAuth(modelBuilder);
             ConfigurePatients(modelBuilder);
-            // ConfigureDoctors(modelBuilder); // 功能已整合到Users
             // ConfigureRegistrations(modelBuilder); // 模块已删除
-            // ConfigureQueueings(modelBuilder); // 模块已删除
             ConfigureMedicalCases(modelBuilder);
             ConfigureConsultations(modelBuilder);
-            // ConfigureDiagnosisTreatments(modelBuilder); // 已删除，使用Consultation替代
             ConfigurePrescriptions(modelBuilder);
             ConfigureHerbs(modelBuilder);
             ConfigureFormulas(modelBuilder);
             // ConfigurePharmacies(modelBuilder); // 模块已删除
             // ConfigurePharmacyHerbs(modelBuilder); // 模块已删除
             // ConfigureCashiers(modelBuilder); // 模块已删除
-            // ConfigureRecords(modelBuilder); // 已删除，使用MedicalCase替代
             // ConfigureTreatmentTasks(modelBuilder); // 模块已删除
             // ConfigureSyncs(modelBuilder); // MVP阶段暂不需要
             ConfigureLogModels(modelBuilder);
             ConfigureConfigurationModels(modelBuilder);
+            ConfigureSecurityAudit(modelBuilder);
+            
+            // ==================== DDD聚合根配置 ====================
+            ConfigureDomainUsers(modelBuilder);
+            ConfigureDomainPatients(modelBuilder);
+            ConfigureDomainConsultations(modelBuilder);
+            ConfigureDomainHerbs(modelBuilder);
+            ConfigureDomainFormulas(modelBuilder);
+            ConfigureDomainMedicalCases(modelBuilder);
+            ConfigureDomainPrescriptions(modelBuilder);
         }
 
         private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -298,14 +353,7 @@ namespace LYBT.Infrastructure.Data
 
         // 医生功能已整合到Users
         /*
-        private static void ConfigureDoctors(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<DoctorModel>();
-            entity.ToTable("Doctors");
-            entity.HasKey(d => d.Id);
-            entity.Property(d => d.Specialty).HasMaxLength(100);
-            entity.Property(d => d.LicenseNumber).HasMaxLength(32);
-            entity.Property(d => d.CreateTime).HasColumnName("CreatedTime");
-        }
+
         */
 
 
@@ -317,11 +365,7 @@ namespace LYBT.Infrastructure.Data
         }*/
 
         // 排队模块已删除
-        /*        private static void ConfigureQueueings(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<QueueingModel>();
-            entity.ToTable("Queueings");
-            entity.HasKey(q => q.Id);
-        }*/
+
 
         private static void ConfigureMedicalCases(ModelBuilder modelBuilder)
         {
@@ -367,8 +411,6 @@ namespace LYBT.Infrastructure.Data
             entity.HasIndex(c => c.UserId);
             entity.HasIndex(c => c.ConsultationTime);
         }
-
-        // DiagnosisTreatments已删除，使用Consultation替代
 
         private static void ConfigurePrescriptions(ModelBuilder modelBuilder)
         {
@@ -452,7 +494,6 @@ namespace LYBT.Infrastructure.Data
         private static void ConfigureCashiers(ModelBuilder modelBuilder) {
             // CashierRecord 配置
             var cashierEntity = modelBuilder.Entity<CashierRecord>();
-            cashierEntity.ToTable("CashierRecords");
             cashierEntity.HasKey(c => c.Id);
             cashierEntity.Property(c => c.TotalAmount).HasColumnType("decimal(18,2)");
             cashierEntity.Property(c => c.PaidAmount).HasColumnType("decimal(18,2)");
@@ -487,8 +528,6 @@ namespace LYBT.Infrastructure.Data
         }
         */
 
-
-        // Records已删除，使用MedicalCase和Consultation替代
 
         // 治疗室模块已删除
         /*        private static void ConfigureTreatmentTasks(ModelBuilder modelBuilder) {
@@ -694,6 +733,638 @@ namespace LYBT.Infrastructure.Data
                 entity.HasIndex(e => e.IsActive);
             });
             */
+        }
+
+        /// <summary>
+        /// 配置安全审计实体 - UltraThink重构安全审计架构
+        /// </summary>
+        private static void ConfigureSecurityAudit(ModelBuilder modelBuilder)
+        {
+            // 安全审计日志配置
+            modelBuilder.Entity<SecurityAuditLog>(entity =>
+            {
+                entity.ToTable("SecurityAuditLogs");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.EventType).HasConversion<string>();
+                entity.Property(e => e.UserName).HasMaxLength(100);
+                entity.Property(e => e.ClientIP).HasMaxLength(45).IsRequired();
+                entity.Property(e => e.UserAgent).HasMaxLength(500);
+                entity.Property(e => e.EventData).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.SessionId).HasMaxLength(100);
+                entity.Property(e => e.ThreatLevel).HasConversion<string>();
+                entity.Property(e => e.GeoLocation).HasMaxLength(200);
+                entity.Property(e => e.EventHash).HasMaxLength(64);
+                
+                // 索引配置
+                entity.HasIndex(e => new { e.UserId, e.CreatedAt })
+                      .HasDatabaseName("IX_SecurityAuditLogs_UserId_CreatedAt");
+                entity.HasIndex(e => new { e.ClientIP, e.CreatedAt })
+                      .HasDatabaseName("IX_SecurityAuditLogs_ClientIP_CreatedAt");
+                entity.HasIndex(e => new { e.EventType, e.CreatedAt })
+                      .HasDatabaseName("IX_SecurityAuditLogs_EventType_CreatedAt");
+                entity.HasIndex(e => e.IsSuccess);
+                entity.HasIndex(e => e.ThreatLevel);
+            });
+        }
+
+        // ==================== DDD聚合根配置方法 ====================
+
+        /// <summary>
+        /// 配置DDD用户聚合根
+        /// </summary>
+        private static void ConfigureDomainUsers(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<User>();
+            entity.ToTable("DomainUsers");
+            entity.HasKey(u => u.Id);
+            
+            // 基础值对象配置 - 映射为owned entities
+            entity.OwnsOne(u => u.UserName, userName =>
+            {
+                userName.Property(un => un.Value)
+                    .HasColumnName("UserName")
+                    .HasMaxLength(50)
+                    .IsRequired();
+            });
+            
+            entity.OwnsOne(u => u.RealName, realName =>
+            {
+                realName.Property(rn => rn.Value)
+                    .HasColumnName("RealName")
+                    .HasMaxLength(100)
+                    .IsRequired();
+            });
+            
+            entity.OwnsOne(u => u.Email, email =>
+            {
+                email.Property(e => e.Value)
+                    .HasColumnName("Email")
+                    .HasMaxLength(100)
+                    .IsRequired();
+            });
+            
+            entity.OwnsOne(u => u.PhoneNumber, phoneNumber =>
+            {
+                phoneNumber.Property(pn => pn.Value)
+                    .HasColumnName("PhoneNumber")
+                    .HasMaxLength(20);
+            });
+            
+            // 用户角色值对象配置
+            entity.OwnsOne(u => u.Role, role =>
+            {
+                role.Property(r => r.Value)
+                    .HasColumnName("Role")
+                    .IsRequired();
+                    
+                role.Property(r => r.Name)
+                    .HasColumnName("RoleName")
+                    .HasMaxLength(50)
+                    .IsRequired();
+            });
+            
+            // 直接属性配置
+            entity.Property(u => u.PasswordHash)
+                .HasMaxLength(255)
+                .IsRequired();
+                
+            entity.Property(u => u.IsActive)
+                .IsRequired();
+                
+            entity.Property(u => u.LastLoginAt);
+            
+            entity.Property(u => u.FailedLoginAttempts)
+                .HasDefaultValue(0);
+                
+            entity.Property(u => u.LockedUntil);
+            
+            // 继承自AggregateRoot的属性
+            entity.Property(u => u.CreatedAt)
+                .IsRequired();
+                
+            entity.Property(u => u.CreatedBy);
+            
+            entity.Property(u => u.UpdatedAt);
+            
+            entity.Property(u => u.UpdatedBy);
+            
+            // 索引配置
+            entity.HasIndex("UserName_Value")
+                .IsUnique()
+                .HasDatabaseName("IX_DomainUsers_UserName");
+                
+            entity.HasIndex("Email_Value")
+                .HasDatabaseName("IX_DomainUsers_Email");
+                
+            entity.HasIndex("PhoneNumber_Value")
+                .HasDatabaseName("IX_DomainUsers_PhoneNumber");
+                
+            entity.HasIndex(u => u.IsActive)
+                .HasDatabaseName("IX_DomainUsers_IsActive");
+                
+            entity.HasIndex(u => u.CreatedAt)
+                .HasDatabaseName("IX_DomainUsers_CreatedAt");
+        }
+
+        /// <summary>
+        /// 配置DDD患者聚合根
+        /// </summary>
+        private static void ConfigureDomainPatients(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<Patient>();
+            entity.ToTable("DomainPatients");
+            entity.HasKey(p => p.Id);
+            
+            // 基本属性配置
+            entity.Property(p => p.Name).HasMaxLength(100).IsRequired();
+            entity.Property(p => p.PhoneNumber).HasMaxLength(20);
+            entity.Property(p => p.Address).HasMaxLength(256);
+            
+            // 身份信息值对象配置
+            entity.OwnsOne(p => p.Identity, identity =>
+            {
+                identity.Property(i => i.IdType).HasMaxLength(20);
+                identity.Property(i => i.IdNumber).HasMaxLength(50);
+                identity.Property(i => i.Gender).HasConversion<string>();
+                identity.Property(i => i.DateOfBirth).IsRequired(false);
+            });
+            
+            // 联系信息值对象配置
+            entity.OwnsOne(p => p.ContactInfo, contact =>
+            {
+                contact.Property(c => c.EmergencyContact).HasMaxLength(100);
+                contact.Property(c => c.EmergencyPhone).HasMaxLength(20);
+                contact.Property(c => c.Email).HasMaxLength(100);
+                contact.Property(c => c.Relationship).HasMaxLength(50);
+            });
+            
+            // 过敏史值对象配置
+            entity.OwnsOne(p => p.AllergyHistory, allergy =>
+            {
+                allergy.Property(a => a.AllergyDescription).HasMaxLength(500);
+                allergy.Property(a => a.LastUpdated);
+            });
+            
+            // 个人信息值对象配置
+            entity.OwnsOne(p => p.PersonalInfo, personal =>
+            {
+                personal.Property(pi => pi.PinYinCode).HasMaxLength(20);
+                personal.Property(pi => pi.WuBiCode).HasMaxLength(20);
+                personal.Property(pi => pi.Remark).HasMaxLength(500);
+            });
+            
+            // 索引配置
+            entity.HasIndex(p => p.Name);
+            entity.HasIndex(p => p.PhoneNumber);
+            entity.HasIndex("Identity_IdNumber");
+        }
+
+        /// <summary>
+        /// 配置DDD看诊聚合根
+        /// </summary>
+        private static void ConfigureDomainConsultations(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<Consultation>();
+            entity.ToTable("DomainConsultations");
+            entity.HasKey(c => c.Id);
+            
+            // 基本属性配置
+            entity.Property(c => c.PatientId).IsRequired();
+            entity.Property(c => c.DoctorId).IsRequired();
+            entity.Property(c => c.ConsultationTime).IsRequired();
+            entity.Property(c => c.DoctorName).HasMaxLength(50);
+            entity.Property(c => c.ConsultationNo).HasMaxLength(50);
+            entity.Property(c => c.MedicalAdvice).HasMaxLength(1000);
+            
+            // 望诊信息值对象配置
+            entity.OwnsOne(c => c.Inspection, inspection =>
+            {
+                inspection.Property(i => i.Observations).HasMaxLength(500);
+                // 枚举类型会自动映射为整数
+            });
+            
+            // 闻诊信息值对象配置
+            entity.OwnsOne(c => c.AuscultationOlfaction, ao =>
+            {
+                ao.Property(a => a.Observations).HasMaxLength(500);
+                // 枚举类型会自动映射为整数
+            });
+            
+            // 问诊信息值对象配置
+            entity.OwnsOne(c => c.Inquiry, inquiry =>
+            {
+                inquiry.Property(i => i.ChiefComplaint).HasMaxLength(500);
+                inquiry.Property(i => i.PresentIllness).HasMaxLength(1000);
+                inquiry.Property(i => i.PastHistory).HasMaxLength(500);
+                inquiry.Property(i => i.Menstruation).HasMaxLength(200);
+                inquiry.Property(i => i.Observations).HasMaxLength(500);
+                // 枚举类型会自动映射为整数
+            });
+            
+            // 切诊信息值对象配置
+            entity.OwnsOne(c => c.Palpation, palpation =>
+            {
+                palpation.Property(p => p.PulseDetails).HasMaxLength(300);
+                palpation.Property(p => p.AbdominalPalpation).HasMaxLength(300);
+                palpation.Property(p => p.MeridianPalpation).HasMaxLength(300);
+                palpation.Property(p => p.Observations).HasMaxLength(500);
+                // 枚举类型会自动映射为整数
+            });
+            
+            // 索引配置
+            entity.HasIndex(c => c.PatientId);
+            entity.HasIndex(c => c.DoctorId);
+            entity.HasIndex(c => c.ConsultationTime);
+        }
+
+        /// <summary>
+        /// 配置DDD中药材聚合根
+        /// </summary>
+        private static void ConfigureDomainHerbs(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<Herb>();
+            entity.ToTable("DomainHerbs");
+            entity.HasKey(h => h.Id);
+            
+            // 基本属性配置
+            entity.Property(h => h.Name).HasMaxLength(100).IsRequired();
+            entity.Property(h => h.LatinName).HasMaxLength(200);
+            entity.Property(h => h.CommonName).HasMaxLength(100);
+            entity.Property(h => h.Code).HasMaxLength(50);
+            entity.Property(h => h.Pinyin).HasMaxLength(100);
+            entity.Property(h => h.EnglishName).HasMaxLength(200);
+            entity.Property(h => h.Origin).HasMaxLength(100);
+            entity.Property(h => h.Unit).HasMaxLength(10);
+            entity.Property(h => h.Notes).HasMaxLength(1000);
+            
+            // 基础信息值对象配置
+            entity.OwnsOne(h => h.BasicInfo, basicInfo =>
+            {
+                basicInfo.Property(bi => bi.PinYinCode).HasMaxLength(20);
+                basicInfo.Property(bi => bi.WuBiCode).HasMaxLength(20);
+                basicInfo.Property(bi => bi.CategoryName).HasMaxLength(50);
+            });
+            
+            // 药性信息值对象配置
+            entity.OwnsOne(h => h.Properties, properties =>
+            {
+                properties.Property(p => p.Meridians).HasMaxLength(100);
+                // 枚举类型会自动映射为整数: Nature, Flavor, Toxicity
+            });
+            
+            // 功效信息值对象配置
+            entity.OwnsOne(h => h.Efficacy, efficacy =>
+            {
+                efficacy.Property(e => e.MainEffects).HasMaxLength(500);
+                efficacy.Property(e => e.Indications).HasMaxLength(1000);
+            });
+            
+            // 价格信息值对象配置
+            entity.OwnsOne(h => h.PriceInfo, priceInfo =>
+            {
+                priceInfo.Property(pi => pi.UnitPrice).HasColumnType("decimal(18,2)");
+                priceInfo.Property(pi => pi.Unit).HasMaxLength(10);
+            });
+            
+            // 索引配置
+            entity.HasIndex(h => h.Name);
+            entity.HasIndex(h => h.Code);
+            entity.HasIndex("BasicInfo_PinYinCode");
+        }
+
+        /// <summary>
+        /// 配置DDD验方聚合根
+        /// </summary>
+        private static void ConfigureDomainFormulas(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<Formula>();
+            entity.ToTable("DomainFormulas");
+            entity.HasKey(f => f.Id);
+            
+            // 基本属性配置
+            entity.Property(f => f.Name).HasMaxLength(200).IsRequired();
+            entity.Property(f => f.Code).HasMaxLength(50);
+            entity.Property(f => f.Pinyin).HasMaxLength(100);
+            entity.Property(f => f.Source).HasMaxLength(100);
+            entity.Property(f => f.Indication).HasMaxLength(1000);
+            entity.Property(f => f.Contraindication).HasMaxLength(500);
+            entity.Property(f => f.Preparation).HasMaxLength(500);
+            entity.Property(f => f.Usage).HasMaxLength(300);
+            entity.Property(f => f.Modification).HasMaxLength(500);
+            entity.Property(f => f.Notes).HasMaxLength(1000);
+            entity.Property(f => f.CreatorName).HasMaxLength(100);
+            
+            // 验方信息值对象配置
+            entity.OwnsOne(f => f.FormulaInfo, info =>
+            {
+                info.Property(i => i.ChineseName).HasMaxLength(200);
+                info.Property(i => i.EnglishName).HasMaxLength(200);
+                info.Property(i => i.PinYinCode).HasMaxLength(50);
+                info.Property(i => i.WuBiCode).HasMaxLength(50);
+            });
+            
+            // 功效信息值对象配置
+            entity.OwnsOne(f => f.Efficacy, efficacy =>
+            {
+                efficacy.Property(e => e.MainEffects).HasMaxLength(500);
+                efficacy.Property(e => e.Indications).HasMaxLength(1000);
+                efficacy.Property(e => e.Mechanism).HasMaxLength(500);
+            });
+            
+            // 审批信息值对象配置
+            entity.OwnsOne(f => f.Approval, approval =>
+            {
+                approval.Property(a => a.ApproverName).HasMaxLength(100);
+                approval.Property(a => a.ApprovalComments).HasMaxLength(500);
+                // Boolean 和 DateTime? 类型会自动映射
+            });
+            
+            // 药材列表配置 - 使用Owned Entity
+            entity.OwnsMany(f => f.Herbs, herb =>
+            {
+                herb.ToTable("DomainFormulaHerbs");
+                herb.WithOwner().HasForeignKey("FormulaId");
+                herb.Property(h => h.HerbId).IsRequired();
+                herb.Property(h => h.HerbName).HasMaxLength(100).IsRequired();
+                herb.Property(h => h.Dosage).HasColumnType("decimal(10,2)");
+                herb.Property(h => h.Sequence);
+                herb.Property(h => h.Role).HasConversion<string>();
+                herb.Property(h => h.ProcessingMethod).HasConversion<string>();
+                herb.Property(h => h.SpecialInstructions).HasMaxLength(200);
+                herb.HasKey("FormulaId", "HerbId");
+            });
+            
+            // 索引配置
+            entity.HasIndex(f => f.Name);
+            entity.HasIndex(f => f.Code);
+            entity.HasIndex("FormulaInfo_PinYinCode");
+        }
+
+        /// <summary>
+        /// 配置DDD病案聚合根
+        /// </summary>
+        private static void ConfigureDomainMedicalCases(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<MedicalCase>();
+            entity.ToTable("DomainMedicalCases");
+            entity.HasKey(mc => mc.Id);
+            
+            // 基本属性配置
+            entity.Property(mc => mc.CaseNo).HasMaxLength(50).IsRequired();
+            entity.Property(mc => mc.PatientId).IsRequired();
+            entity.Property(mc => mc.PatientName).HasMaxLength(100);
+            entity.Property(mc => mc.PatientAge);
+            entity.Property(mc => mc.PatientGender).HasConversion<string>();
+            entity.Property(mc => mc.DoctorId).IsRequired();
+            entity.Property(mc => mc.DoctorName).HasMaxLength(100);
+            entity.Property(mc => mc.AdmissionDate);
+            entity.Property(mc => mc.DischargeDate);
+            entity.Property(mc => mc.Status).HasConversion<string>();
+            entity.Property(mc => mc.Type).HasConversion<string>();
+            entity.Property(mc => mc.Notes).HasMaxLength(1000);
+            entity.Property(mc => mc.IsEmergency);
+            entity.Property(mc => mc.Prognosis).HasMaxLength(500);
+            entity.Property(mc => mc.ReferredFromDoctorId);
+            
+            // 病案信息值对象配置
+            entity.OwnsOne(mc => mc.CaseInfo, caseInfo =>
+            {
+                caseInfo.Property(ci => ci.CaseNumber).HasMaxLength(50);
+                caseInfo.Property(ci => ci.CaseType).HasConversion<string>();
+                caseInfo.Property(ci => ci.IsEmergency);
+            });
+            
+            // 主诉值对象配置
+            entity.OwnsOne(mc => mc.ChiefComplaint, cc =>
+            {
+                cc.Property(x => x.Description).HasMaxLength(500);
+                cc.Property(x => x.Duration).HasMaxLength(100);
+                cc.Property(x => x.Severity).HasMaxLength(50);
+            });
+            
+            // 现病史值对象配置
+            entity.OwnsOne(mc => mc.PresentIllness, pi =>
+            {
+                pi.Property(x => x.Onset).HasMaxLength(200);
+                pi.Property(x => x.Development).HasMaxLength(500);
+                pi.Property(x => x.CurrentStatus).HasMaxLength(300);
+                pi.Property(x => x.TreatmentHistory).HasMaxLength(500);
+                pi.Property(x => x.Response).HasMaxLength(300);
+            });
+            
+            // 既往史值对象配置
+            entity.OwnsOne(mc => mc.PastHistory, ph =>
+            {
+                ph.Property(x => x.Diseases).HasMaxLength(500);
+                ph.Property(x => x.Surgeries).HasMaxLength(300);
+                ph.Property(x => x.Allergies).HasMaxLength(200);
+                ph.Property(x => x.Medications).HasMaxLength(300);
+                ph.Property(x => x.Immunizations).HasMaxLength(200);
+            });
+            
+            // 转诊信息配置 - 直接属性而非值对象
+            entity.Property(mc => mc.IsReferral);
+            entity.Property(mc => mc.ReferralReason).HasMaxLength(300);
+            
+            // 治疗结果值对象配置
+            entity.OwnsOne(mc => mc.Outcome, outcome =>
+            {
+                outcome.Property(o => o.Effect).HasConversion<string>();
+                outcome.Property(o => o.Symptoms).HasMaxLength(500);
+                outcome.Property(o => o.Signs).HasMaxLength(300);
+                outcome.Property(o => o.LabResults).HasMaxLength(500);
+                outcome.Property(o => o.Complications).HasMaxLength(300);
+                outcome.Property(o => o.Prognosis).HasMaxLength(300);
+            });
+            
+            // 随访计划值对象配置
+            entity.OwnsOne(mc => mc.FollowUpPlan, fup =>
+            {
+                fup.Property(f => f.NextFollowUpDate);
+                fup.Property(f => f.FollowUpMethod).HasMaxLength(50);
+                fup.Property(f => f.Notes).HasMaxLength(500);
+            });
+            
+            // 检查记录配置 - 使用Owned Entity
+            entity.OwnsMany(mc => mc.Examinations, exam =>
+            {
+                exam.ToTable("DomainMedicalCaseExaminations");
+                exam.WithOwner().HasForeignKey("MedicalCaseId");
+                exam.Property(e => e.ExaminationType).HasMaxLength(50);
+                exam.Property(e => e.ExaminationItem).HasMaxLength(100);
+                exam.Property(e => e.ExaminationDate);
+                exam.Property(e => e.Result).HasMaxLength(1000);
+                exam.Property(e => e.Conclusion).HasMaxLength(500);
+                exam.HasKey("MedicalCaseId", "Id");
+            });
+            
+            // 治疗记录配置 - 使用Owned Entity
+            entity.OwnsMany(mc => mc.Treatments, treatment =>
+            {
+                treatment.ToTable("DomainMedicalCaseTreatments");
+                treatment.WithOwner().HasForeignKey("MedicalCaseId");
+                treatment.Property(t => t.TreatmentType).HasMaxLength(50);
+                treatment.Property(t => t.TreatmentMethod).HasMaxLength(100);
+                treatment.Property(t => t.TreatmentDate);
+                treatment.Property(t => t.TreatmentDetails).HasMaxLength(1000);
+                treatment.Property(t => t.Effect).HasMaxLength(200);
+                treatment.HasKey("MedicalCaseId", "Id");
+            });
+            
+            // 病程记录配置 - 使用Owned Entity
+            entity.OwnsMany(mc => mc.ProgressNotes, note =>
+            {
+                note.ToTable("DomainMedicalCaseProgressNotes");
+                note.WithOwner().HasForeignKey("MedicalCaseId");
+                note.Property(n => n.RecordDate);
+                note.Property(n => n.Symptoms).HasMaxLength(500);
+                note.Property(n => n.Signs).HasMaxLength(300);
+                note.Property(n => n.Assessment).HasMaxLength(500);
+                note.Property(n => n.Plan).HasMaxLength(500);
+                note.Property(n => n.RecordedBy);
+                note.Property(n => n.RecorderName).HasMaxLength(100);
+                note.HasKey("MedicalCaseId", "Id");
+            });
+            
+            // 随访记录配置 - 使用Owned Entity
+            entity.OwnsMany(mc => mc.FollowUps, followUp =>
+            {
+                followUp.ToTable("DomainMedicalCaseFollowUps");
+                followUp.WithOwner().HasForeignKey("MedicalCaseId");
+                followUp.Property(f => f.FollowUpDate);
+                followUp.Property(f => f.Method).HasMaxLength(50);
+                followUp.Property(f => f.Status).HasMaxLength(50);
+                followUp.Property(f => f.Symptoms).HasMaxLength(500);
+                followUp.Property(f => f.Medication).HasMaxLength(300);
+                followUp.Property(f => f.Advice).HasMaxLength(500);
+                followUp.Property(f => f.NextFollowUpDate);
+                followUp.HasKey("MedicalCaseId", "Id");
+            });
+            
+            // 个人史值对象配置
+            entity.OwnsOne(mc => mc.PersonalHistory, ph =>
+            {
+                ph.Property(x => x.Occupation).HasMaxLength(100);
+                ph.Property(x => x.Lifestyle).HasMaxLength(200);
+                ph.Property(x => x.DietaryHabits).HasMaxLength(200);
+                ph.Property(x => x.SmokingHistory).HasMaxLength(100);
+                ph.Property(x => x.DrinkingHistory).HasMaxLength(100);
+            });
+            
+            // 家族史值对象配置
+            entity.OwnsOne(mc => mc.FamilyHistory, fh =>
+            {
+                fh.Property(x => x.Diseases).HasMaxLength(500);
+                fh.Property(x => x.GeneticConditions).HasMaxLength(300);
+            });
+            
+            // 费用值对象配置
+            entity.OwnsOne(mc => mc.TotalCost, cost =>
+            {
+                cost.Property(c => c.Amount).HasPrecision(18, 2);
+                cost.Property(c => c.Currency).HasMaxLength(10);
+            });
+            
+            // 索引配置
+            entity.HasIndex(mc => mc.PatientId);
+            entity.HasIndex(mc => mc.DoctorId);
+            entity.HasIndex("CaseInfo_CaseNumber");
+            entity.HasIndex(mc => mc.CreatedAt);
+        }
+
+        /// <summary>
+        /// 配置DDD处方聚合根
+        /// </summary>
+        private static void ConfigureDomainPrescriptions(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<Prescription>();
+            entity.ToTable("DomainPrescriptions");
+            entity.HasKey(p => p.Id);
+            
+            // 基本属性配置
+            entity.Property(p => p.PatientId).IsRequired();
+            entity.Property(p => p.DoctorId).IsRequired();
+            entity.Property(p => p.ConsultationId).IsRequired();
+            entity.Property(p => p.PrescriptionNo).HasMaxLength(50).IsRequired();
+            entity.Property(p => p.Days).IsRequired();
+            entity.Property(p => p.DosesPerDay).IsRequired();
+            entity.Property(p => p.Notes).HasMaxLength(500);
+            entity.Property(p => p.PrescribedDate).IsRequired();
+            entity.Property(p => p.DispensedDate);
+            entity.Property(p => p.CancelledDate);
+            entity.Property(p => p.CancellationReason).HasMaxLength(200);
+            
+            // Type值对象配置
+            entity.OwnsOne(p => p.Type, type =>
+            {
+                type.Property(t => t.Name).HasColumnName("Type").HasMaxLength(50);
+            });
+            
+            // Status值对象配置
+            entity.OwnsOne(p => p.Status, status =>
+            {
+                status.Property(s => s.Name).HasColumnName("Status").HasMaxLength(50);
+            });
+            
+            // Syndrome值对象配置
+            entity.OwnsOne(p => p.Syndrome, syndrome =>
+            {
+                syndrome.Property(s => s.Name).HasColumnName("Syndrome").HasMaxLength(100);
+            });
+            
+            // TreatmentPrinciple值对象配置
+            entity.OwnsOne(p => p.TreatmentPrinciple, tp =>
+            {
+                tp.Property(t => t.Name).HasColumnName("TreatmentPrinciple").HasMaxLength(100);
+            });
+            
+            // Usage属性配置 (字符串类型)
+            entity.Property(p => p.Usage).HasMaxLength(500);
+            
+            // TotalAmount值对象配置
+            entity.OwnsOne(p => p.TotalAmount, amount =>
+            {
+                amount.Property(a => a.Amount).HasColumnName("TotalAmount").HasColumnType("decimal(18,2)");
+                amount.Property(a => a.Currency).HasColumnName("Currency").HasMaxLength(10);
+            });
+            
+            // 处方药材配置 - 使用Owned Entity
+            entity.OwnsMany(p => p.Items, item =>
+            {
+                item.ToTable("DomainPrescriptionItems");
+                item.WithOwner().HasForeignKey("PrescriptionId");
+                item.Property(i => i.HerbId).IsRequired();
+                item.Property(i => i.HerbName).HasMaxLength(100).IsRequired();
+                item.Property(i => i.SpecialInstructions).HasMaxLength(200);
+                item.Property(i => i.Sequence);
+                
+                // Dosage值对象配置
+                item.OwnsOne(i => i.Dosage, dosage =>
+                {
+                    dosage.Property(d => d.Value).HasColumnName("Dosage").HasColumnType("decimal(10,2)");
+                    dosage.Property(d => d.Unit).HasColumnName("Unit").HasMaxLength(10);
+                });
+                
+                // ProcessingMethod值对象配置
+                item.OwnsOne(i => i.ProcessingMethod, pm =>
+                {
+                    pm.Property(p => p.Name).HasColumnName("ProcessingMethod").HasMaxLength(100);
+                });
+                
+                // Role值对象配置
+                item.OwnsOne(i => i.Role, role =>
+                {
+                    role.Property(r => r.Name).HasColumnName("Role").HasMaxLength(50);
+                });
+                
+                item.HasKey("PrescriptionId", "HerbId");
+            });
+            
+            // 索引配置
+            entity.HasIndex(p => p.PatientId);
+            entity.HasIndex(p => p.DoctorId);
+            entity.HasIndex("PrescriptionInfo_PrescriptionNumber");
+            entity.HasIndex(p => p.CreatedAt);
         }
     }
 }

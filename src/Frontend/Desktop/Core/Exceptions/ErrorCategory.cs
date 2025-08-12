@@ -106,4 +106,17 @@ namespace LYBT.Desktop.Core.Exceptions
         /// </summary>
         Fatal = 4
     }
+
+    /// <summary>
+    /// API调用异常
+    /// </summary>
+    public class ApiCallException : Exception
+    {
+        public System.Net.HttpStatusCode? StatusCode { get; set; }
+        public string? OperationName { get; set; }
+        public int AttemptNumber { get; set; }
+
+        public ApiCallException(string message) : base(message) { }
+        public ApiCallException(string message, Exception? innerException) : base(message, innerException) { }
+    }
 }

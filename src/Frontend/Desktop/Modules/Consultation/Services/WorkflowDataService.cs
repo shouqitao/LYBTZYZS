@@ -246,15 +246,4 @@ namespace LYBT.Desktop.Consultation.Services
 
         #endregion
     }
-
-    /// <summary>
-    /// 工作流数据验证结果
-    /// </summary>
-    public class WorkflowValidationResult
-    {
-        public bool IsValid { get; set; }
-        public bool IsMedicalCaseValid { get; set; }
-        public bool IsPatientValid { get; set; }
-        public string? ErrorMessage { get; set; }
-    }
 }

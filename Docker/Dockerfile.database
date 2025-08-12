@@ -1,0 +1,45 @@
+# 凌隐宝堂数据库容器 - UltraThink重构数据库容器化
+FROM mcr.microsoft.com/mssql/server:2022-latest
+
+# 设置环境变量
+ENV ACCEPT_EULA=Y
+ENV SA_PASSWORD=LYBT@AdminPassword2024
+ENV MSSQL_PID=Developer
+ENV MSSQL_TCP_PORT=1433
+ENV MSSQL_COLLATION=Chinese_PRC_CI_AS
+
+# 创建数据库初始化目录
+USER root
+RUN mkdir -p /opt/mssql-tools/bin
+RUN mkdir -p /var/opt/mssql/scripts
+RUN mkdir -p /var/opt/mssql/data
+RUN mkdir -p /var/opt/mssql/backup
+
+# 复制数据库初始化脚本
+COPY ["Docker/database/init-database.sql", "/var/opt/mssql/scripts/"]
+COPY ["Docker/database/create-admin-user.sql", "/var/opt/mssql/scripts/"]
+COPY ["Docker/database/setup-permissions.sql", "/var/opt/mssql/scripts/"]
+
+# 复制启动脚本
+COPY ["Docker/database/entrypoint.sh", "/var/opt/mssql/scripts/"]
+
+# 设置脚本权限
+RUN chmod +x /var/opt/mssql/scripts/entrypoint.sh
+
+# 切换回mssql用户
+USER mssql
+
+# 暴露端口
+EXPOSE 1433
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+    CMD /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -Q "SELECT 1" -b -o /dev/null
+
+# 设置启动脚本
+ENTRYPOINT ["/var/opt/mssql/scripts/entrypoint.sh"]
+
+# 元数据
+LABEL maintainer="LYBT Development Team"
+LABEL version="1.0.0"
+LABEL description="凌隐宝堂中医诊所管理系统 - SQL Server数据库"

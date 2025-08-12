@@ -1,0 +1,163 @@
+-- 凌隐宝堂数据库初始化脚本 - UltraThink重构数据库容器化
+-- 创建数据库和基础配置
+
+USE master;
+GO
+
+-- 创建LYBTDB数据库
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'LYBTDB')
+BEGIN
+    CREATE DATABASE [LYBTDB]
+    ON 
+    ( NAME = N'LYBTDB', FILENAME = N'/var/opt/mssql/data/LYBTDB.mdf' , SIZE = 512MB , FILEGROWTH = 64MB )
+    LOG ON 
+    ( NAME = N'LYBTDB_Log', FILENAME = N'/var/opt/mssql/data/LYBTDB_Log.ldf' , SIZE = 128MB , FILEGROWTH = 10MB );
+END
+GO
+
+-- 配置数据库选项
+ALTER DATABASE [LYBTDB] SET COMPATIBILITY_LEVEL = 150;
+GO
+
+ALTER DATABASE [LYBTDB] SET ANSI_NULL_DEFAULT OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET ANSI_NULLS OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET ANSI_PADDING OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET ANSI_WARNINGS OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET ARITHABORT OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET AUTO_CLOSE OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET AUTO_SHRINK OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET AUTO_CREATE_STATISTICS ON;
+GO
+
+ALTER DATABASE [LYBTDB] SET AUTO_UPDATE_STATISTICS ON;
+GO
+
+ALTER DATABASE [LYBTDB] SET CURSOR_CLOSE_ON_COMMIT OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET CURSOR_DEFAULT GLOBAL;
+GO
+
+ALTER DATABASE [LYBTDB] SET CONCAT_NULL_YIELDS_NULL OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET NUMERIC_ROUNDABORT OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET QUOTED_IDENTIFIER OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET RECURSIVE_TRIGGERS OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET DISABLE_BROKER;
+GO
+
+ALTER DATABASE [LYBTDB] SET AUTO_UPDATE_STATISTICS_ASYNC OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET DATE_CORRELATION_OPTIMIZATION OFF;
+GO
+
+ALTER DATABASE [LYBTDB] SET PARAMETERIZATION SIMPLE;
+GO
+
+ALTER DATABASE [LYBTDB] SET READ_COMMITTED_SNAPSHOT ON;
+GO
+
+ALTER DATABASE [LYBTDB] SET READ_WRITE;
+GO
+
+ALTER DATABASE [LYBTDB] SET RECOVERY FULL;
+GO
+
+ALTER DATABASE [LYBTDB] SET MULTI_USER;
+GO
+
+-- 使用LYBTDB数据库
+USE [LYBTDB];
+GO
+
+-- 创建管理员密钥表
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='AdminSecrets' AND xtype='U')
+BEGIN
+    CREATE TABLE [dbo].[AdminSecrets](
+        [Id] [uniqueidentifier] NOT NULL PRIMARY KEY DEFAULT NEWID(),
+        [UserName] [nvarchar](50) NOT NULL,
+        [PasswordHash] [nvarchar](500) NOT NULL,
+        [CreatedAt] [datetime2] NOT NULL DEFAULT GETUTCDATE(),
+        [UpdatedAt] [datetime2] NOT NULL DEFAULT GETUTCDATE()
+    );
+
+    -- 创建索引
+    CREATE UNIQUE INDEX [IX_AdminSecrets_UserName] ON [dbo].[AdminSecrets]([UserName]);
+END
+GO
+
+-- 插入默认管理员账户（密码: Admin@123456）
+IF NOT EXISTS (SELECT 1 FROM [dbo].[AdminSecrets] WHERE [UserName] = 'sysadmin')
+BEGIN
+    INSERT INTO [dbo].[AdminSecrets] ([UserName], [PasswordHash])
+    VALUES ('sysadmin', 'AQAAAAIAAYagAAAAEBZtKH/jLrWSCIstrn4KyQtIopjqYQNrjJ8ZTIZxjKrpJ1l0obDU19hLQMSNwBjbeQ==');
+END
+GO
+
+-- 创建应用数据库用户
+IF NOT EXISTS (SELECT name FROM sys.sql_logins WHERE name = 'lybt_app_user')
+BEGIN
+    CREATE LOGIN [lybt_app_user] WITH PASSWORD = 'LybtApp@2024!', 
+        DEFAULT_DATABASE = [LYBTDB], 
+        CHECK_EXPIRATION = OFF, 
+        CHECK_POLICY = OFF;
+END
+GO
+
+-- 在LYBTDB中创建用户
+IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = 'lybt_app_user')
+BEGIN
+    CREATE USER [lybt_app_user] FOR LOGIN [lybt_app_user];
+END
+GO
+
+-- 授予应用用户权限
+ALTER ROLE [db_datareader] ADD MEMBER [lybt_app_user];
+ALTER ROLE [db_datawriter] ADD MEMBER [lybt_app_user];
+ALTER ROLE [db_ddladmin] ADD MEMBER [lybt_app_user];
+GO
+
+-- 创建性能优化配置
+-- 设置最大内存使用
+EXEC sp_configure 'show advanced options', 1;
+RECONFIGURE;
+GO
+
+EXEC sp_configure 'max server memory (MB)', 2048;
+RECONFIGURE;
+GO
+
+-- 设置并行度
+EXEC sp_configure 'max degree of parallelism', 4;
+RECONFIGURE;
+GO
+
+-- 设置成本阈值
+EXEC sp_configure 'cost threshold for parallelism', 25;
+RECONFIGURE;
+GO
+
+PRINT '凌隐宝堂数据库初始化完成！';
+GO

@@ -1,0 +1,337 @@
+# 凌隐宝堂监控告警系统 - UltraThink重构监控架构
+# 包含完整的监控栈：Prometheus + Grafana + AlertManager + ELK + Jaeger
+
+version: '3.8'
+
+services:
+  # ==================== 核心监控服务 ====================
+  
+  # Prometheus - 指标收集
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: lybt-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./Docker/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+      - '--log.level=info'
+    networks:
+      - lybt_monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - cadvisor
+      - node-exporter
+
+  # AlertManager - 告警管理
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: lybt-alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./Docker/alertmanager:/etc/alertmanager
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+      - '--cluster.advertise-address=0.0.0.0:9093'
+      - '--log.level=info'
+    networks:
+      - lybt_monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana - 可视化仪表板
+  grafana:
+    image: grafana/grafana:10.1.2
+    container_name: lybt-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Docker/grafana/provisioning:/etc/grafana/provisioning
+      - ./Docker/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=LYBT@Grafana2024
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel
+      - GF_ALERTING_ENABLED=true
+      - GF_UNIFIED_ALERTING_ENABLED=true
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=smtp.qq.com:587
+      - GF_SMTP_USER=lybt-system@qq.com
+      - GF_SMTP_PASSWORD=your-email-password
+      - GF_SMTP_FROM_ADDRESS=lybt-system@qq.com
+      - GF_SMTP_FROM_NAME=LYBT监控系统
+    networks:
+      - lybt_monitoring
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== 系统监控组件 ====================
+
+  # Node Exporter - 系统指标采集
+  node-exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: lybt-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.systemd'
+      - '--collector.processes'
+    networks:
+      - lybt_monitoring
+
+  # cAdvisor - 容器监控
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    container_name: lybt-cadvisor
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    privileged: true
+    devices:
+      - /dev/kmsg
+    networks:
+      - lybt_monitoring
+    command:
+      - '--port=8080'
+      - '--logtostderr=true'
+      - '--housekeeping_interval=30s'
+      - '--docker_only=false'
+
+  # ==================== 日志处理栈 (ELK) ====================
+
+  # Elasticsearch - 日志存储
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.2
+    container_name: lybt-elasticsearch
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - node.name=lybt-es01
+      - cluster.name=lybt-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - xpack.ml.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - lybt_monitoring
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Logstash - 日志处理
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.9.2
+    container_name: lybt-logstash
+    restart: unless-stopped
+    ports:
+      - "5044:5044"  # Beats输入
+      - "5045:5045"  # TCP JSON输入
+      - "5046:5046"  # Syslog输入
+      - "8081:8080"  # HTTP输入
+    volumes:
+      - ./Docker/elk/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./Docker/elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./Docker/elk/logstash/templates:/usr/share/logstash/templates
+    environment:
+      - "LS_JAVA_OPTS=-Xmx2g -Xms2g"
+      - XPACK_MONITORING_ENABLED=false
+    networks:
+      - lybt_monitoring
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana - 日志分析界面
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.9.2
+    container_name: lybt-kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=lybt-kibana
+      - SERVER_HOST=0.0.0.0
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=lybt-encryption-key-32-characters
+    volumes:
+      - ./Docker/elk/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - kibana_data:/usr/share/kibana/data
+    networks:
+      - lybt_monitoring
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Filebeat - 日志收集器
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.9.2
+    container_name: lybt-filebeat
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./Docker/elk/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ../logs:/var/log/lybt:ro
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - LOGSTASH_HOST=logstash:5044
+    networks:
+      - lybt_monitoring
+    depends_on:
+      - logstash
+    command: ["--strict.perms=false"]
+
+  # ==================== 应用性能监控 (APM) ====================
+
+  # Jaeger - 分布式追踪
+  jaeger:
+    image: jaegertracing/all-in-one:1.48
+    container_name: lybt-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14268:14268"  # HTTP collector
+      - "6831:6831/udp"  # Agent UDP
+      - "6832:6832/udp"  # Agent UDP
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_CREATE_INDEX_TEMPLATES=true
+    networks:
+      - lybt_monitoring
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # ==================== 服务发现和配置 ====================
+
+  # Consul - 服务发现
+  consul:
+    image: consul:1.16.1
+    container_name: lybt-consul
+    restart: unless-stopped
+    ports:
+      - "8500:8500"
+    volumes:
+      - consul_data:/consul/data
+    command: >
+      consul agent
+        -server
+        -bootstrap-expect=1
+        -data-dir=/consul/data
+        -node=lybt-consul
+        -bind=0.0.0.0
+        -client=0.0.0.0
+        -retry-join=lybt-consul
+        -ui-config-enabled
+        -connect-enabled
+    networks:
+      - lybt_monitoring
+
+  # ==================== 通知服务 ====================
+
+  # Webhook服务 - 自定义告警处理
+  webhook-server:
+    image: nginx:alpine
+    container_name: lybt-webhook-server
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      - ./Docker/webhook:/usr/share/nginx/html
+    networks:
+      - lybt_monitoring
+
+# ==================== 网络和卷配置 ====================
+
+networks:
+  lybt_monitoring:
+    driver: bridge
+    name: lybt_monitoring
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  prometheus_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  kibana_data:
+    driver: local
+  consul_data:
+    driver: local

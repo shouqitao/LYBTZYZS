@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
         #region 字段
 
         private readonly IPrescriptionTemplateService _templateService;
-        private readonly IDialogService _dialogService;
+        private readonly ICommonDialogService _dialogService;
         private readonly ILogger<PrescriptionTemplateManagementViewModel> _logger;
         
         private ObservableCollection<TemplateItemViewModel> _allTemplates = new();
@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.ViewModels
 
         public PrescriptionTemplateManagementViewModel(
             IPrescriptionTemplateService templateService,
-            IDialogService dialogService,
+            ICommonDialogService dialogService,
             ILogger<PrescriptionTemplateManagementViewModel> logger)
         {
             _templateService = templateService;

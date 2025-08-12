@@ -15,12 +15,12 @@ namespace LYBT.Desktop.Admin.Prescriptions.Views
     /// </summary>
     public partial class PrescriptionPrintPreviewDialog : Window
     {
-        private readonly IPrescriptionPrintService _printService;
+        private readonly IAdvancedPrescriptionPrintService _printService;
         private PrescriptionInfo? _prescription;
         private FlowDocument? _document;
 
         public PrescriptionPrintPreviewDialog(
-            IPrescriptionPrintService printService,
+            IAdvancedPrescriptionPrintService printService,
             PrescriptionInfo prescription)
         {
             InitializeComponent();

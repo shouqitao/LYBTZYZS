@@ -1,0 +1,157 @@
+# 凌隐宝堂日志收集器配置 - UltraThink重构日志收集架构
+
+filebeat.inputs:
+  # 收集Web API应用日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/lybt/webapi/*.log
+    fields:
+      log_type: webapi
+      service: lybt-webapi
+    fields_under_root: true
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    
+  # 收集安全审计日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/lybt/security/*.log
+    fields:
+      log_type: security
+      service: lybt-security
+    fields_under_root: true
+    include_lines: ['LOGIN_ATTEMPT', 'API_ACCESS', 'DATA_ACCESS', 'SECURITY_EXCEPTION']
+    
+  # 收集数据库日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/lybt/database/*.log
+    fields:
+      log_type: database
+      service: lybt-database
+    fields_under_root: true
+    include_lines: ['ERROR', 'WARN', 'deadlock', 'timeout', 'connection']
+    
+  # 收集性能日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/lybt/performance/*.log
+    fields:
+      log_type: performance
+      service: lybt-performance
+    fields_under_root: true
+    include_lines: ['PERF -', 'Duration:', 'Slow operation']
+    
+  # 收集系统日志
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/lybt/system/*.log
+    fields:
+      log_type: system
+      service: lybt-system
+    fields_under_root: true
+    
+  # 收集Docker容器日志
+  - type: container
+    enabled: true
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+    containers.ids:
+      - '*'
+    containers.stream: all
+
+# 处理器配置
+processors:
+  # 添加Docker元数据
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+      
+  # 添加主机信息
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+      
+  # 删除敏感字段
+  - drop_fields:
+      fields: ["agent", "input", "ecs", "host.os", "host.architecture"]
+      
+  # 重命名字段
+  - rename:
+      fields:
+        - from: "container.name"
+          to: "service_name"
+          
+  # 添加标签
+  - add_tags:
+      tags: [lybt-logs, production]
+      
+  # 条件处理
+  - if:
+      contains:
+        message: "ERROR"
+    then:
+      - add_tags:
+          tags: [error-log]
+    else:
+      - add_tags:
+          tags: [normal-log]
+
+# 输出配置
+output:
+  # 发送到Logstash
+  logstash:
+    hosts: ["logstash:5044"]
+    compression_level: 3
+    bulk_max_size: 2048
+    template.enabled: false
+    
+  # 备用输出到Elasticsearch（如果Logstash不可用）
+  # elasticsearch:
+  #   hosts: ["elasticsearch:9200"]
+  #   index: "filebeat-lybt-%{+yyyy.MM.dd}"
+  #   template.enabled: true
+  #   template.pattern: "filebeat-lybt-*"
+
+# 日志配置
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat.log
+  keepfiles: 7
+  permissions: 0644
+
+# 监控配置
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  
+# 配置重载
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: true
+    reload.period: 10s
+
+# 队列配置
+queue.mem:
+  events: 4096
+  flush.min_events: 512
+  flush.timeout: 1s
+
+# HTTP端点
+http.enabled: true
+http.host: 0.0.0.0
+http.port: 5066
+
+# 关闭Kibana仪表板加载
+setup.dashboards.enabled: false
+setup.template.enabled: false
+
+# ILM策略
+setup.ilm.enabled: false

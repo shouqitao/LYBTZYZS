@@ -1,0 +1,184 @@
+# 凌隐宝堂告警管理器配置 - UltraThink重构监控告警架构
+
+global:
+  # SMTP全局配置
+  smtp_smarthost: 'smtp.qq.com:587'
+  smtp_from: 'lybt-system@qq.com'
+  smtp_auth_username: 'lybt-system@qq.com'
+  smtp_auth_password: 'your-email-auth-password'
+  smtp_require_tls: true
+  
+  # 企业微信全局配置
+  wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+  wechat_api_secret: 'your-wechat-api-secret'
+  wechat_api_corp_id: 'your-corp-id'
+
+  # 告警解析时间
+  resolve_timeout: 5m
+
+# 路由配置 - 根据告警类型和严重程度分发
+route:
+  group_by: ['alertname', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'web.hook'
+  
+  routes:
+    # 严重告警 - 立即通知所有渠道
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 0s
+      repeat_interval: 15m
+      
+    # 警告告警 - 通知管理员
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      repeat_interval: 30m
+      
+    # 信息告警 - 仅记录日志
+    - match:
+        severity: info
+      receiver: 'info-alerts'
+      repeat_interval: 2h
+      
+    # 安全告警 - 特殊处理
+    - match:
+        service: lybt-security
+      receiver: 'security-alerts'
+      group_wait: 0s
+      repeat_interval: 10m
+      
+    # 数据库告警 - 高优先级
+    - match:
+        service: lybt-database
+      receiver: 'database-alerts'
+      repeat_interval: 15m
+
+# 抑制规则 - 避免告警风暴
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']
+
+  - source_match:
+      alertname: 'APIServiceDown'
+    target_match_re:
+      alertname: 'High.*'
+    equal: ['service']
+
+# 接收器配置
+receivers:
+  # 默认webhook接收器
+  - name: 'web.hook'
+    webhook_configs:
+      - url: 'http://lybt-webapi:5000/api/v1/monitoring/alerts'
+        send_resolved: true
+        http_config:
+          bearer_token: 'your-webhook-token'
+
+  # 严重告警接收器 - 多渠道通知
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'admin@lybt.com'
+        subject: '🚨 [CRITICAL] 凌隐宝堂系统严重告警'
+        html: |
+          <h2 style="color: #ff0000;">严重告警</h2>
+          <p><strong>服务:</strong> {{ range .Alerts }}{{ .Labels.service }}{{ end }}</p>
+          <p><strong>告警名称:</strong> {{ range .Alerts }}{{ .Labels.alertname }}{{ end }}</p>
+          <p><strong>描述:</strong> {{ range .Alerts }}{{ .Annotations.description }}{{ end }}</p>
+          <p><strong>触发时间:</strong> {{ range .Alerts }}{{ .StartsAt.Format "2006-01-02 15:04:05" }}{{ end }}</p>
+          <p><strong>状态:</strong> {{ .Status }}</p>
+          
+    webhook_configs:
+      - url: 'http://lybt-webapi:5000/api/v1/monitoring/alerts/critical'
+        send_resolved: true
+        
+    wechat_configs:
+      - api_secret: 'your-wechat-api-secret'
+        corp_id: 'your-corp-id'
+        to_party: '1'
+        agent_id: 'your-agent-id'
+        message: |
+          🚨 **严重告警**
+          服务: {{ range .Alerts }}{{ .Labels.service }}{{ end }}
+          告警: {{ range .Alerts }}{{ .Labels.alertname }}{{ end }}
+          描述: {{ range .Alerts }}{{ .Annotations.description }}{{ end }}
+          时间: {{ range .Alerts }}{{ .StartsAt.Format "2006-01-02 15:04:05" }}{{ end }}
+
+  # 警告告警接收器
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'admin@lybt.com,ops@lybt.com'
+        subject: '⚠️ [WARNING] 凌隐宝堂系统告警'
+        html: |
+          <h2 style="color: #ff8800;">警告告警</h2>
+          <p><strong>服务:</strong> {{ range .Alerts }}{{ .Labels.service }}{{ end }}</p>
+          <p><strong>告警名称:</strong> {{ range .Alerts }}{{ .Labels.alertname }}{{ end }}</p>
+          <p><strong>描述:</strong> {{ range .Alerts }}{{ .Annotations.description }}{{ end }}</p>
+          <p><strong>触发时间:</strong> {{ range .Alerts }}{{ .StartsAt.Format "2006-01-02 15:04:05" }}{{ end }}</p>
+          
+    webhook_configs:
+      - url: 'http://lybt-webapi:5000/api/v1/monitoring/alerts/warning'
+        send_resolved: true
+
+  # 信息告警接收器 - 仅Webhook
+  - name: 'info-alerts'
+    webhook_configs:
+      - url: 'http://lybt-webapi:5000/api/v1/monitoring/alerts/info'
+        send_resolved: true
+
+  # 安全告警接收器 - 特殊处理
+  - name: 'security-alerts'
+    email_configs:
+      - to: 'security@lybt.com,admin@lybt.com'
+        subject: '🔒 [SECURITY] 凌隐宝堂安全告警'
+        html: |
+          <h2 style="color: #cc0000;">安全告警</h2>
+          <p><strong>告警类型:</strong> {{ range .Alerts }}{{ .Labels.alertname }}{{ end }}</p>
+          <p><strong>描述:</strong> {{ range .Alerts }}{{ .Annotations.description }}{{ end }}</p>
+          <p><strong>触发时间:</strong> {{ range .Alerts }}{{ .StartsAt.Format "2006-01-02 15:04:05" }}{{ end }}</p>
+          <p><strong>建议:</strong> 请立即检查系统日志，确认是否存在安全威胁</p>
+          
+    webhook_configs:
+      - url: 'http://lybt-webapi:5000/api/v1/monitoring/alerts/security'
+        send_resolved: true
+        http_config:
+          bearer_token: 'your-security-webhook-token'
+          
+    wechat_configs:
+      - api_secret: 'your-wechat-api-secret'
+        corp_id: 'your-corp-id'
+        to_user: 'SecurityTeam'
+        agent_id: 'your-agent-id'
+        message: |
+          🔒 **安全告警**
+          类型: {{ range .Alerts }}{{ .Labels.alertname }}{{ end }}
+          描述: {{ range .Alerts }}{{ .Annotations.description }}{{ end }}
+          时间: {{ range .Alerts }}{{ .StartsAt.Format "2006-01-02 15:04:05" }}{{ end }}
+          
+          请立即检查系统安全状态！
+
+  # 数据库告警接收器
+  - name: 'database-alerts'
+    email_configs:
+      - to: 'dba@lybt.com,admin@lybt.com'
+        subject: '💾 [DATABASE] 数据库告警'
+        html: |
+          <h2 style="color: #0066cc;">数据库告警</h2>
+          <p><strong>告警名称:</strong> {{ range .Alerts }}{{ .Labels.alertname }}{{ end }}</p>
+          <p><strong>描述:</strong> {{ range .Alerts }}{{ .Annotations.description }}{{ end }}</p>
+          <p><strong>触发时间:</strong> {{ range .Alerts }}{{ .StartsAt.Format "2006-01-02 15:04:05" }}{{ end }}</p>
+          <p><strong>建议:</strong> 请检查数据库性能指标和日志</p>
+          
+    webhook_configs:
+      - url: 'http://lybt-webapi:5000/api/v1/monitoring/alerts/database'
+        send_resolved: true
+
+# 模板配置
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

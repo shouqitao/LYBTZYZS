@@ -53,7 +53,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         public bool IsSelected { get; set; }
 
         /// <summary>总金额</summary>
-        public decimal TotalAmount => Items?.Sum(x => x.Amount) ?? 0;
+        public decimal TotalAmount => Items?.Sum(x => x.Subtotal) ?? 0;
 
         /// <summary>用法说明</summary>
         public string? Usage { get; set; }
@@ -85,9 +85,6 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
             {
                 PrescriptionStatus.Draft => "草稿",
                 PrescriptionStatus.Completed => "已完成",
-                PrescriptionStatus.Pending => "待审核",
-                PrescriptionStatus.Approved => "已审核",
-                PrescriptionStatus.Canceled => "已作废",
                 _ => "未知状态"
             };
         }
@@ -98,9 +95,6 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
             {
                 PrescriptionStatus.Draft => "#9E9E9E",      // 灰色
                 PrescriptionStatus.Completed => "#4CAF50",   // 绿色
-                PrescriptionStatus.Pending => "#FFC107",     // 黄色
-                PrescriptionStatus.Approved => "#2196F3",    // 蓝色
-                PrescriptionStatus.Canceled => "#F44336",    // 红色
                 _ => "#757575"
             };
         }

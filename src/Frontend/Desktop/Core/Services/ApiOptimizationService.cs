@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -166,7 +167,7 @@ namespace LYBT.Desktop.Core.Services
                     _ = Task.Delay(windowTime).ContinueWith(async _ =>
                     {
                         await ExecuteBatch(typedBatchRequest);
-                        _batchRequests.TryRemove(requestKey, out _);
+                        _batchRequests.TryRemove(requestKey, out var _);
                     });
                 }
             }

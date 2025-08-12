@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Consultation.ViewModels;
+using static LYBT.Desktop.Consultation.ViewModels.TCMFourDiagnosisViewModel;
 
 namespace LYBT.Desktop.Consultation.Services
 {

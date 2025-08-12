@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Consultation.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
@@ -36,5 +35,16 @@ namespace LYBT.Desktop.Consultation.Interfaces
 
         /// <summary>验证工作流数据完整性</summary>
         Task<WorkflowValidationResult> ValidateWorkflowDataAsync(Guid medicalCaseId);
+    }
+
+    /// <summary>
+    /// 工作流数据验证结果
+    /// </summary>
+    public class WorkflowValidationResult
+    {
+        public bool IsValid { get; set; }
+        public bool IsMedicalCaseValid { get; set; }
+        public bool IsPatientValid { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 }

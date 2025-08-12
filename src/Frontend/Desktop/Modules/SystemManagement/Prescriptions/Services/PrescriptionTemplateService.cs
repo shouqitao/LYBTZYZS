@@ -175,7 +175,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
                 // 设置创建信息
                 template.Id = Guid.NewGuid();
                 template.CreatorId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty;
-                template.CreatorName = _userSessionManager.CurrentUser?.Name ?? "系统";
+                template.CreatorName = _userSessionManager.CurrentUser?.DisplayName ?? "系统";
                 template.CreateTime = DateTime.Now;
                 template.UsageCount = 0;
 
@@ -369,7 +369,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
                     Category = category,
                     Diagnosis = prescription.Diagnosis ?? string.Empty,
                     Usage = prescription.Usage ?? string.Empty,
-                    DosageCount = prescription.DosageCount ?? 7,
+                    DosageCount = prescription.DosageCount,
                     Remark = prescription.Remark ?? string.Empty,
                     IsPublic = isPublic,
                     IsActive = true,

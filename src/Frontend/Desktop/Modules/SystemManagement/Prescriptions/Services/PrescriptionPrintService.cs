@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
     /// 处方打印服务
     /// 负责处方的打印、预览和PDF导出功能
     /// </summary>
-    public class PrescriptionPrintService : IPrescriptionPrintService
+    public class PrescriptionPrintService : IAdvancedPrescriptionPrintService
     {
         private readonly ILogger<PrescriptionPrintService> _logger;
         private readonly IPrescriptionService _prescriptionService;
@@ -444,7 +444,7 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
 
             // 剂数和用法
             var dosageInfo = new Paragraph();
-            dosageInfo.Inlines.Add(new Run($"【剂数】{prescription.DosageCount ?? 1} 剂")
+            dosageInfo.Inlines.Add(new Run($"【剂数】{prescription.DosageCount} 剂")
             {
                 FontWeight = FontWeights.Bold
             });
@@ -631,9 +631,9 @@ namespace LYBT.Desktop.Admin.Prescriptions.Services
     #region 接口定义
 
     /// <summary>
-    /// 处方打印服务接口
+    /// 高级处方打印服务接口
     /// </summary>
-    public interface IPrescriptionPrintService
+    public interface IAdvancedPrescriptionPrintService
     {
         Task<bool> PrintPrescription(PrescriptionInfo prescription);
         Task<int> BatchPrintPrescriptions(IEnumerable<PrescriptionInfo> prescriptions);

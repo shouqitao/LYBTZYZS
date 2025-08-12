@@ -1,0 +1,406 @@
+---
+# 凌隐宝堂Ansible部署剧本 - UltraThink重构生产环境自动化
+- name: Deploy LYBT Production Environment
+  hosts: all
+  become: yes
+  gather_facts: yes
+  
+  vars:
+    project_name: lybt
+    environment: "{{ deploy_environment | default('production') }}"
+    deployment_user: lybt-deploy
+    deployment_path: /opt/lybt
+    backup_path: /backup/lybt
+    config_path: /etc/lybt
+    log_path: /var/log/lybt
+    
+  pre_tasks:
+    - name: Validate environment
+      assert:
+        that:
+          - environment in ['development', 'staging', 'production']
+        fail_msg: "Invalid environment: {{ environment }}"
+    
+    - name: Create deployment timestamp
+      set_fact:
+        deploy_timestamp: "{{ ansible_date_time.epoch }}"
+        deploy_version: "{{ version | default('latest') }}"
+    
+    - name: Display deployment information
+      debug:
+        msg:
+          - "部署环境: {{ environment }}"
+          - "部署版本: {{ deploy_version }}"
+          - "部署时间: {{ ansible_date_time.iso8601 }}"
+          - "目标主机: {{ inventory_hostname }}"
+  
+  tasks:
+    # ==================== 系统准备 ====================
+    - name: System preparation
+      block:
+        - name: Update system packages
+          package:
+            name: '*'
+            state: latest
+          when: environment != 'production'
+        
+        - name: Install required packages
+          package:
+            name:
+              - docker.io
+              - docker-compose
+              - python3-pip
+              - git
+              - curl
+              - wget
+              - htop
+              - netdata
+              - ufw
+            state: present
+        
+        - name: Install Python packages
+          pip:
+            name:
+              - docker
+              - docker-compose
+              - requests
+              - pyyaml
+            state: present
+        
+        - name: Create deployment user
+          user:
+            name: "{{ deployment_user }}"
+            groups: docker
+            shell: /bin/bash
+            home: "/home/{{ deployment_user }}"
+            create_home: yes
+            state: present
+        
+        - name: Create directory structure
+          file:
+            path: "{{ item }}"
+            state: directory
+            owner: "{{ deployment_user }}"
+            group: "{{ deployment_user }}"
+            mode: '0755'
+          loop:
+            - "{{ deployment_path }}"
+            - "{{ backup_path }}"
+            - "{{ config_path }}"
+            - "{{ log_path }}"
+            - "{{ deployment_path }}/releases"
+            - "{{ deployment_path }}/shared"
+    
+    # ==================== 备份现有系统 ====================
+    - name: Backup existing system
+      block:
+        - name: Check if current deployment exists
+          stat:
+            path: "{{ deployment_path }}/current"
+          register: current_deployment
+        
+        - name: Create backup if deployment exists
+          shell: |
+            tar -czf {{ backup_path }}/backup-{{ deploy_timestamp }}.tar.gz \
+              -C {{ deployment_path }} current
+          when: current_deployment.stat.exists
+          ignore_errors: yes
+        
+        - name: Backup database
+          shell: |
+            docker exec lybt-sqlserver \
+              /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P '{{ db_password }}' \
+              -Q "BACKUP DATABASE [LYBTDB] TO DISK = '/backup/LYBTDB-{{ deploy_timestamp }}.bak'"
+          when: 
+            - current_deployment.stat.exists
+            - environment == 'production'
+          ignore_errors: yes
+        
+        - name: Clean old backups (keep last 10)
+          shell: |
+            ls -t {{ backup_path }}/backup-*.tar.gz | tail -n +11 | xargs rm -f
+          ignore_errors: yes
+    
+    # ==================== 配置管理 ====================
+    - name: Configuration management
+      block:
+        - name: Copy environment configuration
+          template:
+            src: "templates/env.{{ environment }}.j2"
+            dest: "{{ config_path }}/.env"
+            owner: "{{ deployment_user }}"
+            group: "{{ deployment_user }}"
+            mode: '0600'
+            backup: yes
+        
+        - name: Copy Docker Compose configuration
+          template:
+            src: "templates/docker-compose.{{ environment }}.yml.j2"
+            dest: "{{ deployment_path }}/docker-compose.yml"
+            owner: "{{ deployment_user }}"
+            group: "{{ deployment_user }}"
+            mode: '0644'
+            backup: yes
+        
+        - name: Copy nginx configuration
+          template:
+            src: "templates/nginx.conf.j2"
+            dest: "{{ config_path }}/nginx.conf"
+            owner: root
+            group: root
+            mode: '0644'
+            backup: yes
+        
+        - name: Setup SSL certificates
+          copy:
+            content: "{{ item.content }}"
+            dest: "{{ config_path }}/{{ item.name }}"
+            owner: root
+            group: root
+            mode: '0600'
+          loop:
+            - { name: 'ssl.crt', content: "{{ ssl_certificate }}" }
+            - { name: 'ssl.key', content: "{{ ssl_private_key }}" }
+          when: environment == 'production'
+          no_log: true
+    
+    # ==================== 部署应用 ====================
+    - name: Deploy application
+      block:
+        - name: Pull Docker images
+          docker_image:
+            name: "{{ item }}"
+            source: pull
+            force_source: yes
+          loop:
+            - "lybt/webapi:{{ deploy_version }}"
+            - "mcr.microsoft.com/mssql/server:2022-latest"
+            - "redis:7-alpine"
+            - "nginx:alpine"
+          become_user: "{{ deployment_user }}"
+        
+        - name: Create new release directory
+          file:
+            path: "{{ deployment_path }}/releases/{{ deploy_timestamp }}"
+            state: directory
+            owner: "{{ deployment_user }}"
+            group: "{{ deployment_user }}"
+            mode: '0755'
+        
+        - name: Deploy application files
+          unarchive:
+            src: "{{ artifact_path }}/lybt-{{ deploy_version }}.tar.gz"
+            dest: "{{ deployment_path }}/releases/{{ deploy_timestamp }}"
+            owner: "{{ deployment_user }}"
+            group: "{{ deployment_user }}"
+            remote_src: yes
+          when: artifact_path is defined
+        
+        - name: Link shared directories
+          file:
+            src: "{{ deployment_path }}/shared/{{ item }}"
+            dest: "{{ deployment_path }}/releases/{{ deploy_timestamp }}/{{ item }}"
+            state: link
+            force: yes
+          loop:
+            - uploads
+            - logs
+            - cache
+          ignore_errors: yes
+    
+    # ==================== 数据库迁移 ====================
+    - name: Database migration
+      block:
+        - name: Wait for database to be ready
+          wait_for:
+            host: localhost
+            port: 1433
+            delay: 10
+            timeout: 300
+        
+        - name: Run database migrations
+          shell: |
+            docker run --rm \
+              --network host \
+              -e ConnectionStrings__DefaultConnection="{{ db_connection_string }}" \
+              lybt/webapi:{{ deploy_version }} \
+              dotnet ef database update
+          register: migration_result
+          retries: 3
+          delay: 10
+        
+        - name: Display migration result
+          debug:
+            var: migration_result.stdout_lines
+    
+    # ==================== 启动服务 ====================
+    - name: Start services
+      block:
+        - name: Stop existing containers
+          docker_compose:
+            project_src: "{{ deployment_path }}"
+            state: absent
+          ignore_errors: yes
+        
+        - name: Start new containers
+          docker_compose:
+            project_src: "{{ deployment_path }}"
+            state: present
+            pull: yes
+            recreate: always
+          environment:
+            DEPLOY_VERSION: "{{ deploy_version }}"
+            ENVIRONMENT: "{{ environment }}"
+        
+        - name: Wait for services to be healthy
+          uri:
+            url: "http://localhost/health"
+            status_code: 200
+          register: health_check
+          until: health_check.status == 200
+          retries: 30
+          delay: 10
+    
+    # ==================== 切换版本 ====================
+    - name: Switch to new version
+      block:
+        - name: Update current symlink
+          file:
+            src: "{{ deployment_path }}/releases/{{ deploy_timestamp }}"
+            dest: "{{ deployment_path }}/current"
+            state: link
+            force: yes
+            owner: "{{ deployment_user }}"
+            group: "{{ deployment_user }}"
+        
+        - name: Reload nginx
+          systemd:
+            name: nginx
+            state: reloaded
+          when: environment == 'production'
+        
+        - name: Clean old releases (keep last 5)
+          shell: |
+            ls -t {{ deployment_path }}/releases | tail -n +6 | \
+            xargs -I {} rm -rf {{ deployment_path }}/releases/{}
+          ignore_errors: yes
+    
+    # ==================== 验证部署 ====================
+    - name: Verify deployment
+      block:
+        - name: Check API health
+          uri:
+            url: "http://localhost/api/v1/health"
+            method: GET
+            status_code: 200
+          register: api_health
+        
+        - name: Check database connectivity
+          uri:
+            url: "http://localhost/api/v1/health/database"
+            method: GET
+            status_code: 200
+          register: db_health
+        
+        - name: Check Redis connectivity
+          uri:
+            url: "http://localhost/api/v1/health/redis"
+            method: GET
+            status_code: 200
+          register: redis_health
+        
+        - name: Run smoke tests
+          uri:
+            url: "http://localhost/api/v1/{{ item }}"
+            method: GET
+            status_code: [200, 401]
+          loop:
+            - auth/login
+            - patients
+            - herbs
+            - prescriptions
+          register: smoke_tests
+        
+        - name: Display verification results
+          debug:
+            msg:
+              - "API Health: {{ api_health.status }}"
+              - "Database: {{ db_health.status }}"
+              - "Redis: {{ redis_health.status }}"
+              - "Smoke Tests: {{ smoke_tests.results | length }} passed"
+    
+    # ==================== 监控配置 ====================
+    - name: Setup monitoring
+      block:
+        - name: Configure Prometheus target
+          lineinfile:
+            path: /etc/prometheus/targets.yml
+            line: "  - targets: ['localhost:8080']"
+            create: yes
+          when: prometheus_enabled | default(false)
+        
+        - name: Configure log shipping
+          template:
+            src: templates/filebeat.yml.j2
+            dest: /etc/filebeat/filebeat.yml
+            backup: yes
+          when: filebeat_enabled | default(false)
+        
+        - name: Restart monitoring services
+          systemd:
+            name: "{{ item }}"
+            state: restarted
+          loop:
+            - prometheus-node-exporter
+            - filebeat
+          when: monitoring_enabled | default(false)
+          ignore_errors: yes
+  
+  post_tasks:
+    # ==================== 通知 ====================
+    - name: Send deployment notification
+      uri:
+        url: "{{ notification_webhook }}"
+        method: POST
+        body_format: json
+        body:
+          text: "部署完成通知"
+          environment: "{{ environment }}"
+          version: "{{ deploy_version }}"
+          timestamp: "{{ ansible_date_time.iso8601 }}"
+          host: "{{ inventory_hostname }}"
+          status: "success"
+      when: notification_webhook is defined
+      ignore_errors: yes
+    
+    - name: Update deployment record
+      lineinfile:
+        path: "{{ deployment_path }}/deployments.log"
+        line: "{{ ansible_date_time.iso8601 }} | {{ environment }} | {{ deploy_version }} | {{ ansible_user }} | SUCCESS"
+        create: yes
+    
+    - name: Display deployment summary
+      debug:
+        msg:
+          - "================================"
+          - "部署成功完成!"
+          - "环境: {{ environment }}"
+          - "版本: {{ deploy_version }}"
+          - "时间: {{ ansible_date_time.iso8601 }}"
+          - "================================"
+  
+  handlers:
+    - name: restart docker
+      systemd:
+        name: docker
+        state: restarted
+    
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
+    
+    - name: cleanup docker
+      shell: |
+        docker system prune -af
+        docker volume prune -f
