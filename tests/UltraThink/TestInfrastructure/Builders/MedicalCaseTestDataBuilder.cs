@@ -1,5 +1,5 @@
 using System;
-using LYBT.Models.MedicalCase;
+using LYBT.Entities.MedicalCase;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders

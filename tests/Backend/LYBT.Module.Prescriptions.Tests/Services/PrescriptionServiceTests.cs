@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Models.Prescriptions;
+using LYBT.Entities.Prescriptions;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Shared.Models.Common;

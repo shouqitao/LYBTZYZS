@@ -1,5 +1,5 @@
 using System;
-using LYBT.Models.Herbs;
+using LYBT.Entities.Herbs;
 using LYBT.Tests.UltraThink.TestInfrastructure.Builders;
 
 namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders

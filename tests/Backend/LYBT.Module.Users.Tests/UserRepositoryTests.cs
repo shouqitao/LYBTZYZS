@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Models.Users;
+using LYBT.Entities.Users;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Tests.Base;
 using LYBT.Shared.Models.Contracts.Users;

@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Backend\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\src\Backend\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
+    <ProjectReference Include="..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
     <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
   </ItemGroup>

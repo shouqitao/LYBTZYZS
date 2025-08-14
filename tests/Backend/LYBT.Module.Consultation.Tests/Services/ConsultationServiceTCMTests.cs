@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
-using LYBT.Models.Consultation;
+using LYBT.Entities.Consultation;
 using LYBT.Module.Consultation.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;

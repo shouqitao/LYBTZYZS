@@ -144,4 +144,43 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("电话号码")]
         public string? PhoneNumber { get; set; }
     }
+
+    /// <summary>
+    /// 用户统计DTO
+    /// 用于用户统计信息的展示
+    /// </summary>
+    public class UserStatisticsDto
+    {
+        /// <summary>用户总数</summary>
+        [DisplayName("用户总数")]
+        public int TotalCount { get; set; }
+
+        /// <summary>活跃用户数</summary>
+        [DisplayName("活跃用户数")]
+        public int ActiveCount { get; set; }
+
+        /// <summary>非活跃用户数</summary>
+        [DisplayName("非活跃用户数")]
+        public int InactiveCount { get; set; }
+
+        /// <summary>医生数量</summary>
+        [DisplayName("医生数量")]
+        public int DoctorCount { get; set; }
+
+        /// <summary>护士数量</summary>
+        [DisplayName("护士数量")]
+        public int NurseCount { get; set; }
+
+        /// <summary>管理员数量</summary>
+        [DisplayName("管理员数量")]
+        public int AdminCount { get; set; }
+
+        /// <summary>药师数量</summary>
+        [DisplayName("药师数量")]
+        public int PharmacistCount { get; set; }
+
+        /// <summary>前台数量</summary>
+        [DisplayName("前台数量")]
+        public int ReceptionistCount { get; set; }
+    }
 }

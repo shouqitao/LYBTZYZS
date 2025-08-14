@@ -21,9 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Backend\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
-    <ProjectReference Include="..\..\..\src\Backend\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\src\Backend\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
+    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
+    <ProjectReference Include="..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
   </ItemGroup>
 
 </Project>

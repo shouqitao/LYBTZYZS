@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
-using LYBT.Models.Formula;
+using LYBT.Entities.Formula;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Formula.Services;
 using LYBT.Shared.Models.Common;

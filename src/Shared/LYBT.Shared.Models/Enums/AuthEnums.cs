@@ -166,4 +166,31 @@ namespace LYBT.Shared.Models.Enums
         [Description("双因子认证")]
         TwoFactor = 6
     }
+
+    /// <summary>
+    /// 用户角色枚举
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum UserRole
+    {
+        /// <summary>管理员</summary>
+        [Description("管理员")]
+        Admin = 0,
+
+        /// <summary>医生</summary>
+        [Description("医生")]
+        Doctor = 1,
+
+        /// <summary>护士</summary>
+        [Description("护士")]
+        Nurse = 2,
+
+        /// <summary>药师</summary>
+        [Description("药师")]
+        Pharmacist = 3,
+
+        /// <summary>前台</summary>
+        [Description("前台")]
+        Receptionist = 4
+    }
 }

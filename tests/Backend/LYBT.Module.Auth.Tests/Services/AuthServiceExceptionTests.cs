@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Configuration.Options;
-using LYBT.Models.Users;
+using LYBT.Entities.Users;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Contracts.Auth;

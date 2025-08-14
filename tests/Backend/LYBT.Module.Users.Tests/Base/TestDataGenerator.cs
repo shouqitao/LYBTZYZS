@@ -1,5 +1,5 @@
 using Bogus;
-using LYBT.Models.Users;
+using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Users.Tests.Base

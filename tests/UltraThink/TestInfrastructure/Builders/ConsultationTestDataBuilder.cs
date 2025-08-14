@@ -1,5 +1,5 @@
 using System;
-using LYBT.Models.Consultation;
+using LYBT.Entities.Consultation;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.UltraThink.TestInfrastructure.Builders;
 

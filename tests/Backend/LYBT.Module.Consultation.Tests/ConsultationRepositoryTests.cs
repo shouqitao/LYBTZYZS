@@ -1,7 +1,7 @@
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Consultation.Repositories;
-using LYBT.Models.Consultation;
+using LYBT.Entities.Consultation;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;

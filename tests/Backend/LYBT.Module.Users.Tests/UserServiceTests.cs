@@ -8,7 +8,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging.Abstractions;
 using FluentAssertions;
 using LYBT.Infrastructure.Logging;
-using LYBT.Models.Users;
+using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Module.Users.Tests.Base;

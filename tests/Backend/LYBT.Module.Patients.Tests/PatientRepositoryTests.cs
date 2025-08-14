@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
-using LYBT.Models.Patients;
+using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Tests.Base;
 using LYBT.Shared.Models.Enums;

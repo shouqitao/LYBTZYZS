@@ -68,3 +68,44 @@ nul
 *.tmp
 *.temp
 .cache/
+
+# Claude Code 工具文件 - 保留本地但不上传
+.claude/
+.serena/
+
+# 截图和图片文件
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+PixPin_*.png
+
+# 测试和覆盖率报告
+coverage/
+TestResults/
+*.trx
+*.coveragexml
+
+# 任务管理文件
+tasks/
+
+# IDE和工具生成的文件
+.vscode/
+*.code-workspace
+
+# 服务器端敏感文件
+.encryption-key
+server.log
+*.log
+build_output.txt
+
+# Python缓存文件
+__pycache__/
+*.pyc
+*.pyo
+
+# 配置文件中的敏感信息
+appsettings.Local.json
+*.secret
+*.private

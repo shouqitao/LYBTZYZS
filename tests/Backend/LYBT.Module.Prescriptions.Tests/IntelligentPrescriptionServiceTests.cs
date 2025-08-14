@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using LYBT.Models.Prescriptions;
+using LYBT.Entities.Prescriptions;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Services;

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 using FluentAssertions;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Configuration.Options;
-using LYBT.Models.Users;
+using LYBT.Entities.Users;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Module.Auth.Tests.Base;
