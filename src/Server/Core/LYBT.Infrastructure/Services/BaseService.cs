@@ -26,18 +26,16 @@ namespace LYBT.Infrastructure.Services
         protected readonly IBaseRepository<TEntity> _repository;
         protected readonly IMapper _mapper;
         protected readonly ILogger _logger;
-        protected readonly IUnifiedLogService? _logService;
+        // UltraThink重构：删除复杂日志服务，使用标准ILogger
 
         protected BaseService(
             IBaseRepository<TEntity> repository,
             IMapper mapper,
-            ILogger logger,
-            IUnifiedLogService? logService = null)
+            ILogger logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _logService = logService;
         }
 
         /// <summary>
@@ -306,12 +304,10 @@ namespace LYBT.Infrastructure.Services
         /// </summary>
         protected virtual async Task LogOperationAsync(string operation, TEntity entity)
         {
-            if (_logService == null) return;
-
+            // UltraThink重构：使用标准ILogger替代复杂日志服务
             try
             {
-                // 这里可以根据具体需求记录操作日志
-                // await _logService.LogOperationAsync(operation, entity);
+                _logger.LogInformation("操作: {Operation}, 实体: {EntityType}", operation, typeof(TEntity).Name);
                 await Task.CompletedTask;
             }
             catch (Exception ex)

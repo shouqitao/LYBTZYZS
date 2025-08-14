@@ -195,7 +195,8 @@ namespace LYBT.Infrastructure.Extensions
         /// <returns>服务集合</returns>
         public static IServiceCollection AddUnifiedLogging(this IServiceCollection services)
         {
-            services.AddScoped<IUnifiedLogService, UnifiedLogService>();
+            // UltraThink重构：删除复杂日志服务，使用标准Microsoft.Extensions.Logging
+            // 标准日志已由ASP.NET Core默认提供，无需额外注册
             return services;
         }
 
