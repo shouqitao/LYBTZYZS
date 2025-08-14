@@ -63,37 +63,12 @@ namespace LYBT.Infrastructure.Data
         public DbSet<FormulaModel> Formulas { get; set; }
 
 
-        // ==================== 日志相关实体 ====================
+        // ==================== 日志相关实体 - UltraThink重构：简化 ====================
 
         /// <summary>
-        /// 统一日志
+        /// 简化日志模型 - 仅保留必要功能
         /// </summary>
-        public DbSet<LogModel> Logs { get; set; }
-
-        /// <summary>
-        /// 系统日志
-        /// </summary>
-        public DbSet<SystemLogModel> SystemLogs { get; set; }
-
-        /// <summary>
-        /// 用户操作日志
-        /// </summary>
-        public DbSet<UserActionLogModel> UserActionLogs { get; set; }
-
-        /// <summary>
-        /// 错误日志
-        /// </summary>
-        public DbSet<ErrorLogModel> ErrorLogs { get; set; }
-
-        /// <summary>
-        /// 审计日志
-        /// </summary>
-        public DbSet<AuditLogModel> AuditLogs { get; set; }
-
-        /// <summary>
-        /// 性能日志
-        /// </summary>
-        public DbSet<PerformanceLogModel> PerformanceLogs { get; set; }
+        public DbSet<SimpleLog> Logs { get; set; }
 
         // ==================== 配置相关实体 ====================
 
@@ -485,118 +460,21 @@ namespace LYBT.Infrastructure.Data
         // Sync模块MVP阶段暂不需要
 
         /// <summary>
-        /// 配置日志相关实体
+        /// 配置日志相关实体 - UltraThink重构：极简版
         /// </summary>
         private static void ConfigureLogModels(ModelBuilder modelBuilder)
         {
-            // 统一日志配置
-            modelBuilder.Entity<LogModel>(entity =>
+            // 简化日志配置 - 只保留核心字段
+            modelBuilder.Entity<SimpleLog>(entity =>
             {
-                entity.ToTable("InfrastructureLogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.LogType).HasConversion<string>();
-                entity.Property(e => e.ObjectType).HasConversion<string>();
-                entity.Property(e => e.ActionType).HasConversion<string>();
-                entity.Property(e => e.OperatorName).HasMaxLength(50);
-                entity.Property(e => e.Content).HasMaxLength(500);
-                entity.Property(e => e.IP).HasMaxLength(45);
-                entity.Property(e => e.Remark).HasMaxLength(1000);
-                entity.HasIndex(e => e.LogTime);
-                entity.HasIndex(e => e.OperatorId);
-                entity.HasIndex(e => e.LogType);
-            });
-
-            // 系统日志配置
-            modelBuilder.Entity<SystemLogModel>(entity =>
-            {
-                entity.ToTable("SystemLogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Level).HasConversion<string>();
-                entity.Property(e => e.Source).HasMaxLength(100);
-                entity.Property(e => e.Message).HasMaxLength(2000);
-                entity.Property(e => e.ServerInfo).HasMaxLength(100);
-                entity.Property(e => e.RequestId).HasMaxLength(50);
-                entity.HasIndex(e => e.LogTime);
+                entity.ToTable("SimpleLogs");
+                entity.HasKey(e => new { e.Time, e.Level }); // 使用复合主键避免Guid
+                entity.Property(e => e.Level).HasMaxLength(20);
+                entity.Property(e => e.Message).HasMaxLength(1000);
+                entity.Property(e => e.Exception).HasMaxLength(2000);
+                entity.Property(e => e.UserId).HasMaxLength(50);
+                entity.HasIndex(e => e.Time);
                 entity.HasIndex(e => e.Level);
-                entity.HasIndex(e => e.Source);
-            });
-
-            // 用户操作日志配置
-            modelBuilder.Entity<UserActionLogModel>(entity =>
-            {
-                entity.ToTable("UserActionLogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.ActionType).HasConversion<string>();
-                entity.Property(e => e.UserName).HasMaxLength(50);
-                entity.Property(e => e.Module).HasMaxLength(50);
-                entity.Property(e => e.Function).HasMaxLength(100);
-                entity.Property(e => e.Description).HasMaxLength(500);
-                entity.Property(e => e.RequestPath).HasMaxLength(500);
-                entity.Property(e => e.HttpMethod).HasMaxLength(10);
-                entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
-                entity.Property(e => e.ClientIP).HasMaxLength(45);
-                entity.Property(e => e.UserAgent).HasMaxLength(500);
-                entity.HasIndex(e => e.ActionTime);
-                entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.ActionType);
-            });
-
-            // 错误日志配置
-            modelBuilder.Entity<ErrorLogModel>(entity =>
-            {
-                entity.ToTable("ErrorLogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
-                entity.Property(e => e.ExceptionType).HasMaxLength(200);
-                entity.Property(e => e.RequestPath).HasMaxLength(500);
-                entity.Property(e => e.HttpMethod).HasMaxLength(10);
-                entity.Property(e => e.ClientIP).HasMaxLength(45);
-                entity.Property(e => e.UserAgent).HasMaxLength(500);
-                entity.Property(e => e.Environment).HasMaxLength(50);
-                entity.Property(e => e.Severity).HasMaxLength(20);
-                entity.Property(e => e.ResolutionNotes).HasMaxLength(1000);
-                entity.HasIndex(e => e.OccurredAt);
-                entity.HasIndex(e => e.IsResolved);
-                entity.HasIndex(e => e.Severity);
-            });
-
-            // 审计日志配置
-            modelBuilder.Entity<AuditLogModel>(entity =>
-            {
-                entity.ToTable("AuditLogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.EventType).HasMaxLength(50);
-                entity.Property(e => e.ResourceType).HasMaxLength(50);
-                entity.Property(e => e.ResourceId).HasMaxLength(50);
-                entity.Property(e => e.UserName).HasMaxLength(50);
-                entity.Property(e => e.Description).HasMaxLength(500);
-                entity.Property(e => e.ClientIP).HasMaxLength(45);
-                entity.Property(e => e.SessionId).HasMaxLength(50);
-                entity.Property(e => e.RequestId).HasMaxLength(50);
-                entity.Property(e => e.Result).HasMaxLength(50);
-                entity.Property(e => e.RiskLevel).HasMaxLength(20);
-                entity.Property(e => e.ComplianceFlags).HasMaxLength(200);
-                entity.HasIndex(e => e.Timestamp);
-                entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.EventType);
-                entity.HasIndex(e => e.ResourceType);
-            });
-
-            // 性能日志配置
-            modelBuilder.Entity<PerformanceLogModel>(entity =>
-            {
-                entity.ToTable("PerformanceLogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.OperationName).HasMaxLength(100);
-                entity.Property(e => e.ModuleName).HasMaxLength(50);
-                entity.Property(e => e.MethodName).HasMaxLength(100);
-                entity.Property(e => e.ClientIP).HasMaxLength(45);
-                entity.Property(e => e.RequestPath).HasMaxLength(500);
-                entity.Property(e => e.PerformanceLevel).HasMaxLength(20);
-                entity.Property(e => e.AdditionalData).HasColumnType("text");
-                entity.HasIndex(e => e.StartTime);
-                entity.HasIndex(e => e.Duration);
-                entity.HasIndex(e => e.PerformanceLevel);
             });
         }
 
