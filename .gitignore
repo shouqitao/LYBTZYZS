@@ -73,6 +73,22 @@ nul
 .claude/
 .serena/
 
+# IDE和工具生成的文件 - 更新规则
+.vscode/
+*.code-workspace
+
+# 项目需求文档（PRP） - 本地开发使用
+PRPs/
+
+# 备份文件和临时目录
+backup_*/
+shrimp-data/
+*.backup
+
+# 应用图标和资源文件（根目录下的）
+app.ico
+*.ico
+
 # 截图和图片文件
 *.png
 *.jpg
@@ -83,6 +99,7 @@ PixPin_*.png
 
 # 测试和覆盖率报告
 coverage/
+coverage-report/
 TestResults/
 *.trx
 *.coveragexml
@@ -90,9 +107,7 @@ TestResults/
 # 任务管理文件
 tasks/
 
-# IDE和工具生成的文件
-.vscode/
-*.code-workspace
+# IDE和编辑器配置文件（已在上方定义）
 
 # 服务器端敏感文件
 .encryption-key
