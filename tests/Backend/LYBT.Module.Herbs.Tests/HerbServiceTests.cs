@@ -6,7 +6,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging.Abstractions;
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
-using LYBT.Models.Herbs;
+using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Services;
 using LYBT.Module.Herbs.Mapping;

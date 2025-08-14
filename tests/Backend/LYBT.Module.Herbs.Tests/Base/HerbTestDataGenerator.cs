@@ -1,5 +1,5 @@
 using Bogus;
-using LYBT.Models.Herbs;
+using LYBT.Entities.Herbs;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Herbs.Tests.Base

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Infrastructure.Logging;
-using LYBT.Models.Users;
+using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Models.Contracts.Users;

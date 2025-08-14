@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Infrastructure.Logging;
-using LYBT.Models.Users;
+using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Module.Users.Mapping;

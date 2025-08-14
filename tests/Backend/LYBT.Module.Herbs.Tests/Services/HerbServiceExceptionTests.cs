@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
-using LYBT.Models.Herbs;
+using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Services;
 using LYBT.Shared.Models.Common;

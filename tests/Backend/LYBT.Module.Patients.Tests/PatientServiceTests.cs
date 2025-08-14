@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using FluentAssertions;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Logging.Dtos;
-using LYBT.Models.Patients;
+using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
 using LYBT.Module.Patients.Mapping;

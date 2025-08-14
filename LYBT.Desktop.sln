@@ -10,21 +10,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workbenches", "Workbenches"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedResources", "SharedResources", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shell", "src\Frontend\Desktop\Shell\LYBT.Desktop.Shell.csproj", "{A1234567-1234-1234-1234-123456789001}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shell", "src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj", "{A1234567-1234-1234-1234-123456789001}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Core", "src\Frontend\Desktop\Core\LYBT.Desktop.Core.csproj", "{A1234567-1234-1234-1234-123456789002}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Core", "src\Client\Desktop\Core\LYBT.Desktop.Core.csproj", "{A1234567-1234-1234-1234-123456789002}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Services", "src\Frontend\Desktop\Services\LYBT.Desktop.Services.csproj", "{A1234567-1234-1234-1234-123456789003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Services", "src\Client\Desktop\Services\LYBT.Desktop.Services.csproj", "{A1234567-1234-1234-1234-123456789003}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure", "src\Frontend\Desktop\Infrastructure\LYBT.Desktop.Infrastructure.csproj", "{A1234567-1234-1234-1234-123456789004}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure", "src\Client\Desktop\Infrastructure\LYBT.Desktop.Infrastructure.csproj", "{A1234567-1234-1234-1234-123456789004}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shared", "src\Frontend\Desktop\Shared\LYBT.Desktop.Shared.csproj", "{B1234567-1234-1234-1234-123456789100}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shared", "src\Client\Desktop\Shared\LYBT.Desktop.Shared.csproj", "{B1234567-1234-1234-1234-123456789100}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Core", "src\Frontend\Desktop\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj", "{C1234567-1234-1234-1234-123456789001}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Core", "src\Client\Desktop\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj", "{C1234567-1234-1234-1234-123456789001}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Admin", "src\Frontend\Desktop\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj", "{C1234567-1234-1234-1234-123456789002}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Admin", "src\Client\Desktop\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj", "{C1234567-1234-1234-1234-123456789002}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Consultation", "src\Frontend\Desktop\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj", "{C1234567-1234-1234-1234-123456789003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Consultation", "src\Client\Desktop\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj", "{C1234567-1234-1234-1234-123456789003}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Models", "src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj", "{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}"
 EndProject

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LYBT.Models.Prescriptions;
+using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders

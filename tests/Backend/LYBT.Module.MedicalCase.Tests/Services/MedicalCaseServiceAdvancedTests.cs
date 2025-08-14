@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
-using LYBT.Models.MedicalCase;
+using LYBT.Entities.MedicalCase;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Shared.Models.Common;

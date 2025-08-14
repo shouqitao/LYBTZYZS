@@ -68,3 +68,75 @@ nul
 *.tmp
 *.temp
 .cache/
+
+# Claude Code 工具文件 - 保留本地但不上传
+.claude/
+.serena/
+
+# IDE和工具生成的文件 - 更新规则
+.vscode/
+*.code-workspace
+
+# 项目需求文档（PRP） - 本地开发使用
+PRPs/
+
+# 备份文件和临时目录
+backup_*/
+shrimp-data/
+*.backup
+
+# 应用图标和资源文件（根目录下的）
+app.ico
+*.ico
+
+# Python脚本和临时工具（非开发必需）
+fix_*.py
+rename_*.py
+test_*.py
+*_test.py
+generate_*.py
+check_*.py
+performance_*.py
+integration_*.py
+analyze_*.py
+
+# 示例和模板目录
+use-cases/
+examples/
+templates/
+
+# 截图和图片文件
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+PixPin_*.png
+
+# 测试和覆盖率报告
+coverage/
+coverage-report/
+TestResults/
+*.trx
+*.coveragexml
+
+# 任务管理文件
+tasks/
+
+# IDE和编辑器配置文件（已在上方定义）
+
+# 服务器端敏感文件
+.encryption-key
+server.log
+*.log
+build_output.txt
+
+# Python缓存文件
+__pycache__/
+*.pyc
+*.pyo
+
+# 配置文件中的敏感信息
+appsettings.Local.json
+*.secret
+*.private

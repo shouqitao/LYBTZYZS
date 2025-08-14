@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
-using LYBT.Models.Herbs;
+using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Tests.Base;
 using LYBT.Shared.Models.Enums;
