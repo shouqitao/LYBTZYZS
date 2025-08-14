@@ -664,7 +664,7 @@ namespace LYBT.Domain.Aggregates.MedicalCaseAggregate
 
             if (_chiefComplaint != null)
             {
-                summary.Add($"主诉：{_chiefComplaint.Complaint}");
+                summary.Add($"主诉：{_chiefComplaint.Description}");
             }
 
             if (_diagnoses.Any())
@@ -678,7 +678,7 @@ namespace LYBT.Domain.Aggregates.MedicalCaseAggregate
 
             if (_tcmDiagnosis != null)
             {
-                summary.Add($"中医诊断：{_tcmDiagnosis.Disease}，证型：{_tcmDiagnosis.Syndrome}");
+                summary.Add($"中医诊断：{_tcmDiagnosis.Syndrome}，治法：{_tcmDiagnosis.Pattern}");
             }
 
             summary.Add($"诊疗次数：{_consultations.Count}次");
