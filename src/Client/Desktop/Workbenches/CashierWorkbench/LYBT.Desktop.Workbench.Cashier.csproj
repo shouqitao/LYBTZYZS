@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>LYBT.Desktop.Workbench.Cashier</AssemblyName>
+		<RootNamespace>LYBT.Desktop.Workbench.Cashier</RootNamespace>
+		<AssemblyTitle>凌隐宝堂中医诊所管理系统 - 收银员工作台</AssemblyTitle>
+		<AssemblyDescription>收银员工作台，包含费用结算、支付管理等功能</AssemblyDescription>
+		<AssemblyProduct>凌隐宝堂中医诊所管理系统</AssemblyProduct>
+		<AssemblyCompany>凌隐宝堂</AssemblyCompany>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Shared\LYBT.Desktop.Shared.csproj" />
+		<ProjectReference Include="..\Core\LYBT.Desktop.Workbench.Core.csproj" />
+		<ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
+		<ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+	</ItemGroup>
+
+	<!-- 
+	<ItemGroup>
+		<Resource Include="Resources\CashierTheme.xaml" />
+	</ItemGroup>
+	-->
+
+</Project>

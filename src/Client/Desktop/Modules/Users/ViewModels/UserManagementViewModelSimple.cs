@@ -57,7 +57,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<PagedResult<UserInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
+        protected override async Task<ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<UserInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
         {
             try
             {
@@ -69,11 +69,11 @@ namespace LYBT.Desktop.Users.ViewModels
                 };
 
                 var result = await Service.SearchUsersAsync(query);
-                return ServiceResult<PagedResult<UserInfo>>.Success(result);
+                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<UserInfo>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<PagedResult<UserInfo>>.Failure($"加载用户列表失败: {ex.Message}");
+                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<UserInfo>>.Failure($"加载用户列表失败: {ex.Message}");
             }
         }
 

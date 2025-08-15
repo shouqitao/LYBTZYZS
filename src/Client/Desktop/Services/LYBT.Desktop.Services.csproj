@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\LYBT.Desktop.Core.csproj" />
+    <ProjectReference Include="..\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj" />
     <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
   </ItemGroup>

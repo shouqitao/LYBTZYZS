@@ -33,6 +33,8 @@ namespace LYBT.Desktop.Shell.ViewModels
         private readonly IPermissionService _permissionService;
         private readonly IUserService _userService;
         private readonly IWorkbenchRouter _workbenchRouter;
+        private readonly ApiTestService _apiTestService;
+        private readonly LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer _uiOptimizer;
 
         private string _title = "凌隐宝堂中医诊所诊疗系统";
         private UserInfo? _currentUser;
@@ -48,7 +50,9 @@ namespace LYBT.Desktop.Shell.ViewModels
             IPermissionService permissionService,
             IUserService userService,
             ICommonDialogService commonDialogService,
-            IWorkbenchRouter workbenchRouter)
+            IWorkbenchRouter workbenchRouter,
+            ApiTestService apiTestService,
+            LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer uiOptimizer)
         {
             _commonDialogService = commonDialogService;
             _regionManager = regionManager;
@@ -57,6 +61,8 @@ namespace LYBT.Desktop.Shell.ViewModels
             _permissionService = permissionService;
             _userService = userService;
             _workbenchRouter = workbenchRouter;
+            _apiTestService = apiTestService;
+            _uiOptimizer = uiOptimizer;
 
             LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync());
             TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync(), () => _isLoggedIn);
@@ -137,21 +143,31 @@ namespace LYBT.Desktop.Shell.ViewModels
         }
 
         /// <summary>
-        /// 检查登录状态
+        /// 检查登录状态 - 简化版本
         /// </summary>
         private async Task CheckLoginStatusAsync()
         {
-            if (_authService.IsLoggedIn)
+            try
             {
-                CurrentUser = await _authService.GetCurrentUserAsync();
-                IsLoggedIn = true;
-                TestApiCommand.RaiseCanExecuteChanged();
-                ShowControlExamplesCommand.RaiseCanExecuteChanged();
-
-                LoadMainContent();
+                if (_authService.IsLoggedIn)
+                {
+                    var user = await _authService.GetCurrentUserAsync();
+                    if (user != null)
+                    {
+                        CurrentUser = user;
+                        IsLoggedIn = true;
+                        TestApiCommand.RaiseCanExecuteChanged();
+                        ShowControlExamplesCommand.RaiseCanExecuteChanged();
+                        LoadMainContent();
+                        return;
+                    }
+                }
+                
+                ShowLoginDialog();
             }
-            else
+            catch (Exception ex)
             {
+                await _commonDialogService.ShowErrorAsync($"检查登录状态失败：{ex.Message}", "错误");
                 ShowLoginDialog();
             }
         }
@@ -266,8 +282,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             try
             {
-                var testService = new ApiTestService(_authService, _userService);
-                var result = await testService.RunFullApiTestAsync();
+                var result = await _apiTestService.RunFullApiTestAsync();
                 ApiTestService.ShowTestResult(result);
             }
             catch (Exception ex)
