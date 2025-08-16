@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Refit;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Services.Interfaces
 {
@@ -14,7 +15,7 @@ namespace LYBT.Desktop.Services.Interfaces
         /// 用户登录
         /// </summary>
         [Post("/api/v1/auth/login")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<LoginResponse>>> LoginAsync([Body] LoginRequest loginRequest);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> LoginAsync([Body] LoginRequest loginRequest);
 
         /// <summary>
         /// 用户登出

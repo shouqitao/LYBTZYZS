@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -5,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Shared;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

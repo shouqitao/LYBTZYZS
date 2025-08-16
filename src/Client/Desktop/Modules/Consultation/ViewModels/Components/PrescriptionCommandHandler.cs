@@ -6,9 +6,11 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Dialogs;
-using LYBT.Desktop.Core.Interfaces.Services;
+
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Desktop.Core.Extensions;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Consultation.ViewModels.Components
 {

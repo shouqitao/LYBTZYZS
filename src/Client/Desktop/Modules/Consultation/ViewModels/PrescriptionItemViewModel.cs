@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Prism.Mvvm;
 using LYBT.Desktop.Core.Models.Prescriptions;

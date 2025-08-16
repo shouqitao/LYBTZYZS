@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Navigation.Regions;
 
 namespace LYBT.Desktop.Workbench.Consultation.Navigation
@@ -43,7 +44,7 @@ namespace LYBT.Desktop.Workbench.Consultation.Navigation
         /// </summary>
         /// <param name="viewName">视图名称</param>
         /// <param name="parameters">导航参数</param>
-        void NavigateToView(string viewName, NavigationParameters parameters = null);
+        void NavigateToView(string viewName, NavigationParameters? parameters = null);
 
         /// <summary>
         /// 指定区域导航方法
@@ -51,6 +52,6 @@ namespace LYBT.Desktop.Workbench.Consultation.Navigation
         /// <param name="regionName">区域名称</param>
         /// <param name="viewName">视图名称</param>
         /// <param name="parameters">导航参数</param>
-        void NavigateToView(string regionName, string viewName, NavigationParameters parameters = null);
+        void NavigateToView(string regionName, string viewName, NavigationParameters? parameters = null);
     }
 }

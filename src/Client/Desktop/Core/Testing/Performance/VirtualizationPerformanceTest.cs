@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -108,7 +109,7 @@ namespace LYBT.Desktop.Core.Testing.Performance
                     
                     // 配置虚拟化
                     VirtualizingPanel.SetIsVirtualizing(listBox, true);
-                    VirtualizingPanel.SetVirtualizationMode(listBox, VirtualizationMode.Recycling);
+                    VirtualizingPanel.SetVirtualizationMode(listBox, System.Windows.Controls.VirtualizationMode.Recycling);
                     ScrollViewer.SetCanContentScroll(listBox, true);
                     
                     var collection = new ObservableCollection<TestDataItem>(testData);
@@ -165,7 +166,7 @@ namespace LYBT.Desktop.Core.Testing.Performance
                 {
                     var listBox = new ListBox();
                     VirtualizingPanel.SetIsVirtualizing(listBox, true);
-                    VirtualizingPanel.SetVirtualizationMode(listBox, VirtualizationMode.Recycling);
+                    VirtualizingPanel.SetVirtualizationMode(listBox, System.Windows.Controls.VirtualizationMode.Recycling);
                     listBox.ItemsSource = new ObservableCollection<TestDataItem>(testData);
 
                     // 模拟滚动操作
@@ -212,7 +213,7 @@ namespace LYBT.Desktop.Core.Testing.Performance
                 {
                     var listBox = new ListBox();
                     VirtualizingPanel.SetIsVirtualizing(listBox, true);
-                    VirtualizingPanel.SetVirtualizationMode(listBox, VirtualizationMode.Recycling);
+                    VirtualizingPanel.SetVirtualizationMode(listBox, System.Windows.Controls.VirtualizationMode.Recycling);
                     listBox.ItemsSource = new ObservableCollection<TestDataItem>(largeDataSet);
                     
                     // 只渲染可视区域
@@ -326,7 +327,7 @@ namespace LYBT.Desktop.Core.Testing.Performance
                         {
                             var listBox = new ListBox();
                             VirtualizingPanel.SetIsVirtualizing(listBox, true);
-                            VirtualizingPanel.SetVirtualizationMode(listBox, VirtualizationMode.Recycling);
+                            VirtualizingPanel.SetVirtualizationMode(listBox, System.Windows.Controls.VirtualizationMode.Recycling);
                             listBox.ItemsSource = new ObservableCollection<TestDataItem>(testData);
                             listBox.Measure(new Size(800, 600));
                         });

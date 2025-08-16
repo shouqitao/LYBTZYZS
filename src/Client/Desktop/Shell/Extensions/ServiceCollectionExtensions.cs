@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Net.Http;
 using System.Net.Security;
@@ -11,6 +12,7 @@ using AutoMapper;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Services;
 using LYBT.Desktop.Core.Configuration;
 using LYBT.Desktop.Core.Mapping;
@@ -19,7 +21,10 @@ using LYBT.Desktop.Infrastructure;
 using LYBT.Desktop.Services.Handlers;
 using LYBT.Desktop.Core.Caching;
 using LYBT.Desktop.Core.Services;
-using LYBT.Desktop.Admin.Prescriptions.Services;
+using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Consultation.Services;
+using LYBT.Shared.Interfaces.Services.Business;
+// using LYBT.Desktop.Admin.Prescriptions.Services; // 已整合到AdminWorkbench
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -142,6 +147,24 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IApiService, LYBT.Desktop.Services.ApiService>();
+
+            // UltraThink Phase 5.4: 注册性能优化服务基础设施
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Configuration.IAppConfiguration>(() =>
+                LYBT.Desktop.Core.Configuration.AppConfiguration.CreateDefault());
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer, 
+                LYBT.Desktop.Core.Services.Performance.UIPerformanceOptimizer>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IPerformanceMonitorService, 
+                LYBT.Desktop.Core.Services.Performance.PerformanceMonitorService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IMemoryManagerService, 
+                LYBT.Desktop.Core.Services.Performance.MemoryManagerService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.ISmartVirtualizationManager, 
+                LYBT.Desktop.Core.Services.Performance.SmartVirtualizationManager>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.ISmartLoadingStrategy, 
+                LYBT.Desktop.Core.Services.Performance.SmartLoadingStrategy>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IDataBindingOptimizer, 
+                LYBT.Desktop.Core.Services.Performance.DataBindingOptimizer>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IPerformanceAnalysisService, 
+                LYBT.Desktop.Core.Services.Performance.PerformanceAnalysisService>();
         }
 
         /// <summary>
@@ -191,7 +214,29 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ITokenManager, TokenManager>();
             containerRegistry.RegisterSingleton<IUserSessionManager, UserSessionManager>();
             containerRegistry.RegisterSingleton<IPermissionService, PermissionService>();
-            containerRegistry.RegisterSingleton<IErrorHandlingService, ErrorHandlingService>();
+            
+            // 错误处理相关服务 - 注册依赖链
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IErrorClassifier, LYBT.Desktop.Core.Services.ErrorClassifier>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IUserNotificationService, LYBT.Desktop.Core.Services.UserNotificationService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IGlobalExceptionHandler, LYBT.Desktop.Core.Services.GlobalExceptionHandler>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService, LYBT.Desktop.Services.ErrorHandlingService>();
+            
+            // UltraThink重构：注册新的统一事件系统组件
+            RegisterEventSystemServices(containerRegistry);
+        }
+
+        /// <summary>
+        /// 注册事件系统服务 - UltraThink架构重构
+        /// </summary>
+        private static void RegisterEventSystemServices(IContainerRegistry containerRegistry)
+        {
+            // UltraThink策略：完全切换到新统一事件架构
+            containerRegistry.RegisterSingleton<UnifiedEventHandler>();
+            containerRegistry.RegisterSingleton<EventMigrationAdapter>();
+            
+            // 直接使用新架构的ConsultationEventHandler
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Services.Interfaces.IConsultationEventHandler, 
+                LYBT.Desktop.Consultation.Services.ConsultationEventHandler>();
         }
 
         /// <summary>
@@ -199,25 +244,43 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterDomainServices(IContainerRegistry containerRegistry)
         {
-            var domainServices = new (Type Interface, Type Implementation)[]
+            // UltraThink Phase 2.2.6: 注册新的业务接口和旧的UI接口
+            // 每个Service实现都同时支持两套接口
+            
+            // 注册AuthenticationService - 同时支持业务接口和UI接口
+            containerRegistry.RegisterSingleton<AuthenticationService>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.Business.IAuthenticationService>(
+                container => container.Resolve<AuthenticationService>());
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(
+                container => container.Resolve<AuthenticationService>());
+
+            // 注册UserService - 同时支持业务接口和UI接口
+            containerRegistry.RegisterSingleton<UserService>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.Business.IUserService>(
+                container => container.Resolve<UserService>());
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserService>(
+                container => container.Resolve<UserService>());
+
+            // 注册其他服务 - 暂时保持原有注册方式，使用完全限定类型名解决歧义
+            var legacyDomainServices = new (Type Interface, Type Implementation)[]
             {
-                (typeof(IAuthenticationService), typeof(AuthenticationService)),
-                (typeof(IUserService), typeof(UserService)),
-                (typeof(IPatientService), typeof(PatientService)),
-                (typeof(IFormulaService), typeof(FormulaService)),
-                (typeof(IConsultationService), typeof(ConsultationService)),
-                (typeof(IPrescriptionService), typeof(PrescriptionService)),
-                (typeof(IMedicalCaseService), typeof(MedicalCaseService))
+                (typeof(LYBT.Desktop.Core.Interfaces.Services.IPatientService), typeof(PatientService)),
+                (typeof(LYBT.Desktop.Core.Interfaces.Services.IConsultationService), typeof(ConsultationService)),
+                (typeof(LYBT.Shared.Interfaces.Services.IPrescriptionService), typeof(PrescriptionService)),
+                (typeof(LYBT.Desktop.Core.Interfaces.Services.IMedicalCaseService), typeof(MedicalCaseService))
             };
 
-            foreach (var (interfaceType, implementationType) in domainServices)
+            // 注册FormulaService为具体类型（当前未实现接口，在Phase 3中将重构为接口实现）
+            containerRegistry.RegisterSingleton<FormulaService>();
+
+            foreach (var (interfaceType, implementationType) in legacyDomainServices)
             {
                 containerRegistry.RegisterSingleton(interfaceType, implementationType);
             }
 
             // 特殊处理：药材服务使用缓存装饰器（阶段3优化）
             containerRegistry.RegisterSingleton<HerbService>();  // 原始服务
-            containerRegistry.RegisterSingleton<IHerbService>(container => 
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IHerbService>(container => 
                 new CachedHerbService(
                     container.Resolve<HerbService>(),
                     container.Resolve<IMemoryCacheService>(),
@@ -241,13 +304,13 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.PrescriptionPrintService>(); // Services项目中的实现
             containerRegistry.RegisterSingleton<IPrescriptionPrintService>(container => container.Resolve<LYBT.Desktop.Services.PrescriptionPrintService>());
             
-            // SystemManagement模块的高级打印服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Admin.Prescriptions.Services.PrescriptionPrintService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Admin.Prescriptions.Services.IAdvancedPrescriptionPrintService>(
-                container => container.Resolve<LYBT.Desktop.Admin.Prescriptions.Services.PrescriptionPrintService>());
+            // SystemManagement模块的高级打印服务 - 已整合到AdminWorkbench
+            // containerRegistry.RegisterSingleton<LYBT.Desktop.Admin.Prescriptions.Services.PrescriptionPrintService>();
+            // containerRegistry.RegisterSingleton<LYBT.Desktop.Admin.Prescriptions.Services.IAdvancedPrescriptionPrintService>(
+            //     container => container.Resolve<LYBT.Desktop.Admin.Prescriptions.Services.PrescriptionPrintService>());
             
-            containerRegistry.RegisterSingleton<PrescriptionTemplateService>();
-            containerRegistry.RegisterSingleton<OptimizedPrescriptionSearchService>();
+            // containerRegistry.RegisterSingleton<PrescriptionTemplateService>(); // 已删除
+            // containerRegistry.RegisterSingleton<OptimizedPrescriptionSearchService>(); // 已删除
 
             // 缓存和性能优化服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.ICacheWarmupService, LYBT.Desktop.Core.Services.CacheWarmupService>();
@@ -264,16 +327,16 @@ namespace LYBT.Desktop.Shell.Extensions
             // containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IPredictivePreloadService, LYBT.Desktop.Core.Services.Performance.PredictivePreloadService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.ISmartConcurrencyManager, LYBT.Desktop.Core.Services.Performance.SmartConcurrencyManager>();
             
-            // 日志监控服务 - UltraThink Stage 5.3.1
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Monitoring.IStructuredLoggingService, LYBT.Desktop.Core.Services.Monitoring.StructuredLoggingService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Monitoring.IPerformanceMonitoringService, LYBT.Desktop.Core.Services.Monitoring.PerformanceMonitoringService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Monitoring.IBusinessMetricsService, LYBT.Desktop.Core.Services.Monitoring.BusinessMetricsService>();
+            // UltraThink重构：已删除复杂监控服务，使用标准Microsoft.Extensions.Logging
             
             // 配置管理服务 - UltraThink Stage 5.3.2
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Configuration.IConfigurationManagerService, LYBT.Desktop.Core.Services.Configuration.ConfigurationManagerService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Configuration.IFeatureToggleService, LYBT.Desktop.Core.Services.Configuration.FeatureToggleService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Configuration.IHotReloadService, LYBT.Desktop.Core.Services.Configuration.HotReloadService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Configuration.ISecureConfigurationService, LYBT.Desktop.Core.Services.Configuration.SecureConfigurationService>();
+            
+            // API测试服务 - 修复SystemWorkbench启动问题
+            containerRegistry.RegisterSingleton<ApiTestService>();
         }
 
         /// <summary>

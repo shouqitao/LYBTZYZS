@@ -1,8 +1,8 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     public class HerbAddEditDialogViewModel : BindableBase
     {
         private readonly IHerbApiService _herbApiService;
-        private readonly HerbInfo? _originalHerb;
+        private readonly HerbDto? _originalHerb;
         private bool _isEditMode;
 
         #region Properties
@@ -129,7 +129,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         /// <param name="herbApiService">中药材API服务</param>
         /// <param name="herb">要编辑的药材信息（null表示新增模式）</param>
-        public HerbAddEditDialogViewModel(IHerbApiService herbApiService, HerbInfo? herb = null)
+        public HerbAddEditDialogViewModel(IHerbApiService herbApiService, HerbDto? herb = null)
         {
             _herbApiService = herbApiService ?? throw new ArgumentNullException(nameof(herbApiService));
             _originalHerb = herb;
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 初始化编辑数据
         /// </summary>
-        private void InitializeEditData(HerbInfo herb)
+        private void InitializeEditData(HerbDto herb)
         {
             DialogTitle = "编辑中药材";
             HerbName = herb.Name;

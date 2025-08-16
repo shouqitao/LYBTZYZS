@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -5,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Models;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Services;
 
@@ -617,56 +619,6 @@ namespace LYBT.Desktop.Core.Services
         public int? AttemptCount { get; set; }
     }
 
-    /// <summary>
-    /// 错误上下文信息
-    /// </summary>
-    public class ErrorContext
-    {
-        /// <summary>
-        /// 操作名称
-        /// </summary>
-        public string OperationName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 模块名称
-        /// </summary>
-        public string ModuleName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 用户ID
-        /// </summary>
-        public Guid? UserId { get; set; }
-
-        /// <summary>
-        /// 会话ID
-        /// </summary>
-        public string? SessionId { get; set; }
-
-        /// <summary>
-        /// 相关实体ID
-        /// </summary>
-        public Guid? EntityId { get; set; }
-
-        /// <summary>
-        /// 实体类型
-        /// </summary>
-        public string? EntityType { get; set; }
-
-        /// <summary>
-        /// 重试次数
-        /// </summary>
-        public int RetryCount { get; set; } = 0;
-
-        /// <summary>
-        /// 操作参数
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; set; } = new();
-
-        /// <summary>
-        /// 错误发生时间
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.Now;
-    }
 
     /// <summary>
     /// 增强的用户友好错误信息

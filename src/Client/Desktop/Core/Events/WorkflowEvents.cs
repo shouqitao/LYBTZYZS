@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Prism.Events;
 using LYBT.Desktop.Core.Models.Consultation;
@@ -70,8 +71,24 @@ namespace LYBT.Desktop.Core.Events
     public class NavigationEventArgs
     {
         public string NavigationPath { get; set; } = string.Empty;
+        public string ViewName { get; set; } = string.Empty;
         public object? Parameters { get; set; }
         public string? Source { get; set; }
+
+        public NavigationEventArgs() { }
+
+        public NavigationEventArgs(string viewName)
+        {
+            ViewName = viewName;
+            NavigationPath = viewName;
+        }
+
+        public NavigationEventArgs(string viewName, object parameters)
+        {
+            ViewName = viewName;
+            NavigationPath = viewName;
+            Parameters = parameters;
+        }
     }
 
     /// <summary>

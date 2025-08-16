@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Events;
+using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Events;
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Events;
 
 namespace LYBT.Desktop.Consultation.Services.Interfaces
@@ -71,7 +73,7 @@ namespace LYBT.Desktop.Consultation.Services.Interfaces
         /// <summary>
         /// 订阅错误事件
         /// </summary>
-        void SubscribeToErrors(Action<ErrorEventArgs> handler);
+        void SubscribeToErrors(Action<ConsultationErrorEventArgs> handler);
 
         /// <summary>
         /// 发布导航请求事件

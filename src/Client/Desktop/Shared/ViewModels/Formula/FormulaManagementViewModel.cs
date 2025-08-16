@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Windows;
 using LYBT.Desktop.Shared;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -211,7 +212,27 @@ namespace LYBT.Desktop.Shared.ViewModels.Formula
                         var formulaDto = result.Parameters.GetValue<FormulaDto>("FormulaData");
                         await ExecuteWithLoadingAsync(async () =>
                         {
-                            var serviceResult = await _formulaService.CreateFormulaAsync(formulaDto);
+                            var createDto = new FormulaCreateDto
+                            {
+                                Name = formulaDto.Name,
+                                Effect = formulaDto.Effect,
+                                Usage = formulaDto.Usage,
+                                IsShared = formulaDto.IsShared,
+                                Instructions = formulaDto.Indications,  // 映射字段
+                                Indications = formulaDto.Indications,
+                                Contraindications = formulaDto.Contraindications,
+                                Preparation = formulaDto.Preparation,
+                                Remark = formulaDto.Remark,
+                                Herbs = formulaDto.Herbs?.Select(h => new FormulaHerbItemCreateDto
+                                {
+                                    HerbId = h.HerbId,
+                                    Quantity = h.Quantity,
+                                    Preparation = h.Preparation,
+                                    Usage = h.Usage,
+                                    SortOrder = h.SortOrder
+                                }).ToList() ?? new List<FormulaHerbItemCreateDto>()
+                            };
+                            var serviceResult = await _formulaService.CreateFormulaAsync(createDto);
                             if (serviceResult.IsSuccess)
                             {
                                 await LoadDataAsync(); // 刷新列表
@@ -258,7 +279,29 @@ namespace LYBT.Desktop.Shared.ViewModels.Formula
                         var formulaDto = result.Parameters.GetValue<FormulaDto>("FormulaData");
                         await ExecuteWithLoadingAsync(async () =>
                         {
-                            var serviceResult = await _formulaService.UpdateFormulaAsync(formulaDto);
+                            var updateDto = new FormulaUpdateDto
+                            {
+                                Id = formulaDto.Id,
+                                Name = formulaDto.Name,
+                                Effect = formulaDto.Effect,
+                                Usage = formulaDto.Usage,
+                                IsShared = formulaDto.IsShared,
+                                Instructions = formulaDto.Indications, // FormulaDto使用Indications字段
+                                Indications = formulaDto.Indications,
+                                Contraindications = formulaDto.Contraindications,
+                                Preparation = formulaDto.Preparation,
+                                Remark = formulaDto.Remark,
+                                Herbs = formulaDto.Herbs?.Select(h => new FormulaHerbItemUpdateDto
+                                {
+                                    Id = h.Id,
+                                    HerbId = h.HerbId,
+                                    Quantity = h.Quantity,
+                                    Preparation = h.Preparation,
+                                    Usage = h.Usage,
+                                    SortOrder = h.SortOrder
+                                }).ToList() ?? new List<FormulaHerbItemUpdateDto>()
+                            };
+                            var serviceResult = await _formulaService.UpdateFormulaAsync(formulaDto.Id, updateDto);
                             if (serviceResult.IsSuccess)
                             {
                                 await LoadDataAsync(); // 刷新列表
@@ -317,14 +360,25 @@ namespace LYBT.Desktop.Shared.ViewModels.Formula
 
             try
             {
-                var copiedFormula = new FormulaDto
+                var copiedFormula = new FormulaCreateDto
                 {
                     Name = $"{SelectedFormula.Name} (副本)",
                     Effect = SelectedFormula.Effect,
                     Usage = SelectedFormula.Usage,
                     IsShared = false,
-                    HerbCount = SelectedFormula.HerbCount,
-                    Remark = SelectedFormula.Remark
+                    Instructions = SelectedFormula.Indications,
+                    Indications = SelectedFormula.Indications,
+                    Contraindications = SelectedFormula.Contraindications,
+                    Preparation = SelectedFormula.Preparation,
+                    Remark = SelectedFormula.Remark,
+                    Herbs = SelectedFormula.Herbs?.Select(h => new FormulaHerbItemCreateDto
+                    {
+                        HerbId = h.HerbId,
+                        Quantity = h.Quantity,
+                        Preparation = h.Preparation,
+                        Usage = h.Usage,
+                        SortOrder = h.SortOrder
+                    }).ToList() ?? new List<FormulaHerbItemCreateDto>()
                 };
 
                 await ExecuteWithLoadingAsync(async () =>

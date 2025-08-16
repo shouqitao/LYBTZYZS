@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -99,7 +100,10 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
             try
             {
                 if (step != WorkflowStep.Prescription || _dataManager == null)
+                {
+                    await Task.CompletedTask;
                     return;
+                }
 
                 _logger.LogDebug("处理处方步骤保存事件");
 
@@ -109,6 +113,10 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                     await _dataManager.SaveAsync();
                     _logger.LogInformation("工作流触发：处方数据已自动保存");
                 }
+                else
+                {
+                    await Task.CompletedTask;
+                }
 
                 // 发布处方保存完成事件
                 PublishPrescriptionSaved();
@@ -116,6 +124,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "处理工作流步骤保存事件失败");
+                await Task.CompletedTask;
             }
         }
 
@@ -163,6 +172,8 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         {
             try
             {
+                bool hasAsyncOperation = false;
+
                 // 如果从处方步骤导航出去，检查是否需要保存
                 if (navInfo.FromStep == "Prescription" && _dataManager != null)
                 {
@@ -172,6 +183,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                         if (autoSave)
                         {
                             await _dataManager.SaveAsync();
+                            hasAsyncOperation = true;
                             _logger.LogInformation("导航触发：处方数据已自动保存");
                         }
                     }
@@ -181,11 +193,19 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                 if (navInfo.ToStep == "Prescription" && _dataManager != null)
                 {
                     await RefreshPrescriptionData(navInfo.MedicalCaseId);
+                    hasAsyncOperation = true;
+                }
+
+                // 确保所有路径都有await
+                if (!hasAsyncOperation)
+                {
+                    await Task.CompletedTask;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "处理导航事件失败");
+                await Task.CompletedTask;
             }
         }
 

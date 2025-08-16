@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -12,7 +13,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 药材名称（冗余字段，提高显示性能）
         /// </summary>
-        public string HerbName { get; set; } = string.Empty;
+        public new string HerbName { get; set; } = string.Empty;
 
         /// <summary>
         /// 单价
@@ -22,7 +23,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 小计金额
         /// </summary>
-        public decimal Subtotal { get; set; }
+        public new decimal Subtotal { get; set; }
 
         /// <summary>
         /// 是否选中（用于批量操作）

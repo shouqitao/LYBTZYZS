@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,7 +9,7 @@ using System.Windows.Data;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 
 namespace LYBT.Desktop.Users.Base
@@ -160,7 +161,7 @@ namespace LYBT.Desktop.Users.Base
         /// <summary>
         /// 加载数据的具体实现
         /// </summary>
-        protected abstract Task<ServiceResult<PagedResult<TModel>>> LoadDataFromServiceAsync(PaginationRequest request);
+        protected abstract Task<ServiceResult<PagedResult<TModel>>> LoadDataFromServiceAsync(PagedQueryBaseDto request);
 
         /// <summary>
         /// 删除数据的具体实现
@@ -236,11 +237,10 @@ namespace LYBT.Desktop.Users.Base
                 IsLoading = true;
                 Items.Clear();
 
-                var request = new PaginationRequest
+                var request = new PagedQueryBaseDto
                 {
-                    CurrentPage = CurrentPage,
-                    PageSize = PageSize,
-                    SearchKeyword = SearchKeyword
+                    PageIndex = CurrentPage,
+                    PageSize = PageSize
                 };
 
                 var result = await LoadDataFromServiceAsync(request);

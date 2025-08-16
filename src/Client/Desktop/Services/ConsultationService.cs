@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Core.Models.Common;
+// using LYBT.Desktop.Core.Models.Common; // 已迁移到 LYBT.Shared.Models.Contracts.Common
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Common;
@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        public async Task<LYBT.Desktop.Core.Models.Common.PagedResult<ConsultationInfo>> SearchConsultationsAsync(PagedQueryBaseDto query)
+        public async Task<PagedResult<ConsultationInfo>> SearchConsultationsAsync(PagedQueryBaseDto query)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace LYBT.Desktop.Services
                 {
                     var consultations = apiResponse.Data.Items?.Select(MapToConsultationInfo).ToList() ?? new List<ConsultationInfo>();
 
-                    return new LYBT.Desktop.Core.Models.Common.PagedResult<ConsultationInfo>
+                    return new PagedResult<ConsultationInfo>
                     {
                         Items = consultations,
                         TotalCount = (int)apiResponse.Data.TotalCount,
@@ -68,7 +68,7 @@ namespace LYBT.Desktop.Services
                     };
                 }
 
-                return new LYBT.Desktop.Core.Models.Common.PagedResult<ConsultationInfo>
+                return new PagedResult<ConsultationInfo>
                 {
                     Items = new List<ConsultationInfo>(),
                     TotalCount = 0,
@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "分页查询看诊记录失败");
-                return new LYBT.Desktop.Core.Models.Common.PagedResult<ConsultationInfo>
+                return new PagedResult<ConsultationInfo>
                 {
                     Items = new List<ConsultationInfo>(),
                     TotalCount = 0,

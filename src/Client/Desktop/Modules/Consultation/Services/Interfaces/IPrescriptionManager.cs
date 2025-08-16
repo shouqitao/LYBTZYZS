@@ -1,9 +1,10 @@
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Herbs;
 
 namespace LYBT.Desktop.Consultation.Services
 {
@@ -30,7 +31,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 添加药材到处方
         /// </summary>
-        bool AddHerbToPrescription(HerbInfo herb, decimal quantity = 10m);
+        bool AddHerbToPrescription(HerbDto herb, decimal quantity = 10m);
 
         /// <summary>
         /// 从处方中移除药材

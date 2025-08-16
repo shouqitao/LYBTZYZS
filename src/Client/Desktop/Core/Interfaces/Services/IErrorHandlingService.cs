@@ -1,6 +1,6 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Exceptions;
 
 namespace LYBT.Desktop.Core.Interfaces.Services

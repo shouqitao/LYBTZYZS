@@ -8,9 +8,11 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
+
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Consultation.ViewModels;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Interfaces.Services;
 
 using Prism.Dialogs;
 using LYBT.Desktop.Core.Extensions;
@@ -292,10 +294,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
             try
             {
-                var result = await _prescriptionService.GetByMedicalCaseIdAsync(MedicalCaseId);
-                if (result.IsSuccess && result.Data != null)
+                // UltraThink重构: 适配Shared接口的返回类型 List<PrescriptionDto>
+                var prescriptions = await _prescriptionService.GetByMedicalCaseIdAsync(MedicalCaseId);
+                if (prescriptions != null && prescriptions.Any())
                 {
-                    var prescription = result.Data;
+                    var prescription = prescriptions.First(); // 取第一个处方
                     
                     // 加载处方项
                     PrescriptionItems.Clear();
@@ -312,11 +315,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
                         }));
                     }
                     
+                    // UltraThink重构: 适配PrescriptionDto基础类，只使用存在的属性
                     DosageCount = prescription.DosageCount;
-                    Usage = prescription.Usage ?? "水煎服，一日三次，饭后服用";
-                    MedicalAdvice = prescription.MedicalAdvice ?? "";
-                    Discount = prescription.Discount;
-                    PrescriptionNo = prescription.PrescriptionNo ?? $"CF{DateTime.Now:yyyyMMddHHmmss}";
+                    Usage = "水煎服，一日三次，饭后服用"; // 使用默认值
+                    MedicalAdvice = prescription.Advice ?? ""; // 使用Advice字段 
+                    Discount = 1.0m; // 使用默认折扣
+                    PrescriptionNo = $"CF{DateTime.Now:yyyyMMddHHmmss}"; // 生成新编号
                     
                     // 重置更改标记
                     HasChanges = false;

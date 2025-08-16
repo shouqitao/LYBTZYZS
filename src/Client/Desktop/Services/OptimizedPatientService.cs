@@ -6,6 +6,7 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Services
 {
@@ -78,7 +79,7 @@ namespace LYBT.Desktop.Services
             return ServiceResult<List<PatientDetailDto>>.Success(patients);
         }
 
-        public async Task<LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>> GetPagedAsync(PatientPagedQueryDto query)
+        public async Task<PagedResult<PatientInfo>> GetPagedAsync(PatientPagedQueryDto query)
         {
             _logger.LogInformation("分页查询患者");
             await Task.Delay(150);
@@ -89,7 +90,7 @@ namespace LYBT.Desktop.Services
                 new PatientInfo { Id = Guid.NewGuid(), Name = "患者2" }
             };
             
-            return new LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>
+            return new PagedResult<PatientInfo>
             {
                 Items = items,
                 TotalCount = 2,

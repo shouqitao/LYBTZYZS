@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,7 +9,7 @@ using LYBT.Shared.Models.Core;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -16,7 +17,8 @@ using Prism.Commands;
 using Prism.Dialogs;
 using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Users;
+// UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
+using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -57,23 +59,23 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<UserInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
+        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<UserInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
                 var query = new UserPagedQueryDto
                 {
-                    PageIndex = request.CurrentPage,
+                    PageIndex = request.PageIndex,
                     PageSize = request.PageSize,
                     Keyword = SearchKeyword
                 };
 
                 var result = await Service.SearchUsersAsync(query);
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<UserInfo>>.Success(result);
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<UserInfo>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<UserInfo>>.Failure($"加载用户列表失败: {ex.Message}");
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<UserInfo>>.Failure($"加载用户列表失败: {ex.Message}");
             }
         }
 

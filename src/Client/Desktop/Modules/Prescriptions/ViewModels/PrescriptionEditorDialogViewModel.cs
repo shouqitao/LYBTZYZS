@@ -4,12 +4,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Herbs;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Services.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services.Business;
 using SharedEnums = LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -242,33 +243,33 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 IsLoading = true;
                 StatusMessage = "正在加载处方...";
 
-                var result = await _prescriptionService.GetByIdAsync(prescriptionId);
-                if (result.IsSuccess && result.Data != null)
+                var prescriptionDto = await _prescriptionService.GetByIdAsync(prescriptionId);
+                if (prescriptionDto != null)
                 {
-                    // Convert PrescriptionDetailDto to PrescriptionInfo
+                    // Convert PrescriptionDto to PrescriptionInfo
                     Prescription = new PrescriptionInfo
                     {
-                        Id = result.Data.Id,
-                        PatientId = result.Data.PatientId,
-                        PatientName = result.Data.PatientName ?? string.Empty,
-                        UserId = result.Data.DoctorId,
-                        DoctorName = result.Data.DoctorName ?? string.Empty,
-                        PrescriptionNo = result.Data.PrescriptionNo ?? GeneratePrescriptionNo(),
-                        Diagnosis = result.Data.Diagnosis,
-                        DosageCount = result.Data.DosageCount,
-                        SingleDosePrice = result.Data.SingleDosePrice,
-                        TotalPrice = result.Data.TotalPrice,
-                        TotalWeight = result.Data.TotalWeight,
-                        Status = result.Data.Status,
-                        CreateTime = result.Data.CreateTime,
-                        UpdateTime = result.Data.UpdateTime,
-                        Advice = result.Data.Advice,
-                        Remark = result.Data.Remark
+                        Id = prescriptionDto.Id,
+                        PatientId = prescriptionDto.PatientId,
+                        PatientName = prescriptionDto.PatientName ?? string.Empty,
+                        UserId = prescriptionDto.DoctorId,
+                        DoctorName = prescriptionDto.DoctorName ?? string.Empty,
+                        PrescriptionNo = (prescriptionDto as PrescriptionDetailDto)?.PrescriptionNo ?? GeneratePrescriptionNo(),
+                        Diagnosis = prescriptionDto.Diagnosis,
+                        DosageCount = prescriptionDto.DosageCount,
+                        SingleDosePrice = prescriptionDto.SingleDosePrice,
+                        TotalPrice = prescriptionDto.TotalPrice,
+                        TotalWeight = prescriptionDto.TotalWeight,
+                        Status = prescriptionDto.Status,
+                        CreateTime = prescriptionDto.CreateTime,
+                        UpdateTime = prescriptionDto.UpdateTime,
+                        Advice = prescriptionDto.Advice,
+                        Remark = (prescriptionDto as PrescriptionDetailDto)?.Remark
                     };
                     // Map items
-                    if (result.Data.Items != null)
+                    if (prescriptionDto.Items != null)
                     {
-                        var items = result.Data.Items.Select(dto => new PrescriptionItemInfo
+                        var items = prescriptionDto.Items.Select(dto => new PrescriptionItemInfo
                         {
                             Id = dto.Id,
                             HerbId = dto.HerbId,
@@ -287,7 +288,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 }
                 else
                 {
-                    StatusMessage = result.ErrorMessage ?? "加载处方失败";
+                    StatusMessage = "加载处方失败";
                 }
             }
             catch (Exception ex)
@@ -380,15 +381,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             Remark = item.Remark
                         }).ToList()
                     };
-                    var result = await _prescriptionService.UpdateAsync(updateDto);
-                    if (result.IsSuccess)
+                    var updatedDto = await _prescriptionService.UpdateAsync(Prescription.Id, updateDto);
+                    if (updatedDto != null)
                     {
                         StatusMessage = "处方已更新";
                         // TODO: Close dialog with success
                     }
                     else
                     {
-                        StatusMessage = result.ErrorMessage ?? "更新失败";
+                        StatusMessage = "更新失败";
                     }
                 }
                 else
@@ -415,15 +416,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             Remark = item.Remark
                         }).ToList()
                     };
-                    var result = await _prescriptionService.CreateAsync(createDto);
-                    if (result.IsSuccess)
+                    var createdDto = await _prescriptionService.CreateAsync(createDto);
+                    if (createdDto != null)
                     {
                         StatusMessage = "处方已创建";
                         // TODO: Close dialog with success
                     }
                     else
                     {
-                        StatusMessage = result.ErrorMessage ?? "创建失败";
+                        StatusMessage = "创建失败";
                     }
                 }
             }

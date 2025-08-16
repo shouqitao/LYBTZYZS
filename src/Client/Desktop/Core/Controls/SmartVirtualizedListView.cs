@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -221,12 +222,12 @@ namespace LYBT.Desktop.Core.Controls
             // 设置附加属性
             ScrollViewer.SetCanContentScroll(_listBox, true);
             VirtualizingPanel.SetIsVirtualizing(_listBox, true);
-            VirtualizingPanel.SetVirtualizationMode(_listBox, VirtualizationMode.Recycling);
+            VirtualizingPanel.SetVirtualizationMode(_listBox, System.Windows.Controls.VirtualizationMode.Recycling);
             
             // 设置ItemsPanel
             var factory = new FrameworkElementFactory(typeof(VirtualizingStackPanel));
             factory.SetValue(VirtualizingStackPanel.IsVirtualizingProperty, true);
-            factory.SetValue(VirtualizingStackPanel.VirtualizationModeProperty, VirtualizationMode.Recycling);
+            factory.SetValue(VirtualizingStackPanel.VirtualizationModeProperty, System.Windows.Controls.VirtualizationMode.Recycling);
             _listBox.ItemsPanel = new ItemsPanelTemplate(factory);
 
             // 绑定属性

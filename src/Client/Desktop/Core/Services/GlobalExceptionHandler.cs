@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -5,7 +6,7 @@ using System.Windows;
 using System.Windows.Threading;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Logging;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services
@@ -15,10 +16,9 @@ namespace LYBT.Desktop.Core.Services
     /// </summary>
     public class GlobalExceptionHandler : IGlobalExceptionHandler
     {
-        private readonly IStructuredLoggingService _loggingService;
+        private readonly ILogger<GlobalExceptionHandler> _logger;
         private readonly IErrorClassifier _errorClassifier;
         private readonly IUserNotificationService _notificationService;
-        private readonly ILogger<GlobalExceptionHandler>? _logger;
         
         private bool _isRegistered = false;
         private readonly object _registrationLock = new();
@@ -29,15 +29,13 @@ namespace LYBT.Desktop.Core.Services
         private DateTime _lastExceptionTime = DateTime.MinValue;
         
         public GlobalExceptionHandler(
-            IStructuredLoggingService loggingService,
             IErrorClassifier errorClassifier,
             IUserNotificationService notificationService,
-            ILogger<GlobalExceptionHandler>? logger = null)
+            ILogger<GlobalExceptionHandler> logger)
         {
-            _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
             _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
             _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         
         /// <summary>
@@ -73,7 +71,7 @@ namespace LYBT.Desktop.Core.Services
                     #endif
                     
                     _isRegistered = true;
-                    _loggingService.LogInformation("全局异常处理器注册成功");
+                    _logger.LogInformation("全局异常处理器注册成功");
                 }
                 catch (Exception ex)
                 {
@@ -106,7 +104,7 @@ namespace LYBT.Desktop.Core.Services
                 #endif
                 
                 _isRegistered = false;
-                _loggingService.LogInformation("全局异常处理器注销成功");
+                _logger.LogInformation("全局异常处理器注销成功");
             }
         }
         
@@ -184,7 +182,7 @@ namespace LYBT.Desktop.Core.Services
             var exception = e.ExceptionObject as Exception ?? new Exception("未知的非托管异常");
             var isTerminating = e.IsTerminating;
             
-            _loggingService.LogCritical(exception, "AppDomain未处理异常，应用即将终止: {IsTerminating}", isTerminating);
+            _logger.LogCritical(exception, "AppDomain未处理异常，应用即将终止: {IsTerminating}", isTerminating);
             
             var handled = HandleExceptionAsync(exception, ExceptionSource.AppDomain).Result;
             
@@ -200,7 +198,7 @@ namespace LYBT.Desktop.Core.Services
         
         private void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            _loggingService.LogError(e.Exception, "Task未观察异常");
+            _logger.LogError(e.Exception, "Task未观察异常");
             
             var handled = HandleExceptionAsync(e.Exception, ExceptionSource.TaskScheduler).Result;
             
@@ -213,7 +211,7 @@ namespace LYBT.Desktop.Core.Services
         
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            _loggingService.LogError(e.Exception, "WPF Dispatcher未处理异常");
+            _logger.LogError(e.Exception, "WPF Dispatcher未处理异常");
             
             var handled = HandleExceptionAsync(e.Exception, ExceptionSource.Dispatcher).Result;
             
@@ -229,7 +227,7 @@ namespace LYBT.Desktop.Core.Services
             // 仅在调试模式下记录第一次机会异常
             if (e.Exception is AppException appEx)
             {
-                _loggingService.LogTrace("第一次机会异常: {Type} - {Message}", 
+                _logger.LogTrace("第一次机会异常: {Type} - {Message}", 
                     appEx.Category, appEx.Message);
             }
         }
@@ -250,7 +248,7 @@ namespace LYBT.Desktop.Core.Services
                 _ => LogLevel.Error
             };
             
-            _loggingService.LogError(exception,
+            _logger.LogError(exception,
                 "异常处理 - 来源: {Source}, 类别: {Category}, 严重程度: {Severity}, 错误码: {ErrorCode}",
                 source, exception.Category, exception.Severity, exception.ErrorCode);
         }
@@ -312,7 +310,7 @@ namespace LYBT.Desktop.Core.Services
         
         private async Task ExecuteRecoveryStrategyAsync(AppException exception)
         {
-            _loggingService.LogInformation("执行恢复策略: {Category}", exception.Category);
+            _logger.LogInformation("执行恢复策略: {Category}", exception.Category);
             
             switch (exception.Category)
             {
@@ -331,7 +329,7 @@ namespace LYBT.Desktop.Core.Services
                     
                 case ErrorCategory.Configuration:
                     // 尝试重新加载配置
-                    _loggingService.LogInformation("尝试重新加载配置");
+                    _logger.LogInformation("尝试重新加载配置");
                     // TODO: 重新加载配置
                     break;
                     
@@ -362,7 +360,7 @@ namespace LYBT.Desktop.Core.Services
         
         private async Task InitiateGracefulShutdownAsync(AppException exception)
         {
-            _loggingService.LogCritical(exception, "启动优雅关闭流程");
+            _logger.LogCritical(exception, "启动优雅关闭流程");
             
             try
             {
@@ -397,7 +395,7 @@ namespace LYBT.Desktop.Core.Services
         {
             try
             {
-                _loggingService.LogInformation("保存关键数据");
+                _logger.LogInformation("保存关键数据");
                 // TODO: 实现数据保存逻辑
             }
             catch (Exception ex)
@@ -420,7 +418,7 @@ namespace LYBT.Desktop.Core.Services
                 };
                 
                 // TODO: 保存崩溃报告到文件
-                _loggingService.LogInformation("崩溃报告已生成");
+                _logger.LogInformation("崩溃报告已生成");
             }
             catch (Exception ex)
             {

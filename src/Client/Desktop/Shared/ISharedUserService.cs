@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Shared
@@ -17,7 +18,7 @@ namespace LYBT.Desktop.Shared
         /// </summary>
         /// <param name="dto">用户信息</param>
         /// <returns>创建的用户信息</returns>
-        Task<ServiceResult<UserDto>> CreateUserAsync(UserDto dto);
+        Task<ServiceResult<UserDto>> CreateUserAsync(UserCreateDto dto);
 
         /// <summary>
         /// 根据ID获取用户信息
@@ -31,7 +32,7 @@ namespace LYBT.Desktop.Shared
         /// </summary>
         /// <param name="dto">更新的用户信息</param>
         /// <returns>更新结果</returns>
-        Task<ServiceResult> UpdateUserAsync(UserDto dto);
+        Task<ServiceResult> UpdateUserAsync(Guid id, UserUpdateDto dto);
 
         /// <summary>
         /// 启用用户账号
@@ -90,6 +91,46 @@ namespace LYBT.Desktop.Shared
         /// </summary>
         /// <returns>在线用户列表</returns>
         Task<ServiceResult<List<UserDto>>> GetOnlineUsersAsync();
+
+        /// <summary>
+        /// 验证用户权限
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="permission">权限名称</param>
+        /// <returns>是否有权限</returns>
+        /// <summary>
+        /// 分页查询用户列表
+        /// </summary>
+        /// <param name="queryParams">查询参数</param>
+        /// <returns>分页用户列表</returns>
+        Task<ServiceResult<PagedResult<UserDto>>> GetUsersAsync(Dictionary<string, object> queryParams);
+
+        /// <summary>
+        /// 根据ID获取单个用户信息
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        /// <returns>用户详细信息</returns>
+        Task<ServiceResult<UserDto>> GetUserAsync(Guid id);
+
+        /// <summary>
+        /// 删除用户
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        /// <returns>删除结果</returns>
+        Task<ServiceResult> DeleteUserAsync(Guid id);
+
+        /// <summary>
+        /// 获取用户统计信息
+        /// </summary>
+        /// <returns>统计信息</returns>
+        Task<ServiceResult<UserStatisticsDto>> GetUserStatisticsAsync();
+
+        /// <summary>
+        /// 切换用户状态（启用/禁用）
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <returns>切换结果</returns>
+        Task<ServiceResult> ToggleUserStatusAsync(Guid userId);
 
         /// <summary>
         /// 验证用户权限

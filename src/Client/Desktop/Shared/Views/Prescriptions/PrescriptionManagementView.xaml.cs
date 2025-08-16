@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Enums;
 using LYBT.Desktop.Shared.ViewModels.Prescriptions;

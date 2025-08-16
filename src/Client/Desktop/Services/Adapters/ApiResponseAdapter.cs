@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Refit;
 using LYBT.Desktop.Core.Models;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Desktop.Services.Adapters

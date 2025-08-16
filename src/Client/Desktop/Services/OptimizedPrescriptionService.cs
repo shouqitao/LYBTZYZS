@@ -25,12 +25,12 @@ namespace LYBT.Desktop.Services
             _logger = logger;
         }
 
-        public async Task<LYBT.Desktop.Core.Models.Common.PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request)
+        public async Task<PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request)
         {
             _logger.LogInformation("分页查询处方: {PageIndex}/{PageSize}", request.PageIndex, request.PageSize);
             await Task.Delay(100);
             
-            return new LYBT.Desktop.Core.Models.Common.PagedResult<PrescriptionDto>
+            return new PagedResult<PrescriptionDto>
             {
                 Items = new List<PrescriptionDto>
                 {

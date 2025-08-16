@@ -8,8 +8,8 @@ using System.Windows;
 using Refit;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Common;
-using ErrorSeverity = LYBT.Desktop.Core.Models.Common.ErrorSeverity;
+using LYBT.Shared.Models.Contracts.Common;
+using ErrorSeverity = LYBT.Shared.Models.Contracts.Common.ErrorSeverity;
 using TimeoutException = System.TimeoutException;
 
 namespace LYBT.Desktop.Services
@@ -204,15 +204,15 @@ namespace LYBT.Desktop.Services
             };
         }
         
-        private ErrorSeverity ConvertSeverity(LYBT.Desktop.Core.Models.Common.ErrorSeverity severity)
+        private ErrorSeverity ConvertSeverity(LYBT.Shared.Models.Contracts.Common.ErrorSeverity severity)
         {
             return severity switch
             {
-                LYBT.Desktop.Core.Models.Common.ErrorSeverity.Info => ErrorSeverity.Info,
-                LYBT.Desktop.Core.Models.Common.ErrorSeverity.Warning => ErrorSeverity.Warning,
-                LYBT.Desktop.Core.Models.Common.ErrorSeverity.Error => ErrorSeverity.Error,
-                LYBT.Desktop.Core.Models.Common.ErrorSeverity.Critical => ErrorSeverity.Critical,
-                LYBT.Desktop.Core.Models.Common.ErrorSeverity.Fatal => ErrorSeverity.Fatal,
+                LYBT.Shared.Models.Contracts.Common.ErrorSeverity.Info => ErrorSeverity.Info,
+                LYBT.Shared.Models.Contracts.Common.ErrorSeverity.Warning => ErrorSeverity.Warning,
+                LYBT.Shared.Models.Contracts.Common.ErrorSeverity.Error => ErrorSeverity.Error,
+                LYBT.Shared.Models.Contracts.Common.ErrorSeverity.Critical => ErrorSeverity.Critical,
+                LYBT.Shared.Models.Contracts.Common.ErrorSeverity.Fatal => ErrorSeverity.Fatal,
                 _ => ErrorSeverity.Error
             };
         }

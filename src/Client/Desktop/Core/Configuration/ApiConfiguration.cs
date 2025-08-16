@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Microsoft.Extensions.Configuration;
 using System.IO;

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    
+    <!-- 登录界面字符串资源 -->
+    <data name="WindowTitle" xml:space="preserve">
+        <value>凌隐宝堂中医诊所 - 管理系统</value>
+    </data>
+    <data name="BrandName" xml:space="preserve">
+        <value>凌隐宝堂中医诊所</value>
+    </data>
+    <data name="SystemName" xml:space="preserve">
+        <value>管理系统</value>
+    </data>
+    <data name="UsernameLabel" xml:space="preserve">
+        <value>用户名</value>
+    </data>
+    <data name="PasswordLabel" xml:space="preserve">
+        <value>密码</value>
+    </data>
+    <data name="RememberMe" xml:space="preserve">
+        <value>记住我</value>
+    </data>
+    <data name="LoginButton" xml:space="preserve">
+        <value>登录系统</value>
+    </data>
+    <data name="LoadingText" xml:space="preserve">
+        <value>正在验证身份...</value>
+    </data>
+    <data name="ApiOnline" xml:space="preserve">
+        <value>✅ API连接正常</value>
+    </data>
+    <data name="ApiOffline" xml:space="preserve">
+        <value>❌ API服务不可用</value>
+    </data>
+    <data name="ApiChecking" xml:space="preserve">
+        <value>正在检测API连接...</value>
+    </data>
+    
+    <!-- 无障碍标签 -->
+    <data name="UsernameInputA11y" xml:space="preserve">
+        <value>用户名输入框</value>
+    </data>
+    <data name="PasswordInputA11y" xml:space="preserve">
+        <value>密码输入框</value>
+    </data>
+    <data name="LoginButtonA11y" xml:space="preserve">
+        <value>登录系统按钮</value>
+    </data>
+    <data name="ApiStatusA11y" xml:space="preserve">
+        <value>API连接状态</value>
+    </data>
+    
+    <!-- 帮助文本 -->
+    <data name="UsernameHelp" xml:space="preserve">
+        <value>请输入您的用户名</value>
+    </data>
+    <data name="PasswordHelp" xml:space="preserve">
+        <value>请输入您的密码</value>
+    </data>
+    <data name="RememberMeHelp" xml:space="preserve">
+        <value>勾选后将保存登录信息</value>
+    </data>
+    <data name="LoginButtonHelp" xml:space="preserve">
+        <value>点击登录到管理系统</value>
+    </data>
+</root>

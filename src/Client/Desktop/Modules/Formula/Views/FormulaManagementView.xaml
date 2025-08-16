@@ -54,8 +54,16 @@
                 <Button Grid.Column="2" Content="清空筛选" Command="{Binding ClearFiltersCommand}"
                         Padding="10,5" Margin="0,0,10,0" />
 
-                <!-- 操作按钮 -->
+                <!-- 操作按钮 - UltraThink Phase 3.4: 增强功能集成 -->
                 <StackPanel Grid.Column="4" Orientation="Horizontal">
+                    <Button Content="📥导入模板" Command="{Binding ImportTemplatesCommand}"
+                            Padding="8,5" Margin="0,0,5,0"
+                            Background="#6C757D" Foreground="White"
+                            ToolTip="从Excel/CSV文件导入验方模板" />
+                    <Button Content="📄导出模板" Command="{Binding ExportTemplateCommand}"
+                            Padding="8,5" Margin="0,0,5,0"
+                            Background="#17A2B8" Foreground="White"
+                            ToolTip="下载验方模板导入格式" />
                     <Button Content="新增验方" Command="{Binding AddFormulaCommand}"
                             Padding="10,5" Margin="0,0,5,0"
                             Background="{DynamicResource SuccessColorBrush}"
@@ -96,19 +104,23 @@
                 <DataGridTemplateColumn Header="操作" Width="200">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
+                            <!-- UltraThink Phase 3.4: 增强操作功能 -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="查看" 
-                                        Command="{Binding DataContext.ViewFormulaCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                <Button Content="📋查看" 
+                                        Command="{Binding DataContext.ViewTemplateCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
-                                        Margin="2" Padding="5,2" />
+                                        Margin="2" Padding="5,2"
+                                        ToolTip="查看验方模板详情" />
                                 <Button Content="编辑"
                                         Command="{Binding DataContext.EditFormulaCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Margin="2" Padding="5,2" />
-                                <Button Content="复制"
-                                        Command="{Binding DataContext.CopyFormulaCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                <Button Content="📋复制"
+                                        Command="{Binding DataContext.CopyTemplateCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
-                                        Margin="2" Padding="5,2" />
+                                        Margin="2" Padding="5,2"
+                                        Background="#28A745" Foreground="White"
+                                        ToolTip="复制验方模板" />
                                 <Button Content="删除"
                                         Command="{Binding DataContext.DeleteFormulaCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"

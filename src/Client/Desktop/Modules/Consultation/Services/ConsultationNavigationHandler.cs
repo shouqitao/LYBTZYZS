@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;

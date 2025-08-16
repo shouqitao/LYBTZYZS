@@ -1,10 +1,13 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Consultation;
-using LYBT.Desktop.Core.Models.Herbs;
-using LYBT.Desktop.Core.Models.Formulas;
+
+// UltraThink重构: 统一HerbInfo和HerbDto，FormulaInfo和FormulaDto，使用Dto作为统一模型
+using LYBT.Shared.Models.Contracts.Herbs;
+using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
 
 namespace LYBT.Desktop.Consultation.Services.Interfaces
 {
@@ -23,7 +26,7 @@ namespace LYBT.Desktop.Consultation.Services.Interfaces
         /// 加载中药材列表
         /// </summary>
         /// <param name="forceRefresh">是否强制刷新缓存</param>
-        Task<List<HerbInfo>> LoadHerbsAsync(bool forceRefresh = false);
+        Task<List<HerbDto>> LoadHerbsAsync(bool forceRefresh = false);
 
         /// <summary>
         /// 加载验方模板列表

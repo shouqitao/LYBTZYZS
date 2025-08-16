@@ -1,9 +1,10 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Patients;
-using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.ViewModels.Base;
 using Prism.Commands;
 using Prism.Dialogs;
 using LYBT.Desktop.Core.Extensions;
@@ -15,7 +16,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     /// <summary>
     /// 创建医疗案例对话框视图模型
     /// </summary>
-    public class CreateMedicalCaseViewModel : BaseViewModel // Temporarily remove IDialogAware due to Prism 9 compatibility issues
+    public class CreateMedicalCaseViewModel : ServiceViewModel // Temporarily remove IDialogAware due to Prism 9 compatibility issues
     {
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPatientService _patientService;

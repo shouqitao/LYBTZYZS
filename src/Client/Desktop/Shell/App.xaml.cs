@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.DryIoc;
 using System;
@@ -7,7 +8,7 @@ using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Auth;
-using LYBT.Desktop.Admin;
+// using LYBT.Desktop.Admin; // 已整合到AdminWorkbench
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Shared;
@@ -71,24 +72,10 @@ namespace LYBT.Desktop.Shell
 
         protected override void ConfigureModuleCatalog(Prism.Modularity.IModuleCatalog moduleCatalog)
         {
-            // 配置模块目录 - 按依赖顺序注册
+            // UltraThink 性能优化：实现模块延迟加载策略
+            // 只有认证模块在启动时加载，其他模块按需加载
             
-            // 1. 核心业务模块（独立，无依赖）
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(UsersModule),
-                ModuleType = typeof(UsersModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
-            });
-
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(PatientsModule),
-                ModuleType = typeof(PatientsModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
-            });
-
-            // 2. 传统模块（保持向后兼容）
+            // 1. 启动必需模块（立即加载）
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(AuthenticationModule),
@@ -96,33 +83,44 @@ namespace LYBT.Desktop.Shell
                 InitializationMode = InitializationMode.WhenAvailable
             });
 
+            // 2. 核心业务模块（按需加载）
             moduleCatalog.AddModule(new ModuleInfo
             {
-                ModuleName = nameof(SystemManagementModule),
-                ModuleType = typeof(SystemManagementModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
+                ModuleName = nameof(UsersModule),
+                ModuleType = typeof(UsersModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.OnDemand
             });
+
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(PatientsModule),
+                ModuleType = typeof(PatientsModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.OnDemand
+            });
+
+            // 3. 功能模块（延迟加载）
+            // SystemManagementModule已整合到SystemWorkbenchModule
 
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(ConsultationModule),
                 ModuleType = typeof(ConsultationModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
+                InitializationMode = InitializationMode.OnDemand
             });
 
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(MedicalCaseModule),
                 ModuleType = typeof(MedicalCaseModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
+                InitializationMode = InitializationMode.OnDemand
             });
 
-            // 3. 工作台模块（依赖业务模块，最后初始化）
+            // 4. 工作台模块（延迟加载 + 依赖管理）
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(SystemWorkbenchModule),
                 ModuleType = typeof(SystemWorkbenchModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable,
+                InitializationMode = InitializationMode.OnDemand,
                 DependsOn = new System.Collections.ObjectModel.Collection<string> { nameof(UsersModule), nameof(PatientsModule) }
             });
 
@@ -130,7 +128,7 @@ namespace LYBT.Desktop.Shell
             {
                 ModuleName = nameof(ConsultationWorkbenchModule),
                 ModuleType = typeof(ConsultationWorkbenchModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable,
+                InitializationMode = InitializationMode.OnDemand,
                 DependsOn = new System.Collections.ObjectModel.Collection<string> { nameof(PatientsModule), nameof(ConsultationModule), nameof(MedicalCaseModule) }
             });
 

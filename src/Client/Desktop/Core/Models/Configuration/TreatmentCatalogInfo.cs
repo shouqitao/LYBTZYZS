@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Core;
 using System;
 using System.Collections.Generic;

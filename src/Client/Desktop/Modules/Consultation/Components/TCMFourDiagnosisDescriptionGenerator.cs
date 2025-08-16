@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.Linq;
 using LYBT.Desktop.Consultation.ViewModels;
 

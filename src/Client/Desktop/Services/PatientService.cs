@@ -6,6 +6,7 @@ using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Services.Interfaces;
@@ -123,7 +124,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        public async Task<LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>> GetPagedAsync(PatientPagedQueryDto query)
+        public async Task<PagedResult<PatientInfo>> GetPagedAsync(PatientPagedQueryDto query)
         {
             try
             {
@@ -138,7 +139,7 @@ namespace LYBT.Desktop.Services
                 if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
                 {
                     var patientInfos = serviceResult.Data.Data.Items.Select(dto => ConvertToPatientInfo(ApiResponseAdapter.ToPatientDetailDto(dto))).ToList();
-                    return new LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>
+                    return new PagedResult<PatientInfo>
                     {
                         Items = patientInfos,
                         TotalCount = (int)serviceResult.Data.Data.TotalCount,
@@ -147,7 +148,7 @@ namespace LYBT.Desktop.Services
                     };
                 }
 
-                return new LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>
+                return new PagedResult<PatientInfo>
                 {
                     Items = new List<PatientInfo>(),
                     TotalCount = 0,
@@ -158,7 +159,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return new LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>
+                return new PagedResult<PatientInfo>
                 {
                     Items = new List<PatientInfo>(),
                     TotalCount = 0,

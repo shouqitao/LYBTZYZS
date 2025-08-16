@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -439,7 +440,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             var firstStep = Steps.FirstOrDefault(s => s.CompletionTime.HasValue);
             var lastStep = Steps.LastOrDefault(s => s.CompletionTime.HasValue);
 
-            if (firstStep != null && lastStep != null)
+            if (firstStep != null && lastStep != null && 
+                firstStep.CompletionTime.HasValue && lastStep.CompletionTime.HasValue)
             {
                 return lastStep.CompletionTime.Value - firstStep.CompletionTime.Value;
             }

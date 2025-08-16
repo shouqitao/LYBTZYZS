@@ -1,8 +1,9 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.MedicalCase;
-using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
@@ -17,7 +18,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     /// <summary>
     /// 医疗案例详情视图模型
     /// </summary>
-    public class MedicalCaseDetailViewModel : BaseViewModel, INavigationAware
+    public class MedicalCaseDetailViewModel : ServiceViewModel, INavigationAware
     {
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IDialogService _dialogService;

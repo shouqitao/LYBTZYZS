@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
 using LYBT.Desktop.Formula.Views;
@@ -17,8 +18,8 @@ namespace LYBT.Desktop.Formula
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册视图导航
-            containerRegistry.RegisterForNavigation<FormulaManagementView, FormulaManagementViewModel>();
+            // UltraThink Phase 3.4: 注册增强版验方管理ViewModel
+            containerRegistry.RegisterForNavigation<FormulaManagementView, FormulaManagementViewModelEnhanced>();
             
             // 注册对话框
             containerRegistry.RegisterForNavigation<AddFormulaDialog, AddFormulaDialogViewModel>();

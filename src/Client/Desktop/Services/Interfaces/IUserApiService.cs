@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Common;
 using LYBT.Desktop.Core.Models;
@@ -17,7 +18,7 @@ namespace LYBT.Desktop.Services.Interfaces
         /// 获取用户列表（支持分页和查询）
         /// </summary>
         [Get("/api/v1/users")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<PagedData<UserDto>>>> GetUsersAsync(
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<PagedData<UserDto>>>> GetUsersAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null,
@@ -54,43 +55,43 @@ namespace LYBT.Desktop.Services.Interfaces
         /// 切换用户状态
         /// </summary>
         [Patch("/api/v1/users/{id}/toggle-status")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<object>>> ToggleStatusAsync(Guid id);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> ToggleStatusAsync(Guid id);
 
         /// <summary>
         /// 批量禁用用户
         /// </summary>
         [Patch("/api/v1/users/batch-disable")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<object>>> BatchDisableAsync([Body] BatchIdsDto dto);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> BatchDisableAsync([Body] BatchIdsDto dto);
 
         /// <summary>
         /// 批量启用用户
         /// </summary>
         [Patch("/api/v1/users/batch-enable")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<object>>> BatchEnableAsync([Body] BatchIdsDto dto);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> BatchEnableAsync([Body] BatchIdsDto dto);
 
         /// <summary>
         /// 重置用户密码
         /// </summary>
         [Post("/api/v1/users/reset-password/{id}")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<object>>> ResetPasswordAsync(Guid id);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> ResetPasswordAsync(Guid id);
 
         /// <summary>
         /// 修改密码
         /// </summary>
         [Patch("/api/v1/users/password")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<object>>> ChangePasswordAsync([Body] ChangePasswordDto dto);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> ChangePasswordAsync([Body] ChangePasswordDto dto);
 
         /// <summary>
         /// 修改个人信息
         /// </summary>
         [Put("/api/v1/users/profile")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<object>>> ChangeProfileAsync([Body] ChangeProfileDto dto);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> ChangeProfileAsync([Body] ChangeProfileDto dto);
 
         /// <summary>
         /// 获取所有角色
         /// </summary>
         [Get("/api/v1/users/roles")]
-        Task<Refit.ApiResponse<LYBT.Desktop.Core.Models.ApiResponse<IEnumerable<object>>>> GetRolesAsync();
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<IEnumerable<object>>>> GetRolesAsync();
 
         /// <summary>
         /// 获取活跃用户列表

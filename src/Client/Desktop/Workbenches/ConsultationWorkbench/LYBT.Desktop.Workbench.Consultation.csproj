@@ -19,6 +19,8 @@
 		<ProjectReference Include="..\Core\LYBT.Desktop.Workbench.Core.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
 		<ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+		<!-- UltraThink Phase 3.4: 集成Formula模块功能 -->
+		<ProjectReference Include="..\..\Modules\Formula\LYBT.Desktop.Formula.csproj" />
 	</ItemGroup>
 
 </Project>

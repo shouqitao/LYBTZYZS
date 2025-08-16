@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.Models

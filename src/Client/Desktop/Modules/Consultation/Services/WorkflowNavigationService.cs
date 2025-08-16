@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -49,11 +50,13 @@ namespace LYBT.Desktop.Consultation.Services
                     $"{viewName}{navigationParameters}");
                 
                 _logger.LogInformation($"导航到工作流步骤: {step}");
+                await Task.CompletedTask;
                 return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"导航到工作流步骤 {step} 失败");
+                await Task.CompletedTask;
                 return false;
             }
         }
@@ -66,6 +69,7 @@ namespace LYBT.Desktop.Consultation.Services
             var parameters = patientId.HasValue ? $"?PatientId={patientId}" : "";
             _regionManager.RequestNavigate("WorkflowContentRegion", 
                 $"PatientSelectionView{parameters}");
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -75,6 +79,7 @@ namespace LYBT.Desktop.Consultation.Services
         {
             _regionManager.RequestNavigate("WorkflowContentRegion", 
                 $"TCMFourDiagnosisView?MedicalCaseId={medicalCaseId}&PatientId={patientId}");
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -84,6 +89,7 @@ namespace LYBT.Desktop.Consultation.Services
         {
             _regionManager.RequestNavigate("WorkflowContentRegion", 
                 $"DifferentiationView?MedicalCaseId={medicalCaseId}&ConsultationId={consultationId}");
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -93,6 +99,7 @@ namespace LYBT.Desktop.Consultation.Services
         {
             _regionManager.RequestNavigate("WorkflowContentRegion", 
                 $"PrescriptionView?MedicalCaseId={medicalCaseId}&ConsultationId={consultationId}");
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -102,6 +109,7 @@ namespace LYBT.Desktop.Consultation.Services
         {
             _regionManager.RequestNavigate("ContentRegion", "HomeView");
             _logger.LogInformation("导航回主页");
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -111,6 +119,7 @@ namespace LYBT.Desktop.Consultation.Services
         {
             _regionManager.RequestNavigate("ContentRegion", "MedicalCaseListView");
             _logger.LogInformation("导航到医疗案例列表");
+            await Task.CompletedTask;
         }
 
         #endregion

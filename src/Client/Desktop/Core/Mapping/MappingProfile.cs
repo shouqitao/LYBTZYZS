@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using AutoMapper;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Desktop.Core.Models.Patients;

@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using LYBT.Desktop.Core.Models.Users;
 using System.Collections.Generic;
@@ -5,6 +6,9 @@ using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
+
+// UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
+using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {
@@ -16,7 +20,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>
         /// 搜索用户
         /// </summary>
-        Task<Models.Common.PagedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request);
+        Task<LYBT.Shared.Models.Contracts.Common.PagedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request);
 
         /// <summary>
         /// 新增用户

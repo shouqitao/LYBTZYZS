@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -5,7 +6,7 @@ using Prism.Commands;
 using Prism.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Exceptions;
 
 namespace LYBT.Desktop.Core.ViewModels.Base

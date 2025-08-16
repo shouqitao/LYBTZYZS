@@ -4,11 +4,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Core.Models.Herbs;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
@@ -156,7 +158,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                     AvailableHerbs.Clear();
                     foreach (var herb in herbs)
                     {
-                        AvailableHerbs.Add(herb);
+                        AvailableHerbs.Add(herb.ToHerbInfo());
                     }
                 }
             }

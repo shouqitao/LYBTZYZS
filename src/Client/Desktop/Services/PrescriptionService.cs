@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+// using LYBT.Desktop.Core.Models.Common; // 已迁移到 LYBT.Shared.Models.Contracts.Common
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Common;
@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 分页查询处方
         /// </summary>
-        public async Task<LYBT.Desktop.Core.Models.Common.PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request)
+        public async Task<PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace LYBT.Desktop.Services
 
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
-                    return new LYBT.Desktop.Core.Models.Common.PagedResult<PrescriptionDto>
+                    return new PagedResult<PrescriptionDto>
                     {
                         Items = response.Content.Items.ToList(),
                         TotalCount = (int)response.Content.TotalCount,
@@ -50,7 +50,7 @@ namespace LYBT.Desktop.Services
                     };
                 }
 
-                return new LYBT.Desktop.Core.Models.Common.PagedResult<PrescriptionDto>
+                return new PagedResult<PrescriptionDto>
                 {
                     Items = new List<PrescriptionDto>(),
                     TotalCount = 0,
@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return new LYBT.Desktop.Core.Models.Common.PagedResult<PrescriptionDto>
+                return new PagedResult<PrescriptionDto>
                 {
                     Items = new List<PrescriptionDto>(),
                     TotalCount = 0,
@@ -155,7 +155,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PrescriptionDto>>.Failure($"获取患者处方失败: {ex.Message}", ex);
+                return ServiceResult<List<PrescriptionDto>>.Failure($"获取患者处方失败: {ex.Message}", null, ex);
             }
         }
 
@@ -182,7 +182,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PrescriptionDto>>.Failure($"获取医生处方失败: {ex.Message}", ex);
+                return ServiceResult<List<PrescriptionDto>>.Failure($"获取医生处方失败: {ex.Message}", null, ex);
             }
         }
 
@@ -210,7 +210,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PrescriptionDto>>.Failure($"获取今日处方失败: {ex.Message}", ex);
+                return ServiceResult<List<PrescriptionDto>>.Failure($"获取今日处方失败: {ex.Message}", null, ex);
             }
         }
 
@@ -259,7 +259,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<PrescriptionDetailDto>.Failure($"根据医疗案例ID获取处方失败: {ex.Message}", ex);
+                return ServiceResult<PrescriptionDetailDto>.Failure($"根据医疗案例ID获取处方失败: {ex.Message}", null, ex);
             }
         }
 
@@ -276,7 +276,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<PrescriptionDto>.Failure($"创建或更新处方失败: {ex.Message}", ex);
+                return ServiceResult<PrescriptionDto>.Failure($"创建或更新处方失败: {ex.Message}", null, ex);
             }
         }
 
@@ -371,7 +371,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<int>.Failure($"批量更新处方状态失败: {ex.Message}", ex);
+                return ServiceResult<int>.Failure($"批量更新处方状态失败: {ex.Message}", null, ex);
             }
         }
     }

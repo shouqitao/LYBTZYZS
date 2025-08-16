@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;

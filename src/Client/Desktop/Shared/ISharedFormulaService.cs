@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Shared
@@ -59,14 +60,22 @@ namespace LYBT.Desktop.Shared
         /// </summary>
         /// <param name="dto">验方信息</param>
         /// <returns>创建的验方信息</returns>
-        Task<ServiceResult<FormulaDto>> CreateFormulaAsync(FormulaDto dto);
+        Task<ServiceResult<FormulaDto>> CreateFormulaAsync(FormulaCreateDto dto);
 
         /// <summary>
         /// 更新验方
         /// </summary>
+        /// <param name="id">验方ID</param>
         /// <param name="dto">更新的验方信息</param>
         /// <returns>更新结果</returns>
-        Task<ServiceResult> UpdateFormulaAsync(FormulaDto dto);
+        Task<ServiceResult> UpdateFormulaAsync(Guid id, FormulaUpdateDto dto);
+
+        /// <summary>
+        /// 删除验方
+        /// </summary>
+        /// <param name="id">验方ID</param>
+        /// <returns>删除结果</returns>
+        Task<ServiceResult> DeleteFormulaAsync(Guid id);
 
         /// <summary>
         /// 收藏验方
@@ -97,5 +106,51 @@ namespace LYBT.Desktop.Shared
         /// <param name="limit">返回数量，默认20</param>
         /// <returns>常用验方列表</returns>
         Task<ServiceResult<List<FormulaDto>>> GetFrequentlyUsedFormulasAsync(int limit = 20);
+
+        /// <summary>
+        /// 分页查询验方列表
+        /// </summary>
+        /// <param name="queryDto">查询参数</param>
+        /// <returns>分页验方列表</returns>
+        Task<ServiceResult<PagedResult<FormulaDto>>> GetFormulasAsync(FormulaQueryDto queryDto);
+
+        /// <summary>
+        /// 获取验方统计信息
+        /// </summary>
+        /// <returns>验方统计信息</returns>
+        Task<ServiceResult<FormulaStatisticsDto>> GetFormulaStatisticsAsync();
+
+        /// <summary>
+        /// 获取验方创建者列表
+        /// </summary>
+        /// <returns>创建者列表</returns>
+        Task<ServiceResult<List<string>>> GetFormulaCreatorsAsync();
+
+        /// <summary>
+        /// 获取验方功效列表
+        /// </summary>
+        /// <returns>功效列表</returns>
+        Task<ServiceResult<List<string>>> GetFormulaEffectsAsync();
+
+        /// <summary>
+        /// 复制验方
+        /// </summary>
+        /// <param name="formulaId">验方ID</param>
+        /// <returns>复制的验方</returns>
+        Task<ServiceResult<FormulaDto>> CopyFormulaAsync(Guid formulaId);
+
+        /// <summary>
+        /// 切换验方共享状态
+        /// </summary>
+        /// <param name="formulaId">验方ID</param>
+        /// <returns>操作结果</returns>
+        Task<ServiceResult<bool>> ToggleFormulaShareStatusAsync(Guid formulaId);
+
+        /// <summary>
+        /// 获取验方详细信息（与GetFormulaByIdAsync别名）
+        /// </summary>
+        /// <param name="formulaId">验方ID</param>
+        /// <returns>验方详细信息</returns>
+        Task<ServiceResult<FormulaDto>> GetFormulaAsync(Guid formulaId);
     }
 }

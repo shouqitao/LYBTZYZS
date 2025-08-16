@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -126,6 +127,7 @@ namespace LYBT.Desktop.Consultation.Services
             {
                 // 暂时返回模拟数据，待实际接口调整
                 _logger.LogInformation("诊疗记录保存功能待实现");
+                await Task.CompletedTask;
                 return new ConsultationInfo
                 {
                     Id = Guid.NewGuid(),
@@ -135,6 +137,7 @@ namespace LYBT.Desktop.Consultation.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "保存诊疗记录时发生错误");
+                await Task.CompletedTask;
                 return null;
             }
         }
@@ -176,6 +179,7 @@ namespace LYBT.Desktop.Consultation.Services
             {
                 // 暂时返回模拟数据，待实际接口调整
                 _logger.LogInformation("处方保存功能待实现");
+                await Task.CompletedTask;
                 return new PrescriptionInfo
                 {
                     Id = Guid.NewGuid(),
@@ -185,6 +189,7 @@ namespace LYBT.Desktop.Consultation.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "保存处方时发生错误");
+                await Task.CompletedTask;
                 return null;
             }
         }
@@ -198,11 +203,13 @@ namespace LYBT.Desktop.Consultation.Services
             {
                 // 暂时返回空列表，待实际接口调整
                 _logger.LogInformation($"加载患者 {patientId} 历史处方功能待实现");
+                await Task.CompletedTask;
                 return new List<PrescriptionInfo>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"加载患者 {patientId} 历史处方时发生错误");
+                await Task.CompletedTask;
                 return new List<PrescriptionInfo>();
             }
         }

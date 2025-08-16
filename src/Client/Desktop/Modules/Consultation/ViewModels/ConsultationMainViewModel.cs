@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,10 +10,8 @@ using Prism.Navigation.Regions;
 using Prism.Events;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Desktop.Core.Models.Consultation;
-using LYBT.Desktop.Core.Models.Formulas;
-using LYBT.Desktop.Core.Models.Events;
+using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Consultation.Services;
@@ -20,9 +19,12 @@ using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-
 using Prism.Dialogs;
 using LYBT.Desktop.Core.Extensions;
+
+// UltraThink重构: 统一HerbInfo和HerbDto，FormulaInfo和FormulaDto，使用Dto作为统一模型
+using LYBT.Shared.Models.Contracts.Herbs;
+using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
 namespace LYBT.Desktop.Consultation.ViewModels
 {
     /// <summary>
@@ -109,8 +111,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public decimal TotalPrice => _prescriptionManager.TotalPrice;
 
-        private ObservableCollection<HerbInfo> _availableHerbs = new();
-        public ObservableCollection<HerbInfo> AvailableHerbs
+        private ObservableCollection<HerbDto> _availableHerbs = new();
+        public ObservableCollection<HerbDto> AvailableHerbs
         {
             get => _availableHerbs;
             set => SetProperty(ref _availableHerbs, value);
@@ -173,7 +175,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             RefreshCommand = new DelegateCommand(async () => await RefreshDataAsync());
             NewConsultationCommand = new DelegateCommand(async () => await StartNewConsultationAsync());
             SaveConsultationCommand = new DelegateCommand(async () => await SaveConsultationAsync());
-            AddHerbCommand = new DelegateCommand<HerbInfo>(AddHerbToPrescription);
+            AddHerbCommand = new DelegateCommand<HerbDto>(AddHerbToPrescription);
             RemoveHerbCommand = new DelegateCommand<PrescriptionItemInfo>(RemoveHerbFromPrescription);
             ApplyFormulaCommand = new DelegateCommand<FormulaInfo>(async f => await ApplyFormulaAsync(f));
 
@@ -207,7 +209,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             await Task.WhenAll(patientsTask, herbsTask, formulasTask);
 
             Patients = new ObservableCollection<PatientInfo>(await patientsTask);
-            AvailableHerbs = new ObservableCollection<HerbInfo>(await herbsTask);
+            AvailableHerbs = new ObservableCollection<HerbDto>(await herbsTask);
             AvailableFormulas = new ObservableCollection<FormulaInfo>(await formulasTask);
 
             _eventHandler.PublishStatusMessage("数据刷新完成", StatusMessageType.Success);
@@ -320,7 +322,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 处方管理
 
-        private void AddHerbToPrescription(HerbInfo? herb)
+        private void AddHerbToPrescription(HerbDto? herb)
         {
             if (herb != null && _prescriptionManager.AddHerbToPrescription(herb))
             {

@@ -1,0 +1,218 @@
+<UserControl x:Class="LYBT.Desktop.Workbench.Admin.Views.SystemWorkbenchMainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000"
+             Background="{DynamicResource AdminBackgroundBrush}"
+             UseLayoutRounding="True"
+             SnapsToDevicePixels="True">
+    
+    <!-- 用户控件资源 -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/AdminTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- 转换器 -->
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            
+            <!-- 反转布尔转换器 -->
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧导航栏 -->
+        <Border Grid.Column="0" 
+                Background="{DynamicResource AdminNavBackgroundBrush}" 
+                BorderThickness="0,0,1,0" 
+                BorderBrush="{DynamicResource AdminNavSeparatorBrush}"
+                Style="{DynamicResource AdminHighContrastBorderStyle}"
+                AutomationProperties.AutomationId="NavigationPanel"
+                AutomationProperties.Name="系统管理导航面板">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="64"/>  <!-- 增加标题高度 -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- 标题区域 -->
+                <Border Grid.Row="0" 
+                        Background="{DynamicResource AdminNavHeaderBrush}" 
+                        Padding="20,16"
+                        AutomationProperties.AutomationId="WorkbenchHeader">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="系统管理工作台" 
+                                   Style="{DynamicResource AdminWorkbenchTitleStyle}"
+                                   AutomationProperties.AutomationId="WorkbenchTitle"/>
+                        <Rectangle Height="2" 
+                                   Fill="{DynamicResource AdminInfoBrush}"
+                                   Margin="0,4,0,0"
+                                   HorizontalAlignment="Left"
+                                   Width="60"
+                                   RadiusX="1" RadiusY="1"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 导航菜单 -->
+                <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              AutomationProperties.AutomationId="NavigationScrollViewer"
+                              AutomationProperties.Name="导航菜单滚动区域">
+                    <ItemsControl ItemsSource="{Binding NavigationItems}" 
+                                  Margin="0,12"
+                                  AutomationProperties.AutomationId="NavigationItemsControl"
+                                  AutomationProperties.Name="导航菜单项列表"
+                                  KeyboardNavigation.TabNavigation="Continue">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- 分隔符或普通菜单项容器 -->
+                                <Grid>
+                                    <!-- 分隔符 -->
+                                    <Border Style="{DynamicResource AdminNavigationSeparatorStyle}"
+                                            Visibility="{Binding IsSeparator, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            AutomationProperties.AutomationId="NavigationSeparator"/>
+                                    
+                                    <!-- 普通菜单项 -->
+                                    <Button Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding IsSeparator, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Visible}"
+                                            AutomationProperties.AutomationId="{Binding Id, StringFormat='NavButton_{0}'}"
+                                            AutomationProperties.Name="{Binding DisplayName, StringFormat='导航到{0}'}"
+                                            AutomationProperties.HelpText="{Binding DisplayName, StringFormat='点击进入{0}页面'}"
+                                            KeyboardNavigation.IsTabStop="True">
+                                        
+                                        <!-- 根据选中状态设置Tag和样式 -->
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource AdminNavigationButtonStyle}">
+                                                <Style.Triggers>
+                                                    <!-- 选中状态触发器 -->
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Tag" Value="Selected"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        
+                                        <!-- 键盘导航支持 -->
+                                        <Button.InputBindings>
+                                            <KeyBinding Key="Enter" 
+                                                        Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+                                            <KeyBinding Key="Space" 
+                                                        Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+                                        </Button.InputBindings>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- 右侧内容区域 -->
+        <Grid Grid.Column="1" 
+              AutomationProperties.AutomationId="ContentArea"
+              AutomationProperties.Name="主要内容区域">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="56"/>  <!-- 增加工具栏高度 -->
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 顶部工具栏 -->
+            <Border Grid.Row="0" 
+                    Background="{DynamicResource AdminToolbarBackgroundBrush}" 
+                    BorderThickness="0,0,0,1" 
+                    BorderBrush="{DynamicResource AdminToolbarBorderBrush}"
+                    AutomationProperties.AutomationId="Toolbar"
+                    AutomationProperties.Name="工具栏">
+                <Grid Margin="24,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 面包屑导航 -->
+                    <StackPanel Grid.Column="0" 
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                AutomationProperties.AutomationId="BreadcrumbNavigation"
+                                AutomationProperties.Name="面包屑导航">
+                        <!-- 主页图标 -->
+                        <TextBlock Text="&#xE80F;" 
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="16"
+                                   Foreground="{DynamicResource AdminTextSecondaryBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                        <!-- 分隔符 -->
+                        <TextBlock Text="/" 
+                                   Foreground="{DynamicResource AdminTextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                        <!-- 当前页面标题 -->
+                        <TextBlock Text="{Binding CurrentViewTitle}" 
+                                   Style="{DynamicResource AdminBreadcrumbStyle}"
+                                   VerticalAlignment="Center"
+                                   AutomationProperties.AutomationId="CurrentPageTitle"/>
+                    </StackPanel>
+
+                    <!-- 工具按钮组 -->
+                    <StackPanel Grid.Column="1" 
+                                Orientation="Horizontal" 
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="ToolbarButtons"
+                                AutomationProperties.Name="工具栏按钮组">
+                        <!-- 刷新按钮 -->
+                        <Button Content="&#xE72C;" 
+                                Command="{Binding RefreshCommand}"
+                                Style="{DynamicResource AdminToolbarButtonStyle}"
+                                Margin="0,0,8,0"
+                                Width="36" Height="36"
+                                ToolTip="刷新当前页面"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="16"
+                                AutomationProperties.AutomationId="RefreshButton"
+                                AutomationProperties.Name="刷新按钮"
+                                AutomationProperties.HelpText="点击刷新当前页面内容"
+                                KeyboardNavigation.IsTabStop="True"/>
+                        
+                        <!-- 设置按钮 -->
+                        <Button Content="&#xE713;" 
+                                Command="{Binding SettingsCommand}"
+                                Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                                Width="36" Height="36"
+                                ToolTip="系统设置"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="16"
+                                AutomationProperties.AutomationId="SettingsButton"
+                                AutomationProperties.Name="设置按钮"
+                                AutomationProperties.HelpText="点击进入系统设置"
+                                KeyboardNavigation.IsTabStop="True"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 内容区域 -->
+            <ContentControl Grid.Row="1" 
+                            prism:RegionManager.RegionName="SystemWorkbenchContentRegion"
+                            Style="{DynamicResource AdminContentAreaStyle}"
+                            AutomationProperties.AutomationId="MainContent"
+                            AutomationProperties.Name="主要内容显示区域"/>
+        </Grid>
+    </Grid>
+</UserControl>

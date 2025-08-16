@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.Windows;
 
 namespace LYBT.Desktop.Herbs.Views

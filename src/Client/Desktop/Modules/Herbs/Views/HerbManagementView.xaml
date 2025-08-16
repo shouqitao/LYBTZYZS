@@ -43,6 +43,17 @@
 
                 <!-- 操作按钮区域 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <!-- 导入导出功能 - UltraThink Phase 3.3 迁移 -->
+                    <Button Content="📥 导入药材" 
+                            Margin="0,0,10,0"
+                            Style="{StaticResource InfoButton}"
+                            Command="{Binding ImportHerbsCommand}"
+                            ToolTip="从Excel文件批量导入中药材信息"/>
+                    <Button Content="📄 导出模板" 
+                            Margin="0,0,10,0"
+                            Style="{StaticResource InfoButton}"
+                            Command="{Binding ExportTemplateCommand}"
+                            ToolTip="下载药材导入Excel模板"/>
                     <Button Content="+ 新增中药材" 
                             Margin="0,0,10,0"
                             Style="{StaticResource SuccessButton}"
@@ -114,7 +125,7 @@
                 </DataGridTemplateColumn>
                 
                 <!-- 操作 -->
-                <DataGridTemplateColumn Header="操作" Width="260">
+                <DataGridTemplateColumn Header="操作" Width="320">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -125,6 +136,15 @@
                                         Margin="2"
                                         Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"/>
+                                <!-- 库存管理 - UltraThink Phase 3.3 迁移功能 -->
+                                <Button Content="📦库存" 
+                                        Style="{StaticResource WarningButton}"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        Margin="2"
+                                        Command="{Binding DataContext.ManageStockCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip="管理药材库存"/>
                                 <Button Content="状态" 
                                         Style="{StaticResource InfoButton}"
                                         Padding="8,4"

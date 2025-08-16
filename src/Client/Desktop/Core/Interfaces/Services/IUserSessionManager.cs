@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using LYBT.Desktop.Core.Models.Users;
 using LYBT.Shared.Models.Core;
@@ -79,5 +80,51 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         /// <param name="user">更新的用户信息</param>
         void RefreshUserInfo(UserInfo user);
+
+        // UltraThink Phase 4.3: 基于UserRole枚举的新方法
+
+        /// <summary>
+        /// 获取当前用户的UserRole
+        /// </summary>
+        /// <returns>当前用户角色，null表示未登录</returns>
+        UserRole? GetCurrentUserRole();
+
+        /// <summary>
+        /// 检查当前用户是否具有指定的UserRole
+        /// </summary>
+        /// <param name="role">要检查的角色</param>
+        /// <returns>是否具有该角色</returns>
+        bool HasUserRole(UserRole role);
+
+        /// <summary>
+        /// 检查当前用户是否可以访问指定模块
+        /// </summary>
+        /// <param name="module">模块名称</param>
+        /// <returns>是否可以访问</returns>
+        bool CanAccessModule(string module);
+
+        /// <summary>
+        /// 获取当前用户可访问的所有模块
+        /// </summary>
+        /// <returns>可访问的模块列表</returns>
+        IEnumerable<string> GetAccessibleModules();
+
+        /// <summary>
+        /// 检查当前用户是否有管理权限（基于UserRole）
+        /// </summary>
+        /// <returns>是否有管理权限</returns>
+        bool HasManagementAccess();
+
+        /// <summary>
+        /// 检查当前用户是否有医疗权限（基于UserRole）
+        /// </summary>
+        /// <returns>是否有医疗权限</returns>
+        bool HasMedicalAccess();
+
+        /// <summary>
+        /// 获取当前用户对应的工作台视图名称
+        /// </summary>
+        /// <returns>工作台视图名称</returns>
+        string GetCurrentUserWorkbench();
     }
 }

@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
 using LYBT.Desktop.Herbs.ViewModels;
@@ -19,8 +20,8 @@ namespace LYBT.Desktop.Herbs
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册视图和视图模型
-            containerRegistry.RegisterForNavigation<HerbManagementView, HerbManagementViewModelSimple>();
+            // 注册视图和视图模型 - UltraThink Phase 3.3 功能增强
+            containerRegistry.RegisterForNavigation<HerbManagementView, HerbManagementViewModelEnhanced>();
             containerRegistry.RegisterForNavigation<HerbAddEditDialog, HerbAddEditDialogViewModel>();
         }
     }

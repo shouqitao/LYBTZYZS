@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,7 +9,7 @@ using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 //using PagedResult = LYBT.Desktop.Core.Models.Common.PagedResult;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -59,23 +60,23 @@ namespace LYBT.Desktop.Shared.ViewModels.Patients
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
+        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<PatientInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
                 var query = new PatientPagedQueryDto
                 {
-                    PageIndex = request.CurrentPage,
+                    PageIndex = request.PageIndex,
                     PageSize = request.PageSize,
                     Keyword = SearchKeyword
                 };
 
                 var result = await Service.GetPagedAsync(query);
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>>.Success(result);
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<PatientInfo>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<PatientInfo>>.Failure($"加载患者列表失�? {ex.Message}");
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<PatientInfo>>.Failure($"加载患者列表失�? {ex.Message}");
             }
         }
 

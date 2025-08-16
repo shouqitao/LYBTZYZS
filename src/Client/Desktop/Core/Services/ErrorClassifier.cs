@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -7,6 +8,7 @@ using System.IO;
 using System.Security;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Exceptions;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services

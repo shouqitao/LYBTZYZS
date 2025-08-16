@@ -71,6 +71,88 @@ namespace LYBT.Desktop.Services
             return "用户";
         }
 
+        /// <summary>
+        /// 检查角色是否有指定权限
+        /// </summary>
+        public bool HasPermission(UserRole role, string permission)
+        {
+            return role switch
+            {
+                UserRole.Admin => true, // 管理员有所有权限
+                UserRole.Doctor => HasDoctorLevelPermission(permission),
+                UserRole.Receptionist => HasReceptionistLevelPermission(permission),
+                UserRole.Cashier => HasCashierLevelPermission(permission),
+                UserRole.Pharmacist => HasPharmacistLevelPermission(permission),
+                UserRole.Therapist => HasTherapistLevelPermission(permission),
+                _ => false
+            };
+        }
+
+        /// <summary>
+        /// 检查角色是否可访问指定模块
+        /// </summary>
+        public bool CanAccessModule(UserRole role, string moduleName)
+        {
+            var accessibleModules = GetAccessibleModules(role);
+            return accessibleModules.Contains(moduleName);
+        }
+
+        /// <summary>
+        /// 获取角色可访问的模块列表
+        /// </summary>
+        public IEnumerable<string> GetAccessibleModules(UserRole role)
+        {
+            return role switch
+            {
+                UserRole.Admin => GetAdminModules(),
+                UserRole.Doctor => GetDoctorModules(),
+                UserRole.Receptionist => GetReceptionistModules(),
+                UserRole.Cashier => GetCashierModules(),
+                UserRole.Pharmacist => GetPharmacistModules(),
+                UserRole.Therapist => GetTherapistModules(),
+                _ => new List<string>()
+            };
+        }
+
+        /// <summary>
+        /// 获取角色的显示名称
+        /// </summary>
+        public string GetRoleDisplayName(UserRole role)
+        {
+            return role switch
+            {
+                UserRole.Admin => "系统管理员",
+                UserRole.Doctor => "医生",
+                UserRole.Receptionist => "前台",
+                UserRole.Cashier => "收银员",
+                UserRole.Pharmacist => "药师",
+                UserRole.Therapist => "理疗师",
+                _ => "未知角色"
+            };
+        }
+
+        /// <summary>
+        /// 检查角色是否有管理权限
+        /// </summary>
+        public bool HasManagementAccess(UserRole role)
+        {
+            return role == UserRole.Admin;
+        }
+
+        /// <summary>
+        /// 检查角色是否有医疗权限
+        /// </summary>
+        public bool HasMedicalAccess(UserRole role)
+        {
+            return role switch
+            {
+                UserRole.Admin => true,
+                UserRole.Doctor => true,
+                UserRole.Therapist => true,
+                _ => false
+            };
+        }
+
         #region 私有方法 - 权限检查
 
         private bool HasAdminLevelPermission(string permission)
@@ -93,14 +175,14 @@ namespace LYBT.Desktop.Services
             return doctorPermissions.Contains(permission);
         }
 
-        private bool HasFrontDeskLevelPermission(string permission)
+        private bool HasReceptionistLevelPermission(string permission)
         {
-            var frontDeskPermissions = new[]
+            var receptionistPermissions = new[]
             {
                 "AppointmentManagement", "QueueManagement",
                 "PatientInfo", "BasicReports"
             };
-            return frontDeskPermissions.Contains(permission);
+            return receptionistPermissions.Contains(permission);
         }
 
         private bool HasCashierLevelPermission(string permission)
@@ -123,24 +205,14 @@ namespace LYBT.Desktop.Services
             return pharmacistPermissions.Contains(permission);
         }
 
-        private bool HasNurseLevelPermission(string permission)
+        private bool HasTherapistLevelPermission(string permission)
         {
-            var nursePermissions = new[]
+            var therapistPermissions = new[]
             {
-                "PatientCare", "VitalSigns", "TreatmentAssist",
-                "NursingRecords", "PatientEducation"
+                "TherapyTreatment", "PatientCare", "TreatmentPlan",
+                "TherapyRecords", "PatientEducation"
             };
-            return nursePermissions.Contains(permission);
-        }
-
-        private bool HasPhysiotherapistLevelPermission(string permission)
-        {
-            var physiotherapistPermissions = new[]
-            {
-                "PhysiotherapyTreatment", "PatientCare", "TreatmentPlan",
-                "PhysiotherapyRecords", "PatientEducation"
-            };
-            return physiotherapistPermissions.Contains(permission);
+            return therapistPermissions.Contains(permission);
         }
 
         #endregion
@@ -176,11 +248,11 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private List<string> GetFrontDeskModules()
+        private List<string> GetReceptionistModules()
         {
             return new List<string>
             {
-                "FrontDeskModule", "AppointmentModule",
+                "ReceptionistModule", "AppointmentModule",
                 "QueueManagement", "BasicReports"
             };
         }
@@ -203,21 +275,12 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private List<string> GetNurseModules()
+        private List<string> GetTherapistModules()
         {
             return new List<string>
             {
-                "NursingModule", "PatientCare", "VitalSigns",
-                "TreatmentAssist", "NursingRecords"
-            };
-        }
-
-        private List<string> GetPhysiotherapistModules()
-        {
-            return new List<string>
-            {
-                "PhysiotherapyModule", "PatientCare", "TreatmentModule",
-                "PhysiotherapyRecords", "PatientEducation"
+                "TherapistModule", "PatientCare", "TreatmentModule",
+                "TherapyRecords", "PatientEducation"
             };
         }
 

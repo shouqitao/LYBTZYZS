@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Desktop.Core.Models.Settings
 {
     /// <summary>

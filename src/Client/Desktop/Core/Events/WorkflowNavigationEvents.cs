@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Prism.Events;
 using LYBT.Desktop.Core.Models.Consultation;

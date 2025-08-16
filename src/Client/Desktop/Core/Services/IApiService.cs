@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models;
 

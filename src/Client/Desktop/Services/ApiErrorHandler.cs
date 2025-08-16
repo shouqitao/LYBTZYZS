@@ -5,6 +5,7 @@ using Refit;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Exceptions;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Services
 {
@@ -70,7 +71,7 @@ namespace LYBT.Desktop.Services
                             continue;
                         }
 
-                        return ServiceResult<T>.Failure(errorMessage, CreateEnhancedException(errorInfo));
+                        return ServiceResult<T>.Failure(errorMessage, null, CreateEnhancedException(errorInfo));
                     }
                 }
                 catch (Refit.ApiException ex)
@@ -119,7 +120,7 @@ namespace LYBT.Desktop.Services
                         continue;
                     }
 
-                    return ServiceResult<T>.Failure("请求超时，请稍后重试", ex);
+                    return ServiceResult<T>.Failure("请求超时，请稍后重试", null, ex);
                 }
                 catch (Exception ex)
                 {
@@ -136,13 +137,14 @@ namespace LYBT.Desktop.Services
                     LogApiError(errorInfo);
 
                     // 一般异常不重试
-                    return ServiceResult<T>.Failure($"请求失败: {ex.Message}", ex);
+                    return ServiceResult<T>.Failure($"请求失败: {ex.Message}", null, ex);
                 }
             }
 
             // 所有重试都失败了
             return ServiceResult<T>.Failure(
                 $"操作失败，已重试{maxRetries}次: {lastException?.Message ?? "未知错误"}", 
+                null,
                 lastException);
         }
 
@@ -198,7 +200,7 @@ namespace LYBT.Desktop.Services
                 };
             }
 
-            return ServiceResult<T>.Failure(errorMessage, ex);
+            return ServiceResult<T>.Failure(errorMessage, null, ex);
         }
 
         /// <summary>
@@ -259,7 +261,7 @@ namespace LYBT.Desktop.Services
             }
             else
             {
-                return ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
+                return ServiceResult.Failure(result.ErrorMessage ?? "操作失败", null, result.Exception);
             }
         }
 
@@ -275,7 +277,7 @@ namespace LYBT.Desktop.Services
             }
             else
             {
-                return ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
+                return ServiceResult.Failure(result.ErrorMessage ?? "操作失败", null, result.Exception);
             }
         }
 

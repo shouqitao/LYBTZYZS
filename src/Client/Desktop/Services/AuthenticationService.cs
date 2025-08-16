@@ -4,15 +4,19 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Polly;
 using Polly.Extensions.Http;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services.Business;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.Models;
+using LYBT.Shared.Models.Contracts.Common;
 using LoginResponse = LYBT.Shared.Models.Contracts.Auth.LoginResponse;
 using LoginRequest = LYBT.Shared.Models.Contracts.Auth.LoginRequest;
 using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Auth;
-using UserInfo = LYBT.Desktop.Core.Models.Users.UserInfo;
+using LYBT.Shared.Models.Contracts.Users;
+// UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
+using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services
@@ -20,7 +24,9 @@ namespace LYBT.Desktop.Services
     /// <summary>
     /// 身份认证服务 - 遵循UltraThink标准
     /// </summary>
-    public class AuthenticationService : IAuthenticationService
+    public class AuthenticationService : 
+        LYBT.Shared.Interfaces.Services.Business.IAuthenticationService,
+        LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService
     {
         #region 依赖服务
         
@@ -118,7 +124,7 @@ namespace LYBT.Desktop.Services
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "登录过程发生异常");
-                return ServiceResult<LoginResponse>.Failure("登录失败: " + ex.Message, ex);
+                return ServiceResult<LoginResponse>.Failure("登录失败: " + ex.Message, null, ex);
             }
             finally
             {
@@ -160,11 +166,105 @@ namespace LYBT.Desktop.Services
         
         #region 用户信息
         
-        public Task<UserInfo?> GetCurrentUserAsync()
+        /// <summary>
+        /// 获取当前用户信息 - 新Shared接口实现
+        /// </summary>
+        Task<ServiceResult<UserDto>> LYBT.Shared.Interfaces.Services.Business.IAuthenticationService.GetCurrentUserAsync()
+        {
+            var currentUser = _authState.CurrentUser;
+            if (currentUser == null)
+            {
+                return Task.FromResult(ServiceResult<UserDto>.Failure("用户未登录"));
+            }
+            
+            return Task.FromResult(ServiceResult<UserDto>.Success(currentUser));
+        }
+
+        /// <summary>
+        /// 获取当前用户信息 - UI接口实现
+        /// </summary>
+        Task<UserInfo?> LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService.GetCurrentUserAsync()
         {
             return Task.FromResult(_authState.CurrentUser);
         }
+
+        /// <summary>
+        /// 获取当前用户信息 - UI层兼容方法
+        /// </summary>
+        public Task<UserInfo?> GetCurrentUserForUIAsync()
+        {
+            return Task.FromResult(_authState.CurrentUser);
+        }
+
+        /// <summary>
+        /// 检查用户认证状态 - 新Shared接口实现
+        /// </summary>
+        public Task<ServiceResult<bool>> IsAuthenticatedAsync()
+        {
+            return Task.FromResult(ServiceResult<bool>.Success(_authState.IsAuthenticated));
+        }
+
+        /// <summary>
+        /// 验证令牌有效性 - 新Shared接口实现
+        /// </summary>
+        public async Task<ServiceResult<bool>> ValidateTokenAsync(string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    return ServiceResult<bool>.Success(false);
+                }
+
+                // 简单验证：检查是否是当前存储的token
+                var currentToken = _tokenManager.GetToken();
+                if (token == currentToken && _authState.IsAuthenticated)
+                {
+                    return ServiceResult<bool>.Success(true);
+                }
+
+                return ServiceResult<bool>.Success(false);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "验证令牌失败");
+                return ServiceResult<bool>.Failure("令牌验证失败: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 刷新访问令牌 - 新Shared接口实现
+        /// </summary>
+        public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
+        {
+            try
+            {
+                _logger?.LogInformation("开始刷新令牌");
+                
+                // TODO: 实现刷新令牌逻辑，当前返回当前用户信息
+                if (!_authState.IsAuthenticated)
+                {
+                    return ServiceResult<LoginResponse>.Failure("用户未登录，无法刷新令牌");
+                }
+
+                var response = new LoginResponse
+                {
+                    Token = _tokenManager.GetToken() ?? string.Empty,
+                    User = ConvertToBaseUser(_authState.CurrentUser)
+                };
+
+                return ServiceResult<LoginResponse>.Success(response);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "刷新令牌失败");
+                return ServiceResult<LoginResponse>.Failure("刷新令牌失败: " + ex.Message);
+            }
+        }
         
+        /// <summary>
+        /// UI层兼容方法 - 获取Token
+        /// </summary>
         public string? GetToken()
         {
             return _tokenManager.GetToken();
@@ -224,7 +324,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<dynamic>.Failure("网络请求失败: " + ex.Message, ex);
+                return ServiceResult<dynamic>.Failure("网络请求失败: " + ex.Message, null, ex);
             }
         }
         
@@ -302,6 +402,23 @@ namespace LYBT.Desktop.Services
                 Username = authUser.Username,
                 RealName = authUser.RealName,
                 PhoneNumber = authUser.PhoneNumber
+            };
+        }
+
+        /// <summary>
+        /// 转换UserDto到BaseUser - 新接口适配方法
+        /// </summary>
+        private BaseUser ConvertToBaseUser(UserInfo? userInfo)
+        {
+            if (userInfo == null)
+                return new BaseUser();
+            
+            return new BaseUser
+            {
+                Id = userInfo.Id,
+                Username = userInfo.Username,
+                RealName = userInfo.RealName,
+                PhoneNumber = userInfo.PhoneNumber
             };
         }
         

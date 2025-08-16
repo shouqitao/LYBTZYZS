@@ -1,8 +1,9 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -18,7 +19,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>
-        Task<LYBT.Desktop.Core.Models.Common.PagedResult<ConsultationInfo>> SearchConsultationsAsync(PagedQueryBaseDto query);
+        Task<LYBT.Shared.Models.Contracts.Common.PagedResult<ConsultationInfo>> SearchConsultationsAsync(PagedQueryBaseDto query);
 
         /// <summary>
         /// 获取看诊详情

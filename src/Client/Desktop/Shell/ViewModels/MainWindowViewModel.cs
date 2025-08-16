@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,7 +17,7 @@ using Prism.Dialogs;
 using Prism.Events;
 using Prism.Commands;
 
-using LYBT.Desktop.Core.Models.Users;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
@@ -37,7 +38,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         private readonly LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer _uiOptimizer;
 
         private string _title = "凌隐宝堂中医诊所诊疗系统";
-        private UserInfo? _currentUser;
+        private UserDto? _currentUser;
         private bool _isLoggedIn = false;
 
         public DelegateCommand LogoutCommand { get; }
@@ -86,7 +87,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         }
 
         /// <summary>当前用户</summary>
-        public UserInfo? CurrentUser
+        public UserDto? CurrentUser
         {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
@@ -204,16 +205,22 @@ namespace LYBT.Desktop.Shell.ViewModels
                 return;
             }
 
-            // 判断用户角色
+            // UltraThink重构: 使用UserDto的Role属性判断用户角色
             string userRole;
             if (CurrentUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
             {
                 userRole = "管理员";
             }
-            else if (!string.IsNullOrEmpty(CurrentUser.LicenseNumber) || !string.IsNullOrEmpty(CurrentUser.Specialty))
+            else if (CurrentUser.Role?.Equals("Doctor", StringComparison.OrdinalIgnoreCase) == true ||
+                     CurrentUser.Role?.Equals("医生", StringComparison.OrdinalIgnoreCase) == true)
             {
-                // 有执业证书号或专长的是医生
+                // 基于Role字段判断是否为医生
                 userRole = "医生";
+            }
+            else if (CurrentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true ||
+                     CurrentUser.Role?.Equals("管理员", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                userRole = "管理员";
             }
             else
             {

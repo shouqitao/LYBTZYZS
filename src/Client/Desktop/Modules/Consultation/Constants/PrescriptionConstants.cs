@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.Consultation.Constants

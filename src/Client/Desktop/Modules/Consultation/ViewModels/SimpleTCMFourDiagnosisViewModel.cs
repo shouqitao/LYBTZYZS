@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -415,6 +416,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private async void OnImportHistoryData(object args)
         {
             // UltraThink简化：直接返回，不处理复杂的历史数据导入
+            await Task.CompletedTask;
             return;
         }
 

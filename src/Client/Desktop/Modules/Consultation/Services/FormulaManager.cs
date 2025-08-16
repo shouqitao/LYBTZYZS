@@ -1,15 +1,21 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Events;
+using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Enums;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+using LYBT.Shared.Interfaces.Services;
+
+// UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
+using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
+using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Consultation.Services
 {

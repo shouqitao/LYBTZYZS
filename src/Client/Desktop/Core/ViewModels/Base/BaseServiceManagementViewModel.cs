@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -5,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using Prism.Commands;
 using Prism.Events;
@@ -221,7 +221,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             {
                 IsLoading = true;
 
-                var request = new PaginationRequest
+                var request = new PagedQueryBaseDto
                 {
                     CurrentPage = CurrentPage,
                     PageSize = PageSize,
@@ -257,7 +257,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 从服务加载数据（由子类实现）
         /// </summary>
-        protected abstract Task<ServiceResult<PagedResult<TModel>>> LoadDataFromServiceAsync(PaginationRequest request);
+        protected abstract Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<TModel>>> LoadDataFromServiceAsync(PagedQueryBaseDto request);
 
         /// <summary>
         /// 搜索

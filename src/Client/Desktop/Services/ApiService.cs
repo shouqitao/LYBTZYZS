@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.Models.Auth;
 using LYBT.Desktop.Core.Models;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Core;
 using LYBT.Desktop.Core.Interfaces.Services;
 
@@ -42,7 +43,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, ex);
+                return ServiceResult<T>.Failure(ex.Message, null, ex);
             }
         }
 
@@ -70,7 +71,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, ex);
+                return ServiceResult<T>.Failure(ex.Message, null, ex);
             }
         }
 
@@ -93,7 +94,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, ex);
+                return ServiceResult<T>.Failure(ex.Message, null, ex);
             }
         }
 
@@ -110,7 +111,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, ex);
+                return ServiceResult<T>.Failure(ex.Message, null, ex);
             }
         }
 
@@ -133,7 +134,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, ex);
+                return ServiceResult<T>.Failure(ex.Message, null, ex);
             }
         }
 
@@ -177,7 +178,7 @@ namespace LYBT.Desktop.Services
                 }
                 catch (JsonException ex)
                 {
-                    return ServiceResult<T>.Failure($"响应数据格式错误: {ex.Message}", ex);
+                    return ServiceResult<T>.Failure($"响应数据格式错误: {ex.Message}", null, ex);
                 }
             }
             else

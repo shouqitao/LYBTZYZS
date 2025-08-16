@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 
@@ -11,27 +12,27 @@ namespace LYBT.Desktop.Workbench.Core
         /// <summary>
         /// 导航项ID
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         /// <summary>
         /// 显示名称
         /// </summary>
-        public string DisplayName { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 图标名称或路径
         /// </summary>
-        public string Icon { get; set; }
+        public string Icon { get; set; } = string.Empty;
 
         /// <summary>
         /// 导航目标视图名称
         /// </summary>
-        public string ViewName { get; set; }
+        public string ViewName { get; set; } = string.Empty;
 
         /// <summary>
         /// 所属模块
         /// </summary>
-        public string Module { get; set; }
+        public string Module { get; set; } = string.Empty;
 
         /// <summary>
         /// 排序顺序
@@ -61,7 +62,7 @@ namespace LYBT.Desktop.Workbench.Core
         /// <summary>
         /// 工具提示
         /// </summary>
-        public string ToolTip { get; set; }
+        public string ToolTip { get; set; } = string.Empty;
 
         /// <summary>
         /// 导航参数
@@ -76,12 +77,12 @@ namespace LYBT.Desktop.Workbench.Core
         /// <summary>
         /// 徽章文本（用于显示数字或状态）
         /// </summary>
-        public string BadgeText { get; set; }
+        public string BadgeText { get; set; } = string.Empty;
 
         /// <summary>
         /// 徽章类型（info, warning, error, success）
         /// </summary>
-        public string BadgeType { get; set; }
+        public string BadgeType { get; set; } = string.Empty;
 
         public NavigationItem()
         {

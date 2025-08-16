@@ -1,8 +1,8 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
@@ -114,6 +114,48 @@ namespace LYBT.Desktop.Shared
         /// </summary>
         /// <param name="id">药材ID</param>
         /// <returns>操作结果</returns>
+        /// <summary>
+        /// 分页查询药材列表（带查询条件）
+        /// </summary>
+        /// <param name="queryDto">查询参数</param>
+        /// <returns>分页药材列表</returns>
+        Task<ServiceResult<PagedResult<HerbDto>>> GetHerbsAsync(HerbPagedQueryDto queryDto);
+
+        /// <summary>
+        /// 根据ID获取单个药材信息
+        /// </summary>
+        /// <param name="id">药材ID</param>
+        /// <returns>药材信息</returns>
+        Task<ServiceResult<HerbDto>> GetHerbAsync(Guid id);
+
+        /// <summary>
+        /// 删除药材
+        /// </summary>
+        /// <param name="id">药材ID</param>
+        /// <returns>删除结果</returns>
+        Task<ServiceResult> DeleteHerbAsync(Guid id);
+
+        /// <summary>
+        /// 获取药材统计信息
+        /// </summary>
+        /// <returns>统计信息</returns>
+        Task<ServiceResult<HerbStatisticsDto>> GetHerbStatisticsAsync();
+
+        /// <summary>
+        /// 批量调整药材价格
+        /// </summary>
+        /// <param name="herbIds">药材ID列表</param>
+        /// <param name="adjustmentType">调整类型（percentage/fixed）</param>
+        /// <param name="adjustmentValue">调整值</param>
+        /// <returns>批量调整结果</returns>
+        Task<ServiceResult<int>> BatchAdjustPriceAsync(List<Guid> herbIds, string adjustmentType, decimal adjustmentValue);
+
         Task<ServiceResult<bool>> ToggleHerbStatusAsync(Guid id);
+
+        /// <summary>
+        /// 获取药材产地列表
+        /// </summary>
+        /// <returns>产地列表</returns>
+        Task<ServiceResult<List<string>>> GetHerbOriginsAsync();
     }
 }

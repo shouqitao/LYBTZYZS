@@ -1,9 +1,13 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Events;
+using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Enums;
+
+// UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
+using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
 
 namespace LYBT.Desktop.Consultation.Services.Interfaces
 {

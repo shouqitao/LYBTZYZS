@@ -1,8 +1,11 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Users;
+
+// UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
+using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {
@@ -34,7 +37,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// 获取当前用户信息
         /// </summary>
         /// <returns></returns>
-        Task<LYBT.Desktop.Core.Models.Users.UserInfo?> GetCurrentUserAsync();
+        Task<UserInfo?> GetCurrentUserAsync();
 
         /// <summary>
         /// 获取存储的Token

@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        Task<Models.Common.PagedResult<PatientInfo>> GetPagedAsync(PatientPagedQueryDto query);
+        Task<LYBT.Shared.Models.Contracts.Common.PagedResult<PatientInfo>> GetPagedAsync(PatientPagedQueryDto query);
 
         /// <summary>
         /// 批量禁用患者

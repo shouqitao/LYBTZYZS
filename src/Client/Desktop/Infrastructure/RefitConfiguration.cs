@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Refit;
 using System.Text.Json;
 using System.Text.Json.Serialization;

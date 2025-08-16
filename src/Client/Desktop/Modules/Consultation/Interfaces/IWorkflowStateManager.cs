@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.ComponentModel;
 using LYBT.Desktop.Consultation.Services;
 

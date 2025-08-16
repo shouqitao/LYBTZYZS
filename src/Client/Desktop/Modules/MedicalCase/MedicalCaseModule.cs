@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Desktop.MedicalCase.Views;
 using Prism.Ioc;

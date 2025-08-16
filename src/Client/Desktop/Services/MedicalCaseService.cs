@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -92,7 +92,7 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<MedicalCaseInfo>.Success(createdMedicalCase);
             }
 
-            return ServiceResult<MedicalCaseInfo>.Failure(apiResponse.ErrorMessage ?? "创建医疗案例失败", apiResponse.Exception);
+            return ServiceResult<MedicalCaseInfo>.Failure(apiResponse.ErrorMessage ?? "创建医疗案例失败", null, apiResponse.Exception);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<List<MedicalCaseInfo>>.Success(medicalCases);
             }
 
-            return ServiceResult<List<MedicalCaseInfo>>.Failure(apiResponse.ErrorMessage ?? "获取患者医疗案例列表失败", apiResponse.Exception);
+            return ServiceResult<List<MedicalCaseInfo>>.Failure(apiResponse.ErrorMessage ?? "获取患者医疗案例列表失败", null, apiResponse.Exception);
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<List<MedicalCaseInfo>>.Success(medicalCases);
             }
 
-            return ServiceResult<List<MedicalCaseInfo>>.Failure(apiResponse.ErrorMessage ?? "获取今日医疗案例列表失败", apiResponse.Exception);
+            return ServiceResult<List<MedicalCaseInfo>>.Failure(apiResponse.ErrorMessage ?? "获取今日医疗案例列表失败", null, apiResponse.Exception);
         }
 
         /// <summary>

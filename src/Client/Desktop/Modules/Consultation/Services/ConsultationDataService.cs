@@ -4,14 +4,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Consultation;
-using LYBT.Desktop.Core.Models.Herbs;
-using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Consultation.Services.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+
+// UltraThink重构: 统一HerbInfo和HerbDto，FormulaInfo和FormulaDto，使用Dto作为统一模型
+using LYBT.Shared.Models.Contracts.Herbs;
+using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
 
 namespace LYBT.Desktop.Consultation.Services
 {
@@ -110,7 +114,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 加载中药材列表（带缓存）
         /// </summary>
-        public async Task<List<HerbInfo>> LoadHerbsAsync(bool forceRefresh = false)
+        public async Task<List<HerbDto>> LoadHerbsAsync(bool forceRefresh = false)
         {
             try
             {
@@ -134,7 +138,7 @@ namespace LYBT.Desktop.Consultation.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载中药材列表时发生异常");
-                return new List<HerbInfo>();
+                return new List<HerbDto>();
             }
         }
 

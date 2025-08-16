@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
@@ -6,6 +7,8 @@ using LYBT.Desktop.Workbench.Consultation.Views;
 using LYBT.Desktop.Workbench.Consultation.Services;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
 using LYBT.Desktop.Workbench.Core;
+// UltraThink Phase 3.4: 集成Formula模块功能
+using LYBT.Desktop.Formula.Views;
 
 namespace LYBT.Desktop.Workbench.Consultation
 {
@@ -28,6 +31,9 @@ namespace LYBT.Desktop.Workbench.Consultation
             
             // 注册主视图
             containerRegistry.RegisterForNavigation<ConsultationWorkbenchMainView>();
+            
+            // UltraThink Phase 3.4: 注册集成的验方管理功能
+            containerRegistry.RegisterForNavigation<FormulaManagementView>();
             
             // 注册子视图（这些视图将由业务模块提供）
             // 患者管理、看诊管理、医疗案例管理等视图由各自的BusinessModules提供

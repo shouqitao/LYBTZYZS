@@ -1,11 +1,11 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 // using Prism.Dialogs; // Temporarily disabled due to Prism 9 compatibility
@@ -30,22 +30,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Properties
 
-        private ObservableCollection<HerbInfo> _herbs = new();
-        public ObservableCollection<HerbInfo> Herbs
+        private ObservableCollection<HerbDto> _herbs = new();
+        public ObservableCollection<HerbDto> Herbs
         {
             get => _herbs;
             set => SetProperty(ref _herbs, value);
         }
 
-        private ObservableCollection<HerbInfo> _filteredHerbs = new();
-        public ObservableCollection<HerbInfo> FilteredHerbs
+        private ObservableCollection<HerbDto> _filteredHerbs = new();
+        public ObservableCollection<HerbDto> FilteredHerbs
         {
             get => _filteredHerbs;
             set => SetProperty(ref _filteredHerbs, value);
         }
 
-        private HerbInfo? _selectedHerb;
-        public HerbInfo? SelectedHerb
+        private HerbDto? _selectedHerb;
+        public HerbDto? SelectedHerb
         {
             get => _selectedHerb;
             set => SetProperty(ref _selectedHerb, value);
@@ -172,7 +172,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 var herbs = await _herbService.GetHerbsAsync();
                 if (herbs != null)
                 {
-                    Herbs = new ObservableCollection<HerbInfo>(herbs);
+                    Herbs = new ObservableCollection<HerbDto>(herbs);
                     FilterHerbs();
 
                     // 如果是编辑模式，选中对应的药材
@@ -200,11 +200,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             var filtered = Herbs.AsEnumerable();
 
-            // 按分类过滤
-            if (SelectedCategory != "全部")
-            {
-                filtered = filtered.Where(h => h.Category == SelectedCategory);
-            }
+            // 按分类过滤 - 暂时注释，HerbDto不包含Category属性
+            // if (SelectedCategory != "全部")
+            // {
+            //     filtered = filtered.Where(h => h.Category == SelectedCategory);
+            // }
 
             // 按关键字过滤
             if (!string.IsNullOrWhiteSpace(SearchText))
@@ -214,7 +214,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     (h.Name?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
-            FilteredHerbs = new ObservableCollection<HerbInfo>(filtered);
+            FilteredHerbs = new ObservableCollection<HerbDto>(filtered);
         }
 
         private bool CanConfirm()

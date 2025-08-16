@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 
 namespace LYBT.Desktop.Core.Redux

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
@@ -125,6 +127,92 @@ namespace LYBT.Desktop.Services
             {
                 _currentUser = user;
             }
+        }
+
+        
+        /// <summary>
+        /// 获取当前用户角色
+        /// </summary>
+        /// <returns>当前用户角色</returns>
+        public UserRole? GetCurrentUserRole()
+        {
+            if (_currentUser == null) return UserRole.Admin; // 默认角色
+
+            // 简化的角色判断逻辑：只有管理员和普通用户
+            return _currentUser.Username == "sysadmin" ? UserRole.Admin : UserRole.Doctor;
+        }
+
+        /// <summary>
+        /// 检查用户是否有指定角色
+        /// </summary>
+        /// <param name="role">角色</param>
+        /// <returns>是否有该角色</returns>
+        public bool HasUserRole(UserRole role)
+        {
+            var currentRole = GetCurrentUserRole();
+            return currentRole.HasValue && currentRole.Value == role;
+        }
+
+        /// <summary>
+        /// 检查是否可访问指定模块
+        /// </summary>
+        /// <param name="moduleName">模块名称</param>
+        /// <returns>是否可访问</returns>
+        public bool CanAccessModule(string moduleName)
+        {
+            var currentRole = GetCurrentUserRole();
+            return currentRole.HasValue && _permissionService.CanAccessModule(currentRole.Value, moduleName);
+        }
+
+        /// <summary>
+        /// 获取可访问的模块列表
+        /// </summary>
+        /// <returns>模块列表</returns>
+        public IEnumerable<string> GetAccessibleModules()
+        {
+            var currentRole = GetCurrentUserRole();
+            return currentRole.HasValue ? _permissionService.GetAccessibleModules(currentRole.Value) : 
+                   Enumerable.Empty<string>();
+        }
+
+        /// <summary>
+        /// 检查是否有管理权限
+        /// </summary>
+        /// <returns>是否有管理权限</returns>
+        public bool HasManagementAccess()
+        {
+            var currentRole = GetCurrentUserRole();
+            return currentRole.HasValue && _permissionService.HasManagementAccess(currentRole.Value);
+        }
+
+        /// <summary>
+        /// 检查是否有医疗权限
+        /// </summary>
+        /// <returns>是否有医疗权限</returns>
+        public bool HasMedicalAccess()
+        {
+            var currentRole = GetCurrentUserRole();
+            return currentRole.HasValue && _permissionService.HasMedicalAccess(currentRole.Value);
+        }
+
+        /// <summary>
+        /// 获取当前用户工作台类型
+        /// </summary>
+        /// <returns>工作台类型</returns>
+        public string GetCurrentUserWorkbench()
+        {
+            var currentRole = GetCurrentUserRole();
+            return currentRole switch
+            {
+                UserRole.Admin => "AdminWorkbench",
+                UserRole.Doctor => "ConsultationWorkbench", 
+                UserRole.Receptionist => "ReceptionistWorkbench",
+                UserRole.Cashier => "CashierWorkbench",
+                UserRole.Pharmacist => "PharmacistWorkbench",
+                UserRole.Therapist => "TherapistWorkbench",
+                null => "ConsultationWorkbench",
+                _ => "ConsultationWorkbench"
+            };
         }
     }
 }

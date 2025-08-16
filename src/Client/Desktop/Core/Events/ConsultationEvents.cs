@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Prism.Events;
 using LYBT.Desktop.Core.Models.Patients;
@@ -71,6 +72,34 @@ namespace LYBT.Desktop.Core.Events
     /// 诊疗数据更新事件
     /// </summary>
     public class ConsultationDataUpdatedEvent : PubSubEvent<object>
+    {
+    }
+
+    /// <summary>
+    /// 数据刷新请求事件
+    /// </summary>
+    public class DataRefreshRequestEvent : PubSubEvent<DataRefreshRequestEventArgs>
+    {
+    }
+
+    /// <summary>
+    /// 错误发生事件
+    /// </summary>
+    public class ErrorOccurredEvent : PubSubEvent<ConsultationErrorEventArgs>
+    {
+    }
+
+    /// <summary>
+    /// 导航请求事件
+    /// </summary>
+    public class NavigationRequestEvent : PubSubEvent<NavigationEventArgs>
+    {
+    }
+
+    /// <summary>
+    /// 状态消息事件
+    /// </summary>
+    public class StatusMessageEvent : PubSubEvent<StatusMessageEventArgs>
     {
     }
 
@@ -151,6 +180,8 @@ namespace LYBT.Desktop.Core.Events
         public DateTime DiagnosisTime { get; set; } = DateTime.Now;
     }
 
+
+
     #endregion
 
     #region 枚举
@@ -175,6 +206,8 @@ namespace LYBT.Desktop.Core.Events
         /// <summary>完成确认</summary>
         Completion
     }
+
+
 
     #endregion
 }

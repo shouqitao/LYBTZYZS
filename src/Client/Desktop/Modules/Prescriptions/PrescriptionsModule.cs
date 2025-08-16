@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
 using LYBT.Desktop.Prescriptions.ViewModels;

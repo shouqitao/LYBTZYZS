@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Results;

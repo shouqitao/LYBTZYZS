@@ -158,14 +158,14 @@
                         </StackPanel>
                     </Button>
                     
-                    <!-- 验方模板 -->
+                    <!-- 验方模板 - UltraThink Phase 3.4: 增强功能集成 -->
                     <Button Style="{StaticResource ConsultationMenuButton}"
                             Command="{Binding NavigateToFormulasCommand}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🏥" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
                             <StackPanel>
                                 <TextBlock Text="验方模板" FontSize="14" FontWeight="Bold"/>
-                                <TextBlock Text="经典验方及个人模板" FontSize="11" Foreground="#6C757D"/>
+                                <TextBlock Text="导入导出·复制·经典验方管理" FontSize="11" Foreground="#6C757D"/>
                             </StackPanel>
                         </StackPanel>
                     </Button>

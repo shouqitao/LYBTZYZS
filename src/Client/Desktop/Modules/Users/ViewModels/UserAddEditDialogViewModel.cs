@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -12,7 +13,8 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.Desktop.Core.Models.Users;
+// UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
+using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
 
 namespace LYBT.Desktop.Users.ViewModels
 {

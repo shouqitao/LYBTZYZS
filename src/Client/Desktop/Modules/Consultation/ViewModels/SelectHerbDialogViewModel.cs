@@ -4,8 +4,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Herbs;
+// UltraThink重构: 统一HerbInfo和HerbDto，使用Dto作为统一模型
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Desktop.Services.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 
@@ -23,8 +26,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
         
         private bool _isLoading;
         private string _searchKeyword = string.Empty;
-        private HerbInfo? _selectedHerb;
-        private ObservableCollection<HerbInfo> _herbs = new ObservableCollection<HerbInfo>();
+        private HerbDto? _selectedHerb;
+        private ObservableCollection<HerbDto> _herbs = new ObservableCollection<HerbDto>();
         private ObservableCollection<HerbSelectionItem> _selectedItems = new ObservableCollection<HerbSelectionItem>();
         private decimal _defaultQuantity = 10;
         private string _quantityUnit = "g";
@@ -59,7 +62,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <summary>
         /// 选中的药材
         /// </summary>
-        public HerbInfo? SelectedHerb
+        public HerbDto? SelectedHerb
         {
             get => _selectedHerb;
             set
@@ -74,7 +77,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <summary>
         /// 药材列表
         /// </summary>
-        public ObservableCollection<HerbInfo> Herbs
+        public ObservableCollection<HerbDto> Herbs
         {
             get => _herbs;
             set => SetProperty(ref _herbs, value);
@@ -147,7 +150,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public DelegateCommand ClearSelectionCommand { get; }
         public DelegateCommand ConfirmCommand { get; }
         public DelegateCommand CancelCommand { get; }
-        public DelegateCommand<HerbInfo> QuickAddCommand { get; }
+        public DelegateCommand<HerbDto> QuickAddCommand { get; }
 
         #endregion
 
@@ -158,7 +161,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #endregion
 
-        private List<HerbInfo> _allHerbs = new();
+        private List<HerbDto> _allHerbs = new();
 
         public SelectHerbDialogViewModel(
             IHerbService herbService,
@@ -184,7 +187,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ClearSelectionCommand = new DelegateCommand(ExecuteClearSelection, () => SelectedItems.Any());
             ConfirmCommand = new DelegateCommand(ExecuteConfirm, () => SelectedItems.Any());
             CancelCommand = new DelegateCommand(ExecuteCancel);
-            QuickAddCommand = new DelegateCommand<HerbInfo>(ExecuteQuickAdd);
+            QuickAddCommand = new DelegateCommand<HerbDto>(ExecuteQuickAdd);
 
             // 初始加载
             Task.Run(async () => await LoadHerbsAsync());
@@ -200,17 +203,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 var result = await _herbService.GetListAsync();
                 if (result.IsSuccess && result.Data != null)
                 {
-                    _allHerbs = result.Data.Select(dto => new HerbInfo
-                    {
-                        Id = dto.Id,
-                        Name = dto.Name,
-                        Category = string.Empty, // 默认值
-                        Price = dto.Price,
-                        Unit = dto.Unit,
-                        Stock = 0, // 默认值
-                        IsActive = true // 默认值
-                    }).ToList();
-                    Herbs = new ObservableCollection<HerbInfo>(_allHerbs);
+                    _allHerbs = result.Data.ToList();
+                    Herbs = new ObservableCollection<HerbDto>(_allHerbs);
                     RaisePropertyChanged(nameof(ShowEmptyState));
                     RaisePropertyChanged(nameof(EmptyStateMessage));
                 }
@@ -242,7 +236,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 if (string.IsNullOrWhiteSpace(SearchKeyword))
                 {
                     // 如果搜索词为空，显示所有药材
-                    Herbs = new ObservableCollection<HerbInfo>(_allHerbs);
+                    Herbs = new ObservableCollection<HerbDto>(_allHerbs);
                 }
                 else
                 {
@@ -253,7 +247,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                         (!string.IsNullOrWhiteSpace(h.PinYinCode) && h.PinYinCode.ToLower().Contains(keyword))
                     ).ToList();
                     
-                    Herbs = new ObservableCollection<HerbInfo>(filteredHerbs);
+                    Herbs = new ObservableCollection<HerbDto>(filteredHerbs);
                 }
                 
                 RaisePropertyChanged(nameof(ShowEmptyState));
@@ -306,7 +300,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ClearSelectionCommand.RaiseCanExecuteChanged();
         }
 
-        private void ExecuteQuickAdd(HerbInfo herb)
+        private void ExecuteQuickAdd(HerbDto herb)
         {
             if (herb == null) return;
             

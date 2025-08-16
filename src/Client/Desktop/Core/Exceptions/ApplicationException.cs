@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Runtime.Serialization;
 
@@ -22,22 +23,22 @@ namespace LYBT.Desktop.Core.Exceptions
         /// <summary>
         /// 错误代码
         /// </summary>
-        public string ErrorCode { get; set; }
+        public string ErrorCode { get; set; } = string.Empty;
         
         /// <summary>
         /// 用户友好的错误消息
         /// </summary>
-        public string UserFriendlyMessage { get; set; }
+        public string UserFriendlyMessage { get; set; } = string.Empty;
         
         /// <summary>
         /// 技术详情（用于日志）
         /// </summary>
-        public string TechnicalDetails { get; set; }
+        public string TechnicalDetails { get; set; } = string.Empty;
         
         /// <summary>
         /// 关联ID（用于追踪）
         /// </summary>
-        public string CorrelationId { get; set; }
+        public string CorrelationId { get; set; } = string.Empty;
         
         /// <summary>
         /// 发生时间
@@ -80,8 +81,10 @@ namespace LYBT.Desktop.Core.Exceptions
             Category = category;
             Severity = severity;
             OccurredAt = DateTime.Now;
+            ErrorCode = $"{category}_{Guid.NewGuid().ToString("N")[..8]}";
             CorrelationId = Guid.NewGuid().ToString();
             UserFriendlyMessage = GetDefaultUserMessage(category);
+            TechnicalDetails = message;
             IsRetryable = DetermineRetryability(category);
         }
         
@@ -91,20 +94,22 @@ namespace LYBT.Desktop.Core.Exceptions
             Category = category;
             Severity = severity;
             OccurredAt = DateTime.Now;
+            ErrorCode = $"{category}_{Guid.NewGuid().ToString("N")[..8]}";
             CorrelationId = Guid.NewGuid().ToString();
             UserFriendlyMessage = GetDefaultUserMessage(category);
+            TechnicalDetails = $"{message} | InnerException: {innerException?.Message}";
             IsRetryable = DetermineRetryability(category);
         }
         
         protected AppException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            Category = (ErrorCategory)info.GetValue(nameof(Category), typeof(ErrorCategory));
-            Severity = (ErrorSeverity)info.GetValue(nameof(Severity), typeof(ErrorSeverity));
-            ErrorCode = info.GetString(nameof(ErrorCode));
-            UserFriendlyMessage = info.GetString(nameof(UserFriendlyMessage));
-            TechnicalDetails = info.GetString(nameof(TechnicalDetails));
-            CorrelationId = info.GetString(nameof(CorrelationId));
+            Category = (ErrorCategory)(info.GetValue(nameof(Category), typeof(ErrorCategory)) ?? ErrorCategory.Unknown);
+            Severity = (ErrorSeverity)(info.GetValue(nameof(Severity), typeof(ErrorSeverity)) ?? ErrorSeverity.Error);
+            ErrorCode = info.GetString(nameof(ErrorCode)) ?? string.Empty;
+            UserFriendlyMessage = info.GetString(nameof(UserFriendlyMessage)) ?? string.Empty;
+            TechnicalDetails = info.GetString(nameof(TechnicalDetails)) ?? string.Empty;
+            CorrelationId = info.GetString(nameof(CorrelationId)) ?? string.Empty;
             OccurredAt = info.GetDateTime(nameof(OccurredAt));
             IsHandled = info.GetBoolean(nameof(IsHandled));
             RetryCount = info.GetInt32(nameof(RetryCount));

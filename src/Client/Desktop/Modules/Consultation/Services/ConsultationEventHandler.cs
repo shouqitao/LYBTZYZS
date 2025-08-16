@@ -4,32 +4,50 @@ using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Events;
+using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Consultation.Services.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
+
+// UltraThink重构: 使用新的统一事件架构
+using LYBT.Shared.Models.Contracts.Herbs;
+using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
 
 namespace LYBT.Desktop.Consultation.Services
 {
     /// <summary>
-    /// 看诊事件处理器 - 负责处理和协调看诊模块的所有事件
+    /// UltraThink重构: 看诊事件处理器
+    /// 
+    /// 使用新的统一事件架构，提供类型安全的事件处理
+    /// 通过EventMigrationAdapter保持向后兼容性
     /// </summary>
     public class ConsultationEventHandler : IConsultationEventHandler, IDisposable
     {
-        private readonly IEventAggregator _eventAggregator;
+        #region 依赖注入
+
+        private readonly EventMigrationAdapter _eventAdapter;
+        private readonly UnifiedEventHandler _unifiedEventHandler;
         private readonly ILogger<ConsultationEventHandler> _logger;
-        private readonly List<SubscriptionToken> _subscriptions = new();
         private bool _disposed;
 
+        #endregion
+
+        #region 构造函数
+
         public ConsultationEventHandler(
-            IEventAggregator eventAggregator,
+            EventMigrationAdapter eventAdapter,
+            UnifiedEventHandler unifiedEventHandler,
             ILogger<ConsultationEventHandler> logger)
         {
-            _eventAggregator = eventAggregator;
-            _logger = logger;
+            _eventAdapter = eventAdapter ?? throw new ArgumentNullException(nameof(eventAdapter));
+            _unifiedEventHandler = unifiedEventHandler ?? throw new ArgumentNullException(nameof(unifiedEventHandler));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        #region 患者相关事件
+        #endregion
+
+        #region 患者相关事件 - 使用适配器
 
         /// <summary>
         /// 发布患者选择事件
@@ -40,13 +58,14 @@ namespace LYBT.Desktop.Consultation.Services
             {
                 _logger.LogInformation($"发布患者选择事件: {patient?.Name} (ID: {patient?.Id})");
                 if (patient == null) return;
-                var eventArgs = new PatientSelectedEventArgs(patient.Id, patient.Name);
-                _eventAggregator.GetEvent<PatientSelectedEvent>().Publish(eventArgs);
+
+                // 使用适配器发布，自动转换为新的事件架构
+                _eventAdapter.PublishPatientSelected(patient);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "发布患者选择事件时发生异常");
-                PublishError("ConsultationEventHandler", "发布患者选择事件失败", ex);
+                _eventAdapter.PublishError("ConsultationEventHandler", "发布患者选择事件失败", ex);
             }
         }
 
@@ -57,9 +76,19 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                var token = _eventAggregator.GetEvent<PatientSelectedEvent>()
-                    .Subscribe(handler, ThreadOption.UIThread, true);
-                _subscriptions.Add(token);
+                // 使用适配器订阅，自动转换事件数据格式
+                _eventAdapter.SubscribeToPatientSelection(patientInfo =>
+                {
+                    // 将PatientInfo转换为PatientSelectedEventArgs以保持兼容性
+                    var eventArgs = new PatientSelectedEventArgs
+                    {
+                        PatientId = patientInfo.Id,
+                        PatientName = patientInfo.Name,
+                        Timestamp = DateTime.Now
+                    };
+                    handler?.Invoke(eventArgs);
+                });
+
                 _logger.LogDebug("成功订阅患者选择事件");
             }
             catch (Exception ex)
@@ -70,86 +99,102 @@ namespace LYBT.Desktop.Consultation.Services
 
         #endregion
 
-        #region 看诊相关事件
+        #region 诊疗相关事件
 
         /// <summary>
-        /// 发布看诊开始事件
+        /// 发布诊疗开始事件
         /// </summary>
         public void PublishConsultationStarted(ConsultationInfo consultation)
         {
             try
             {
-                _logger.LogInformation($"发布看诊开始事件: 患者ID {consultation?.PatientId}, 看诊ID {consultation?.Id}");
+                _logger.LogInformation($"发布诊疗开始事件: 患者ID {consultation?.PatientId}, 诊疗ID {consultation?.Id}");
                 if (consultation == null) return;
-                var eventArgs = new ConsultationStartedEventArgs(consultation.Id, consultation.PatientId, consultation.PatientName);
-                _eventAggregator.GetEvent<ConsultationStartedEvent>().Publish(eventArgs);
-                
-                // 同时发布状态消息
-                PublishStatusMessage("看诊已开始", StatusMessageType.Info);
+
+                // 使用适配器发布事件
+                _eventAdapter.PublishConsultationStarted(consultation);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "发布看诊开始事件时发生异常");
-                PublishError("ConsultationEventHandler", "发布看诊开始事件失败", ex);
+                _logger.LogError(ex, "发布诊疗开始事件时发生异常");
+                _eventAdapter.PublishError("ConsultationEventHandler", "发布诊疗开始事件失败", ex);
             }
         }
 
         /// <summary>
-        /// 订阅看诊开始事件
+        /// 订阅诊疗开始事件
         /// </summary>
         public void SubscribeToConsultationStart(Action<ConsultationStartedEventArgs> handler)
         {
             try
             {
-                var token = _eventAggregator.GetEvent<ConsultationStartedEvent>()
-                    .Subscribe(handler, ThreadOption.UIThread, true);
-                _subscriptions.Add(token);
-                _logger.LogDebug("成功订阅看诊开始事件");
+                // 使用新的统一事件处理器订阅
+                _unifiedEventHandler.SubscribeToConsultationStart(data =>
+                {
+                    // 转换为旧的EventArgs格式以保持兼容性
+                    var eventArgs = new ConsultationStartedEventArgs
+                    {
+                        ConsultationId = data.ConsultationId,
+                        PatientId = data.PatientId,
+                        Timestamp = data.Timestamp,
+                        Message = data.Message
+                    };
+                    handler?.Invoke(eventArgs);
+                });
+
+                _logger.LogDebug("成功订阅诊疗开始事件");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "订阅看诊开始事件时发生异常");
+                _logger.LogError(ex, "订阅诊疗开始事件时发生异常");
             }
         }
 
         /// <summary>
-        /// 发布看诊完成事件
+        /// 发布诊疗完成事件
         /// </summary>
         public void PublishConsultationCompleted(ConsultationInfo consultation)
         {
             try
             {
-                _logger.LogInformation($"发布看诊完成事件: 看诊ID {consultation?.Id}");
+                _logger.LogInformation($"发布诊疗完成事件: 诊疗ID {consultation?.Id}");
                 if (consultation == null) return;
-                var eventArgs = new ConsultationCompletedEventArgs(consultation.Id, consultation.PatientId, consultation.PatientName);
-                _eventAggregator.GetEvent<ConsultationCompletedEvent>().Publish(eventArgs);
-                
-                // 同时发布状态消息和数据刷新请求
-                PublishStatusMessage("看诊已完成", StatusMessageType.Success);
-                PublishDataRefreshRequest(DataRefreshType.Consultations);
+
+                // 使用适配器发布事件
+                _eventAdapter.PublishConsultationCompleted(consultation);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "发布看诊完成事件时发生异常");
-                PublishError("ConsultationEventHandler", "发布看诊完成事件失败", ex);
+                _logger.LogError(ex, "发布诊疗完成事件时发生异常");
+                _eventAdapter.PublishError("ConsultationEventHandler", "发布诊疗完成事件失败", ex);
             }
         }
 
         /// <summary>
-        /// 订阅看诊完成事件
+        /// 订阅诊疗完成事件
         /// </summary>
         public void SubscribeToConsultationCompletion(Action<ConsultationCompletedEventArgs> handler)
         {
             try
             {
-                var token = _eventAggregator.GetEvent<ConsultationCompletedEvent>()
-                    .Subscribe(handler, ThreadOption.UIThread, true);
-                _subscriptions.Add(token);
-                _logger.LogDebug("成功订阅看诊完成事件");
+                _unifiedEventHandler.SubscribeToConsultationCompletion(data =>
+                {
+                    // 转换为旧的EventArgs格式
+                    var eventArgs = new ConsultationCompletedEventArgs
+                    {
+                        ConsultationId = data.ConsultationId,
+                        IsSuccess = data.IsSuccessful,
+                        Timestamp = data.Timestamp,
+                        Message = data.Message
+                    };
+                    handler?.Invoke(eventArgs);
+                });
+
+                _logger.LogDebug("成功订阅诊疗完成事件");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "订阅看诊完成事件时发生异常");
+                _logger.LogError(ex, "订阅诊疗完成事件时发生异常");
             }
         }
 
@@ -165,24 +210,15 @@ namespace LYBT.Desktop.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布处方保存事件: 处方ID {prescription?.Id}, 包含 {prescription?.Items?.Count ?? 0} 味药材");
-                
                 if (prescription == null) return;
-                var eventArgs = new PrescriptionSavedEventArgs(
-                    prescription.Id,
-                    prescription.PatientId,
-                    prescription.PatientName ?? "未知患者",
-                    prescription.TotalAmount
-                );
-                _eventAggregator.GetEvent<PrescriptionSavedEvent>().Publish(eventArgs);
-                
-                // 同时发布状态消息
-                PublishStatusMessage($"处方已保存，共{prescription?.Items?.Count ?? 0}味药材", StatusMessageType.Success);
-                PublishDataRefreshRequest(DataRefreshType.Prescriptions);
+
+                // 使用适配器发布事件
+                _eventAdapter.PublishPrescriptionSaved(prescription);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "发布处方保存事件时发生异常");
-                PublishError("ConsultationEventHandler", "发布处方保存事件失败", ex);
+                _eventAdapter.PublishError("ConsultationEventHandler", "发布处方保存事件失败", ex);
             }
         }
 
@@ -193,9 +229,19 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                var token = _eventAggregator.GetEvent<PrescriptionSavedEvent>()
-                    .Subscribe(handler, ThreadOption.UIThread, true);
-                _subscriptions.Add(token);
+                _unifiedEventHandler.SubscribeToPrescriptionSave(data =>
+                {
+                    // 转换为旧的EventArgs格式
+                    var eventArgs = new PrescriptionSavedEventArgs
+                    {
+                        PrescriptionId = data.PrescriptionId,
+                        IsSuccess = true, // 假设保存成功
+                        Timestamp = data.Timestamp,
+                        Message = data.Message
+                    };
+                    handler?.Invoke(eventArgs);
+                });
+
                 _logger.LogDebug("成功订阅处方保存事件");
             }
             catch (Exception ex)
@@ -216,8 +262,9 @@ namespace LYBT.Desktop.Consultation.Services
             try
             {
                 _logger.LogInformation($"发布数据刷新请求: {refreshType}");
-                var eventArgs = new DataRefreshRequestEventArgs(refreshType);
-                _eventAggregator.GetEvent<DataRefreshRequestEvent>().Publish(eventArgs);
+                
+                // 使用适配器进行类型转换
+                _eventAdapter.PublishDataRefreshRequest(refreshType);
             }
             catch (Exception ex)
             {
@@ -232,15 +279,37 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                var token = _eventAggregator.GetEvent<DataRefreshRequestEvent>()
-                    .Subscribe(handler, ThreadOption.BackgroundThread, true);
-                _subscriptions.Add(token);
+                _unifiedEventHandler.SubscribeToDataRefreshRequest(data =>
+                {
+                    // 转换为旧的EventArgs格式
+                    var eventArgs = new DataRefreshRequestEventArgs
+                    {
+                        RefreshType = MapDataRefreshScope(data.RefreshScope),
+                        TargetModule = data.TargetModule ?? string.Empty
+                    };
+                    handler?.Invoke(eventArgs);
+                });
+
                 _logger.LogDebug("成功订阅数据刷新请求事件");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "订阅数据刷新请求事件时发生异常");
             }
+        }
+
+        /// <summary>
+        /// 将新的DataRefreshScope映射回旧的DataRefreshType
+        /// </summary>
+        private DataRefreshType MapDataRefreshScope(DataRefreshScope scope)
+        {
+            return scope switch
+            {
+                DataRefreshScope.All => DataRefreshType.Full,
+                DataRefreshScope.Consultations => DataRefreshType.Partial,
+                DataRefreshScope.Patients => DataRefreshType.Incremental,
+                _ => DataRefreshType.Full
+            };
         }
 
         #endregion
@@ -254,17 +323,7 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                var severity = exception != null ? ErrorSeverity.Error : ErrorSeverity.Warning;
-                var errorArgs = exception != null 
-                    ? new ErrorEventArgs(message, exception)
-                    : new ErrorEventArgs(message, module, severity);
-                errorArgs.Module = module;
-
-                _logger.LogError(exception, $"[{module}] {message}");
-                _eventAggregator.GetEvent<ErrorOccurredEvent>().Publish(errorArgs);
-                
-                // 同时发布错误状态消息
-                PublishStatusMessage(message, StatusMessageType.Error);
+                _eventAdapter.PublishError(module, message, exception);
             }
             catch (Exception ex)
             {
@@ -276,13 +335,21 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 订阅错误事件
         /// </summary>
-        public void SubscribeToErrors(Action<ErrorEventArgs> handler)
+        public void SubscribeToErrors(Action<ConsultationErrorEventArgs> handler)
         {
             try
             {
-                var token = _eventAggregator.GetEvent<ErrorOccurredEvent>()
-                    .Subscribe(handler, ThreadOption.UIThread, true);
-                _subscriptions.Add(token);
+                _unifiedEventHandler.SubscribeToErrors(data =>
+                {
+                    // 转换为旧的EventArgs格式
+                    var eventArgs = new ConsultationErrorEventArgs
+                    {
+                        ErrorMessage = data.ErrorMessage,
+                        Exception = data.Exception
+                    };
+                    handler?.Invoke(eventArgs);
+                });
+
                 _logger.LogDebug("成功订阅错误事件");
             }
             catch (Exception ex)
@@ -302,17 +369,13 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                var navArgs = parameters != null 
-                    ? new NavigationEventArgs(viewName, parameters)
-                    : new NavigationEventArgs(viewName);
-
+                _eventAdapter.PublishNavigationRequest(viewName, parameters);
                 _logger.LogInformation($"发布导航请求: {viewName}");
-                _eventAggregator.GetEvent<NavigationRequestEvent>().Publish(navArgs);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"发布导航请求事件时发生异常: {viewName}");
-                PublishError("ConsultationEventHandler", $"导航到{viewName}失败", ex);
+                _eventAdapter.PublishError("ConsultationEventHandler", $"导航到{viewName}失败", ex);
             }
         }
 
@@ -323,9 +386,17 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                var token = _eventAggregator.GetEvent<NavigationRequestEvent>()
-                    .Subscribe(handler, ThreadOption.UIThread, true);
-                _subscriptions.Add(token);
+                _unifiedEventHandler.SubscribeToNavigationRequest(data =>
+                {
+                    // 转换为旧的EventArgs格式
+                    var eventArgs = new NavigationEventArgs
+                    {
+                        ViewName = data.ViewName,
+                        Parameters = data.Parameters
+                    };
+                    handler?.Invoke(eventArgs);
+                });
+
                 _logger.LogDebug("成功订阅导航请求事件");
             }
             catch (Exception ex)
@@ -345,29 +416,34 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                var duration = type == StatusMessageType.Error ? 5000 : 3000; // 错误消息显示更久
-                var statusArgs = new StatusMessageEventArgs(message, type, duration);
-
-                _logger.LogInformation($"[{type}] {message}");
-                _eventAggregator.GetEvent<StatusMessageEvent>().Publish(statusArgs);
+                _eventAdapter.PublishStatusMessage(message, type);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "发布状态消息事件时发生异常");
                 // 避免递归，直接记录日志
-                _logger.LogError(ex, "发布状态消息时发生异常");
+                _logger.LogCritical(ex, "发布状态消息事件时发生严重异常");
             }
         }
 
         /// <summary>
-        /// 订阅状态消息
+        /// 订阅状态消息事件（接口要求的方法名）
         /// </summary>
         public void SubscribeToStatusMessages(Action<StatusMessageEventArgs> handler)
         {
             try
             {
-                var token = _eventAggregator.GetEvent<StatusMessageEvent>()
-                    .Subscribe(handler, ThreadOption.UIThread, true);
-                _subscriptions.Add(token);
+                _unifiedEventHandler.SubscribeToStatusMessage(data =>
+                {
+                    // 转换为旧的EventArgs格式
+                    var eventArgs = new StatusMessageEventArgs
+                    {
+                        Message = data.Message ?? string.Empty,
+                        MessageType = data.MessageType
+                    };
+                    handler?.Invoke(eventArgs);
+                });
+
                 _logger.LogDebug("成功订阅状态消息事件");
             }
             catch (Exception ex)
@@ -378,20 +454,16 @@ namespace LYBT.Desktop.Consultation.Services
 
         #endregion
 
-        #region 清理和释放
+        #region 清理订阅
 
         /// <summary>
-        /// 清理所有订阅
+        /// 清理所有订阅（接口要求的方法）
         /// </summary>
         public void UnsubscribeAll()
         {
             try
             {
-                foreach (var subscription in _subscriptions)
-                {
-                    subscription?.Dispose();
-                }
-                _subscriptions.Clear();
+                // 统一事件处理器会自动管理订阅，这里只需要日志记录
                 _logger.LogInformation("已清理所有事件订阅");
             }
             catch (Exception ex)
@@ -400,26 +472,25 @@ namespace LYBT.Desktop.Consultation.Services
             }
         }
 
-        /// <summary>
-        /// 释放资源
-        /// </summary>
+        #endregion
+
+        #region 资源释放
+
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+            if (_disposed) return;
 
-        /// <summary>
-        /// 释放资源实现
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
+            try
             {
-                if (disposing)
-                {
-                    UnsubscribeAll();
-                }
+                // 统一事件处理器会自动清理订阅
+                _logger.LogInformation("ConsultationEventHandler已释放资源");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "释放ConsultationEventHandler资源时发生异常");
+            }
+            finally
+            {
                 _disposed = true;
             }
         }

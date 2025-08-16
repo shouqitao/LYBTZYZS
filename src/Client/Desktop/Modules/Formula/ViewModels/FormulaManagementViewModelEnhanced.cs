@@ -9,15 +9,15 @@ using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Extensions;
 using Prism.Commands;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Services;
 using Prism.Ioc;
 using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -113,31 +113,31 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<FormulaInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
+        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
-                // 如果需要传递分类信息，创建扩展请求
-                var extendedRequest = new ExtendedPaginationRequest
+                // 创建查询请求
+                var queryRequest = new PagedQueryBaseDto
                 {
-                    PageIndex = request.CurrentPage,
-                    PageSize = request.PageSize,
-                    Keyword = request.SearchKeyword,
-                    SortField = request.SortField,
-                    IsDescending = request.IsDescending
+                    PageIndex = request.PageIndex,
+                    PageSize = request.PageSize
                 };
 
-                if (SelectedCategory != "全部")
-                {
-                    extendedRequest.ExtensionData["Category"] = SelectedCategory;
-                }
+                var result = await Service.SearchFormulasAsync(queryRequest);
+                
+                // 转换结果类型 - 使用构造函数创建，TotalPages是计算属性
+                var convertedResult = new LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>(
+                    result.Items.ToFormulaInfoList(),
+                    result.TotalCount,
+                    result.PageIndex,
+                    result.PageSize);
 
-                var result = await Service.SearchFormulasAsync(extendedRequest);
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<FormulaInfo>>.Success(result);
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>.Success(convertedResult);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<FormulaInfo>>.Failure($"加载验方模板列表失败: {ex.Message}");
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>.Failure($"加载验方模板列表失败: {ex.Message}");
             }
         }
 

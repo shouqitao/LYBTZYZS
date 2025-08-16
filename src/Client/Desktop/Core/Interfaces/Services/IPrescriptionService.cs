@@ -1,10 +1,10 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>
         /// 分页查询处方
         /// </summary>
-        Task<LYBT.Desktop.Core.Models.Common.PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request);
+        Task<LYBT.Shared.Models.Contracts.Common.PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request);
 
         /// <summary>
         /// 获取处方详情
@@ -35,8 +35,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         Task<ServiceResult<PrescriptionDto>> UpdateAsync(PrescriptionEditDto dto);
 
         /// <summary>
-        /// 创建或更新处方
-        /// </summary>
+        /// 创建或更新处�?        /// </summary>
         Task<ServiceResult<PrescriptionDto>> CreateOrUpdateAsync(PrescriptionCreateDto dto);
 
         /// <summary>
@@ -70,13 +69,11 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         Task<ServiceResult<PrescriptionDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
         /// <summary>
-        /// 批量获取处方详情（性能优化）
-        /// </summary>
+        /// 批量获取处方详情（性能优化�?        /// </summary>
         Task<List<PrescriptionDto>> GetBatchAsync(IEnumerable<Guid> ids);
 
         /// <summary>
-        /// 批量更新处方状态（性能优化）
-        /// </summary>
+        /// 批量更新处方状态（性能优化�?        /// </summary>
         Task<ServiceResult<int>> UpdateBatchStatusAsync(IEnumerable<Guid> ids, int status, string? reason = null);
     }
 }

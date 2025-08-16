@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
@@ -8,7 +9,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Logging;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Desktop.Core.Views.Dialogs;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services
@@ -18,7 +20,7 @@ namespace LYBT.Desktop.Core.Services
     /// </summary>
     public class UserNotificationService : IUserNotificationService
     {
-        private readonly IStructuredLoggingService _loggingService;
+        private readonly ILogger<UserNotificationService> _loggingService;
         private readonly ILogger<UserNotificationService>? _logger;
         private readonly ConcurrentQueue<NotificationMessage> _messageQueue = new();
         private readonly DispatcherTimer _displayTimer;
@@ -34,7 +36,7 @@ namespace LYBT.Desktop.Core.Services
         private const int SuccessDisplayDurationSeconds = 3;
         
         public UserNotificationService(
-            IStructuredLoggingService loggingService,
+            ILogger<UserNotificationService> loggingService,
             ILogger<UserNotificationService>? logger = null)
         {
             _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
@@ -147,6 +149,99 @@ namespace LYBT.Desktop.Core.Services
             });
         }
         
+        /// <summary>
+        /// 增强的信息通知（支持配置）
+        /// </summary>
+        public async Task ShowInfoAsync(string message, NotificationConfiguration configuration)
+        {
+            await ShowNotificationAsync(new NotificationMessage
+            {
+                Type = NotificationType.Info,
+                Title = "提示",
+                Message = message,
+                Severity = ErrorSeverity.Info,
+                Duration = configuration.Duration,
+                Icon = "ℹ️"
+            });
+        }
+
+        /// <summary>
+        /// 增强的警告通知（支持配置）
+        /// </summary>
+        public async Task ShowWarningAsync(string message, NotificationConfiguration configuration)
+        {
+            await ShowNotificationAsync(new NotificationMessage
+            {
+                Type = NotificationType.Warning,
+                Title = "警告",
+                Message = message,
+                Severity = ErrorSeverity.Warning,
+                Duration = configuration.Duration,
+                Icon = "⚠️"
+            });
+        }
+
+        /// <summary>
+        /// 增强的错误通知（支持建议操作和配置）
+        /// </summary>
+        public async Task ShowErrorAsync(string message, string[] suggestedActions, NotificationConfiguration configuration)
+        {
+            var fullMessage = message;
+            if (suggestedActions.Length > 0)
+            {
+                fullMessage += "\n\n建议操作：\n• " + string.Join("\n• ", suggestedActions);
+            }
+
+            await ShowNotificationAsync(new NotificationMessage
+            {
+                Type = NotificationType.Error,
+                Title = "错误",
+                Message = fullMessage,
+                Severity = ErrorSeverity.Error,
+                Duration = configuration.Duration,
+                Icon = "⛔"
+            });
+        }
+
+        /// <summary>
+        /// 严重错误通知（支持完整错误信息和配置）
+        /// </summary>
+        public async Task ShowCriticalErrorAsync(HandledError handledError, NotificationConfiguration configuration)
+        {
+            if (configuration.ShowInDialog)
+            {
+                // 显示详细的错误对话框
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    var errorDialog = new CriticalErrorDialog
+                    {
+                        Owner = _mainWindow ?? Application.Current.MainWindow,
+                        ErrorInfo = handledError
+                    };
+                    errorDialog.ShowDialog();
+                });
+            }
+            else
+            {
+                // 显示通知
+                var message = handledError.UserMessage;
+                if (handledError.SuggestedActions.Count > 0)
+                {
+                    message += "\n\n建议操作：\n• " + string.Join("\n• ", handledError.SuggestedActions);
+                }
+
+                await ShowNotificationAsync(new NotificationMessage
+                {
+                    Type = NotificationType.Error,
+                    Title = "严重错误",
+                    Message = message,
+                    Severity = handledError.Severity,
+                    Duration = configuration.Duration,
+                    Icon = "❌"
+                });
+            }
+        }
+
         public void ShowProgress(string message, int percentage)
         {
             // TODO: 实现进度显示
@@ -493,16 +588,29 @@ namespace LYBT.Desktop.Core.Services
     
     /// <summary>
     /// 用户通知服务接口
+    /// UltraThink Phase 5.3: 扩展支持增强错误处理
     /// </summary>
     public interface IUserNotificationService
     {
         void Initialize(Window mainWindow);
+        
+        // 基础通知方法
         Task ShowSuccessAsync(string message, int? durationSeconds = null);
         Task ShowWarningAsync(string message, int? durationSeconds = null);
         Task ShowErrorAsync(string message, ErrorSeverity severity, int? durationSeconds = null);
         Task ShowInfoAsync(string message, int? durationSeconds = null);
+        
+        // 增强错误处理支持的方法重载
+        Task ShowInfoAsync(string message, NotificationConfiguration configuration);
+        Task ShowWarningAsync(string message, NotificationConfiguration configuration);
+        Task ShowErrorAsync(string message, string[] suggestedActions, NotificationConfiguration configuration);
+        Task ShowCriticalErrorAsync(HandledError handledError, NotificationConfiguration configuration);
+        
+        // 对话框和输入
         Task<bool> ShowConfirmationAsync(string message, string title = "确认");
         Task<string?> ShowInputAsync(string prompt, string title = "输入", string defaultValue = "");
+        
+        // 进度显示
         void ShowProgress(string message, int percentage);
         void HideProgress();
     }

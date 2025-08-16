@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.Threading.Tasks;
 using Prism.Navigation.Regions;
 
@@ -15,7 +16,7 @@ namespace LYBT.Desktop.Workbench.Core
         /// <param name="viewName">视图名称</param>
         /// <param name="parameters">导航参数</param>
         /// <returns>导航任务</returns>
-        Task NavigateToAsync(string viewName, NavigationParameters parameters = null);
+        Task NavigateToAsync(string viewName, NavigationParameters? parameters = null);
 
         /// <summary>
         /// 导航到默认视图

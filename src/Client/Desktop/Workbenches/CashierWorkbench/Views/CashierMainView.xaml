@@ -1,0 +1,150 @@
+<UserControl x:Class="LYBT.Desktop.Workbench.Cashier.Views.CashierMainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 收银员工作台标题 -->
+        <Border Grid.Row="0" Background="#FFC107" Padding="20,15">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="收银员工作台" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                <TextBlock Text="Cashier Workbench" FontSize="14" Foreground="#FFF3CD" VerticalAlignment="Center" Margin="10,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 主内容区域 -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧导航菜单 -->
+            <Border Grid.Column="0" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,20,0,0">
+                        
+                        <!-- 费用结算 -->
+                        <Button Command="{Binding NavigateToBillingManagementCommand}" 
+                                Style="{x:Null}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,15"
+                                HorizontalContentAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E9ECEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="💰" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="费用结算" FontSize="14" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 支付管理 -->
+                        <Button Command="{Binding NavigateToPaymentManagementCommand}" 
+                                Style="{x:Null}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,15"
+                                HorizontalContentAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E9ECEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="💳" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="支付管理" FontSize="14" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 财务报表 -->
+                        <Button Command="{Binding NavigateToFinancialReportsCommand}" 
+                                Style="{x:Null}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,15"
+                                HorizontalContentAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E9ECEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📊" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="财务报表" FontSize="14" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 退费管理 -->
+                        <Button Command="{Binding NavigateToRefundManagementCommand}" 
+                                Style="{x:Null}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,15"
+                                HorizontalContentAlignment="Left"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#E9ECEF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔄" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="退费管理" FontSize="14" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- 右侧内容区域 -->
+            <ContentControl Grid.Column="1" prism:RegionManager.RegionName="CashierContentRegion"/>
+
+        </Grid>
+    </Grid>
+</UserControl>

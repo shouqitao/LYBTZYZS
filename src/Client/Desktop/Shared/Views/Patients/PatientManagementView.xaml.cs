@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System.Windows.Controls;
 
 namespace LYBT.Desktop.Shared.Views.Patients

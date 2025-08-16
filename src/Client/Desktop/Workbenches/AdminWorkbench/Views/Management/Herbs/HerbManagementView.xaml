@@ -1,0 +1,513 @@
+<UserControl x:Class="LYBT.Desktop.Workbench.Admin.Views.Management.Herbs.HerbManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core"
+             xmlns:local="clr-namespace:LYBT.Desktop.Workbench.Admin.Helpers"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1200"
+             Background="{DynamicResource AdminBackgroundBrush}">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Resources/AdminTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+            
+            <!-- 价格格式转换器 -->
+            <converters:PriceFormatConverter x:Key="PriceFormatConverter"/>
+            <converters:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
+            <RowDefinition Height="Auto"/>  <!-- 筛选栏 -->
+            <RowDefinition Height="*"/>     <!-- 数据网格 -->
+            <RowDefinition Height="Auto"/>  <!-- 分页栏 -->
+            <RowDefinition Height="Auto"/>  <!-- 状态栏 -->
+        </Grid.RowDefinitions>
+
+        <!-- 工具栏 -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource AdminToolbarBackgroundBrush}" 
+                BorderBrush="{DynamicResource AdminToolbarBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal">
+                <!-- 添加药材按钮 -->
+                <Button Content="&#xE710;" 
+                        Command="{Binding AddCommand}"
+                        Style="{DynamicResource AdminToolbarButtonStyle}"
+                        Margin="0,0,8,0"
+                        Width="32" Height="32"
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="14"
+                        ToolTip="添加新药材"/>
+                
+                <TextBlock Text="添加药材" 
+                           VerticalAlignment="Center"
+                           Margin="0,0,24,0"
+                           Foreground="{DynamicResource AdminTextPrimaryBrush}"
+                           FontWeight="Medium"/>
+
+                <!-- 导入按钮 -->
+                <Button Content="&#xE8B5;" 
+                        Command="{Binding ImportHerbsCommand}"
+                        Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                        Margin="0,0,8,0"
+                        Width="32" Height="32"
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="14"
+                        ToolTip="导入药材数据"/>
+
+                <!-- 刷新按钮 -->
+                <Button Content="&#xE72C;" 
+                        Command="{Binding RefreshCommand}"
+                        Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                        Margin="0,0,8,0"
+                        Width="32" Height="32"
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="14"
+                        ToolTip="刷新数据"/>
+
+                <!-- 导出按钮 -->
+                <Button Content="&#xEDE1;" 
+                        Command="{Binding ExportCommand}"
+                        Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                        Margin="0,0,16,0"
+                        Width="32" Height="32"
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="14"
+                        ToolTip="导出数据"/>
+
+                <!-- 间距 -->
+                <Rectangle Width="1" 
+                           Fill="{DynamicResource AdminToolbarBorderBrush}"
+                           Margin="8,4"/>
+
+                <!-- 统计信息 -->
+                <StackPanel Orientation="Horizontal" Margin="16,0">
+                    <TextBlock Text="药材总数：" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AdminTextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding Statistics.TotalCount}" 
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource AdminTextPrimaryBrush}"
+                               Margin="0,0,16,0"/>
+                    
+                    <TextBlock Text="启用：" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AdminTextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding Statistics.EnabledCount}" 
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource AdminSuccessBrush}"
+                               Margin="0,0,16,0"/>
+                    
+                    <TextBlock Text="平均价格：¥" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AdminTextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding Statistics.AveragePrice, StringFormat={}{0:F2}}" 
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource AdminInfoBrush}"
+                               Margin="0,0,16,0"/>
+                    
+                    <TextBlock Text="库存不足：" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AdminTextSecondaryBrush}"/>
+                    <TextBlock Text="{Binding Statistics.LowStockCount}" 
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource AdminWarningBrush}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 筛选栏 -->
+        <Border Grid.Row="1" 
+                Background="{DynamicResource AdminSurfaceBrush}"
+                BorderBrush="{DynamicResource AdminToolbarBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>  <!-- 搜索框 -->
+                    <ColumnDefinition Width="Auto"/> <!-- 产地筛选 -->
+                    <ColumnDefinition Width="Auto"/> <!-- 价格范围 -->
+                    <ColumnDefinition Width="*"/>    <!-- 空白 -->
+                    <ColumnDefinition Width="Auto"/> <!-- 清除按钮 -->
+                </Grid.ColumnDefinitions>
+
+                <!-- 搜索框 -->
+                <Border Grid.Column="0" 
+                        Background="White"
+                        BorderBrush="{DynamicResource AdminToolbarBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 搜索图标 -->
+                        <TextBlock Grid.Column="0"
+                                   Text="&#xE721;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource AdminTextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,8,0"/>
+
+                        <!-- 搜索文本框 -->
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalAlignment="Center"
+                                 Padding="0,8"
+                                 FontSize="14">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="TextBox">
+                                                <Grid>
+                                                    <ScrollViewer x:Name="PART_ContentHost"/>
+                                                    <TextBlock Text="搜索药材名称、拼音码或产地..."
+                                                               Foreground="{DynamicResource AdminTextMutedBrush}"
+                                                               IsHitTestVisible="False"
+                                                               VerticalAlignment="Center">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                                <Setter Property="Visibility" Value="Hidden"/>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+
+                        <!-- 清除搜索按钮 -->
+                        <Button Grid.Column="2"
+                                Content="&#xE711;"
+                                Command="{Binding ClearSearchCommand}"
+                                Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                                Width="24" Height="24"
+                                Margin="4,0,8,0"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="10"
+                                ToolTip="清除搜索"/>
+                    </Grid>
+                </Border>
+
+                <!-- 产地筛选 -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Margin="16,0,0,0">
+                    <TextBlock Text="产地："
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AdminTextSecondaryBrush}"
+                               Margin="0,0,8,0"/>
+                    <ComboBox ItemsSource="{Binding OriginOptions}"
+                              SelectedItem="{Binding SelectedOrigin}"
+                              Width="120"
+                              Height="32"/>
+                </StackPanel>
+
+                <!-- 价格范围筛选 -->
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Margin="16,0,0,0">
+                    <TextBlock Text="价格：¥" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AdminTextSecondaryBrush}"
+                               Margin="0,0,4,0"/>
+                    <TextBox Text="{Binding MinPrice, UpdateSourceTrigger=PropertyChanged}"
+                             Width="60" Height="32"
+                             VerticalContentAlignment="Center"
+                             FontSize="12"/>
+                    <TextBlock Text="~¥" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AdminTextSecondaryBrush}"
+                               Margin="4,0,4,0"/>
+                    <TextBox Text="{Binding MaxPrice, UpdateSourceTrigger=PropertyChanged}"
+                             Width="60" Height="32"
+                             VerticalContentAlignment="Center"
+                             FontSize="12"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 数据网格 -->
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding ItemsView}"
+                  SelectedItem="{Binding SelectedItem}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  SelectionMode="Single"
+                  Background="White"
+                  AlternatingRowBackground="#F9F9F9">
+            
+            <DataGrid.Columns>
+                <!-- 药材名称列 -->
+                <DataGridTextColumn Header="药材名称" 
+                                    Binding="{Binding Name}" 
+                                    Width="140"
+                                    FontWeight="SemiBold"/>
+
+                <!-- 拼音码列 -->
+                <DataGridTextColumn Header="拼音码" 
+                                    Binding="{Binding PinYinCode}" 
+                                    Width="100"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource AdminTextSecondaryBrush}"/>
+
+                <!-- 产地列 -->
+                <DataGridTextColumn Header="产地" 
+                                    Binding="{Binding Origin}" 
+                                    Width="80"/>
+
+                <!-- 规格列 -->
+                <DataGridTextColumn Header="规格" 
+                                    Binding="{Binding Spec}" 
+                                    Width="80"/>
+
+                <!-- 单位列 -->
+                <DataGridTextColumn Header="单位" 
+                                    Binding="{Binding Unit}" 
+                                    Width="60"/>
+
+                <!-- 单价列 -->
+                <DataGridTemplateColumn Header="单价" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Price, Converter={StaticResource PriceFormatConverter}}"
+                                       HorizontalAlignment="Right"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AdminInfoBrush}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- 功效列 -->
+                <DataGridTextColumn Header="功效" 
+                                    Binding="{Binding Effect}" 
+                                    Width="200"
+                                    FontSize="12">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            <Setter Property="ToolTip" Value="{Binding Effect}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <!-- 状态列 -->
+                <DataGridTemplateColumn Header="状态" Width="70">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Background="{Binding IsEnabled, Converter={StaticResource StatusToBrushConverter}}"
+                                    CornerRadius="12"
+                                    Padding="8,2">
+                                <TextBlock Text="{Binding IsEnabled, Converter={StaticResource BooleanToStatusConverter}}"
+                                           Foreground="White"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- 创建时间列 -->
+                <DataGridTextColumn Header="创建时间" 
+                                    Binding="{Binding CreatedAt, StringFormat={}{0:MM-dd HH:mm}}" 
+                                    Width="100"
+                                    FontSize="12"/>
+
+                <!-- 操作列 -->
+                <DataGridTemplateColumn Header="操作" Width="160" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <!-- 编辑按钮 -->
+                                <Button Content="&#xE70F;"
+                                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                                        Width="24" Height="24"
+                                        Margin="2"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        FontSize="10"
+                                        ToolTip="编辑药材"/>
+
+                                <!-- 启用/停用按钮 -->
+                                <Button Command="{Binding DataContext.ToggleStatusCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                                        Width="24" Height="24"
+                                        Margin="2"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        FontSize="10">
+                                    <Button.Content>
+                                        <TextBlock Text="{Binding IsEnabled, Converter={StaticResource BooleanToToggleIconConverter}}"/>
+                                    </Button.Content>
+                                    <Button.ToolTip>
+                                        <TextBlock Text="{Binding IsEnabled, Converter={StaticResource BooleanToToggleTooltipConverter}}"/>
+                                    </Button.ToolTip>
+                                </Button>
+
+                                <!-- 删除按钮 -->
+                                <Button Content="&#xE74D;"
+                                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                                        Width="24" Height="24"
+                                        Margin="2"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        FontSize="10"
+                                        Foreground="{DynamicResource AdminErrorBrush}"
+                                        ToolTip="删除药材"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 分页栏 -->
+        <Border Grid.Row="3" 
+                Background="{DynamicResource AdminSurfaceBrush}"
+                BorderBrush="{DynamicResource AdminToolbarBorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 每页大小选择 -->
+                <StackPanel Grid.Column="0" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <TextBlock Text="每页显示："
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AdminTextSecondaryBrush}"
+                               Margin="0,0,8,0"/>
+                    <ComboBox ItemsSource="{x:Static local:PageSizeOptions.Options}"
+                              SelectedItem="{Binding PageSize}"
+                              Width="80"
+                              Height="28"/>
+                </StackPanel>
+
+                <!-- 分页导航 -->
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <!-- 上一页按钮 -->
+                    <Button Content="&#xE76B;"
+                            Command="{Binding PreviousPageCommand}"
+                            Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                            Width="28" Height="28"
+                            Margin="4,0"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="12"
+                            ToolTip="上一页"/>
+
+                    <!-- 页码信息 -->
+                    <TextBlock VerticalAlignment="Center"
+                               Margin="8,0">
+                        <Run Text="{Binding CurrentPage}"/>
+                        <Run Text="/" Foreground="{DynamicResource AdminTextMutedBrush}"/>
+                        <Run Text="{Binding TotalPages}"/>
+                    </TextBlock>
+
+                    <!-- 下一页按钮 -->
+                    <Button Content="&#xE76C;"
+                            Command="{Binding NextPageCommand}"
+                            Style="{DynamicResource AdminSecondaryToolbarButtonStyle}"
+                            Width="28" Height="28"
+                            Margin="4,0"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="12"
+                            ToolTip="下一页"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 状态栏 -->
+        <Border Grid.Row="4" 
+                Background="{DynamicResource AdminNavHeaderBrush}"
+                Padding="16,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 状态消息 -->
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatusMessage}"
+                           Foreground="{DynamicResource AdminTextOnDarkBrush}"
+                           VerticalAlignment="Center"
+                           FontSize="12"/>
+
+                <!-- 加载指示器 -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="&#xE1CD;"
+                               FontFamily="Segoe MDL2 Assets"
+                               FontSize="12"
+                               Foreground="{DynamicResource AdminInfoBrush}"
+                               Margin="0,0,4,0">
+                        <TextBlock.RenderTransform>
+                            <RotateTransform/>
+                        </TextBlock.RenderTransform>
+                        <TextBlock.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+                                                         From="0" To="360" Duration="0:0:1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </TextBlock.Triggers>
+                    </TextBlock>
+                    <TextBlock Text="加载中..."
+                               Foreground="{DynamicResource AdminTextOnDarkBrush}"
+                               FontSize="12"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

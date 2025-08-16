@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Formulas;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 // using Prism.Dialogs; // Temporarily disabled due to Prism 9 compatibility
@@ -32,22 +31,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Properties
 
-        private ObservableCollection<FormulaInfo> _formulas = new();
-        public ObservableCollection<FormulaInfo> Formulas
+        private ObservableCollection<FormulaDto> _formulas = new();
+        public ObservableCollection<FormulaDto> Formulas
         {
             get => _formulas;
             set => SetProperty(ref _formulas, value);
         }
 
-        private ObservableCollection<FormulaInfo> _filteredFormulas = new();
-        public ObservableCollection<FormulaInfo> FilteredFormulas
+        private ObservableCollection<FormulaDto> _filteredFormulas = new();
+        public ObservableCollection<FormulaDto> FilteredFormulas
         {
             get => _filteredFormulas;
             set => SetProperty(ref _filteredFormulas, value);
         }
 
-        private FormulaInfo? _selectedFormula;
-        public FormulaInfo? SelectedFormula
+        private FormulaDto? _selectedFormula;
+        public FormulaDto? SelectedFormula
         {
             get => _selectedFormula;
             set => SetProperty(ref _selectedFormula, value);
@@ -99,7 +98,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public DelegateCommand SelectCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand RefreshCommand { get; }
-        public DelegateCommand<FormulaInfo> ViewDetailsCommand { get; }
+        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; }
 
         #endregion
 
@@ -117,7 +116,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 .ObservesProperty(() => SelectedFormula);
             CancelCommand = new DelegateCommand(Cancel);
             RefreshCommand = new DelegateCommand(async () => await LoadFormulasAsync());
-            ViewDetailsCommand = new DelegateCommand<FormulaInfo>(ViewDetails);
+            ViewDetailsCommand = new DelegateCommand<FormulaDto>(ViewDetails);
 
             // 初始加载数据
             Task.Run(async () => await LoadFormulasAsync());
@@ -155,21 +154,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 var result = await _formulaService.GetFormulasAsync();
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // Convert FormulaDto to FormulaInfo
-                    var formulaInfos = result.Data.Select(dto => {
-                        var info = new FormulaInfo();
-                        info.Id = dto.Id;
-                        info.Name = dto.Name;
-                        info.Category = "其他"; // Default category
-                        info.Effect = dto.Effect;
-                        info.Usage = dto.Usage;
-                        info.Remark = dto.Remark;
-                        info.IsShared = dto.IsShared;
-                        info.CreateTime = dto.CreateTime;
-                        info.UpdateTime = dto.UpdateTime;
-                        return info;
-                    }).ToList();
-                    Formulas = new ObservableCollection<FormulaInfo>(formulaInfos);
+                    // 直接使用FormulaDto，无需转换
+                    Formulas = new ObservableCollection<FormulaDto>(result.Data);
                     FilterFormulas();
                 }
                 else
@@ -207,7 +193,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     (f.DosageInstruction?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
-            FilteredFormulas = new ObservableCollection<FormulaInfo>(filtered);
+            FilteredFormulas = new ObservableCollection<FormulaDto>(filtered);
         }
 
         private bool CanSelect()
@@ -234,7 +220,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
-        private void ViewDetails(FormulaInfo? formula)
+        private void ViewDetails(FormulaDto? formula)
         {
             if (formula == null) return;
 

@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,7 +6,6 @@ using System.Windows;
 using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Exceptions;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels

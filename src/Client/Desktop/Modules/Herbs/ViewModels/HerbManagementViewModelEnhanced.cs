@@ -5,14 +5,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
-using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Dialogs;
@@ -22,9 +22,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
     /// 中药材管理视图模型（增强版 - 迁移自SystemManagement）
-    /// UltraThink Phase 3.3: 功能迁移
+    /// UltraThink Phase 5 DTO统一化: HerbInfo→HerbDto
     /// </summary>
-    public class HerbManagementViewModelEnhanced : BaseServiceManagementViewModel<HerbInfo, IHerbService>
+    public class HerbManagementViewModelEnhanced : BaseServiceManagementViewModel<HerbDto, IHerbService>
     {
         private readonly IDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         public DelegateCommand ImportHerbsCommand { get; }
         public DelegateCommand ExportTemplateCommand { get; }
-        public DelegateCommand<HerbInfo> ManageStockCommand { get; }
+        public DelegateCommand<HerbDto> ManageStockCommand { get; }
 
         #endregion
 
@@ -66,18 +66,18 @@ namespace LYBT.Desktop.Herbs.ViewModels
             // 初始化增强功能命令
             ImportHerbsCommand = new DelegateCommand(async () => await ImportHerbs());
             ExportTemplateCommand = new DelegateCommand(ExportTemplate);
-            ManageStockCommand = new DelegateCommand<HerbInfo>(ManageStock);
+            ManageStockCommand = new DelegateCommand<HerbDto>(ManageStock);
         }
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<HerbInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
+        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
                 var query = new HerbPagedQueryDto
                 {
-                    PageIndex = request.CurrentPage,
+                    PageIndex = request.PageIndex,
                     PageSize = request.PageSize,
                     Name = SearchKeyword
                 };
@@ -88,11 +88,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 // TODO: 集成库存管理服务后启用
                 LowStockCount = 0;
 
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<HerbInfo>>.Success(result);
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<HerbInfo>>.Failure($"加载药材列表失败: {ex.Message}");
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Failure($"加载药材列表失败: {ex.Message}");
             }
         }
 
@@ -114,7 +114,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        protected override async Task EditAsync(HerbInfo item)
+        protected override async Task EditAsync(HerbDto item)
         {
             if (item == null)
                 return;
@@ -139,7 +139,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        protected override async Task DeleteAsync(HerbInfo item)
+        protected override async Task DeleteAsync(HerbDto item)
         {
             if (item == null) return;
 
@@ -347,7 +347,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 管理库存
         /// </summary>
-        private void ManageStock(HerbInfo herb)
+        private void ManageStock(HerbDto herb)
         {
             if (herb == null)
                 return;

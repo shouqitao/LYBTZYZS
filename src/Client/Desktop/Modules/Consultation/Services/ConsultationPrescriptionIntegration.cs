@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -105,7 +106,7 @@ namespace LYBT.Desktop.Consultation.Services
                 {
                     Id = Guid.NewGuid(),
                     PatientId = patientId,
-                    MedicalCaseId = _currentMedicalCaseId.Value,
+                    MedicalCaseId = _currentMedicalCaseId ?? Guid.Empty,
                     UserId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
                     Status = PrescriptionStatus.Draft,
                     CreateTime = DateTime.Now
@@ -116,7 +117,7 @@ namespace LYBT.Desktop.Consultation.Services
                     .Publish(new ConsultationSessionData
                     {
                         PatientId = patientId,
-                        MedicalCaseId = _currentMedicalCaseId.Value,
+                        MedicalCaseId = _currentMedicalCaseId ?? Guid.Empty,
                         ConsultationId = _currentConsultationId.Value
                     });
 
@@ -326,6 +327,7 @@ namespace LYBT.Desktop.Consultation.Services
             // TODO: 调用医疗案例服务创建新案例
             var caseId = Guid.NewGuid();
             _logger.LogInformation($"创建新医疗案例 - ID: {caseId}");
+            await Task.CompletedTask;
             return caseId;
         }
 
@@ -333,6 +335,7 @@ namespace LYBT.Desktop.Consultation.Services
         {
             // TODO: 调用医疗案例服务更新状态
             _logger.LogInformation($"更新医疗案例状态 - ID: {caseId}, 状态: {status}");
+            await Task.CompletedTask;
         }
 
         private void ClearSession()

@@ -1,18 +1,17 @@
+using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Dialogs;
 using LYBT.Desktop.Core.Extensions;
@@ -21,9 +20,9 @@ using LYBT.Desktop.Core.Interfaces.Services;
 namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
-    /// 中药材管理视图模型（简化重构版）
+    /// 中药材管理视图模型（简化重构版）- UltraThink Phase 5 DTO统一化
     /// </summary>
-    public class HerbManagementViewModelSimple : BaseServiceManagementViewModel<HerbInfo, IHerbService>
+    public class HerbManagementViewModelSimple : BaseServiceManagementViewModel<HerbDto, IHerbService>
     {
         private readonly IDialogService _commonDialogService;
         private readonly IDialogService _dialogService;
@@ -33,8 +32,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #region Commands
 
-        public DelegateCommand<HerbInfo> ToggleStatusCommand { get; }
-        public DelegateCommand<HerbInfo> BatchUpdateStatusCommand { get; }
+        public DelegateCommand<HerbDto> ToggleStatusCommand { get; }
+        public DelegateCommand<HerbDto> BatchUpdateStatusCommand { get; }
 
         #endregion
 
@@ -51,29 +50,29 @@ namespace LYBT.Desktop.Herbs.ViewModels
             _herbApiService = herbApiService;
 
             // 初始化命令
-            ToggleStatusCommand = new DelegateCommand<HerbInfo>(async herb => await ToggleStatusAsync(herb));
-            BatchUpdateStatusCommand = new DelegateCommand<HerbInfo>(async herb => await BatchUpdateStatusAsync(herb));
+            ToggleStatusCommand = new DelegateCommand<HerbDto>(async herb => await ToggleStatusAsync(herb));
+            BatchUpdateStatusCommand = new DelegateCommand<HerbDto>(async herb => await BatchUpdateStatusAsync(herb));
         }
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<HerbInfo>>> LoadDataFromServiceAsync(PaginationRequest request)
+        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
                 var query = new HerbPagedQueryDto
                 {
-                    PageIndex = request.CurrentPage,
+                    PageIndex = request.PageIndex,
                     PageSize = request.PageSize,
                     Keyword = SearchKeyword
                 };
 
                 var result = await Service.SearchHerbsAsync(query);
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<HerbInfo>>.Success(result);
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Desktop.Core.Models.Common.PagedResult<HerbInfo>>.Failure($"加载中药材列表失败: {ex.Message}");
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Failure($"加载中药材列表失败: {ex.Message}");
             }
         }
 
@@ -111,7 +110,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        protected override async Task EditAsync(HerbInfo item)
+        protected override async Task EditAsync(HerbDto item)
         {
             if (item == null) return;
 
@@ -147,7 +146,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        protected override async Task DeleteAsync(HerbInfo item)
+        protected override async Task DeleteAsync(HerbDto item)
         {
             if (item == null) return;
 
@@ -162,7 +161,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 切换中药材状态
         /// </summary>
-        private async Task ToggleStatusAsync(HerbInfo herb)
+        private async Task ToggleStatusAsync(HerbDto herb)
         {
             if (herb == null) return;
 
@@ -199,7 +198,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 批量更新中药材状态
         /// </summary>
-        private async Task BatchUpdateStatusAsync(HerbInfo herb)
+        private async Task BatchUpdateStatusAsync(HerbDto herb)
         {
             // 简化版本，可以扩展为真正的批量操作
             await ToggleStatusAsync(herb);
