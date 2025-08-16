@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Formula.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Common;
 using Microsoft.Extensions.Caching.Memory;
@@ -30,7 +31,7 @@ namespace LYBT.WebAPI.Controllers
         /// 分页查询验方 - 统一API响应格式
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<ApiResponse<object>>> GetPagedFormulas([FromBody] FormulaQueryDto query)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> GetPagedFormulas([FromBody] FormulaQueryDto query)
         {
             try
             {
@@ -50,7 +51,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方列表 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetFormulas()
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<FormulaDto>>>> GetFormulas()
         {
             try
             {
@@ -67,7 +68,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据ID获取验方详情 - 统一API响应格式
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<FormulaDetailDto>>> GetFormulaById(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<FormulaDetailDto>>> GetFormulaById(Guid id)
         {
             try
             {
@@ -90,7 +91,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建验方 - 统一API响应格式
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> CreateFormula([FromBody] FormulaCreateDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<FormulaDto>>> CreateFormula([FromBody] FormulaCreateDto dto)
         {
             try
             {
@@ -116,7 +117,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新验方 - 统一API响应格式
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<FormulaDetailDto>>> UpdateFormula(Guid id, [FromBody] FormulaUpdateDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<FormulaDetailDto>>> UpdateFormula(Guid id, [FromBody] FormulaUpdateDto dto)
         {
             try
             {
@@ -145,7 +146,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除验方 - 统一API响应格式
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> DeleteFormula(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> DeleteFormula(Guid id)
         {
             try
             {
@@ -171,7 +172,7 @@ namespace LYBT.WebAPI.Controllers
         /// 搜索验方 - 统一API响应格式
         /// </summary>
         [HttpGet("search")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> SearchFormulas([FromQuery] string keyword, [FromQuery] int maxResults = 50)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<FormulaDto>>>> SearchFormulas([FromQuery] string keyword, [FromQuery] int maxResults = 50)
         {
             try
             {
@@ -194,7 +195,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取共享验方列表 - 统一API响应格式
         /// </summary>
         [HttpGet("shared")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetSharedFormulas()
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<FormulaDto>>>> GetSharedFormulas()
         {
             try
             {
@@ -211,7 +212,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取个人验方列表 - 统一API响应格式
         /// </summary>
         [HttpGet("personal")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetPersonalFormulas()
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<FormulaDto>>>> GetPersonalFormulas()
         {
             try
             {
@@ -229,7 +230,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取常用验方 - 统一API响应格式
         /// </summary>
         [HttpGet("frequently-used")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetFrequentlyUsedFormulas([FromQuery] int limit = 20)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<FormulaDto>>>> GetFrequentlyUsedFormulas([FromQuery] int limit = 20)
         {
             try
             {
@@ -250,7 +251,7 @@ namespace LYBT.WebAPI.Controllers
         /// 从处方创建验方 - 统一API响应格式
         /// </summary>
         [HttpPost("from-prescription")]
-        public async Task<ActionResult<ApiResponse<FormulaDetailDto>>> CreateFromPrescription([FromBody] CreateFormulaFromPrescriptionDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<FormulaDetailDto>>> CreateFromPrescription([FromBody] CreateFormulaFromPrescriptionDto dto)
         {
             try
             {
@@ -276,7 +277,7 @@ namespace LYBT.WebAPI.Controllers
         /// 复制验方 - 统一API响应格式
         /// </summary>
         [HttpPost("{id}/copy")]
-        public async Task<ActionResult<ApiResponse<FormulaDetailDto>>> CopyFormula(Guid id, [FromBody] CopyFormulaRequest request)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<FormulaDetailDto>>> CopyFormula(Guid id, [FromBody] CopyFormulaRequest request)
         {
             try
             {
@@ -305,7 +306,7 @@ namespace LYBT.WebAPI.Controllers
         /// 分享验方 - 统一API响应格式
         /// </summary>
         [HttpPut("{id}/share")]
-        public async Task<ActionResult<ApiResponse>> ShareFormula(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ShareFormula(Guid id)
         {
             try
             {
@@ -331,7 +332,7 @@ namespace LYBT.WebAPI.Controllers
         /// 取消分享验方 - 统一API响应格式
         /// </summary>
         [HttpPut("{id}/unshare")]
-        public async Task<ActionResult<ApiResponse>> UnshareFormula(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> UnshareFormula(Guid id)
         {
             try
             {
@@ -357,7 +358,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方推荐 - 统一API响应格式
         /// </summary>
         [HttpPost("recommendations")]
-        public async Task<ActionResult<ApiResponse<object>>> GetRecommendations([FromBody] FormulaRecommendationRequest request)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> GetRecommendations([FromBody] FormulaRecommendationRequest request)
         {
             try
             {
@@ -378,7 +379,7 @@ namespace LYBT.WebAPI.Controllers
         /// 验证验方合理性 - 统一API响应格式
         /// </summary>
         [HttpPost("{id}/validate")]
-        public async Task<ActionResult<ApiResponse<object>>> ValidateFormula(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> ValidateFormula(Guid id)
         {
             try
             {
@@ -398,7 +399,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方使用记录 - 统一API响应格式
         /// </summary>
         [HttpGet("{id}/usage-records")]
-        public async Task<ActionResult<ApiResponse<object>>> GetUsageRecords(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> GetUsageRecords(Guid id)
         {
             try
             {
@@ -418,7 +419,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方统计 - 统一API响应格式
         /// </summary>
         [HttpGet("statistics")]
-        public async Task<ActionResult<ApiResponse<object>>> GetStatistics([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid? doctorId = null)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> GetStatistics([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid? doctorId = null)
         {
             try
             {

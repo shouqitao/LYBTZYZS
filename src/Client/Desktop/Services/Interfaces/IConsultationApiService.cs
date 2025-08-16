@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Refit;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Desktop.Core.Models;
-
 namespace LYBT.Desktop.Services.Interfaces
 {
     /// <summary>

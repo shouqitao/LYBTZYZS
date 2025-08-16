@@ -43,7 +43,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, null, ex);
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
@@ -71,7 +71,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, null, ex);
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
@@ -94,7 +94,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, null, ex);
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
@@ -111,7 +111,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, null, ex);
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
@@ -134,7 +134,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<T>.Failure(ex.Message, null, ex);
+                return ServiceResult<T>.Failure(ex.Message, ex);
             }
         }
 
@@ -178,7 +178,7 @@ namespace LYBT.Desktop.Services
                 }
                 catch (JsonException ex)
                 {
-                    return ServiceResult<T>.Failure($"响应数据格式错误: {ex.Message}", null, ex);
+                    return ServiceResult<T>.Failure($"响应数据格式错误: {ex.Message}", ex);
                 }
             }
             else

@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Logging.Dtos;
+using Microsoft.Extensions.Logging;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
@@ -23,18 +22,18 @@ namespace LYBT.Module.Patients.Services
     {
         private readonly IPatientRepository _patientRepository;
         private readonly IMapper _mapper;
-        private readonly IUnifiedLogService _logService;
+        private readonly ILogger<PatientArchiveService> _logger;
         private readonly PatientValidationService _validationService;
 
         public PatientArchiveService(
             IPatientRepository patientRepository, 
             IMapper mapper, 
-            IUnifiedLogService logService,
+            ILogger<PatientArchiveService> logger,
             PatientValidationService validationService)
         {
             _patientRepository = patientRepository;
             _mapper = mapper;
-            _logService = logService;
+            _logger = logger;
             _validationService = validationService;
         }
 
@@ -80,7 +79,7 @@ namespace LYBT.Module.Patients.Services
             var result = await _patientRepository.UpdateAsync(patient);
             if (result != null)
             {
-                await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Update,
+                await LogPatientOperationAsync(operatorId, operatorName, "Update",
                     $"更新患者过敏史：{result.Name}",
                     JsonSerializer.Serialize(new { OldValue = oldValue, NewValue = allergyHistory }));
             }
@@ -133,7 +132,7 @@ namespace LYBT.Module.Patients.Services
                 }
             }
 
-            await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
+            await LogPatientOperationAsync(operatorId, operatorName, "Create",
                 $"批量导入患者，成功：{result.SuccessCount}，失败：{result.FailedCount}，重复：{result.DuplicateCount}",
                 JsonSerializer.Serialize(result));
 
@@ -189,7 +188,7 @@ namespace LYBT.Module.Patients.Services
             await _patientRepository.UpdateAsync(primary);
             await _patientRepository.UpdateAsync(duplicate);
 
-            await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Update,
+            await LogPatientOperationAsync(operatorId, operatorName, "Update",
                 $"合并患者档案：{duplicate.Name} -> {primary.Name}",
                 JsonSerializer.Serialize(new { PrimaryId = primaryId, DuplicateId = duplicateId }));
 
@@ -210,7 +209,7 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<bool> SetPatientTagsAsync(Guid patientId, List<string> tags, Guid operatorId, string operatorName)
         {
-            await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Update,
+            await LogPatientOperationAsync(operatorId, operatorName, "Update",
                 $"设置患者标签",
                 JsonSerializer.Serialize(new { PatientId = patientId, Tags = tags }));
             return true;
@@ -265,17 +264,10 @@ namespace LYBT.Module.Patients.Services
         /// 统一的患者操作日志记录
         /// </summary>
         private async Task LogPatientOperationAsync(Guid operatorId, string operatorName,
-            LogActionType actionType, string content, string? parameters = null)
+            string actionType, string content, string? parameters = null)
         {
-            await _logService.LogUserActionAsync(
-                operatorId,
-                operatorName,
-                actionType,
-                "Patients",
-                "PatientArchiveManagement",
-                content,
-                parameters: parameters
-            );
+            _logger.LogInformation("患者档案操作 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
+                operatorName, operatorId, actionType, content);
         }
 
         #endregion

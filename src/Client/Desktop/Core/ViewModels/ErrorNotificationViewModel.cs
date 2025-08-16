@@ -5,8 +5,6 @@ using System.Linq;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Core.Exceptions;
 
 namespace LYBT.Desktop.Core.ViewModels
 {

@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Desktop.Core.Models;
+
 
 // UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
 using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;

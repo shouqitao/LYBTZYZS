@@ -7,7 +7,7 @@ using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Enums;
 
 // UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
+using LYBT.Desktop.Core.Models.Formulas;
 
 namespace LYBT.Desktop.Consultation.Services.Interfaces
 {

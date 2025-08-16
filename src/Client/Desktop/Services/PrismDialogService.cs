@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
-using Prism.Dialogs;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Enums;
 using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
@@ -10,13 +9,13 @@ using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 基于 Prism IDialogService 的通用对话框服务实现
+    /// 基于 ICustomDialogService 的通用对话框服务实现
     /// </summary>
     public class PrismDialogService : ICommonDialogService
     {
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
 
-        public PrismDialogService(IDialogService dialogService)
+        public PrismDialogService(ICustomDialogService dialogService)
         {
             _dialogService = dialogService;
         }
@@ -25,89 +24,22 @@ namespace LYBT.Desktop.Services
 
         public Task<bool> ShowConfirmationAsync(string message, string title = "确认")
         {
-            var tcs = new TaskCompletionSource<bool>();
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                var parameters = new DialogParameters
-                {
-                    { "title", title },
-                    { "message", message }
-                };
-
-                _dialogService.ShowDialog("ConfirmationDialog", parameters, result =>
-                {
-                    tcs.SetResult(result.Result == ButtonResult.Yes);
-                });
-            });
-
-            return tcs.Task;
+            return _dialogService.ShowConfirmationAsync(message, title);
         }
 
         public Task ShowInformationAsync(string message, string title = "信息")
         {
-            var tcs = new TaskCompletionSource<bool>();
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                var parameters = new DialogParameters
-                {
-                    { "title", title },
-                    { "message", message },
-                    { "type", DialogType.Information }
-                };
-
-                _dialogService.ShowDialog("InformationDialog", parameters, result =>
-                {
-                    tcs.SetResult(true);
-                });
-            });
-
-            return tcs.Task;
+            return _dialogService.ShowInformationAsync(message, title);
         }
 
         public Task ShowWarningAsync(string message, string title = "警告")
         {
-            var tcs = new TaskCompletionSource<bool>();
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                var parameters = new DialogParameters
-                {
-                    { "title", title },
-                    { "message", message },
-                    { "type", DialogType.Warning }
-                };
-
-                _dialogService.ShowDialog("InformationDialog", parameters, result =>
-                {
-                    tcs.SetResult(true);
-                });
-            });
-
-            return tcs.Task;
+            return _dialogService.ShowWarningAsync(message, title);
         }
 
         public Task ShowErrorAsync(string message, string title = "错误")
         {
-            var tcs = new TaskCompletionSource<bool>();
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                var parameters = new DialogParameters
-                {
-                    { "title", title },
-                    { "message", message },
-                    { "type", DialogType.Error }
-                };
-
-                _dialogService.ShowDialog("InformationDialog", parameters, result =>
-                {
-                    tcs.SetResult(true);
-                });
-            });
-
-            return tcs.Task;
+            return _dialogService.ShowErrorAsync(message, title);
         }
 
         #endregion

@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
 // UltraThink重构: 统一HerbInfo和HerbDto，使用Dto作为统一模型
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Services;
+using ICustomDialogService = LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService;
 using Prism.Commands;
 using Prism.Mvvm;
 
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 namespace LYBT.Desktop.Consultation.ViewModels
 {
     /// <summary>
@@ -22,7 +20,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     public class SelectHerbDialogViewModel : BindableBase
     {
         private readonly IHerbService _herbService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         
         private bool _isLoading;
         private string _searchKeyword = string.Empty;
@@ -165,7 +163,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public SelectHerbDialogViewModel(
             IHerbService herbService,
-            IDialogService dialogService)
+            ICustomDialogService dialogService)
         {
             _herbService = herbService;
             _dialogService = dialogService;

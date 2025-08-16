@@ -9,12 +9,10 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Services.Interfaces;
 using Prism.Commands;
 using Prism.Mvvm;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Shared.Interfaces.Services;
 
 // UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
+using LYBT.Desktop.Core.Models.Formulas;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -24,7 +22,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     public class SelectFormulaDialogViewModel : BindableBase
     {
         private readonly IFormulaService _formulaService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         
         private bool _isLoading;
         private string _searchKeyword = string.Empty;
@@ -162,7 +160,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public SelectFormulaDialogViewModel(
             IFormulaService formulaService,
-            IDialogService dialogService)
+            ICustomDialogService dialogService)
         {
             _formulaService = formulaService;
             _dialogService = dialogService;
@@ -189,10 +187,23 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 IsLoading = true;
 
                 // 加载验方列表
-                var result = await _formulaService.GetListAsync();
+                var result = await _formulaService.GetFormulasAsync();
                 if (result.IsSuccess && result.Data != null)
                 {
-                    _allFormulas = result.Data;
+                    // 使用AutoMapper转换FormulaDto到FormulaInfo
+                    // 临时手动转换，因为AutoMapper需要配置
+                    _allFormulas = result.Data.Select(dto => new FormulaInfo
+                    {
+                        Id = dto.Id,
+                        Name = dto.Name,
+                        Category = "其他", // 默认分类
+                        Description = dto.Effect,
+                        Source = dto.Source ?? "",
+                        CreateTime = dto.CreateTime,
+                        UpdateTime = dto.UpdateTime,
+                        // Status = CommonStatus.Enabled, // 默认启用状态
+                        Remark = dto.Remark
+                    }).ToList();
                     
                     // 提取分类
                     var categories = _allFormulas

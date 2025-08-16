@@ -9,9 +9,8 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
-using Prism.Navigation.Regions;
+using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -21,7 +20,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     public class MedicalCaseListViewModel : ServiceViewModel
     {
         private readonly IMedicalCaseService _medicalCaseService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly IDialogService _prismDialogService;
         private readonly IRegionManager _regionManager;
 
@@ -102,7 +101,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseListViewModel(
             IMedicalCaseService medicalCaseService,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             IDialogService prismDialogService,
             IRegionManager regionManager,
             IEventAggregator eventAggregator)

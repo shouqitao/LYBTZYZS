@@ -5,8 +5,6 @@ using Refit;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Core.Models;
-
 namespace LYBT.Desktop.Services.Interfaces
 {
     /// <summary>

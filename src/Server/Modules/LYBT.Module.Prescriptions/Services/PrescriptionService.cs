@@ -2,8 +2,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using AutoMapper;
-using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Logging.Dtos;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Interfaces;
@@ -24,20 +23,20 @@ namespace LYBT.Module.Prescriptions.Services
     {
         private readonly IPrescriptionRepository _repository;
         private readonly LYBT.Infrastructure.Data.AppDbContext _dbContext;
-        private readonly IUnifiedLogService _logService;
+        private readonly ILogger<PrescriptionService> _logger;
         private readonly IIntelligentPrescriptionService _intelligentService;
         private readonly IMapper _mapper;
 
         public PrescriptionService(
             IPrescriptionRepository repository, 
             LYBT.Infrastructure.Data.AppDbContext dbContext,
-            IUnifiedLogService logService,
+            ILogger<PrescriptionService> logger,
             IIntelligentPrescriptionService intelligentService,
             IMapper mapper)
         {
             _repository = repository;
             _dbContext = dbContext;
-            _logService = logService;
+            _logger = logger;
             _intelligentService = intelligentService;
             _mapper = mapper;
         }
@@ -138,34 +137,16 @@ namespace LYBT.Module.Prescriptions.Services
                 var duplicateResult = _intelligentService.DetectDuplicateHerbs(prescriptionItems);
                 if (duplicateResult.HasDuplicates && duplicateResult.DuplicateHerbs.Any())
                 {
-                    await _logService.CreateLogAsync(new LogCreateDto
-                    {
-                        LogType = LogType.Business,
-                        ObjectType = ObjectType.Prescription,
-                        ObjectId = model.Id,
-                        ActionType = ActionType.Other,
-                        OperatorId = operatorId,
-                        OperatorName = operatorName,
-                        Content = $"处方包含重复药材: {string.Join(", ", duplicateResult.DuplicateHerbs)}",
-                        NewValue = JsonSerializer.Serialize(duplicateResult.DuplicateHerbs)
-                    });
+                    _logger.LogWarning("处方重复药材警告 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 重复药材: {DuplicateHerbs}", 
+                        operatorName, model.Id, string.Join(", ", duplicateResult.DuplicateHerbs));
                 }
 
                 // 检查药材可用性
                 var availabilityResult = await _intelligentService.CheckHerbAvailabilityAsync(prescriptionItems);
                 if (!availabilityResult.IsAvailable && availabilityResult.UnavailableHerbs.Any())
                 {
-                    await _logService.CreateLogAsync(new LogCreateDto
-                    {
-                        LogType = LogType.Business,
-                        ObjectType = ObjectType.Prescription,
-                        ObjectId = model.Id,
-                        ActionType = ActionType.Other,
-                        OperatorId = operatorId,
-                        OperatorName = operatorName,
-                        Content = $"药材可用性警告: {string.Join(", ", availabilityResult.UnavailableHerbs)} 不可用",
-                        NewValue = JsonSerializer.Serialize(availabilityResult.UnavailableHerbs)
-                    });
+                    _logger.LogWarning("药材可用性警告 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 不可用药材: {UnavailableHerbs}", 
+                        operatorName, model.Id, string.Join(", ", availabilityResult.UnavailableHerbs));
                 }
             }
             
@@ -173,17 +154,8 @@ namespace LYBT.Module.Prescriptions.Services
             if (!success)
                 return null;
 
-            await _logService.CreateLogAsync(new LogCreateDto
-            {
-                LogType = LogType.Operation,
-                ObjectType = ObjectType.Prescription,
-                ObjectId = model.Id,
-                ActionType = ActionType.Create,
-                OperatorId = operatorId,
-                OperatorName = operatorName,
-                Content = "新增处方",
-                NewValue = JsonSerializer.Serialize(model)
-            });
+            _logger.LogInformation("处方新增 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
+                operatorName, operatorId, model.Id);
 
             // 返回创建的对象
             return _mapper.Map<PrescriptionDto>(model);
@@ -203,18 +175,8 @@ namespace LYBT.Module.Prescriptions.Services
                 return false;
             var model = _mapper.Map(dto, old);
             var success = await _repository.UpdateAsync(model);
-            await _logService.CreateLogAsync(new LogCreateDto
-            {
-                LogType = LogType.Operation,
-                ObjectType = ObjectType.Prescription,
-                ObjectId = model.Id,
-                ActionType = ActionType.Edit,
-                OperatorId = operatorId,
-                OperatorName = operatorName,
-                Content = "编辑处方",
-                OldValue = JsonSerializer.Serialize(old),
-                NewValue = JsonSerializer.Serialize(model)
-            });
+            _logger.LogInformation("处方编辑 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
+                operatorName, operatorId, model.Id);
             return success;
         }
 
@@ -233,17 +195,8 @@ namespace LYBT.Module.Prescriptions.Services
             if (item == null)
                 return false;
             var success = await _repository.DeleteAsync(gid);
-            await _logService.CreateLogAsync(new LogCreateDto
-            {
-                LogType = LogType.Operation,
-                ObjectType = ObjectType.Prescription,
-                ObjectId = gid,
-                ActionType = ActionType.Other,
-                OperatorId = operatorId,
-                OperatorName = operatorName,
-                Content = "删除处方",
-                OldValue = JsonSerializer.Serialize(item)
-            });
+            _logger.LogInformation("处方删除 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
+                operatorName, operatorId, gid);
             return success;
         }
 
@@ -258,17 +211,8 @@ namespace LYBT.Module.Prescriptions.Services
             if (model == null)
                 return false;
             var success = await _repository.CancelAsync(gid);
-            await _logService.CreateLogAsync(new LogCreateDto
-            {
-                LogType = LogType.Operation,
-                ObjectType = ObjectType.Prescription,
-                ObjectId = gid,
-                ActionType = ActionType.Edit,
-                OperatorId = operatorId,
-                OperatorName = operatorName,
-                Content = "作废处方",
-                OldValue = JsonSerializer.Serialize(model)
-            });
+            _logger.LogInformation("处方作废 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
+                operatorName, operatorId, gid);
             return success;
         }
 
@@ -365,16 +309,8 @@ namespace LYBT.Module.Prescriptions.Services
             var success = await _repository.UpdateAsync(prescription);
             if (success)
             {
-                await _logService.CreateLogAsync(new LogCreateDto
-                {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Prescription,
-                    ObjectId = prescriptionId,
-                    ActionType = ActionType.Edit,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    Content = "快速保存处方"
-                });
+                _logger.LogInformation("处方快速保存 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
+                    operatorName, operatorId, prescriptionId);
             }
 
             return success;
@@ -405,16 +341,8 @@ namespace LYBT.Module.Prescriptions.Services
             var success = await _repository.UpdateAsync(prescription);
             if (success)
             {
-                await _logService.CreateLogAsync(new LogCreateDto
-                {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Prescription,
-                    ObjectId = prescriptionId,
-                    ActionType = ActionType.Edit,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    Content = "提交处方"
-                });
+                _logger.LogInformation("处方提交 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
+                    operatorName, operatorId, prescriptionId);
             }
 
             return success;

@@ -12,7 +12,7 @@ using Prism.Events;
 
 // UltraThink重构: 使用新的统一事件架构
 using LYBT.Shared.Models.Contracts.Herbs;
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
+using LYBT.Desktop.Core.Models.Formulas;
 
 namespace LYBT.Desktop.Consultation.Services
 {

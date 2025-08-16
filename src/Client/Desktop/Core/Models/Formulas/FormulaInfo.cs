@@ -52,6 +52,13 @@ namespace LYBT.Desktop.Core.Models.Formulas
         /// <summary>药材名称列表（用于显示）</summary>
         public string HerbNames => Herbs?.Count > 0 ? string.Join("、", Herbs.Take(3).Select(h => h.HerbName)) + (Herbs.Count > 3 ? "..." : "") : "无";
 
+        /// <summary>是否活跃（映射到Status == Enabled）</summary>
+        public bool IsActive
+        {
+            get => Status == LYBT.Shared.Models.Enums.CommonStatus.Enabled;
+            set => Status = value ? LYBT.Shared.Models.Enums.CommonStatus.Enabled : LYBT.Shared.Models.Enums.CommonStatus.Disabled;
+        }
+
         /// <summary>
         /// 创建时间（前端显示字段，映射自CreateTime）
         /// </summary>
@@ -65,6 +72,20 @@ namespace LYBT.Desktop.Core.Models.Formulas
         /// 更新时间（前端显示字段，映射自UpdateTime）
         /// </summary>
         public DateTime? UpdatedTime
+        {
+            get => UpdateTime;
+            set => UpdateTime = value;
+        }
+
+        /// <summary>创建时间（向后兼容性属性）</summary>
+        public DateTime CreatedAt
+        {
+            get => CreateTime;
+            set => CreateTime = value;
+        }
+
+        /// <summary>更新时间（向后兼容性属性）</summary>
+        public DateTime? UpdatedAt
         {
             get => UpdateTime;
             set => UpdateTime = value;

@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models;
+
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Shared.Models.Contracts.MedicalCase;

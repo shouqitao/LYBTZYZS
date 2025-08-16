@@ -1,13 +1,12 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
 using Prism.Commands;
 using Prism.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Core.Exceptions;
+using LYBT.Desktop.Core.Models.Common;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
@@ -48,7 +47,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             {
                 if (Prism.Ioc.ContainerLocator.Container != null)
                 {
-                    ErrorHandlingService = Prism.Ioc.ContainerLocator.Container.Resolve<IErrorHandlingService>();
+                    ErrorHandlingService = Prism.Ioc.ContainerLocator.Container.Resolve(typeof(IErrorHandlingService)) as IErrorHandlingService;
                 }
                 else
                 {
@@ -120,7 +119,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                 var handledError = ErrorHandlingService.HandleException(ex, context);
                 ErrorMessage = handledError.UserMessage;
                 
-                if (handledError.Severity >= ErrorSeverity.Error)
+                if (handledError.Severity >= SharedCommon.ErrorSeverity.Error)
                 {
                     _ = ErrorHandlingService.ShowErrorAsync(handledError, false);
                 }

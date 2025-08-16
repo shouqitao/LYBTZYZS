@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -6,8 +5,8 @@ using System.Windows;
 using System.Windows.Threading;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -143,7 +142,7 @@ namespace LYBT.Desktop.Core.Services
                 }
                 
                 // 6. 更新统计
-                if (classifiedException.Severity >= ErrorSeverity.Critical)
+                if (classifiedException.Severity >= SharedCommon.ErrorSeverity.Critical)
                 {
                     _criticalExceptionsCount++;
                 }
@@ -240,11 +239,11 @@ namespace LYBT.Desktop.Core.Services
         {
             var logLevel = exception.Severity switch
             {
-                ErrorSeverity.Info => LogLevel.Information,
-                ErrorSeverity.Warning => LogLevel.Warning,
-                ErrorSeverity.Error => LogLevel.Error,
-                ErrorSeverity.Critical => LogLevel.Critical,
-                ErrorSeverity.Fatal => LogLevel.Critical,
+                SharedCommon.ErrorSeverity.Info => LogLevel.Information,
+                SharedCommon.ErrorSeverity.Warning => LogLevel.Warning,
+                SharedCommon.ErrorSeverity.Error => LogLevel.Error,
+                SharedCommon.ErrorSeverity.Critical => LogLevel.Critical,
+                SharedCommon.ErrorSeverity.Fatal => LogLevel.Critical,
                 _ => LogLevel.Error
             };
             
@@ -259,7 +258,7 @@ namespace LYBT.Desktop.Core.Services
             if (exception.IsHandled)
                 return false;
                 
-            if (exception.Severity <= ErrorSeverity.Info)
+            if (exception.Severity <= SharedCommon.ErrorSeverity.Info)
                 return false;
                 
             if (source == ExceptionSource.FirstChance)
@@ -289,7 +288,7 @@ namespace LYBT.Desktop.Core.Services
         private bool DetermineRecoverability(AppException exception, ExceptionSource source)
         {
             // 致命错误不可恢复
-            if (exception.Severity == ErrorSeverity.Fatal)
+            if (exception.Severity == SharedCommon.ErrorSeverity.Fatal)
                 return false;
                 
             // AppDomain异常通常不可恢复
@@ -301,8 +300,8 @@ namespace LYBT.Desktop.Core.Services
                 return true;
                 
             // 网络和超时错误通常可恢复
-            if (exception.Category == ErrorCategory.Network || 
-                exception.Category == ErrorCategory.Timeout)
+            if (exception.Category == SharedCommon.ErrorCategory.Network || 
+                exception.Category == SharedCommon.ErrorCategory.Timeout)
                 return true;
                 
             return false;
@@ -314,20 +313,20 @@ namespace LYBT.Desktop.Core.Services
             
             switch (exception.Category)
             {
-                case ErrorCategory.Network:
-                case ErrorCategory.ServiceUnavailable:
+                case SharedCommon.ErrorCategory.Network:
+                case SharedCommon.ErrorCategory.ServiceUnavailable:
                     // 等待并重试
                     await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, exception.RetryCount)));
                     exception.IncrementRetryCount();
                     break;
                     
-                case ErrorCategory.Authentication:
+                case SharedCommon.ErrorCategory.Authentication:
                     // 触发重新登录
-                    await _notificationService.ShowErrorAsync("认证失败，请重新登录", ErrorSeverity.Warning);
+                    await _notificationService.ShowErrorAsync("认证失败，请重新登录", SharedCommon.ErrorSeverity.Warning);
                     // TODO: 触发登录事件
                     break;
                     
-                case ErrorCategory.Configuration:
+                case SharedCommon.ErrorCategory.Configuration:
                     // 尝试重新加载配置
                     _logger.LogInformation("尝试重新加载配置");
                     // TODO: 重新加载配置
@@ -342,7 +341,7 @@ namespace LYBT.Desktop.Core.Services
         private bool ShouldShutdownApplication(AppException exception)
         {
             // 致命错误需要关闭应用
-            if (exception.Severity == ErrorSeverity.Fatal)
+            if (exception.Severity == SharedCommon.ErrorSeverity.Fatal)
                 return true;
                 
             // 连续多个严重错误
@@ -350,9 +349,9 @@ namespace LYBT.Desktop.Core.Services
                 return true;
                 
             // 特定类别的严重错误
-            if (exception.Severity == ErrorSeverity.Critical &&
-                (exception.Category == ErrorCategory.Configuration ||
-                 exception.Category == ErrorCategory.Internal))
+            if (exception.Severity == SharedCommon.ErrorSeverity.Critical &&
+                (exception.Category == SharedCommon.ErrorCategory.Configuration ||
+                 exception.Category == SharedCommon.ErrorCategory.Internal))
                 return true;
                 
             return false;
@@ -367,7 +366,7 @@ namespace LYBT.Desktop.Core.Services
                 // 1. 通知用户
                 await _notificationService.ShowErrorAsync(
                     "应用程序遇到严重错误，即将关闭。您的数据已保存。",
-                    ErrorSeverity.Fatal);
+                    SharedCommon.ErrorSeverity.Fatal);
                 
                 // 2. 保存关键数据
                 SaveCriticalData();

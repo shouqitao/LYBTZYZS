@@ -11,8 +11,7 @@ using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
 
 // UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
-using FormulaHerbItem = LYBT.Shared.Models.Contracts.Formula.FormulaHerbItemDto;
+using LYBT.Desktop.Core.Models.Formulas;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Formula.ViewModels
@@ -142,7 +141,21 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var result = await _formulaService.GetFormulasAsync();
                 if (result.IsSuccess && result.Data != null)
                 {
-                    _allFormulas = new ObservableCollection<FormulaInfo>(result.Data);
+                    // 将FormulaDto转换为FormulaInfo
+                    var formulaInfoList = result.Data.Select(dto => new FormulaInfo
+                    {
+                        Id = dto.Id,
+                        Name = dto.Name,
+                        Category = "其他", // 默认分类
+                        Description = dto.Effect,
+                        Source = dto.Source ?? "",
+                        CreateTime = dto.CreateTime,
+                        UpdateTime = dto.UpdateTime,
+                        // Status = CommonStatus.Enabled, // 默认启用状态
+                        Remark = dto.Remark
+                    }).ToList();
+                    
+                    _allFormulas = new ObservableCollection<FormulaInfo>(formulaInfoList);
                     FilterFormulas();
                     StatusMessage = $"已加载 {_allFormulas.Count} 个验方模板";
                 }

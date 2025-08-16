@@ -11,6 +11,7 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
 
@@ -244,13 +245,13 @@ namespace LYBT.Desktop.Consultation.Services
                 // 调用服务保存处方
                 var result = await _prescriptionService.CreateAsync(createDto);
                 
-                if (result.IsSuccess)
+                if (result != null)
                 {
                     _logger.LogInformation($"成功保存处方，包含 {_prescriptionItems.Count} 味药材");
                     return true;
                 }
 
-                _logger.LogWarning($"保存处方失败: {result.ErrorMessage}");
+                _logger.LogWarning("保存处方失败");
                 return false;
             }
             catch (Exception ex)

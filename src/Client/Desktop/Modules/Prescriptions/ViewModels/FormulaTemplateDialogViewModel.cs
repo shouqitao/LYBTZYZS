@@ -9,7 +9,7 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
-// using Prism.Dialogs; // Temporarily disabled due to Prism 9 compatibility
+// // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility // Temporarily disabled due to Prism 9 compatibility
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels

@@ -10,6 +10,7 @@ using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using LYBT.Desktop.Core.Events;
@@ -191,15 +192,15 @@ namespace LYBT.Desktop.Consultation.Services
 
                 // 调用服务创建处方
                 var result = await _prescriptionService.CreateAsync(createDto);
-                if (result.IsSuccess && result.Data != null)
+                if (result != null)
                 {
-                    _logger.LogInformation($"处方创建成功 - ID: {result.Data.Id}");
+                    _logger.LogInformation($"处方创建成功 - ID: {result.Id}");
 
                     // 发布处方创建事件
                     _eventAggregator.GetEvent<PrescriptionCreatedEvent>()
                         .Publish(new PrescriptionCreatedData
                         {
-                            PrescriptionId = result.Data.Id,
+                            PrescriptionId = result.Id,
                             PatientId = prescription.PatientId,
                             MedicalCaseId = _currentMedicalCaseId ?? Guid.Empty,
                             ConsultationId = _currentConsultationId ?? Guid.Empty
@@ -209,7 +210,7 @@ namespace LYBT.Desktop.Consultation.Services
                 }
                 else
                 {
-                    _logger.LogError($"处方创建失败: {result.ErrorMessage}");
+                    _logger.LogError("处方创建失败");
                     return null;
                 }
             }

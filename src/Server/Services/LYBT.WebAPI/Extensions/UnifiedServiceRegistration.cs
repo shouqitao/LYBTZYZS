@@ -110,7 +110,7 @@ public static class UnifiedServiceRegistration
         services.AddSingleton<ISystemMetricsCollector, SystemMetricsCollector>();
 
         // =========== 统一服务 ===========
-        services.AddScoped<IUnifiedLogService, UnifiedLogService>();
+        // 注意：日志系统已简化为标准ILogger，无需单独注册
         
         // =========== 性能优化服务 ===========
         services.RegisterPerformanceServices(configManager);
@@ -361,9 +361,7 @@ public static class UnifiedServiceRegistration
         LYBT.Infrastructure.Configuration.IConfigurationManager configManager)
     {
         // =========== 统一日志管理 ===========
-        services.AddSingleton<LYBT.Infrastructure.Logging.IUnifiedLogger, LYBT.Infrastructure.Logging.UnifiedLogger>();
-        services.AddHostedService(provider => 
-            (LYBT.Infrastructure.Logging.UnifiedLogger)provider.GetRequiredService<LYBT.Infrastructure.Logging.IUnifiedLogger>());
+        // 注意：已简化为标准ILogger，无需额外配置
 
         // =========== 监控管理 ===========
         // 注意：IUnifiedMonitor的实现类需要在后续创建

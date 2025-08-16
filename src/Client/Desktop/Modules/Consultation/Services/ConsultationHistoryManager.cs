@@ -9,6 +9,7 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Consultation.Services
@@ -251,10 +252,10 @@ namespace LYBT.Desktop.Consultation.Services
 
             try
             {
-                var result = await _prescriptionService.GetByPatientIdAsync(patientId);
-                if (result.IsSuccess && result.Data != null)
+                var prescriptions = await _prescriptionService.GetByPatientIdAsync(patientId);
+                if (prescriptions != null && prescriptions.Any())
                 {
-                    foreach (var prescription in result.Data)
+                    foreach (var prescription in prescriptions)
                     {
                         history.Add(new HistoryRecord
                         {

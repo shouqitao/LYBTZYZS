@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Prism.Commands;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -33,7 +31,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 服务依赖
 
         private readonly IConsultationApiService _consultationApiService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly ILogger<TCMFourDiagnosisCoordinator>? _logger;
 
         #endregion
@@ -52,7 +50,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public TCMFourDiagnosisCoordinator(
             IConsultationApiService consultationApiService,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null,
             ILogger<TCMFourDiagnosisCoordinator>? logger = null)
         {

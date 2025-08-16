@@ -1,12 +1,13 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Contracts.Formula
 {
     /// <summary>
-    /// 验方基础DTO - 继承审计DTO提供ID、创建时间、更新时间
+    /// 验方基础DTO - UltraThink统一标准，包含完整业务属性
     /// </summary>
     public class FormulaDto : AuditableDto, IRemarkable
     {
@@ -34,6 +35,32 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
+        
+        // UltraThink P0修复：添加Client层期望的缺失属性
+        [DisplayName("分类")]
+        public string? Category { get; set; }
+        
+        [DisplayName("主治症状")]
+        public string? Indications { get; set; }
+        
+        [DisplayName("来源")]
+        public string? Source { get; set; }
+        
+        [DisplayName("用药指导")]
+        public string? Instructions { get; set; }
+        
+        [DisplayName("禁忌症")]
+        public string? Contraindications { get; set; }
+        
+        [DisplayName("制备方法")]
+        public string? Preparation { get; set; }
+        
+        // UltraThink P0修复：添加Client层期望的更多缺失属性
+        [DisplayName("用药指导")]
+        public string? DosageInstruction { get; set; }
+        
+        [DisplayName("药材组成")]
+        public List<FormulaHerbItemDto> Herbs { get; set; } = new();
     }
 
     /// <summary>
@@ -76,6 +103,11 @@ namespace LYBT.Shared.Models.Contracts.Formula
         
         [DisplayName("排序")]
         public int SortOrder { get; set; }
+
+        // UltraThink导航属性 - 确保架构统一
+        /// <summary>中药材导航属性</summary>
+        [DisplayName("中药材")]
+        public HerbDto? Herb { get; set; }
     }
 
     /// <summary>
@@ -210,6 +242,13 @@ namespace LYBT.Shared.Models.Contracts.Formula
         
         [DisplayName("升序排序")]
         public bool IsAscending { get; set; } = false;
+
+        // UltraThink兼容性别名 - 确保架构统一
+        /// <summary>页码兼容性别名</summary>
+        public int Page { get => PageIndex; set => PageIndex = value; }
+        
+        /// <summary>页大小兼容性别名</summary>
+        public int Size { get => PageSize; set => PageSize = value; }
     }
 
     /// <summary>

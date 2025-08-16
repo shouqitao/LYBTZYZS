@@ -11,14 +11,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+		<PackageReference Include="Prism.DryIoc" Version="8.1.97" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\Shared\LYBT.Desktop.Shared.csproj" />
 		<ProjectReference Include="..\Core\LYBT.Desktop.Workbench.Core.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
 		<ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+		<ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+		<ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -8,6 +8,7 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Consultation.ViewModels.Components
 {
@@ -87,13 +88,21 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
         {
             try
             {
-                var result = await _prescriptionService.GetByMedicalCaseIdAsync(MedicalCaseId);
+                // 注意：由于接口限制，这里暂时跳过加载现有处方数据
+                // 实际应该通过ConsultationId来获取处方数据
+                _logger.LogInformation("暂时跳过加载现有处方数据，因为需要ConsultationId而不是MedicalCaseId");
                 
-                if (result.IsSuccess && result.Data != null)
+                // TODO: 当有ConsultationId时，使用 GetByConsultationIdAsync
+                // var result = await _prescriptionService.GetByConsultationIdAsync(consultationId);
+                var result = false; // 暂时设为false
+                
+                if (result)
                 {
-                    var existingPrescription = result.Data;
+                    // var existingPrescription = result.Data;
                     _logger.LogDebug("找到现有处方数据，开始加载");
                     
+                    // TODO: 临时注释，需要重新实现
+                    /*
                     // 加载基础信息
                     PrescriptionNo = existingPrescription.PrescriptionNo ?? GeneratePrescriptionNoInternal();
                     DosageCount = existingPrescription.DosageCount;
@@ -124,6 +133,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
                     }
                     
                     _logger.LogInformation("成功加载处方数据，共 {ItemCount} 个药材", PrescriptionItems.Count);
+                    */
                 }
                 else
                 {

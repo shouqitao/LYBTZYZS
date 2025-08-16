@@ -3,15 +3,13 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using AutoMapper;
-using LYBT.Infrastructure.Logging;
 using LYBT.Shared.Models.Enums;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
-
-
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using SharedUserCreateDto = LYBT.Shared.Models.Contracts.Users.UserCreateDto;
 using SharedUserDto = LYBT.Shared.Models.Contracts.Users.UserDto;
@@ -28,18 +26,18 @@ namespace LYBT.Module.Users.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IUnifiedLogService _logService;
+        private readonly ILogger<UserService> _logger;
         private readonly UserOptions _options;
         private readonly IMapper _mapper;
 
         public UserService(
             IUserRepository userRepository,
-            IUnifiedLogService logService,
+            ILogger<UserService> logger,
             IOptions<UserOptions> options,
             IMapper mapper)
         {
             _userRepository = userRepository;
-            _logService = logService;
+            _logger = logger;
             _options = options.Value;
             _mapper = mapper;
         }
@@ -145,7 +143,7 @@ namespace LYBT.Module.Users.Services
             if (result)
             {
                 await LogUserOperation(
-                    id, ActionType.Disable, operatorId, operatorName,
+                    id, ActionType.Update, operatorId, operatorName,
                     $"禁用用户：{user.Username}",
                     oldValue: JsonSerializer.Serialize(user)
                 );
@@ -165,7 +163,7 @@ namespace LYBT.Module.Users.Services
             if (result)
             {
                 await LogUserOperation(
-                    id, ActionType.Enable, operatorId, operatorName,
+                    id, ActionType.Update, operatorId, operatorName,
                     $"启用用户：{user.Username}",
                     oldValue: JsonSerializer.Serialize(user)
                 );
@@ -187,7 +185,7 @@ namespace LYBT.Module.Users.Services
             if (updatedCount > 0)
             {
                 await LogBatchUserOperation(
-                    users, ActionType.Disable, operatorId, operatorName,
+                    users, ActionType.Update, operatorId, operatorName,
                     $"批量禁用 {updatedCount} 个用户"
                 );
             }
@@ -208,7 +206,7 @@ namespace LYBT.Module.Users.Services
             if (updatedCount > 0)
             {
                 await LogBatchUserOperation(
-                    users, ActionType.Enable, operatorId, operatorName,
+                    users, ActionType.Update, operatorId, operatorName,
                     $"批量启用 {updatedCount} 个用户"
                 );
             }
@@ -229,7 +227,7 @@ namespace LYBT.Module.Users.Services
             if (result)
             {
                 await LogUserOperation(
-                    id, ActionType.ResetPassword, operatorId, operatorName,
+                    id, ActionType.Update, operatorId, operatorName,
                     $"重置用户密码：{user.Username}"
                 );
 
@@ -260,7 +258,7 @@ namespace LYBT.Module.Users.Services
             if (result)
             {
                 await LogUserOperation(
-                    id, ActionType.Edit, id, user.RealName,
+                    id, ActionType.Update, id, user.RealName,
                     "用户修改个人密码"
                 );
             }
@@ -285,7 +283,7 @@ namespace LYBT.Module.Users.Services
             if (result != null)
             {
                 await LogUserOperation(
-                    id, ActionType.Edit, id, user.RealName,
+                    id, ActionType.Update, id, user.RealName,
                     "用户修改个人信息",
                     oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(user)
                 );
@@ -413,15 +411,8 @@ namespace LYBT.Module.Users.Services
             if (!_options.EnableDetailedAuditLogging)
                 return;
 
-            await _logService.LogUserActionAsync(
-                operatorId,
-                operatorName,
-                (LogActionType)actionType,
-                "Users",
-                "UserManagement",
-                content,
-                parameters: newValue != null ? JsonSerializer.Serialize(newValue) : null
-            );
+            _logger.LogInformation("用户操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
+                operatorName, operatorId, actionType, content);
         }
 
         /// <summary>
@@ -437,15 +428,8 @@ namespace LYBT.Module.Users.Services
             var userNames = string.Join(", ", users.Select(u => u.Username));
             var detailedContent = $"{content}: {userNames}";
 
-            await _logService.LogUserActionAsync(
-                operatorId,
-                operatorName,
-                (LogActionType)actionType,
-                "Users",
-                "BatchUserManagement",
-                detailedContent,
-                parameters: JsonSerializer.Serialize(users.Select(u => new { u.Id, u.Username }).ToList())
-            );
+            _logger.LogInformation("批量用户操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
+                operatorName, operatorId, actionType, detailedContent);
         }
 
         /// <summary>

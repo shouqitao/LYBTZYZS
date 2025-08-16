@@ -14,8 +14,6 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Core.Interfaces.Services;
 // UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
 using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
@@ -27,8 +25,8 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserManagementViewModelSimple : BaseServiceManagementViewModel<UserInfo, IUserService>
     {
-        private readonly IDialogService _commonDialogService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _commonDialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly IUserApiService _userApiService;
 
         protected override string ModuleName => "用户管理";
@@ -43,8 +41,8 @@ namespace LYBT.Desktop.Users.ViewModels
         public UserManagementViewModelSimple(
             IUserService userService,
             IUserApiService userApiService,
-            IDialogService commonDialogService,
-            IDialogService dialogService,
+            ICustomDialogService commonDialogService,
+            ICustomDialogService dialogService,
             Prism.Events.IEventAggregator eventAggregator)
             : base(userService, eventAggregator)
         {

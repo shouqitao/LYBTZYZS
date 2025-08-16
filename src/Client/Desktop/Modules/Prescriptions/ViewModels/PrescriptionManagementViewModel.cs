@@ -9,9 +9,9 @@ using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
-// using Prism.Dialogs; // Temporarily disabled due to Prism 9 compatibility
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     public class PrescriptionManagementViewModel : BindableBase
     {
         private readonly IPrescriptionService _prescriptionService;
-        // private readonly IDialogService _dialogService; // Temporarily disabled
+        private readonly ICustomDialogService _dialogService;
         private readonly ILogger<PrescriptionManagementViewModel> _logger;
 
         #region Properties
@@ -116,11 +116,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         public PrescriptionManagementViewModel(
             IPrescriptionService prescriptionService,
-            // IDialogService dialogService, // Temporarily disabled
+            ICustomDialogService dialogService,
             ILogger<PrescriptionManagementViewModel> logger)
         {
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
-            // _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService)); // Temporarily disabled
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             // 初始化命令
@@ -149,12 +149,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 IsLoading = true;
                 StatusMessage = "正在加载处方数据...";
 
-                // Use GetTodayPrescriptionsAsync for initial load, or GetPagedAsync for paged results
-                var result = await _prescriptionService.GetTodayPrescriptionsAsync();
-                if (result.IsSuccess && result.Data != null)
+                // Use GetPagedAsync for initial load
+                var query = new PrescriptionQueryDto 
+                { 
+                    PageIndex = 1, 
+                    PageSize = 50,
+                    StartDate = DateTime.Today,
+                    EndDate = DateTime.Today.AddDays(1)
+                };
+                var result = await _prescriptionService.GetPagedAsync(query);
+                if (result != null && result.Items != null)
                 {
                     // Convert PrescriptionDto list to PrescriptionInfo
-                    var prescriptionInfos = result.Data.Select(dto => new PrescriptionInfo
+                    var prescriptionInfos = result.Items.Select(dto => new PrescriptionInfo
                     {
                         Id = dto.Id,
                         PatientId = dto.PatientId,
@@ -303,26 +310,33 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             if (prescription == null) return;
 
-            // TODO: Implement confirm dialog when Prism dialog support is added
-            // For now, directly delete without confirmation
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"确定要删除患者 '{prescription.PatientName}' 的处方吗？\n此操作不可恢复。",
+                "确认删除");
+
+            if (!confirm) return;
+
             try
             {
                 var deleteResult = await _prescriptionService.DeleteAsync(prescription.Id);
-                if (deleteResult.IsSuccess)
+                if (deleteResult)
                 {
                     _allPrescriptions.Remove(prescription);
                     FilterPrescriptions();
                     StatusMessage = "处方已删除";
+                    await _dialogService.ShowSuccessAsync("处方删除成功", "操作完成");
                 }
                 else
                 {
-                    StatusMessage = deleteResult.ErrorMessage ?? "删除失败";
+                    StatusMessage = "删除失败";
+                    await _dialogService.ShowErrorAsync("删除失败", "错误");
                 }
             }
             catch (Exception ex)
             {
                 StatusMessage = $"删除失败: {ex.Message}";
                 _logger.LogError(ex, "删除处方时出错");
+                await _dialogService.ShowErrorAsync($"删除失败: {ex.Message}", "错误");
             }
         }
 

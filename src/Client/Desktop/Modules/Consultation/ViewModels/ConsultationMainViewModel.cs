@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using Prism.Events;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Prescriptions;
@@ -19,12 +19,11 @@ using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 // UltraThink重构: 统一HerbInfo和HerbDto，FormulaInfo和FormulaDto，使用Dto作为统一模型
 using LYBT.Shared.Models.Contracts.Herbs;
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
+using LYBT.Desktop.Core.Models.Formulas;
 namespace LYBT.Desktop.Consultation.ViewModels
 {
     /// <summary>
@@ -42,7 +41,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private readonly IFormulaManager _formulaManager;
         private readonly IConsultationValidator _validator;
         private readonly IConsultationEventHandler _eventHandler;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<ConsultationMainViewModel> _logger;
@@ -155,7 +154,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             IFormulaManager formulaManager,
             IConsultationValidator validator,
             IConsultationEventHandler eventHandler,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILogger<ConsultationMainViewModel> logger)

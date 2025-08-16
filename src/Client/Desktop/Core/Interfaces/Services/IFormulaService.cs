@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models;
+
 using LYBT.Desktop.Core.Models.Formulas;
-using LYBT.Desktop.Core.Models.Common;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
-using FormulaPagedResult = LYBT.Desktop.Core.Models.Common.PagedResult<LYBT.Desktop.Core.Models.Formulas.FormulaInfo>;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {
@@ -19,7 +16,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>
         /// 分页查询验方模板
         /// </summary>
-        Task<FormulaPagedResult> SearchFormulasAsync(PagedQueryBaseDto query);
+        Task<LYBT.Shared.Models.Contracts.Common.PagedResult<LYBT.Desktop.Core.Models.Formulas.FormulaInfo>> SearchFormulasAsync(PagedQueryBaseDto query);
 
         /// <summary>
         /// 获取验方模板列表

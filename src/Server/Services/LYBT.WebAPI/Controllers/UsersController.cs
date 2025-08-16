@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +38,7 @@ public class UsersController : BaseApiController {
     /// 切换用户状态（启用/禁用） - 统一API响应格式
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ToggleStatus(Guid id) {
         try {
             var validation = ValidateGuid(id, "用户ID");
             if (validation != null)
@@ -77,7 +78,7 @@ public class UsersController : BaseApiController {
     /// 批量禁用用户 - 统一API响应格式
     /// </summary>
     [HttpPatch("batch-disable")]
-    public async Task<ActionResult<ApiResponse>> BatchDisable([FromBody] BatchIdsDto dto) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> BatchDisable([FromBody] BatchIdsDto dto) {
         try {
             var validation = ValidateModel();
             if (validation != null)
@@ -102,7 +103,7 @@ public class UsersController : BaseApiController {
     /// 批量启用用户 - 统一API响应格式
     /// </summary>
     [HttpPatch("batch-enable")]
-    public async Task<ActionResult<ApiResponse>> BatchEnable([FromBody] BatchIdsDto dto) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> BatchEnable([FromBody] BatchIdsDto dto) {
         try {
             var validation = ValidateModel();
             if (validation != null)
@@ -127,7 +128,7 @@ public class UsersController : BaseApiController {
     /// 管理员重置密码，恢复为默认值 - 统一API响应格式
     /// </summary>
     [HttpPost("reset-password/{id}")]
-    public async Task<ActionResult<ApiResponse>> ResetPassword(Guid id) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ResetPassword(Guid id) {
         try {
             var validation = ValidateGuid(id, "用户ID");
             if (validation != null)
@@ -153,7 +154,7 @@ public class UsersController : BaseApiController {
     /// 用户修改密码 - 统一API响应格式
     /// </summary>
     [HttpPatch("password")]
-    public async Task<ActionResult<ApiResponse>> ChangePassword([FromBody] ChangePasswordDto dto) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ChangePassword([FromBody] ChangePasswordDto dto) {
         try {
             var validation = ValidateModel();
             if (validation != null)
@@ -180,7 +181,7 @@ public class UsersController : BaseApiController {
     /// 用户修改个人信息 - 统一API响应格式
     /// </summary>
     [HttpPut("profile")]
-    public async Task<ActionResult<ApiResponse>> ChangeProfile([FromBody] ChangeProfileDto dto) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ChangeProfile([FromBody] ChangeProfileDto dto) {
         try {
             var validation = ValidateModel();
             if (validation != null)
@@ -207,7 +208,7 @@ public class UsersController : BaseApiController {
     /// 获取所有角色 - 统一API响应格式
     /// </summary>
     [HttpGet("roles")]
-    public ActionResult<ApiResponse<IEnumerable<object>>> GetRoles() {
+    public ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<IEnumerable<object>>> GetRoles() {
         try {
             var roles = _userService.GetRoles();
             return Success<IEnumerable<object>>(roles, "获取角色列表成功");
@@ -222,7 +223,7 @@ public class UsersController : BaseApiController {
     /// 获取启用的用户列表 - 统一API响应格式
     /// </summary>
     [HttpGet("active")]
-    public async Task<ActionResult<ApiResponse<IEnumerable<LYBT.Shared.Models.Contracts.Users.UserDto>>>> GetActiveUsers() {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<IEnumerable<LYBT.Shared.Models.Contracts.Users.UserDto>>>> GetActiveUsers() {
         try {
             var users = await _userService.GetActiveUsersAsync();
             return Success<IEnumerable<LYBT.Shared.Models.Contracts.Users.UserDto>>(users, "获取启用用户列表成功");
@@ -237,7 +238,7 @@ public class UsersController : BaseApiController {
     /// 获取所有用户列表 (RESTful GET /Users) - 支持模糊查询 - 统一API响应格式
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<PagedApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetUsers(
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.PagedApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetUsers(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
@@ -276,7 +277,7 @@ public class UsersController : BaseApiController {
     /// 根据ID获取用户 (RESTful GET /Users/{id}) - 统一API响应格式
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetUser(Guid id) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetUser(Guid id) {
         try {
             var validation = ValidateGuid<LYBT.Shared.Models.Contracts.Users.UserDto>(id, "用户ID");
             if (validation != null)
@@ -298,7 +299,7 @@ public class UsersController : BaseApiController {
     /// 创建新用户 (RESTful POST /Users) - 统一API响应格式
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> CreateUser([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> CreateUser([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
         try {
             var validation = ValidateModel<LYBT.Shared.Models.Contracts.Users.UserDto>();
             if (validation != null)
@@ -324,7 +325,7 @@ public class UsersController : BaseApiController {
     /// 更新用户信息 (RESTful PUT /Users/{id}) - 统一API响应格式
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> UpdateUser(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Users.UserUpdateDto dto) {
+    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> UpdateUser(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Users.UserUpdateDto dto) {
         try {
             var idValidation = ValidateGuid<LYBT.Shared.Models.Contracts.Users.UserDto>(id, "用户ID");
             if (idValidation != null)

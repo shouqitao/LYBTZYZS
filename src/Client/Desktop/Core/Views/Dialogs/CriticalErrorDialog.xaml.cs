@@ -1,10 +1,11 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Diagnostics;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
+using LYBT.Desktop.Core.Exceptions;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Views.Dialogs
 {
@@ -14,9 +15,9 @@ namespace LYBT.Desktop.Core.Views.Dialogs
     /// </summary>
     public partial class CriticalErrorDialog : Window
     {
-        private HandledError? _errorInfo;
+        private SharedCommon.HandledError? _errorInfo;
 
-        public HandledError? ErrorInfo
+        public SharedCommon.HandledError? ErrorInfo
         {
             get => _errorInfo;
             set
@@ -57,22 +58,22 @@ namespace LYBT.Desktop.Core.Views.Dialogs
                 }
 
                 // 技术信息
-                ErrorTypeText.Text = _errorInfo.OriginalException?.GetType().Name ?? "Unknown";
-                TimestampText.Text = _errorInfo.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                ErrorTypeText.Text = _errorInfo.Exception?.GetType().Name ?? "Unknown";
+                TimestampText.Text = _errorInfo.OccurredAt.ToString("yyyy-MM-dd HH:mm:ss");
                 ErrorIdText.Text = _errorInfo.Id.ToString();
 
                 // 技术详情
                 TechnicalDetailsText.Text = _errorInfo.TechnicalDetails ?? 
-                    _errorInfo.OriginalException?.Message ?? "无技术详情";
+                    _errorInfo.Exception?.Message ?? "无技术详情";
 
                 // 堆栈跟踪
-                StackTraceText.Text = _errorInfo.OriginalException?.StackTrace ?? "无堆栈信息";
+                StackTraceText.Text = _errorInfo.Exception?.StackTrace ?? "无堆栈信息";
 
                 // 根据错误严重程度调整窗口标题
                 this.Title = _errorInfo.Severity switch
                 {
-                    ErrorSeverity.Fatal => "致命错误",
-                    ErrorSeverity.Critical => "严重错误",
+                    SharedCommon.ErrorSeverity.Fatal => "致命错误",
+                    SharedCommon.ErrorSeverity.Critical => "严重错误",
                     _ => "错误"
                 };
             }
@@ -121,7 +122,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
             {
                 // 生成错误报告并尝试打开邮件客户端
                 var errorReport = GenerateErrorReport();
-                var subject = Uri.EscapeDataString($"错误报告 - {_errorInfo?.OriginalException?.GetType().Name}");
+                var subject = Uri.EscapeDataString($"错误报告 - {_errorInfo?.Exception?.GetType().Name}");
                 var body = Uri.EscapeDataString(errorReport);
                 
                 var mailto = $"mailto:support@lybt.com?subject={subject}&body={body}";
@@ -154,7 +155,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
 
             var report = $@"=== 凌隐宝堂系统错误报告 ===
 
-错误时间: {_errorInfo.Timestamp:yyyy-MM-dd HH:mm:ss}
+错误时间: {_errorInfo.OccurredAt:yyyy-MM-dd HH:mm:ss}
 错误ID: {_errorInfo.Id}
 错误类别: {_errorInfo.Category}
 错误严重程度: {_errorInfo.Severity}
@@ -166,13 +167,13 @@ namespace LYBT.Desktop.Core.Views.Dialogs
 {string.Join("\n", _errorInfo.SuggestedActions?.Select(a => $"• {a}") ?? new[] { "• 联系技术支持" })}
 
 技术详情:
-{_errorInfo.TechnicalDetails ?? _errorInfo.OriginalException?.Message ?? "无"}
+{_errorInfo.TechnicalDetails ?? _errorInfo.Exception?.Message ?? "无"}
 
 错误类型:
-{_errorInfo.OriginalException?.GetType().FullName ?? "Unknown"}
+{_errorInfo.Exception?.GetType().FullName ?? "Unknown"}
 
 堆栈跟踪:
-{_errorInfo.OriginalException?.StackTrace ?? "无"}
+{_errorInfo.Exception?.StackTrace ?? "无"}
 
 系统信息:
 - 操作系统: {Environment.OSVersion}

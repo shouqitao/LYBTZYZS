@@ -7,7 +7,7 @@ using LYBT.Desktop.Core.Models.Consultation;
 
 // UltraThink重构: 统一HerbInfo和HerbDto，FormulaInfo和FormulaDto，使用Dto作为统一模型
 using LYBT.Shared.Models.Contracts.Herbs;
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
+using LYBT.Desktop.Core.Models.Formulas;
 
 namespace LYBT.Desktop.Consultation.Services.Interfaces
 {

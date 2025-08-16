@@ -13,10 +13,8 @@ using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Consultation.ViewModels;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Services;
-
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Core.Models.Consultation;
+using ICustomDialogService = LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Desktop.Consultation.Services;
 using LYBT.Desktop.Consultation.Constants;
@@ -34,7 +32,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private readonly IPrescriptionService _prescriptionService;
         private readonly IHerbService _herbService;
         private readonly IFormulaService _formulaService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly ILogger<PrescriptionViewModel> _logger;
         
         // TODO: 可以在这里添加新的服务类
@@ -220,7 +218,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             IPrescriptionService prescriptionService,
             IHerbService herbService,
             IFormulaService formulaService,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             ILogger<PrescriptionViewModel> logger)
         {
             _eventAggregator = eventAggregator;
@@ -295,7 +293,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             try
             {
                 // UltraThink重构: 适配Shared接口的返回类型 List<PrescriptionDto>
-                var prescriptions = await _prescriptionService.GetByMedicalCaseIdAsync(MedicalCaseId);
+                // 注意：在看诊流程中，MedicalCaseId实际上对应ConsultationId
+                var prescriptions = await _prescriptionService.GetByConsultationIdAsync(MedicalCaseId);
                 if (prescriptions != null && prescriptions.Any())
                 {
                     var prescription = prescriptions.First(); // 取第一个处方

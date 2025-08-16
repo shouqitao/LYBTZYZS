@@ -10,7 +10,6 @@ using Prism.Commands;
 using Prism.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {

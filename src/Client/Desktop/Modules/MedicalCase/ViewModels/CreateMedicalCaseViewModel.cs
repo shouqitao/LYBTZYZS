@@ -6,10 +6,10 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.ViewModels.Base;
 using Prism.Commands;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Events;
+using Prism.Services.Dialogs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Desktop.Core.Models.Common;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPatientService _patientService;
         private readonly IUserSessionManager _userSessionManager;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
 
         #region Properties
 
@@ -114,7 +114,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IMedicalCaseService medicalCaseService,
             IPatientService patientService,
             IUserSessionManager userSessionManager,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             IEventAggregator eventAggregator)
             : base(eventAggregator)
         {
@@ -135,7 +135,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Dialog Implementation (Temporary - Waiting for Prism 9 IDialogAware fix)
 
-        public event Action<IDialogResult> RequestClose = delegate { };
+        public event Action<Prism.Services.Dialogs.IDialogResult> RequestClose = delegate { };
 
         public bool CanCloseDialog() => true;
 
@@ -144,7 +144,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // Cleanup resources
         }
 
-        public void OnDialogOpened(IDialogParameters parameters)
+        public void OnDialogOpened(Prism.Services.Dialogs.DialogParameters parameters)
         {
             if (parameters.ContainsKey("PatientId"))
             {
@@ -316,7 +316,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     // {
                     //     { "CreatedMedicalCase", result.Data }
                     // })); // Temporarily disabled - DialogResult constructor issue
-                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+                    RequestClose?.Invoke(new Prism.Services.Dialogs.DialogResult(Prism.Services.Dialogs.ButtonResult.OK));
                 }
                 else
                 {
@@ -336,7 +336,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private void Cancel()
         {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+            RequestClose?.Invoke(new Prism.Services.Dialogs.DialogResult(Prism.Services.Dialogs.ButtonResult.Cancel));
         }
 
         private static int CalculateAge(DateTime? birthDate)

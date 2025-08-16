@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Common;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,6 +19,10 @@ namespace LYBT.Shared.Models.Contracts.Users
         /// <summary>真实姓名</summary>
         [DisplayName("真实姓名")]
         public string RealName { get; set; } = string.Empty;
+
+        /// <summary>用户角色</summary>
+        [DisplayName("用户角色")]
+        public string Role { get; set; } = "User";
 
         /// <summary>电话号码</summary>
         [DisplayName("电话号码")]
@@ -46,6 +51,10 @@ namespace LYBT.Shared.Models.Contracts.Users
         /// <summary>最后登录IP</summary>
         [DisplayName("最后登录IP")]
         public string? LastLoginIp { get; set; }
+
+        /// <summary>账号启用状态 - UltraThink兼容性别名</summary>
+        [DisplayName("账号启用状态")]
+        public bool IsActive => Status == CommonStatus.Enabled;
     }
 
     /// <summary>

@@ -1,6 +1,11 @@
 using System.Collections.ObjectModel;
-using LYBT.Desktop.Shared;
 using LYBT.Desktop.Workbench.Core;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
+using Prism.Regions;
+using Prism.Events;
+using Prism.Commands;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Workbench.Admin.ViewModels
 {
@@ -12,8 +17,8 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IWorkbenchRouter _workbenchRouter;
-        private readonly ISharedPatientService _sharedPatientService;
-        private readonly ISharedUserService _sharedUserService;
+        private readonly IPatientService _patientService;
+        private readonly IUserService _userService;
 
         private ObservableCollection<NavigationItem> _navigationItems;
         private string _currentViewTitle = "仪表板";
@@ -23,14 +28,14 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             IWorkbenchRouter workbenchRouter,
-            ISharedPatientService sharedPatientService = null,
-            ISharedUserService sharedUserService = null)
+            IPatientService patientService = null,
+            IUserService userService = null)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _workbenchRouter = workbenchRouter;
-            _sharedPatientService = sharedPatientService;
-            _sharedUserService = sharedUserService;
+            _patientService = patientService;
+            _userService = userService;
 
             InitializeCommands();
             LoadNavigationItems();
@@ -161,9 +166,9 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
         /// </summary>
         public async void QuickCreatePatient()
         {
-            if (_sharedPatientService != null)
+            if (_patientService != null)
             {
-                // 使用共享服务创建患者
+                // 使用患者服务创建患者
                 var patientDto = new LYBT.Shared.Models.Contracts.Patients.PatientDetailDto
                 {
                     Name = "测试患者",
@@ -172,7 +177,7 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
                     Age = 30
                 };
 
-                var result = await _sharedPatientService.CreatePatientAsync(patientDto);
+                var result = await _patientService.CreateAsync(patientDto);
                 if (result.IsSuccess)
                 {
                     // 创建成功，刷新列表

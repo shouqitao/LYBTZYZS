@@ -12,8 +12,8 @@ using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Services;
 using LYBT.Desktop.Workbench.Core;
 using Prism.Mvvm;
-using Prism.Navigation.Regions;
-using Prism.Dialogs;
+using Prism.Regions;
+// using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
 using Prism.Events;
 using Prism.Commands;
 
@@ -254,10 +254,10 @@ namespace LYBT.Desktop.Shell.ViewModels
                     // 根据角色导航到对应的工作台主视图
                     _regionManager.RequestNavigate("ContentRegion", workbenchView, navigationResult =>
                     {
-                        if (!navigationResult.Success)
+                        if (navigationResult.Result != true)
                         {
                             // 如果导航失败，显示错误信息
-                            var errorMessage = navigationResult.Exception?.Message ?? "未知导航错误";
+                            var errorMessage = "导航失败";
                             _commonDialogService.ShowWarningAsync(
                                 $"{welcomeMessage}\n\n注意：工作台模块加载失败。\n错误详情：{errorMessage}", 
                                 "登录成功").GetAwaiter().GetResult();

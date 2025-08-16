@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using LYBT.Infrastructure.Common;
 using LYBT.Shared.Models;
 using LYBT.Shared.Models.Contracts.Common;
 
@@ -47,7 +46,7 @@ namespace LYBT.Infrastructure.Repositories.Base
         /// <summary>
         /// 分页查询
         /// </summary>
-        Task<Infrastructure.Common.PagedResult<TEntity>> GetPagedAsync<TDto>(
+        Task<PagedResult<TEntity>> GetPagedAsync<TDto>(
             IPagedQuery<TDto> query,
             Expression<Func<TEntity, bool>> predicate = null,
             Expression<Func<TEntity, object>> orderBy = null,

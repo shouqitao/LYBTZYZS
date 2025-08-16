@@ -1,14 +1,14 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Services;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -72,7 +72,7 @@ namespace LYBT.Desktop.Core.Services
                 { 
                     Title = "网络连接异常", 
                     Message = "网络连接不稳定，请检查网络设置后重试",
-                    Severity = ErrorSeverity.Warning,
+                    Severity = SharedCommon.ErrorSeverity.Warning,
                     SuggestedActions = new[] { "检查网络连接", "重试操作", "联系技术支持" }
                 } 
             },
@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Core.Services
                 { 
                     Title = "操作超时", 
                     Message = "操作耗时过长已超时，请稍后重试",
-                    Severity = ErrorSeverity.Warning,
+                    Severity = SharedCommon.ErrorSeverity.Warning,
                     SuggestedActions = new[] { "稍后重试", "检查网络", "减小数据量" }
                 } 
             },
@@ -92,7 +92,7 @@ namespace LYBT.Desktop.Core.Services
                 { 
                     Title = "访问权限不足", 
                     Message = "您没有执行此操作的权限，请联系管理员",
-                    Severity = ErrorSeverity.Error,
+                    Severity = SharedCommon.ErrorSeverity.Error,
                     SuggestedActions = new[] { "联系管理员", "检查账户权限", "重新登录" }
                 } 
             },
@@ -102,7 +102,7 @@ namespace LYBT.Desktop.Core.Services
                 { 
                     Title = "数据验证失败", 
                     Message = "输入的数据不符合要求，请检查后重新填写",
-                    Severity = ErrorSeverity.Warning,
+                    Severity = SharedCommon.ErrorSeverity.Warning,
                     SuggestedActions = new[] { "检查输入格式", "补填必填项", "联系技术支持" }
                 } 
             },
@@ -112,7 +112,7 @@ namespace LYBT.Desktop.Core.Services
                 { 
                     Title = "数据不存在", 
                     Message = "请求的数据不存在或已被删除",
-                    Severity = ErrorSeverity.Info,
+                    Severity = SharedCommon.ErrorSeverity.Info,
                     SuggestedActions = new[] { "刷新页面", "检查搜索条件", "联系管理员" }
                 } 
             },
@@ -122,7 +122,7 @@ namespace LYBT.Desktop.Core.Services
                 { 
                     Title = "服务器异常", 
                     Message = "服务器出现异常，技术人员正在处理，请稍后重试",
-                    Severity = ErrorSeverity.Error,
+                    Severity = SharedCommon.ErrorSeverity.Error,
                     SuggestedActions = new[] { "稍后重试", "联系技术支持", "保存工作内容" }
                 } 
             }
@@ -182,7 +182,7 @@ namespace LYBT.Desktop.Core.Services
                 { 
                     Title = "操作成功", 
                     Message = "操作已成功完成",
-                    Severity = ErrorSeverity.Info 
+                    Severity = SharedCommon.ErrorSeverity.Info 
                 };
             }
 
@@ -201,7 +201,7 @@ namespace LYBT.Desktop.Core.Services
                 { 
                     Title = "操作成功", 
                     Message = "操作已成功完成",
-                    Severity = ErrorSeverity.Info 
+                    Severity = SharedCommon.ErrorSeverity.Info 
                 };
             }
 
@@ -390,7 +390,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 Title = "操作异常",
                 Message = "操作过程中出现异常，请稍后重试或联系技术支持",
-                Severity = ErrorSeverity.Warning,
+                Severity = SharedCommon.ErrorSeverity.Warning,
                 SuggestedActions = new[] { "重试操作", "联系技术支持", "保存当前工作" }
             };
         }
@@ -548,7 +548,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 Title = "系统异常",
                 Message = "系统出现异常，请稍后重试或联系技术支持",
-                Severity = ErrorSeverity.Error,
+                Severity = SharedCommon.ErrorSeverity.Error,
                 SuggestedActions = new[] { "重试操作", "联系技术支持" },
                 SmartFixActions = new List<SmartFixAction>
                 {
@@ -586,7 +586,7 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 错误严重程度
         /// </summary>
-        public ErrorSeverity Severity { get; set; } = ErrorSeverity.Warning;
+        public SharedCommon.ErrorSeverity Severity { get; set; } = SharedCommon.ErrorSeverity.Warning;
 
         /// <summary>
         /// 建议操作

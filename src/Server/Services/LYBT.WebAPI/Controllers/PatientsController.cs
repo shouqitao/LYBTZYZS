@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
@@ -39,7 +40,7 @@ namespace LYBT.WebAPI.Controllers
         /// 快速创建患者档案（简化版本） - 统一API响应格式
         /// </summary>
         [HttpPost("quick")]
-        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> QuickCreate([FromBody] QuickPatientCreateDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PatientDetailDto>>> QuickCreate([FromBody] QuickPatientCreateDto dto)
         {
             try
             {
@@ -84,7 +85,7 @@ namespace LYBT.WebAPI.Controllers
         /// 切换患者档案状态（启用/禁用） - 统一API响应格式
         /// </summary>
         [HttpPatch("{id}/toggle-status")]
-        public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ToggleStatus(Guid id)
         {
             try
             {
@@ -132,7 +133,7 @@ namespace LYBT.WebAPI.Controllers
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("all")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetAll()
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<PatientDetailDto>>>> GetAll()
         {
             try
             {
@@ -159,7 +160,7 @@ namespace LYBT.WebAPI.Controllers
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpPost("paged")]
-        public async Task<ActionResult<PagedApiResponse<PatientDetailDto>>> GetPaged([FromBody] PatientPagedQueryDto query)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.PagedApiResponse<PatientDetailDto>>> GetPaged([FromBody] PatientPagedQueryDto query)
         {
             try
             {
@@ -188,7 +189,7 @@ namespace LYBT.WebAPI.Controllers
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("search")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Search([FromQuery] string keyword = "")
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<PatientDetailDto>>>> Search([FromQuery] string keyword = "")
         {
             try
             {
@@ -207,7 +208,7 @@ namespace LYBT.WebAPI.Controllers
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
         [HttpGet("export")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> Export()
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<PatientDetailDto>>>> Export()
         {
             try
             {
@@ -229,7 +230,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取启用的患者档案列表 - 统一API响应格式
         /// </summary>
         [HttpGet("active")]
-        public async Task<ActionResult<ApiResponse<List<PatientDetailDto>>>> GetActivePatients()
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<PatientDetailDto>>>> GetActivePatients()
         {
             try
             {
@@ -247,7 +248,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据姓名和身份证号查询患者档案，如果不存在则创建新档案
         /// </summary>
         [HttpPost("find-or-create")]
-        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> FindOrCreate([FromBody] PatientDetailDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PatientDetailDto>>> FindOrCreate([FromBody] PatientDetailDto dto)
         {
             try
             {
@@ -277,7 +278,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取所有患者列表 (RESTful GET /Patients) - 支持多字段模糊查询 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<PagedApiResponse<PatientDetailDto>>> GetPatients(
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.PagedApiResponse<PatientDetailDto>>> GetPatients(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -324,7 +325,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建新患者 (RESTful POST /Patients) - 统一API响应格式
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> CreatePatient([FromBody] PatientDetailDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PatientDetailDto>>> CreatePatient([FromBody] PatientDetailDto dto)
         {
             try
             {
@@ -356,7 +357,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据ID获取患者 (RESTful GET /Patients/{id}) - 统一API响应格式
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> GetPatient(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PatientDetailDto>>> GetPatient(Guid id)
         {
             try
             {
@@ -382,7 +383,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新患者信息 (RESTful PUT /Patients/{id}) - 统一API响应格式
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> UpdatePatient(Guid id, [FromBody] PatientDetailDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PatientDetailDto>>> UpdatePatient(Guid id, [FromBody] PatientDetailDto dto)
         {
             try
             {
@@ -429,7 +430,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除患者 (RESTful DELETE /Patients/{id}) - 实际执行软删除 - 统一API响应格式
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> DeletePatient(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> DeletePatient(Guid id)
         {
             try
             {

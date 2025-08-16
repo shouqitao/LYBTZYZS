@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Backup;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Refit;
 using LYBT.Desktop.Core.Models;
 

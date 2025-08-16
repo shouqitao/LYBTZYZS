@@ -11,10 +11,12 @@ using LYBT.Desktop.Auth;
 // using LYBT.Desktop.Admin; // 已整合到AdminWorkbench
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.MedicalCase;
-using LYBT.Desktop.Shared;
 using LYBT.Desktop.Users;
 using LYBT.Desktop.Patients;
-using LYBT.Desktop.Workbench.Admin;
+// UltraThink架构师修复：添加缺失模块的命名空间
+using LYBT.Desktop.Herbs;
+using LYBT.Desktop.Prescriptions;
+using LYBT.Desktop.Formula;
 using LYBT.Desktop.Workbench.Consultation;
 using LYBT.Desktop.Workbench.Core;
 using Prism.Modularity;
@@ -115,15 +117,29 @@ namespace LYBT.Desktop.Shell
                 InitializationMode = InitializationMode.OnDemand
             });
 
-            // 4. 工作台模块（延迟加载 + 依赖管理）
+            // UltraThink架构师修复：添加缺失的业务模块注册
             moduleCatalog.AddModule(new ModuleInfo
             {
-                ModuleName = nameof(SystemWorkbenchModule),
-                ModuleType = typeof(SystemWorkbenchModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.OnDemand,
-                DependsOn = new System.Collections.ObjectModel.Collection<string> { nameof(UsersModule), nameof(PatientsModule) }
+                ModuleName = nameof(HerbsModule),
+                ModuleType = typeof(HerbsModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.OnDemand
             });
 
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(PrescriptionsModule),
+                ModuleType = typeof(PrescriptionsModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.OnDemand
+            });
+
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(FormulaModule),
+                ModuleType = typeof(FormulaModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.OnDemand
+            });
+
+            // 4. 工作台模块（延迟加载 + 依赖管理）
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(ConsultationWorkbenchModule),

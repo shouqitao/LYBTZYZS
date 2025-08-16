@@ -9,7 +9,11 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Desktop.Consultation.ViewModels.Components;
 using LYBT.Desktop.Consultation.Constants;
-using Prism.Dialogs;
+using LYBT.Shared.Interfaces.Services;
+using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
+using IPrescriptionService = LYBT.Shared.Interfaces.Services.IPrescriptionService;
+using Prism.Services.Dialogs;
+// using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -232,7 +236,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             IPrescriptionService prescriptionService,
             IHerbService herbService,
             IFormulaService formulaService,
-            IDialogService dialogService,
+            Prism.Services.Dialogs.IDialogService dialogService,
             ILogger<PrescriptionViewModelRefactored> logger,
             ILogger<PrescriptionDataManager> dataManagerLogger,
             ILogger<PrescriptionValidator> validatorLogger,

@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using LYBT.Desktop.Workbench.Core;
 
 namespace LYBT.Desktop.Workbench.Admin.Services

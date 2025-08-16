@@ -4,10 +4,11 @@ using System.Windows;
 using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
-using Prism.Navigation.Regions;
+using Prism.Regions;
+using Prism.Events;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
 using LYBT.Desktop.Workbench.Core;
-using LYBT.Desktop.Shared;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Workbench.Consultation.ViewModels
 {
@@ -20,7 +21,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly IWorkbenchRouter _workbenchRouter;
         private readonly IConsultationWorkbenchNavigator _navigator;
-        private readonly ISharedPatientService _sharedPatientService;
+        private readonly IPatientService _patientService;
         
         #region Properties
 
@@ -63,12 +64,12 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
             IRegionManager regionManager,
             IWorkbenchRouter workbenchRouter,
             IConsultationWorkbenchNavigator navigator,
-            ISharedPatientService sharedPatientService = null)
+            IPatientService patientService = null)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _workbenchRouter = workbenchRouter ?? throw new ArgumentNullException(nameof(workbenchRouter));
             _navigator = navigator ?? throw new ArgumentNullException(nameof(navigator));
-            _sharedPatientService = sharedPatientService; // 可为null，取决于是否注册了共享服务
+            _patientService = patientService; // 可为null，取决于是否注册了服务
 
             // 初始化命令
             QuickAddPatientCommand = new DelegateCommand(ExecuteQuickAddPatient);

@@ -4,19 +4,19 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 简化后的处方服务 - UltraThink简化后实现
-    /// AI预测功能已删除，保留核心业务功能
+    /// 简化后的处方服务 - UltraThink统一架构标准
+    /// 严格按照Shared层IPrescriptionService接口实现，用于测试和开发
     /// </summary>
-    public class OptimizedPrescriptionService : IPrescriptionService
+    public class OptimizedPrescriptionService : LYBT.Shared.Interfaces.Services.IPrescriptionService
     {
         private readonly ILogger<OptimizedPrescriptionService> _logger;
 
@@ -25,168 +25,180 @@ namespace LYBT.Desktop.Services
             _logger = logger;
         }
 
-        public async Task<PagedResult<PrescriptionDto>> GetPagedAsync(PagedQueryBaseDto request)
+        /// <summary>
+        /// 获取处方详情 - UltraThink标准：直接返回PrescriptionDto
+        /// </summary>
+        public async Task<PrescriptionDto> GetByIdAsync(Guid id)
         {
-            _logger.LogInformation("分页查询处方: {PageIndex}/{PageSize}", request.PageIndex, request.PageSize);
+            _logger.LogInformation("获取处方详情: {Id}", id);
+            await Task.Delay(50);
+            
+            return new PrescriptionDto
+            {
+                Id = id,
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                PatientName = "模拟患者",
+                DoctorName = "模拟医生",
+                TotalPrice = 150.00m,
+                CreateTime = DateTime.Now
+            };
+        }
+
+        /// <summary>
+        /// 分页查询处方 - UltraThink标准：使用PrescriptionQueryDto
+        /// </summary>
+        public async Task<PagedResult<PrescriptionDto>> GetPagedAsync(PrescriptionQueryDto query)
+        {
+            _logger.LogInformation("分页查询处方: {PageIndex}/{PageSize}", query.PageIndex, query.PageSize);
             await Task.Delay(100);
             
             return new PagedResult<PrescriptionDto>
             {
                 Items = new List<PrescriptionDto>
                 {
-                    new PrescriptionDto { Id = Guid.NewGuid(), PatientId = Guid.NewGuid(), DoctorId = Guid.NewGuid(), TotalPrice = 150.00m },
-                    new PrescriptionDto { Id = Guid.NewGuid(), PatientId = Guid.NewGuid(), DoctorId = Guid.NewGuid(), TotalPrice = 200.00m }
+                    new PrescriptionDto { Id = Guid.NewGuid(), PatientId = Guid.NewGuid(), DoctorId = Guid.NewGuid(), PatientName = "张三", DoctorName = "李医生", TotalPrice = 150.00m },
+                    new PrescriptionDto { Id = Guid.NewGuid(), PatientId = Guid.NewGuid(), DoctorId = Guid.NewGuid(), PatientName = "李四", DoctorName = "王医生", TotalPrice = 200.00m }
                 },
                 TotalCount = 2,
-                CurrentPage = request.PageIndex,
-                PageSize = request.PageSize
+                CurrentPage = query.PageIndex,
+                PageSize = query.PageSize
             };
         }
 
-        public async Task<ServiceResult<PrescriptionDetailDto>> GetByIdAsync(Guid id)
-        {
-            _logger.LogInformation("获取处方详情: {Id}", id);
-            await Task.Delay(100);
-            
-            var prescription = new PrescriptionDetailDto
-            {
-                Id = id,
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid()
-            };
-            
-            return ServiceResult<PrescriptionDetailDto>.Success(prescription);
-        }
-
-        public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
+        /// <summary>
+        /// 创建处方 - UltraThink标准：直接返回PrescriptionDto
+        /// </summary>
+        public async Task<PrescriptionDto> CreateAsync(PrescriptionCreateDto dto)
         {
             _logger.LogInformation("创建处方: {PatientId}", dto?.PatientId);
-            await Task.Delay(150);
+            await Task.Delay(100);
             
-            var result = new PrescriptionDto
+            return new PrescriptionDto
             {
                 Id = Guid.NewGuid(),
                 PatientId = dto?.PatientId ?? Guid.NewGuid(),
-                DoctorId = dto?.DoctorId ?? Guid.NewGuid()
+                DoctorId = dto?.DoctorId ?? Guid.NewGuid(),
+                PatientName = "模拟患者",
+                DoctorName = "模拟医生",
+                TotalPrice = dto?.TotalAmount ?? 100.00m,
+                CreateTime = DateTime.Now
             };
-            
-            return ServiceResult<PrescriptionDto>.Success(result);
         }
 
-        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(PrescriptionEditDto dto)
+        /// <summary>
+        /// 更新处方 - UltraThink标准：按接口签名实现
+        /// </summary>
+        public async Task<PrescriptionDto> UpdateAsync(Guid id, PrescriptionEditDto dto)
         {
-            _logger.LogInformation("更新处方: {Id}", dto?.Id);
+            _logger.LogInformation("更新处方: {Id}", id);
             await Task.Delay(100);
             
-            var result = new PrescriptionDto
+            return new PrescriptionDto
             {
-                Id = dto?.Id ?? Guid.NewGuid()
+                Id = id,
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                PatientName = "模拟患者",
+                DoctorName = "模拟医生",
+                TotalPrice = 100.00m,
+                Diagnosis = dto?.Diagnosis ?? "模拟诊断",
+                DosageCount = dto?.DosageCount ?? 7,
+                UpdateTime = DateTime.Now
             };
-            
-            return ServiceResult<PrescriptionDto>.Success(result);
         }
 
-        public async Task<ServiceResult<PrescriptionDto>> CreateOrUpdateAsync(PrescriptionCreateDto dto)
-        {
-            _logger.LogInformation("创建或更新处方: {PatientId}", dto?.PatientId);
-            await Task.Delay(100);
-            
-            return await CreateAsync(dto);
-        }
-
-        public async Task<ServiceResult> DeleteAsync(Guid id)
+        /// <summary>
+        /// 删除处方 - UltraThink标准：返回bool
+        /// </summary>
+        public async Task<bool> DeleteAsync(Guid id)
         {
             _logger.LogInformation("删除处方: {Id}", id);
             await Task.Delay(50);
-            return ServiceResult.Success();
+            return true; // 模拟成功删除
         }
 
-        public async Task<ServiceResult<PrescriptionDto>> CancelAsync(Guid id)
+        /// <summary>
+        /// 根据患者ID获取处方列表 - UltraThink标准：直接返回List
+        /// </summary>
+        public async Task<List<PrescriptionDto>> GetByPatientIdAsync(Guid patientId)
         {
-            _logger.LogInformation("作废处方: {Id}", id);
+            _logger.LogInformation("获取患者处方: {PatientId}", patientId);
             await Task.Delay(50);
             
-            var result = new PrescriptionDto
+            return new List<PrescriptionDto>
             {
-                Id = id
+                new PrescriptionDto { Id = Guid.NewGuid(), PatientId = patientId, DoctorId = Guid.NewGuid(), PatientName = "模拟患者", TotalPrice = 120.00m }
             };
-            
-            return ServiceResult<PrescriptionDto>.Success(result);
         }
 
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetByPatientIdAsync(Guid patientId)
+        /// <summary>
+        /// 根据诊疗ID获取处方列表 - UltraThink新增：补充接口实现
+        /// </summary>
+        public async Task<List<PrescriptionDto>> GetByConsultationIdAsync(Guid consultationId)
         {
-            _logger.LogInformation("根据患者ID获取处方: {PatientId}", patientId);
+            _logger.LogInformation("获取诊疗处方: {ConsultationId}", consultationId);
+            await Task.Delay(50);
+            
+            return new List<PrescriptionDto>
+            {
+                new PrescriptionDto { Id = Guid.NewGuid(), PatientId = Guid.NewGuid(), DoctorId = Guid.NewGuid(), TotalPrice = 180.00m }
+            };
+        }
+
+        /// <summary>
+        /// 验证处方 - UltraThink新增：补充接口实现
+        /// </summary>
+        public async Task<LYBT.Shared.Interfaces.Services.PrescriptionValidationResult> ValidateAsync(PrescriptionCreateDto dto)
+        {
+            _logger.LogInformation("验证处方: {PatientId}", dto?.PatientId);
+            await Task.Delay(50);
+            
+            var result = new LYBT.Shared.Interfaces.Services.PrescriptionValidationResult { IsValid = true };
+            
+            if (dto?.PatientId == Guid.Empty)
+            {
+                result.IsValid = false;
+                result.Errors.Add("患者ID不能为空");
+            }
+
+            if (dto?.Items == null || !dto.Items.Any())
+            {
+                result.IsValid = false;
+                result.Errors.Add("处方药材不能为空");
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 导出PDF - UltraThink新增：补充接口实现
+        /// </summary>
+        public async Task<byte[]> ExportToPdfAsync(Guid id)
+        {
+            _logger.LogInformation("导出处方PDF: {Id}", id);
+            await Task.Delay(200); // 模拟PDF生成时间
+            return Array.Empty<byte>(); // 模拟PDF数据
+        }
+
+        /// <summary>
+        /// 获取统计信息 - UltraThink新增：补充接口实现
+        /// </summary>
+        public async Task<PrescriptionStatisticsDto> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
+        {
+            _logger.LogInformation("获取处方统计: {StartDate} - {EndDate}", startDate, endDate);
             await Task.Delay(100);
             
-            var prescriptions = new List<PrescriptionDto>
+            return new PrescriptionStatisticsDto
             {
-                new PrescriptionDto { Id = Guid.NewGuid(), PatientId = patientId },
-                new PrescriptionDto { Id = Guid.NewGuid(), PatientId = patientId }
+                TotalCount = 50,
+                DraftCount = 5,
+                PendingCount = 10,
+                CompletedCount = 30,
+                CancelledCount = 5,
+                TotalAmount = 15000.00m,
+                AverageAmount = 300.00m
             };
-            
-            return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
-        }
-
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetByDoctorIdAsync(Guid doctorId)
-        {
-            _logger.LogInformation("根据医生ID获取处方: {DoctorId}", doctorId);
-            await Task.Delay(100);
-            
-            var prescriptions = new List<PrescriptionDto>
-            {
-                new PrescriptionDto { Id = Guid.NewGuid(), DoctorId = doctorId },
-                new PrescriptionDto { Id = Guid.NewGuid(), DoctorId = doctorId }
-            };
-            
-            return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
-        }
-
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetTodayPrescriptionsAsync()
-        {
-            _logger.LogInformation("获取今日处方列表");
-            await Task.Delay(150);
-            
-            var prescriptions = new List<PrescriptionDto>
-            {
-                new PrescriptionDto { Id = Guid.NewGuid() },
-                new PrescriptionDto { Id = Guid.NewGuid() }
-            };
-            
-            return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
-        }
-
-        public async Task<ServiceResult<PrescriptionDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
-        {
-            _logger.LogInformation("根据医疗案例ID获取处方: {MedicalCaseId}", medicalCaseId);
-            await Task.Delay(100);
-            
-            var prescription = new PrescriptionDetailDto
-            {
-                Id = Guid.NewGuid()
-            };
-            
-            return ServiceResult<PrescriptionDetailDto>.Success(prescription);
-        }
-
-        public async Task<List<PrescriptionDto>> GetBatchAsync(IEnumerable<Guid> ids)
-        {
-            _logger.LogInformation("批量获取处方详情: {Count}个", ids?.Count() ?? 0);
-            await Task.Delay(100);
-            
-            return ids?.Select(id => new PrescriptionDto 
-            { 
-                Id = id
-            }).ToList() ?? new List<PrescriptionDto>();
-        }
-
-        public async Task<ServiceResult<int>> UpdateBatchStatusAsync(IEnumerable<Guid> ids, int status, string? reason = null)
-        {
-            var count = ids?.Count() ?? 0;
-            _logger.LogInformation("批量更新处方状态: {Count}个, 状态: {Status}, 原因: {Reason}", count, status, reason);
-            await Task.Delay(100);
-            
-            return ServiceResult<int>.Success(count);
         }
     }
 }

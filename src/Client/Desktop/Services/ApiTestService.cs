@@ -5,6 +5,7 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Services
 {
@@ -131,7 +132,7 @@ namespace LYBT.Desktop.Services
                     result += "   用户列表:\n";
                     foreach (var user in users.Items)
                     {
-                        result += $"     - {user.RealName} ({user.Username}) - {(user.IsSysAdmin ? "管理员" : "普通用户")} - {user.StatusText}\n";
+                        result += $"     - {user.RealName} ({user.Username}) - {("用户")} - {(user.Status == CommonStatus.Enabled ? "启用" : "禁用")}\n";
                     }
                 }
 
@@ -156,7 +157,7 @@ namespace LYBT.Desktop.Services
                     return $"✅ Token验证成功\n" +
                            $"   当前用户: {currentUser.RealName}\n" +
                            $"   用户ID: {currentUser.Id}\n" +
-                           $"   角色: {(currentUser.IsSysAdmin ? "管理员" : "普通用户")}";
+                           $"   用户名: {currentUser.Username}";
                 }
                 else
                 {

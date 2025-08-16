@@ -9,7 +9,6 @@ using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
 using Polly.CircuitBreaker;
-using LYBT.Desktop.Core.Models;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -141,7 +140,7 @@ namespace LYBT.Desktop.Core.Services
             catch (Exception ex)
             {
                 Logger?.LogError(ex, "处理API响应失败");
-                return ServiceResult<T>.Failure("处理服务器响应失败", null, ex);
+                return ServiceResult<T>.Failure("处理服务器响应失败", ex);
             }
         }
         

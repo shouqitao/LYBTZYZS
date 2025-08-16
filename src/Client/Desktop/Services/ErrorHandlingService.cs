@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using Refit;
 using LYBT.Desktop.Core.Exceptions;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 using ErrorSeverity = LYBT.Shared.Models.Contracts.Common.ErrorSeverity;
+using ErrorCategory = LYBT.Shared.Models.Contracts.Common.ErrorCategory;
 using TimeoutException = System.TimeoutException;
 
 namespace LYBT.Desktop.Services
@@ -28,8 +30,8 @@ namespace LYBT.Desktop.Services
         private readonly Dictionary<Type, ErrorSeverity> _severityMapping;
         private readonly Dictionary<Type, string[]> _actionMapping;
 
-        public event EventHandler<HandledError>? ErrorOccurred;
-        public event EventHandler<HandledError>? CriticalErrorOccurred;
+        public event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
+        public event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
 
         public ErrorHandlingService(ICommonDialogService dialogService, IUserSessionManager sessionManager)
         {
@@ -42,12 +44,12 @@ namespace LYBT.Desktop.Services
             _actionMapping = InitializeActionMapping();
         }
 
-        public HandledError HandleException(Exception exception, ErrorContext? context = null)
+        public SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null)
         {
             return HandleExceptionAsync(exception, context).GetAwaiter().GetResult();
         }
 
-        public async Task<HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null)
+        public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null)
         {
             if (exception == null)
                 throw new ArgumentNullException(nameof(exception));
@@ -69,7 +71,7 @@ namespace LYBT.Desktop.Services
             return handledError;
         }
 
-        public async Task ShowErrorAsync(HandledError handledError, bool showDialog = true)
+        public async Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true)
         {
             if (handledError == null)
                 return;
@@ -106,7 +108,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
-        public async Task LogErrorAsync(HandledError handledError)
+        public async Task LogErrorAsync(SharedCommon.HandledError handledError)
         {
             try
             {
@@ -293,7 +295,7 @@ namespace LYBT.Desktop.Services
 
         #region 私有方法
 
-        private HandledError CreateHandledError(Exception exception, ErrorContext context)
+        private SharedCommon.HandledError CreateHandledError(Exception exception, ErrorContext context)
         {
             var category = GetErrorCategory(exception);
             var severity = GetErrorSeverity(exception);
@@ -301,21 +303,20 @@ namespace LYBT.Desktop.Services
             var canRetry = CanRetry(exception);
             var suggestedActions = GetSuggestedActions(exception);
 
-            var handledError = new HandledError
+            var handledError = new SharedCommon.HandledError
             {
                 Category = category,
                 Severity = severity,
                 UserMessage = userMessage,
                 TechnicalDetails = exception.ToString(),
-                OriginalException = exception,
-                Context = context,
+                Exception = exception,
                 CanRetry = canRetry,
                 RequiresUserAcknowledgment = severity >= ErrorSeverity.Warning
             };
 
             foreach (var action in suggestedActions)
             {
-                handledError.AddSuggestedAction(action);
+                handledError.SuggestedActions.Add(action);
             }
 
             return handledError;
@@ -331,7 +332,7 @@ namespace LYBT.Desktop.Services
             return null;
         }
 
-        private async Task ShowDetailedErrorAsync(HandledError handledError)
+        private async Task ShowDetailedErrorAsync(SharedCommon.HandledError handledError)
         {
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -358,7 +359,7 @@ namespace LYBT.Desktop.Services
 
                     // 添加错误ID和时间信息
                     message += $"\n\n错误ID: {handledError.Id}";
-                    message += $"\n时间: {handledError.Timestamp:yyyy-MM-dd HH:mm:ss}";
+                    message += $"\n时间: {handledError.OccurredAt:yyyy-MM-dd HH:mm:ss}";
 
                     MessageBox.Show(message, $"错误 - {handledError.Category}", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
@@ -399,7 +400,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private void OnErrorOccurred(HandledError handledError)
+        private void OnErrorOccurred(SharedCommon.HandledError handledError)
         {
             try
             {
@@ -411,7 +412,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
-        private void OnCriticalErrorOccurred(HandledError handledError)
+        private void OnCriticalErrorOccurred(SharedCommon.HandledError handledError)
         {
             try
             {

@@ -3,7 +3,7 @@ using System;
 using LYBT.Desktop.Core.Models.Users;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models;
+
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
 

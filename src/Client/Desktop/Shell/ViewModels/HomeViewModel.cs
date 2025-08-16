@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using Prism.Commands;
 using Prism.Mvvm;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -191,8 +191,8 @@ namespace LYBT.Desktop.Shell.ViewModels
                 {
                     WelcomeMessage = $"欢迎，{currentUser.RealName}";
                     
-                    // 判断角色 - 使用现有的IsSysAdmin属性
-                    if (currentUser.IsSysAdmin)
+                    // 判断角色 - 使用Role属性
+                    if (currentUser.Role == "Admin" || currentUser.Role == "SysAdmin")
                     {
                         IsAdminRole = true;
                         IsDoctorRole = false;

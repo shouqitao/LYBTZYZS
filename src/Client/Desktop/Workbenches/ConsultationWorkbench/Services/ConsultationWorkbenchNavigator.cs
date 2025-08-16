@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
 
 namespace LYBT.Desktop.Workbench.Consultation.Services
@@ -49,14 +49,14 @@ namespace LYBT.Desktop.Workbench.Consultation.Services
             NavigateToView("PersonalSettingsView");
         }
 
-        public void NavigateToView(string viewName, NavigationParameters? parameters = null)
+        public void NavigateToView(string viewName)
         {
-            _regionManager.RequestNavigate(ContentRegion, viewName, parameters);
+            _regionManager.RequestNavigate(ContentRegion, viewName);
         }
 
-        public void NavigateToView(string regionName, string viewName, NavigationParameters? parameters = null)
+        public void NavigateToView(string regionName, string viewName)
         {
-            _regionManager.RequestNavigate(regionName, viewName, parameters);
+            _regionManager.RequestNavigate(regionName, viewName);
         }
     }
 }

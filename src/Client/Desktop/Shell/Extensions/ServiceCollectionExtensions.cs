@@ -23,7 +23,6 @@ using LYBT.Desktop.Core.Caching;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Consultation.Services;
-using LYBT.Shared.Interfaces.Services.Business;
 // using LYBT.Desktop.Admin.Prescriptions.Services; // 已整合到AdminWorkbench
 
 namespace LYBT.Desktop.Shell.Extensions
@@ -247,17 +246,13 @@ namespace LYBT.Desktop.Shell.Extensions
             // UltraThink Phase 2.2.6: 注册新的业务接口和旧的UI接口
             // 每个Service实现都同时支持两套接口
             
-            // 注册AuthenticationService - 同时支持业务接口和UI接口
+            // 注册AuthenticationService - UI接口实现
             containerRegistry.RegisterSingleton<AuthenticationService>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.Business.IAuthenticationService>(
-                container => container.Resolve<AuthenticationService>());
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(
                 container => container.Resolve<AuthenticationService>());
 
-            // 注册UserService - 同时支持业务接口和UI接口
+            // 注册UserService - UI接口实现
             containerRegistry.RegisterSingleton<UserService>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.Business.IUserService>(
-                container => container.Resolve<UserService>());
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserService>(
                 container => container.Resolve<UserService>());
 
@@ -344,10 +339,24 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
-            // 暂时不注册 Prism 对话框，因为 IDialogAware 接口有兼容性问题
+            // 注册新的自定义对话框服务（兼容 Prism 8.1.97）
+            containerRegistry.RegisterSingleton<ICustomDialogService, WpfDialogService>();
 
-            // 注册简单的对话框服务，使用 MessageBox 实现
+            // 注册对话框ViewModels
+            containerRegistry.Register<LYBT.Desktop.Core.ViewModels.Dialogs.InputDialogViewModel>();
+            containerRegistry.Register<LYBT.Desktop.Core.ViewModels.Dialogs.HerbSelectionDialogViewModel>();
+            containerRegistry.Register<LYBT.Desktop.Core.ViewModels.Dialogs.FormulaSelectionDialogViewModel>();
+
+            // 注册对话框Windows
+            containerRegistry.Register<LYBT.Desktop.Core.Views.Dialogs.InputDialog>();
+            containerRegistry.Register<LYBT.Desktop.Core.Views.Dialogs.HerbSelectionDialog>();
+            containerRegistry.Register<LYBT.Desktop.Core.Views.Dialogs.FormulaSelectionDialog>();
+
+            // 保留原有的简单对话框服务，用于向后兼容
             containerRegistry.RegisterSingleton<ICommonDialogService, SimpleDialogService>();
+
+            // 注册 PrismDialogService 作为适配器（如果需要）
+            // containerRegistry.RegisterSingleton<PrismDialogService>();
         }
         
         /// <summary>

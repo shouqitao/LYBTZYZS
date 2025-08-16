@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using LYBT.Desktop.Workbench.Admin.Services;
 
 namespace LYBT.Desktop.Workbench.Admin.Services
@@ -67,7 +67,7 @@ namespace LYBT.Desktop.Workbench.Admin.Services
 
         #region IWorkbenchNavigator Implementation
 
-        public Task NavigateToAsync(string viewName, NavigationParameters parameters = null)
+        public Task NavigateToAsync(string viewName, NavigationParameters? parameters = null)
         {
             return Task.Run(() =>
             {
@@ -177,12 +177,12 @@ namespace LYBT.Desktop.Workbench.Admin.Services
             NavigateToSettingsAsync().Wait();
         }
 
-        public void NavigateToView(string viewName, NavigationParameters parameters = null)
+        public void NavigateToView(string viewName, NavigationParameters? parameters = null)
         {
             NavigateToAsync(viewName, parameters).Wait();
         }
 
-        public void NavigateToView(string regionName, string viewName, NavigationParameters parameters = null)
+        public void NavigateToView(string regionName, string viewName, NavigationParameters? parameters = null)
         {
             _regionManager.RequestNavigate(regionName, viewName, parameters);
         }

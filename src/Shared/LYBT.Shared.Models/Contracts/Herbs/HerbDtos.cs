@@ -54,6 +54,10 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>库存数量 - UltraThink兼容性属性</summary>
+        [DisplayName("库存数量")]
+        public int Stock { get; set; } = 0;
     }
 
     /// <summary>
@@ -269,5 +273,33 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>最大单价</summary>
         [DisplayName("最大单价")]
         public decimal? MaxPrice { get; set; }
+
+        // UltraThink兼容性别名 - 确保架构统一
+        /// <summary>页码兼容性别名</summary>
+        public int Page { get => PageIndex; set => PageIndex = value; }
+        
+        /// <summary>页大小兼容性别名</summary>
+        public int Size { get => PageSize; set => PageSize = value; }
+        
+        /// <summary>排序字段兼容性别名</summary>
+        public string? SortBy { get => SortField; set => SortField = value; }
+    }
+
+    /// <summary>
+    /// 中药材统计DTO - 继承统计DTO基础类
+    /// </summary>
+    public class HerbStatisticsDto : StatisticsDto
+    {
+        [DisplayName("可用药材数量")]
+        public int AvailableCount { get; set; }
+        
+        [DisplayName("缺货药材数量")]
+        public int OutOfStockCount { get; set; }
+        
+        [DisplayName("即将过期药材数量")]
+        public int NearExpiryCount { get; set; }
+        
+        [DisplayName("产地种类数量")]
+        public int OriginCount { get; set; }
     }
 }

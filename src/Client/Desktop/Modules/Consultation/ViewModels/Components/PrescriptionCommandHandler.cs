@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Dialogs;
-
+using Prism.Services.Dialogs;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Services;
 
@@ -23,7 +21,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
     public class PrescriptionCommandHandler
     {
         private readonly IHerbService _herbService;
-        private readonly IFormulaService _formulaService;
+        private readonly LYBT.Shared.Interfaces.Services.IFormulaService _formulaService;
         private readonly IPrescriptionService _prescriptionService;
         private readonly IDialogService _dialogService;
         private readonly ILogger<PrescriptionCommandHandler> _logger;
@@ -35,7 +33,7 @@ namespace LYBT.Desktop.Consultation.ViewModels.Components
 
         public PrescriptionCommandHandler(
             IHerbService herbService,
-            IFormulaService formulaService,
+            LYBT.Shared.Interfaces.Services.IFormulaService formulaService,
             IPrescriptionService prescriptionService,
             IDialogService dialogService,
             ILogger<PrescriptionCommandHandler> logger)

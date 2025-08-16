@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.Common;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -340,19 +341,14 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 药材库存统计DTO
+    /// 药材库存统计DTO - 继承HerbStatisticsDto保持UltraThink架构统一
     /// </summary>
-    public class HerbStockStatisticsDto
+    public class HerbStockStatisticsDto : HerbStatisticsDto
     {
         /// <summary>
-        /// 药材总数
+        /// 缺货药材数（库存为0） - 重写基类属性
         /// </summary>
-        public int TotalCount { get; set; }
-
-        /// <summary>
-        /// 缺货药材数（库存为0）
-        /// </summary>
-        public int OutOfStockCount { get; set; }
+        public new int OutOfStockCount { get; set; }
 
         /// <summary>
         /// 预警药材数（低于预警值）
@@ -370,9 +366,14 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         public decimal TotalStockValue { get; set; }
 
         /// <summary>
-        /// 即将过期药材数（30天内）
+        /// 即将过期药材数（30天内） - 重写基类属性
         /// </summary>
-        public int ExpiringCount { get; set; }
+        public new int NearExpiryCount { get; set; }
+
+        /// <summary>
+        /// 即将过期药材数（30天内） - UltraThink兼容性别名
+        /// </summary>
+        public int ExpiringCount { get => NearExpiryCount; set => NearExpiryCount = value; }
 
         /// <summary>
         /// 已过期药材数

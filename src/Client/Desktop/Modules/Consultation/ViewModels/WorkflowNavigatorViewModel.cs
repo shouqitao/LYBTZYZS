@@ -10,8 +10,6 @@ using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 
 using LYBT.Desktop.Core.Models.Consultation;
 namespace LYBT.Desktop.Consultation.ViewModels
@@ -23,7 +21,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     public class WorkflowNavigatorViewModel : BindableBase
     {
         private readonly IEventAggregator _eventAggregator;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly ILogger<WorkflowNavigatorViewModel> _logger;
 
         #region 属性
@@ -77,7 +75,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public WorkflowNavigatorViewModel(
             IEventAggregator eventAggregator,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             ILogger<WorkflowNavigatorViewModel> logger)
         {
             _steps = new ObservableCollection<WorkflowStepViewModel>();

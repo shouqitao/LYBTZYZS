@@ -10,11 +10,10 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Interfaces.Services.Business;
 using SharedEnums = LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
-// using Prism.Dialogs; // Temporarily disabled due to Prism 9 compatibility
+using LYBT.Desktop.Core.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
@@ -27,7 +26,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private readonly IPrescriptionService _prescriptionService;
         private readonly IPatientService _patientService;
         private readonly IHerbService _herbService;
-        // private readonly IDialogService _dialogService; // Temporarily disabled
+        private readonly ICustomDialogService _dialogService;
         private readonly ILogger<PrescriptionEditorDialogViewModel> _logger;
 
         #region Dialog Properties
@@ -136,13 +135,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             IPrescriptionService prescriptionService,
             IPatientService patientService,
             IHerbService herbService,
-            // IDialogService dialogService, // Temporarily disabled
+            ICustomDialogService dialogService,
             ILogger<PrescriptionEditorDialogViewModel> logger)
         {
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-            // _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService)); // Temporarily disabled
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             // 初始化命令
@@ -385,11 +384,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     if (updatedDto != null)
                     {
                         StatusMessage = "处方已更新";
+                        await _dialogService.ShowSuccessAsync("处方更新成功", "操作完成");
                         // TODO: Close dialog with success
                     }
                     else
                     {
                         StatusMessage = "更新失败";
+                        await _dialogService.ShowErrorAsync("处方更新失败", "错误");
                     }
                 }
                 else
@@ -420,11 +421,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     if (createdDto != null)
                     {
                         StatusMessage = "处方已创建";
+                        await _dialogService.ShowSuccessAsync("处方创建成功", "操作完成");
                         // TODO: Close dialog with success
                     }
                     else
                     {
                         StatusMessage = "创建失败";
+                        await _dialogService.ShowErrorAsync("处方创建失败", "错误");
                     }
                 }
             }
@@ -432,6 +435,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 StatusMessage = $"保存失败: {ex.Message}";
                 _logger.LogError(ex, "保存处方时出错");
+                await _dialogService.ShowErrorAsync($"保存失败: {ex.Message}", "错误");
             }
             finally
             {

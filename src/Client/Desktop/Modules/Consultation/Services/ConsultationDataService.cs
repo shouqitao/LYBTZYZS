@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Services.Interfaces;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -15,7 +14,8 @@ using AutoMapper;
 
 // UltraThink重构: 统一HerbInfo和HerbDto，FormulaInfo和FormulaDto，使用Dto作为统一模型
 using LYBT.Shared.Models.Contracts.Herbs;
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
+using LYBT.Desktop.Core.Models.Formulas;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Consultation.Services
 {
@@ -128,9 +128,17 @@ namespace LYBT.Desktop.Consultation.Services
                 var herbs = await _cacheService.GetOrCreateAsync(HERBS_CACHE_KEY, async () =>
                 {
                     _logger.LogInformation("从API加载中药材列表");
-                    var herbList = await _herbService.GetHerbsAsync();
-                    _logger.LogInformation($"成功加载 {herbList.Count} 种中药材");
-                    return herbList;
+                    var herbResult = await _herbService.GetHerbsAsync();
+                    if (herbResult.IsSuccess && herbResult.Data != null)
+                    {
+                        _logger.LogInformation($"成功加载 {herbResult.Data.Count} 种中药材");
+                        return herbResult.Data;
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"加载中药材失败: {herbResult.ErrorMessage}");
+                        return new List<HerbDto>();
+                    }
                 }, HERBS_CACHE_DURATION);
 
                 return herbs;

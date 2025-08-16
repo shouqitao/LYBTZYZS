@@ -9,8 +9,6 @@ using Prism.Mvvm;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Desktop.Core.Interfaces.Services;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Consultation.Components;
 using Microsoft.Extensions.Logging;
 
@@ -374,7 +372,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public TCMFourDiagnosisViewModel(
             IConsultationApiService consultationApiService,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null,
             ILogger<TCMFourDiagnosisCoordinator>? logger = null)
         {

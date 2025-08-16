@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Polly;
 using Polly.Extensions.Http;
-using LYBT.Shared.Interfaces.Services.Business;
+
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
@@ -25,7 +25,6 @@ namespace LYBT.Desktop.Services
     /// 身份认证服务 - 遵循UltraThink标准
     /// </summary>
     public class AuthenticationService : 
-        LYBT.Shared.Interfaces.Services.Business.IAuthenticationService,
         LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService
     {
         #region 依赖服务
@@ -124,7 +123,7 @@ namespace LYBT.Desktop.Services
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "登录过程发生异常");
-                return ServiceResult<LoginResponse>.Failure("登录失败: " + ex.Message, null, ex);
+                return ServiceResult<LoginResponse>.Failure("登录失败: " + ex.Message, ex);
             }
             finally
             {
@@ -169,15 +168,15 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取当前用户信息 - 新Shared接口实现
         /// </summary>
-        Task<ServiceResult<UserDto>> LYBT.Shared.Interfaces.Services.Business.IAuthenticationService.GetCurrentUserAsync()
+        public async Task<ServiceResult<UserDto>> GetCurrentUserAsync()
         {
             var currentUser = _authState.CurrentUser;
             if (currentUser == null)
             {
-                return Task.FromResult(ServiceResult<UserDto>.Failure("用户未登录"));
+                return ServiceResult<UserDto>.Failure("用户未登录");
             }
             
-            return Task.FromResult(ServiceResult<UserDto>.Success(currentUser));
+            return ServiceResult<UserDto>.Success(currentUser);
         }
 
         /// <summary>
@@ -324,7 +323,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<dynamic>.Failure("网络请求失败: " + ex.Message, null, ex);
+                return ServiceResult<dynamic>.Failure("登录失败: " + ex.Message, ex);
             }
         }
         

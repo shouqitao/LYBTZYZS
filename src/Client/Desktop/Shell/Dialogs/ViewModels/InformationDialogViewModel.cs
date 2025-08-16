@@ -2,7 +2,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Prism.Commands;
 using Prism.Mvvm;
-using Prism.Dialogs;
 using LYBT.Desktop.Core.Enums;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
@@ -35,7 +34,9 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
         public DelegateCommand OkCommand { get; }
 
-        public event Action<IDialogResult>? RequestClose;
+        // Simplified dialog implementation without Prism.Dialogs dependency
+        public event Action? RequestClose;
+        public bool DialogResult { get; private set; } = true;
 
         public InformationDialogViewModel()
         {
@@ -44,34 +45,8 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
         private void OnOk()
         {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
-        }
-
-        public bool CanCloseDialog()
-        {
-            return true;
-        }
-
-        public void OnDialogClosed()
-        {
-        }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            if (parameters.ContainsKey("title"))
-            {
-                Title = parameters.GetValue<string>("title");
-            }
-
-            if (parameters.ContainsKey("message"))
-            {
-                Message = parameters.GetValue<string>("message");
-            }
-
-            if (parameters.ContainsKey("type"))
-            {
-                DialogType = parameters.GetValue<DialogType>("type");
-            }
+            DialogResult = true;
+            RequestClose?.Invoke();
         }
     }
 }

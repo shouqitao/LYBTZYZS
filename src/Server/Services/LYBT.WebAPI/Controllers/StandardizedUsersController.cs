@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.AspNetCore.Authorization;
@@ -33,7 +34,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取用户分页列表 - 标准化分页响应
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<PagedApiResponse<UserDto>>> GetPagedUsers([FromQuery] UserPagedQueryDto query)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.PagedApiResponse<UserDto>>> GetPagedUsers([FromQuery] UserPagedQueryDto query)
         {
             try
             {
@@ -57,7 +58,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据ID获取用户详情 - 标准化单个资源响应
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<UserDetailDto>>> GetUserById(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDetailDto>>> GetUserById(Guid id)
         {
             try
             {
@@ -96,7 +97,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建新用户 - 标准化创建响应
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserCreateDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> CreateUser([FromBody] UserCreateDto dto)
         {
             try
             {
@@ -133,7 +134,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新用户信息 - 标准化更新响应
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserUpdateDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserUpdateDto dto)
         {
             try
             {
@@ -180,7 +181,7 @@ namespace LYBT.WebAPI.Controllers
         /// 切换用户状态 - 标准化状态操作响应
         /// </summary>
         [HttpPatch("{id}/status")]
-        public async Task<ActionResult<ApiResponse>> ToggleUserStatus(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ToggleUserStatus(Guid id)
         {
             try
             {
@@ -230,7 +231,7 @@ namespace LYBT.WebAPI.Controllers
         /// 批量启用用户 - 标准化批量操作响应
         /// </summary>
         [HttpPatch("batch/enable")]
-        public async Task<ActionResult<ApiResponse<BatchOperationResult>>> BatchEnableUsers([FromBody] List<Guid> ids)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<BatchOperationResult>>> BatchEnableUsers([FromBody] List<Guid> ids)
         {
             try
             {
@@ -272,7 +273,7 @@ namespace LYBT.WebAPI.Controllers
         /// 重置用户密码 - 标准化密码操作响应
         /// </summary>
         [HttpPost("{id}/reset-password")]
-        public async Task<ActionResult<ApiResponse>> ResetUserPassword(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ResetUserPassword(Guid id)
         {
             try
             {

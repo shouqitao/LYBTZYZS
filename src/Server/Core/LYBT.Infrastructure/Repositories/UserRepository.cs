@@ -162,9 +162,9 @@ namespace LYBT.Infrastructure.Repositories
 
             return new PagedResult<UserModel>
             {
-                Data = items,
+                Items = items,
                 TotalCount = totalCount,
-                PageIndex = query.PageIndex,
+                CurrentPage = query.PageIndex,
                 PageSize = query.PageSize
             };
         }

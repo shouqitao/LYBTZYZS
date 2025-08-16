@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Prism.Mvvm;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -12,7 +12,7 @@ using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Consultation.Services;
-using Prism.Dialogs;
+// using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
 using CoreWorkflowStep = LYBT.Desktop.Core.Models.Consultation.WorkflowStep;
 
 namespace LYBT.Desktop.Consultation.ViewModels

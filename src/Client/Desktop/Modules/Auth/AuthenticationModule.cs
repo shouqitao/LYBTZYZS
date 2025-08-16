@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using LYBT.Desktop.Auth.Views;
 
 namespace LYBT.Desktop.Auth

@@ -24,7 +24,7 @@ namespace LYBT.Module.Auth.Services
     {
         private readonly IAuthRepository _authRepository;
         private readonly IMapper _mapper;
-        private readonly IUnifiedLogService _logService;
+        
         private readonly SysAdminHandler _sysAdminHandler;
         private readonly AuthOptions _authOptions;
         private readonly ILogger<AuthService> _logger;
@@ -33,7 +33,6 @@ namespace LYBT.Module.Auth.Services
         public AuthService(
             IAuthRepository authRepository,
             IMapper mapper,
-            IUnifiedLogService logService,
             SysAdminHandler sysAdminHandler,
             IOptions<AuthOptions> authOptions,
             ILogger<AuthService> logger,
@@ -41,7 +40,6 @@ namespace LYBT.Module.Auth.Services
         {
             _authRepository = authRepository;
             _mapper = mapper;
-            _logService = logService;
             _sysAdminHandler = sysAdminHandler;
             _authOptions = authOptions.Value;
             _logger = logger;
@@ -150,7 +148,7 @@ namespace LYBT.Module.Auth.Services
             await LogUserAction(
                 Guid.Empty,
                 "sysadmin",
-                ActionType.Edit,
+                ActionType.Update,
                 "修改系统管理员密码"
             );
 
@@ -361,29 +359,14 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 统一的用户操作日志记录
+        /// 统一的用户操作日志记录 - 简化为ILogger
         /// </summary>
         private async Task LogUserAction(Guid userId, string operatorName, ActionType actionType, string content)
         {
-            if (actionType == ActionType.Login)
-            {
-                await _logService.LogUserLoginAsync(userId, operatorName, "", "", true);
-            }
-            else if (actionType == ActionType.Logout)
-            {
-                await _logService.LogUserLogoutAsync(userId, operatorName, "");
-            }
-            else
-            {
-                await _logService.LogUserActionAsync(
-                    userId,
-                    operatorName,
-                    (LogActionType)actionType,
-                    "Auth",
-                    "Authentication",
-                    content
-                );
-            }
+            _logger.LogInformation("认证操作日志 - 操作者: {OperatorName} ({UserId}), 操作类型: {ActionType}, 内容: {Content}",
+                operatorName, userId, actionType, content);
+            
+            await Task.CompletedTask;
         }
 
         /// <summary>

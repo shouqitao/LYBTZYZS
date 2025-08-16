@@ -191,6 +191,14 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>前台</summary>
         [Description("前台")]
-        Receptionist = 4
+        Receptionist = 4,
+
+        /// <summary>收银员</summary>
+        [Description("收银员")]
+        Cashier = 5,
+
+        /// <summary>理疗师</summary>
+        [Description("理疗师")]
+        Therapist = 6
     }
 }

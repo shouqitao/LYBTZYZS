@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -34,7 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// 分页查询医疗案例 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<object>>> GetPaged([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 20)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> GetPaged([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 20)
         {
             try
             {
@@ -56,7 +57,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取医疗案例详情 - 统一API响应格式
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDetailDto>>> GetById(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDetailDto>>> GetById(Guid id)
         {
             try
             {
@@ -80,7 +81,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建医疗案例 - 统一API响应格式
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDetailDto>>> Create([FromBody] MedicalCaseCreateDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<MedicalCaseDetailDto>>> Create([FromBody] MedicalCaseCreateDto dto)
         {
             try
             {
@@ -106,7 +107,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新医疗案例 - 统一API响应格式
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse>> Update(Guid id, [FromBody] MedicalCaseEditDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> Update(Guid id, [FromBody] MedicalCaseEditDto dto)
         {
             try
             {
@@ -137,7 +138,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者的医疗案例列表 - 统一API响应格式
         /// </summary>
         [HttpGet("patient/{patientId}")]
-        public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> GetByPatientId(Guid patientId)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<MedicalCaseDto>>>> GetByPatientId(Guid patientId)
         {
             try
             {
@@ -157,7 +158,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取今日医疗案例列表 - 统一API响应格式
         /// </summary>
         [HttpGet("user/{userId}/today")]
-        public async Task<ActionResult<ApiResponse<object>>> GetTodayByUserId(Guid userId)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> GetTodayByUserId(Guid userId)
         {
             try
             {
@@ -177,7 +178,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新医疗案例状态 - 统一API响应格式
         /// </summary>
         [HttpPut("{id}/status")]
-        public async Task<ActionResult<ApiResponse>> UpdateStatus(Guid id, [FromBody] MedicalCaseStatus status)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> UpdateStatus(Guid id, [FromBody] MedicalCaseStatus status)
         {
             try
             {
@@ -203,7 +204,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除医疗案例（软删除） - 统一API响应格式
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> Delete(Guid id)
         {
             try
             {

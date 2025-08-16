@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Consultation.Interfaces;

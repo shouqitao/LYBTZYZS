@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Logging.Dtos;
+using Microsoft.Extensions.Logging;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
@@ -24,7 +23,7 @@ namespace LYBT.Module.Patients.Services
     {
         private readonly IPatientRepository _patientRepository;
         private readonly IMapper _mapper;
-        private readonly IUnifiedLogService _logService;
+        private readonly ILogger<PatientService> _logger;
         private readonly PatientValidationService _validationService;
         private readonly PatientArchiveService _archiveService;
         private readonly PatientStatisticsService _statisticsService;
@@ -32,14 +31,14 @@ namespace LYBT.Module.Patients.Services
         public PatientService(
             IPatientRepository patientRepository,
             IMapper mapper,
-            IUnifiedLogService logService,
+            ILogger<PatientService> logger,
             PatientValidationService validationService,
             PatientArchiveService archiveService,
             PatientStatisticsService statisticsService)
         {
             _patientRepository = patientRepository;
             _mapper = mapper;
-            _logService = logService;
+            _logger = logger;
             _validationService = validationService;
             _archiveService = archiveService;
             _statisticsService = statisticsService;
@@ -66,7 +65,7 @@ namespace LYBT.Module.Patients.Services
 
             if (result != null)
             {
-                await LogPatientOperationAsync(operatorId, operatorName, LogActionType.Create,
+                await LogPatientOperationAsync(operatorId, operatorName, "Create",
                     $"新增患者档案：{result.Name}", JsonSerializer.Serialize(result));
 
                 return _mapper.Map<PatientDetailDto>(result);
@@ -99,18 +98,8 @@ namespace LYBT.Module.Patients.Services
 
             if (result != null)
             {
-                await _logService.CreateLogAsync(new LogCreateDto
-                {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = result.Id,
-                    ActionType = ActionType.Edit,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    Content = $"编辑患者档案：{result.Name}",
-                    OldValue = oldJson,
-                    NewValue = JsonSerializer.Serialize(dto)
-                });
+                _logger.LogInformation("患者档案编辑 - 操作者: {OperatorName} ({OperatorId}), 患者: {PatientName} ({PatientId})",
+                    operatorName, operatorId, result.Name, result.Id);
 
                 return _mapper.Map<PatientDetailDto>(result);
             }
@@ -168,16 +157,8 @@ namespace LYBT.Module.Patients.Services
             var result = await _patientRepository.DisableAsync(id);
             if (result)
             {
-                await _logService.CreateLogAsync(new LogCreateDto
-                {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = id,
-                    ActionType = ActionType.Disable,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    Content = $"删除患者：{id}"
-                });
+                _logger.LogInformation("患者删除(软删除) - 操作者: {OperatorName} ({OperatorId}), 患者ID: {PatientId}",
+                    operatorName, operatorId, id);
             }
             return result;
         }
@@ -203,16 +184,8 @@ namespace LYBT.Module.Patients.Services
 
             if (result)
             {
-                await _logService.CreateLogAsync(new LogCreateDto
-                {
-                    LogType = LogType.Operation,
-                    ObjectType = ObjectType.Patient,
-                    ObjectId = id,
-                    ActionType = isActive ? ActionType.Enable : ActionType.Disable,
-                    OperatorId = operatorId,
-                    OperatorName = operatorName,
-                    Content = $"{action}患者：{id}"
-                });
+                _logger.LogInformation("患者状态变更 - 操作者: {OperatorName} ({OperatorId}), 患者ID: {PatientId}, 操作: {Action}",
+                    operatorName, operatorId, id, action);
             }
             return result;
         }
@@ -323,17 +296,10 @@ namespace LYBT.Module.Patients.Services
         /// 统一的患者操作日志记录
         /// </summary>
         private async Task LogPatientOperationAsync(Guid operatorId, string operatorName,
-            LogActionType actionType, string content, string? parameters = null)
+            string actionType, string content, string? parameters = null)
         {
-            await _logService.LogUserActionAsync(
-                operatorId,
-                operatorName,
-                actionType,
-                "Patients",
-                "PatientManagement",
-                content,
-                parameters: parameters
-            );
+            _logger.LogInformation("患者操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
+                operatorName, operatorId, actionType, content);
         }
     }
 }

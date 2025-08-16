@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Common;
@@ -34,7 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取处方列表 (RESTful GET /Prescriptions) - 支持模糊查询和分页 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PaginatedResult<PrescriptionDto>>>> GetList(
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PaginatedResult<PrescriptionDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -95,7 +96,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取处方详情 - 统一API响应格式
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<PrescriptionDetailDto>>> GetById(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PrescriptionDetailDto>>> GetById(Guid id)
         {
             try
             {
@@ -119,7 +120,7 @@ namespace LYBT.WebAPI.Controllers
         /// 新增处方 - 统一API响应格式
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> Add([FromBody] PrescriptionCreateDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PrescriptionDto>>> Add([FromBody] PrescriptionCreateDto dto)
         {
             try
             {
@@ -146,7 +147,7 @@ namespace LYBT.WebAPI.Controllers
         /// 编辑处方 - 统一API响应格式
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<PrescriptionDetailDto>>> Update(Guid id, [FromBody] PrescriptionEditDto dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PrescriptionDetailDto>>> Update(Guid id, [FromBody] PrescriptionEditDto dto)
         {
             try
             {
@@ -184,7 +185,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除处方 - 统一API响应格式
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> Delete(Guid id)
         {
             try
             {
@@ -211,7 +212,7 @@ namespace LYBT.WebAPI.Controllers
         /// 作废处方 - 统一API响应格式
         /// </summary>
         [HttpPost("void/{id}")]
-        public async Task<ActionResult<ApiResponse<PrescriptionDetailDto>>> Cancel(Guid id)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PrescriptionDetailDto>>> Cancel(Guid id)
         {
             try
             {

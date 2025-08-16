@@ -8,7 +8,7 @@ using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
-// using Prism.Dialogs; // Temporarily disabled due to Prism 9 compatibility
+// // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility // Temporarily disabled due to Prism 9 compatibility
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
@@ -169,10 +169,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 IsLoading = true;
-                var herbs = await _herbService.GetHerbsAsync();
-                if (herbs != null)
+                var herbsResult = await _herbService.GetHerbsAsync();
+                if (herbsResult.IsSuccess && herbsResult.Data != null)
                 {
-                    Herbs = new ObservableCollection<HerbDto>(herbs);
+                    Herbs = new ObservableCollection<HerbDto>(herbsResult.Data);
                     FilterHerbs();
 
                     // 如果是编辑模式，选中对应的药材

@@ -10,8 +10,6 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Consultation.ViewModels;
 
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Core.Models.Consultation;
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -25,7 +23,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IConsultationService _consultationService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly ILogger<SimpleTCMFourDiagnosisViewModel> _logger;
 
         #endregion
@@ -146,7 +144,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public SimpleTCMFourDiagnosisViewModel(
             IEventAggregator eventAggregator,
             IConsultationService consultationService,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             ILogger<SimpleTCMFourDiagnosisViewModel> logger)
         {
             _eventAggregator = eventAggregator;
@@ -290,7 +288,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private void Clear()
         {
-            var confirm = _dialogService.ShowConfirmAsync(
+            var confirm = _dialogService.ShowConfirmationAsync(
                 "确定要清空所有四诊信息吗？此操作不可恢复。",
                 "清空确认").Result;
                 

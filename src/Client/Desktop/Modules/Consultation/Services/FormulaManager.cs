@@ -14,7 +14,7 @@ using AutoMapper;
 using LYBT.Shared.Interfaces.Services;
 
 // UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
+using LYBT.Desktop.Core.Models.Formulas;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Consultation.Services
@@ -294,7 +294,14 @@ namespace LYBT.Desktop.Consultation.Services
                 if (_cachedFormulas == null)
                 {
                     var formulaResult = await _formulaService.GetFormulasAsync();
-                    _cachedFormulas = formulaResult.IsSuccess ? formulaResult.Data ?? new List<FormulaInfo>() : new List<FormulaInfo>();
+                    if (formulaResult.IsSuccess && formulaResult.Data != null)
+                    {
+                        _cachedFormulas = _mapper.Map<List<FormulaInfo>>(formulaResult.Data);
+                    }
+                    else
+                    {
+                        _cachedFormulas = new List<FormulaInfo>();
+                    }
                 }
 
                 // 根据使用次数排序
@@ -339,7 +346,14 @@ namespace LYBT.Desktop.Consultation.Services
                 if (_cachedFormulas == null)
                 {
                     var formulaResult = await _formulaService.GetFormulasAsync();
-                    _cachedFormulas = formulaResult.IsSuccess ? formulaResult.Data ?? new List<FormulaInfo>() : new List<FormulaInfo>();
+                    if (formulaResult.IsSuccess && formulaResult.Data != null)
+                    {
+                        _cachedFormulas = _mapper.Map<List<FormulaInfo>>(formulaResult.Data);
+                    }
+                    else
+                    {
+                        _cachedFormulas = new List<FormulaInfo>();
+                    }
                 }
 
                 var symptomKeywords = symptoms

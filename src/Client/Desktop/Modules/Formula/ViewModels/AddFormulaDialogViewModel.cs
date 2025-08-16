@@ -152,11 +152,11 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 IsLoading = true;
-                var herbs = await _herbService.GetHerbsAsync();
-                if (herbs != null)
+                var herbsResult = await _herbService.GetHerbsAsync();
+                if (herbsResult.IsSuccess && herbsResult.Data != null)
                 {
                     AvailableHerbs.Clear();
-                    foreach (var herb in herbs)
+                    foreach (var herb in herbsResult.Data)
                     {
                         AvailableHerbs.Add(herb.ToHerbInfo());
                     }

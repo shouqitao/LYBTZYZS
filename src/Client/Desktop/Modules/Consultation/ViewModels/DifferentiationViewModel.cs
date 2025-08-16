@@ -12,8 +12,6 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Consultation.ViewModels;
 
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Core.Models.Consultation;
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -27,7 +25,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IConsultationService _consultationService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly ILogger<DifferentiationViewModel> _logger;
 
         #endregion
@@ -221,7 +219,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public DifferentiationViewModel(
             IEventAggregator eventAggregator,
             IConsultationService consultationService,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             ILogger<DifferentiationViewModel> logger)
         {
             _eventAggregator = eventAggregator;

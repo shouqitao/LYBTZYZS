@@ -13,8 +13,6 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Herbs.ViewModels
@@ -24,8 +22,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// </summary>
     public class HerbManagementViewModelSimple : BaseServiceManagementViewModel<HerbDto, IHerbService>
     {
-        private readonly IDialogService _commonDialogService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _commonDialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly IHerbApiService _herbApiService;
 
         protected override string ModuleName => "中药材管理";
@@ -40,8 +38,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public HerbManagementViewModelSimple(
             IHerbService herbService,
             IHerbApiService herbApiService,
-            IDialogService commonDialogService,
-            IDialogService dialogService,
+            ICustomDialogService commonDialogService,
+            ICustomDialogService dialogService,
             Prism.Events.IEventAggregator eventAggregator)
             : base(herbService, eventAggregator)
         {
@@ -67,7 +65,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     Keyword = SearchKeyword
                 };
 
-                var result = await Service.SearchHerbsAsync(query);
+                var pagedResult = await Service.GetPagedAsync(query);
+                var result = pagedResult.Data;
                 return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Success(result);
             }
             catch (Exception ex)
@@ -179,7 +178,16 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     Reason = $"手动{action}中药材"
                 };
                 
-                var result = await Service.UpdateStatusAsync(herb.Id, statusDto);
+                // UltraThink统一标准：使用UpdateAsync替代UpdateStatusAsync
+                var updateDto = new HerbUpdateDto 
+                {
+                    Name = herb.Name,
+                    Effect = herb.Effect, // UltraThink标准：使用Effect替代Description
+                    Price = herb.Price,
+                    Unit = herb.Unit,
+                    Status = newStatus
+                };
+                var result = await Service.UpdateAsync(herb.Id, updateDto);
 
                 if (result.IsSuccess)
                 {

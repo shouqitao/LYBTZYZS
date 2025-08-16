@@ -119,9 +119,9 @@ namespace LYBT.Module.Consultation.Services
 
                 return new PagedResult<ConsultationDto>
                 {
-                    Data = items,
+                    Items = items,
                     TotalCount = totalCount,
-                    PageIndex = query.PageIndex,
+                    CurrentPage = query.PageIndex,
                     PageSize = query.PageSize
                 };
             }

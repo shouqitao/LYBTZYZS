@@ -12,8 +12,7 @@ using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
 
 // UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
-using FormulaInfo = LYBT.Shared.Models.Contracts.Formula.FormulaDto;
-using FormulaHerbItem = LYBT.Shared.Models.Contracts.Formula.FormulaHerbItemDto;
+using LYBT.Desktop.Core.Models.Formulas;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Formula.ViewModels

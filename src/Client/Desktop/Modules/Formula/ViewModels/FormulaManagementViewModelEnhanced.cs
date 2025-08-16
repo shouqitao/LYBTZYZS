@@ -12,12 +12,11 @@ using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Extensions;
+using SharedServices = LYBT.Shared.Interfaces.Services;
+using CoreServices = LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using LYBT.Desktop.Services;
 using Prism.Ioc;
-using Prism.Dialogs;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -25,11 +24,11 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// 验方管理增强版视图模型
     /// UltraThink Phase 3.4: 迁移SystemManagement中更完整的Formula功能到业务模块
     /// </summary>
-    public class FormulaManagementViewModelEnhanced : BaseServiceManagementViewModel<FormulaInfo, IFormulaService>
+    public class FormulaManagementViewModelEnhanced : BaseServiceManagementViewModel<FormulaInfo, SharedServices.IFormulaService>
     {
-        private readonly IDialogService _commonDialogService;
-        private readonly IDialogService _dialogService;
-        private readonly IHerbService _herbService;
+        private readonly CoreServices.ICustomDialogService _commonDialogService;
+        private readonly CoreServices.ICustomDialogService _dialogService;
+        private readonly SharedServices.IHerbService _herbService;
         private readonly IFormulaApiService _formulaApiService;
 
         protected override string ModuleName => "验方模板管理";
@@ -70,11 +69,11 @@ namespace LYBT.Desktop.Formula.ViewModels
         #endregion
 
         public FormulaManagementViewModelEnhanced(
-            IFormulaService formulaService,
+            SharedServices.IFormulaService formulaService,
             IFormulaApiService formulaApiService,
-            IDialogService commonDialogService,
-            IDialogService dialogService,
-            IHerbService herbService,
+            CoreServices.ICustomDialogService commonDialogService,
+            CoreServices.ICustomDialogService dialogService,
+            SharedServices.IHerbService herbService,
             Prism.Events.IEventAggregator eventAggregator)
             : base(formulaService, eventAggregator)
         {
@@ -126,12 +125,26 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 var result = await Service.SearchFormulasAsync(queryRequest);
                 
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>.Failure(result.ErrorMessage ?? "查询验方失败");
+                }
+                
                 // 转换结果类型 - 使用构造函数创建，TotalPages是计算属性
                 var convertedResult = new LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>(
-                    result.Items.ToFormulaInfoList(),
-                    result.TotalCount,
-                    result.PageIndex,
-                    result.PageSize);
+                    result.Data.Items.Select(dto => new FormulaInfo
+                    {
+                        Id = dto.Id,
+                        Name = dto.Name,
+                        Category = dto.Category ?? "其他",
+                        Indications = dto.Indications ?? dto.Effect,
+                        CreateTime = dto.CreateTime,
+                        UpdateTime = dto.UpdateTime,
+                        Herbs = new List<FormulaHerbItem>()
+                    }).ToList(),
+                    result.Data.TotalCount,
+                    result.Data.CurrentPage,
+                    result.Data.PageSize);
 
                 return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>.Success(convertedResult);
             }

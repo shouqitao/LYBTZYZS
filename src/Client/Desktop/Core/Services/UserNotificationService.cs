@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
@@ -7,11 +6,10 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Views.Dialogs;
 using Microsoft.Extensions.Logging;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -71,7 +69,7 @@ namespace LYBT.Desktop.Core.Services
                 Type = NotificationType.Success,
                 Title = "成功",
                 Message = message,
-                Severity = ErrorSeverity.Info,
+                Severity = SharedCommon.ErrorSeverity.Info,
                 Duration = TimeSpan.FromSeconds(durationSeconds ?? SuccessDisplayDurationSeconds),
                 Icon = "✅"
             });
@@ -84,22 +82,22 @@ namespace LYBT.Desktop.Core.Services
                 Type = NotificationType.Warning,
                 Title = "警告",
                 Message = message,
-                Severity = ErrorSeverity.Warning,
+                Severity = SharedCommon.ErrorSeverity.Warning,
                 Duration = TimeSpan.FromSeconds(durationSeconds ?? DefaultDisplayDurationSeconds),
                 Icon = "⚠️"
             });
         }
         
-        public async Task ShowErrorAsync(string message, ErrorSeverity severity, int? durationSeconds = null)
+        public async Task ShowErrorAsync(string message, SharedCommon.ErrorSeverity severity, int? durationSeconds = null)
         {
             await ShowNotificationAsync(new NotificationMessage
             {
                 Type = NotificationType.Error,
-                Title = severity >= ErrorSeverity.Critical ? "严重错误" : "错误",
+                Title = severity >= SharedCommon.ErrorSeverity.Critical ? "严重错误" : "错误",
                 Message = message,
                 Severity = severity,
                 Duration = TimeSpan.FromSeconds(durationSeconds ?? ErrorDisplayDurationSeconds),
-                Icon = severity >= ErrorSeverity.Critical ? "❌" : "⛔"
+                Icon = severity >= SharedCommon.ErrorSeverity.Critical ? "❌" : "⛔"
             });
         }
         
@@ -110,7 +108,7 @@ namespace LYBT.Desktop.Core.Services
                 Type = NotificationType.Info,
                 Title = "提示",
                 Message = message,
-                Severity = ErrorSeverity.Info,
+                Severity = SharedCommon.ErrorSeverity.Info,
                 Duration = TimeSpan.FromSeconds(durationSeconds ?? DefaultDisplayDurationSeconds),
                 Icon = "ℹ️"
             });
@@ -159,7 +157,7 @@ namespace LYBT.Desktop.Core.Services
                 Type = NotificationType.Info,
                 Title = "提示",
                 Message = message,
-                Severity = ErrorSeverity.Info,
+                Severity = SharedCommon.ErrorSeverity.Info,
                 Duration = configuration.Duration,
                 Icon = "ℹ️"
             });
@@ -175,7 +173,7 @@ namespace LYBT.Desktop.Core.Services
                 Type = NotificationType.Warning,
                 Title = "警告",
                 Message = message,
-                Severity = ErrorSeverity.Warning,
+                Severity = SharedCommon.ErrorSeverity.Warning,
                 Duration = configuration.Duration,
                 Icon = "⚠️"
             });
@@ -197,7 +195,7 @@ namespace LYBT.Desktop.Core.Services
                 Type = NotificationType.Error,
                 Title = "错误",
                 Message = fullMessage,
-                Severity = ErrorSeverity.Error,
+                Severity = SharedCommon.ErrorSeverity.Error,
                 Duration = configuration.Duration,
                 Icon = "⛔"
             });
@@ -206,7 +204,7 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 严重错误通知（支持完整错误信息和配置）
         /// </summary>
-        public async Task ShowCriticalErrorAsync(HandledError handledError, NotificationConfiguration configuration)
+        public async Task ShowCriticalErrorAsync(SharedCommon.HandledError handledError, NotificationConfiguration configuration)
         {
             if (configuration.ShowInDialog)
             {
@@ -493,7 +491,7 @@ namespace LYBT.Desktop.Core.Services
             public NotificationType Type { get; set; }
             public string Title { get; set; } = string.Empty;
             public string Message { get; set; } = string.Empty;
-            public ErrorSeverity Severity { get; set; }
+            public SharedCommon.ErrorSeverity Severity { get; set; }
             public TimeSpan Duration { get; set; }
             public string Icon { get; set; } = string.Empty;
         }
@@ -597,14 +595,14 @@ namespace LYBT.Desktop.Core.Services
         // 基础通知方法
         Task ShowSuccessAsync(string message, int? durationSeconds = null);
         Task ShowWarningAsync(string message, int? durationSeconds = null);
-        Task ShowErrorAsync(string message, ErrorSeverity severity, int? durationSeconds = null);
+        Task ShowErrorAsync(string message, SharedCommon.ErrorSeverity severity, int? durationSeconds = null);
         Task ShowInfoAsync(string message, int? durationSeconds = null);
         
         // 增强错误处理支持的方法重载
         Task ShowInfoAsync(string message, NotificationConfiguration configuration);
         Task ShowWarningAsync(string message, NotificationConfiguration configuration);
         Task ShowErrorAsync(string message, string[] suggestedActions, NotificationConfiguration configuration);
-        Task ShowCriticalErrorAsync(HandledError handledError, NotificationConfiguration configuration);
+        Task ShowCriticalErrorAsync(SharedCommon.HandledError handledError, NotificationConfiguration configuration);
         
         // 对话框和输入
         Task<bool> ShowConfirmationAsync(string message, string title = "确认");

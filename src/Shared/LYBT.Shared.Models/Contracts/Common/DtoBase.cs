@@ -95,6 +95,10 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+
+        /// <summary>是否启用 - 根据Status计算得出</summary>
+        [DisplayName("是否启用")]
+        public bool IsEnabled => Status == CommonStatus.Enabled;
     }
 
     /// <summary>

@@ -3,7 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.Consultation;
 using Prism.Mvvm;
@@ -234,7 +234,7 @@ namespace LYBT.Desktop.Consultation.Services
                             }
                             else
                             {
-                                var errorMessage = result?.Exception?.Message ?? "未知错误";
+                                var errorMessage = "导航失败";
                                 _logger.LogWarning("导航到视图失败: {ViewName}, Error: {Error}", 
                                     viewName, errorMessage);
                                 

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Configuration;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Refit;
-using LYBT.Desktop.Core.Models;
-
 namespace LYBT.Desktop.Services.Interfaces
 {
     /// <summary>

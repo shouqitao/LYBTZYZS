@@ -186,22 +186,21 @@ public static class UnifiedApplicationInitialization
     /// </summary>
     private static async Task LogApplicationStartupAsync(this WebApplication app, IServiceScope scope)
     {
-        var logService = scope.ServiceProvider.GetService<IUnifiedLogService>();
-        if (logService != null)
+        var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
+        if (logger != null)
         {
             try
             {
-                await logService.LogInfoAsync("System", "应用程序启动成功", null, "WebAPI-Startup");
-                
-                var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
-                logger?.LogInformation("✅ 统一日志服务初始化成功");
+                logger.LogInformation("✅ 应用程序启动成功 - WebAPI-Startup");
+                logger.LogInformation("✅ 日志系统初始化成功");
             }
             catch (Exception ex)
             {
-                var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
-                logger?.LogWarning(ex, "⚠️ 统一日志服务初始化失败，但不影响应用启动");
+                logger.LogWarning(ex, "⚠️ 日志记录过程中发生异常，但不影响应用启动");
             }
         }
+        
+        await Task.CompletedTask;
     }
 
     /// <summary>

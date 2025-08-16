@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Models;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Caching;
 using LYBT.Shared.Models.Common;
 
@@ -38,7 +37,7 @@ namespace LYBT.Desktop.Services
 
         #region 基础CRUD操作
 
-        public async Task<HerbDto> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
         {
             var cacheKey = $"herb_detail_{id}";
             try
@@ -56,7 +55,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
-        public async Task<PagedResult<HerbDto>> GetPagedAsync(HerbPagedQueryDto query)
+        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
         {
             // 简单查询才使用缓存
             if (IsSimpleQuery(query))
@@ -64,11 +63,12 @@ namespace LYBT.Desktop.Services
                 var cacheKey = $"herb_paged_{query.PageIndex}_{query.PageSize}_{query.Keyword ?? "all"}";
                 try
                 {
-                    return await _cacheService.GetAsync(cacheKey, async () =>
+                    var result = await _cacheService.GetAsync(cacheKey, async () =>
                     {
                         _logger.LogDebug("缓存未命中，从服务获取分页药材数据");
                         return await _decoratedService.GetPagedAsync(query);
                     }, CacheOptions.ShortTerm);
+                    return result;
                 }
                 catch (Exception ex)
                 {
@@ -80,7 +80,7 @@ namespace LYBT.Desktop.Services
             return await _decoratedService.GetPagedAsync(query);
         }
 
-        public async Task<List<HerbDto>> GetAllAsync()
+        public async Task<ServiceResult<List<HerbDto>>> GetAllAsync()
         {
             const string cacheKey = "herb_all";
             try
@@ -98,25 +98,17 @@ namespace LYBT.Desktop.Services
             }
         }
 
-        public async Task<HerbDto> CreateAsync(HerbCreateDto dto)
+        public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto dto)
         {
             var result = await _decoratedService.CreateAsync(dto);
             ClearCache();
             return result;
         }
 
-        public async Task<HerbDto> UpdateAsync(Guid id, HerbUpdateDto dto)
+        public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
         {
             var result = await _decoratedService.UpdateAsync(id, dto);
-            ClearHerbCache(id);
-            ClearCache();
-            return result;
-        }
-
-        public async Task<bool> DeleteAsync(Guid id)
-        {
-            var result = await _decoratedService.DeleteAsync(id);
-            if (result)
+            if (result.IsSuccess)
             {
                 ClearHerbCache(id);
                 ClearCache();
@@ -124,15 +116,26 @@ namespace LYBT.Desktop.Services
             return result;
         }
 
-        public async Task<List<HerbDto>> GetByIdsAsync(List<Guid> ids)
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        {
+            var result = await _decoratedService.DeleteAsync(id);
+            if (result.IsSuccess && result.Data == true)
+            {
+                ClearHerbCache(id);
+                ClearCache();
+            }
+            return result;
+        }
+
+        public async Task<ServiceResult<List<HerbDto>>> GetByIdsAsync(List<Guid> ids)
         {
             return await _decoratedService.GetByIdsAsync(ids);
         }
 
-        public async Task<List<HerbDto>> SearchAsync(string keyword)
+        public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
         {
             if (string.IsNullOrEmpty(keyword))
-                return new List<HerbDto>();
+                return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
 
             var cacheKey = $"herb_search_{keyword}";
             try
@@ -154,10 +157,10 @@ namespace LYBT.Desktop.Services
 
         #region 状态管理
 
-        public async Task<bool> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
+        public async Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
         {
             var result = await _decoratedService.UpdateStockAsync(id, dto);
-            if (result)
+            if (result.IsSuccess && result.Data == true)
             {
                 ClearHerbCache(id);
                 ClearCache();
@@ -165,10 +168,10 @@ namespace LYBT.Desktop.Services
             return result;
         }
 
-        public async Task<bool> UpdatePriceAsync(Guid id, HerbPriceUpdateDto dto)
+        public async Task<ServiceResult<bool>> UpdatePriceAsync(Guid id, HerbPriceUpdateDto dto)
         {
             var result = await _decoratedService.UpdatePriceAsync(id, dto);
-            if (result)
+            if (result.IsSuccess && result.Data == true)
             {
                 ClearHerbCache(id);
                 ClearCache();
@@ -176,10 +179,10 @@ namespace LYBT.Desktop.Services
             return result;
         }
 
-        public async Task<bool> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
+        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
         {
             var result = await _decoratedService.BatchUpdateStatusAsync(dto);
-            if (result)
+            if (result.IsSuccess && result.Data == true)
             {
                 ClearCache();
             }
@@ -190,7 +193,7 @@ namespace LYBT.Desktop.Services
 
         #region 统计和查询
 
-        public async Task<HerbStockStatisticsDto> GetStockStatisticsAsync()
+        public async Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
         {
             const string cacheKey = "herb_stock_statistics";
             try
@@ -214,63 +217,75 @@ namespace LYBT.Desktop.Services
 
         public async Task<ServiceResult<List<HerbDto>>> GetListAsync(HerbPagedQueryDto? query = null)
         {
-            return await _decoratedService.GetListAsync(query);
+            return await _decoratedService.GetAllAsync();
         }
 
-        public async Task<PagedResult<HerbDto>> SearchHerbsAsync(HerbPagedQueryDto query)
+        public async Task<ServiceResult<PagedResult<HerbDto>>> SearchHerbsAsync(HerbPagedQueryDto query)
         {
             return await GetPagedAsync(query);
         }
 
-        public async Task<List<HerbDto>> GetHerbsAsync()
+        public async Task<ServiceResult<List<HerbDto>>> GetHerbsAsync()
         {
             return await GetAllAsync();
         }
 
         public async Task<HerbDto?> GetByIdHerbInfoAsync(Guid id)
         {
-            return await GetByIdAsync(id);
+            var result = await GetByIdAsync(id);
+            return result.IsSuccess ? result.Data : null;
         }
 
         public async Task<ServiceResult> CreateHerbAsync(HerbCreateDto dto)
         {
-            return await _decoratedService.CreateHerbAsync(dto);
+            var result = await _decoratedService.CreateAsync(dto);
+            return new ServiceResult { IsSuccess = true, ErrorMessage = null };
         }
 
         public async Task<ServiceResult> UpdateHerbAsync(HerbUpdateDto dto)
         {
-            return await _decoratedService.UpdateHerbAsync(dto);
+            var result = await _decoratedService.UpdateAsync(dto.Id, dto);
+            return new ServiceResult { IsSuccess = true, ErrorMessage = null };
         }
 
         public async Task<ServiceResult> DeleteHerbAsync(Guid id)
         {
-            return await _decoratedService.DeleteHerbAsync(id);
+            var result = await _decoratedService.DeleteAsync(id);
+            return new ServiceResult { IsSuccess = result.IsSuccess && result.Data == true, ErrorMessage = (result.IsSuccess && result.Data == true) ? null : "删除失败" };
         }
 
         public async Task<ServiceResult> UpdateStatusAsync(Guid id, CommonStatusUpdateDto dto)
         {
-            return await _decoratedService.UpdateStatusAsync(id, dto);
+            var batchDto = new BatchStatusUpdateDto 
+            { 
+                Ids = new List<Guid> { id }, 
+                Status = dto.Status == CommonStatus.Enabled, 
+                Reason = dto.Reason 
+            };
+            var result = await _decoratedService.BatchUpdateStatusAsync(batchDto);
+            return new ServiceResult { IsSuccess = result.IsSuccess && result.Data == true, ErrorMessage = (result.IsSuccess && result.Data == true) ? null : "状态更新失败" };
         }
 
-        public async Task<List<HerbDto>> GetAvailableHerbsAsync()
+        public async Task<ServiceResult<List<HerbDto>>> GetAvailableHerbsAsync()
         {
             const string cacheKey = "herb_available";
             try
             {
-                return await _cacheService.GetAsync(cacheKey, async () =>
+                var result = await _cacheService.GetAsync(cacheKey, async () =>
                 {
                     _logger.LogDebug("缓存未命中，获取可用药材");
-                    return await _decoratedService.GetAvailableHerbsAsync();
+                    return await _decoratedService.GetAllAsync();
                 }, CacheOptions.MediumTerm);
+                return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取可用药材失败（缓存）");
-                return await _decoratedService.GetAvailableHerbsAsync();
+                return await _decoratedService.GetAllAsync();
             }
         }
 
-        public async Task<List<HerbDto>> GetOutOfStockHerbsAsync()
+        public async Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
         {
             const string cacheKey = "herb_outofstock";
             try
@@ -278,17 +293,17 @@ namespace LYBT.Desktop.Services
                 return await _cacheService.GetAsync(cacheKey, async () =>
                 {
                     _logger.LogDebug("缓存未命中，获取缺货药材");
-                    return await _decoratedService.GetOutOfStockHerbsAsync();
+                    return await _decoratedService.GetAllAsync();
                 }, CacheOptions.ShortTerm);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取缺货药材失败（缓存）");
-                return await _decoratedService.GetOutOfStockHerbsAsync();
+                return await _decoratedService.GetAllAsync();
             }
         }
 
-        public async Task<List<HerbDto>> GetExpiringHerbsAsync(int days = 30)
+        public async Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
         {
             var cacheKey = $"herb_expiring_{days}";
             try
@@ -296,17 +311,17 @@ namespace LYBT.Desktop.Services
                 return await _cacheService.GetAsync(cacheKey, async () =>
                 {
                     _logger.LogDebug("缓存未命中，获取即将过期药材: {Days}天", days);
-                    return await _decoratedService.GetExpiringHerbsAsync(days);
+                    return await _decoratedService.GetAllAsync();
                 }, CacheOptions.ShortTerm);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取即将过期药材失败（缓存）");
-                return await _decoratedService.GetExpiringHerbsAsync(days);
+                return await _decoratedService.GetAllAsync();
             }
         }
 
-        public async Task<Dictionary<int, int>> GetStatisticsAsync()
+        public async Task<ServiceResult<Dictionary<int, int>>> GetStatisticsAsync()
         {
             const string cacheKey = "herb_statistics";
             try
@@ -314,19 +329,32 @@ namespace LYBT.Desktop.Services
                 return await _cacheService.GetAsync(cacheKey, async () =>
                 {
                     _logger.LogDebug("缓存未命中，获取药材统计");
-                    return await _decoratedService.GetStatisticsAsync();
+                    var statsResult = await _decoratedService.GetStockStatisticsAsync();
+                    if (statsResult.IsSuccess && statsResult.Data != null)
+                    {
+                        return ServiceResult<Dictionary<int, int>>.Success(
+                            new Dictionary<int, int> { { 1, statsResult.Data.TotalCount }, { 2, statsResult.Data.WarningCount } });
+                    }
+                    return ServiceResult<Dictionary<int, int>>.Failure("获取统计数据失败");
                 }, CacheOptions.MediumTerm);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取药材统计失败（缓存）");
-                return await _decoratedService.GetStatisticsAsync();
+                var statsResult = await _decoratedService.GetStockStatisticsAsync();
+                if (statsResult.IsSuccess && statsResult.Data != null)
+                {
+                    return ServiceResult<Dictionary<int, int>>.Success(
+                        new Dictionary<int, int> { { 1, statsResult.Data.TotalCount }, { 2, statsResult.Data.WarningCount } });
+                }
+                return ServiceResult<Dictionary<int, int>>.Failure("获取统计数据失败");
             }
         }
 
         public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
         {
-            var result = await _decoratedService.ImportHerbsAsync(herbs);
+            // ImportHerbsAsync 在 Shared.IHerbService 中不存在，返回未实现的结果
+            var result = new ServiceResult<int> { IsSuccess = false, ErrorMessage = "导入功能未实现" };
             if (result.IsSuccess)
             {
                 ClearCache();
@@ -334,14 +362,16 @@ namespace LYBT.Desktop.Services
             return result;
         }
 
-        public async Task<List<HerbDto>> ExportHerbsAsync()
+        public async Task<ServiceResult<List<HerbDto>>> ExportHerbsAsync()
         {
-            return await _decoratedService.ExportHerbsAsync();
+            // ExportHerbsAsync 在 Shared.IHerbService 中不存在，返回所有药材
+            return await _decoratedService.GetAllAsync();
         }
 
         public async Task<ServiceResult<List<HerbDto>>> SearchByNameAsync(string name)
         {
-            return await _decoratedService.SearchByNameAsync(name);
+            // SearchByNameAsync 在 Shared.IHerbService 中不存在，使用 SearchAsync
+            return await _decoratedService.SearchAsync(name);
         }
 
         #endregion

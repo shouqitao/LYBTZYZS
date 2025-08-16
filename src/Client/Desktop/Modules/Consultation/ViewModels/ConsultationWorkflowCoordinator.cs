@@ -5,13 +5,12 @@ using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Events;
-using Prism.Dialogs;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Consultation.Services;
-using Prism.Navigation.Regions;
+using Prism.Regions;
 using CoreWorkflowStep = LYBT.Desktop.Core.Models.Consultation.WorkflowStep;
 
 namespace LYBT.Desktop.Consultation.ViewModels
@@ -35,7 +34,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 依赖服务
 
         private readonly IEventAggregator _eventAggregator;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly IUserSessionManager _userSessionManager;
         private readonly ILogger<ConsultationWorkflowCoordinator> _logger;
 
@@ -86,7 +85,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ConsultationHistoryManager historyManager,
             ConsultationNavigationHandler navigationHandler,
             IEventAggregator eventAggregator,
-            IDialogService dialogService,
+            ICustomDialogService dialogService,
             IUserSessionManager userSessionManager,
             ILogger<ConsultationWorkflowCoordinator> logger)
         {
@@ -216,7 +215,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             if (success)
             {
                 // 替换为基本Show方法
-                _dialogService.Show("BasicDialog", new DialogParameters {{ "message", "草稿已保存" }}, null);
+                await _dialogService.ShowInformationAsync("草稿已保存", "保存成功");
             }
         }
 
@@ -230,7 +229,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 var saveSuccess = await SaveCurrentStepDataAsync();
                 if (!saveSuccess)
                 {
-                    _dialogService.Show("BasicDialog", new DialogParameters {{ "message", "保存失败，无法完成工作流" }}, null);
+                    await _dialogService.ShowErrorAsync("保存失败，无法完成工作流", "保存失败");
                     return;
                 }
 
@@ -238,7 +237,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 StepManager.MarkCurrentStepAsCompleted();
 
                 StatusMessage = "工作流已完成";
-                _dialogService.Show("BasicDialog", new DialogParameters {{ "message", "诊疗工作流已完成" }}, null);
+                await _dialogService.ShowSuccessAsync("诊疗工作流已完成", "完成");
 
                 // 可以在这里添加完成后的导航逻辑
                 _logger.LogInformation("诊疗工作流完成: MedicalCaseId={MedicalCaseId}", DataManager.MedicalCaseId);
@@ -246,7 +245,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "完成工作流时发生错误");
-                _dialogService.Show("BasicDialog", new DialogParameters {{ "message", $"完成工作流失败: {ex.Message}" }}, null);
+                await _dialogService.ShowErrorAsync($"完成工作流失败: {ex.Message}", "错误");
             }
         }
 
@@ -402,7 +401,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 _logger.LogError(ex, "初始化工作流失败");
                 StatusMessage = "初始化失败";
-                _dialogService.Show("BasicDialog", new DialogParameters {{ "message", $"初始化失败: {ex.Message}" }}, null);
+                await _dialogService.ShowErrorAsync($"初始化失败: {ex.Message}", "初始化错误");
             }
             finally
             {
@@ -459,7 +458,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "执行操作时发生错误");
-                _dialogService.Show("BasicDialog", new DialogParameters {{ "message", $"操作失败: {ex.Message}" }}, null);
+                await _dialogService.ShowErrorAsync($"操作失败: {ex.Message}", "操作错误");
             }
             finally
             {

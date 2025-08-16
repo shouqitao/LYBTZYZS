@@ -15,8 +15,6 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using LYBT.Desktop.Core.Interfaces.Services;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
@@ -26,8 +24,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// </summary>
     public class HerbManagementViewModelEnhanced : BaseServiceManagementViewModel<HerbDto, IHerbService>
     {
-        private readonly IDialogService _commonDialogService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _commonDialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly IHerbApiService _herbApiService;
 
         protected override string ModuleName => "中药材管理";
@@ -54,8 +52,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public HerbManagementViewModelEnhanced(
             IHerbService herbService,
             IHerbApiService herbApiService,
-            IDialogService commonDialogService,
-            IDialogService dialogService,
+            ICustomDialogService commonDialogService,
+            ICustomDialogService dialogService,
             Prism.Events.IEventAggregator eventAggregator)
             : base(herbService, eventAggregator)
         {
@@ -82,7 +80,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     Name = SearchKeyword
                 };
 
-                var result = await Service.SearchHerbsAsync(query);
+                var pagedResult = await Service.GetPagedAsync(query);
+                var result = pagedResult.Data;
 
                 // 更新库存不足数量 (暂时注释库存相关功能)
                 // TODO: 集成库存管理服务后启用
@@ -149,7 +148,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             if (confirm)
             {
-                var result = await Service.DeleteHerbAsync(item.Id);
+                var result = await Service.DeleteAsync(item.Id);
                 if (result.IsSuccess)
                 {
                     await RefreshAsync();
@@ -246,7 +245,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                             }
 
                             // 调用服务创建药材
-                            var response = await Service.CreateHerbAsync(dto);
+                            var response = await Service.CreateAsync(dto);
                             if (response.IsSuccess)
                             {
                                 successCount++;

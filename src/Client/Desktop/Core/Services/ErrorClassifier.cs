@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -8,8 +7,8 @@ using System.IO;
 using System.Security;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Exceptions;
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -52,12 +51,12 @@ namespace LYBT.Desktop.Core.Services
                 
                 // 文件系统相关（更具体的异常先匹配）
                 DirectoryNotFoundException => new AppException(
-                    "目录不存在", ErrorCategory.FileSystem, ErrorSeverity.Warning, exception),
+                    "目录不存在", SharedCommon.ErrorCategory.FileSystem, SharedCommon.ErrorSeverity.Warning, exception),
                 FileNotFoundException => new AppException(
-                    "文件不存在", ErrorCategory.FileSystem, ErrorSeverity.Warning, exception),
+                    "文件不存在", SharedCommon.ErrorCategory.FileSystem, SharedCommon.ErrorSeverity.Warning, exception),
                 IOException ioEx => ClassifyIOException(ioEx),
                 UnauthorizedAccessException => new AppException(
-                    "文件访问被拒绝", ErrorCategory.FileSystem, ErrorSeverity.Warning, exception),
+                    "文件访问被拒绝", SharedCommon.ErrorCategory.FileSystem, SharedCommon.ErrorSeverity.Warning, exception),
                 
                 // 安全相关
                 SecurityException secEx => new AuthorizationException(
@@ -84,7 +83,7 @@ namespace LYBT.Desktop.Core.Services
                 // 默认
                 _ => new AppException(
                     exception.Message ?? "未知错误",
-                    ErrorCategory.Unknown,
+                    SharedCommon.ErrorCategory.Unknown,
                     DetermineSeverity(exception),
                     exception)
             };
@@ -153,7 +152,7 @@ namespace LYBT.Desktop.Core.Services
             
             return new NetworkException(message, null, (int)exception.SocketErrorCode)
             {
-                Severity = ErrorSeverity.Error
+                Severity = SharedCommon.ErrorSeverity.Error
             };
         }
         
@@ -175,7 +174,7 @@ namespace LYBT.Desktop.Core.Services
             return new DataAccessException(message, null, null)
             {
                 ErrorCode = $"SQL_{exception.Number}",
-                Severity = exception.Number == -2 ? ErrorSeverity.Warning : ErrorSeverity.Error
+                Severity = exception.Number == -2 ? SharedCommon.ErrorSeverity.Warning : SharedCommon.ErrorSeverity.Error
             };
         }
         
@@ -188,8 +187,8 @@ namespace LYBT.Desktop.Core.Services
             {
                 return new AppException(
                     "文件被占用",
-                    ErrorCategory.FileSystem,
-                    ErrorSeverity.Warning,
+                    SharedCommon.ErrorCategory.FileSystem,
+                    SharedCommon.ErrorSeverity.Warning,
                     exception)
                 {
                     UserFriendlyMessage = "文件正在被使用，请稍后重试"
@@ -200,15 +199,15 @@ namespace LYBT.Desktop.Core.Services
             {
                 return new AppException(
                     "磁盘空间不足",
-                    ErrorCategory.FileSystem,
-                    ErrorSeverity.Critical,
+                    SharedCommon.ErrorCategory.FileSystem,
+                    SharedCommon.ErrorSeverity.Critical,
                     exception);
             }
             
             return new AppException(
                 "文件操作失败",
-                ErrorCategory.FileSystem,
-                ErrorSeverity.Error,
+                SharedCommon.ErrorCategory.FileSystem,
+                SharedCommon.ErrorSeverity.Error,
                 exception);
         }
         
@@ -224,34 +223,34 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 确定网络错误严重程度
         /// </summary>
-        private ErrorSeverity DetermineNetworkSeverity(int? statusCode)
+        private SharedCommon.ErrorSeverity DetermineNetworkSeverity(int? statusCode)
         {
             if (!statusCode.HasValue)
-                return ErrorSeverity.Error;
+                return SharedCommon.ErrorSeverity.Error;
                 
             return statusCode.Value switch
             {
-                >= 500 => ErrorSeverity.Critical,  // 服务器错误
-                429 => ErrorSeverity.Warning,      // 请求过多
-                401 or 403 => ErrorSeverity.Warning, // 认证/授权
-                404 => ErrorSeverity.Info,         // 资源不存在
-                _ => ErrorSeverity.Error
+                >= 500 => SharedCommon.ErrorSeverity.Critical,  // 服务器错误
+                429 => SharedCommon.ErrorSeverity.Warning,      // 请求过多
+                401 or 403 => SharedCommon.ErrorSeverity.Warning, // 认证/授权
+                404 => SharedCommon.ErrorSeverity.Info,         // 资源不存在
+                _ => SharedCommon.ErrorSeverity.Error
             };
         }
         
         /// <summary>
         /// 确定异常严重程度
         /// </summary>
-        private ErrorSeverity DetermineSeverity(Exception exception)
+        private SharedCommon.ErrorSeverity DetermineSeverity(Exception exception)
         {
             // 基于异常类型确定严重程度
             return exception switch
             {
-                OutOfMemoryException => ErrorSeverity.Fatal,
-                StackOverflowException => ErrorSeverity.Fatal,
-                AccessViolationException => ErrorSeverity.Fatal,
-                SystemException => ErrorSeverity.Critical,
-                _ => ErrorSeverity.Error
+                OutOfMemoryException => SharedCommon.ErrorSeverity.Fatal,
+                StackOverflowException => SharedCommon.ErrorSeverity.Fatal,
+                AccessViolationException => SharedCommon.ErrorSeverity.Fatal,
+                SystemException => SharedCommon.ErrorSeverity.Critical,
+                _ => SharedCommon.ErrorSeverity.Error
             };
         }
         

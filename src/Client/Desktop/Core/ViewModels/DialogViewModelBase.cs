@@ -2,7 +2,8 @@ using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Prism.Commands;
 using Prism.Mvvm;
-using Prism.Dialogs;
+using LYBT.Desktop.Core.Models.Common;
+// using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
 
 namespace LYBT.Desktop.Core.ViewModels
 {

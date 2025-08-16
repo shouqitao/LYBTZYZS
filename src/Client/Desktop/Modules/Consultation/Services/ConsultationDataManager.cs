@@ -12,6 +12,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Consultation.Services

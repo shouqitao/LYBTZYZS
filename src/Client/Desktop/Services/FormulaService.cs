@@ -7,7 +7,6 @@ using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Services.Interfaces;
-using FormulaPagedResult = LYBT.Shared.Models.Contracts.Common.PagedResult<LYBT.Desktop.Core.Models.Formulas.FormulaInfo>;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Common;
@@ -32,7 +31,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 分页查询验方模板
         /// </summary>
-        public async Task<FormulaPagedResult> SearchFormulasAsync(PagedQueryBaseDto query)
+        public async Task<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>> SearchFormulasAsync(PagedQueryBaseDto query)
         {
             try
             {
@@ -40,7 +39,7 @@ namespace LYBT.Desktop.Services
                 if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     var templateInfos = response.Content.Items.Select(ConvertToFormulaInfo).ToList();
-                    return new FormulaPagedResult
+                    return new LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>
                     {
                         Items = templateInfos,
                         TotalCount = (int)response.Content.TotalCount,
@@ -49,7 +48,7 @@ namespace LYBT.Desktop.Services
                     };
                 }
 
-                return new FormulaPagedResult
+                return new LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>
                 {
                     Items = new List<FormulaInfo>(),
                     TotalCount = 0,
@@ -60,7 +59,7 @@ namespace LYBT.Desktop.Services
             }
             catch (Exception ex)
             {
-                return new FormulaPagedResult
+                return new LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>
                 {
                     Items = new List<FormulaInfo>(),
                     TotalCount = 0,
@@ -84,7 +83,7 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<List<FormulaInfo>>.Success(templates);
             }
 
-            return ServiceResult<List<FormulaInfo>>.Failure(apiResponse.ErrorMessage ?? "获取验方模板列表失败", null, apiResponse.Exception);
+            return ServiceResult<List<FormulaInfo>>.Failure(apiResponse.ErrorMessage ?? "获取验方模板列表失败", apiResponse.Exception);
         }
 
         /// <summary>
@@ -114,7 +113,7 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<FormulaInfo>.Success(createdTemplate);
             }
 
-            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "创建验方模板失败", null, apiResponse.Exception);
+            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "创建验方模板失败", apiResponse.Exception);
         }
 
         public async Task<ServiceResult<FormulaInfo>> UpdateAsync(FormulaUpdateDto updateDto)
@@ -129,7 +128,7 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<FormulaInfo>.Success(updatedTemplate);
             }
 
-            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "更新验方模板失败", null, apiResponse.Exception);
+            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "更新验方模板失败", apiResponse.Exception);
         }
 
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
@@ -144,7 +143,7 @@ namespace LYBT.Desktop.Services
             }
             else
             {
-                return ServiceResult<bool>.Failure(result.ErrorMessage ?? "删除验方模板失败", null, result.Exception);
+                return ServiceResult<bool>.Failure(result.ErrorMessage ?? "删除验方模板失败", result.Exception);
             }
         }
 
@@ -160,7 +159,7 @@ namespace LYBT.Desktop.Services
             }
             else
             {
-                return ServiceResult<int>.Failure(result.ErrorMessage ?? "批量删除验方模板失败", null, result.Exception);
+                return ServiceResult<int>.Failure(result.ErrorMessage ?? "批量删除验方模板失败", result.Exception);
             }
         }
 
@@ -176,7 +175,7 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<FormulaInfo>.Success(copiedTemplate);
             }
 
-            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "复制验方模板失败", null, apiResponse.Exception);
+            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "复制验方模板失败", apiResponse.Exception);
         }
 
         public async Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
@@ -191,7 +190,7 @@ namespace LYBT.Desktop.Services
             }
             else
             {
-                return ServiceResult<bool>.Failure(result.ErrorMessage ?? "切换验方模板状态失败", null, result.Exception);
+                return ServiceResult<bool>.Failure(result.ErrorMessage ?? "切换验方模板状态失败", result.Exception);
             }
         }
 

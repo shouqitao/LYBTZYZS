@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Desktop.Core.Exceptions;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {
@@ -15,9 +15,9 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
     /// </summary>
     public class ErrorDetailsDialogViewModel : BindableBase
     {
-        private HandledError _handledError;
+        private SharedCommon.HandledError _handledError;
 
-        public HandledError HandledError
+        public SharedCommon.HandledError HandledError
         {
             get => _handledError;
             set
@@ -30,16 +30,16 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         // 显示属性
         public string Id => HandledError?.Id ?? string.Empty;
         public string UserMessage => HandledError?.UserMessage ?? string.Empty;
-        public ErrorCategory Category => HandledError?.Category ?? ErrorCategory.Unknown;
-        public ErrorSeverity Severity => HandledError?.Severity ?? ErrorSeverity.Error;
-        public DateTime Timestamp => HandledError?.Timestamp ?? DateTime.Now;
+        public SharedCommon.ErrorCategory Category => HandledError?.Category ?? SharedCommon.ErrorCategory.Unknown;
+        public SharedCommon.ErrorSeverity Severity => HandledError?.Severity ?? SharedCommon.ErrorSeverity.Error;
+        public DateTime Timestamp => HandledError?.OccurredAt ?? DateTime.Now;
         public string TechnicalDetails => HandledError?.TechnicalDetails ?? string.Empty;
         public bool CanRetry => HandledError?.CanRetry ?? false;
         public List<string> SuggestedActions => HandledError?.SuggestedActions ?? new List<string>();
         public bool HasSuggestedActions => SuggestedActions.Any();
         
         // 上下文信息
-        public ErrorContext Context => HandledError?.Context ?? new ErrorContext();
+        public string Module => HandledError?.Module ?? string.Empty;
         public List<KeyValuePair<string, string>> ContextData => GetContextData();
 
         // 命令
@@ -51,7 +51,7 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         public event EventHandler? CloseRequested;
         public event EventHandler? RetryRequested;
 
-        public ErrorDetailsDialogViewModel(HandledError handledError)
+        public ErrorDetailsDialogViewModel(SharedCommon.HandledError handledError)
         {
             _handledError = handledError ?? throw new ArgumentNullException(nameof(handledError));
 
@@ -71,7 +71,6 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
             RaisePropertyChanged(nameof(CanRetry));
             RaisePropertyChanged(nameof(SuggestedActions));
             RaisePropertyChanged(nameof(HasSuggestedActions));
-            RaisePropertyChanged(nameof(Context));
             RaisePropertyChanged(nameof(ContextData));
 
             RetryCommand.RaiseCanExecuteChanged();
@@ -81,12 +80,12 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         {
             var data = new List<KeyValuePair<string, string>>();
             
-            if (Context?.AdditionalData != null)
+            // 简化上下文数据显示
+            if (HandledError != null)
             {
-                foreach (var kvp in Context.AdditionalData)
-                {
-                    data.Add(new KeyValuePair<string, string>(kvp.Key, kvp.Value?.ToString() ?? string.Empty));
-                }
+                data.Add(new KeyValuePair<string, string>("错误ID", Id));
+                data.Add(new KeyValuePair<string, string>("模块", Module));
+                data.Add(new KeyValuePair<string, string>("发生时间", Timestamp.ToString("yyyy-MM-dd HH:mm:ss")));
             }
 
             return data;
@@ -137,11 +136,9 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 是否可重试: {(CanRetry ? "是" : "否")}
 
 操作上下文:
-- 操作名称: {Context.OperationName}
-- 模块名称: {Context.ModuleName}
-- 视图名称: {Context.ViewName}
-- 用户名: {Context.Username}
-- 用户ID: {Context.UserId}
+- 模块名称: {Module}
+- 错误类型: {Category}
+- 严重程度: {Severity}
 
 建议操作:
 {(HasSuggestedActions ? string.Join("\n", SuggestedActions.Select(a => $"• {a}")) : "无")}

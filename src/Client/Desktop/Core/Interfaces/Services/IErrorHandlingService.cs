@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Desktop.Core.Models.Common;
 using System;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Exceptions;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {
@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <param name="exception">原始异常</param>
         /// <param name="context">错误上下文</param>
         /// <returns>处理后的错误信息</returns>
-        HandledError HandleException(Exception exception, ErrorContext? context = null);
+        SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null);
 
         /// <summary>
         /// 异步处理异常
@@ -24,20 +24,20 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <param name="exception">原始异常</param>
         /// <param name="context">错误上下文</param>
         /// <returns>处理后的错误信息</returns>
-        Task<HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null);
+        Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null);
 
         /// <summary>
         /// 显示错误通知给用户
         /// </summary>
         /// <param name="handledError">处理后的错误信息</param>
         /// <param name="showDialog">是否显示对话框</param>
-        Task ShowErrorAsync(HandledError handledError, bool showDialog = true);
+        Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true);
 
         /// <summary>
         /// 记录错误日志
         /// </summary>
         /// <param name="handledError">处理后的错误信息</param>
-        Task LogErrorAsync(HandledError handledError);
+        Task LogErrorAsync(SharedCommon.HandledError handledError);
 
         /// <summary>
         /// 获取用户友好的错误消息
@@ -59,14 +59,14 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         /// <param name="exception">异常</param>
         /// <returns>错误分类</returns>
-        ErrorCategory GetErrorCategory(Exception exception);
+        SharedCommon.ErrorCategory GetErrorCategory(Exception exception);
 
         /// <summary>
         /// 获取异常的严重程度
         /// </summary>
         /// <param name="exception">异常</param>
         /// <returns>错误严重程度</returns>
-        ErrorSeverity GetErrorSeverity(Exception exception);
+        SharedCommon.ErrorSeverity GetErrorSeverity(Exception exception);
 
         /// <summary>
         /// 获取建议的恢复操作
@@ -101,11 +101,11 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>
         /// 错误发生事件
         /// </summary>
-        event EventHandler<HandledError>? ErrorOccurred;
+        event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
 
         /// <summary>
         /// 严重错误发生事件
         /// </summary>
-        event EventHandler<HandledError>? CriticalErrorOccurred;
+        event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
     }
 }

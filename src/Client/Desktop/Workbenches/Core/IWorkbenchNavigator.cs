@@ -1,6 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System.Threading.Tasks;
-using Prism.Navigation.Regions;
+using Prism.Regions;
+using Prism.Navigation;
 
 namespace LYBT.Desktop.Workbench.Core
 {

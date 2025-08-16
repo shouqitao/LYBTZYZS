@@ -24,14 +24,13 @@
     <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-    <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+    <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
     <!-- Serilog包已删除 - UltraThink重构：使用标准Microsoft.Extensions.Logging -->
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\LYBT.Desktop.Shared.csproj" />
     <ProjectReference Include="..\Core\LYBT.Desktop.Core.csproj" />
     <ProjectReference Include="..\Services\LYBT.Desktop.Services.csproj" />
     <ProjectReference Include="..\Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
@@ -40,9 +39,12 @@
     <ProjectReference Include="..\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
     <ProjectReference Include="..\Modules\Users\LYBT.Desktop.Users.csproj" />
     <ProjectReference Include="..\Modules\Patients\LYBT.Desktop.Patients.csproj" />
+    <!-- UltraThink架构师修复：添加缺失的业务模块 -->
+    <ProjectReference Include="..\Modules\Herbs\LYBT.Desktop.Herbs.csproj" />
+    <ProjectReference Include="..\Modules\Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
+    <ProjectReference Include="..\Modules\Formula\LYBT.Desktop.Formula.csproj" />
     <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj" />
-    <ProjectReference Include="..\Workbenches\AdminWorkbench\LYBT.Desktop.Workbench.Admin.csproj" />
     <ProjectReference Include="..\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj" />
   </ItemGroup>
 

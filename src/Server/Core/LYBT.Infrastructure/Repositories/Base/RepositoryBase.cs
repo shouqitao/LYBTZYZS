@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Common;
 using LYBT.Shared.Models;
 using LYBT.Shared.Models.Contracts.Common;
 
@@ -74,7 +73,7 @@ namespace LYBT.Infrastructure.Repositories.Base
             return await DbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
         }
 
-        public virtual async Task<Infrastructure.Common.PagedResult<TEntity>> GetPagedAsync<TDto>(
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync<TDto>(
             IPagedQuery<TDto> query,
             Expression<Func<TEntity, bool>> predicate = null,
             Expression<Func<TEntity, object>> orderBy = null,
@@ -118,7 +117,13 @@ namespace LYBT.Infrastructure.Repositories.Base
                 .Take(query.PageSize)
                 .ToListAsync();
 
-            return new Infrastructure.Common.PagedResult<TEntity>(items, totalCount, query.PageIndex, query.PageSize);
+            return new PagedResult<TEntity>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                CurrentPage = query.PageIndex,
+                PageSize = query.PageSize
+            };
         }
 
         public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate = null)

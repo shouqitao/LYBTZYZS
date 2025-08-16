@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Refit;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Models;
-
 namespace LYBT.Desktop.Services.Interfaces
 {
     /// <summary>

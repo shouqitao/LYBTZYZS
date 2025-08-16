@@ -14,8 +14,6 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
-using Prism.Dialogs;
-using LYBT.Desktop.Core.Extensions;
 using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Patients.ViewModels
@@ -25,8 +23,8 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// </summary>
     public class PatientManagementViewModelSimple : BaseServiceManagementViewModel<PatientInfo, IPatientService>
     {
-        private readonly IDialogService _commonDialogService;
-        private readonly IDialogService _dialogService;
+        private readonly ICustomDialogService _commonDialogService;
+        private readonly ICustomDialogService _dialogService;
         private readonly IPatientApiService _patientApiService;
 
         protected override string ModuleName => "患者管理";
@@ -41,8 +39,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         public PatientManagementViewModelSimple(
             IPatientService patientService,
             IPatientApiService patientApiService,
-            IDialogService commonDialogService,
-            IDialogService dialogService,
+            ICustomDialogService commonDialogService,
+            ICustomDialogService dialogService,
             Prism.Events.IEventAggregator eventAggregator)
             : base(patientService, eventAggregator)
         {

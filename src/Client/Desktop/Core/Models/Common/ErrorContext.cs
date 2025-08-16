@@ -24,6 +24,16 @@ namespace LYBT.Desktop.Core.Models.Common
         public string? Username { get; set; }
 
         /// <summary>
+        /// 用户角色
+        /// </summary>
+        public string? UserRole { get; set; }
+
+        /// <summary>
+        /// 重试次数
+        /// </summary>
+        public int RetryCount { get; set; } = 0;
+
+        /// <summary>
         /// 模块名称
         /// </summary>
         public string? ModuleName { get; set; }

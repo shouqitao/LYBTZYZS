@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

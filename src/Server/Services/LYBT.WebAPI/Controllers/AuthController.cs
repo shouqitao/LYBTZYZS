@@ -5,6 +5,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
@@ -49,7 +50,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<ApiResponse<LoginResponse>>> Login([FromBody] LoginRequest dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> Login([FromBody] LoginRequest dto)
         {
             try
             {
@@ -130,7 +131,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 专门处理sysadmin登录 - 统一错误处理
         /// </summary>
-        private async Task<ActionResult<ApiResponse<LoginResponse>>> HandleSysAdminLogin(LoginRequest dto)
+        private async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> HandleSysAdminLogin(LoginRequest dto)
         {
             try
             {
@@ -198,7 +199,7 @@ namespace LYBT.WebAPI.Controllers
         /// 用户登出 - 统一API响应格式
         /// </summary>
         [HttpPost("logout")]
-        public async Task<ActionResult<ApiResponse>> Logout()
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> Logout()
         {
             try
             {
@@ -229,7 +230,7 @@ namespace LYBT.WebAPI.Controllers
         /// 修改sysadmin密码 - 统一API响应格式
         /// </summary>
         [HttpPost("changeSysAdminPassword")]
-        public async Task<ActionResult<ApiResponse>> ChangeSysAdminPassword([FromBody] ChangeSysAdminPassword dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ChangeSysAdminPassword([FromBody] ChangeSysAdminPassword dto)
         {
             try
             {
@@ -255,7 +256,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取当前用户信息 - 统一API响应格式
         /// </summary>
         [HttpGet("current-user")]
-        public ActionResult<ApiResponse<BaseUser>> GetCurrentUser()
+        public ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<BaseUser>> GetCurrentUser()
         {
             try
             {
@@ -288,7 +289,7 @@ namespace LYBT.WebAPI.Controllers
         /// 刷新JWT令牌 - 统一API响应格式
         /// </summary>
         [HttpPost("refresh-token")]
-        public ActionResult<ApiResponse<object>> RefreshToken()
+        public ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> RefreshToken()
         {
             try
             {
@@ -323,7 +324,7 @@ namespace LYBT.WebAPI.Controllers
         /// 修改密码 (通用接口) - 统一API响应格式
         /// </summary>
         [HttpPost("change-password")]
-        public async Task<ActionResult<ApiResponse>> ChangePassword([FromBody] ChangePasswordRequest dto)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ChangePassword([FromBody] ChangePasswordRequest dto)
         {
             try
             {

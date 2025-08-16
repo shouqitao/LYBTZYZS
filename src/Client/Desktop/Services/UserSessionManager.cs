@@ -201,15 +201,17 @@ namespace LYBT.Desktop.Services
         /// <returns>工作台类型</returns>
         public string GetCurrentUserWorkbench()
         {
+            // UltraThink架构师统一：所有角色使用统一的ConsultationWorkbench
+            // 通过权限控制功能访问，避免工作台架构冗余
             var currentRole = GetCurrentUserRole();
             return currentRole switch
             {
-                UserRole.Admin => "AdminWorkbench",
+                UserRole.Admin => "ConsultationWorkbench",      // 修复：AdminWorkbench已删除
                 UserRole.Doctor => "ConsultationWorkbench", 
-                UserRole.Receptionist => "ReceptionistWorkbench",
-                UserRole.Cashier => "CashierWorkbench",
-                UserRole.Pharmacist => "PharmacistWorkbench",
-                UserRole.Therapist => "TherapistWorkbench",
+                UserRole.Receptionist => "ConsultationWorkbench", // 统一：移除角色特定工作台
+                UserRole.Cashier => "ConsultationWorkbench",       // 统一：移除角色特定工作台
+                UserRole.Pharmacist => "ConsultationWorkbench",    // 统一：移除角色特定工作台
+                UserRole.Therapist => "ConsultationWorkbench",     // 统一：移除角色特定工作台
                 null => "ConsultationWorkbench",
                 _ => "ConsultationWorkbench"
             };
