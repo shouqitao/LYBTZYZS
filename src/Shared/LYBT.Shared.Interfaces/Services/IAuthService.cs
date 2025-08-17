@@ -1,0 +1,48 @@
+using System;
+using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Auth;
+
+namespace LYBT.Shared.Interfaces.Services
+{
+    /// <summary>
+    /// 身份认证服务接口 - UltraThink统一标准
+    /// </summary>
+    public interface IAuthService
+    {
+        /// <summary>
+        /// 用户登录验证
+        /// </summary>
+        Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request);
+        
+        /// <summary>
+        /// 用户登出
+        /// </summary>
+        Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request);
+        
+        /// <summary>
+        /// 修改sysadmin密码
+        /// </summary>
+        Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request);
+        
+        /// <summary>
+        /// 验证用户凭据
+        /// </summary>
+        Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request);
+        
+        /// <summary>
+        /// 刷新Token
+        /// </summary>
+        Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken);
+        
+        /// <summary>
+        /// 验证Token有效性
+        /// </summary>
+        Task<ServiceResult<bool>> ValidateTokenAsync(string token);
+        
+        /// <summary>
+        /// 获取用户会话信息
+        /// </summary>
+        Task<ServiceResult<object>> GetSessionInfoAsync(string token);
+    }
+}
