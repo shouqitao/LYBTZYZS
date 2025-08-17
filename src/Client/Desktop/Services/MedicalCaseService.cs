@@ -70,11 +70,19 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 根据ID获取医疗案例详情
         /// </summary>
-        public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<MedicalCaseInfo>> GetByIdAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.GetByIdAsync(id)
             );
+
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                var medicalCaseInfo = ConvertToMedicalCaseInfo(apiResponse.Data);
+                return ServiceResult<MedicalCaseInfo>.Success(medicalCaseInfo);
+            }
+
+            return ServiceResult<MedicalCaseInfo>.Failure(apiResponse.ErrorMessage ?? "获取医疗案例详情失败", apiResponse.Exception);
         }
 
         /// <summary>
@@ -164,7 +172,7 @@ namespace LYBT.Desktop.Services
         #region Private Methods
 
         /// <summary>
-        /// 转换DTO为前端模型
+        /// UltraThink重构: 转换DTO为前端模型
         /// </summary>
         private MedicalCaseInfo ConvertToMedicalCaseInfo(MedicalCaseDto dto)
         {
@@ -188,6 +196,44 @@ namespace LYBT.Desktop.Services
                 // 前端特有字段使用默认值
                 IsSelected = false,
                 Remark = "",
+                PatientAge = null,
+                PatientGender = "",
+                UpdateTime = null,
+                IsActive = true
+            };
+        }
+
+        /// <summary>
+        /// UltraThink重构: 转换DetailDTO为前端模型（增强版本，包含详细信息）
+        /// </summary>
+        private MedicalCaseInfo ConvertToMedicalCaseInfo(MedicalCaseDetailDto detailDto)
+        {
+            // 解析状态字符串为枚举
+            MedicalCaseStatus status = MedicalCaseStatus.Registered;
+            if (!string.IsNullOrEmpty(detailDto.Status))
+            {
+                Enum.TryParse(detailDto.Status, out status);
+            }
+
+            return new MedicalCaseInfo
+            {
+                Id = detailDto.Id,
+                PatientId = detailDto.PatientId,
+                PatientName = detailDto.PatientName ?? "",
+                UserId = detailDto.DoctorId, // DoctorId映射到UserId
+                DoctorId = detailDto.DoctorId,
+                DoctorName = detailDto.DoctorName ?? "",
+                Status = status,
+                CreateTime = detailDto.CreateTime,
+                CompleteTime = detailDto.CompleteTime,
+                
+                // 详细信息字段映射
+                ChiefComplaint = detailDto.ChiefComplaint,
+                Diagnosis = detailDto.DiagnosisResult,
+                
+                // 前端特有字段使用默认值
+                IsSelected = false,
+                Remark = detailDto.TreatmentPlan ?? "",
                 PatientAge = null,
                 PatientGender = "",
                 UpdateTime = null,

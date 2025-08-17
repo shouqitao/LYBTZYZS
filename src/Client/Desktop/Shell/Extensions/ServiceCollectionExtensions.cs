@@ -273,13 +273,8 @@ namespace LYBT.Desktop.Shell.Extensions
                 containerRegistry.RegisterSingleton(interfaceType, implementationType);
             }
 
-            // 特殊处理：药材服务使用缓存装饰器（阶段3优化）
-            containerRegistry.RegisterSingleton<HerbService>();  // 原始服务
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IHerbService>(container => 
-                new CachedHerbService(
-                    container.Resolve<HerbService>(),
-                    container.Resolve<IMemoryCacheService>(),
-                    container.Resolve<ILogger<CachedHerbService>>()));
+            // 特殊处理：注册HerbService为前端专用接口实现
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IHerbService, HerbService>();
         }
 
         /// <summary>

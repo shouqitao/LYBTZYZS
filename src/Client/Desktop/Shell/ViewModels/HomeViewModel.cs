@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -192,7 +193,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     WelcomeMessage = $"欢迎，{currentUser.RealName}";
                     
                     // 判断角色 - 使用Role属性
-                    if (currentUser.Role == "Admin" || currentUser.Role == "SysAdmin")
+                    if (currentUser.Role == UserRole.Admin)
                     {
                         IsAdminRole = true;
                         IsDoctorRole = false;

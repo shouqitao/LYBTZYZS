@@ -1,12 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
 namespace LYBT.Desktop.Core.Interfaces.Services

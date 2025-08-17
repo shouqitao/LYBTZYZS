@@ -14,6 +14,7 @@ using SharedEnums = LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Desktop.Core.Interfaces.Services;
+using IHerbService = LYBT.Desktop.Core.Interfaces.Services.IHerbService; // UltraThink: 明确使用前端专用接口
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels

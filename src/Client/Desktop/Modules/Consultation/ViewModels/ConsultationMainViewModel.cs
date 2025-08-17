@@ -437,7 +437,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                         PatientId = dto.PatientId,
                         PatientName = dto.PatientName,
                         UserId = Guid.Empty, // 使用默认值
-                        Status = Enum.TryParse<MedicalCaseStatus>(dto.Status, out var status) ? status : MedicalCaseStatus.Registered,
+                        Status = dto.Status, // UltraThink：直接使用枚举值，不需要解析
                         CreateTime = dto.CreateTime
                     };
                     Title = $"看诊工作台 - {CurrentMedicalCase?.PatientName}";

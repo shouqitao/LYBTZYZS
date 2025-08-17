@@ -23,14 +23,14 @@ namespace LYBT.Desktop.Services
             _logger = logger;
         }
 
-        public async Task<ServiceResult> AddAsync(PatientDetailDto dto)
+        public async Task<ServiceResult> AddAsync(PatientCreateDto dto)
         {
             _logger.LogInformation("添加患者: {Name}", dto?.Name ?? "未知");
             await Task.Delay(100); // 模拟API调用
             return ServiceResult.Success();
         }
 
-        public async Task<ServiceResult> UpdateAsync(PatientDetailDto dto)
+        public async Task<ServiceResult> UpdateAsync(PatientUpdateDto dto)
         {
             _logger.LogInformation("更新患者: {Id}", dto?.Id);
             await Task.Delay(100);
@@ -51,32 +51,32 @@ namespace LYBT.Desktop.Services
             return ServiceResult.Success();
         }
 
-        public async Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<PatientInfo>> GetByIdAsync(Guid id)
         {
             _logger.LogInformation("获取患者详情: {Id}", id);
             await Task.Delay(100);
             
-            var patient = new PatientDetailDto
+            var patient = new PatientInfo
             {
                 Id = id,
                 Name = "模拟患者"
             };
             
-            return ServiceResult<PatientDetailDto>.Success(patient);
+            return ServiceResult<PatientInfo>.Success(patient);
         }
 
-        public async Task<ServiceResult<List<PatientDetailDto>>> GetAllAsync()
+        public async Task<ServiceResult<List<PatientInfo>>> GetAllAsync()
         {
             _logger.LogInformation("获取所有患者");
             await Task.Delay(200);
             
-            var patients = new List<PatientDetailDto>
+            var patients = new List<PatientInfo>
             {
-                new PatientDetailDto { Id = Guid.NewGuid(), Name = "张三" },
-                new PatientDetailDto { Id = Guid.NewGuid(), Name = "李四" }
+                new PatientInfo { Id = Guid.NewGuid(), Name = "张三" },
+                new PatientInfo { Id = Guid.NewGuid(), Name = "李四" }
             };
             
-            return ServiceResult<List<PatientDetailDto>>.Success(patients);
+            return ServiceResult<List<PatientInfo>>.Success(patients);
         }
 
         public async Task<PagedResult<PatientInfo>> GetPagedAsync(PatientPagedQueryDto query)
@@ -113,41 +113,41 @@ namespace LYBT.Desktop.Services
             return ServiceResult.Success();
         }
 
-        public async Task<ServiceResult<List<PatientDetailDto>>> SearchAsync(string keyword)
+        public async Task<ServiceResult<List<PatientInfo>>> SearchAsync(string keyword)
         {
             _logger.LogInformation("搜索患者: {Keyword}", keyword);
             await Task.Delay(100);
             
-            var results = new List<PatientDetailDto>
+            var results = new List<PatientInfo>
             {
-                new PatientDetailDto { Id = Guid.NewGuid(), Name = $"搜索结果-{keyword}" }
+                new PatientInfo { Id = Guid.NewGuid(), Name = $"搜索结果-{keyword}" }
             };
             
-            return ServiceResult<List<PatientDetailDto>>.Success(results);
+            return ServiceResult<List<PatientInfo>>.Success(results);
         }
 
-        public async Task<ServiceResult> ImportAsync(List<PatientDetailDto> patients)
+        public async Task<ServiceResult> ImportAsync(List<PatientImportDto> patients)
         {
             _logger.LogInformation("导入患者数据: {Count}个", patients?.Count ?? 0);
             await Task.Delay(200);
             return ServiceResult.Success();
         }
 
-        public async Task<ServiceResult<List<PatientDetailDto>>> ExportAsync()
+        public async Task<ServiceResult<List<PatientInfo>>> ExportAsync()
         {
             _logger.LogInformation("导出患者数据");
             await Task.Delay(200);
             return await GetAllAsync();
         }
 
-        public async Task<ServiceResult<List<PatientDetailDto>>> GetActivePatientsAsync()
+        public async Task<ServiceResult<List<PatientInfo>>> GetActivePatientsAsync()
         {
             _logger.LogInformation("获取活跃患者");
             await Task.Delay(100);
             return await GetAllAsync();
         }
 
-        public async Task<ServiceResult<PatientDetailDto>> FindOrCreateAsync(PatientDetailDto dto)
+        public async Task<ServiceResult<PatientInfo>> FindOrCreateAsync(PatientCreateDto dto)
         {
             _logger.LogInformation("查询或创建患者: {Name}", dto?.Name);
             await Task.Delay(100);
@@ -155,14 +155,18 @@ namespace LYBT.Desktop.Services
             // 模拟查找逻辑
             if (dto != null && !string.IsNullOrEmpty(dto.Name))
             {
-                dto.Id = Guid.NewGuid();
-                return ServiceResult<PatientDetailDto>.Success(dto);
+                var patientInfo = new PatientInfo
+                {
+                    Id = Guid.NewGuid(),
+                    Name = dto.Name
+                };
+                return ServiceResult<PatientInfo>.Success(patientInfo);
             }
             
-            return ServiceResult<PatientDetailDto>.Failure("患者信息不完整");
+            return ServiceResult<PatientInfo>.Failure("患者信息不完整");
         }
 
-        public async Task<ServiceResult<List<PatientDetailDto>>> QuickSearchAsync(string keyword)
+        public async Task<ServiceResult<List<PatientInfo>>> QuickSearchAsync(string keyword)
         {
             _logger.LogInformation("快速搜索患者: {Keyword}", keyword);
             return await SearchAsync(keyword);
@@ -180,33 +184,37 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        public async Task<ServiceResult<PatientDetailDto>> CreateAsync(PatientDetailDto dto)
+        public async Task<ServiceResult<PatientInfo>> CreateAsync(PatientCreateDto dto)
         {
             _logger.LogInformation("创建患者: {Name}", dto?.Name);
             await Task.Delay(100);
             
             if (dto != null)
             {
-                dto.Id = Guid.NewGuid();
-                return ServiceResult<PatientDetailDto>.Success(dto);
+                var patientInfo = new PatientInfo
+                {
+                    Id = Guid.NewGuid(),
+                    Name = dto.Name
+                };
+                return ServiceResult<PatientInfo>.Success(patientInfo);
             }
             
-            return ServiceResult<PatientDetailDto>.Failure("患者信息不能为空");
+            return ServiceResult<PatientInfo>.Failure("患者信息不能为空");
         }
 
-        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByNameOrPinYinAsync(string keyword)
+        public async Task<ServiceResult<List<PatientInfo>>> SearchByNameOrPinYinAsync(string keyword)
         {
             _logger.LogInformation("按姓名或拼音搜索: {Keyword}", keyword);
             return await SearchAsync(keyword);
         }
 
-        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByPhoneAsync(string phone)
+        public async Task<ServiceResult<List<PatientInfo>>> SearchByPhoneAsync(string phone)
         {
             _logger.LogInformation("按电话搜索: {Phone}", phone);
             return await SearchAsync(phone);
         }
 
-        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByIdCardAsync(string idCard)
+        public async Task<ServiceResult<List<PatientInfo>>> SearchByIdCardAsync(string idCard)
         {
             _logger.LogInformation("按身份证搜索: {IdCard}", idCard);
             return await SearchAsync(idCard);

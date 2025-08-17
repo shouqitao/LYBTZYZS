@@ -5,30 +5,24 @@ using System.Threading.Tasks;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Services.Interfaces;
-using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Common;
-
 using LYBT.Desktop.Core.Models.Users;
 
-// UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
-using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
+// UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
 
-namespace LYBT.Desktop.Services
-{
+namespace LYBT.Desktop.Services {
+
     /// <summary>
     /// 用户服务实现
     /// </summary>
-    public class UserService : LYBT.Desktop.Core.Interfaces.Services.IUserService
-    {
+    public class UserService : IUserService {
         private readonly IApiService _apiService;
         private readonly IUserApiService _userApiService;
 
-        public UserService(IApiService apiService, IUserApiService userApiService)
-        {
+        public UserService(IApiService apiService, IUserApiService userApiService) {
             _apiService = apiService;
             _userApiService = userApiService;
         }
@@ -36,10 +30,8 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 搜索用户
         /// </summary>
-        public async Task<PagedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request)
-        {
-            try
-            {
+        public async Task<PagedResult<UserInfo>> SearchUsersAsync(UserPagedQueryDto request) {
+            try {
                 // 使用更新后的RESTful GET接口
                 var response = await _userApiService.GetUsersAsync(
                     page: request.PageIndex,
@@ -52,12 +44,10 @@ namespace LYBT.Desktop.Services
                     isActive: request.Status == CommonStatus.Enabled ? true : (request.Status == CommonStatus.Disabled ? false : null)
                 );
 
-                if (response.IsSuccessStatusCode && response.Content?.Data != null)
-                {
+                if (response.IsSuccessStatusCode && response.Content?.Data != null) {
                     var users = response.Content.Data.Items.Select(ConvertToUserInfo).ToList();
 
-                    return new PagedResult<UserInfo>
-                    {
+                    return new PagedResult<UserInfo> {
                         Items = users,
                         TotalCount = (int)response.Content.Data.TotalCount,
                         CurrentPage = response.Content.Data.CurrentPage,
@@ -65,16 +55,13 @@ namespace LYBT.Desktop.Services
                     };
                 }
 
-                return new PagedResult<UserInfo>
-                {
+                return new PagedResult<UserInfo> {
                     Items = new List<UserInfo>(),
                     TotalCount = 0,
                     CurrentPage = request.PageIndex,
                     PageSize = request.PageSize
                 };
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 throw new InvalidOperationException($"搜索用户失败: {ex.Message}", ex);
             }
         }
@@ -82,8 +69,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 新增用户
         /// </summary>
-        public async Task<ServiceResult> CreateUserAsync(UserCreateDto request)
-        {
+        public async Task<ServiceResult> CreateUserAsync(UserCreateDto request) {
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.CreateUserAsync(request)
             );
@@ -92,8 +78,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 更新用户
         /// </summary>
-        public async Task<ServiceResult> UpdateUserAsync(UserUpdateDto request)
-        {
+        public async Task<ServiceResult> UpdateUserAsync(UserUpdateDto request) {
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.UpdateUserAsync(request.Id, request)
             );
@@ -102,8 +87,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 禁用用户
         /// </summary>
-        public async Task<ServiceResult> DisableUserAsync(Guid userId)
-        {
+        public async Task<ServiceResult> DisableUserAsync(Guid userId) {
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ToggleStatusAsync(userId)
             );
@@ -112,8 +96,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 启用用户
         /// </summary>
-        public async Task<ServiceResult> EnableUserAsync(Guid userId)
-        {
+        public async Task<ServiceResult> EnableUserAsync(Guid userId) {
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ToggleStatusAsync(userId)
             );
@@ -122,8 +105,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 重置用户密码
         /// </summary>
-        public async Task<ServiceResult> ResetPasswordAsync(Guid userId)
-        {
+        public async Task<ServiceResult> ResetPasswordAsync(Guid userId) {
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ResetPasswordAsync(userId)
             );
@@ -132,8 +114,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取所有角色
         /// </summary>
-        public Task<List<string>> GetRolesAsync()
-        {
+        public Task<List<string>> GetRolesAsync() {
             // 系统只有两种用户类型
             return Task.FromResult(new List<string> { "系统管理员", "普通用户" });
         }
@@ -141,15 +122,13 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 根据ID获取用户详情
         /// </summary>
-        public async Task<ServiceResult<UserInfo>> GetUserByIdAsync(Guid userId)
-        {
+        public async Task<ServiceResult<UserInfo>> GetUserByIdAsync(Guid userId) {
             var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _userApiService.GetUserByIdAsync(userId)
             );
 
-            if (apiResponse.IsSuccess && apiResponse.Data != null)
-            {
-                return ServiceResult<UserInfo>.Success(ConvertToUserInfo(apiResponse.Data));
+            if (apiResponse.IsSuccess && apiResponse.Data != null && apiResponse.Data.Success && apiResponse.Data.Data != null) {
+                return ServiceResult<UserInfo>.Success(ConvertToUserInfo(apiResponse.Data.Data));
             }
 
             return ServiceResult<UserInfo>.Failure(apiResponse.ErrorMessage ?? "获取用户详情失败", apiResponse.Exception);
@@ -158,22 +137,17 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取活跃用户列表
         /// </summary>
-        public async Task<ServiceResult<List<UserInfo>>> GetActiveUsersAsync()
-        {
-            try
-            {
+        public async Task<ServiceResult<List<UserInfo>>> GetActiveUsersAsync() {
+            try {
                 var apiResponse = await _userApiService.GetActiveUsersAsync();
-                
-                if (apiResponse.IsSuccessStatusCode && apiResponse.Content != null)
-                {
-                    var users = apiResponse.Content.Select(ConvertToUserInfo).ToList();
+
+                if (apiResponse.IsSuccessStatusCode && apiResponse.Content != null && apiResponse.Content.Success && apiResponse.Content.Data != null) {
+                    var users = apiResponse.Content.Data.Select(ConvertToUserInfo).ToList();
                     return ServiceResult<List<UserInfo>>.Success(users);
                 }
 
                 return ServiceResult<List<UserInfo>>.Failure("获取活跃用户失败");
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return ServiceResult<List<UserInfo>>.Failure($"获取活跃用户失败: {ex.Message}", ex);
             }
         }
@@ -181,8 +155,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 批量禁用用户
         /// </summary>
-        public async Task<ServiceResult> BatchDisableUsersAsync(List<Guid> userIds)
-        {
+        public async Task<ServiceResult> BatchDisableUsersAsync(List<Guid> userIds) {
             var dto = new BatchIdsDto { Ids = userIds };
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.BatchDisableAsync(dto)
@@ -192,8 +165,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 批量启用用户
         /// </summary>
-        public async Task<ServiceResult> BatchEnableUsersAsync(List<Guid> userIds)
-        {
+        public async Task<ServiceResult> BatchEnableUsersAsync(List<Guid> userIds) {
             var dto = new BatchIdsDto { Ids = userIds };
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.BatchEnableAsync(dto)
@@ -203,8 +175,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 修改用户密码
         /// </summary>
-        public async Task<ServiceResult> ChangePasswordAsync(string oldPassword, string newPassword)
-        {
+        public async Task<ServiceResult> ChangePasswordAsync(string oldPassword, string newPassword) {
             var dto = new ChangePasswordDto { OldPassword = oldPassword, NewPassword = newPassword };
             return await ApiErrorHandler.HandleApiCallAsync(async () =>
                 await _userApiService.ChangePasswordAsync(dto)
@@ -214,10 +185,8 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 修改个人信息
         /// </summary>
-        public async Task<ServiceResult> ChangeProfileAsync(string realName, string? phoneNumber)
-        {
-            var dto = new ChangeProfileDto
-            {
+        public async Task<ServiceResult> ChangeProfileAsync(string realName, string? phoneNumber) {
+            var dto = new ChangeProfileDto {
                 RealName = realName,
                 PhoneNumber = phoneNumber
             };
@@ -229,8 +198,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 构建查询字符串
         /// </summary>
-        private string BuildQueryString(UserPagedQueryDto request)
-        {
+        private string BuildQueryString(UserPagedQueryDto request) {
             var parameters = new List<string>();
 
             if (!string.IsNullOrEmpty(request.Keyword))
@@ -245,12 +213,21 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// UltraThink重构: 已统一UserDto和UserInfo，无需转换
+        /// UltraThink重构: 恢复四层架构，UserDto转换为UserInfo
         /// </summary>
-        private UserInfo ConvertToUserInfo(LYBT.Shared.Models.Contracts.Users.UserDto dto)
-        {
-            // 由于type alias，UserInfo和UserDto现在是同一类型，直接返回
-            return dto;
+        private UserInfo ConvertToUserInfo(LYBT.Shared.Models.Contracts.Users.UserDto dto) {
+            return new UserInfo {
+                Id = dto.Id,
+                Username = dto.Username,
+                RealName = dto.RealName,
+                Role = Enum.TryParse<UserRole>(dto.Role, out var role) ? role : UserRole.Receptionist,
+                Status = dto.Status,
+                Email = null, // UserDto没有Email属性
+                PhoneNumber = dto.PhoneNumber,
+                CreateTime = dto.CreateTime,
+                UpdateTime = dto.UpdateTime,
+                IsSelected = false  // UI状态，默认未选中
+            };
         }
 
         #region 新业务接口实现
@@ -259,17 +236,14 @@ namespace LYBT.Desktop.Services
         /// 分页查询用户 - 业务接口实现
         /// </summary>
 
-
-        #endregion
+        #endregion 新业务接口实现
 
         /// <summary>
         /// 获取所有用户
         /// </summary>
-        public async Task<List<UserInfo>> GetUsersAsync()
-        {
+        public async Task<List<UserInfo>> GetUsersAsync() {
             var result = await GetActiveUsersAsync();
-            if (result.IsSuccess && result.Data != null)
-            {
+            if (result.IsSuccess && result.Data != null) {
                 return result.Data;
             }
             return new List<UserInfo>();
@@ -279,8 +253,7 @@ namespace LYBT.Desktop.Services
     /// <summary>
     /// 搜索用户响应
     /// </summary>
-    public class SearchUsersResponse
-    {
+    public class SearchUsersResponse {
         public List<UserInfo>? users { get; set; }
         public int total { get; set; }
     }

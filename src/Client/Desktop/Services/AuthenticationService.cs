@@ -15,8 +15,8 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
-// UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
-using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
+using LYBT.Desktop.Core.Models.Users;
+// UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services
@@ -176,7 +176,8 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<UserDto>.Failure("用户未登录");
             }
             
-            return ServiceResult<UserDto>.Success(currentUser);
+            var userDto = ConvertToUserDto(currentUser);
+            return ServiceResult<UserDto>.Success(userDto);
         }
 
         /// <summary>
@@ -361,7 +362,13 @@ namespace LYBT.Desktop.Services
                     Id = Guid.TryParse(userObj.Id?.ToString(), out Guid id) ? id : Guid.Empty,
                     Username = userObj.Username?.ToString() ?? string.Empty,
                     RealName = userObj.RealName?.ToString() ?? string.Empty,
-                    PhoneNumber = userObj.PhoneNumber?.ToString()
+                    PhoneNumber = userObj.PhoneNumber?.ToString(),
+                    Email = userObj.Email?.ToString(),
+                    Role = Enum.TryParse<LYBT.Shared.Models.Enums.UserRole>(userObj.Role?.ToString(), out LYBT.Shared.Models.Enums.UserRole role) ? role : LYBT.Shared.Models.Enums.UserRole.Receptionist,
+                    Status = Enum.TryParse<LYBT.Shared.Models.Enums.CommonStatus>(userObj.Status?.ToString(), out LYBT.Shared.Models.Enums.CommonStatus status) ? status : LYBT.Shared.Models.Enums.CommonStatus.Enabled,
+                    CreateTime = DateTime.TryParse(userObj.CreateTime?.ToString(), out DateTime createTime) ? createTime : DateTime.Now,
+                    UpdateTime = DateTime.TryParse(userObj.UpdateTime?.ToString(), out DateTime updateTime) ? updateTime : DateTime.Now,
+                    IsSelected = false  // UI状态，默认未选中
                 };
             }
             catch (Exception ex)
@@ -400,7 +407,31 @@ namespace LYBT.Desktop.Services
                 Id = authUser.Id,
                 Username = authUser.Username,
                 RealName = authUser.RealName,
-                PhoneNumber = authUser.PhoneNumber
+                PhoneNumber = authUser.PhoneNumber,
+                Role = authUser.Role,
+                Status = authUser.Status,
+                Email = authUser.Email,
+                CreateTime = authUser.CreateTime,
+                UpdateTime = authUser.UpdateTime,
+                IsSelected = false  // UI状态，默认未选中
+            };
+        }
+
+        /// <summary>
+        /// UltraThink重构: UserInfo转换为UserDto - 四层架构适配
+        /// </summary>
+        private UserDto ConvertToUserDto(UserInfo userInfo)
+        {
+            return new UserDto
+            {
+                Id = userInfo.Id,
+                Username = userInfo.Username,
+                RealName = userInfo.RealName,
+                PhoneNumber = userInfo.PhoneNumber,
+                Role = userInfo.Role.ToString(),
+                Status = userInfo.Status,
+                CreateTime = userInfo.CreateTime,
+                UpdateTime = userInfo.UpdateTime
             };
         }
 

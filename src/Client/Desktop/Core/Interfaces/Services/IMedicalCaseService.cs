@@ -2,8 +2,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Common;
@@ -29,7 +27,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         /// <param name="id">医疗案例ID</param>
         /// <returns>服务结果</returns>
-        Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id);
+        Task<ServiceResult<MedicalCaseInfo>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建医疗案例

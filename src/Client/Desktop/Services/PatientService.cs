@@ -16,7 +16,8 @@ using System.Linq;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 患者服务实现
+    /// 患者服务实现 - UltraThink四层架构（UI层）
+    /// 实现前端专用接口，使用PatientInfo模型
     /// </summary>
     public class PatientService : IPatientService
     {
@@ -32,11 +33,10 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 新增患者
         /// </summary>
-        public async Task<ServiceResult> AddAsync(PatientDetailDto dto)
+        public async Task<ServiceResult> AddAsync(PatientCreateDto dto)
         {
-            var createDto = ApiResponseAdapter.ToPatientCreateDto(dto);
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientApiService.CreatePatientAsync(createDto)
+                await _patientApiService.CreatePatientAsync(dto)
             );
             return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
         }
@@ -44,11 +44,10 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 编辑患者
         /// </summary>
-        public async Task<ServiceResult> UpdateAsync(PatientDetailDto dto)
+        public async Task<ServiceResult> UpdateAsync(PatientUpdateDto dto)
         {
-            var updateDto = ApiResponseAdapter.ToPatientUpdateDto(dto);
             var result = await ApiErrorHandler.HandleApiResponseAsync(async () =>
-                await _patientApiService.UpdatePatientAsync(dto.Id, updateDto)
+                await _patientApiService.UpdatePatientAsync(dto.Id, dto)
             );
             return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "操作失败");
         }
@@ -76,7 +75,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取患者详情
         /// </summary>
-        public async Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<PatientInfo>> GetByIdAsync(Guid id)
         {
             try
             {
@@ -86,21 +85,22 @@ namespace LYBT.Desktop.Services
                 if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
                 {
                     var patientDetail = ApiResponseAdapter.ToPatientDetailDto(serviceResult.Data.Data);
-                    return ServiceResult<PatientDetailDto>.Success(patientDetail);
+                    var patientInfo = ConvertToPatientInfo(patientDetail);
+                    return ServiceResult<PatientInfo>.Success(patientInfo);
                 }
                 
-                return ServiceResult<PatientDetailDto>.Failure(serviceResult.ErrorMessage ?? "获取患者详情失败");
+                return ServiceResult<PatientInfo>.Failure(serviceResult.ErrorMessage ?? "获取患者详情失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<PatientDetailDto>.Failure($"获取患者详情失败: {ex.Message}");
+                return ServiceResult<PatientInfo>.Failure($"获取患者详情失败: {ex.Message}");
             }
         }
 
         /// <summary>
         /// 获取所有患者
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> GetAllAsync()
+        public async Task<ServiceResult<List<PatientInfo>>> GetAllAsync()
         {
             try
             {
@@ -110,14 +110,15 @@ namespace LYBT.Desktop.Services
                 if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
                 {
                     var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
-                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                    var patientInfos = ConvertToPatientInfoList(patientDetails);
+                    return ServiceResult<List<PatientInfo>>.Success(patientInfos);
                 }
                 
-                return ServiceResult<List<PatientDetailDto>>.Failure(serviceResult.ErrorMessage ?? "获取患者列表失败");
+                return ServiceResult<List<PatientInfo>>.Failure(serviceResult.ErrorMessage ?? "获取患者列表失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PatientDetailDto>>.Failure($"获取所有患者失败: {ex.Message}");
+                return ServiceResult<List<PatientInfo>>.Failure($"获取所有患者失败: {ex.Message}");
             }
         }
 
@@ -193,7 +194,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 搜索患者
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> SearchAsync(string keyword)
+        public async Task<ServiceResult<List<PatientInfo>>> SearchAsync(string keyword)
         {
             try
             {
@@ -203,21 +204,22 @@ namespace LYBT.Desktop.Services
                 if (serviceResult.IsSuccess && serviceResult.Data?.Data != null)
                 {
                     var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
-                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                    var patientInfos = ConvertToPatientInfoList(patientDetails);
+                    return ServiceResult<List<PatientInfo>>.Success(patientInfos);
                 }
                 
-                return ServiceResult<List<PatientDetailDto>>.Failure(serviceResult.ErrorMessage ?? "搜索患者失败");
+                return ServiceResult<List<PatientInfo>>.Failure(serviceResult.ErrorMessage ?? "搜索患者失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PatientDetailDto>>.Failure($"搜索患者失败: {ex.Message}");
+                return ServiceResult<List<PatientInfo>>.Failure($"搜索患者失败: {ex.Message}");
             }
         }
 
         /// <summary>
         /// 导入患者数据 - 功能已移除
         /// </summary>
-        public async Task<ServiceResult> ImportAsync(List<PatientDetailDto> patients)
+        public async Task<ServiceResult> ImportAsync(List<PatientImportDto> patients)
         {
             // 导入功能已移除，返回失败
             await Task.CompletedTask;
@@ -227,7 +229,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 导出患者数据
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> ExportAsync()
+        public async Task<ServiceResult<List<PatientInfo>>> ExportAsync()
         {
             try
             {
@@ -237,14 +239,15 @@ namespace LYBT.Desktop.Services
                 if (serviceResult.IsSuccess && serviceResult.Data?.Data != null)
                 {
                     var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
-                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                    var patientInfos = ConvertToPatientInfoList(patientDetails);
+                    return ServiceResult<List<PatientInfo>>.Success(patientInfos);
                 }
                 
-                return ServiceResult<List<PatientDetailDto>>.Failure(serviceResult.ErrorMessage ?? "导出患者数据失败");
+                return ServiceResult<List<PatientInfo>>.Failure(serviceResult.ErrorMessage ?? "导出患者数据失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PatientDetailDto>>.Failure($"导出患者数据失败: {ex.Message}");
+                return ServiceResult<List<PatientInfo>>.Failure($"导出患者数据失败: {ex.Message}");
             }
         }
 
@@ -261,7 +264,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取活跃患者列表
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> GetActivePatientsAsync()
+        public async Task<ServiceResult<List<PatientInfo>>> GetActivePatientsAsync()
         {
             try
             {
@@ -271,80 +274,59 @@ namespace LYBT.Desktop.Services
                 if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
                 {
                     var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data);
-                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                    var patientInfos = ConvertToPatientInfoList(patientDetails);
+                    return ServiceResult<List<PatientInfo>>.Success(patientInfos);
                 }
                 
-                return ServiceResult<List<PatientDetailDto>>.Failure(serviceResult.ErrorMessage ?? "获取活跃患者列表失败");
+                return ServiceResult<List<PatientInfo>>.Failure(serviceResult.ErrorMessage ?? "获取活跃患者列表失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PatientDetailDto>>.Failure($"获取活跃患者列表失败: {ex.Message}");
+                return ServiceResult<List<PatientInfo>>.Failure($"获取活跃患者列表失败: {ex.Message}");
             }
         }
 
         /// <summary>
         /// 查询或创建患者
         /// </summary>
-        public async Task<ServiceResult<PatientDetailDto>> FindOrCreateAsync(PatientDetailDto dto)
+        public async Task<ServiceResult<PatientInfo>> FindOrCreateAsync(PatientCreateDto dto)
         {
             // 先尝试查找患者，如果不存在则创建  
             var searchResult = await SearchAsync(dto.Name);
             if (searchResult.IsSuccess && searchResult.Data != null && searchResult.Data.Any())
             {
-                return ServiceResult<PatientDetailDto>.Success(searchResult.Data.First());
+                return ServiceResult<PatientInfo>.Success(searchResult.Data.First());
             }
             
             // 如果找不到，创建新患者
-            var createDto = ApiResponseAdapter.ToPatientCreateDto(dto);
-            
             try
             {
-                var apiResponse = await _patientApiService.CreatePatientAsync(createDto);
+                var apiResponse = await _patientApiService.CreatePatientAsync(dto);
                 var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
                 
                 if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
                 {
                     var patientDetail = ApiResponseAdapter.ToPatientDetailDto(serviceResult.Data.Data);
-                    return ServiceResult<PatientDetailDto>.Success(patientDetail);
+                    var patientInfo = ConvertToPatientInfo(patientDetail);
+                    return ServiceResult<PatientInfo>.Success(patientInfo);
                 }
                 
-                return ServiceResult<PatientDetailDto>.Failure(serviceResult.ErrorMessage ?? "创建患者失败");
+                return ServiceResult<PatientInfo>.Failure(serviceResult.ErrorMessage ?? "创建患者失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<PatientDetailDto>.Failure($"创建患者失败: {ex.Message}");
+                return ServiceResult<PatientInfo>.Failure($"创建患者失败: {ex.Message}");
             }
         }
 
         /// <summary>
         /// 快速搜索患者（根据关键词）
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> QuickSearchAsync(string keyword)
+        public async Task<ServiceResult<List<PatientInfo>>> QuickSearchAsync(string keyword)
         {
             return await SearchAsync(keyword);
         }
 
-        /// <summary>
-        /// 转换PatientDetailDto到PatientInfo
-        /// </summary>
-        private PatientInfo ConvertToPatientInfo(PatientDetailDto dto)
-        {
-            return new PatientInfo
-            {
-                Id = dto.Id,
-                Name = dto.Name,
-                Gender = dto.Gender,
-                Age = dto.Age,
-                PhoneNumber = dto.PhoneNumber,
-                IdNumber = dto.IDNumber,  // 注意大小写
-                Address = dto.Address,
-                AllergyHistory = dto.AllergyHistory,
-                BirthDate = dto.DateOfBirth,
-                CreateTime = dto.CreateTime,
-                UpdateTime = dto.UpdateTime,
-                Status = dto.Status  // 直接使用CommonStatus
-            };
-        }
 
         /// <summary>
         /// 获取患者列表
@@ -373,25 +355,25 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 创建患者
         /// </summary>
-        public async Task<ServiceResult<PatientDetailDto>> CreateAsync(PatientDetailDto dto)
+        public async Task<ServiceResult<PatientInfo>> CreateAsync(PatientCreateDto dto)
         {
-            var createDto = ApiResponseAdapter.ToPatientCreateDto(dto);
-            var apiResponse = await _patientApiService.CreatePatientAsync(createDto);
+            var apiResponse = await _patientApiService.CreatePatientAsync(dto);
             var serviceResult = ApiResponseAdapter.ToServiceResult(apiResponse);
             
             if (serviceResult.IsSuccess && serviceResult.Data.Data != null)
             {
                 var patientDetail = ApiResponseAdapter.ToPatientDetailDto(serviceResult.Data.Data);
-                return ServiceResult<PatientDetailDto>.Success(patientDetail);
+                var patientInfo = ConvertToPatientInfo(patientDetail);
+                return ServiceResult<PatientInfo>.Success(patientInfo);
             }
             
-            return ServiceResult<PatientDetailDto>.Failure(serviceResult.ErrorMessage ?? "创建患者失败");
+            return ServiceResult<PatientInfo>.Failure(serviceResult.ErrorMessage ?? "创建患者失败");
         }
 
         /// <summary>
         /// 按姓名或拼音搜索患者
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByNameOrPinYinAsync(string keyword)
+        public async Task<ServiceResult<List<PatientInfo>>> SearchByNameOrPinYinAsync(string keyword)
         {
             try
             {
@@ -406,21 +388,22 @@ namespace LYBT.Desktop.Services
                 if (serviceResult.IsSuccess && serviceResult.Data?.Data != null)
                 {
                     var patientDetails = ApiResponseAdapter.ToPatientDetailDtos(serviceResult.Data.Data.Items);
-                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                    var patientInfos = ConvertToPatientInfoList(patientDetails);
+                    return ServiceResult<List<PatientInfo>>.Success(patientInfos);
                 }
                 
-                return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");
+                return ServiceResult<List<PatientInfo>>.Failure("搜索失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PatientDetailDto>>.Failure($"搜索患者失败: {ex.Message}");
+                return ServiceResult<List<PatientInfo>>.Failure($"搜索患者失败: {ex.Message}");
             }
         }
 
         /// <summary>
         /// 按电话号码搜索患者（支持后几位）
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByPhoneAsync(string phone)
+        public async Task<ServiceResult<List<PatientInfo>>> SearchByPhoneAsync(string phone)
         {
             try
             {
@@ -444,21 +427,22 @@ namespace LYBT.Desktop.Services
                         ).ToList();
                     }
                     
-                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                    var patientInfos = ConvertToPatientInfoList(patientDetails);
+                    return ServiceResult<List<PatientInfo>>.Success(patientInfos);
                 }
                 
-                return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");
+                return ServiceResult<List<PatientInfo>>.Failure("搜索失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PatientDetailDto>>.Failure($"按电话搜索患者失败: {ex.Message}");
+                return ServiceResult<List<PatientInfo>>.Failure($"按电话搜索患者失败: {ex.Message}");
             }
         }
 
         /// <summary>
         /// 按身份证号搜索患者（支持后几位）
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> SearchByIdCardAsync(string idCard)
+        public async Task<ServiceResult<List<PatientInfo>>> SearchByIdCardAsync(string idCard)
         {
             try
             {
@@ -482,15 +466,56 @@ namespace LYBT.Desktop.Services
                         ).ToList();
                     }
                     
-                    return ServiceResult<List<PatientDetailDto>>.Success(patientDetails);
+                    var patientInfos = ConvertToPatientInfoList(patientDetails);
+                    return ServiceResult<List<PatientInfo>>.Success(patientInfos);
                 }
                 
-                return ServiceResult<List<PatientDetailDto>>.Failure("搜索失败");
+                return ServiceResult<List<PatientInfo>>.Failure("搜索失败");
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PatientDetailDto>>.Failure($"按身份证搜索患者失败: {ex.Message}");
+                return ServiceResult<List<PatientInfo>>.Failure($"按身份证搜索患者失败: {ex.Message}");
             }
         }
+
+        #region UltraThink重构: 私有转换方法
+
+        /// <summary>
+        /// UltraThink重构: PatientDetailDto转换为PatientInfo（UI层模型）
+        /// </summary>
+        private PatientInfo ConvertToPatientInfo(PatientDetailDto dto)
+        {
+            return new PatientInfo
+            {
+                // 基础属性映射
+                Id = dto.Id,
+                Name = dto.Name,
+                Gender = dto.Gender,
+                Age = dto.Age,
+                BirthDate = dto.DateOfBirth, // PatientDetailDto只有DateOfBirth属性
+                PhoneNumber = dto.PhoneNumber,
+                Address = dto.Address,
+                IdNumber = dto.IDNumber, // 注意大小写
+                AllergyHistory = dto.AllergyHistory,
+                CreateTime = dto.CreateTime,
+                UpdateTime = dto.UpdateTime,
+                Status = dto.Status, // 直接使用CommonStatus
+                
+                // UI专用属性初始化
+                EmergencyContact = dto.EmergencyContact,
+                EmergencyPhone = dto.EmergencyPhone,
+                IsActive = true // 默认为活跃状态
+            };
+        }
+
+        /// <summary>
+        /// UltraThink重构: 批量转换PatientDetailDto列表为PatientInfo列表
+        /// </summary>
+        private List<PatientInfo> ConvertToPatientInfoList(IEnumerable<PatientDetailDto> dtos)
+        {
+            return dtos.Select(ConvertToPatientInfo).ToList();
+        }
+
+        #endregion
     }
 }

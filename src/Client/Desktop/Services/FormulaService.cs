@@ -15,11 +15,10 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 验方模板服务实现
-    /// 注意：暂时不实现Shared.IFormulaService，因为接口契约不匹配
-    /// 需要在第二阶段重新设计接口契约层
+    /// 验方模板服务实现 - UltraThink四层架构（UI层）
+    /// 实现前端专用接口，使用FormulaInfo模型
     /// </summary>
-    public class FormulaService
+    public class FormulaService : IFormulaService
     {
         private readonly IFormulaApiService _apiService;
 
@@ -94,11 +93,18 @@ namespace LYBT.Desktop.Services
             return await GetListAsync(keyword, category);
         }
 
-        public async Task<ServiceResult<FormulaDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<FormulaInfo>> GetByIdAsync(Guid id)
         {
-            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
                 await _apiService.GetFormulaByIdAsync(id)
             );
+
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                return ServiceResult<FormulaInfo>.Success(ConvertToFormulaInfo(apiResponse.Data));
+            }
+
+            return ServiceResult<FormulaInfo>.Failure(apiResponse.ErrorMessage ?? "获取验方详情失败", apiResponse.Exception);
         }
 
         public async Task<ServiceResult<FormulaInfo>> CreateAsync(FormulaCreateDto createDto)

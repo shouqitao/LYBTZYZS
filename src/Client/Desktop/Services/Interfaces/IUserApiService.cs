@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Services.Interfaces
         /// 获取用户详情
         /// </summary>
         [Get("/api/v1/users/{id}")]
-        Task<Refit.ApiResponse<UserDto>> GetUserByIdAsync(Guid id);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> GetUserByIdAsync(Guid id);
 
         // 移除重复的GetById接口，统一使用GetUserByIdAsync
 
@@ -40,13 +40,13 @@ namespace LYBT.Desktop.Services.Interfaces
         /// 创建用户
         /// </summary>
         [Post("/api/v1/users")]
-        Task<Refit.ApiResponse<UserDto>> CreateUserAsync([Body] UserCreateDto dto);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> CreateUserAsync([Body] UserCreateDto dto);
 
         /// <summary>
         /// 更新用户
         /// </summary>
         [Put("/api/v1/users/{id}")]
-        Task<Refit.ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Body] UserUpdateDto dto);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> UpdateUserAsync(Guid id, [Body] UserUpdateDto dto);
 
         // 移除单独的Enable/Disable接口，统一使用ToggleStatus
 
@@ -96,6 +96,6 @@ namespace LYBT.Desktop.Services.Interfaces
         /// 获取活跃用户列表
         /// </summary>
         [Get("/api/v1/users/active")]
-        Task<Refit.ApiResponse<IEnumerable<UserDto>>> GetActiveUsersAsync();
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<IEnumerable<UserDto>>>> GetActiveUsersAsync();
     }
 }

@@ -16,6 +16,7 @@ using AutoMapper;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Core.Interfaces.Services;
+using IHerbService = LYBT.Desktop.Core.Interfaces.Services.IHerbService; // UltraThink: 明确使用前端专用接口
 
 namespace LYBT.Desktop.Consultation.Services
 {
@@ -125,14 +126,16 @@ namespace LYBT.Desktop.Consultation.Services
                 }
 
                 // 使用GetOrCreateAsync方法，自动处理缓存逻辑
-                var herbs = await _cacheService.GetOrCreateAsync(HERBS_CACHE_KEY, async () =>
+                var herbs = await _cacheService.GetOrCreateAsync<List<HerbDto>>(HERBS_CACHE_KEY, async () =>
                 {
                     _logger.LogInformation("从API加载中药材列表");
                     var herbResult = await _herbService.GetHerbsAsync();
                     if (herbResult.IsSuccess && herbResult.Data != null)
                     {
-                        _logger.LogInformation($"成功加载 {herbResult.Data.Count} 种中药材");
-                        return herbResult.Data;
+                        // UltraThink转换：HerbInfo → HerbDto
+                        var herbDtos = herbResult.Data.Select(ConvertToHerbDto).ToList();
+                        _logger.LogInformation($"成功加载 {herbDtos.Count} 种中药材");
+                        return herbDtos;
                     }
                     else
                     {
@@ -337,6 +340,33 @@ namespace LYBT.Desktop.Consultation.Services
                 _logger.LogError(ex, "获取缓存统计信息时发生异常");
                 return new { Error = "获取统计信息失败" };
             }
+        }
+
+        #endregion
+
+        #region 私有转换方法
+
+        /// <summary>
+        /// UltraThink转换：HerbInfo → HerbDto（UI层到传输层）
+        /// </summary>
+        private static HerbDto ConvertToHerbDto(LYBT.Desktop.Core.Models.Herbs.HerbInfo herbInfo)
+        {
+            return new HerbDto
+            {
+                Id = herbInfo.Id,
+                Name = herbInfo.Name,
+                PinYinCode = herbInfo.PinYinCode,
+                WuBiCode = null, // HerbInfo没有WuBiCode属性
+                Origin = herbInfo.Origin,
+                Spec = herbInfo.Spec,
+                Unit = herbInfo.Unit,
+                Price = herbInfo.Price,
+                Effect = herbInfo.Effect,
+                Usage = herbInfo.Usage,
+                Remark = herbInfo.Remark,
+                Status = herbInfo.Status,
+                Stock = (int)herbInfo.Stock // UltraThink：decimal到int类型转换
+            };
         }
 
         #endregion

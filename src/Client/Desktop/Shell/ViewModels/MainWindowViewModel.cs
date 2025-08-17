@@ -18,6 +18,7 @@ using Prism.Events;
 using Prism.Commands;
 
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Desktop.Core.Models.Users;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
@@ -155,7 +156,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     var user = await _authService.GetCurrentUserAsync();
                     if (user != null)
                     {
-                        CurrentUser = user;
+                        CurrentUser = ConvertToUserDto(user);
                         IsLoggedIn = true;
                         TestApiCommand.RaiseCanExecuteChanged();
                         ShowControlExamplesCommand.RaiseCanExecuteChanged();
@@ -310,6 +311,27 @@ namespace LYBT.Desktop.Shell.ViewModels
                 _commonDialogService.ShowErrorAsync($"打开控件示例页面失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
         }
+
+        #region 私有转换方法
+
+        /// <summary>
+        /// UltraThink转换：UserInfo → UserDto（UI层到传输层）
+        /// </summary>
+        private static UserDto ConvertToUserDto(UserInfo userInfo)
+        {
+            return new UserDto
+            {
+                Id = userInfo.Id,
+                Username = userInfo.Username,
+                RealName = userInfo.RealName,
+                PhoneNumber = userInfo.PhoneNumber,
+                Role = userInfo.Role.ToString(), // 枚举转字符串
+                LastLoginTime = userInfo.LastLoginTime,
+                CreateTime = userInfo.CreateTime
+            };
+        }
+
+        #endregion
 
     }
 }

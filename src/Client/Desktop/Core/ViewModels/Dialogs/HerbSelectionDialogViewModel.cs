@@ -11,7 +11,6 @@ using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Desktop.Core.Mvvm;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Extensions;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.ViewModels.Dialogs
 {
@@ -187,7 +186,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                         Herbs.Clear();
                         foreach (var herb in result.Data)
                         {
-                            Herbs.Add(herb.ToHerbInfo());
+                            Herbs.Add(herb);
                         }
                     });
                 }
@@ -223,7 +222,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                         Herbs.Clear();
                         foreach (var herb in filteredHerbs)
                         {
-                            Herbs.Add(herb.ToHerbInfo());
+                            Herbs.Add(herb);
                         }
                     });
                 }

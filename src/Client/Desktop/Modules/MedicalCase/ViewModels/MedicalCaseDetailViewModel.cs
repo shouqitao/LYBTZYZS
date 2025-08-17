@@ -30,8 +30,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _medicalCaseId, value);
         }
 
-        private MedicalCaseDetailDto? _medicalCase;
-        public MedicalCaseDetailDto? MedicalCase
+        private MedicalCaseInfo? _medicalCase;
+        public MedicalCaseInfo? MedicalCase
         {
             get => _medicalCase;
             set => SetProperty(ref _medicalCase, value);
@@ -272,8 +272,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     ClinicalNotes = "";
                     DoctorName = "";
                     
-                    // 解析状态
-                    Status = ParseStatus(result.Data.Status);
+                    // 使用枚举状态（UltraThink：直接使用类型安全的枚举值）
+                    Status = result.Data.Status;
                     StatusText = GetStatusText(Status);
                     
                     CreateTime = result.Data.CreateTime;

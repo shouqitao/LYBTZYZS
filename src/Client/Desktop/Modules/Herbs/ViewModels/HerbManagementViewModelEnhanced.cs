@@ -15,6 +15,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using LYBT.Desktop.Core.Interfaces.Services;
+using IHerbService = LYBT.Desktop.Core.Interfaces.Services.IHerbService; // UltraThink: 明确使用前端专用接口
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
@@ -81,13 +82,22 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 };
 
                 var pagedResult = await Service.GetPagedAsync(query);
-                var result = pagedResult.Data;
+                var herbInfoResult = pagedResult.Data;
+
+                // UltraThink转换：HerbInfo → HerbDto
+                var herbDtoResult = new LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>
+                {
+                    Items = herbInfoResult.Items.Select(ConvertToHerbDto).ToList(),
+                    TotalCount = herbInfoResult.TotalCount,
+                    CurrentPage = herbInfoResult.CurrentPage,
+                    PageSize = herbInfoResult.PageSize
+                };
 
                 // 更新库存不足数量 (暂时注释库存相关功能)
                 // TODO: 集成库存管理服务后启用
                 LowStockCount = 0;
 
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Success(result);
+                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Success(herbDtoResult);
             }
             catch (Exception ex)
             {
@@ -363,6 +373,33 @@ namespace LYBT.Desktop.Herbs.ViewModels
             {
                 _commonDialogService.ShowErrorAsync($"打开库存管理对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
+        }
+
+        #endregion
+
+        #region 私有转换方法
+
+        /// <summary>
+        /// UltraThink转换：HerbInfo → HerbDto（UI层到传输层）
+        /// </summary>
+        private HerbDto ConvertToHerbDto(LYBT.Desktop.Core.Models.Herbs.HerbInfo herbInfo)
+        {
+            return new HerbDto
+            {
+                Id = herbInfo.Id,
+                Name = herbInfo.Name,
+                PinYinCode = herbInfo.PinYinCode,
+                WuBiCode = null, // HerbInfo没有WuBiCode属性
+                Origin = herbInfo.Origin,
+                Spec = herbInfo.Spec,
+                Unit = herbInfo.Unit,
+                Price = herbInfo.Price,
+                Effect = herbInfo.Effect,
+                Usage = herbInfo.Usage,
+                Remark = herbInfo.Remark,
+                Status = herbInfo.Status,
+                Stock = (int)herbInfo.Stock // UltraThink：decimal到int类型转换
+            };
         }
 
         #endregion

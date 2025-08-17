@@ -13,8 +13,8 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
-// UltraThink重构: 统一UserInfo和UserDto，使用UserDto作为统一模型
-using UserInfo = LYBT.Shared.Models.Contracts.Users.UserDto;
+using LYBT.Desktop.Core.Models.Users;
+// UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
 
 namespace LYBT.Desktop.Users.ViewModels
 {

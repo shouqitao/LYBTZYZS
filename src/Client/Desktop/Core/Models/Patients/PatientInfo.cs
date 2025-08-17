@@ -26,6 +26,13 @@ namespace LYBT.Desktop.Core.Models.Patients
             set => PhoneNumber = value; 
         }
         
+        /// <summary>出生日期（映射到BirthDate）</summary>
+        public DateTime? DateOfBirth 
+        { 
+            get => BirthDate; 
+            set => BirthDate = value; 
+        }
+        
         /// <summary>性别显示文本</summary>
         public string GenderDisplay 
         {

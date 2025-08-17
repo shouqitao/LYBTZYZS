@@ -168,8 +168,8 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
         {
             if (_patientService != null)
             {
-                // 使用患者服务创建患者
-                var patientDto = new LYBT.Shared.Models.Contracts.Patients.PatientDetailDto
+                // 使用患者服务创建患者（UltraThink：使用正确的创建DTO类型）
+                var patientDto = new LYBT.Shared.Models.Contracts.Patients.PatientCreateDto
                 {
                     Name = "测试患者",
                     PhoneNumber = "13800138000",

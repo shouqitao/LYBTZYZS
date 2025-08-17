@@ -12,6 +12,7 @@ using LYBT.Desktop.Consultation.Constants;
 using LYBT.Shared.Interfaces.Services;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 using IPrescriptionService = LYBT.Shared.Interfaces.Services.IPrescriptionService;
+using IHerbService = LYBT.Desktop.Core.Interfaces.Services.IHerbService; // UltraThink: 明确使用前端专用接口
 using Prism.Services.Dialogs;
 // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
 
@@ -234,7 +235,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public PrescriptionViewModelRefactored(
             IEventAggregator eventAggregator,
             IPrescriptionService prescriptionService,
-            IHerbService herbService,
+            LYBT.Shared.Interfaces.Services.IHerbService herbService,
             IFormulaService formulaService,
             Prism.Services.Dialogs.IDialogService dialogService,
             ILogger<PrescriptionViewModelRefactored> logger,
