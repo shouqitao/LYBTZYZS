@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Models.Common;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;

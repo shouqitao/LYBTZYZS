@@ -1,13 +1,12 @@
 ﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers;
@@ -28,17 +27,13 @@ public class UsersController : BaseApiController {
         _userService = userService;
     }
 
-    // 移除重复的分页查询接口，统一使用RESTful GET接口
-    // 移除重复的新增用户接口，统一使用RESTful POST接口
-    // 移除重复的编辑用户接口，统一使用RESTful PUT接口
-
     // 移除单独的Enable/Disable接口，统一使用ToggleStatus或Status接口
 
     /// <summary>
     /// 切换用户状态（启用/禁用） - 统一API响应格式
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ToggleStatus(Guid id) {
+    public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id) {
         try {
             var validation = ValidateGuid(id, "用户ID");
             if (validation != null)
@@ -47,23 +42,23 @@ public class UsersController : BaseApiController {
             var (operatorId, operatorName, operatorRole) = GetOperator();
 
             // 先获取用户当前状态
-            var user = await _userService.GetByIdAsync(id);
-            if (user == null) {
+            var userResult = await _userService.GetByIdAsync(id);
+            if (!userResult.IsSuccess || userResult.Data == null) {
                 return NotFound("用户不存在", ApiErrorCodes.USER_NOT_FOUND);
             }
 
             // 根据当前状态切换
-            bool result;
+            ServiceResult<bool> result;
             string message;
-            if (user.Status == CommonStatus.Enabled) {
-                result = await _userService.DisableAsync(id, operatorId, operatorName);
+            if (userResult.Data.Status == CommonStatus.Enabled) {
+                result = await _userService.DisableAsync(id);
                 message = "用户已禁用";
             } else {
-                result = await _userService.EnableAsync(id, operatorId, operatorName);
+                result = await _userService.EnableAsync(id);
                 message = "用户已启用";
             }
 
-            if (!result) {
+            if (!result.IsSuccess || !result.Data) {
                 return BusinessFail("状态切换失败", ApiErrorCodes.DATA_UPDATE_FAILED);
             }
 
@@ -78,7 +73,7 @@ public class UsersController : BaseApiController {
     /// 批量禁用用户 - 统一API响应格式
     /// </summary>
     [HttpPatch("batch-disable")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> BatchDisable([FromBody] BatchIdsDto dto) {
+    public async Task<ActionResult<ApiResponse>> BatchDisable([FromBody] BatchIdsDto dto) {
         try {
             var validation = ValidateModel();
             if (validation != null)
@@ -89,7 +84,11 @@ public class UsersController : BaseApiController {
             }
 
             var (operatorId, operatorName, _) = GetOperator();
-            var count = await _userService.BatchDisableAsync(dto.Ids, operatorId, operatorName);
+            var countResult = await _userService.BatchDisableAsync(dto.Ids);
+            if (!countResult.IsSuccess) {
+                return BusinessFail($"批量禁用失败：{countResult.ErrorMessage}", ApiErrorCodes.DATA_UPDATE_FAILED);
+            }
+            var count = countResult.Data;
 
             var message = $"成功禁用 {count} 个用户，共 {dto.Ids.Count} 个";
             LogOperation("批量禁用用户", new { count, total = dto.Ids.Count });
@@ -103,7 +102,7 @@ public class UsersController : BaseApiController {
     /// 批量启用用户 - 统一API响应格式
     /// </summary>
     [HttpPatch("batch-enable")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> BatchEnable([FromBody] BatchIdsDto dto) {
+    public async Task<ActionResult<ApiResponse>> BatchEnable([FromBody] BatchIdsDto dto) {
         try {
             var validation = ValidateModel();
             if (validation != null)
@@ -114,7 +113,11 @@ public class UsersController : BaseApiController {
             }
 
             var (operatorId, operatorName, _) = GetOperator();
-            var count = await _userService.BatchEnableAsync(dto.Ids, operatorId, operatorName);
+            var countResult = await _userService.BatchEnableAsync(dto.Ids);
+            if (!countResult.IsSuccess) {
+                return BusinessFail($"批量启用失败：{countResult.ErrorMessage}", ApiErrorCodes.DATA_UPDATE_FAILED);
+            }
+            var count = countResult.Data;
 
             var message = $"成功启用 {count} 个用户，共 {dto.Ids.Count} 个";
             LogOperation("批量启用用户", new { count, total = dto.Ids.Count });
@@ -128,16 +131,16 @@ public class UsersController : BaseApiController {
     /// 管理员重置密码，恢复为默认值 - 统一API响应格式
     /// </summary>
     [HttpPost("reset-password/{id}")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ResetPassword(Guid id) {
+    public async Task<ActionResult<ApiResponse>> ResetPassword(Guid id) {
         try {
             var validation = ValidateGuid(id, "用户ID");
             if (validation != null)
                 return validation;
 
             var (operatorId, operatorName, _) = GetOperator();
-            var result = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
+            var result = await _userService.ResetPasswordAsync(id, "ChangeMe123");
 
-            if (!result) {
+            if (!result.IsSuccess || !result.Data) {
                 return BusinessFail("密码重置失败", ApiErrorCodes.PASSWORD_CHANGE_FAILED);
             }
 
@@ -154,7 +157,7 @@ public class UsersController : BaseApiController {
     /// 用户修改密码 - 统一API响应格式
     /// </summary>
     [HttpPatch("password")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ChangePassword([FromBody] ChangePasswordDto dto) {
+    public async Task<ActionResult<ApiResponse>> ChangePassword([FromBody] ChangePasswordDto dto) {
         try {
             var validation = ValidateModel();
             if (validation != null)
@@ -166,7 +169,7 @@ public class UsersController : BaseApiController {
             }
 
             var result = await _userService.ChangePasswordAsync(operatorId, dto.OldPassword, dto.NewPassword);
-            if (!result) {
+            if (!result.IsSuccess || !result.Data) {
                 return BusinessFail("密码修改失败，请检查当前密码", ApiErrorCodes.PASSWORD_CHANGE_FAILED);
             }
 
@@ -181,7 +184,7 @@ public class UsersController : BaseApiController {
     /// 用户修改个人信息 - 统一API响应格式
     /// </summary>
     [HttpPut("profile")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ChangeProfile([FromBody] ChangeProfileDto dto) {
+    public async Task<ActionResult<ApiResponse>> ChangeProfile([FromBody] ChangeProfileDto dto) {
         try {
             var validation = ValidateModel();
             if (validation != null)
@@ -192,8 +195,8 @@ public class UsersController : BaseApiController {
                 return Unauthorized("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATION_FAILED);
             }
 
-            var result = await _userService.ChangeProfileAsync(operatorId, dto.RealName, dto.PhoneNumber);
-            if (!result) {
+            var result = await _userService.ChangeProfileAsync(operatorId, dto.RealName, dto.PhoneNumber ?? string.Empty);
+            if (!result.IsSuccess || !result.Data) {
                 return BusinessFail("个人信息修改失败", ApiErrorCodes.DATA_UPDATE_FAILED);
             }
 
@@ -208,9 +211,14 @@ public class UsersController : BaseApiController {
     /// 获取所有角色 - 统一API响应格式
     /// </summary>
     [HttpGet("roles")]
-    public ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<IEnumerable<object>>> GetRoles() {
+    public ActionResult<ApiResponse<IEnumerable<object>>> GetRoles() {
         try {
-            var roles = _userService.GetRoles();
+            // 临时返回固定角色列表，实际应该从配置中获取
+            var roles = new[] {
+                new { Value = "Admin", Label = "管理员" },
+                new { Value = "Doctor", Label = "医生" },
+                new { Value = "Receptionist", Label = "接待员" }
+            };
             return Success<IEnumerable<object>>(roles, "获取角色列表成功");
         } catch (Exception ex) {
             return HandleException<IEnumerable<object>>(ex, "获取角色列表", null);
@@ -223,12 +231,15 @@ public class UsersController : BaseApiController {
     /// 获取启用的用户列表 - 统一API响应格式
     /// </summary>
     [HttpGet("active")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<IEnumerable<LYBT.Shared.Models.Contracts.Users.UserDto>>>> GetActiveUsers() {
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserDto>>>> GetActiveUsers() {
         try {
-            var users = await _userService.GetActiveUsersAsync();
-            return Success<IEnumerable<LYBT.Shared.Models.Contracts.Users.UserDto>>(users, "获取启用用户列表成功");
+            var usersResult = await _userService.GetActiveUsersAsync();
+            if (!usersResult.IsSuccess || usersResult.Data == null) {
+                return HandleException<IEnumerable<UserDto>>(new Exception(usersResult.ErrorMessage ?? "获取用户列表失败"), "获取启用用户列表", null);
+            }
+            return Success<IEnumerable<UserDto>>(usersResult.Data, "获取启用用户列表成功");
         } catch (Exception ex) {
-            return HandleException<IEnumerable<LYBT.Shared.Models.Contracts.Users.UserDto>>(ex, "获取启用用户列表", null);
+            return HandleException<IEnumerable<UserDto>>(ex, "获取启用用户列表", null);
         }
     }
 
@@ -238,7 +249,7 @@ public class UsersController : BaseApiController {
     /// 获取所有用户列表 (RESTful GET /Users) - 支持模糊查询 - 统一API响应格式
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.PagedApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetUsers(
+    public async Task<ActionResult<PagedApiResponse<UserDto>>> GetUsers(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
@@ -250,7 +261,7 @@ public class UsersController : BaseApiController {
         [FromQuery] bool? isActive = null) {
         try {
             if (page <= 0 || pageSize <= 0 || pageSize > 100) {
-                return ValidationFailPaged<LYBT.Shared.Models.Contracts.Users.UserDto>("页码和页大小参数无效（页码>0，页大小1-100）");
+                return ValidationFailPaged<UserDto>("页码和页大小参数无效（页码>0，页大小1-100）");
             }
 
             var (_, _, operatorRole) = GetOperator();
@@ -267,9 +278,9 @@ public class UsersController : BaseApiController {
             };
 
             var result = await _userService.GetPagedAsync(query);
-            return Success(result, "查询成功");
+            return HandlePagedServiceResult(result, "查询成功");
         } catch (Exception ex) {
-            return HandleExceptionPaged<LYBT.Shared.Models.Contracts.Users.UserDto>(ex, "获取用户列表", new { page, pageSize, keyword });
+            return HandleExceptionPaged<UserDto>(ex, "获取用户列表", new { page, pageSize, keyword });
         }
     }
 
@@ -277,21 +288,17 @@ public class UsersController : BaseApiController {
     /// 根据ID获取用户 (RESTful GET /Users/{id}) - 统一API响应格式
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> GetUser(Guid id) {
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id) {
         try {
-            var validation = ValidateGuid<LYBT.Shared.Models.Contracts.Users.UserDto>(id, "用户ID");
+            var validation = ValidateGuid<UserDto>(id, "用户ID");
             if (validation != null)
                 return validation;
 
             var (_, _, operatorRole) = GetOperator();
-            var user = await _userService.GetByIdAsync(id);
-            if (user == null) {
-                return NotFound<LYBT.Shared.Models.Contracts.Users.UserDto>("用户不存在", ApiErrorCodes.USER_NOT_FOUND);
-            }
-
-            return Success(user, "查询成功");
+            var result = await _userService.GetByIdAsync(id);
+            return HandleServiceResult(result, "查询成功");
         } catch (Exception ex) {
-            return HandleException<LYBT.Shared.Models.Contracts.Users.UserDto>(ex, "获取用户信息", id);
+            return HandleException<UserDto>(ex, "获取用户信息", id);
         }
     }
 
@@ -299,25 +306,23 @@ public class UsersController : BaseApiController {
     /// 创建新用户 (RESTful POST /Users) - 统一API响应格式
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> CreateUser([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
         try {
-            var validation = ValidateModel<LYBT.Shared.Models.Contracts.Users.UserDto>();
+            var validation = ValidateModel<UserDto>();
             if (validation != null)
                 return validation;
 
             var (operatorId, operatorName, _) = GetOperator();
-            var result = await _userService.AddAsync(dto, operatorId, operatorName);
+            var result = await _userService.CreateAsync(dto);
 
-            if (result == null) {
-                return BusinessFail<LYBT.Shared.Models.Contracts.Users.UserDto>("用户创建失败", ApiErrorCodes.DATA_SAVE_FAILED);
+            if (result.IsSuccess && result.Data != null) {
+                LogOperation("创建用户", result.Data, result.Data.Id);
             }
-
-            LogOperation("创建用户", result, result.Id);
-            return Success(result, "用户创建成功");
+            return HandleServiceResult(result, "用户创建成功");
         } catch (InvalidOperationException ex) when (ex.Message.Contains("已存在")) {
-            return BusinessFail<LYBT.Shared.Models.Contracts.Users.UserDto>(ex.Message, ApiErrorCodes.USERNAME_EXISTS);
+            return BusinessFail<UserDto>(ex.Message, ApiErrorCodes.USERNAME_EXISTS);
         } catch (Exception ex) {
-            return HandleException<LYBT.Shared.Models.Contracts.Users.UserDto>(ex, "创建用户", dto);
+            return HandleException<UserDto>(ex, "创建用户", dto);
         }
     }
 
@@ -325,36 +330,32 @@ public class UsersController : BaseApiController {
     /// 更新用户信息 (RESTful PUT /Users/{id}) - 统一API响应格式
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LYBT.Shared.Models.Contracts.Users.UserDto>>> UpdateUser(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Users.UserUpdateDto dto) {
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Users.UserUpdateDto dto) {
         try {
-            var idValidation = ValidateGuid<LYBT.Shared.Models.Contracts.Users.UserDto>(id, "用户ID");
+            var idValidation = ValidateGuid<UserDto>(id, "用户ID");
             if (idValidation != null)
                 return idValidation;
 
-            var modelValidation = ValidateModel<LYBT.Shared.Models.Contracts.Users.UserDto>();
+            var modelValidation = ValidateModel<UserDto>();
             if (modelValidation != null)
                 return modelValidation;
 
             // 检查ID一致性
             if (dto.Id != id) {
-                return ValidationFail<LYBT.Shared.Models.Contracts.Users.UserDto>("URL中的ID与请求体中的ID不匹配");
+                return ValidationFail<UserDto>("URL中的ID与请求体中的ID不匹配");
             }
 
             var (operatorId, operatorName, _) = GetOperator();
-            var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
+            var result = await _userService.UpdateAsync(id, dto);
 
-            if (!result) {
-                return BusinessFail<UserDto>("用户信息更新失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+            if (result.IsSuccess && result.Data != null) {
+                LogOperation("更新用户信息", result.Data, id);
             }
-
-            // 获取更新后的资源
-            var updated = await _userService.GetByIdAsync(dto.Id);
-            LogOperation("更新用户信息", updated, dto.Id);
-            return Success(updated!, "用户信息更新成功");
+            return HandleServiceResult(result, "用户信息更新成功");
         } catch (InvalidOperationException ex) when (ex.Message.Contains("用户不存在")) {
-            return NotFound<LYBT.Shared.Models.Contracts.Users.UserDto>(ex.Message, ApiErrorCodes.USER_NOT_FOUND);
+            return NotFound<UserDto>(ex.Message, ApiErrorCodes.USER_NOT_FOUND);
         } catch (Exception ex) {
-            return HandleException<LYBT.Shared.Models.Contracts.Users.UserDto>(ex, "更新用户信息", new { id, dto });
+            return HandleException<UserDto>(ex, "更新用户信息", new { id, dto });
         }
     }
 

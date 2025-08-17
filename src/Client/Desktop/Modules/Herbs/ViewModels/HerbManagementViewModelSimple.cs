@@ -1,38 +1,40 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using AutoMapper;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
+using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using LYBT.Desktop.Core.Interfaces.Services;
-using IHerbService = LYBT.Desktop.Core.Interfaces.Services.IHerbService; // UltraThink: 明确使用前端专用接口
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
-    /// 中药材管理视图模型（简化重构版）- UltraThink Phase 5 DTO统一化
+    /// 中药材管理视图模型（UltraThink架构重构版）
+    /// Layer 4: Desktop层，使用HerbInfo模型，通过AutoMapper与DTO交互
     /// </summary>
-    public class HerbManagementViewModelSimple : BaseServiceManagementViewModel<HerbDto, IHerbService>
+    public class HerbManagementViewModelSimple : BaseServiceManagementViewModel<HerbInfo, IHerbService>
     {
         private readonly ICustomDialogService _commonDialogService;
         private readonly ICustomDialogService _dialogService;
         private readonly IHerbApiService _herbApiService;
+        private readonly IMapper _mapper;
 
         protected override string ModuleName => "中药材管理";
 
         #region Commands
 
-        public DelegateCommand<HerbDto> ToggleStatusCommand { get; }
-        public DelegateCommand<HerbDto> BatchUpdateStatusCommand { get; }
+        public DelegateCommand<HerbInfo> ToggleStatusCommand { get; }
+        public DelegateCommand<HerbInfo> BatchUpdateStatusCommand { get; }
 
         #endregion
 
@@ -41,21 +43,23 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IHerbApiService herbApiService,
             ICustomDialogService commonDialogService,
             ICustomDialogService dialogService,
+            IMapper mapper,
             Prism.Events.IEventAggregator eventAggregator)
             : base(herbService, eventAggregator)
         {
             _commonDialogService = commonDialogService;
             _dialogService = dialogService;
             _herbApiService = herbApiService;
+            _mapper = mapper;
 
             // 初始化命令
-            ToggleStatusCommand = new DelegateCommand<HerbDto>(async herb => await ToggleStatusAsync(herb));
-            BatchUpdateStatusCommand = new DelegateCommand<HerbDto>(async herb => await BatchUpdateStatusAsync(herb));
+            ToggleStatusCommand = new DelegateCommand<HerbInfo>(async herb => await ToggleStatusAsync(herb));
+            BatchUpdateStatusCommand = new DelegateCommand<HerbInfo>(async herb => await BatchUpdateStatusAsync(herb));
         }
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
+        protected override async Task<ServiceResult<PagedResult<HerbInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
@@ -66,23 +70,12 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     Keyword = SearchKeyword
                 };
 
-                var pagedResult = await Service.GetPagedAsync(query);
-                var herbInfoResult = pagedResult.Data;
-                
-                // UltraThink转换：HerbInfo → HerbDto
-                var herbDtoResult = new LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>
-                {
-                    Items = herbInfoResult.Items.Select(ConvertToHerbDto).ToList(),
-                    TotalCount = herbInfoResult.TotalCount,
-                    CurrentPage = herbInfoResult.CurrentPage,
-                    PageSize = herbInfoResult.PageSize
-                };
-                
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Success(herbDtoResult);
+                var result = await Service.GetPagedAsync(query);
+                return result;
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Failure($"加载中药材列表失败: {ex.Message}");
+                return ServiceResult<PagedResult<HerbInfo>>.Failure($"加载中药材列表失败: {ex.Message}");
             }
         }
 
@@ -120,7 +113,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        protected override async Task EditAsync(HerbDto item)
+        protected override async Task EditAsync(HerbInfo item)
         {
             if (item == null) return;
 
@@ -130,8 +123,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 dialog.Owner = Application.Current.MainWindow;
                 dialog.Title = "编辑中药材";
 
-                // 创建ViewModel并设置为编辑模式
-                var viewModel = new HerbAddEditDialogViewModel(_herbApiService, item);
+                // 创建ViewModel并设置为编辑模式，使用AutoMapper转换
+                var herbDto = _mapper.Map<HerbDto>(item);
+                var viewModel = new HerbAddEditDialogViewModel(_herbApiService, herbDto);
                 dialog.DataContext = viewModel;
 
                 // 设置保存成功回调
@@ -156,7 +150,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        protected override async Task DeleteAsync(HerbDto item)
+        protected override async Task DeleteAsync(HerbInfo item)
         {
             if (item == null) return;
 
@@ -171,7 +165,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 切换中药材状态
         /// </summary>
-        private async Task ToggleStatusAsync(HerbDto herb)
+        private async Task ToggleStatusAsync(HerbInfo herb)
         {
             if (herb == null) return;
 
@@ -183,21 +177,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
             if (confirm)
             {
                 var newStatus = herb.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
-                var statusDto = new CommonStatusUpdateDto
-                {
-                    Status = newStatus,
-                    Reason = $"手动{action}中药材"
-                };
                 
-                // UltraThink统一标准：使用UpdateAsync替代UpdateStatusAsync
-                var updateDto = new HerbUpdateDto 
-                {
-                    Name = herb.Name,
-                    Effect = herb.Effect, // UltraThink标准：使用Effect替代Description
-                    Price = herb.Price,
-                    Unit = herb.Unit,
-                    Status = newStatus
-                };
+                // 使用AutoMapper创建更新DTO
+                herb.Status = newStatus;
+                var updateDto = _mapper.Map<HerbUpdateDto>(herb);
+                
                 var result = await Service.UpdateAsync(herb.Id, updateDto);
 
                 if (result.IsSuccess)
@@ -217,37 +201,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 批量更新中药材状态
         /// </summary>
-        private async Task BatchUpdateStatusAsync(HerbDto herb)
+        private async Task BatchUpdateStatusAsync(HerbInfo herb)
         {
             // 简化版本，可以扩展为真正的批量操作
             await ToggleStatusAsync(herb);
-        }
-
-        #endregion
-
-        #region 私有转换方法
-
-        /// <summary>
-        /// UltraThink转换：HerbInfo → HerbDto（UI层到传输层）
-        /// </summary>
-        private HerbDto ConvertToHerbDto(LYBT.Desktop.Core.Models.Herbs.HerbInfo herbInfo)
-        {
-            return new HerbDto
-            {
-                Id = herbInfo.Id,
-                Name = herbInfo.Name,
-                PinYinCode = herbInfo.PinYinCode,
-                WuBiCode = null, // HerbInfo没有WuBiCode属性
-                Origin = herbInfo.Origin,
-                Spec = herbInfo.Spec,
-                Unit = herbInfo.Unit,
-                Price = herbInfo.Price,
-                Effect = herbInfo.Effect,
-                Usage = herbInfo.Usage,
-                Remark = herbInfo.Remark,
-                Status = herbInfo.Status,
-                Stock = (int)herbInfo.Stock // UltraThink：decimal到int类型转换
-            };
         }
 
         #endregion

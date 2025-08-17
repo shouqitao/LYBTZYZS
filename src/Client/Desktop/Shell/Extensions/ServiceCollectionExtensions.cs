@@ -10,7 +10,7 @@ using Prism.Ioc;
 using Refit;
 using AutoMapper;
 using LYBT.Desktop.Services.Interfaces;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Services;
@@ -251,27 +251,43 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(
                 container => container.Resolve<AuthenticationService>());
 
-            // 注册UserService - UI接口实现
+            // 注册UserService - UltraThink重构：现在实现Shared接口
             containerRegistry.RegisterSingleton<UserService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserService>(
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService>(
                 container => container.Resolve<UserService>());
 
             // 注册其他服务 - 暂时保持原有注册方式，使用完全限定类型名解决歧义
             var legacyDomainServices = new (Type Interface, Type Implementation)[]
             {
                 (typeof(LYBT.Desktop.Core.Interfaces.Services.IPatientService), typeof(PatientService)),
-                (typeof(LYBT.Desktop.Core.Interfaces.Services.IConsultationService), typeof(ConsultationService)),
-                (typeof(LYBT.Shared.Interfaces.Services.IPrescriptionService), typeof(PrescriptionService)),
-                (typeof(LYBT.Desktop.Core.Interfaces.Services.IMedicalCaseService), typeof(MedicalCaseService))
+                // ConsultationService注册移至单独注册 - 实现了双接口
+                // MedicalCaseService注册移至单独注册 - 实现了双接口
+                (typeof(LYBT.Shared.Interfaces.Services.IPrescriptionService), typeof(PrescriptionService))
             };
 
-            // 注册FormulaService为具体类型（当前未实现接口，在Phase 3中将重构为接口实现）
+            // UltraThink Phase 5: 注册FormulaService为Shared接口实现
             containerRegistry.RegisterSingleton<FormulaService>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IFormulaService>(
+                container => container.Resolve<FormulaService>());
 
             foreach (var (interfaceType, implementationType) in legacyDomainServices)
             {
                 containerRegistry.RegisterSingleton(interfaceType, implementationType);
             }
+
+            // UltraThink Phase 3: 注册ConsultationService为双接口实现
+            containerRegistry.RegisterSingleton<ConsultationService>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IConsultationService>(
+                container => container.Resolve<ConsultationService>());
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IConsultationService>(
+                container => container.Resolve<ConsultationService>());
+
+            // UltraThink Phase 4: 注册MedicalCaseService为双接口实现
+            containerRegistry.RegisterSingleton<MedicalCaseService>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IMedicalCaseService>(
+                container => container.Resolve<MedicalCaseService>());
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IMedicalCaseService>(
+                container => container.Resolve<MedicalCaseService>());
 
             // 特殊处理：注册HerbService为前端专用接口实现
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IHerbService, HerbService>();

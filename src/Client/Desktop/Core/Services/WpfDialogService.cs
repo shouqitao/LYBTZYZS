@@ -5,7 +5,7 @@ using System.Windows;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using LYBT.Desktop.Core.Interfaces;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
 // using LYBT.Desktop.Shell.Dialogs.Views; // 暂时注释以避免跨项目依赖
 

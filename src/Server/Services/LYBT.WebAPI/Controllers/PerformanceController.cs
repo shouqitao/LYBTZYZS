@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Performance;
+using LYBT.Infrastructure.Web;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -16,7 +17,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [Route("api/v1/[controller]")]
     [Authorize] // 性能数据需要身份验证
-    public class PerformanceController : ControllerBase
+    public class PerformanceController : BaseSystemController
     {
         private readonly CQRSPerformanceMonitor _cqrsMonitor;
         private readonly IPerformanceCollector _performanceCollector;
@@ -26,6 +27,7 @@ namespace LYBT.WebAPI.Controllers
             CQRSPerformanceMonitor cqrsMonitor,
             IPerformanceCollector performanceCollector,
             ILogger<PerformanceController> logger)
+            : base(logger) // 传递给BaseSystemController
         {
             _cqrsMonitor = cqrsMonitor;
             _performanceCollector = performanceCollector;

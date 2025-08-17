@@ -6,17 +6,11 @@ using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Consultation.Services.Interfaces;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
-
-// UltraThink重构: 统一HerbInfo和HerbDto，FormulaInfo和FormulaDto，使用Dto作为统一模型
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Desktop.Core.Models.Formulas;
-using LYBT.Desktop.Core.Interfaces.Services;
-using IHerbService = LYBT.Desktop.Core.Interfaces.Services.IHerbService; // UltraThink: 明确使用前端专用接口
 
 namespace LYBT.Desktop.Consultation.Services
 {

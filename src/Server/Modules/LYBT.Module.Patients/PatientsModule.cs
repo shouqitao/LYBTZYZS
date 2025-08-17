@@ -1,3 +1,4 @@
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;

@@ -1,16 +1,16 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models.MedicalCase;
-using LYBT.Shared.Models.Contracts.MedicalCase;
+using AutoMapper;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -23,6 +23,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly ICustomDialogService _dialogService;
         private readonly IDialogService _prismDialogService;
         private readonly IRegionManager _regionManager;
+        private readonly IMapper _mapper;
 
         #region Properties
 
@@ -104,13 +105,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ICustomDialogService dialogService,
             IDialogService prismDialogService,
             IRegionManager regionManager,
-            IEventAggregator eventAggregator)
+            IEventAggregator eventAggregator,
+            IMapper mapper)
             : base(eventAggregator)
         {
             _medicalCaseService = medicalCaseService;
             _dialogService = dialogService;
             _prismDialogService = prismDialogService;
             _regionManager = regionManager;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             MedicalCases = new ObservableCollection<MedicalCaseInfo>();
 
@@ -138,34 +141,52 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 IsLoading = true;
 
-                var result = await _medicalCaseService.GetPagedAsync(CurrentPage, PageSize);
+                // UltraThink四层架构：使用ServiceResult模式获取数据
+                var result = await _medicalCaseService.GetAllAsync(); // 暂时使用GetAllAsync避免分页DTO实现复杂性
 
-                if (!string.IsNullOrEmpty(result.ErrorMessage))
+                if (!result.IsSuccess)
                 {
                     await _dialogService.ShowErrorAsync($"加载数据失败: {result.ErrorMessage}", "错误");
                     return;
                 }
 
-                TotalCount = result.TotalCount;
-                TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
-
-                MedicalCases.Clear();
-                foreach (var item in result.Items)
+                if (result.Data != null)
                 {
-                    // 应用搜索和筛选
-                    if (!string.IsNullOrEmpty(SearchKeyword) && 
-                        !item.PatientName.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase) &&
-                        !item.DoctorName.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase))
+                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
+                    var allMedicalCaseInfos = _mapper.Map<List<MedicalCaseInfo>>(result.Data);
+                    
+                    // 应用搜索和筛选（前端过滤）
+                    var filteredInfos = allMedicalCaseInfos.AsEnumerable();
+                    
+                    if (!string.IsNullOrEmpty(SearchKeyword))
                     {
-                        continue;
+                        var searchLower = SearchKeyword.ToLowerInvariant();
+                        filteredInfos = filteredInfos.Where(item => 
+                            item.PatientName.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
+                            item.DoctorName.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
+                            (item.ChiefComplaint?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (item.Diagnosis?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
                     }
 
-                    if (FilterStatus.HasValue && item.Status != FilterStatus.Value)
+                    if (FilterStatus.HasValue)
                     {
-                        continue;
+                        filteredInfos = filteredInfos.Where(item => item.Status == FilterStatus.Value);
                     }
+                    
+                    // 分页处理（前端分页）
+                    var pagedInfos = filteredInfos
+                        .Skip((CurrentPage - 1) * PageSize)
+                        .Take(PageSize)
+                        .ToList();
+                    
+                    TotalCount = filteredInfos.Count();
+                    TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
 
-                    MedicalCases.Add(item);
+                    MedicalCases.Clear();
+                    foreach (var item in pagedInfos)
+                    {
+                        MedicalCases.Add(item);
+                    }
                 }
 
                 // Update command states

@@ -3,19 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Services.Interfaces;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Contracts.Herbs;
+using AutoMapper;
 using LYBT.Shared.Interfaces.Services;
 using SharedEnums = LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.Desktop.Core.Interfaces.Services;
-using IHerbService = LYBT.Desktop.Core.Interfaces.Services.IHerbService; // UltraThink: 明确使用前端专用接口
 using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -29,6 +24,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private readonly IHerbService _herbService;
         private readonly ICustomDialogService _dialogService;
         private readonly ILogger<PrescriptionEditorDialogViewModel> _logger;
+        private readonly IMapper _mapper;
 
         #region Dialog Properties
 
@@ -137,13 +133,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             IPatientService patientService,
             IHerbService herbService,
             ICustomDialogService dialogService,
-            ILogger<PrescriptionEditorDialogViewModel> logger)
+            ILogger<PrescriptionEditorDialogViewModel> logger,
+            IMapper mapper)
         {
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SavePrescriptionAsync(), CanSave)
@@ -222,7 +220,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             Prescription = new PrescriptionInfo
             {
-                PrescriptionNo = GeneratePrescriptionNo(),
+                PrescriptionNumber = GeneratePrescriptionNo(),
                 CreateTime = DateTime.Now,
                 UserId = Guid.Empty, // TODO: 从当前登录用户获取
                 Status = SharedEnums.PrescriptionStatus.Draft,
@@ -243,45 +241,25 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 IsLoading = true;
                 StatusMessage = "正在加载处方...";
 
-                var prescriptionDto = await _prescriptionService.GetByIdAsync(prescriptionId);
-                if (prescriptionDto != null)
+                var result = await _prescriptionService.GetByIdAsync(prescriptionId);
+                if (result.IsSuccess && result.Data != null)
                 {
-                    // Convert PrescriptionDto to PrescriptionInfo
-                    Prescription = new PrescriptionInfo
+                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
+                    Prescription = _mapper.Map<PrescriptionInfo>(result.Data);
+                    
+                    // 确保处方编号存在
+                    if (string.IsNullOrEmpty(Prescription.PrescriptionNumber))
                     {
-                        Id = prescriptionDto.Id,
-                        PatientId = prescriptionDto.PatientId,
-                        PatientName = prescriptionDto.PatientName ?? string.Empty,
-                        UserId = prescriptionDto.DoctorId,
-                        DoctorName = prescriptionDto.DoctorName ?? string.Empty,
-                        PrescriptionNo = (prescriptionDto as PrescriptionDetailDto)?.PrescriptionNo ?? GeneratePrescriptionNo(),
-                        Diagnosis = prescriptionDto.Diagnosis,
-                        DosageCount = prescriptionDto.DosageCount,
-                        SingleDosePrice = prescriptionDto.SingleDosePrice,
-                        TotalPrice = prescriptionDto.TotalPrice,
-                        TotalWeight = prescriptionDto.TotalWeight,
-                        Status = prescriptionDto.Status,
-                        CreateTime = prescriptionDto.CreateTime,
-                        UpdateTime = prescriptionDto.UpdateTime,
-                        Advice = prescriptionDto.Advice,
-                        Remark = (prescriptionDto as PrescriptionDetailDto)?.Remark
-                    };
-                    // Map items
-                    if (prescriptionDto.Items != null)
+                        Prescription.PrescriptionNumber = GeneratePrescriptionNo();
+                    }
+                    
+                    // 映射处方项目
+                    if (result.Data.Items != null)
                     {
-                        var items = prescriptionDto.Items.Select(dto => new PrescriptionItemInfo
-                        {
-                            Id = dto.Id,
-                            HerbId = dto.HerbId,
-                            HerbName = dto.HerbName,
-                            Quantity = dto.Quantity,
-                            Unit = dto.Unit,
-                            UnitPrice = dto.UnitPrice,
-                            Usage = dto.Usage,
-                            Remark = dto.Remark
-                        }).ToList();
+                        var items = _mapper.Map<List<PrescriptionItemInfo>>(result.Data.Items);
                         PrescriptionItems = new ObservableCollection<PrescriptionItemInfo>(items);
                     }
+                    
                     TotalDoses = Prescription.DosageCount;
                     CalculateTotalAmount();
                     StatusMessage = string.Empty;
@@ -309,7 +287,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 // 复制处方时重置一些字段
                 Prescription.Id = Guid.Empty;
-                Prescription.PrescriptionNo = GeneratePrescriptionNo();
+                Prescription.PrescriptionNumber = GeneratePrescriptionNo();
                 Prescription.CreateTime = DateTime.Now;
                 Prescription.Status = SharedEnums.PrescriptionStatus.Draft;
                 StatusMessage = "已复制处方内容，请修改后保存";
@@ -361,28 +339,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
                 if (IsEditMode && Prescription.Id != Guid.Empty)
                 {
-                    // Create update DTO
-                    var updateDto = new PrescriptionEditDto
-                    {
-                        Id = Prescription.Id,
-                        Diagnosis = Prescription.Diagnosis,
-                        DosageCount = Prescription.DosageCount,
-                        Advice = Prescription.Advice,
-                        Remark = Prescription.Remark,
-                        Items = PrescriptionItems.Select(item => new PrescriptionItemCreateDto
-                        {
-                            HerbId = item.HerbId,
-                            HerbName = item.HerbName,
-                            Quantity = item.Quantity,
-                            Unit = item.Unit,
-                            UnitPrice = item.UnitPrice,
-                            Subtotal = item.Subtotal,
-                            Usage = item.Usage,
-                            Remark = item.Remark
-                        }).ToList()
-                    };
-                    var updatedDto = await _prescriptionService.UpdateAsync(Prescription.Id, updateDto);
-                    if (updatedDto != null)
+                    // UltraThink四层架构：使用AutoMapper转换Info → DTO
+                    var updateDto = _mapper.Map<PrescriptionEditDto>(Prescription);
+                    updateDto.Items = _mapper.Map<List<PrescriptionItemCreateDto>>(PrescriptionItems);
+                    
+                    var result = await _prescriptionService.UpdateAsync(Prescription.Id, updateDto);
+                    if (result.IsSuccess)
                     {
                         StatusMessage = "处方已更新";
                         await _dialogService.ShowSuccessAsync("处方更新成功", "操作完成");
@@ -396,30 +358,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 }
                 else
                 {
-                    // Create new prescription DTO
-                    var createDto = new PrescriptionCreateDto
-                    {
-                        PatientId = Prescription.PatientId,
-                        DoctorId = Prescription.UserId,
-                        Diagnosis = Prescription.Diagnosis ?? string.Empty,
-                        DosageCount = Prescription.DosageCount,
-                        TotalAmount = TotalAmount,
-                        Advice = Prescription.Advice,
-                        Remark = Prescription.Remark,
-                        Items = PrescriptionItems.Select(item => new PrescriptionItemCreateDto
-                        {
-                            HerbId = item.HerbId,
-                            HerbName = item.HerbName,
-                            Quantity = item.Quantity,
-                            Unit = item.Unit,
-                            UnitPrice = item.UnitPrice,
-                            Subtotal = item.Subtotal,
-                            Usage = item.Usage,
-                            Remark = item.Remark
-                        }).ToList()
-                    };
-                    var createdDto = await _prescriptionService.CreateAsync(createDto);
-                    if (createdDto != null)
+                    // UltraThink四层架构：使用AutoMapper转换Info → DTO
+                    var createDto = _mapper.Map<PrescriptionCreateDto>(Prescription);
+                    createDto.Items = _mapper.Map<List<PrescriptionItemCreateDto>>(PrescriptionItems);
+                    createDto.TotalAmount = TotalAmount;
+                    
+                    var result = await _prescriptionService.CreateAsync(createDto);
+                    if (result.IsSuccess)
                     {
                         StatusMessage = "处方已创建";
                         await _dialogService.ShowSuccessAsync("处方创建成功", "操作完成");

@@ -8,7 +8,7 @@ using System.Windows;
 using Refit;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 using ErrorSeverity = LYBT.Shared.Models.Contracts.Common.ErrorSeverity;
 using ErrorCategory = LYBT.Shared.Models.Contracts.Common.ErrorCategory;

@@ -7,7 +7,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Consultation;

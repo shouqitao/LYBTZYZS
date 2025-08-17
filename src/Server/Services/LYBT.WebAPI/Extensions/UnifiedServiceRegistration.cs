@@ -252,7 +252,7 @@ public static class UnifiedServiceRegistration
         services.AddAllModules();
 
         // 注册验方模块服务
-        services.AddScoped<LYBT.Module.Formula.Interfaces.IFormulaService, LYBT.Module.Formula.Services.FormulaService>();
+        services.AddScoped<LYBT.Shared.Interfaces.Services.IFormulaService, LYBT.Module.Formula.Services.FormulaService>();
 
         return services;
     }

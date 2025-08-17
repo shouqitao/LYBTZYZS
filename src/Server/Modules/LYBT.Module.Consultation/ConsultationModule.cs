@@ -1,3 +1,4 @@
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;

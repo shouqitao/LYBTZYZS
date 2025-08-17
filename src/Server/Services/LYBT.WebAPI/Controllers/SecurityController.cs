@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Web;
 using LYBT.WebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class SecurityController : BaseController
+    public class SecurityController : BaseSystemController
     {
         private readonly ISecurityConfigurationValidator _securityValidator;
         private readonly IPasswordValidationService _passwordValidator;
@@ -31,7 +32,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取安全配置验证结果
         /// </summary>
         [HttpGet("configuration/validation")]
-        public async Task<ActionResult<SecurityConfigurationValidationDto>> ValidateSecurityConfiguration()
+        public async Task<IActionResult> ValidateSecurityConfiguration()
         {
             try
             {
@@ -53,7 +54,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "验证安全配置");
+                return HandleSystemException(ex, "验证安全配置");
             }
         }
 
@@ -61,7 +62,7 @@ namespace LYBT.WebAPI.Controllers
         /// 验证JWT配置
         /// </summary>
         [HttpGet("jwt/validation")]
-        public async Task<ActionResult<SecurityConfigurationValidationDto>> ValidateJwtConfiguration()
+        public async Task<IActionResult> ValidateJwtConfiguration()
         {
             try
             {
@@ -83,7 +84,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "验证JWT配置");
+                return HandleSystemException(ex, "验证JWT配置");
             }
         }
 
@@ -91,7 +92,7 @@ namespace LYBT.WebAPI.Controllers
         /// 验证密码强度
         /// </summary>
         [HttpPost("password/validation")]
-        public async Task<ActionResult<PasswordValidationDto>> ValidatePassword([FromBody] ValidatePasswordRequest request)
+        public async Task<IActionResult> ValidatePassword([FromBody] ValidatePasswordRequest request)
         {
             try
             {
@@ -113,7 +114,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "验证密码强度");
+                return HandleSystemException(ex, "验证密码强度");
             }
         }
 
@@ -121,7 +122,7 @@ namespace LYBT.WebAPI.Controllers
         /// 生成安全密码
         /// </summary>
         [HttpPost("password/generate")]
-        public ActionResult<GeneratedPasswordDto> GenerateSecurePassword([FromBody] GeneratePasswordRequest request)
+        public IActionResult GenerateSecurePassword([FromBody] GeneratePasswordRequest request)
         {
             try
             {
@@ -140,7 +141,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "生成安全密码");
+                return HandleSystemException(ex, "生成安全密码");
             }
         }
 
@@ -148,7 +149,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取安全配置摘要
         /// </summary>
         [HttpGet("configuration/summary")]
-        public async Task<ActionResult<SecuritySummaryDto>> GetSecuritySummary()
+        public async Task<IActionResult> GetSecuritySummary()
         {
             try
             {
@@ -169,7 +170,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取安全配置摘要");
+                return HandleSystemException(ex, "获取安全配置摘要");
             }
         }
 

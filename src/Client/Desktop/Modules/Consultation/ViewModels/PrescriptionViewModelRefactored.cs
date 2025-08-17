@@ -5,7 +5,7 @@ using System.Windows.Input;
 using Prism.Mvvm;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Desktop.Consultation.ViewModels.Components;
 using LYBT.Desktop.Consultation.Constants;

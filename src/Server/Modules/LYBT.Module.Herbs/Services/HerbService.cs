@@ -4,10 +4,12 @@ using System;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Entities.Herbs;
-using LYBT.Module.Herbs.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Herbs.Services
@@ -47,32 +49,48 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 获取药材详情
         /// </summary>
-        public async Task<HerbDetailDto?> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
         {
-            var model = await _repository.GetByIdAsync(id);
-            if (model == null)
-                return null;
+            try
+            {
+                var model = await _repository.GetByIdAsync(id);
+                if (model == null)
+                    return ServiceResult<HerbDto>.Failure("药材不存在");
 
-            var dto = _mapper.Map<HerbDetailDto>(model);
-            return dto;
+                var dto = _mapper.Map<HerbDto>(model);
+                return ServiceResult<HerbDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<HerbDto>.Failure("获取药材详情失败", ex);
+            }
         }
 
         /// <summary>
         /// 获取所有药材列表
         /// </summary>
-        public async Task<List<HerbDto>> GetListAsync()
+        public async Task<ServiceResult<List<HerbDto>>> GetAllAsync()
         {
-            var list = await _repository.GetAllAsync();
-            var dtos = _mapper.Map<List<HerbDto>>(list);
-            return dtos;
+            try
+            {
+                var list = await _repository.GetAllAsync();
+                var dtos = _mapper.Map<List<HerbDto>>(list);
+                return ServiceResult<List<HerbDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure("获取药材列表失败", ex);
+            }
         }
 
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        public async Task<PaginatedResult<HerbDto>> GetPagedAsync(HerbPagedQueryDto query)
+        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
         {
-            // 构建查询条件
+            try
+            {
+                // 构建查询条件
             var dbQuery = _context.Herbs.AsQueryable();
 
             // 药材名称搜索
@@ -136,112 +154,223 @@ namespace LYBT.Module.Herbs.Services
 
             var dtos = _mapper.Map<List<HerbDto>>(models);
 
-            return new PaginatedResult<HerbDto>
+            var result = new PagedResult<HerbDto>
             {
                 TotalCount = total,
                 Items = dtos,
                 CurrentPage = query.PageIndex,
                 PageSize = query.PageSize
             };
+            
+            return ServiceResult<PagedResult<HerbDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<PagedResult<HerbDto>>.Failure("分页查询药材失败", ex);
+            }
         }
 
         /// <summary>
         /// 新增药材
         /// </summary>
-        public async Task<HerbDto?> AddAsync(HerbCreateDto dto)
+        public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto dto)
         {
-            var model = _mapper.Map<HerbModel>(dto);
-            model.Id = Guid.NewGuid();
-            model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
-                ? GetSimplePinyinCode(model.Name)
-                : dto.PinYinCode;
-            model.Status = CommonStatus.Enabled; // 新增药材默认启用
-
-            var result = await _repository.AddAsync(model);
-            if (result == null)
+            try
             {
-                return null;
-            }
+                var model = _mapper.Map<HerbModel>(dto);
+                model.Id = Guid.NewGuid();
+                model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
+                    ? GetSimplePinyinCode(model.Name)
+                    : dto.PinYinCode;
+                model.Status = CommonStatus.Enabled; // 新增药材默认启用
 
-            return _mapper.Map<HerbDto>(model);
+                var result = await _repository.AddAsync(model);
+                if (result == null)
+                {
+                    return ServiceResult<HerbDto>.Failure("新增药材失败");
+                }
+
+                var herbDto = _mapper.Map<HerbDto>(model);
+                return ServiceResult<HerbDto>.Success(herbDto);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<HerbDto>.Failure("新增药材失败", ex);
+            }
         }
 
         /// <summary>
         /// 编辑药材信息
         /// </summary>
-        public async Task<bool> UpdateAsync(HerbUpdateDto dto)
+        public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
         {
-            var model = await _repository.GetByIdAsync(dto.Id);
-            if (model == null)
-                return false;
+            try
+            {
+                var model = await _repository.GetByIdAsync(id);
+                if (model == null)
+                    return ServiceResult<HerbDto>.Failure("药材不存在");
 
-            // 更新基础信息
-            model.Name = dto.Name;
-            model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
-                ? GetSimplePinyinCode(dto.Name)
-                : dto.PinYinCode;
-            model.Origin = dto.Origin;
-            model.Spec = dto.Spec;
-            model.Unit = dto.Unit;
-            model.Price = dto.Price;
-            model.Effect = dto.Effect;
-            model.Usage = dto.Usage;
-            model.Remark = dto.Remark;
-            model.Status = dto.Status;
+                // 更新基础信息
+                model.Name = dto.Name;
+                model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
+                    ? GetSimplePinyinCode(dto.Name)
+                    : dto.PinYinCode;
+                model.Origin = dto.Origin;
+                model.Spec = dto.Spec;
+                model.Unit = dto.Unit;
+                model.Price = dto.Price;
+                model.Effect = dto.Effect;
+                model.Usage = dto.Usage;
+                model.Remark = dto.Remark;
+                model.Status = dto.Status;
 
-            var result = await _repository.UpdateAsync(model);
-            return result != null;
+                var result = await _repository.UpdateAsync(model);
+                if (result == null)
+                    return ServiceResult<HerbDto>.Failure("更新药材失败");
+
+                var herbDto = _mapper.Map<HerbDto>(result);
+                return ServiceResult<HerbDto>.Success(herbDto);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<HerbDto>.Failure("更新药材失败", ex);
+            }
         }
 
         /// <summary>
         /// 删除药材（软删除，设置IsActive=false）
         /// </summary>
-        public async Task<bool> DeleteAsync(Guid id)
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
-            var model = await _repository.GetByIdAsync(id);
-            if (model == null)
-                return false;
+            try
+            {
+                var model = await _repository.GetByIdAsync(id);
+                if (model == null)
+                    return ServiceResult<bool>.Failure("药材不存在");
 
-            model.Status = CommonStatus.Disabled;
+                model.Status = CommonStatus.Disabled;
 
-            var result = await _repository.UpdateAsync(model);
-            return result != null;
+                var result = await _repository.UpdateAsync(model);
+                return ServiceResult<bool>.Success(result != null);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.Failure("删除药材失败", ex);
+            }
         }
 
         /// <summary>
         /// 搜索药材（根据名称、拼音码）
         /// </summary>
-        public async Task<List<HerbDto>> SearchAsync(string keyword)
+        public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
         {
-            if (string.IsNullOrWhiteSpace(keyword))
+            try
             {
-                return new List<HerbDto>();
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+                }
+
+                keyword = keyword.ToLower();
+                var models = await _context.Herbs
+                    .Where(h => h.Status == CommonStatus.Enabled && (
+                        h.Name.ToLower().Contains(keyword) ||
+                        (h.PinYinCode != null && h.PinYinCode.ToLower().Contains(keyword))
+                    ))
+                    .OrderBy(h => h.Name)
+                    .Take(20)
+                    .ToListAsync();
+
+                var dtos = _mapper.Map<List<HerbDto>>(models);
+                return ServiceResult<List<HerbDto>>.Success(dtos);
             }
-
-            keyword = keyword.ToLower();
-            var models = await _context.Herbs
-                .Where(h => h.Status == CommonStatus.Enabled && (
-                    h.Name.ToLower().Contains(keyword) ||
-                    (h.PinYinCode != null && h.PinYinCode.ToLower().Contains(keyword))
-                ))
-                .OrderBy(h => h.Name)
-                .Take(20)
-                .ToListAsync();
-
-            return _mapper.Map<List<HerbDto>>(models);
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure("搜索药材失败", ex);
+            }
         }
 
         /// <summary>
         /// 获取可用药材列表（状态为启用）
         /// </summary>
-        public async Task<List<HerbDto>> GetAvailableHerbsAsync()
+        public async Task<ServiceResult<List<HerbDto>>> GetAvailableHerbsAsync()
         {
-            var models = await _context.Herbs
-                .Where(h => h.Status == CommonStatus.Enabled)
-                .OrderBy(h => h.Name)
-                .ToListAsync();
+            try
+            {
+                var models = await _context.Herbs
+                    .Where(h => h.Status == CommonStatus.Enabled)
+                    .OrderBy(h => h.Name)
+                    .ToListAsync();
 
-            return _mapper.Map<List<HerbDto>>(models);
+                var dtos = _mapper.Map<List<HerbDto>>(models);
+                return ServiceResult<List<HerbDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure("获取可用药材列表失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 根据ID列表获取药材
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetByIdsAsync(List<Guid> ids)
+        {
+            try
+            {
+                var models = await _context.Herbs
+                    .Where(h => ids.Contains(h.Id))
+                    .ToListAsync();
+                
+                var dtos = _mapper.Map<List<HerbDto>>(models);
+                return ServiceResult<List<HerbDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure("批量获取药材失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取药材列表（兼容方法）
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetHerbsAsync()
+        {
+            return await GetAllAsync();
+        }
+
+        /// <summary>
+        /// 获取药材列表（带可选查询参数）
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetListAsync(HerbPagedQueryDto? query = null)
+        {
+            try
+            {
+                if (query == null)
+                {
+                    return await GetAllAsync();
+                }
+                
+                var pagedResult = await GetPagedAsync(query);
+                if (pagedResult.IsSuccess && pagedResult.Data != null)
+                {
+                    return ServiceResult<List<HerbDto>>.Success(pagedResult.Data.Items);
+                }
+                
+                return ServiceResult<List<HerbDto>>.Failure(pagedResult.ErrorMessage ?? "查询失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure("获取药材列表失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 按名称搜索药材
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> SearchByNameAsync(string name)
+        {
+            return await SearchAsync(name);
         }
 
         /// <summary>
@@ -264,30 +393,156 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 批量导入药材
         /// </summary>
-        public async Task<int> ImportAsync(List<HerbImportDto> dtos)
+        public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
         {
-            var models = new List<HerbModel>();
-            foreach (var dto in dtos)
+            try
             {
-                var model = _mapper.Map<HerbModel>(dto);
-                model.Id = Guid.NewGuid();
-                model.PinYinCode = GetSimplePinyinCode(model.Name);
-                model.Status = CommonStatus.Enabled; // 导入的药材默认启用
-                models.Add(model);
-            }
+                var models = new List<HerbModel>();
+                foreach (var dto in herbs)
+                {
+                    var model = _mapper.Map<HerbModel>(dto);
+                    model.Id = Guid.NewGuid();
+                    model.PinYinCode = GetSimplePinyinCode(model.Name);
+                    model.Status = CommonStatus.Enabled; // 导入的药材默认启用
+                    models.Add(model);
+                }
 
-            var result = await _repository.AddRangeAsync(models);
-            return result ? models.Count : 0;
+                var result = await _repository.AddRangeAsync(models);
+                var count = result ? models.Count : 0;
+                return ServiceResult<int>.Success(count);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<int>.Failure("导入药材失败", ex);
+            }
         }
 
         /// <summary>
         /// 导出药材数据
         /// </summary>
-        public async Task<List<HerbDetailDto>> ExportAsync()
+        public async Task<ServiceResult<List<HerbDto>>> ExportHerbsAsync()
         {
-            var list = await _repository.GetAllAsync();
-            var dtos = _mapper.Map<List<HerbDetailDto>>(list);
-            return dtos;
+            try
+            {
+                var list = await _repository.GetAllAsync();
+                var dtos = _mapper.Map<List<HerbDto>>(list);
+                return ServiceResult<List<HerbDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure("导出药材数据失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 更新库存（实现Shared接口，已禁用功能）
+        /// </summary>
+        public async Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
+        {
+            try
+            {
+                var herb = await _repository.GetByIdAsync(id);
+                if (herb == null)
+                {
+                    return ServiceResult<bool>.Failure("药材不存在");
+                }
+
+                // 库存字段已删除，仅更新时间戳（向后兼容）
+                var result = await _repository.UpdateAsync(herb);
+                return ServiceResult<bool>.Success(result != null);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.Failure("更新库存失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取缺货药材列表（已禁用 - 不再支持库存管理）
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
+        {
+            try
+            {
+                // 库存字段已删除，返回空列表
+                await Task.CompletedTask;
+                return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure("获取缺货药材失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取即将过期的药材（已禁用 - 不再支持过期日期管理）
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
+        {
+            try
+            {
+                // 过期日期字段已删除，返回空列表
+                await Task.CompletedTask;
+                return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure("获取即将过期药材失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 批量更新状态
+        /// </summary>
+        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
+        {
+            try
+            {
+                var successCount = 0;
+                foreach (var id in dto.Ids)
+                {
+                    var herb = await _repository.GetByIdAsync(id);
+                    if (herb != null)
+                    {
+                        herb.Status = dto.Status ? CommonStatus.Enabled : CommonStatus.Disabled;
+                        var result = await _repository.UpdateAsync(herb);
+                        if (result != null)
+                        {
+                            successCount++;
+                        }
+                    }
+                }
+                
+                return ServiceResult<bool>.Success(successCount > 0);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.Failure("批量更新状态失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取统计数据
+        /// </summary>
+        public async Task<ServiceResult<Dictionary<int, int>>> GetStatisticsAsync()
+        {
+            try
+            {
+                var herbs = await _context.Herbs.Where(h => h.Status == CommonStatus.Enabled).ToListAsync();
+                var stats = new Dictionary<int, int>
+                {
+                    { 0, herbs.Count }, // 总数
+                    { 1, 0 },          // 缺货数（库存已删除）
+                    { 2, herbs.Count }, // 充足数（默认所有都充足）
+                    { 3, 0 }           // 过期数（过期字段已删除）
+                };
+                
+                return ServiceResult<Dictionary<int, int>>.Success(stats);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<Dictionary<int, int>>.Failure("获取统计数据失败", ex);
+            }
         }
 
         #region 库存管理功能
@@ -305,20 +560,29 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 获取库存统计信息（已禁用 - 不再支持库存管理）
         /// </summary>
-        public async Task<HerbStockStatisticsDto> GetStockStatisticsAsync()
+        public async Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
         {
-            var herbs = await _context.Herbs.Where(h => h.Status == CommonStatus.Enabled).ToListAsync();
-
-            return new HerbStockStatisticsDto
+            try
             {
-                TotalCount = herbs.Count,
-                OutOfStockCount = 0, // 库存字段已删除
-                WarningCount = 0, // 库存字段已删除
-                SufficientCount = herbs.Count, // 默认所有药材都充足
-                TotalStockValue = 0, // 库存字段已删除，无法计算
-                ExpiringCount = 0, // 过期日期字段已删除
-                ExpiredCount = 0 // 过期日期字段已删除
-            };
+                var herbs = await _context.Herbs.Where(h => h.Status == CommonStatus.Enabled).ToListAsync();
+
+                var stats = new HerbStockStatisticsDto
+                {
+                    TotalCount = herbs.Count,
+                    OutOfStockCount = 0, // 库存字段已删除
+                    WarningCount = 0, // 库存字段已删除
+                    SufficientCount = herbs.Count, // 默认所有药材都充足
+                    TotalStockValue = 0, // 库存字段已删除，无法计算
+                    ExpiringCount = 0, // 过期日期字段已删除
+                    ExpiredCount = 0 // 过期日期字段已删除
+                };
+
+                return ServiceResult<HerbStockStatisticsDto>.Success(stats);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<HerbStockStatisticsDto>.Failure("获取库存统计失败", ex);
+            }
         }
 
         /// <summary>
@@ -393,30 +657,37 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 更新药材价格
         /// </summary>
-        public async Task<bool> UpdatePriceAsync(HerbPriceUpdateDto dto)
+        public async Task<ServiceResult<bool>> UpdatePriceAsync(Guid id, HerbPriceUpdateDto dto)
         {
-            var herb = await _repository.GetByIdAsync(dto.Id);
-            if (herb == null)
+            try
             {
-                return false;
-            }
+                var herb = await _repository.GetByIdAsync(id);
+                if (herb == null)
+                {
+                    return ServiceResult<bool>.Failure("药材不存在");
+                }
 
-            // 记录价格历史（这里简化处理，实际应该保存到价格历史表）
-            if (dto.CostPrice.HasValue)
-            {
-                herb.CostPrice = dto.CostPrice.Value;
-            }
-            if (dto.Price.HasValue)
-            {
-                herb.Price = dto.Price.Value;
-            }
-            // MemberPrice 字段已删除，跳过会员价格设置
-            // if (dto.MemberPrice.HasValue) {
-            //     herb.MemberPrice = dto.MemberPrice.Value;
-            // }
+                // 记录价格历史（这里简化处理，实际应该保存到价格历史表）
+                if (dto.CostPrice.HasValue)
+                {
+                    herb.CostPrice = dto.CostPrice.Value;
+                }
+                if (dto.Price.HasValue)
+                {
+                    herb.Price = dto.Price.Value;
+                }
+                // MemberPrice 字段已删除，跳过会员价格设置
+                // if (dto.MemberPrice.HasValue) {
+                //     herb.MemberPrice = dto.MemberPrice.Value;
+                // }
 
-            var result = await _repository.UpdateAsync(herb);
-            return result != null;
+                var result = await _repository.UpdateAsync(herb);
+                return ServiceResult<bool>.Success(result != null);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.Failure("更新价格失败", ex);
+            }
         }
 
         /// <summary>
@@ -427,7 +698,8 @@ namespace LYBT.Module.Herbs.Services
             var successCount = 0;
             foreach (var update in updates)
             {
-                if (await UpdatePriceAsync(update))
+                var result = await UpdatePriceAsync(update.Id, update);
+                if (result.IsSuccess)
                 {
                     successCount++;
                 }

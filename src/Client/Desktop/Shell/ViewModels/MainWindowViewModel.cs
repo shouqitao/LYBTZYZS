@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using LYBT.Desktop.Core.Events;

@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Web;
 using LYBT.WebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class MonitoringController : BaseController
+    public class MonitoringController : BaseSystemController
     {
         private readonly ISystemMetricsCollector _metricsCollector;
 
@@ -30,7 +31,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取API性能统计
         /// </summary>
         [HttpGet("api/performance")]
-        public async Task<ActionResult<ApiPerformanceStats>> GetApiPerformanceStats()
+        public async Task<IActionResult> GetApiPerformanceStats()
         {
             try
             {
@@ -39,7 +40,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取API性能统计");
+                return HandleSystemException(ex, "获取API性能统计");
             }
         }
 
@@ -47,7 +48,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取错误统计
         /// </summary>
         [HttpGet("errors")]
-        public async Task<ActionResult<ErrorStats>> GetErrorStats()
+        public async Task<IActionResult> GetErrorStats()
         {
             try
             {
@@ -56,7 +57,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取错误统计");
+                return HandleSystemException(ex, "获取错误统计");
             }
         }
 
@@ -64,7 +65,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取热点API端点统计
         /// </summary>
         [HttpGet("api/hotspots")]
-        public async Task<ActionResult<List<ApiEndpointStats>>> GetHotApiEndpoints([FromQuery] int count = 10)
+        public async Task<IActionResult> GetHotApiEndpoints([FromQuery] int count = 10)
         {
             try
             {
@@ -78,7 +79,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取热点API端点");
+                return HandleSystemException(ex, "获取热点API端点");
             }
         }
 
@@ -86,7 +87,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取性能趋势数据
         /// </summary>
         [HttpGet("performance/trend")]
-        public async Task<ActionResult<SystemPerformanceTrend>> GetPerformanceTrend([FromQuery] string period = "1h")
+        public async Task<IActionResult> GetPerformanceTrend([FromQuery] string period = "1h")
         {
             try
             {
@@ -101,7 +102,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取性能趋势");
+                return HandleSystemException(ex, "获取性能趋势");
             }
         }
 
@@ -109,7 +110,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取系统监控仪表板数据
         /// </summary>
         [HttpGet("dashboard")]
-        public async Task<ActionResult<MonitoringDashboardData>> GetDashboardData()
+        public async Task<IActionResult> GetDashboardData()
         {
             try
             {
@@ -134,7 +135,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取监控仪表板数据");
+                return HandleSystemException(ex, "获取监控仪表板数据");
             }
         }
 
@@ -152,7 +153,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "清理过期监控数据");
+                return HandleSystemException(ex, "清理过期监控数据");
             }
         }
 
@@ -193,7 +194,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取监控配置");
+                return HandleSystemException(ex, "获取监控配置");
             }
         }
 
@@ -201,7 +202,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取实时监控状态
         /// </summary>
         [HttpGet("status/realtime")]
-        public async Task<ActionResult<RealtimeMonitoringStatus>> GetRealtimeStatus()
+        public async Task<IActionResult> GetRealtimeStatus()
         {
             try
             {
@@ -225,7 +226,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取实时监控状态");
+                return HandleSystemException(ex, "获取实时监控状态");
             }
         }
 
@@ -233,7 +234,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取告警列表
         /// </summary>
         [HttpGet("alerts")]
-        public async Task<ActionResult<List<MonitoringAlert>>> GetActiveAlerts()
+        public async Task<IActionResult> GetActiveAlerts()
         {
             try
             {
@@ -288,7 +289,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取告警列表");
+                return HandleSystemException(ex, "获取告警列表");
             }
         }
 

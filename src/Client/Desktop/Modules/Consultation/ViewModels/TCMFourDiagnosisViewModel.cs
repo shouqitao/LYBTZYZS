@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,11 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.Desktop.Services.Interfaces;
-using LYBT.Shared.Models.Contracts.Consultation;
+using AutoMapper;
+using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Consultation.Components;
 using Microsoft.Extensions.Logging;
+using LYBT.Shared.Models.Contracts.Consultation;
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -21,6 +22,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     public class TCMFourDiagnosisViewModel : BindableBase
     {
         private readonly TCMFourDiagnosisCoordinator _coordinator;
+        private readonly IMapper _mapper;
 
         #region 委托属性（保持向后兼容）
 
@@ -373,9 +375,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public TCMFourDiagnosisViewModel(
             IConsultationApiService consultationApiService,
             ICustomDialogService dialogService,
+            IMapper mapper,
             ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null,
             ILogger<TCMFourDiagnosisCoordinator>? logger = null)
         {
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            
             // 创建协调器，委托所有操作
             _coordinator = new TCMFourDiagnosisCoordinator(
                 consultationApiService, 
@@ -416,16 +421,24 @@ namespace LYBT.Desktop.Consultation.ViewModels
             _coordinator.DescriptionGenerator.GetPalpationDescription(_coordinator.DataManager);
 
         /// <summary>
-        /// 映射到更新DTO
+        /// 映射到看诊更新信息模型
+        /// UltraThink四层架构：先获取协调器DTO，然后转换为Info模型
         /// </summary>
-        public ConsultationUpdateDto MapToConsultationUpdateDto() => 
-            _coordinator.MapToConsultationUpdateDto();
+        public ConsultationInfo MapToConsultationUpdateInfo()
+        {
+            var updateDto = _coordinator.MapToConsultationUpdateDto();
+            return _mapper.Map<ConsultationInfo>(updateDto);
+        }
 
         /// <summary>
-        /// 从看诊详情中映射数据
+        /// 从看诊详情信息中映射数据
+        /// UltraThink四层架构：先将Info转换为DTO，然后传递给协调器
         /// </summary>
-        public void MapFromConsultationDetail(ConsultationDetailDto detail) => 
-            _coordinator.LoadFromConsultationDetail(detail);
+        public void MapFromConsultationDetail(ConsultationInfo consultationInfo)
+        {
+            var detailDto = _mapper.Map<ConsultationDetailDto>(consultationInfo);
+            _coordinator.LoadFromConsultationDetail(detailDto);
+        }
 
         /// <summary>
         /// 获取完整四诊数据

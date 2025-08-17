@@ -3,20 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using Microsoft.Win32;
 using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Models;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Formula;
 using SharedServices = LYBT.Shared.Interfaces.Services;
 using CoreServices = LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
-using LYBT.Desktop.Services;
-using Prism.Ioc;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -112,7 +105,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
+        protected override async Task<ServiceResult<PagedResult<FormulaInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
@@ -127,11 +120,11 @@ namespace LYBT.Desktop.Formula.ViewModels
                 
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>.Failure(result.ErrorMessage ?? "查询验方失败");
+                    return ServiceResult<PagedResult<FormulaInfo>>.Failure(result.ErrorMessage ?? "查询验方失败");
                 }
                 
                 // 转换结果类型 - 使用构造函数创建，TotalPages是计算属性
-                var convertedResult = new LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>(
+                var convertedResult = new PagedResult<FormulaInfo>(
                     result.Data.Items.Select(dto => new FormulaInfo
                     {
                         Id = dto.Id,
@@ -146,11 +139,11 @@ namespace LYBT.Desktop.Formula.ViewModels
                     result.Data.CurrentPage,
                     result.Data.PageSize);
 
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>.Success(convertedResult);
+                return ServiceResult<PagedResult<FormulaInfo>>.Success(convertedResult);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<FormulaInfo>>.Failure($"加载验方模板列表失败: {ex.Message}");
+                return ServiceResult<PagedResult<FormulaInfo>>.Failure($"加载验方模板列表失败: {ex.Message}");
             }
         }
 
@@ -387,20 +380,9 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 辅助方法
 
-        private FormulaInfo ConvertToFormulaInfo(FormulaDto dto)
-        {
-            return new FormulaInfo
-            {
-                Id = dto.Id,
-                Name = dto.Name ?? string.Empty,
-                Category = "其他", // FormulaDto没有Category属性，使用默认值
-                Indications = dto.Effect ?? string.Empty, // 使用Effect字段
-                CreateTime = dto.CreateTime,
-                UpdateTime = dto.UpdateTime,
-                // 药材信息需要从详情接口获取
-                Herbs = new List<FormulaHerbItem>()
-            };
-        }
+        // UltraThink架构修复：移除手动转换方法，使用AutoMapper
+        // private FormulaInfo ConvertToFormulaInfo(FormulaDto dto) 已移除
+        // 现在统一使用 AutoMapper 进行 DTO → Info 映射
 
         #endregion
     }

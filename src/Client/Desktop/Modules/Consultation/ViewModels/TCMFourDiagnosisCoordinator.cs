@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Prism.Commands;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Desktop.Consultation.Components;

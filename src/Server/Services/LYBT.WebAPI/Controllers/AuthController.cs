@@ -1,11 +1,10 @@
 using Asp.Versioning;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
@@ -79,24 +78,25 @@ namespace LYBT.WebAPI.Controllers
                 // 普通用户登录
                 
                 // 1. 先验证身份
-                var validatedUsername = await _authService.VerifyCredentialsAsync(dto);
-                if (validatedUsername == null)
+                var credentialsResult = await _authService.VerifyCredentialsAsync(dto);
+                if (!credentialsResult.IsSuccess)
                 {
-                    _logger.LogWarning("用户 {Username} 身份验证失败", dto.Username);
+                    _logger.LogWarning("用户 {Username} 身份验证失败: {Error}", dto.Username, credentialsResult.ErrorMessage);
                     return Unauthorized<LoginResponse>("用户名或密码错误", ApiErrorCodes.AUTHENTICATION_FAILED);
                 }
                 
                 // 2. 获取用户信息
-                var user = await _userService.GetByUsernameAsync(validatedUsername);
-                if (user == null)
+                var userResult = await _userService.GetByUsernameAsync(credentialsResult.Data);
+                if (!userResult.IsSuccess || userResult.Data == null)
                 {
-                    _logger.LogError("身份验证成功但无法获取用户 {Username} 的详细信息", validatedUsername);
+                    _logger.LogError("身份验证成功但无法获取用户 {Username} 的详细信息", credentialsResult.Data);
                     return InternalError<LoginResponse>("系统错误，请联系管理员", ApiErrorCodes.SYSTEM_CONFIG_ERROR);
                 }
+                var user = userResult.Data;
 
                 var token = _jwtService.GenerateToken(
                     user.Id.ToString(),
-                    user.Username,
+                    user.Username, 
                     new[] { "Admin" }, // Role字段已移除，默认Admin
                     dto.RememberMe
                 );
@@ -237,8 +237,8 @@ namespace LYBT.WebAPI.Controllers
                 var validation = ValidateModel();
                 if (validation != null) return validation;
 
-                var success = await _authService.ChangeSysAdminPasswordAsync(dto);
-                if (!success)
+                var result = await _authService.ChangeSysAdminPasswordAsync(dto);
+                if (!result.IsSuccess || !result.Data)
                 {
                     return BusinessFail("修改密码失败，请检查当前密码", ApiErrorCodes.PASSWORD_CHANGE_FAILED);
                 }
@@ -346,8 +346,8 @@ namespace LYBT.WebAPI.Controllers
                         NewPassword = dto.NewPassword
                     };
                     
-                    var success = await _authService.ChangeSysAdminPasswordAsync(sysAdminDto);
-                    if (!success)
+                    var result = await _authService.ChangeSysAdminPasswordAsync(sysAdminDto);
+                    if (!result.IsSuccess || !result.Data)
                     {
                         return BusinessFail("修改密码失败，请检查当前密码", ApiErrorCodes.PASSWORD_CHANGE_FAILED);
                     }

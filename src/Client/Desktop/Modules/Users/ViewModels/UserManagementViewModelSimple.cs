@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,14 +8,13 @@ using LYBT.Shared.Models.Core;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Models;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using AutoMapper;
 using LYBT.Desktop.Core.Models.Users;
-// UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
+// UltraThink四层架构修复：正确使用UserInfo作为Desktop层模型
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -28,6 +26,7 @@ namespace LYBT.Desktop.Users.ViewModels
         private readonly ICustomDialogService _commonDialogService;
         private readonly ICustomDialogService _dialogService;
         private readonly IUserApiService _userApiService;
+        private readonly IMapper _mapper;
 
         protected override string ModuleName => "用户管理";
 
@@ -43,12 +42,14 @@ namespace LYBT.Desktop.Users.ViewModels
             IUserApiService userApiService,
             ICustomDialogService commonDialogService,
             ICustomDialogService dialogService,
+            IMapper mapper,
             Prism.Events.IEventAggregator eventAggregator)
             : base(userService, eventAggregator)
         {
             _commonDialogService = commonDialogService;
             _dialogService = dialogService;
             _userApiService = userApiService;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             ResetPasswordCommand = new DelegateCommand<UserInfo>(async user => await ResetPasswordAsync(user));
@@ -57,7 +58,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<UserInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
+        protected override async Task<ServiceResult<PagedResult<UserInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
@@ -69,11 +70,11 @@ namespace LYBT.Desktop.Users.ViewModels
                 };
 
                 var result = await Service.SearchUsersAsync(query);
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<UserInfo>>.Success(result);
+                return ServiceResult<PagedResult<UserInfo>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<UserInfo>>.Failure($"加载用户列表失败: {ex.Message}");
+                return ServiceResult<PagedResult<UserInfo>>.Failure($"加载用户列表失败: {ex.Message}");
             }
         }
 
@@ -86,7 +87,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 dialog.Title = "新增用户";
 
                 // 创建ViewModel并设置为添加模式
-                var viewModel = new UserAddEditDialogViewModel(_userApiService, null); // null表示新增
+                var viewModel = new UserAddEditDialogViewModel(_userApiService, _mapper, null); // null表示新增
                 dialog.DataContext = viewModel;
 
                 // 设置保存成功回调
@@ -122,7 +123,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 dialog.Title = "编辑用户";
 
                 // 创建ViewModel并设置为编辑模式
-                var viewModel = new UserAddEditDialogViewModel(_userApiService, item);
+                var viewModel = new UserAddEditDialogViewModel(_userApiService, _mapper, item);
                 dialog.DataContext = viewModel;
 
                 // 设置保存成功回调

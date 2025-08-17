@@ -1,4 +1,5 @@
-﻿using LYBT.Module.Herbs.Interfaces;
+﻿using LYBT.Shared.Interfaces.Services;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
 using Microsoft.Extensions.DependencyInjection;

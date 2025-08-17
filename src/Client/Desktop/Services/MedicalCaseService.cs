@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Models.MedicalCase;
@@ -14,9 +14,10 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 医疗案例服务实现
+    /// 医疗案例服务实现 - UltraThink Phase 4: 实现Shared接口统一
     /// </summary>
-    public class MedicalCaseService : IMedicalCaseService
+    public class MedicalCaseService : LYBT.Shared.Interfaces.Services.IMedicalCaseService, 
+                                      LYBT.Desktop.Core.Interfaces.Services.IMedicalCaseService
     {
         private readonly IMedicalCaseApiService _apiService;
 
@@ -25,8 +26,216 @@ namespace LYBT.Desktop.Services
             _apiService = apiService;
         }
 
+        #region Shared Interface Implementation (显式实现)
+
         /// <summary>
-        /// 分页查询医疗案例
+        /// [Shared] 根据ID获取医疗案例详情
+        /// </summary>
+        async Task<ServiceResult<MedicalCaseDetailDto>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.GetByIdAsync(Guid id)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.GetByIdAsync(id)
+            );
+
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                return ServiceResult<MedicalCaseDetailDto>.Success(apiResponse.Data);
+            }
+
+            return ServiceResult<MedicalCaseDetailDto>.Failure(apiResponse.ErrorMessage ?? "获取医疗案例详情失败", apiResponse.Exception);
+        }
+
+        /// <summary>
+        /// [Shared] 分页查询医疗案例
+        /// </summary>
+        async Task<ServiceResult<PagedResult<MedicalCaseDto>>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.GetPagedAsync(PagedQueryBaseDto query)
+        {
+            try
+            {
+                var response = await _apiService.GetPagedAsync(query.PageIndex, query.PageSize);
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    // 转换为Shared DTO格式
+                    var dtos = response.Content.Items.ToList();
+                    var result = new PagedResult<MedicalCaseDto>
+                    {
+                        Items = dtos,
+                        TotalCount = response.Content.TotalCount,
+                        CurrentPage = response.Content.CurrentPage,
+                        PageSize = response.Content.PageSize
+                    };
+                    return ServiceResult<PagedResult<MedicalCaseDto>>.Success(result);
+                }
+
+                return ServiceResult<PagedResult<MedicalCaseDto>>.Failure("获取医疗案例失败");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<PagedResult<MedicalCaseDto>>.Failure("分页查询医疗案例时发生错误", ex);
+            }
+        }
+
+        /// <summary>
+        /// [Shared] 创建医疗案例
+        /// </summary>
+        async Task<ServiceResult<MedicalCaseDto>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.CreateAsync(MedicalCaseCreateDto dto)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.CreateAsync(dto)
+            );
+
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                return ServiceResult<MedicalCaseDto>.Success(apiResponse.Data);
+            }
+
+            return ServiceResult<MedicalCaseDto>.Failure(apiResponse.ErrorMessage ?? "创建医疗案例失败", apiResponse.Exception);
+        }
+
+        /// <summary>
+        /// [Shared] 更新医疗案例
+        /// </summary>
+        async Task<ServiceResult<MedicalCaseDto>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.UpdateAsync(Guid id, MedicalCaseUpdateDto dto)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.UpdateAsync(id, dto)
+            );
+
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                return ServiceResult<MedicalCaseDto>.Success(apiResponse.Data);
+            }
+
+            return ServiceResult<MedicalCaseDto>.Failure(apiResponse.ErrorMessage ?? "更新医疗案例失败", apiResponse.Exception);
+        }
+
+        /// <summary>
+        /// [Shared] 删除医疗案例
+        /// </summary>
+        async Task<ServiceResult<bool>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.DeleteAsync(Guid id)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.DeleteAsync(id)
+            );
+        }
+
+        /// <summary>
+        /// [Shared] 根据患者ID获取医疗案例
+        /// </summary>
+        async Task<ServiceResult<List<MedicalCaseDto>>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.GetByPatientIdAsync(Guid patientId)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.GetByPatientIdAsync(patientId)
+            );
+
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                return ServiceResult<List<MedicalCaseDto>>.Success(apiResponse.Data);
+            }
+
+            return ServiceResult<List<MedicalCaseDto>>.Failure(apiResponse.ErrorMessage ?? "获取患者医疗案例列表失败", apiResponse.Exception);
+        }
+
+        /// <summary>
+        /// [Shared] 获取患者活跃医疗案例
+        /// </summary>
+        async Task<ServiceResult<MedicalCaseDto>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.GetActiveByPatientIdAsync(Guid patientId)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.GetActiveByPatientIdAsync(patientId)
+            );
+
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                return ServiceResult<MedicalCaseDto>.Success(apiResponse.Data);
+            }
+
+            return ServiceResult<MedicalCaseDto>.Failure(apiResponse.ErrorMessage ?? "获取患者活跃医疗案例失败", apiResponse.Exception);
+        }
+
+        /// <summary>
+        /// [Shared] 完成医疗案例
+        /// </summary>
+        async Task<ServiceResult<bool>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.CompleteAsync(Guid id, string completionReason)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.CompleteAsync(id, completionReason)
+            );
+        }
+
+        /// <summary>
+        /// [Shared] 暂停医疗案例
+        /// </summary>
+        async Task<ServiceResult<bool>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.SuspendAsync(Guid id, string reason)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.SuspendAsync(id, reason)
+            );
+        }
+
+        /// <summary>
+        /// [Shared] 恢复医疗案例
+        /// </summary>
+        async Task<ServiceResult<bool>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.ResumeAsync(Guid id)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.ResumeAsync(id)
+            );
+        }
+
+        /// <summary>
+        /// [Shared] 归档医疗案例
+        /// </summary>
+        async Task<ServiceResult<bool>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.ArchiveAsync(Guid id, string archiveReason)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.ArchiveAsync(id, archiveReason)
+            );
+        }
+
+        /// <summary>
+        /// [Shared] 获取医疗案例统计信息
+        /// </summary>
+        async Task<ServiceResult<object>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.GetStatisticsAsync(startDate, endDate)
+            );
+        }
+
+        /// <summary>
+        /// [Shared] 搜索医疗案例
+        /// </summary>
+        async Task<ServiceResult<List<MedicalCaseDto>>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.SearchAsync(string keyword)
+        {
+            var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.SearchAsync(keyword)
+            );
+
+            if (apiResponse.IsSuccess && apiResponse.Data != null)
+            {
+                return ServiceResult<List<MedicalCaseDto>>.Success(apiResponse.Data);
+            }
+
+            return ServiceResult<List<MedicalCaseDto>>.Failure(apiResponse.ErrorMessage ?? "搜索医疗案例失败", apiResponse.Exception);
+        }
+
+        /// <summary>
+        /// [Shared] 获取医疗案例历史记录
+        /// </summary>
+        async Task<ServiceResult<List<object>>> LYBT.Shared.Interfaces.Services.IMedicalCaseService.GetHistoryAsync(Guid id)
+        {
+            return await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                await _apiService.GetHistoryAsync(id)
+            );
+        }
+
+        #endregion
+
+        #region UI-Specific Interface Implementation (向后兼容)
+
+        /// <summary>
+        /// [UI] 分页查询医疗案例
         /// </summary>
         public async Task<PagedResult<MedicalCaseInfo>> GetPagedAsync(int pageIndex = 1, int pageSize = 20)
         {
@@ -68,7 +277,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 根据ID获取医疗案例详情
+        /// [UI] 根据ID获取医疗案例详情
         /// </summary>
         public async Task<ServiceResult<MedicalCaseInfo>> GetByIdAsync(Guid id)
         {
@@ -86,7 +295,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 创建医疗案例
+        /// [UI] 创建医疗案例
         /// </summary>
         public async Task<ServiceResult<MedicalCaseInfo>> CreateAsync(MedicalCaseCreateDto createDto)
         {
@@ -104,7 +313,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 更新医疗案例
+        /// [UI] 更新医疗案例
         /// </summary>
         public async Task<ServiceResult<bool>> UpdateAsync(MedicalCaseEditDto editDto)
         {
@@ -114,7 +323,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 获取患者的医疗案例列表
+        /// [UI] 获取患者的医疗案例列表
         /// </summary>
         public async Task<ServiceResult<List<MedicalCaseInfo>>> GetByPatientIdAsync(Guid patientId)
         {
@@ -132,7 +341,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 获取今日医疗案例列表
+        /// [UI] 获取今日医疗案例列表
         /// </summary>
         public async Task<ServiceResult<List<MedicalCaseInfo>>> GetTodayByUserIdAsync(Guid userId)
         {
@@ -150,7 +359,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 更新医疗案例状态
+        /// [UI] 更新医疗案例状态
         /// </summary>
         public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, MedicalCaseStatus status)
         {
@@ -160,7 +369,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 删除医疗案例（软删除）
+        /// [UI] 删除医疗案例（软删除）
         /// </summary>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
@@ -168,6 +377,8 @@ namespace LYBT.Desktop.Services
                 await _apiService.DeleteAsync(id)
             );
         }
+
+        #endregion
 
         #region Private Methods
 

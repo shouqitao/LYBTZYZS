@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System.Windows;
 using System.Windows.Controls;
 using LYBT.Desktop.Auth.ViewModels;

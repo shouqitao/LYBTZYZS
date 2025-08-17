@@ -22,6 +22,7 @@ using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.WebAPI.Extensions;

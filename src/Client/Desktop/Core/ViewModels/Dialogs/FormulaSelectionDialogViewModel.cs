@@ -9,7 +9,10 @@ using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Core.Mvvm;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Desktop.Core.Extensions;
 
 namespace LYBT.Desktop.Core.ViewModels.Dialogs
 {
@@ -169,7 +172,10 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
 
                 if (result.IsSuccess)
                 {
-                    var formulaInfos = result.Data ?? new List<FormulaInfo>();
+                    var formulaDtos = result.Data ?? new List<FormulaDto>();
+                    
+                    // 转换DTO为FormulaInfo
+                    var formulaInfos = formulaDtos.Select(dto => dto.ToFormulaInfo()).ToList();
 
                     Formulas.Clear();
                     foreach (var formula in formulaInfos)

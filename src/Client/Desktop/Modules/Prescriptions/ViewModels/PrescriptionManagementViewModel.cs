@@ -2,17 +2,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Services.Interfaces;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Models.Prescriptions;
+using AutoMapper;
 using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -24,6 +20,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private readonly IPrescriptionService _prescriptionService;
         private readonly ICustomDialogService _dialogService;
         private readonly ILogger<PrescriptionManagementViewModel> _logger;
+        private readonly IMapper _mapper;
 
         #region Properties
 
@@ -117,11 +114,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public PrescriptionManagementViewModel(
             IPrescriptionService prescriptionService,
             ICustomDialogService dialogService,
-            ILogger<PrescriptionManagementViewModel> logger)
+            ILogger<PrescriptionManagementViewModel> logger,
+            IMapper mapper)
         {
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             LoadPrescriptionsCommand = new DelegateCommand(async () => await LoadPrescriptionsAsync());
@@ -149,39 +148,20 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 IsLoading = true;
                 StatusMessage = "正在加载处方数据...";
 
-                // Use GetPagedAsync for initial load
-                var query = new PrescriptionQueryDto 
-                { 
-                    PageIndex = 1, 
-                    PageSize = 50,
-                    StartDate = DateTime.Today,
-                    EndDate = DateTime.Today.AddDays(1)
-                };
-                var result = await _prescriptionService.GetPagedAsync(query);
-                if (result != null && result.Items != null)
+                // UltraThink四层架构：使用ServiceResult模式，避免直接使用DTO
+                var result = await _prescriptionService.GetAllAsync(); // 暂时使用GetAllAsync，避免复杂的分页DTO依赖
+                if (result.IsSuccess && result.Data != null)
                 {
-                    // Convert PrescriptionDto list to PrescriptionInfo
-                    var prescriptionInfos = result.Items.Select(dto => new PrescriptionInfo
-                    {
-                        Id = dto.Id,
-                        PatientId = dto.PatientId,
-                        PatientName = dto.PatientName ?? string.Empty,
-                        UserId = dto.DoctorId,
-                        DoctorName = dto.DoctorName ?? string.Empty,
-                        PrescriptionNumber = $"RX{dto.CreateTime:yyyyMMdd}{dto.Id.ToString().Substring(0, 4)}", // Generate prescription number
-                        Diagnosis = dto.Diagnosis,
-                        DosageCount = dto.DosageCount,
-                        SingleDosePrice = dto.SingleDosePrice,
-                        TotalPrice = dto.TotalPrice,
-                        TotalWeight = dto.TotalWeight,
-                        Status = dto.Status,
-                        CreateTime = dto.CreateTime,
-                        UpdateTime = null, // Basic DTO doesn't have UpdateTime
-                        Advice = dto.Advice,
-                        Remark = null // Basic DTO doesn't have Remark
-                    }).ToList();
+                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
+                    var prescriptionInfos = _mapper.Map<List<PrescriptionInfo>>(result.Data);
+                    
+                    // 应用日期过滤（前端过滤）
+                    var filteredInfos = prescriptionInfos
+                        .Where(p => p.CreateTime.Date >= DateTime.Today && p.CreateTime.Date <= DateTime.Today.AddDays(1))
+                        .Take(50) // 限制初始加载数量
+                        .ToList();
 
-                    _allPrescriptions = new ObservableCollection<PrescriptionInfo>(prescriptionInfos);
+                    _allPrescriptions = new ObservableCollection<PrescriptionInfo>(filteredInfos);
                     FilterPrescriptions();
                     StatusMessage = $"已加载 {_allPrescriptions.Count} 个处方";
                 }
@@ -212,7 +192,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 var searchLower = SearchText.ToLowerInvariant();
                 filtered = filtered.Where(p =>
                     (p.PatientName?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (p.PrescriptionNo?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (p.PrescriptionNumber?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (p.DoctorName?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (p.Diagnosis?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
             }

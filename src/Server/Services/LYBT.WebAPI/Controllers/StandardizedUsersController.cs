@@ -2,6 +2,7 @@ using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -45,8 +46,8 @@ namespace LYBT.WebAPI.Controllers
                 // 调用服务层
                 var result = await _userService.GetPagedAsync(query);
 
-                // 返回标准化分页响应
-                return Success(result, "用户列表查询成功");
+                // 返回标准化分页响应 - 使用ServiceResult解包
+                return HandlePagedServiceResult(result, "用户列表查询成功");
             }
             catch (Exception ex)
             {
@@ -66,13 +67,14 @@ namespace LYBT.WebAPI.Controllers
                 var validation = ValidateGuid<UserDetailDto>(id, "用户ID");
                 if (validation != null) return validation;
 
-                // 查询用户
-                var user = await _userService.GetByIdAsync(id);
-                if (user == null)
+                // 查询用户 - 处理ServiceResult
+                var userResult = await _userService.GetByIdAsync(id);
+                if (!userResult.IsSuccess || userResult.Data == null)
                 {
-                    return NotFound<UserDetailDto>("用户不存在", ApiErrorCodes.USER_NOT_FOUND);
+                    return NotFound<UserDetailDto>(userResult.ErrorMessage ?? "用户不存在", ApiErrorCodes.USER_NOT_FOUND);
                 }
 
+                var user = userResult.Data;
                 // 映射到详情DTO（实际应用中可能需要更详细的映射）
                 var detailDto = new UserDetailDto
                 {
@@ -108,17 +110,17 @@ namespace LYBT.WebAPI.Controllers
                 // 获取操作者信息
                 var (operatorId, operatorName, _) = GetOperator();
 
-                // 创建用户
-                var user = await _userService.AddAsync(dto, operatorId, operatorName);
-                if (user == null)
+                // 创建用户 - 处理ServiceResult
+                var result = await _userService.CreateAsync(dto);
+                if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<UserDto>("用户创建失败", ApiErrorCodes.DATA_SAVE_FAILED);
+                    return BusinessFail<UserDto>(result.ErrorMessage ?? "用户创建失败", ApiErrorCodes.DATA_SAVE_FAILED);
                 }
 
                 // 记录操作日志
-                LogOperation("创建用户", user, user.Id);
+                LogOperation("创建用户", result.Data, result.Data.Id);
 
-                return Success(user, "用户创建成功");
+                return Success(result.Data, "用户创建成功");
             }
             catch (InvalidOperationException ex) when (ex.Message.Contains("用户名已存在"))
             {
@@ -154,18 +156,17 @@ namespace LYBT.WebAPI.Controllers
                 // 获取操作者信息
                 var (operatorId, operatorName, _) = GetOperator();
 
-                // 更新用户
-                var success = await _userService.UpdateAsync(dto, operatorId, operatorName);
-                if (!success)
+                // 更新用户 - 处理ServiceResult
+                var updateResult = await _userService.UpdateAsync(id, dto);
+                if (!updateResult.IsSuccess || updateResult.Data == null)
                 {
-                    return BusinessFail<UserDto>("用户更新失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                    return BusinessFail<UserDto>(updateResult.ErrorMessage ?? "用户更新失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
 
-                // 返回更新后的用户信息
-                var updatedUser = await _userService.GetByIdAsync(id);
-                LogOperation("更新用户", updatedUser, id);
+                // 记录操作日志
+                LogOperation("更新用户", updateResult.Data, id);
 
-                return Success(updatedUser!, "用户更新成功");
+                return Success(updateResult.Data, "用户更新成功");
             }
             catch (InvalidOperationException ex) when (ex.Message.Contains("用户不存在"))
             {
@@ -192,28 +193,30 @@ namespace LYBT.WebAPI.Controllers
                 // 获取操作者信息
                 var (operatorId, operatorName, _) = GetOperator();
 
-                // 获取当前用户状态
-                var user = await _userService.GetByIdAsync(id);
-                if (user == null)
+                // 获取当前用户状态 - 处理ServiceResult
+                var userResult = await _userService.GetByIdAsync(id);
+                if (!userResult.IsSuccess || userResult.Data == null)
                 {
-                    return NotFound("用户不存在", ApiErrorCodes.USER_NOT_FOUND);
+                    return NotFound(userResult.ErrorMessage ?? "用户不存在", ApiErrorCodes.USER_NOT_FOUND);
                 }
 
-                // 根据当前状态切换
-                bool result;
+                var user = userResult.Data;
+
+                // 根据当前状态切换 - 处理ServiceResult
+                ServiceResult<bool> result;
                 string message;
                 if (user.Status == Shared.Models.Enums.CommonStatus.Enabled)
                 {
-                    result = await _userService.DisableAsync(id, operatorId, operatorName);
+                    result = await _userService.DisableAsync(id);
                     message = "用户已禁用";
                 }
                 else
                 {
-                    result = await _userService.EnableAsync(id, operatorId, operatorName);
+                    result = await _userService.EnableAsync(id);
                     message = "用户已启用";
                 }
 
-                if (!result)
+                if (!result.IsSuccess || !result.Data)
                 {
                     return BusinessFail("状态切换失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
@@ -249,9 +252,14 @@ namespace LYBT.WebAPI.Controllers
                 // 获取操作者信息
                 var (operatorId, operatorName, _) = GetOperator();
 
-                // 执行批量启用
-                var successCount = await _userService.BatchEnableAsync(ids, operatorId, operatorName);
+                // 执行批量启用 - 处理ServiceResult
+                var batchResult = await _userService.BatchEnableAsync(ids);
+                if (!batchResult.IsSuccess)
+                {
+                    return BusinessFail<BatchOperationResult>(batchResult.ErrorMessage ?? "批量启用失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                }
 
+                var successCount = batchResult.Data;
                 var result = new BatchOperationResult
                 {
                     TotalCount = ids.Count,
@@ -284,11 +292,11 @@ namespace LYBT.WebAPI.Controllers
                 // 获取操作者信息
                 var (operatorId, operatorName, _) = GetOperator();
 
-                // 重置密码
-                var success = await _userService.ResetPasswordAsync(id, operatorId, operatorName);
-                if (!success)
+                // 重置密码 - 处理ServiceResult (使用默认密码)
+                var result = await _userService.ResetPasswordAsync(id, "ChangeMe123");
+                if (!result.IsSuccess || !result.Data)
                 {
-                    return BusinessFail("密码重置失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                    return BusinessFail(result.ErrorMessage ?? "密码重置失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
 
                 LogOperation("重置用户密码", null, id);

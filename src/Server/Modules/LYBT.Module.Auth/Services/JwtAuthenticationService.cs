@@ -119,7 +119,7 @@ namespace LYBT.Module.Auth.Services
                 {
                     UserId = userId,
                     UserName = userName,
-                    Roles = roles,
+                    Role = roles,
                     ExpiresAt = jsonToken.ValidTo
                 };
             }

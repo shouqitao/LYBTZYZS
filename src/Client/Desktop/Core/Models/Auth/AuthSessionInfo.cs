@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using System.ComponentModel;

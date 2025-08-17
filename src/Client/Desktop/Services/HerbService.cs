@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Desktop.Services.Interfaces;

@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +8,22 @@ namespace LYBT.Desktop.Core.Models.Formulas
 {
     /// <summary>
     /// 验方信息模型 - 前端专用，继承共享基础模型
+    /// UltraThink四层架构：Info层，包含UI状态和显示逻辑
     /// </summary>
     public class FormulaInfo : BaseFormula
     {
+        #region UI状态属性
+        
+        /// <summary>是否被选中</summary>
+        public bool IsSelected { get; set; }
+        
+        /// <summary>是否展开</summary>
+        public bool IsExpanded { get; set; }
+        
+        /// <summary>是否正在编辑</summary>
+        public bool IsEditing { get; set; }
+        
+        #endregion
         /// <summary>分类</summary>
         public string Category { get; set; } = string.Empty;
 

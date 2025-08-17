@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Web;
 using LYBT.WebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [AllowAnonymous] // 健康检查端点允许匿名访问
-    public class HealthController : BaseController
+    public class HealthController : BaseSystemController
     {
         private readonly ISystemHealthService _healthService;
 
@@ -55,7 +56,7 @@ namespace LYBT.WebAPI.Controllers
         /// 详细健康状态
         /// </summary>
         [HttpGet("detailed")]
-        public async Task<ActionResult<SystemHealthStatus>> GetDetailed()
+        public async Task<IActionResult> GetDetailed()
         {
             try
             {
@@ -64,7 +65,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取详细健康状态");
+                return HandleSystemException(ex, "获取详细健康状态");
             }
         }
 
@@ -72,7 +73,7 @@ namespace LYBT.WebAPI.Controllers
         /// 数据库健康检查
         /// </summary>
         [HttpGet("database")]
-        public async Task<ActionResult<ComponentHealthStatus>> GetDatabaseHealth()
+        public async Task<IActionResult> GetDatabaseHealth()
         {
             try
             {
@@ -90,7 +91,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "数据库健康检查");
+                return HandleSystemException(ex, "数据库健康检查");
             }
         }
 
@@ -98,7 +99,7 @@ namespace LYBT.WebAPI.Controllers
         /// 系统资源状态
         /// </summary>
         [HttpGet("resources")]
-        public async Task<ActionResult<SystemResourceStatus>> GetSystemResources()
+        public async Task<IActionResult> GetSystemResources()
         {
             try
             {
@@ -107,7 +108,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取系统资源状态");
+                return HandleSystemException(ex, "获取系统资源状态");
             }
         }
 
@@ -115,7 +116,7 @@ namespace LYBT.WebAPI.Controllers
         /// 应用程序指标
         /// </summary>
         [HttpGet("metrics")]
-        public async Task<ActionResult<ApplicationMetrics>> GetApplicationMetrics()
+        public async Task<IActionResult> GetApplicationMetrics()
         {
             try
             {
@@ -124,7 +125,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取应用程序指标");
+                return HandleSystemException(ex, "获取应用程序指标");
             }
         }
 
@@ -132,7 +133,7 @@ namespace LYBT.WebAPI.Controllers
         /// 完整健康报告
         /// </summary>
         [HttpGet("report")]
-        public async Task<ActionResult<DetailedHealthReport>> GetHealthReport()
+        public async Task<IActionResult> GetHealthReport()
         {
             try
             {
@@ -141,7 +142,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取健康报告");
+                return HandleSystemException(ex, "获取健康报告");
             }
         }
 
@@ -279,7 +280,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "获取版本信息");
+                return HandleSystemException(ex, "获取版本信息");
             }
         }
 

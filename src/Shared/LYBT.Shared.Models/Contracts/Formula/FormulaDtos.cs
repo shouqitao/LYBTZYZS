@@ -68,11 +68,11 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// </summary>
     public class FormulaDetailDto : FormulaDto
     {
-        public List<FormulaHerbItemDto> Herbs { get; set; } = new();
-        public string? Instructions { get; set; }
-        public string? Indications { get; set; }
-        public string? Contraindications { get; set; }
-        public string? Preparation { get; set; }
+        public new List<FormulaHerbItemDto> Herbs { get; set; } = new();
+        public new string? Instructions { get; set; }
+        public new string? Indications { get; set; }
+        public new string? Contraindications { get; set; }
+        public new string? Preparation { get; set; }
     }
 
     /// <summary>

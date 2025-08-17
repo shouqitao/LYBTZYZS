@@ -1,18 +1,14 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
+using AutoMapper;
+using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Shared.Interfaces.Services;
 
-// UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
-using LYBT.Desktop.Core.Models.Formulas;
-using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -23,6 +19,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         private readonly IFormulaService _formulaService;
         private readonly ILogger<FormulaManagementViewModel> _logger;
+        private readonly IMapper _mapper; // UltraThink架构：注入AutoMapper
 
         #region Properties
 
@@ -108,10 +105,12 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         public FormulaManagementViewModel(
             IFormulaService formulaService,
-            ILogger<FormulaManagementViewModel> logger)
+            ILogger<FormulaManagementViewModel> logger,
+            IMapper mapper) // UltraThink架构：注入AutoMapper
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             LoadFormulasCommand = new DelegateCommand(async () => await LoadFormulasAsync());
@@ -141,19 +140,8 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var result = await _formulaService.GetFormulasAsync();
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // 将FormulaDto转换为FormulaInfo
-                    var formulaInfoList = result.Data.Select(dto => new FormulaInfo
-                    {
-                        Id = dto.Id,
-                        Name = dto.Name,
-                        Category = "其他", // 默认分类
-                        Description = dto.Effect,
-                        Source = dto.Source ?? "",
-                        CreateTime = dto.CreateTime,
-                        UpdateTime = dto.UpdateTime,
-                        // Status = CommonStatus.Enabled, // 默认启用状态
-                        Remark = dto.Remark
-                    }).ToList();
+                    // UltraThink架构修复：使用AutoMapper将FormulaDto转换为FormulaInfo
+                    var formulaInfoList = _mapper.Map<List<FormulaInfo>>(result.Data);
                     
                     _allFormulas = new ObservableCollection<FormulaInfo>(formulaInfoList);
                     FilterFormulas();

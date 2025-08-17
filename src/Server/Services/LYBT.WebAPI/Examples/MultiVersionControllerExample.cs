@@ -2,7 +2,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using LYBT.WebAPI.Controllers;
+using LYBT.Infrastructure.Web;
 
 namespace LYBT.WebAPI.Examples
 {
@@ -16,7 +16,7 @@ namespace LYBT.WebAPI.Examples
     [ApiVersion("3.0", Deprecated = true)] // v3.0已弃用
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class ExampleController : BaseController
+    public class ExampleController : BaseSystemController
     {
         public ExampleController(ILogger<ExampleController> logger, IMemoryCache cache) : base(logger, cache)
         {

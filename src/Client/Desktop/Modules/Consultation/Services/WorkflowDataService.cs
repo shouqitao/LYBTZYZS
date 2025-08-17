@@ -1,10 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Desktop.Core.Models.Prescriptions;
@@ -13,7 +11,6 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Consultation.Services
 {

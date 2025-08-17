@@ -1,33 +1,27 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
+using AutoMapper;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Models;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using LYBT.Desktop.Core.Interfaces.Services;
-using IHerbService = LYBT.Desktop.Core.Interfaces.Services.IHerbService; // UltraThink: 明确使用前端专用接口
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
-    /// 中药材管理视图模型（增强版 - 迁移自SystemManagement）
-    /// UltraThink Phase 5 DTO统一化: HerbInfo→HerbDto
+    /// 中药材管理视图模型（UltraThink架构重构增强版）
+    /// Layer 4: Desktop层，使用HerbInfo模型，提供Excel导入导出等增强功能
     /// </summary>
-    public class HerbManagementViewModelEnhanced : BaseServiceManagementViewModel<HerbDto, IHerbService>
+    public class HerbManagementViewModelEnhanced : BaseServiceManagementViewModel<HerbInfo, IHerbService>
     {
         private readonly ICustomDialogService _commonDialogService;
         private readonly ICustomDialogService _dialogService;
         private readonly IHerbApiService _herbApiService;
+        private readonly IMapper _mapper;
 
         protected override string ModuleName => "中药材管理";
 
@@ -46,7 +40,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         public DelegateCommand ImportHerbsCommand { get; }
         public DelegateCommand ExportTemplateCommand { get; }
-        public DelegateCommand<HerbDto> ManageStockCommand { get; }
+        public DelegateCommand<HerbInfo> ManageStockCommand { get; }
 
         #endregion
 
@@ -55,22 +49,24 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IHerbApiService herbApiService,
             ICustomDialogService commonDialogService,
             ICustomDialogService dialogService,
+            IMapper mapper,
             Prism.Events.IEventAggregator eventAggregator)
             : base(herbService, eventAggregator)
         {
             _commonDialogService = commonDialogService;
             _dialogService = dialogService;
             _herbApiService = herbApiService;
+            _mapper = mapper;
             
             // 初始化增强功能命令
             ImportHerbsCommand = new DelegateCommand(async () => await ImportHerbs());
             ExportTemplateCommand = new DelegateCommand(ExportTemplate);
-            ManageStockCommand = new DelegateCommand<HerbDto>(ManageStock);
+            ManageStockCommand = new DelegateCommand<HerbInfo>(ManageStock);
         }
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
+        protected override async Task<ServiceResult<PagedResult<HerbInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
@@ -81,27 +77,17 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     Name = SearchKeyword
                 };
 
-                var pagedResult = await Service.GetPagedAsync(query);
-                var herbInfoResult = pagedResult.Data;
-
-                // UltraThink转换：HerbInfo → HerbDto
-                var herbDtoResult = new LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>
-                {
-                    Items = herbInfoResult.Items.Select(ConvertToHerbDto).ToList(),
-                    TotalCount = herbInfoResult.TotalCount,
-                    CurrentPage = herbInfoResult.CurrentPage,
-                    PageSize = herbInfoResult.PageSize
-                };
+                var result = await Service.GetPagedAsync(query);
 
                 // 更新库存不足数量 (暂时注释库存相关功能)
                 // TODO: 集成库存管理服务后启用
                 LowStockCount = 0;
 
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Success(herbDtoResult);
+                return result;
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<HerbDto>>.Failure($"加载药材列表失败: {ex.Message}");
+                return ServiceResult<PagedResult<HerbInfo>>.Failure($"加载药材列表失败: {ex.Message}");
             }
         }
 
@@ -123,7 +109,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        protected override async Task EditAsync(HerbDto item)
+        protected override async Task EditAsync(HerbInfo item)
         {
             if (item == null)
                 return;
@@ -133,8 +119,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 var dialog = new Views.HerbAddEditDialog();
                 dialog.Owner = Application.Current.MainWindow;
 
-                // 为编辑模式创建ViewModel并设置药材信息
-                var viewModel = new ViewModels.HerbAddEditDialogViewModel(_herbApiService, item);
+                // 使用AutoMapper转换HerbInfo到HerbDto以适配现有对话框
+                var herbDto = _mapper.Map<HerbDto>(item);
+                var viewModel = new ViewModels.HerbAddEditDialogViewModel(_herbApiService, herbDto);
                 dialog.DataContext = viewModel;
 
                 if (dialog.ShowDialog() == true)
@@ -148,7 +135,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        protected override async Task DeleteAsync(HerbDto item)
+        protected override async Task DeleteAsync(HerbInfo item)
         {
             if (item == null) return;
 
@@ -356,7 +343,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 管理库存
         /// </summary>
-        private void ManageStock(HerbDto herb)
+        private void ManageStock(HerbInfo herb)
         {
             if (herb == null)
                 return;
@@ -373,33 +360,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
             {
                 _commonDialogService.ShowErrorAsync($"打开库存管理对话框失败: {ex.Message}", "错误").GetAwaiter().GetResult();
             }
-        }
-
-        #endregion
-
-        #region 私有转换方法
-
-        /// <summary>
-        /// UltraThink转换：HerbInfo → HerbDto（UI层到传输层）
-        /// </summary>
-        private HerbDto ConvertToHerbDto(LYBT.Desktop.Core.Models.Herbs.HerbInfo herbInfo)
-        {
-            return new HerbDto
-            {
-                Id = herbInfo.Id,
-                Name = herbInfo.Name,
-                PinYinCode = herbInfo.PinYinCode,
-                WuBiCode = null, // HerbInfo没有WuBiCode属性
-                Origin = herbInfo.Origin,
-                Spec = herbInfo.Spec,
-                Unit = herbInfo.Unit,
-                Price = herbInfo.Price,
-                Effect = herbInfo.Effect,
-                Usage = herbInfo.Usage,
-                Remark = herbInfo.Remark,
-                Status = herbInfo.Status,
-                Stock = (int)herbInfo.Stock // UltraThink：decimal到int类型转换
-            };
         }
 
         #endregion

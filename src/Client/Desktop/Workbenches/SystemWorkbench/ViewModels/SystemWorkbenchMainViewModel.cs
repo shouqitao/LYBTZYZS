@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Workbench.Core;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using Prism.Regions;
 using Prism.Events;
 using Prism.Commands;

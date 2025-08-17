@@ -1,20 +1,12 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Services.Interfaces;
-using LYBT.Shared.Models.Core;
-using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Desktop.Core.Models.Users;
-// UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
+using AutoMapper;
+// UltraThink四层架构：Desktop层使用AutoMapper转换UserInfo到DTO，移除Contracts直接引用
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -24,6 +16,7 @@ namespace LYBT.Desktop.Users.ViewModels
     public class UserAddEditDialogViewModel : BindableBase
     {
         private readonly IUserApiService _userService;
+        private readonly IMapper _mapper;
         private readonly UserInfo? _originalUser;
 
         private string _userName = string.Empty;
@@ -115,9 +108,10 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>关闭对话框回调</summary>
         public Action? CloseDialogCallback { get; set; }
 
-        public UserAddEditDialogViewModel(IUserApiService userService, UserInfo? user = null)
+        public UserAddEditDialogViewModel(IUserApiService userService, IMapper mapper, UserInfo? user = null)
         {
             _userService = userService;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _originalUser = user;
             _isNewUser = user == null;
 
@@ -187,17 +181,20 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 if (IsNewUser)
                 {
-                    // 新增用户
-                    var createRequest = new UserCreateDto
+                    // UltraThink架构：使用AutoMapper从UserInfo转换到UserCreateDto
+                    var userInfo = new UserInfo
                     {
-                        Username = UserName.Trim(), // 需要提供用户名
-                        Password = "ChangeMe123", // 默认密码
-                        ConfirmPassword = "ChangeMe123", // 确认密码
+                        Username = UserName.Trim(),
                         RealName = RealName.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
+                        Role = SelectedRole!.Value,
                         Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
-                        // Role和Email已按优化标准移除
                     };
+                    
+                    var createRequest = _mapper.Map<UserCreateDto>(userInfo);
+                    // DTO特有字段手动设置
+                    createRequest.Password = "ChangeMe123"; // 默认密码
+                    createRequest.ConfirmPassword = "ChangeMe123"; // 确认密码
 
                     var response = await Services.ApiErrorHandler.HandleApiResponseAsync(async () =>
                         await _userService.CreateUserAsync(createRequest)
@@ -219,16 +216,18 @@ namespace LYBT.Desktop.Users.ViewModels
                         return;
                     }
 
-                    var updateRequest = new UserUpdateDto
+                    // UltraThink架构：使用AutoMapper从UserInfo转换到UserUpdateDto
+                    var userInfo = new UserInfo
                     {
-                        Id = _originalUser.Id, // 需要提供用户ID
+                        Id = _originalUser.Id,
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
                         Role = SelectedRole!.Value,
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
                         Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
-                        // Email已按优化标准移除
                     };
+                    
+                    var updateRequest = _mapper.Map<UserUpdateDto>(userInfo);
 
                     var response = await Services.ApiErrorHandler.HandleApiResponseAsync(async () =>
                         await _userService.UpdateUserAsync(_originalUser.Id, updateRequest)

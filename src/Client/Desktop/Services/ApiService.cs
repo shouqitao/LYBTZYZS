@@ -8,7 +8,7 @@ using LYBT.Desktop.Core.Models.Auth;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Core;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Services
 {

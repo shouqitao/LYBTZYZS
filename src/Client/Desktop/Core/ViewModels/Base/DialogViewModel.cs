@@ -3,7 +3,7 @@ using System;
 using System.Windows;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {

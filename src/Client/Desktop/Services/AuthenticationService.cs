@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LoginResponse = LYBT.Shared.Models.Contracts.Auth.LoginResponse;
 using LoginRequest = LYBT.Shared.Models.Contracts.Auth.LoginRequest;
 using LYBT.Desktop.Services.Interfaces;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;

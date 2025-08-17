@@ -1,17 +1,13 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Prescriptions;
-// UltraThink重构: 统一HerbInfo和HerbDto，使用Dto作为统一模型
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Services.Interfaces;
-using LYBT.Desktop.Consultation.Services.Interfaces;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Services.Interfaces;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
 

@@ -1,14 +1,12 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
-using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Services.Interfaces;
-using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using Prism.Commands;
 using Prism.Mvvm;
+using AutoMapper;
+// UltraThink四层架构：Desktop层使用AutoMapper转换PatientInfo到DTO，移除Contracts直接引用
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -18,6 +16,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     public class PatientAddEditDialogViewModel : BindableBase
     {
         private readonly IPatientApiService _patientApiService;
+        private readonly IMapper _mapper;
         private readonly PatientInfo? _originalPatient;
         private bool _isEditMode;
 
@@ -155,10 +154,12 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// 构造函数
         /// </summary>
         /// <param name="patientApiService">患者API服务</param>
+        /// <param name="mapper">AutoMapper实例</param>
         /// <param name="patient">要编辑的患者信息（null表示新增模式）</param>
-        public PatientAddEditDialogViewModel(IPatientApiService patientApiService, PatientInfo? patient = null)
+        public PatientAddEditDialogViewModel(IPatientApiService patientApiService, IMapper mapper, PatientInfo? patient = null)
         {
             _patientApiService = patientApiService ?? throw new ArgumentNullException(nameof(patientApiService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _originalPatient = patient;
             _isEditMode = patient != null;
 
@@ -251,21 +252,23 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 if (_isEditMode && _originalPatient != null)
                 {
-                    // 编辑模式
-                    var updateDto = new PatientUpdateDto
+                    // UltraThink架构：使用AutoMapper从PatientInfo转换到PatientUpdateDto
+                    var patientInfo = new PatientInfo
                     {
                         Id = _originalPatient.Id,
                         Name = PatientName.Trim(),
                         Gender = Gender,
                         Age = Age,
-                        DateOfBirth = BirthDate,
+                        BirthDate = BirthDate,
                         PhoneNumber = PhoneNumber.Trim(),
                         Address = Address?.Trim() ?? string.Empty,
-                        // IDType = IdType?.Trim() ?? "身份证", // DTO中没有此属性
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
-                        AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
+                        AllergyHistory = AllergyHistory?.Trim() ?? string.Empty,
+                        EmergencyContact = EmergencyContact?.Trim() ?? string.Empty,
+                        EmergencyPhone = EmergencyPhone?.Trim() ?? string.Empty
                     };
-
+                    
+                    var updateDto = _mapper.Map<PatientUpdateDto>(patientInfo);
                     var response = await _patientApiService.UpdatePatientAsync(_originalPatient.Id, updateDto);
                     result = response.IsSuccessStatusCode;
                     
@@ -276,20 +279,22 @@ namespace LYBT.Desktop.Patients.ViewModels
                 }
                 else
                 {
-                    // 新增模式
-                    var createDto = new PatientCreateDto
+                    // UltraThink架构：使用AutoMapper从PatientInfo转换到PatientCreateDto
+                    var patientInfo = new PatientInfo
                     {
                         Name = PatientName.Trim(),
                         Gender = Gender,
                         Age = Age,
-                        DateOfBirth = BirthDate,
+                        BirthDate = BirthDate,
                         PhoneNumber = PhoneNumber.Trim(),
                         Address = Address?.Trim() ?? string.Empty,
-                        // IDType = IdType?.Trim() ?? "身份证", // DTO中没有此属性
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
-                        AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
+                        AllergyHistory = AllergyHistory?.Trim() ?? string.Empty,
+                        EmergencyContact = EmergencyContact?.Trim() ?? string.Empty,
+                        EmergencyPhone = EmergencyPhone?.Trim() ?? string.Empty
                     };
 
+                    var createDto = _mapper.Map<PatientCreateDto>(patientInfo);
                     var response = await _patientApiService.CreatePatientAsync(createDto);
                     result = response.IsSuccessStatusCode;
                     

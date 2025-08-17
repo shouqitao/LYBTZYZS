@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
 // using LYBT.Desktop.Core.Models.Common; // 已迁移到 LYBT.Shared.Models.Contracts.Common
@@ -16,9 +17,10 @@ using LYBT.Shared.Models.Contracts.Consultation;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 看诊服务实现
+    /// 看诊服务实现 - UltraThink架构重构：实现Shared接口
+    /// 同时保留UI特定方法以确保向后兼容
     /// </summary>
-    public class ConsultationService : IConsultationService
+    public class ConsultationService : LYBT.Shared.Interfaces.Services.IConsultationService, LYBT.Desktop.Core.Interfaces.Services.IConsultationService
     {
         private readonly IConsultationApiService _apiService;
         private readonly IMapper _mapper;
@@ -34,8 +36,350 @@ namespace LYBT.Desktop.Services
             _logger = logger;
         }
 
+        #region Shared接口实现 - UltraThink标准
+
         /// <summary>
-        /// 分页查询看诊记录
+        /// 根据ID获取看诊详情 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.GetByIdAsync(id)
+                );
+
+                if (apiResponse.IsSuccess && apiResponse.Data != null)
+                {
+                    return ServiceResult<ConsultationDetailDto>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<ConsultationDetailDto>.Failure(apiResponse.ErrorMessage ?? "获取看诊详情失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取看诊详情失败: {Id}", id);
+                return ServiceResult<ConsultationDetailDto>.Failure("获取看诊详情失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 分页查询看诊记录 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
+        {
+            try
+            {
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.GetConsultationsAsync(
+                        page: query.PageIndex,
+                        pageSize: query.PageSize,
+                        keyword: query.Keyword,
+                        doctorId: null,
+                        patientId: null,
+                        startDate: null,
+                        endDate: null,
+                        status: null
+                    )
+                );
+
+                if (apiResponse.IsSuccess && apiResponse.Data != null)
+                {
+                    return ServiceResult<PagedResult<ConsultationDto>>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<PagedResult<ConsultationDto>>.Failure(apiResponse.ErrorMessage ?? "分页查询看诊记录失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "分页查询看诊记录失败");
+                return ServiceResult<PagedResult<ConsultationDto>>.Failure("分页查询看诊记录失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 开始看诊 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto dto)
+        {
+            try
+            {
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.StartConsultationAsync(dto)
+                );
+
+                if (apiResponse.IsSuccess && apiResponse.Data != null)
+                {
+                    return ServiceResult<ConsultationDto>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<ConsultationDto>.Failure(apiResponse.ErrorMessage ?? "开始看诊失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "开始看诊失败");
+                return ServiceResult<ConsultationDto>.Failure("开始看诊失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 更新看诊记录 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto dto)
+        {
+            try
+            {
+                // 转换为API使用的UpdateDto
+                var updateDto = new ConsultationUpdateDto
+                {
+                    Inspection = dto.Inspection,
+                    AuscultationOlfaction = dto.AuscultationOlfaction,
+                    Inquiry = dto.Inquiry,
+                    Palpation = dto.Palpation,
+                    TongueInspection = dto.TongueInspection,
+                    PulseCondition = dto.PulseCondition,
+                    TCMDiagnosis = dto.TCMDiagnosis,
+                    Diagnosis = dto.Diagnosis,
+                    Remark = dto.Remark
+                };
+
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.UpdateConsultationAsync(id, updateDto)
+                );
+
+                if (apiResponse.IsSuccess && apiResponse.Data != null)
+                {
+                    return ServiceResult<ConsultationDto>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<ConsultationDto>.Failure(apiResponse.ErrorMessage ?? "更新看诊记录失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新看诊记录失败: {Id}", id);
+                return ServiceResult<ConsultationDto>.Failure("更新看诊记录失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 删除看诊记录 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        {
+            try
+            {
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.DeleteAsync(id)
+                );
+
+                if (apiResponse.IsSuccess)
+                {
+                    return ServiceResult<bool>.Success(true);
+                }
+
+                return ServiceResult<bool>.Failure(apiResponse.ErrorMessage ?? "删除看诊记录失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除看诊记录失败: {Id}", id);
+                return ServiceResult<bool>.Failure("删除看诊记录失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 根据患者ID获取看诊记录 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<List<ConsultationDto>>> GetByPatientIdAsync(Guid patientId)
+        {
+            try
+            {
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.GetPatientHistoryAsync(patientId)
+                );
+
+                if (apiResponse.IsSuccess && apiResponse.Data != null)
+                {
+                    return ServiceResult<List<ConsultationDto>>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据患者ID获取看诊记录失败: {PatientId}", patientId);
+                return ServiceResult<List<ConsultationDto>>.Failure("获取患者看诊记录失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 根据医疗案例ID获取看诊记录 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                var singleResult = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.GetByMedicalCaseIdAsync(medicalCaseId)
+                );
+
+                if (singleResult.IsSuccess && singleResult.Data != null)
+                {
+                    var list = new List<ConsultationDto> { singleResult.Data };
+                    return ServiceResult<List<ConsultationDto>>.Success(list);
+                }
+
+                return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据医疗案例ID获取看诊记录失败: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<List<ConsultationDto>>.Failure("获取医疗案例看诊记录失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 根据医生ID获取看诊记录 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<List<ConsultationDto>>> GetByDoctorIdAsync(Guid doctorId)
+        {
+            try
+            {
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.GetTodayConsultationsByDoctorAsync(doctorId)
+                );
+
+                if (apiResponse.IsSuccess && apiResponse.Data != null)
+                {
+                    return ServiceResult<List<ConsultationDto>>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据医生ID获取看诊记录失败: {DoctorId}", doctorId);
+                return ServiceResult<List<ConsultationDto>>.Failure("获取医生看诊记录失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 完成看诊 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<bool>> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
+        {
+            try
+            {
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.CompleteConsultationAsync(id, dto)
+                );
+
+                if (apiResponse.IsSuccess)
+                {
+                    return ServiceResult<bool>.Success(true);
+                }
+
+                return ServiceResult<bool>.Failure(apiResponse.ErrorMessage ?? "完成看诊失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "完成看诊失败: {Id}", id);
+                return ServiceResult<bool>.Failure("完成看诊失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 取消看诊 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
+        {
+            try
+            {
+                var dto = new UpdateStatusDto
+                {
+                    Status = LYBT.Shared.Models.Enums.ConsultationStatus.Cancelled,
+                    Reason = reason
+                };
+
+                var apiResponse = await ApiErrorHandler.HandleApiResponseAsync(async () =>
+                    await _apiService.UpdateStatusAsync(id, dto)
+                );
+
+                if (apiResponse.IsSuccess)
+                {
+                    return ServiceResult<bool>.Success(true);
+                }
+
+                return ServiceResult<bool>.Failure(apiResponse.ErrorMessage ?? "取消看诊失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取消看诊失败: {Id}", id);
+                return ServiceResult<bool>.Failure("取消看诊失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取看诊统计信息 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
+        {
+            try
+            {
+                // 目前API可能没有统计接口，返回空统计
+                var statistics = new
+                {
+                    Message = "统计功能暂未实现",
+                    StartDate = startDate,
+                    EndDate = endDate
+                };
+
+                return ServiceResult<object>.Success(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取看诊统计失败");
+                return ServiceResult<object>.Failure("获取看诊统计失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 搜索看诊记录 (Shared接口)
+        /// </summary>
+        public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keyword))
+                    return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
+
+                var query = new PagedQueryBaseDto
+                {
+                    Keyword = keyword,
+                    PageIndex = 1,
+                    PageSize = 20
+                };
+
+                var pagedResult = await GetPagedAsync(query);
+                if (pagedResult.IsSuccess && pagedResult.Data != null)
+                {
+                    return ServiceResult<List<ConsultationDto>>.Success(pagedResult.Data.Items.ToList());
+                }
+
+                return ServiceResult<List<ConsultationDto>>.Failure(pagedResult.ErrorMessage ?? "搜索看诊记录失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索看诊记录失败: {Keyword}", keyword);
+                return ServiceResult<List<ConsultationDto>>.Failure("搜索看诊记录失败", ex);
+            }
+        }
+
+        #endregion
+
+        #region UI特定方法 - 保持向后兼容
+
+        /// <summary>
+        /// 分页查询看诊记录 (UI特定方法)
         /// </summary>
         public async Task<PagedResult<ConsultationInfo>> SearchConsultationsAsync(PagedQueryBaseDto query)
         {
@@ -90,9 +434,9 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 获取看诊详情
+        /// 获取看诊详情 (UI特定方法)
         /// </summary>
-        public async Task<ServiceResult<ConsultationInfo>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<ConsultationInfo>> GetConsultationInfoByIdAsync(Guid id)
         {
             try
             {
@@ -116,9 +460,9 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 根据医疗案例ID获取看诊信息
+        /// 根据医疗案例ID获取看诊信息 (UI特定方法)
         /// </summary>
-        public async Task<ServiceResult<ConsultationInfo>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        public async Task<ServiceResult<ConsultationInfo>> GetConsultationInfoByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             try
             {
@@ -142,7 +486,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 开始看诊
+        /// 开始看诊 (UI特定方法)
         /// </summary>
         public async Task<ServiceResult<ConsultationInfo>> StartConsultationAsync(ConsultationStartDto dto)
         {
@@ -168,7 +512,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 更新看诊信息
+        /// 更新看诊信息 (UI特定方法)
         /// </summary>
         public async Task<ServiceResult<ConsultationInfo>> UpdateConsultationAsync(Guid id, ConsultationUpdateDto dto)
         {
@@ -194,9 +538,17 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 完成看诊
+        /// 完成看诊 (UI特定方法 - 已实现在Shared接口中)
         /// </summary>
-        public async Task<ServiceResult<bool>> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
+        async Task<ServiceResult<bool>> LYBT.Desktop.Core.Interfaces.Services.IConsultationService.CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
+        {
+            return await CompleteConsultationAsync(id, dto);
+        }
+
+        /// <summary>
+        /// 完成看诊 (内部实现)
+        /// </summary>
+        private async Task<ServiceResult<bool>> CompleteConsultationInternalAsync(Guid id, ConsultationCompleteDto dto)
         {
             try
             {
@@ -328,9 +680,17 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 删除看诊记录（软删除）
+        /// 删除看诊记录 (UI特定方法 - 已实现在Shared接口中)
         /// </summary>
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        async Task<ServiceResult<bool>> LYBT.Desktop.Core.Interfaces.Services.IConsultationService.DeleteAsync(Guid id)
+        {
+            return await DeleteAsync(id);
+        }
+
+        /// <summary>
+        /// 删除看诊记录（软删除） (内部实现)
+        /// </summary>
+        private async Task<ServiceResult<bool>> DeleteInternalAsync(Guid id)
         {
             try
             {
@@ -351,6 +711,8 @@ namespace LYBT.Desktop.Services
                 return ServiceResult<bool>.Failure("删除看诊记录失败");
             }
         }
+
+        #endregion
 
         /// <summary>
         /// 根据医疗案例ID获取四诊信息

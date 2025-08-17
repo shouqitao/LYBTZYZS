@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,8 +8,8 @@ using System.Windows.Data;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Desktop.Core.Models;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
+// UltraThink四层架构：移除Contracts引用，使用Common中的共享分页模型
 
 namespace LYBT.Desktop.Users.Base
 {

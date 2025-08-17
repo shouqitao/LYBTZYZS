@@ -1,15 +1,15 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Shared.Models.Contracts.MedicalCase;
+using AutoMapper;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Regions;
 using Prism.Events;
-using System.Collections.ObjectModel;
+using LYBT.Desktop.Core.Interfaces.Services;
+
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
@@ -20,6 +20,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly ICustomDialogService _dialogService;
         private readonly IRegionManager _regionManager;
+        private readonly IMapper _mapper;
 
         #region 属性
 
@@ -184,12 +185,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IMedicalCaseService medicalCaseService,
             ICustomDialogService dialogService,
             IRegionManager regionManager,
-            IEventAggregator eventAggregator)
+            IEventAggregator eventAggregator,
+            IMapper mapper)
             : base(eventAggregator)
         {
             _medicalCaseService = medicalCaseService;
             _dialogService = dialogService;
             _regionManager = regionManager;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -256,14 +259,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var result = await _medicalCaseService.GetByIdAsync(MedicalCaseId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    MedicalCase = result.Data;
+                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
+                    MedicalCase = _mapper.Map<MedicalCaseInfo>(result.Data);
                     
                     // 映射到UI属性
-                    PatientName = result.Data.PatientName ?? "";
-                    CaseNumber = $"MC{result.Data.Id.ToString().Substring(0, 8).ToUpper()}";
-                    // 以下属性在后端DTO中不存在，暂时设为空值
-                    ChiefComplaint = "";
-                    CurrentIllnessHistory = "";
+                    PatientName = MedicalCase.PatientName;
+                    CaseNumber = $"MC{MedicalCase.Id.ToString().Substring(0, 8).ToUpper()}";
+                    ChiefComplaint = MedicalCase.ChiefComplaint ?? "";
+                    DiagnosisSummary = MedicalCase.Diagnosis ?? "";
+                    // 从 Info 模型获取属性值
+                    CurrentIllnessHistory = MedicalCase.Remark ?? "";
                     PastMedicalHistory = "";
                     PhysicalExamination = "";
                     AuxiliaryExamination = "";

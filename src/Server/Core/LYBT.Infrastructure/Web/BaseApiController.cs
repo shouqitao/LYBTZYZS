@@ -14,30 +14,19 @@ namespace LYBT.Infrastructure.Web
     /// API控制器基类 - 前后端契约统一化
     /// 提供统一的API响应格式、错误处理和业务逻辑封装
     /// </summary>
-    public abstract class BaseApiController : ControllerBase
+    public abstract class BaseApiController : BaseControllerCore
     {
-        protected readonly ILogger _logger;
-        protected readonly IMemoryCache? _cache;
+        protected BaseApiController(ILogger logger, IMemoryCache? cache = null) 
+            : base(logger, cache) { }
 
-        protected BaseApiController(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        protected BaseApiController(ILogger logger, IMemoryCache cache)
-        {
-            _logger = logger;
-            _cache = cache;
-        }
-
-        #region 统一响应包装方法
+        #region 统一API响应包装方法
 
         /// <summary>
         /// 返回成功响应（带数据）
         /// </summary>
         protected ActionResult<ApiResponse<T>> Success<T>(T data, string message = "操作成功")
         {
-            var response = ApiResponse<T>.Ok(data, message);
+            var response = ApiResponse<T>.CreateSuccess(data, message);
             response.RequestId = GetRequestId();
             return Ok(response);
         }
@@ -47,7 +36,7 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse> Success(string message = "操作成功")
         {
-            var response = ApiResponse.Ok(message);
+            var response = ApiResponse.CreateSuccess(message: message);
             response.RequestId = GetRequestId();
             return Ok(response);
         }
@@ -72,7 +61,11 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse<T>> BusinessFail<T>(string message, string? errorCode = null)
         {
-            var response = ApiResponse<T>.Fail(message, errorCode);
+            var response = ApiResponse<T>.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
             response.RequestId = GetRequestId();
             return Ok(response); // 业务失败仍返回200，通过success字段区分
         }
@@ -82,7 +75,11 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse> BusinessFail(string message, string? errorCode = null)
         {
-            var response = ApiResponse.Fail(message, errorCode);
+            var response = ApiResponse.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
             response.RequestId = GetRequestId();
             return Ok(response);
         }
@@ -92,7 +89,25 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse> ValidationFail(string message = "参数验证失败", string? errorCode = "VALIDATION_ERROR")
         {
-            var response = ApiResponse.Fail(message, errorCode);
+            var response = ApiResponse.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
+            response.RequestId = GetRequestId();
+            return BadRequest(response);
+        }
+
+        /// <summary>
+        /// 返回验证失败响应（泛型版本）
+        /// </summary>
+        protected ActionResult<ApiResponse<T>> ValidationFail<T>(string message = "参数验证失败", string? errorCode = "VALIDATION_ERROR")
+        {
+            var response = ApiResponse<T>.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
             response.RequestId = GetRequestId();
             return BadRequest(response);
         }
@@ -102,7 +117,25 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse> Unauthorized(string message = "未授权访问", string? errorCode = "UNAUTHORIZED")
         {
-            var response = ApiResponse.Fail(message, errorCode);
+            var response = ApiResponse.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
+            response.RequestId = GetRequestId();
+            return base.Unauthorized(response);
+        }
+
+        /// <summary>
+        /// 返回未授权响应（泛型版本）
+        /// </summary>
+        protected ActionResult<ApiResponse<T>> Unauthorized<T>(string message = "未授权访问", string? errorCode = "UNAUTHORIZED")
+        {
+            var response = ApiResponse<T>.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
             response.RequestId = GetRequestId();
             return base.Unauthorized(response);
         }
@@ -112,7 +145,11 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse> Forbidden(string message = "禁止访问", string? errorCode = "FORBIDDEN")
         {
-            var response = ApiResponse.Fail(message, errorCode);
+            var response = ApiResponse.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
             response.RequestId = GetRequestId();
             return StatusCode(403, response);
         }
@@ -122,7 +159,25 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse> NotFound(string message = "资源未找到", string? errorCode = "NOT_FOUND")
         {
-            var response = ApiResponse.Fail(message, errorCode);
+            var response = ApiResponse.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
+            response.RequestId = GetRequestId();
+            return base.NotFound(response);
+        }
+
+        /// <summary>
+        /// 返回资源未找到响应（泛型版本）
+        /// </summary>
+        protected ActionResult<ApiResponse<T>> NotFound<T>(string message = "资源不存在", string? errorCode = "NOT_FOUND")
+        {
+            var response = ApiResponse<T>.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
             response.RequestId = GetRequestId();
             return base.NotFound(response);
         }
@@ -132,41 +187,114 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse> InternalError(string message = "服务器内部错误", string? errorCode = "INTERNAL_ERROR")
         {
-            var response = ApiResponse.Fail(message, errorCode);
+            var response = ApiResponse.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
+            response.RequestId = GetRequestId();
+            return StatusCode(500, response);
+        }
+
+        /// <summary>
+        /// 返回服务器错误响应（泛型版本）
+        /// </summary>
+        protected ActionResult<ApiResponse<T>> InternalError<T>(string message = "服务器内部错误", string? errorCode = "INTERNAL_ERROR")
+        {
+            var response = ApiResponse<T>.CreateFail(message);
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
             response.RequestId = GetRequestId();
             return StatusCode(500, response);
         }
 
         #endregion
 
-        #region 通用业务逻辑
+        #region ServiceResult统一处理方法 - UltraThink核心模式
 
         /// <summary>
-        /// 获取当前操作者信息
+        /// ServiceResult自动解包并返回统一响应 - UltraThink标准模式
         /// </summary>
-        protected (Guid operatorId, string operatorName, string operatorRole) GetOperator()
+        protected ActionResult<ApiResponse<T>> HandleServiceResult<T>(ServiceResult<T> serviceResult, string? successMessage = null)
         {
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User?.Identity?.Name;
-            var roleStr = User?.FindFirst("Admin")?.Value;
-
-            if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName))
+            if (serviceResult.IsSuccess)
             {
-                return (opId, userName, roleStr ?? "User");
+                return Success(serviceResult.Data, successMessage ?? "操作成功");
             }
-            throw new UnauthorizedAccessException("未登录或用户信息无效");
+            else
+            {
+                return BusinessFail<T>(serviceResult.ErrorMessage ?? "操作失败");
+            }
         }
+
+        /// <summary>
+        /// 分页ServiceResult自动解包
+        /// </summary>
+        protected ActionResult<PagedApiResponse<T>> HandlePagedServiceResult<T>(ServiceResult<PagedResult<T>> serviceResult, string? successMessage = null)
+        {
+            if (serviceResult.IsSuccess && serviceResult.Data != null)
+            {
+                var response = PagedApiResponse<T>.Ok(
+                    serviceResult.Data.Items,
+                    serviceResult.Data.TotalCount,
+                    serviceResult.Data.CurrentPage,
+                    serviceResult.Data.PageSize,
+                    successMessage ?? "查询成功");
+                response.RequestId = GetRequestId();
+                return Ok(response);
+            }
+            else
+            {
+                var response = PagedApiResponse<T>.Fail(
+                    serviceResult.ErrorMessage ?? "查询失败");
+                response.RequestId = GetRequestId();
+                return BadRequest(response);
+            }
+        }
+
+        /// <summary>
+        /// bool类型ServiceResult解包
+        /// </summary>
+        protected ActionResult<ApiResponse> HandleBoolServiceResult(ServiceResult<bool> serviceResult, string? successMessage = null, string? failMessage = null)
+        {
+            if (serviceResult.IsSuccess && serviceResult.Data)
+            {
+                return Success(successMessage ?? "操作成功");
+            }
+            else
+            {
+                return BusinessFail(failMessage ?? serviceResult.ErrorMessage ?? "操作失败");
+            }
+        }
+
+        #endregion
+
+        #region 业务验证方法
 
         /// <summary>
         /// 验证模型状态
         /// </summary>
         protected ActionResult<ApiResponse>? ValidateModel()
         {
-            if (!ModelState.IsValid)
+            if (!IsModelValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                var message = string.Join("; ", errors);
+                var message = GetValidationErrorMessage();
                 return ValidationFail(message);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 验证模型状态（泛型版本）
+        /// </summary>
+        protected ActionResult<ApiResponse<T>>? ValidateModel<T>()
+        {
+            if (!IsModelValid)
+            {
+                var message = GetValidationErrorMessage();
+                return ValidationFail<T>(message);
             }
             return null;
         }
@@ -176,35 +304,9 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse>? ValidateGuid(Guid id, string paramName)
         {
-            if (id == Guid.Empty)
+            if (!IsValidGuid(id))
             {
                 return ValidationFail($"{paramName}不能为空");
-            }
-            return null;
-        }
-
-        #region 泛型验证方法重载
-
-        /// <summary>
-        /// 返回验证失败响应（泛型版本）
-        /// </summary>
-        protected ActionResult<ApiResponse<T>> ValidationFail<T>(string message = "参数验证失败", string? errorCode = "VALIDATION_ERROR")
-        {
-            var response = ApiResponse<T>.Fail(message, errorCode);
-            response.RequestId = GetRequestId();
-            return BadRequest(response);
-        }
-
-        /// <summary>
-        /// 验证模型状态（泛型版本）
-        /// </summary>
-        protected ActionResult<ApiResponse<T>>? ValidateModel<T>()
-        {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                var message = string.Join("; ", errors);
-                return ValidationFail<T>(message);
             }
             return null;
         }
@@ -214,42 +316,32 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse<T>>? ValidateGuid<T>(Guid id, string paramName)
         {
-            if (id == Guid.Empty)
+            if (!IsValidGuid(id))
             {
                 return ValidationFail<T>($"{paramName}不能为空");
             }
             return null;
         }
 
-        /// <summary>
-        /// 返回未授权响应（泛型版本）
-        /// </summary>
-        protected ActionResult<ApiResponse<T>> Unauthorized<T>(string message = "未授权访问", string? errorCode = "UNAUTHORIZED")
-        {
-            var response = ApiResponse<T>.Fail(message, errorCode);
-            response.RequestId = GetRequestId();
-            return base.Unauthorized(response);
-        }
+        #endregion
+
+        #region 统一异常处理
 
         /// <summary>
-        /// 返回不存在响应（泛型版本）
+        /// 统一异常处理
         /// </summary>
-        protected ActionResult<ApiResponse<T>> NotFound<T>(string message = "资源不存在", string? errorCode = "NOT_FOUND")
+        protected ActionResult<ApiResponse> HandleException(Exception ex, string operation, object? context = null)
         {
-            var response = ApiResponse<T>.Fail(message, errorCode);
-            response.RequestId = GetRequestId();
-            return base.NotFound(response);
-        }
-
-
-        /// <summary>
-        /// 返回服务器错误响应（泛型版本）
-        /// </summary>
-        protected ActionResult<ApiResponse<T>> InternalError<T>(string message = "服务器内部错误", string? errorCode = "INTERNAL_ERROR")
-        {
-            var response = ApiResponse<T>.Fail(message, errorCode);
-            response.RequestId = GetRequestId();
-            return StatusCode(500, response);
+            HandleExceptionCore(ex, operation, context);
+            
+            // 根据异常类型返回不同的错误响应
+            return ex switch
+            {
+                UnauthorizedAccessException => Unauthorized(ex.Message),
+                ArgumentException => ValidationFail(ex.Message),
+                InvalidOperationException => BusinessFail(ex.Message),
+                _ => InternalError($"{operation}失败")
+            };
         }
 
         /// <summary>
@@ -257,8 +349,7 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse<T>> HandleException<T>(Exception ex, string operation, object? context = null)
         {
-            var contextInfo = context != null ? $", 上下文: {System.Text.Json.JsonSerializer.Serialize(context)}" : "";
-            _logger.LogError(ex, "{Operation}失败{Context}", operation, contextInfo);
+            HandleExceptionCore(ex, operation, context);
             
             // 根据异常类型返回不同的错误响应
             return ex switch
@@ -293,7 +384,37 @@ namespace LYBT.Infrastructure.Web
                     TotalPages = 0
                 }
             };
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
             return BadRequest(response);
+        }
+
+        /// <summary>
+        /// 返回分页业务失败响应
+        /// </summary>
+        protected ActionResult<PagedApiResponse<T>> BusinessFailPaged<T>(string message, string? errorCode = null)
+        {
+            var response = new PagedApiResponse<T>
+            {
+                Success = false,
+                Message = message,
+                RequestId = GetRequestId(),
+                Data = new PagedData<T>
+                {
+                    Items = new List<T>(),
+                    TotalCount = 0,
+                    CurrentPage = 1,
+                    PageSize = 10,
+                    TotalPages = 0
+                }
+            };
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                response.Errors = new { code = errorCode };
+            }
+            return Ok(response); // 业务失败仍返回200，通过success字段区分
         }
 
         /// <summary>
@@ -301,10 +422,9 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<PagedApiResponse<T>>? ValidateModelPaged<T>()
         {
-            if (!ModelState.IsValid)
+            if (!IsModelValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                var message = string.Join("; ", errors);
+                var message = GetValidationErrorMessage();
                 return ValidationFailPaged<T>(message);
             }
             return null;
@@ -315,8 +435,7 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<PagedApiResponse<T>> HandleExceptionPaged<T>(Exception ex, string operation, object? context = null)
         {
-            var contextInfo = context != null ? $", 上下文: {System.Text.Json.JsonSerializer.Serialize(context)}" : "";
-            _logger.LogError(ex, "{Operation}失败{Context}", operation, contextInfo);
+            HandleExceptionCore(ex, operation, context);
             
             var message = ex switch
             {
@@ -335,64 +454,6 @@ namespace LYBT.Infrastructure.Web
             };
 
             return ValidationFailPaged<T>(message, errorCode);
-        }
-
-        #endregion
-
-        /// <summary>
-        /// 统一异常处理
-        /// </summary>
-        protected ActionResult<ApiResponse> HandleException(Exception ex, string operation, object? context = null)
-        {
-            var contextInfo = context != null ? $", 上下文: {System.Text.Json.JsonSerializer.Serialize(context)}" : "";
-            _logger.LogError(ex, "{Operation}失败{Context}", operation, contextInfo);
-            
-            // 根据异常类型返回不同的错误响应
-            return ex switch
-            {
-                UnauthorizedAccessException => Unauthorized(ex.Message),
-                ArgumentException => ValidationFail(ex.Message),
-                InvalidOperationException => BusinessFail(ex.Message),
-                _ => InternalError($"{operation}失败")
-            };
-        }
-
-        /// <summary>
-        /// 记录操作日志
-        /// </summary>
-        protected void LogOperation(string operation, object? data = null, Guid? targetId = null)
-        {
-            try
-            {
-                var (operatorId, operatorName, _) = GetOperator();
-                var logData = data != null ? System.Text.Json.JsonSerializer.Serialize(data) : null;
-                _logger.LogInformation("{Operation}，操作者: {OperatorName}({OperatorId}), 目标ID: {TargetId}, 数据: {Data}",
-                    operation, operatorName, operatorId, targetId, logData);
-            }
-            catch
-            {
-                // 记录日志失败时不应影响主业务流程
-            }
-        }
-
-        /// <summary>
-        /// 清除缓存的帮助方法
-        /// </summary>
-        protected void ClearCacheByPattern(string pattern)
-        {
-            // 具体实现可由子类重写
-        }
-
-        #endregion
-
-        #region 私有辅助方法
-
-        /// <summary>
-        /// 获取请求ID（用于链路追踪）
-        /// </summary>
-        private string GetRequestId()
-        {
-            return HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
         }
 
         #endregion

@@ -1,15 +1,12 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Module.Prescriptions.Services;
-using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
@@ -35,7 +32,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取处方列表 (RESTful GET /Prescriptions) - 支持模糊查询和分页 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PaginatedResult<PrescriptionDto>>>> GetList(
+        public async Task<ActionResult<PagedApiResponse<PrescriptionDto>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -52,7 +49,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return ValidationFail<PaginatedResult<PrescriptionDto>>("页码和页大小参数无效（页码>0，页大小1-100）");
+                    return ValidationFailPaged<PrescriptionDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
                 // 如果没有任何查询条件且请求第一页，返回简单列表
@@ -61,32 +58,41 @@ namespace LYBT.WebAPI.Controllers
                     !startDate.HasValue && !endDate.HasValue && !minDosageCount.HasValue && !maxDosageCount.HasValue)
                 {
 
-                    var list = await _service.GetAllAsync();
-                    var totalCount = list?.Count ?? 0;
-                    var pagedList = list?.Take(pageSize).ToList() ?? new List<PrescriptionDto>();
-                    var result = new PaginatedResult<PrescriptionDto>
+                    var result = await _service.SearchAsync("");
+                    if (!result.IsSuccess || result.Data == null)
+                    {
+                        return BusinessFailPaged<PrescriptionDto>(result.ErrorMessage ?? "查询失败", ApiErrorCodes.INTERNAL_ERROR);
+                    }
+                    
+                    var list = result.Data;
+                    var totalCount = list.Count;
+                    var pagedList = list.Take(pageSize).ToList();
+                    var paginatedResult = new PaginatedResult<PrescriptionDto>
                     {
                         TotalCount = totalCount,
                         Items = pagedList
                     };
-                    return Success<PaginatedResult<PrescriptionDto>>(result, "查询成功");
+                    return Success(paginatedResult, "查询成功");
                 }
 
                 // 使用分页查询服务 (简化版本，只保留基本搜索功能)
-                var query = new PagedQueryBaseDto
+                var query = new PrescriptionQueryDto
                 {
                     PageIndex = page,
                     PageSize = pageSize,
-                    Keyword = keyword
+                    Keyword = keyword,
+                    PrescriptionStatus = status,
+                    // 注意：其他属性暂时移除，因为PrescriptionQueryDto中没有定义
+                    // PatientName、DoctorName、Diagnosis、MinDosageCount、MaxDosageCount等
                 };
 
                 var (_, _, operatorRole) = GetOperator();
                 var pagedResult = await _service.GetPagedAsync(query);
-                return Success<PaginatedResult<PrescriptionDto>>(pagedResult, "查询成功");
+                return HandlePagedServiceResult(pagedResult, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PaginatedResult<PrescriptionDto>>(ex, "获取处方列表", new { page, pageSize, keyword });
+                return HandleExceptionPaged<PrescriptionDto>(ex, "获取处方列表", new { page, pageSize, keyword });
             }
         }
 
@@ -96,23 +102,27 @@ namespace LYBT.WebAPI.Controllers
         /// 获取处方详情 - 统一API响应格式
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PrescriptionDetailDto>>> GetById(Guid id)
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> GetById(Guid id)
         {
             try
             {
-                var validationResult = ValidateGuid<PrescriptionDetailDto>(id, "处方ID");
+                var validationResult = ValidateGuid<PrescriptionDto>(id, "处方ID");
                 if (validationResult != null) return validationResult;
 
-                var detail = await _service.GetByIdAsync(id.ToString());
-                if (detail == null)
+                var result = await _service.GetByIdAsync(id);
+                if (!result.IsSuccess || result.Data == null)
                 {
-                    return NotFound<PrescriptionDetailDto>("处方不存在", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
+                    return NotFound<PrescriptionDto>(result.ErrorMessage ?? "处方不存在", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
                 }
+                
+                // 如果需要转换为PrescriptionDetailDto，这里应该进行映射
+                // 暂时假设PrescriptionDto可以用作PrescriptionDetailDto
+                var detail = result.Data;
                 return Success(detail, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PrescriptionDetailDto>(ex, "获取处方详情", id);
+                return HandleException<PrescriptionDto>(ex, "获取处方详情", id);
             }
         }
 
@@ -120,7 +130,7 @@ namespace LYBT.WebAPI.Controllers
         /// 新增处方 - 统一API响应格式
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PrescriptionDto>>> Add([FromBody] PrescriptionCreateDto dto)
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> Add([FromBody] PrescriptionCreateDto dto)
         {
             try
             {
@@ -128,14 +138,14 @@ namespace LYBT.WebAPI.Controllers
                 if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
-                var result = await _service.CreateAsync(dto, operatorId, operatorName);
-                if (result == null)
+                var result = await _service.CreateAsync(dto);
+                if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<PrescriptionDto>("新增处方失败", ApiErrorCodes.DATA_SAVE_FAILED);
+                    return BusinessFail<PrescriptionDto>(result.ErrorMessage ?? "新增处方失败", ApiErrorCodes.DATA_SAVE_FAILED);
                 }
 
-                LogOperation("新增处方成功", result, result.Id);
-                return Success(result, "处方创建成功");
+                LogOperation("新增处方成功", result.Data, result.Data.Id);
+                return Success(result.Data, "处方创建成功");
             }
             catch (Exception ex)
             {
@@ -147,37 +157,33 @@ namespace LYBT.WebAPI.Controllers
         /// 编辑处方 - 统一API响应格式
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PrescriptionDetailDto>>> Update(Guid id, [FromBody] PrescriptionEditDto dto)
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> Update(Guid id, [FromBody] PrescriptionEditDto dto)
         {
             try
             {
-                var idValidation = ValidateGuid<PrescriptionDetailDto>(id, "处方ID");
+                var idValidation = ValidateGuid<PrescriptionDto>(id, "处方ID");
                 if (idValidation != null) return idValidation;
 
-                var modelValidation = ValidateModel<PrescriptionDetailDto>();
+                var modelValidation = ValidateModel<PrescriptionDto>();
                 if (modelValidation != null) return modelValidation;
 
                 // 确保DTO的ID与路由参数一致
                 dto.Id = id;
                 var (operatorId, operatorName, _) = GetOperator();
-                var result = await _service.UpdateAsync(dto, operatorId, operatorName);
-                if (!result)
+                var result = await _service.UpdateAsync(id, dto);
+                if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<PrescriptionDetailDto>("编辑处方失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                    return BusinessFail<PrescriptionDto>(result.ErrorMessage ?? "编辑处方失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
 
-                // 获取更新后的资源
-                var updated = await _service.GetByIdAsync(dto.Id.ToString());
-                if (updated == null)
-                {
-                    return BusinessFail<PrescriptionDetailDto>("处方更新后查询失败", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
-                }
+                // 获取更新后的资源 - 可以直接使用更新结果
+                var updated = result.Data;
                 LogOperation("编辑处方成功", updated, dto.Id);
                 return Success(updated, "处方更新成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PrescriptionDetailDto>(ex, "编辑处方", new { id, dto });
+                return HandleException<PrescriptionDto>(ex, "编辑处方", new { id, dto });
             }
         }
 
@@ -185,7 +191,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除处方 - 统一API响应格式
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> Delete(Guid id)
+        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
         {
             try
             {
@@ -193,8 +199,8 @@ namespace LYBT.WebAPI.Controllers
                 if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
-                var result = await _service.DeleteAsync(id.ToString(), operatorId, operatorName);
-                if (!result)
+                var result = await _service.DeleteAsync(id);
+                if (!result.IsSuccess || !result.Data)
                 {
                     return NotFound("处方不存在", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
                 }
@@ -212,32 +218,21 @@ namespace LYBT.WebAPI.Controllers
         /// 作废处方 - 统一API响应格式
         /// </summary>
         [HttpPost("void/{id}")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PrescriptionDetailDto>>> Cancel(Guid id)
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> Cancel(Guid id)
         {
             try
             {
-                var validationResult = ValidateGuid<PrescriptionDetailDto>(id, "处方ID");
+                var validationResult = ValidateGuid<PrescriptionDto>(id, "处方ID");
                 if (validationResult != null) return validationResult;
 
                 var (operatorId, operatorName, _) = GetOperator();
-                var result = await _service.CancelAsync(id.ToString(), operatorId, operatorName);
-                if (!result)
-                {
-                    return NotFound<PrescriptionDetailDto>("处方不存在", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
-                }
-
-                // 获取更新后的资源
-                var updated = await _service.GetByIdAsync(id.ToString());
-                if (updated == null)
-                {
-                    return BusinessFail<PrescriptionDetailDto>("处方作废后查询失败", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
-                }
-                LogOperation("作废处方成功", updated, id);
-                return Success(updated, "处方已作废");
+                               
+                // 临时返回未实现错误
+                return BusinessFail<PrescriptionDto>("作废功能暂未实现", ApiErrorCodes.INTERNAL_ERROR);
             }
             catch (Exception ex)
             {
-                return HandleException<PrescriptionDetailDto>(ex, "作废处方", id);
+                return HandleException<PrescriptionDto>(ex, "作废处方", id);
             }
         }
     }

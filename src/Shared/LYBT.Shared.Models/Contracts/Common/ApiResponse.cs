@@ -120,7 +120,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         }
 
         // BaseApiController兼容方法
-        public static new ApiResponse Ok(string message = "操作成功")
+        public static ApiResponse Ok(string message = "操作成功")
         {
             return CreateSuccess(null, message);
         }

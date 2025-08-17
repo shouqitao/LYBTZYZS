@@ -4,8 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Desktop.Core.Models.Formulas;
+using AutoMapper;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -21,6 +21,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     {
         private readonly IFormulaService _formulaService;
         private readonly ILogger<FormulaTemplateDialogViewModel> _logger;
+        private readonly IMapper _mapper;
 
         #region Dialog Properties
 
@@ -31,22 +32,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Properties
 
-        private ObservableCollection<FormulaDto> _formulas = new();
-        public ObservableCollection<FormulaDto> Formulas
+        private ObservableCollection<FormulaInfo> _formulas = new();
+        public ObservableCollection<FormulaInfo> Formulas
         {
             get => _formulas;
             set => SetProperty(ref _formulas, value);
         }
 
-        private ObservableCollection<FormulaDto> _filteredFormulas = new();
-        public ObservableCollection<FormulaDto> FilteredFormulas
+        private ObservableCollection<FormulaInfo> _filteredFormulas = new();
+        public ObservableCollection<FormulaInfo> FilteredFormulas
         {
             get => _filteredFormulas;
             set => SetProperty(ref _filteredFormulas, value);
         }
 
-        private FormulaDto? _selectedFormula;
-        public FormulaDto? SelectedFormula
+        private FormulaInfo? _selectedFormula;
+        public FormulaInfo? SelectedFormula
         {
             get => _selectedFormula;
             set => SetProperty(ref _selectedFormula, value);
@@ -98,7 +99,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public DelegateCommand SelectCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand RefreshCommand { get; }
-        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; }
+        public DelegateCommand<FormulaInfo> ViewDetailsCommand { get; }
 
         #endregion
 
@@ -106,17 +107,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         public FormulaTemplateDialogViewModel(
             IFormulaService formulaService,
-            ILogger<FormulaTemplateDialogViewModel> logger)
+            ILogger<FormulaTemplateDialogViewModel> logger,
+            IMapper mapper)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             SelectCommand = new DelegateCommand(Select, CanSelect)
                 .ObservesProperty(() => SelectedFormula);
             CancelCommand = new DelegateCommand(Cancel);
             RefreshCommand = new DelegateCommand(async () => await LoadFormulasAsync());
-            ViewDetailsCommand = new DelegateCommand<FormulaDto>(ViewDetails);
+            ViewDetailsCommand = new DelegateCommand<FormulaInfo>(ViewDetails);
 
             // 初始加载数据
             Task.Run(async () => await LoadFormulasAsync());
@@ -154,8 +157,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 var result = await _formulaService.GetFormulasAsync();
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // 直接使用FormulaDto，无需转换
-                    Formulas = new ObservableCollection<FormulaDto>(result.Data);
+                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
+                    var formulaInfoList = _mapper.Map<List<FormulaInfo>>(result.Data);
+                    Formulas = new ObservableCollection<FormulaInfo>(formulaInfoList);
                     FilterFormulas();
                 }
                 else
@@ -193,7 +197,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     (f.DosageInstruction?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
-            FilteredFormulas = new ObservableCollection<FormulaDto>(filtered);
+            FilteredFormulas = new ObservableCollection<FormulaInfo>(filtered);
         }
 
         private bool CanSelect()
@@ -220,7 +224,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
-        private void ViewDetails(FormulaDto? formula)
+        private void ViewDetails(FormulaInfo? formula)
         {
             if (formula == null) return;
 

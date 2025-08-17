@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Services.Performance;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Core.Services.Performance
 {
@@ -14,9 +17,9 @@ namespace LYBT.Desktop.Core.Services.Performance
     public class SmartCachingUsageExample
     {
         private readonly IDataPreloadService _preloadService;
-        private readonly IHerbService _herbService; // 假设存在的药材服务
+        private readonly LYBT.Shared.Interfaces.Services.IHerbService _herbService; // 假设存在的药材服务
 
-        public SmartCachingUsageExample(IDataPreloadService preloadService, IHerbService herbService)
+        public SmartCachingUsageExample(IDataPreloadService preloadService, LYBT.Shared.Interfaces.Services.IHerbService herbService)
         {
             _preloadService = preloadService ?? throw new ArgumentNullException(nameof(preloadService));
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
@@ -156,9 +159,19 @@ namespace LYBT.Desktop.Core.Services.Performance
         /// </summary>
         private async Task<IList<object>> LoadHerbsFromServer(int startIndex, int count, CancellationToken cancellationToken)
         {
-            var pageIndex = startIndex / count;
-            var herbs = await _herbService.GetHerbsAsync(pageIndex, count);
-            return herbs.Cast<object>().ToList();
+            var pageIndex = (startIndex / count) + 1; // 修正为1基索引
+            var query = new HerbPagedQueryDto
+            {
+                PageIndex = pageIndex,
+                PageSize = count
+            };
+            
+            var result = await _herbService.GetPagedAsync(query);
+            if (result.IsSuccess && result.Data != null)
+            {
+                return result.Data.Items.Cast<object>().ToList();
+            }
+            return new List<object>();
         }
 
         /// <summary>
@@ -166,9 +179,14 @@ namespace LYBT.Desktop.Core.Services.Performance
         /// </summary>
         private async Task<IList<object>> SearchDataProvider(string keyword, int startIndex, int count, CancellationToken cancellationToken)
         {
-            var pageIndex = startIndex / count;
-            var results = await _herbService.SearchHerbsAsync(keyword, pageIndex, count);
-            return results.Cast<object>().ToList();
+            var result = await _herbService.SearchAsync(keyword);
+            if (result.IsSuccess && result.Data != null)
+            {
+                // 手动实现分页逻辑，因为SearchAsync不支持分页
+                var pagedResults = result.Data.Skip(startIndex).Take(count).ToList();
+                return pagedResults.Cast<object>().ToList();
+            }
+            return new List<object>();
         }
 
         /// <summary>
@@ -176,8 +194,13 @@ namespace LYBT.Desktop.Core.Services.Performance
         /// </summary>
         private async Task<IList<HerbDto>> SearchHerbsFromServer(string keyword, int startIndex, int count, CancellationToken cancellationToken)
         {
-            var pageIndex = startIndex / count;
-            return await _herbService.SearchHerbsAsync(keyword, pageIndex, count);
+            var result = await _herbService.SearchAsync(keyword);
+            if (result.IsSuccess && result.Data != null)
+            {
+                // 手动实现分页逻辑，因为SearchAsync不支持分页
+                return result.Data.Skip(startIndex).Take(count).ToList();
+            }
+            return new List<HerbDto>();
         }
 
         /// <summary>
@@ -246,23 +269,6 @@ namespace LYBT.Desktop.Core.Services.Performance
         }
     }
 
-    // 假设的药材 DTO 和服务接口
-    public class HerbDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Specification { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public decimal CurrentStock { get; set; }
-        public string Unit { get; set; } = string.Empty;
-        public bool IsEnabled { get; set; }
-        public string? Description { get; set; }
-        public string? PinyinCode { get; set; }
-    }
-
-    public interface IHerbService
-    {
-        Task<IList<HerbDto>> GetHerbsAsync(int pageIndex, int pageSize);
-        Task<IList<HerbDto>> SearchHerbsAsync(string keyword, int pageIndex, int pageSize);
-    }
+    // 注释：HerbDto类定义已迁移到Shared层，统一使用LYBT.Shared.Models.Contracts.Herbs.HerbDto
+    // 注释：IHerbService接口定义已迁移到Shared层，统一使用LYBT.Shared.Interfaces.Services.IHerbService
 }

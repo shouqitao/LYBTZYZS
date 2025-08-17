@@ -1,15 +1,14 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Patients;
+using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Desktop.Core.ViewModels.Base;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Services.Dialogs;
-using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Desktop.Core.Models.Common;
+using AutoMapper;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -22,6 +21,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly IPatientService _patientService;
         private readonly IUserSessionManager _userSessionManager;
         private readonly ICustomDialogService _dialogService;
+        private readonly IMapper _mapper;
 
         #region Properties
 
@@ -115,13 +115,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IPatientService patientService,
             IUserSessionManager userSessionManager,
             ICustomDialogService dialogService,
-            IEventAggregator eventAggregator)
+            IEventAggregator eventAggregator,
+            IMapper mapper)
             : base(eventAggregator)
         {
             _medicalCaseService = medicalCaseService;
             _patientService = patientService;
             _userSessionManager = userSessionManager;
             _dialogService = dialogService;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // Initialize commands
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
@@ -171,17 +173,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         Patients.Clear();
-                        foreach (var patientDetail in result.Data)
+                        // UltraThink四层架构：使用AutoMapper转换DTO → Info
+                        var patientInfoList = _mapper.Map<List<PatientInfo>>(result.Data);
+                        foreach (var patientInfo in patientInfoList)
                         {
-                            // Convert PatientDetailDto to PatientInfo
-                            var patientInfo = new PatientInfo
-                            {
-                                Id = patientDetail.Id,
-                                Name = patientDetail.Name,
-                                Phone = patientDetail.PhoneNumber,
-                                Gender = patientDetail.Gender,
-                                BirthDate = patientDetail.DateOfBirth
-                            };
                             Patients.Add(patientInfo);
                         }
                     });
@@ -301,12 +296,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 IsLoading = true;
                 StatusMessage = "创建医疗案例...";
 
-                var createDto = new MedicalCaseCreateDto
+                // UltraThink四层架构：创建Info模型然后转换为DTO
+                var medicalCaseInfo = new MedicalCaseInfo
                 {
                     PatientId = SelectedPatient.Id,
                     DoctorId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
-                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim()
+                    PatientName = SelectedPatient.Name,
+                    DoctorName = _userSessionManager.CurrentUser?.RealName ?? "未知医生",
+                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim(),
+                    CreateTime = DateTime.Now
                 };
+                
+                var createDto = _mapper.Map<MedicalCaseCreateDto>(medicalCaseInfo);
 
                 var result = await _medicalCaseService.CreateAsync(createDto);
                 if (result.IsSuccess)

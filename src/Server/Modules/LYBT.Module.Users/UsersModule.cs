@@ -1,4 +1,5 @@
-﻿using LYBT.Module.Users.Interfaces;
+﻿using LYBT.Shared.Interfaces.Services;
+using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,7 @@ namespace LYBT.Module.Users
         public static IServiceCollection AddUsersModuleServices(this IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>(); // 仓储层
-            services.AddScoped<IUserService, UserService>();           // 业务层
+            services.AddScoped<IUserService, UserService>();           // 业务层 - UltraThink重构：现在实现Shared接口
             return services;
         }
 
@@ -30,7 +31,7 @@ namespace LYBT.Module.Users
         {
             // 已弃用：改为使用统一的 AppDbContext
             services.AddScoped<IUserRepository, UserRepository>(); // 仓储层
-            services.AddScoped<IUserService, UserService>();           // 业务层
+            services.AddScoped<IUserService, UserService>();           // 业务层 - UltraThink重构：现在实现Shared接口
             return services;
         }
     }

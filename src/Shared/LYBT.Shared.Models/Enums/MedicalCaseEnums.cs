@@ -23,7 +23,15 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>已取消</summary>
         [Description("已取消")]
-        Cancelled = 3
+        Cancelled = 3,
+
+        /// <summary>暂停</summary>
+        [Description("暂停")]
+        Suspended = 4,
+
+        /// <summary>已归档</summary>
+        [Description("已归档")]
+        Archived = 5
     }
 
 }

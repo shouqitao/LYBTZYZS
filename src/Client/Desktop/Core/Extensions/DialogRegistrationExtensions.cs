@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 using Prism.Ioc;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.Extensions
 {

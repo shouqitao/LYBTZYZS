@@ -1,5 +1,8 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Web;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.WebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +17,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/herbs")]
     [Authorize]
-    public class HerbImportExportController : BaseController
+    public class HerbImportExportController : BaseApiController
     {
         private readonly IHerbService _herbService;
         private readonly ICacheService _cacheService;
@@ -36,7 +39,7 @@ namespace LYBT.WebAPI.Controllers
         /// 批量导入药材
         /// </summary>
         [HttpPost("import")]
-        public async Task<ActionResult> Import([FromBody] List<HerbImportDto> dtos)
+        public async Task<ActionResult<ApiResponse>> Import([FromBody] List<HerbImportDto> dtos)
         {
             try
             {
@@ -63,7 +66,7 @@ namespace LYBT.WebAPI.Controllers
                     });
                 }
 
-                var count = await _herbService.ImportAsync(dtos);
+                var count = await _herbService.ImportHerbsAsync(dtos);
 
                 // 清除相关缓存
                 await _cacheService.RemoveByPatternAsync("herbs");
@@ -103,24 +106,23 @@ namespace LYBT.WebAPI.Controllers
         /// 导出药材数据
         /// </summary>
         [HttpGet("export")]
-        public async Task<ActionResult<List<HerbDetailDto>>> Export([FromQuery] string? format = "json")
+        public async Task<ActionResult<ApiResponse<List<HerbDto>>>> Export([FromQuery] string? format = "json")
         {
             try
             {
-                var data = await _herbService.ExportAsync();
+                var result = await _herbService.ExportHerbsAsync();
                 
-                LogOperation("导出药材数据", new { Count = data?.Count ?? 0, Format = format }, null);
+                if (!result.IsSuccess)
+                    return HandleException<List<HerbDto>>(new Exception(result.ErrorMessage), "导出药材数据");
+                
+                var data = result.Data ?? new List<HerbDto>();
+                LogOperation("导出药材数据", new { Count = data.Count, Format = format }, null);
 
-                // 根据格式返回不同类型的响应
-                return format?.ToLower() switch
-                {
-                    "json" => Ok(data ?? new List<HerbDetailDto>()),
-                    _ => Ok(data ?? new List<HerbDetailDto>())
-                };
+                return Success(data, "导出成功");
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "导出药材数据");
+                return HandleException<List<HerbDto>>(ex, "导出药材数据");
             }
         }
 
@@ -168,7 +170,7 @@ namespace LYBT.WebAPI.Controllers
         /// 验证导入数据有效性
         /// </summary>
         [HttpPost("validate-import")]
-        public async Task<ActionResult> ValidateImport([FromBody] List<HerbImportDto> dtos)
+        public async Task<ActionResult<ApiResponse>> ValidateImport([FromBody] List<HerbImportDto> dtos)
         {
             try
             {

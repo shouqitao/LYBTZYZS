@@ -1,14 +1,13 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Herbs;
+using AutoMapper;
 using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
-// // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility // Temporarily disabled due to Prism 9 compatibility
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
@@ -20,6 +19,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     {
         private readonly IHerbService _herbService;
         private readonly ILogger<HerbSelectionDialogViewModel> _logger;
+        private readonly IMapper _mapper;
 
         #region Dialog Properties
 
@@ -30,22 +30,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Properties
 
-        private ObservableCollection<HerbDto> _herbs = new();
-        public ObservableCollection<HerbDto> Herbs
+        private ObservableCollection<HerbInfo> _herbs = new();
+        public ObservableCollection<HerbInfo> Herbs
         {
             get => _herbs;
             set => SetProperty(ref _herbs, value);
         }
 
-        private ObservableCollection<HerbDto> _filteredHerbs = new();
-        public ObservableCollection<HerbDto> FilteredHerbs
+        private ObservableCollection<HerbInfo> _filteredHerbs = new();
+        public ObservableCollection<HerbInfo> FilteredHerbs
         {
             get => _filteredHerbs;
             set => SetProperty(ref _filteredHerbs, value);
         }
 
-        private HerbDto? _selectedHerb;
-        public HerbDto? SelectedHerb
+        private HerbInfo? _selectedHerb;
+        public HerbInfo? SelectedHerb
         {
             get => _selectedHerb;
             set => SetProperty(ref _selectedHerb, value);
@@ -122,10 +122,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         public HerbSelectionDialogViewModel(
             IHerbService herbService,
-            ILogger<HerbSelectionDialogViewModel> logger)
+            ILogger<HerbSelectionDialogViewModel> logger,
+            IMapper mapper)
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             ConfirmCommand = new DelegateCommand(Confirm, CanConfirm)
@@ -172,7 +174,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 var herbsResult = await _herbService.GetHerbsAsync();
                 if (herbsResult.IsSuccess && herbsResult.Data != null)
                 {
-                    Herbs = new ObservableCollection<HerbDto>(herbsResult.Data);
+                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
+                    var herbInfoList = _mapper.Map<List<HerbInfo>>(herbsResult.Data);
+                    Herbs = new ObservableCollection<HerbInfo>(herbInfoList);
                     FilterHerbs();
 
                     // 如果是编辑模式，选中对应的药材
@@ -200,7 +204,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             var filtered = Herbs.AsEnumerable();
 
-            // 按分类过滤 - 暂时注释，HerbDto不包含Category属性
+            // 按分类过滤 - 暂时注释，HerbInfo不包含Category属性
             // if (SelectedCategory != "全部")
             // {
             //     filtered = filtered.Where(h => h.Category == SelectedCategory);
@@ -214,7 +218,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     (h.Name?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
-            FilteredHerbs = new ObservableCollection<HerbDto>(filtered);
+            FilteredHerbs = new ObservableCollection<HerbInfo>(filtered);
         }
 
         private bool CanConfirm()

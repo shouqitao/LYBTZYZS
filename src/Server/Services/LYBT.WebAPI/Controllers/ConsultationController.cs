@@ -1,13 +1,12 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Consultation.Interfaces;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -34,7 +33,7 @@ namespace LYBT.WebAPI.Controllers
         /// 分页查询看诊记录 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<PagedResult<ConsultationDto>>>> GetConsultations(
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.PagedApiResponse<ConsultationDto>>> GetConsultations(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? keyword = null,
@@ -48,7 +47,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return ValidationFail<PagedResult<ConsultationDto>>("页码和页大小参数无效（页码>0，页大小1-100）");
+                    return ValidationFailPaged<ConsultationDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
                 var query = new ConsultationPagedQueryDto
@@ -64,11 +63,11 @@ namespace LYBT.WebAPI.Controllers
                 };
 
                 var result = await _consultationService.GetPagedAsync(query);
-                return Success(result, "查询成功");
+                return HandlePagedServiceResult(result, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PagedResult<ConsultationDto>>(ex, "分页查询看诊记录", new { page, pageSize, keyword });
+                return HandleExceptionPaged<ConsultationDto>(ex, "分页查询看诊记录", new { page, pageSize, keyword });
             }
         }
 
@@ -84,11 +83,7 @@ namespace LYBT.WebAPI.Controllers
                 if (validation != null) return validation;
 
                 var result = await _consultationService.GetByIdAsync(id);
-                if (result == null)
-                {
-                    return NotFound<ConsultationDetailDto>("看诊记录不存在", ApiErrorCodes.CONSULTATION_NOT_FOUND);
-                }
-                return Success(result, "查询成功");
+                return HandleServiceResult(result, "查询成功");
             }
             catch (Exception ex)
             {
@@ -108,11 +103,20 @@ namespace LYBT.WebAPI.Controllers
                 if (validation != null) return validation;
 
                 var result = await _consultationService.GetByMedicalCaseIdAsync(medicalCaseId);
-                if (result == null)
+                if (!result.IsSuccess || result.Data == null || result.Data.Count == 0)
                 {
                     return NotFound<ConsultationDetailDto>("看诊记录不存在", ApiErrorCodes.CONSULTATION_NOT_FOUND);
                 }
-                return Success(result, "查询成功");
+                // 取第一个看诊记录转换为详细信息
+                var detailDto = new ConsultationDetailDto
+                {
+                    Id = result.Data[0].Id,
+                    PatientId = result.Data[0].PatientId,
+                    DoctorId = result.Data[0].UserId, // ConsultationDto使用UserId
+                    Status = Enum.TryParse<ConsultationStatus>(result.Data[0].Status, out var status) ? status : ConsultationStatus.InProgress,
+                    CreateTime = DateTime.Now // 使用当前时间作为默认值
+                };
+                return Success(detailDto, "查询成功");
             }
             catch (Exception ex)
             {
@@ -131,12 +135,21 @@ namespace LYBT.WebAPI.Controllers
                 var validation = ValidateModel<ConsultationDetailDto>();
                 if (validation != null) return validation;
 
-                var result = await _consultationService.StartConsultationAsync(dto);
-                if (result == null)
+                var result = await _consultationService.StartAsync(dto);
+                // 将ConsultationDto转换为ConsultationDetailDto
+                if (!result.IsSuccess || result.Data == null)
                 {
                     return BusinessFail<ConsultationDetailDto>("开始看诊失败", ApiErrorCodes.DATA_SAVE_FAILED);
                 }
-                return Success(result, "看诊已开始");
+                var detailDto = new ConsultationDetailDto
+                {
+                    Id = result.Data.Id,
+                    PatientId = result.Data.PatientId,
+                    DoctorId = result.Data.UserId, // ConsultationDto使用UserId
+                    Status = Enum.TryParse<ConsultationStatus>(result.Data.Status, out var status) ? status : ConsultationStatus.InProgress,
+                    CreateTime = DateTime.Now
+                };
+                return Success(detailDto, "看诊已开始");
             }
             catch (InvalidOperationException ex)
             {
@@ -162,12 +175,33 @@ namespace LYBT.WebAPI.Controllers
                 var modelValidation = ValidateModel<ConsultationDetailDto>();
                 if (modelValidation != null) return modelValidation;
 
-                var result = await _consultationService.UpdateConsultationAsync(id, dto);
-                if (result == null)
+                // 先获取现有记录，然后更新
+                var existingResult = await _consultationService.GetByIdAsync(id);
+                if (!existingResult.IsSuccess || existingResult.Data == null)
+                {
+                    return NotFound<ConsultationDetailDto>("看诊记录不存在", ApiErrorCodes.CONSULTATION_NOT_FOUND);
+                }
+                // 更新现有记录的字段（ConsultationUpdateDto只包含某些字段）
+                if (!string.IsNullOrEmpty(dto.ChiefComplaint)) existingResult.Data.ChiefComplaint = dto.ChiefComplaint;
+                if (!string.IsNullOrEmpty(dto.Diagnosis)) existingResult.Data.Diagnosis = dto.Diagnosis;
+                if (!string.IsNullOrEmpty(dto.Remark)) existingResult.Data.Remark = dto.Remark;
+                // 更新时间
+                existingResult.Data.UpdateTime = DateTime.Now;
+                var updateDto = existingResult.Data;
+                var result = await _consultationService.UpdateAsync(id, updateDto);
+                if (!result.IsSuccess || result.Data == null)
                 {
                     return BusinessFail<ConsultationDetailDto>("更新看诊信息失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
-                return Success(result, "看诊信息更新成功");
+                var detailDto = new ConsultationDetailDto
+                {
+                    Id = result.Data.Id,
+                    PatientId = result.Data.PatientId,
+                    DoctorId = result.Data.UserId, // ConsultationDto使用UserId
+                    Status = Enum.TryParse<ConsultationStatus>(result.Data.Status, out var updateStatus) ? updateStatus : ConsultationStatus.InProgress,
+                    CreateTime = DateTime.Now
+                };
+                return Success(detailDto, "看诊信息更新成功");
             }
             catch (InvalidOperationException ex) when (ex.Message.Contains("不存在"))
             {
@@ -194,7 +228,7 @@ namespace LYBT.WebAPI.Controllers
                 if (modelValidation != null) return modelValidation;
 
                 var result = await _consultationService.CompleteConsultationAsync(id, dto);
-                if (!result)
+                if (!result.IsSuccess || !result.Data)
                 {
                     return BusinessFail("完成看诊操作失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
@@ -223,8 +257,16 @@ namespace LYBT.WebAPI.Controllers
                 var validation = ValidateGuid<List<ConsultationDto>>(doctorId, "医生ID");
                 if (validation != null) return validation;
 
-                var result = await _consultationService.GetTodayConsultationsByDoctorAsync(doctorId);
-                return Success(result, $"查询成功，共{result.Count}条今日看诊记录");
+                // 使用现有方法获取医生的所有看诊记录，然后过滤今日的
+                var result = await _consultationService.GetByDoctorIdAsync(doctorId);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return HandleServiceResult(ServiceResult<List<ConsultationDto>>.Failure(result.ErrorMessage ?? "获取医生看诊记录失败"));
+                }
+                // 过滤今日的记录
+                var today = DateTime.Today;
+                var todayConsultations = result.Data.Where(c => c.ConsultationTime.Date == today).ToList();
+                return Success(todayConsultations, $"查询成功，共{todayConsultations.Count}条今日看诊记录");
             }
             catch (Exception ex)
             {
@@ -243,8 +285,9 @@ namespace LYBT.WebAPI.Controllers
                 var validation = ValidateGuid<List<ConsultationDto>>(patientId, "患者ID");
                 if (validation != null) return validation;
 
-                var result = await _consultationService.GetPatientHistoryAsync(patientId);
-                return Success(result, $"查询成功，共{result.Count}条历史看诊记录");
+                // 使用现有方法获取患者的所有看诊记录
+                var result = await _consultationService.GetByPatientIdAsync(patientId);
+                return HandleServiceResult(result, result.IsSuccess ? $"查询成功，共{result.Data?.Count ?? 0}条历史看诊记录" : "查询成功");
             }
             catch (Exception ex)
             {
@@ -266,7 +309,25 @@ namespace LYBT.WebAPI.Controllers
                 var validation = ValidateGuid<object>(doctorId, "医生ID");
                 if (validation != null) return validation;
 
-                var count = await _consultationService.GetDoctorConsultationCountAsync(doctorId, startDate, endDate);
+                // 使用现有方法获取医生所有看诊记录，然后根据日期范围过滤并计算数量
+                var consultationsResult = await _consultationService.GetByDoctorIdAsync(doctorId);
+                if (!consultationsResult.IsSuccess || consultationsResult.Data == null)
+                {
+                    return HandleServiceResult<object>(ServiceResult<object>.Failure(consultationsResult.ErrorMessage ?? "获取看诊记录失败"));
+                }
+                
+                // 根据日期范围过滤
+                var consultations = consultationsResult.Data.AsQueryable();
+                if (startDate.HasValue)
+                {
+                    consultations = consultations.Where(c => c.ConsultationTime >= startDate.Value);
+                }
+                if (endDate.HasValue)
+                {
+                    consultations = consultations.Where(c => c.ConsultationTime <= endDate.Value.AddDays(1));
+                }
+                
+                var count = consultations.Count();
                 var result = new { count };
                 return Success<object>(result, $"看诊数量：{count}");
             }
@@ -290,14 +351,33 @@ namespace LYBT.WebAPI.Controllers
                 var modelValidation = ValidateModel<ConsultationDetailDto>();
                 if (modelValidation != null) return modelValidation;
 
-                var result = await _consultationService.UpdateStatusAsync(id, (int)dto.Status, dto.Reason);
-                if (result == null)
+                // 先获取现有的看诊记录
+                var existingResult = await _consultationService.GetByIdAsync(id);
+                if (!existingResult.IsSuccess || existingResult.Data == null)
+                {
+                    return NotFound<ConsultationDetailDto>("看诊记录不存在", ApiErrorCodes.CONSULTATION_NOT_FOUND);
+                }
+                
+                // 更新状态
+                existingResult.Data.Status = dto.Status;
+                var result = await _consultationService.UpdateAsync(id, existingResult.Data);
+                
+                LogOperation("更新看诊状态", dto, id);
+                if (!result.IsSuccess || result.Data == null)
                 {
                     return BusinessFail<ConsultationDetailDto>("状态更新失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
                 
-                LogOperation("更新看诊状态", dto, id);
-                return Success(result, "状态更新成功");
+                // 转换为ConsultationDetailDto
+                var detailDto = new ConsultationDetailDto
+                {
+                    Id = result.Data.Id,
+                    PatientId = result.Data.PatientId,
+                    DoctorId = result.Data.UserId, // ConsultationDto使用UserId
+                    Status = Enum.TryParse<ConsultationStatus>(result.Data.Status, out var resultStatus) ? resultStatus : ConsultationStatus.InProgress,
+                    CreateTime = DateTime.Now
+                };
+                return Success(detailDto, "状态更新成功");
             }
             catch (InvalidOperationException ex)
             {
@@ -321,7 +401,7 @@ namespace LYBT.WebAPI.Controllers
                 if (validation != null) return validation;
 
                 var result = await _consultationService.DeleteAsync(id);
-                if (!result)
+                if (!result.IsSuccess || !result.Data)
                 {
                     return NotFound("看诊记录不存在", ApiErrorCodes.CONSULTATION_NOT_FOUND);
                 }

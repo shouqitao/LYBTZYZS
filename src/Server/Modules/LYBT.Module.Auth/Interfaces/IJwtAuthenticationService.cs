@@ -1,13 +1,12 @@
+using LYBT.Shared.Models.Enums;
 using System.Security.Claims;
 
-namespace LYBT.Module.Auth.Interfaces
-{
+namespace LYBT.Module.Auth.Interfaces {
 
     /// <summary>
     /// JWT认证服务接口
     /// </summary>
-    public interface IJwtAuthenticationService
-    {
+    public interface IJwtAuthenticationService {
 
         /// <summary>
         /// 生成JWT令牌
@@ -17,7 +16,7 @@ namespace LYBT.Module.Auth.Interfaces
         /// <param name="roles">用户角色</param>
         /// <param name="rememberMe">是否记住我（影响令牌过期时间）</param>
         /// <returns>JWT令牌</returns>
-        string GenerateToken(string userId, string userName, IEnumerable<string> roles, bool rememberMe = false);
+        string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false);
 
         /// <summary>
         /// 验证JWT令牌
@@ -44,11 +43,10 @@ namespace LYBT.Module.Auth.Interfaces
     /// <summary>
     /// 令牌用户信息
     /// </summary>
-    public class TokenUserInfo
-    {
+    public class TokenUserInfo {
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
-        public IEnumerable<string> Roles { get; set; } = new List<string>();
+        public UserRole Role { get; set; } = UserRole.Doctor;
         public DateTime ExpiresAt { get; set; }
     }
 }

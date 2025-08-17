@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Enums;
 using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
 

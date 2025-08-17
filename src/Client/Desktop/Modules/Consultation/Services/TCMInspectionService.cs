@@ -1,8 +1,5 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace LYBT.Desktop.Consultation.Services
 {

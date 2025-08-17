@@ -330,6 +330,157 @@ src/
 - **Patients** 模块处理患者信息管理和基础接待功能
 - **Prescriptions** 结合Formula（验方）和Herbs（中药材）完成处方开具
 
+## 🎯 UltraThink控制器架构标准（2025-08-17）
+
+### 三层控制器体系
+
+系统采用UltraThink统一控制器架构，所有控制器必须遵循以下三层体系：
+
+```
+BaseControllerCore (核心基础层)
+    ├── BaseApiController (业务API层) - 8个核心业务模块
+    │   ├── AuthController, UsersController, PatientsController
+    │   ├── ConsultationController, MedicalCaseController
+    │   ├── PrescriptionsController, HerbsController, FormulasController
+    │   └── HerbImportExportController
+    └── BaseSystemController (系统管理层) - 5个系统管理模块  
+        ├── HealthController, MonitoringController
+        ├── SecurityController, CacheController
+        └── PerformanceController
+```
+
+### 控制器分类规则
+
+#### 1. 业务API控制器 (继承BaseApiController)
+- **用途**: 所有面向前端的业务功能API
+- **响应格式**: 统一的 `ApiResponse<T>` 格式
+- **异常处理**: 使用 `HandleException<T>()` 方法
+- **服务结果**: 自动处理 `ServiceResult<T>` 转换
+
+**标准模板**:
+```csharp
+[ApiController]
+[ApiVersion("1")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[Authorize]
+public class ExampleController : BaseApiController
+{
+    public ExampleController(IExampleService service, ILogger<ExampleController> logger, IMemoryCache cache)
+        : base(logger, cache) { }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponse<ExampleDto>>> GetById(Guid id)
+    {
+        try
+        {
+            var validation = ValidateGuid<ExampleDto>(id, "资源ID");
+            if (validation != null) return validation;
+
+            var result = await _service.GetByIdAsync(id);
+            return HandleServiceResult(result, "查询成功");
+        }
+        catch (Exception ex)
+        {
+            return HandleException<ExampleDto>(ex, "获取资源详情", id);
+        }
+    }
+}
+```
+
+#### 2. 系统管理控制器 (继承BaseSystemController)
+- **用途**: 健康检查、监控、性能、安全等系统级功能
+- **响应格式**: 简化的系统响应格式
+- **异常处理**: 使用 `HandleSystemException()` 方法
+- **权限**: 通常需要Admin权限
+
+**标准模板**:
+```csharp
+[ApiController]
+[Route("api/v1/[controller]")]
+[Authorize(Roles = "Admin")]
+public class ExampleSystemController : BaseSystemController
+{
+    public ExampleSystemController(ILogger<ExampleSystemController> logger)
+        : base(logger) { }
+
+    [HttpGet]
+    public async Task<IActionResult> GetStatus()
+    {
+        try
+        {
+            var status = await GetSystemInfo();
+            return SystemOk(status, "系统状态正常");
+        }
+        catch (Exception ex)
+        {
+            return HandleSystemException(ex, "获取系统状态");
+        }
+    }
+}
+```
+
+### 响应格式标准
+
+#### 业务API响应 (ApiResponse<T>)
+```json
+{
+    "success": true,
+    "message": "操作成功",
+    "data": { "id": "123", "name": "示例" },
+    "timestamp": "2025-08-17T10:30:00Z",
+    "requestId": "req-123456"
+}
+```
+
+#### 系统管理响应
+```json
+{
+    "success": true,
+    "message": "系统正常",
+    "data": { "status": "healthy" },
+    "timestamp": 1692261000,
+    "requestId": "req-123456"
+}
+```
+
+### 强制性开发规则
+
+#### ✅ 必须遵循
+- **基类继承**: 业务API继承BaseApiController，系统管理继承BaseSystemController
+- **异常处理**: 所有public方法必须有try-catch异常处理
+- **参数验证**: 使用基类提供的验证方法 (`ValidateGuid`, `ValidateModel`)
+- **日志记录**: 重要操作使用 `LogOperation()` 记录日志
+- **响应统一**: 使用基类提供的响应方法 (`Success`, `HandleServiceResult`, `SystemOk`)
+
+#### ❌ 禁止行为
+- 直接继承 `ControllerBase`
+- 混合使用不同的响应格式
+- 忽略异常处理
+- 在业务API中使用系统响应格式，反之亦然
+
+### 创建新控制器检查清单
+
+新建业务API控制器时：
+- [ ] 继承 `BaseApiController` 
+- [ ] 添加正确的路由和版本配置
+- [ ] 使用 `HandleServiceResult` 处理服务结果
+- [ ] 使用 `HandleException<T>` 处理异常
+- [ ] 添加适当的授权配置
+- [ ] 记录关键操作日志
+
+新建系统管理控制器时：
+- [ ] 继承 `BaseSystemController`
+- [ ] 使用 `SystemOk/SystemError` 响应方法
+- [ ] 使用 `HandleSystemException` 处理异常
+- [ ] 添加管理员权限检查 `[Authorize(Roles = "Admin")]`
+- [ ] 返回类型使用 `IActionResult`
+
+### 相关文档
+
+- [控制器设计模式详解](docs/architecture/ultrathink-controller-design-patterns-20250817.md)
+- [API响应标准规范](docs/architecture/ultrathink-api-response-standards-20250817.md)
+- [控制器开发模板](docs/templates/controller-templates-20250817.md)
+
 ## ✅ 任务完成
 
 ### 任务管理

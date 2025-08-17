@@ -1,20 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Models;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
+using LYBT.Shared.Interfaces.Services;
+using AutoMapper;
 using LYBT.Desktop.Core.Interfaces.Services;
+// UltraThink四层架构：Desktop层使用AutoMapper转换PatientInfo到DTO，移除Contracts直接引用
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -26,6 +19,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly ICustomDialogService _commonDialogService;
         private readonly ICustomDialogService _dialogService;
         private readonly IPatientApiService _patientApiService;
+        private readonly IMapper _mapper;
 
         protected override string ModuleName => "患者管理";
 
@@ -41,12 +35,14 @@ namespace LYBT.Desktop.Patients.ViewModels
             IPatientApiService patientApiService,
             ICustomDialogService commonDialogService,
             ICustomDialogService dialogService,
+            IMapper mapper,
             Prism.Events.IEventAggregator eventAggregator)
             : base(patientService, eventAggregator)
         {
             _commonDialogService = commonDialogService;
             _dialogService = dialogService;
             _patientApiService = patientApiService;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             ToggleStatusCommand = new DelegateCommand<PatientInfo>(async patient => await ToggleStatusAsync(patient));
@@ -55,7 +51,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region 重写基类方法
 
-        protected override async Task<ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<PatientInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
+        protected override async Task<ServiceResult<PagedResult<PatientInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
         {
             try
             {
@@ -67,11 +63,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                 };
 
                 var result = await Service.GetPagedAsync(query);
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<PatientInfo>>.Success(result);
+                return ServiceResult<PagedResult<PatientInfo>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<LYBT.Shared.Models.Contracts.Common.PagedResult<PatientInfo>>.Failure($"加载患者列表失败: {ex.Message}");
+                return ServiceResult<PagedResult<PatientInfo>>.Failure($"加载患者列表失败: {ex.Message}");
             }
         }
 
@@ -84,7 +80,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 dialog.Title = "新增患者";
 
                 // 创建ViewModel并设置为添加模式
-                var viewModel = new PatientAddEditDialogViewModel(_patientApiService, null); // null表示新增
+                var viewModel = new PatientAddEditDialogViewModel(_patientApiService, _mapper, null); // null表示新增
                 dialog.DataContext = viewModel;
 
                 // 设置保存成功回调
@@ -120,7 +116,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 dialog.Title = "编辑患者";
 
                 // 创建ViewModel并设置为编辑模式
-                var viewModel = new PatientAddEditDialogViewModel(_patientApiService, item);
+                var viewModel = new PatientAddEditDialogViewModel(_patientApiService, _mapper, item);
                 dialog.DataContext = viewModel;
 
                 // 设置保存成功回调
@@ -171,14 +167,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             if (confirm)
             {
-                var newStatus = patient.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
-                var statusDto = new CommonStatusUpdateDto
-                {
-                    Status = newStatus,
-                    Reason = $"手动{action}患者档案"
-                };
-                
-                // 注意: 这里需要根据实际的服务方法调整
+                // UltraThink架构：直接使用Service层方法，无需手动创建DTO
                 ServiceResult result;
                 if (patient.Status == CommonStatus.Enabled)
                 {
@@ -217,12 +206,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (detailResult.IsSuccess)
                 {
                     var detailInfo = $"姓名: {patient.Name}\n" +
-                                   $"性别: {patient.GenderText}\n" +
-                                   $"年龄: {patient.AgeDescription}\n" +
+                                   $"性别: {patient.GenderDisplay}\n" +
+                                   $"年龄: {patient.AgeText}\n" +
                                    $"电话: {patient.Phone ?? "未填写"}\n" +
                                    $"地址: {patient.Address ?? "未填写"}\n" +
-                                   $"就诊次数: {patient.VisitCount}次\n" +
-                                   $"最后就诊: {(patient.LastVisitTime?.ToString("yyyy-MM-dd HH:mm") ?? "从未就诊")}";
+                                   $"状态: {patient.StatusText}\n" +
+                                   $"过敏史: {patient.AllergyDisplay}\n" +
+                                   $"创建时间: {patient.CreateTimeText}";
 
                     await _commonDialogService.ShowInformationAsync(detailInfo, $"患者详情 - {patient.Name}");
                 }

@@ -1,13 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
-using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Core.Models.Consultation;
 using Prism.Mvvm;
-using CoreWorkflowStep = LYBT.Desktop.Core.Models.Consultation.WorkflowStep;
 
 namespace LYBT.Desktop.Consultation.Services
 {

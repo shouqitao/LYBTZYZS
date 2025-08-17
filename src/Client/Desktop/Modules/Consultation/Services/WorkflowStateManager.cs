@@ -1,9 +1,5 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
 using System.ComponentModel;
-using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Consultation.Interfaces;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Consultation.Services
 {

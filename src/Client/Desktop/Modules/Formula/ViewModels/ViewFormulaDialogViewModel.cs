@@ -1,17 +1,11 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Models;
-using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
-using LYBT.Shared.Interfaces.Services;
 
-// UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
+// UltraThink四层架构修复：正确使用FormulaInfo作为Desktop层模型
 using LYBT.Desktop.Core.Models.Formulas;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 

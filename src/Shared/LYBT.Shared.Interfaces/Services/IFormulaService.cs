@@ -21,6 +21,7 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name);
         Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId);
         Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome);
+        Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId);
         
         // 新增Client层期望的方法签名
         Task<ServiceResult<List<FormulaDto>>> GetFormulasAsync(string? keyword = null, string? category = null);
@@ -31,5 +32,9 @@ namespace LYBT.Shared.Interfaces.Services
         
         // UltraThink P0修复：添加Client层期望的SearchFormulasAsync方法
         Task<ServiceResult<PagedResult<FormulaDto>>> SearchFormulasAsync(PagedQueryBaseDto query);
+        
+        // 验方分享功能
+        Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName);
+        Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName);
     }
 }

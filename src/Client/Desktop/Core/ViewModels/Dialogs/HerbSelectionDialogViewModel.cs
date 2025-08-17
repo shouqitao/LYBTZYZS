@@ -5,7 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Interfaces;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Desktop.Core.Mvvm;
@@ -19,7 +20,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
     /// </summary>
     public class HerbSelectionDialogViewModel : ObservableObject, ICustomDialogAware
     {
-        private readonly IHerbService _herbService;
+        private readonly LYBT.Shared.Interfaces.Services.IHerbService _herbService;
         private string _title = "选择中药材";
         private string _searchKeyword = string.Empty;
         private bool _isLoading;
@@ -125,7 +126,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 构造函数
         /// </summary>
-        public HerbSelectionDialogViewModel(IHerbService herbService)
+        public HerbSelectionDialogViewModel(LYBT.Shared.Interfaces.Services.IHerbService herbService)
         {
             _herbService = herbService;
 
@@ -184,9 +185,9 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         Herbs.Clear();
-                        foreach (var herb in result.Data)
+                        foreach (var herbDto in result.Data)
                         {
-                            Herbs.Add(herb);
+                            Herbs.Add(herbDto.ToHerbInfo());
                         }
                     });
                 }
@@ -220,9 +221,9 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         Herbs.Clear();
-                        foreach (var herb in filteredHerbs)
+                        foreach (var herbDto in filteredHerbs)
                         {
-                            Herbs.Add(herb);
+                            Herbs.Add(herbDto.ToHerbInfo());
                         }
                     });
                 }

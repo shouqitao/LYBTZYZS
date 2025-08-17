@@ -6,7 +6,7 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 // using LYBT.Module.Formulas.Interfaces; // Formulas已重命名为Formula
-using LYBT.Module.Herbs.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Prescriptions.Interfaces;
 
 namespace LYBT.Module.Prescriptions.Services
@@ -18,11 +18,11 @@ namespace LYBT.Module.Prescriptions.Services
     public class IntelligentPrescriptionService : IIntelligentPrescriptionService
     {
         // private readonly IFormulaService _formulaService; // 暂时注释，等待Formula模块重构
-        private readonly IHerbService _herbService;
+        private readonly LYBT.Shared.Interfaces.Services.IHerbService _herbService;
 
         public IntelligentPrescriptionService(
             // IFormulaService formulaService,
-            IHerbService herbService)
+            LYBT.Shared.Interfaces.Services.IHerbService herbService)
         {
             // _formulaService = formulaService;
             _herbService = herbService;
@@ -166,7 +166,8 @@ namespace LYBT.Module.Prescriptions.Services
         public async Task<HerbAvailabilityCheckResult> CheckHerbAvailabilityAsync(List<PrescriptionItemModel> items)
         {
             var result = new HerbAvailabilityCheckResult();
-            var allHerbs = await _herbService.GetAvailableHerbsAsync();
+            var herbsResponse = await _herbService.GetAvailableHerbsAsync();
+            var allHerbs = herbsResponse.IsSuccess ? herbsResponse.Data! : new List<HerbDto>();
             var availableHerbNames = allHerbs.Select(h => h.Name?.Trim().ToUpper()).ToHashSet();
 
             foreach (var item in items)

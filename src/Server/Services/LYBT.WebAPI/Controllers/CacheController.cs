@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Web;
 using LYBT.WebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class CacheController : BaseController
+    public class CacheController : BaseSystemController
     {
         private readonly ICacheService _cacheService;
 

@@ -9,7 +9,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
 
 namespace LYBT.Desktop.Shell.ViewModels

@@ -7,7 +7,7 @@ using System.Windows.Media;
 using System.Text;
 using System.Linq;
 using System.Dynamic;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 
 namespace LYBT.Desktop.Services

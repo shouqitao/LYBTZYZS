@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -8,22 +7,19 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Events;
+using AutoMapper;
 using LYBT.Desktop.Core.Models.Patients;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Desktop.Core.Models.Consultation;
+using LYBT.Desktop.Core.Models.Herbs;
+using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.MedicalCase;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Consultation.Services;
 using LYBT.Desktop.Consultation.Services.Interfaces;
-using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
-
-// UltraThink重构: 统一HerbInfo和HerbDto，FormulaInfo和FormulaDto，使用Dto作为统一模型
-using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Desktop.Core.Models.Formulas;
 namespace LYBT.Desktop.Consultation.ViewModels
 {
     /// <summary>
@@ -45,6 +41,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<ConsultationMainViewModel> _logger;
+        private readonly IMapper _mapper;
 
         #endregion
 
@@ -110,8 +107,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public decimal TotalPrice => _prescriptionManager.TotalPrice;
 
-        private ObservableCollection<HerbDto> _availableHerbs = new();
-        public ObservableCollection<HerbDto> AvailableHerbs
+        private ObservableCollection<HerbInfo> _availableHerbs = new();
+        public ObservableCollection<HerbInfo> AvailableHerbs
         {
             get => _availableHerbs;
             set => SetProperty(ref _availableHerbs, value);
@@ -157,7 +154,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ICustomDialogService dialogService,
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
-            ILogger<ConsultationMainViewModel> logger)
+            ILogger<ConsultationMainViewModel> logger,
+            IMapper mapper)
         {
             _dataService = dataService;
             _consultationService = consultationService;
@@ -170,11 +168,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _logger = logger;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             RefreshCommand = new DelegateCommand(async () => await RefreshDataAsync());
             NewConsultationCommand = new DelegateCommand(async () => await StartNewConsultationAsync());
             SaveConsultationCommand = new DelegateCommand(async () => await SaveConsultationAsync());
-            AddHerbCommand = new DelegateCommand<HerbDto>(AddHerbToPrescription);
+            AddHerbCommand = new DelegateCommand<HerbInfo>(AddHerbToPrescription);
             RemoveHerbCommand = new DelegateCommand<PrescriptionItemInfo>(RemoveHerbFromPrescription);
             ApplyFormulaCommand = new DelegateCommand<FormulaInfo>(async f => await ApplyFormulaAsync(f));
 
@@ -208,7 +207,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
             await Task.WhenAll(patientsTask, herbsTask, formulasTask);
 
             Patients = new ObservableCollection<PatientInfo>(await patientsTask);
-            AvailableHerbs = new ObservableCollection<HerbDto>(await herbsTask);
+            
+            // UltraThink四层架构：使用AutoMapper转换HerbDto → HerbInfo  
+            var herbDtos = await herbsTask;
+            var herbInfos = _mapper.Map<List<HerbInfo>>(herbDtos);
+            AvailableHerbs = new ObservableCollection<HerbInfo>(herbInfos);
+            
             AvailableFormulas = new ObservableCollection<FormulaInfo>(await formulasTask);
 
             _eventHandler.PublishStatusMessage("数据刷新完成", StatusMessageType.Success);
@@ -321,11 +325,16 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 处方管理
 
-        private void AddHerbToPrescription(HerbDto? herb)
+        private void AddHerbToPrescription(HerbInfo? herb)
         {
-            if (herb != null && _prescriptionManager.AddHerbToPrescription(herb))
+            if (herb != null)
             {
-                RaisePropertyChanged(nameof(TotalPrice));
+                // UltraThink四层架构：HerbInfo → HerbDto转换
+                var herbDto = _mapper.Map<HerbDto>(herb);
+                if (_prescriptionManager.AddHerbToPrescription(herbDto))
+                {
+                    RaisePropertyChanged(nameof(TotalPrice));
+                }
             }
         }
 
@@ -492,13 +501,17 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
             try
             {
-                var startDto = new ConsultationStartDto
+                // UltraThink四层架构：使用Info模型创建请求，然后通过AutoMapper转换为DTO
+                var startInfo = new ConsultationStartInfo
                 {
                     MedicalCaseId = MedicalCaseId.Value,
-                    PatientId = CurrentMedicalCase.PatientId
-                    // DoctorId已移除
+                    PatientId = CurrentMedicalCase.PatientId,
+                    DoctorId = Guid.Empty, // TODO: 需要从用户会话中获取医生ID
+                    EstimatedDuration = 30,
+                    ConsultationType = "常规看诊"
                 };
 
+                var startDto = _mapper.Map<ConsultationStartDto>(startInfo);
                 var result = await _consultationService.StartConsultationAsync(startDto);
                 
                 if (result.IsSuccess && result.Data != null)

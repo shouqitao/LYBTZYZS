@@ -1,16 +1,12 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Desktop.Core.Models.Patients;
-using LYBT.Desktop.Core.Models.MedicalCase;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Services.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using LYBT.Desktop.Core.Events;

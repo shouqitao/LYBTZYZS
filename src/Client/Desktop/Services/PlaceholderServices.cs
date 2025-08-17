@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
 
 namespace LYBT.Desktop.Services

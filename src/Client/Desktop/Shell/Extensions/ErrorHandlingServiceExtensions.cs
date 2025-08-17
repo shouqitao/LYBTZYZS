@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using LYBT.Desktop.Core.Services;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
