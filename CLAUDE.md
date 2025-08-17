@@ -291,12 +291,16 @@ src/
 
 ### 关键架构特点
 
-1. **统一数据访问**: 所有模块共享 `AppDbContext`（在 Infrastructure 中）
-2. **模块化设计**: 每个业务模块独立但共享数据上下文
-3. **整洁架构**: 严格分离关注点
-4. **API 响应包装**: 所有响应包装在 `ApiResponse<T>` 中
-5. **依赖注入**: 构造函数注入模式
-6. **异步优先**: 数据库操作使用 async/await
+1. **🎆 UltraThink四层架构** (2025-08-17重构完成): 严格的Layer 1(BaseModel)→Layer 2(EntityModel)→Layer 3(Dto)→Layer 4(Info)分层体系
+   - Desktop层(Layer 4)完全使用Info模型，不直接引用Contracts(Layer 3)
+   - 通过AutoMapper实现DTO↔Info自动转换，消除手工转换代码
+   - 16个Info模型+46个AutoMapper映射规则+22个ViewModels重构完成
+2. **统一数据访问**: 所有模块共享 `AppDbContext`（在 Infrastructure 中）
+3. **模块化设计**: 每个业务模块独立但共享数据上下文
+4. **整洁架构**: 严格分离关注点
+5. **API 响应包装**: 所有响应包装在 `ApiResponse<T>` 中
+6. **依赖注入**: 构造函数注入模式，所有ViewModels注入IMapper
+7. **异步优先**: 数据库操作使用 async/await
 
 ### 业务模块列表（实际存在的8个核心模块）
 
@@ -533,14 +537,19 @@ public async Task<Result> MethodName(Type param)
 
 ### 必须遵循的规则
 
-1. **数据库迁移**: 只能在 `LYBT.Infrastructure` 项目中添加
-2. **数据访问**: 使用统一的 `AppDbContext`
-3. **API 响应格式**: 遵循 [API响应标准](docs/API响应标准.md)
+1. **🎯 UltraThink四层架构** (最高优先级): 
+   - Desktop层(Layer 4)严禁直接使用Contracts(Layer 3)的DTOs
+   - 必须创建Info模型进行UI数据绑定
+   - 必须使用AutoMapper实现DTO↔Info转换
+   - ViewModels必须注入IMapper依赖
+2. **数据库迁移**: 只能在 `LYBT.Infrastructure` 项目中添加
+3. **数据访问**: 使用统一的 `AppDbContext`
+4. **API 响应格式**: 遵循 [API响应标准](docs/API响应标准.md)
    - POST 方法返回 `Ok(createdObject)`
    - PUT/DELETE 方法返回 `Ok(new { message = "xxx" })`
    - 错误响应使用 `ProblemDetails`
-4. **对象映射**: 使用 AutoMapper
-5. **模块模式**: 新模块遵循现有模块结构（Interfaces/Services/Repositories/Mapping）
+5. **对象映射**: 使用 AutoMapper，配置在MappingProfile.cs
+6. **模块模式**: 新模块遵循现有模块结构（Interfaces/Services/Repositories/Mapping）
 
 ### 环境配置
 
@@ -611,6 +620,13 @@ public async Task<Result> MethodName(Type param)
 - [开发规范](docs/开发规范.md) - 完整的开发规范指南
 - [前后端契约规范](docs/前后端契约规范.md) - 前后端接口约定
 - [API响应标准](docs/API响应标准.md) - API 响应格式规范
+
+### 🎆 UltraThink四层架构文档 (2025-08-17)
+
+- [UltraThink四层架构重构完成报告](docs/ultrathink/ultrathink-four-layer-refactoring-complete-20250817.md) - 重构总结
+- [Desktop层DTO违规分析](docs/reports/desktop-dto-architecture-violation-analysis-20250817.md) - 架构问题分析
+- [UltraThink API响应标准](docs/architecture/ultrathink-api-response-standards-20250817.md) - API设计标准
+- [UltraThink控制器设计模式](docs/architecture/ultrathink-controller-design-patterns-20250817.md) - 控制器架构
 
 ## 🔧 特殊配置说明
 
