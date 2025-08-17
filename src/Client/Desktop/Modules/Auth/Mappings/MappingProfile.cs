@@ -1,6 +1,8 @@
 using AutoMapper;
 using LYBT.Desktop.Core.Models.Auth;
+using LYBT.Desktop.Core.Models.Users;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Core;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Desktop.Auth.Mappings
@@ -65,10 +67,21 @@ namespace LYBT.Desktop.Auth.Mappings
         }
 
         /// <summary>
-        /// 配置会话相关映射（如果需要的话）
+        /// 配置会话相关映射
         /// </summary>
         private void ConfigureSessionMappings()
         {
+            // UserInfo → BaseUser 映射：前端用户模型到共享基础模型
+            CreateMap<UserInfo, BaseUser>()
+                .IncludeAllDerived();
+
+            // BaseUser → UserInfo 映射：共享基础模型到前端用户模型
+            CreateMap<BaseUser, UserInfo>()
+                .ForMember(dest => dest.IsSelected, opt => opt.Ignore())
+                .ForMember(dest => dest.IsExpanded, opt => opt.Ignore())
+                .ForMember(dest => dest.IsEditing, opt => opt.Ignore())
+                .ForMember(dest => dest.IsLoading, opt => opt.Ignore());
+
             // 预留：如果将来需要其他Auth相关的映射可以在这里添加
             // 例如：ChangePasswordRequest, LogoutRequest等的映射
         }

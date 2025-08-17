@@ -2,6 +2,8 @@ using Prism.Ioc;
 using Prism.Modularity;
 using LYBT.Desktop.Prescriptions.ViewModels;
 using LYBT.Desktop.Prescriptions.Views;
+using LYBT.Desktop.Prescriptions.Services;
+using LYBT.Desktop.Prescriptions.Services.Interfaces;
 
 namespace LYBT.Desktop.Prescriptions
 {
@@ -19,6 +21,9 @@ namespace LYBT.Desktop.Prescriptions
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            // UltraThink模块化架构：注册模块业务服务
+            containerRegistry.RegisterSingleton<IPrescriptionsModuleService, PrescriptionsModuleService>();
+            
             // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<PrescriptionManagementView, PrescriptionManagementViewModel>();
             containerRegistry.RegisterForNavigation<PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();

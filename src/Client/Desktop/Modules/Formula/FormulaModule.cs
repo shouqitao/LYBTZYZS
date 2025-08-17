@@ -3,6 +3,8 @@ using Prism.Ioc;
 using Prism.Modularity;
 using LYBT.Desktop.Formula.Views;
 using LYBT.Desktop.Formula.ViewModels;
+using LYBT.Desktop.Formula.Services;
+using LYBT.Desktop.Formula.Services.Interfaces;
 
 namespace LYBT.Desktop.Formula
 {
@@ -18,6 +20,9 @@ namespace LYBT.Desktop.Formula
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            // UltraThink模块化架构：注册模块核心业务服务
+            containerRegistry.RegisterSingleton<IFormulaModuleService, FormulaModuleService>();
+            
             // UltraThink Phase 3.4: 注册增强版验方管理ViewModel
             containerRegistry.RegisterForNavigation<FormulaManagementView, FormulaManagementViewModelEnhanced>();
             

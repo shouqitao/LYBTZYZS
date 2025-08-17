@@ -5,28 +5,78 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using LYBT.Desktop.Core.Models.Formulas;
-using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Formula.Services.Interfaces;
 using LYBT.Desktop.Core.ViewModels.Base;
-using SharedServices = LYBT.Shared.Interfaces.Services;
 using CoreServices = LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
+using Prism.Mvvm;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
     /// <summary>
     /// 验方管理增强版视图模型
-    /// UltraThink Phase 3.4: 迁移SystemManagement中更完整的Formula功能到业务模块
+    /// UltraThink模块化架构：使用FormulaModuleService独立实现业务逻辑
     /// </summary>
-    public class FormulaManagementViewModelEnhanced : BaseServiceManagementViewModel<FormulaInfo, SharedServices.IFormulaService>
+    public class FormulaManagementViewModelEnhanced : BindableBase
     {
-        private readonly CoreServices.ICustomDialogService _commonDialogService;
+        private readonly IFormulaModuleService _formulaModuleService;
         private readonly CoreServices.ICustomDialogService _dialogService;
-        private readonly SharedServices.IHerbService _herbService;
-        private readonly IFormulaApiService _formulaApiService;
+        private readonly Prism.Events.IEventAggregator _eventAggregator;
 
-        protected override string ModuleName => "验方模板管理";
+        public string ModuleName => "验方模板管理";
 
         #region Properties
+
+        private ObservableCollection<FormulaInfo> _items = new();
+        public ObservableCollection<FormulaInfo> Items
+        {
+            get => _items;
+            set => SetProperty(ref _items, value);
+        }
+
+        private FormulaInfo? _selectedItem;
+        public FormulaInfo? SelectedItem
+        {
+            get => _selectedItem;
+            set => SetProperty(ref _selectedItem, value);
+        }
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
+        private string _statusMessage = "就绪";
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set => SetProperty(ref _statusMessage, value);
+        }
+
+        private int _currentPage = 1;
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set => SetProperty(ref _currentPage, value);
+        }
+
+        private int _pageSize = 20;
+        public int PageSize
+        {
+            get => _pageSize;
+            set => SetProperty(ref _pageSize, value);
+        }
+
+        private int _totalCount;
+        public int TotalCount
+        {
+            get => _totalCount;
+            set => SetProperty(ref _totalCount, value);
+        }
 
         private ObservableCollection<string> _categories = new();
         public ObservableCollection<string> Categories
@@ -53,7 +103,19 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Commands
 
-        // UltraThink Phase 3.4: 从SystemManagement迁移的高级功能
+        // 基础CRUD命令
+        public DelegateCommand RefreshCommand { get; }
+        public DelegateCommand AddCommand { get; }
+        public DelegateCommand<FormulaInfo> EditCommand { get; }
+        public DelegateCommand<FormulaInfo> DeleteCommand { get; }
+        
+        // 分页命令
+        public DelegateCommand FirstPageCommand { get; }
+        public DelegateCommand PreviousPageCommand { get; }
+        public DelegateCommand NextPageCommand { get; }
+        public DelegateCommand LastPageCommand { get; }
+
+        // UltraThink模块化架构：增强功能命令
         public DelegateCommand ImportTemplatesCommand { get; }
         public DelegateCommand<FormulaInfo> CopyTemplateCommand { get; }
         public DelegateCommand ExportTemplateCommand { get; }
@@ -62,18 +124,25 @@ namespace LYBT.Desktop.Formula.ViewModels
         #endregion
 
         public FormulaManagementViewModelEnhanced(
-            SharedServices.IFormulaService formulaService,
-            IFormulaApiService formulaApiService,
-            CoreServices.ICustomDialogService commonDialogService,
+            IFormulaModuleService formulaModuleService,
             CoreServices.ICustomDialogService dialogService,
-            SharedServices.IHerbService herbService,
             Prism.Events.IEventAggregator eventAggregator)
-            : base(formulaService, eventAggregator)
         {
-            _commonDialogService = commonDialogService ?? throw new ArgumentNullException(nameof(commonDialogService));
+            _formulaModuleService = formulaModuleService ?? throw new ArgumentNullException(nameof(formulaModuleService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-            _formulaApiService = formulaApiService ?? throw new ArgumentNullException(nameof(formulaApiService));
+            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+
+            // 初始化基础CRUD命令
+            RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
+            AddCommand = new DelegateCommand(async () => await AddAsync());
+            EditCommand = new DelegateCommand<FormulaInfo>(async (item) => await EditAsync(item));
+            DeleteCommand = new DelegateCommand<FormulaInfo>(async (item) => await DeleteAsync(item));
+            
+            // 初始化分页命令
+            FirstPageCommand = new DelegateCommand(async () => await FirstPageAsync());
+            PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync());
+            NextPageCommand = new DelegateCommand(async () => await NextPageAsync());
+            LastPageCommand = new DelegateCommand(async () => await LastPageAsync());
 
             // 初始化增强功能命令
             ImportTemplatesCommand = new DelegateCommand(async () => await ImportTemplatesAsync());
@@ -81,11 +150,44 @@ namespace LYBT.Desktop.Formula.ViewModels
             ExportTemplateCommand = new DelegateCommand(async () => await ExportTemplateAsync());
             ViewTemplateCommand = new DelegateCommand<FormulaInfo>(async (template) => await ViewTemplate(template));
 
-            // 初始化分类
-            InitializeCategories();
+            // 初始化分类和数据
+            InitializeAsync();
         }
 
-        private void InitializeCategories()
+        private async void InitializeAsync()
+        {
+            await InitializeCategoriesAsync();
+            await RefreshAsync();
+        }
+
+        private async Task InitializeCategoriesAsync()
+        {
+            try
+            {
+                var result = await _formulaModuleService.GetCategoriesAsync();
+                if (result.IsSuccess)
+                {
+                    Categories.Clear();
+                    foreach (var category in result.Data!)
+                    {
+                        Categories.Add(category);
+                    }
+                    SelectedCategory = Categories.FirstOrDefault() ?? "全部";
+                }
+                else
+                {
+                    // 如果服务调用失败，使用默认分类
+                    InitializeDefaultCategories();
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"初始化分类失败: {ex.Message}";
+                InitializeDefaultCategories();
+            }
+        }
+
+        private void InitializeDefaultCategories()
         {
             Categories.Clear();
             Categories.Add("全部");
@@ -100,105 +202,163 @@ namespace LYBT.Desktop.Formula.ViewModels
             Categories.Add("时方");
             Categories.Add("验方");
             Categories.Add("其他");
-            SelectedCategory = Categories.First();
+            SelectedCategory = Categories.FirstOrDefault() ?? "全部";
         }
 
-        #region 重写基类方法
-
-        protected override async Task<ServiceResult<PagedResult<FormulaInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
+        public async Task RefreshAsync()
         {
             try
             {
-                // 创建查询请求
+                IsLoading = true;
+                StatusMessage = "正在加载验方模板...";
+
                 var queryRequest = new PagedQueryBaseDto
                 {
-                    PageIndex = request.PageIndex,
-                    PageSize = request.PageSize
+                    PageIndex = CurrentPage,
+                    PageSize = PageSize
                 };
 
-                var result = await Service.SearchFormulasAsync(queryRequest);
+                var result = await _formulaModuleService.GetPagedAsync(queryRequest);
                 
-                if (!result.IsSuccess || result.Data == null)
+                if (result.IsSuccess && result.Data != null)
                 {
-                    return ServiceResult<PagedResult<FormulaInfo>>.Failure(result.ErrorMessage ?? "查询验方失败");
-                }
-                
-                // 转换结果类型 - 使用构造函数创建，TotalPages是计算属性
-                var convertedResult = new PagedResult<FormulaInfo>(
-                    result.Data.Items.Select(dto => new FormulaInfo
+                    Items.Clear();
+                    foreach (var item in result.Data.Items)
                     {
-                        Id = dto.Id,
-                        Name = dto.Name,
-                        Category = dto.Category ?? "其他",
-                        Indications = dto.Indications ?? dto.Effect,
-                        CreateTime = dto.CreateTime,
-                        UpdateTime = dto.UpdateTime,
-                        Herbs = new List<FormulaHerbItem>()
-                    }).ToList(),
-                    result.Data.TotalCount,
-                    result.Data.CurrentPage,
-                    result.Data.PageSize);
-
-                return ServiceResult<PagedResult<FormulaInfo>>.Success(convertedResult);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<PagedResult<FormulaInfo>>.Failure($"加载验方模板列表失败: {ex.Message}");
-            }
-        }
-
-        protected override async Task AddAsync()
-        {
-            try
-            {
-                // TODO: 使用增强的添加对话框
-                StatusMessage = "添加验方模板功能开发中...";
-                await _commonDialogService.ShowInformationAsync("添加验方模板功能正在开发中", "提示");
-            }
-            catch (Exception ex)
-            {
-                await _commonDialogService.ShowErrorAsync($"打开新增验方模板对话框失败: {ex.Message}", "错误");
-            }
-        }
-
-        protected override async Task EditAsync(FormulaInfo item)
-        {
-            if (item == null) return;
-
-            try
-            {
-                // TODO: 使用增强的编辑对话框
-                StatusMessage = $"编辑验方模板 '{item.Name}' 功能开发中...";
-                await _commonDialogService.ShowInformationAsync($"编辑验方模板 '{item.Name}' 功能正在开发中", "提示");
-            }
-            catch (Exception ex)
-            {
-                await _commonDialogService.ShowErrorAsync($"打开编辑验方模板对话框失败: {ex.Message}", "错误");
-            }
-        }
-
-        protected override async Task DeleteAsync(FormulaInfo item)
-        {
-            if (item == null) return;
-
-            var confirm = await _commonDialogService.ShowConfirmationAsync(
-                $"确定要删除验方模板「{item.Name}」吗？",
-                "删除确认");
-
-            if (confirm)
-            {
-                var result = await Service.DeleteAsync(item.Id);
-                if (result.IsSuccess)
-                {
-                    await RefreshAsync();
-                    await _commonDialogService.ShowInformationAsync("验方模板删除成功", "成功");
+                        Items.Add(item);
+                    }
+                    
+                    TotalCount = result.Data.TotalCount;
+                    StatusMessage = $"已加载 {Items.Count} 条验方模板";
                 }
                 else
                 {
-                    await _commonDialogService.ShowErrorAsync(
-                        result.ErrorMessage ?? "删除验方模板失败",
-                        "错误");
+                    StatusMessage = result.ErrorMessage ?? "加载验方模板失败";
+                    await _dialogService.ShowErrorAsync(StatusMessage, "错误");
                 }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"刷新失败: {ex.Message}";
+                await _dialogService.ShowErrorAsync(StatusMessage, "错误");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        #region 分页方法
+
+        public async Task FirstPageAsync()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage = 1;
+                await RefreshAsync();
+            }
+        }
+
+        public async Task PreviousPageAsync()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage--;
+                await RefreshAsync();
+            }
+        }
+
+        public async Task NextPageAsync()
+        {
+            var totalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+            if (CurrentPage < totalPages)
+            {
+                CurrentPage++;
+                await RefreshAsync();
+            }
+        }
+
+        public async Task LastPageAsync()
+        {
+            var totalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+            if (CurrentPage < totalPages)
+            {
+                CurrentPage = totalPages;
+                await RefreshAsync();
+            }
+        }
+
+        #endregion
+
+        #region CRUD操作方法
+
+        public async Task AddAsync()
+        {
+            try
+            {
+                StatusMessage = "添加验方模板功能开发中...";
+                await _dialogService.ShowInformationAsync("添加验方模板功能正在开发中", "提示");
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowErrorAsync($"打开新增验方模板对话框失败: {ex.Message}", "错误");
+            }
+        }
+
+        public async Task EditAsync(FormulaInfo? item)
+        {
+            if (item == null) return;
+
+            try
+            {
+                StatusMessage = $"编辑验方模板 '{item.Name}' 功能开发中...";
+                await _dialogService.ShowInformationAsync($"编辑验方模板 '{item.Name}' 功能正在开发中", "提示");
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowErrorAsync($"打开编辑验方模板对话框失败: {ex.Message}", "错误");
+            }
+        }
+
+        public async Task DeleteAsync(FormulaInfo? item)
+        {
+            if (item == null) return;
+
+            try
+            {
+                var confirm = await _dialogService.ShowConfirmationAsync(
+                    $"确定要删除验方模板「{item.Name}」吗？",
+                    "删除确认");
+
+                if (confirm)
+                {
+                    IsLoading = true;
+                    StatusMessage = "正在删除验方模板...";
+
+                    var result = await _formulaModuleService.DeleteAsync(item.Id);
+                    if (result.IsSuccess)
+                    {
+                        await RefreshAsync();
+                        await _dialogService.ShowInformationAsync("验方模板删除成功", "成功");
+                        StatusMessage = "删除成功";
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync(
+                            result.ErrorMessage ?? "删除验方模板失败",
+                            "错误");
+                        StatusMessage = "删除失败";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowErrorAsync($"删除验方模板时发生错误: {ex.Message}", "错误");
+                StatusMessage = "删除失败";
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
@@ -314,36 +474,41 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 复制验方模板
         /// </summary>
-        private async Task CopyTemplate(FormulaInfo template)
+        private async Task CopyTemplate(FormulaInfo? template)
         {
             if (template == null) return;
 
-            var result = await _commonDialogService.ShowConfirmationAsync($"确定要复制验方模板 \"{template.Name}\" 吗？", "确认复制");
+            var result = await _dialogService.ShowConfirmationAsync($"确定要复制验方模板 \"{template.Name}\" 吗？", "确认复制");
 
             if (result)
             {
                 try
                 {
+                    IsLoading = true;
                     StatusMessage = "正在复制验方模板...";
                     var newName = $"{template.Name}_副本";
-                    var response = await Service.CopyAsync(template.Id, newName);
+                    var response = await _formulaModuleService.CopyAsync(template.Id, newName);
                     if (response.IsSuccess)
                     {
-                        await _commonDialogService.ShowInformationAsync($"验方模板 \"{template.Name}\" 已复制", "成功");
+                        await _dialogService.ShowInformationAsync($"验方模板 \"{template.Name}\" 已复制", "成功");
                         await RefreshAsync();
                         StatusMessage = "复制成功";
                     }
                     else
                     {
                         var error = response.ErrorMessage ?? "复制失败";
-                        await _commonDialogService.ShowErrorAsync($"复制验方模板失败：{error}", "错误");
+                        await _dialogService.ShowErrorAsync($"复制验方模板失败：{error}", "错误");
                         StatusMessage = "复制失败";
                     }
                 }
                 catch (Exception ex)
                 {
-                    await _commonDialogService.ShowErrorAsync($"复制验方模板时发生错误：{ex.Message}", "错误");
+                    await _dialogService.ShowErrorAsync($"复制验方模板时发生错误：{ex.Message}", "错误");
                     StatusMessage = "复制失败";
+                }
+                finally
+                {
+                    IsLoading = false;
                 }
             }
         }
@@ -351,13 +516,12 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 查看验方模板
         /// </summary>
-        private async Task ViewTemplate(FormulaInfo template)
+        private async Task ViewTemplate(FormulaInfo? template)
         {
             if (template == null) return;
 
             try
             {
-                // TODO: 实现完整的查看对话框
                 StatusMessage = $"查看验方模板 '{template.Name}' 功能开发中...";
                 
                 var viewMessage = $"验方模板详情：\n\n" +
@@ -368,21 +532,13 @@ namespace LYBT.Desktop.Formula.ViewModels
                                 $"更新时间：{template.UpdateTime:yyyy-MM-dd HH:mm}\n\n" +
                                 "完整的查看功能正在开发中...";
 
-                await _commonDialogService.ShowInformationAsync(viewMessage, $"查看验方模板 - {template.Name}");
+                await _dialogService.ShowInformationAsync(viewMessage, $"查看验方模板 - {template.Name}");
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"查看验方模板时发生错误：{ex.Message}", "错误");
+                await _dialogService.ShowErrorAsync($"查看验方模板时发生错误：{ex.Message}", "错误");
             }
         }
-
-        #endregion
-
-        #region 辅助方法
-
-        // UltraThink架构修复：移除手动转换方法，使用AutoMapper
-        // private FormulaInfo ConvertToFormulaInfo(FormulaDto dto) 已移除
-        // 现在统一使用 AutoMapper 进行 DTO → Info 映射
 
         #endregion
     }

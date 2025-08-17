@@ -16,27 +16,23 @@ using LYBT.Desktop.Core.Models.Formulas;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.MedicalCase;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Consultation.Services;
 using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+
 namespace LYBT.Desktop.Consultation.ViewModels
 {
     /// <summary>
-    /// 看诊主界面视图模型 - 增强版（集成MedicalCase）
+    /// 看诊主界面视图模型 - UltraThink架构标准版本
+    /// 完全使用IConsultationModuleService实现模块自包含，符合四层架构规范
     /// 负责协调看诊流程，与医疗案例模块深度集成
     /// </summary>
     public class ConsultationMainViewModel : BindableBase, INavigationAware
     {
         #region 依赖服务
 
-        private readonly IConsultationDataService _dataService;
-        private readonly IConsultationService _consultationService;
+        private readonly IConsultationModuleService _consultationModuleService;
         private readonly IMedicalCaseService _medicalCaseService;
-        private readonly IPrescriptionManager _prescriptionManager;
-        private readonly IFormulaManager _formulaManager;
-        private readonly IConsultationValidator _validator;
-        private readonly IConsultationEventHandler _eventHandler;
         private readonly ICustomDialogService _dialogService;
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
@@ -103,9 +99,16 @@ namespace LYBT.Desktop.Consultation.ViewModels
         }
 
         public ObservableCollection<PrescriptionItemInfo> PrescriptionItems => 
-            _prescriptionManager.PrescriptionItems;
+            _consultationModuleService.GetCurrentPrescriptionItems();
 
-        public decimal TotalPrice => _prescriptionManager.TotalPrice;
+        public decimal TotalPrice
+        {
+            get
+            {
+                var totalResult = _consultationModuleService.CalculatePrescriptionTotalAsync(CurrentConsultation?.Id ?? Guid.Empty).GetAwaiter().GetResult();
+                return totalResult.IsSuccess ? totalResult.Data : 0;
+            }
+        }
 
         private ObservableCollection<HerbInfo> _availableHerbs = new();
         public ObservableCollection<HerbInfo> AvailableHerbs
@@ -144,30 +147,20 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 构造函数
 
         public ConsultationMainViewModel(
-            IConsultationDataService dataService,
-            IConsultationService consultationService,
+            IConsultationModuleService consultationModuleService,
             IMedicalCaseService medicalCaseService,
-            IPrescriptionManager prescriptionManager,
-            IFormulaManager formulaManager,
-            IConsultationValidator validator,
-            IConsultationEventHandler eventHandler,
             ICustomDialogService dialogService,
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILogger<ConsultationMainViewModel> logger,
             IMapper mapper)
         {
-            _dataService = dataService;
-            _consultationService = consultationService;
-            _medicalCaseService = medicalCaseService;
-            _prescriptionManager = prescriptionManager;
-            _formulaManager = formulaManager;
-            _validator = validator;
-            _eventHandler = eventHandler;
-            _dialogService = dialogService;
-            _regionManager = regionManager;
-            _eventAggregator = eventAggregator;
-            _logger = logger;
+            _consultationModuleService = consultationModuleService ?? throw new ArgumentNullException(nameof(consultationModuleService));
+            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             RefreshCommand = new DelegateCommand(async () => await RefreshDataAsync());
@@ -200,22 +193,38 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private async Task RefreshDataAsync()
         {
-            var patientsTask = _dataService.LoadPatientsAsync();
-            var herbsTask = _dataService.LoadHerbsAsync();
-            var formulasTask = _dataService.LoadFormulasAsync();
+            try
+            {
+                // UltraThink四层架构：使用模块化服务加载数据
+                var patientsResult = await _consultationModuleService.GetAllPatientsAsync();
+                var herbsResult = await _consultationModuleService.GetAllHerbsAsync();
+                var formulasResult = await _consultationModuleService.GetAllFormulasAsync();
 
-            await Task.WhenAll(patientsTask, herbsTask, formulasTask);
+                if (patientsResult.IsSuccess)
+                {
+                    Patients = new ObservableCollection<PatientInfo>(patientsResult.Data);
+                }
 
-            Patients = new ObservableCollection<PatientInfo>(await patientsTask);
-            
-            // UltraThink四层架构：使用AutoMapper转换HerbDto → HerbInfo  
-            var herbDtos = await herbsTask;
-            var herbInfos = _mapper.Map<List<HerbInfo>>(herbDtos);
-            AvailableHerbs = new ObservableCollection<HerbInfo>(herbInfos);
-            
-            AvailableFormulas = new ObservableCollection<FormulaInfo>(await formulasTask);
+                if (herbsResult.IsSuccess)
+                {
+                    AvailableHerbs = new ObservableCollection<HerbInfo>(herbsResult.Data);
+                }
 
-            _eventHandler.PublishStatusMessage("数据刷新完成", StatusMessageType.Success);
+                if (formulasResult.IsSuccess)
+                {
+                    AvailableFormulas = new ObservableCollection<FormulaInfo>(formulasResult.Data);
+                }
+
+                // 发布状态消息
+                _eventAggregator.GetEvent<StatusMessageEvent>()
+                    .Publish(new StatusMessageEventArgs("数据刷新完成", StatusMessageType.Success));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "刷新数据失败");
+                _eventAggregator.GetEvent<StatusMessageEvent>()
+                    .Publish(new StatusMessageEventArgs($"数据刷新失败: {ex.Message}", StatusMessageType.Error));
+            }
         }
 
         #endregion
@@ -226,26 +235,49 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             if (SelectedPatient != null)
             {
-                _eventHandler.PublishPatientSelected(SelectedPatient);
+                _eventAggregator.GetEvent<PatientSelectedEvent>()
+                    .Publish(new PatientSelectedEventArgs(SelectedPatient));
             }
         }
 
         private async Task StartNewConsultationAsync()
         {
-            if (SelectedPatient == null) return;
-
-            var validation = _validator.ValidatePatientForConsultation(SelectedPatient);
-            if (!validation.IsValid)
+            if (SelectedPatient == null) 
             {
-                _eventHandler.PublishError("Consultation", validation.FirstError ?? "患者验证失败");
+                await _dialogService.ShowWarningAsync("请先选择患者", "提示");
                 return;
             }
 
-            CurrentConsultation = await _dataService.CreateConsultationAsync(SelectedPatient.Id);
-            if (CurrentConsultation != null)
+            try
             {
-                _prescriptionManager.ClearPrescription();
-                _eventHandler.PublishConsultationStarted(CurrentConsultation);
+                // UltraThink四层架构：使用模块化服务验证和创建看诊
+                var validationResult = await _consultationModuleService.ValidatePatientForConsultationAsync(SelectedPatient.Id);
+                if (!validationResult.IsSuccess)
+                {
+                    await _dialogService.ShowWarningAsync(validationResult.ErrorMessage ?? "患者验证失败", "验证失败");
+                    return;
+                }
+
+                var result = await _consultationModuleService.StartConsultationAsync(SelectedPatient.Id, Guid.Empty);
+                if (result.IsSuccess)
+                {
+                    CurrentConsultation = result.Data;
+                    await _consultationModuleService.ClearCurrentPrescriptionAsync();
+                    
+                    _eventAggregator.GetEvent<ConsultationStartedEvent>()
+                        .Publish(new ConsultationStartedEventArgs(CurrentConsultation));
+                        
+                    await _dialogService.ShowSuccessAsync("看诊已开始", "提示");
+                }
+                else
+                {
+                    await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "开始看诊失败", "错误");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "开始看诊失败");
+                await _dialogService.ShowErrorAsync($"开始看诊失败: {ex.Message}", "错误");
             }
         }
 
@@ -253,41 +285,54 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             if (CurrentConsultation == null) return;
 
-            var validation = await _prescriptionManager.ValidatePrescriptionAsync();
-            if (!validation)
+            try
             {
-                _eventHandler.PublishError("Prescription", "处方验证失败");
-                return;
-            }
-
-            var saved = await _prescriptionManager.SavePrescriptionAsync(
-                CurrentConsultation.Id,
-                CurrentConsultation.Diagnosis ?? "",
-                "汤剂", 7, "每日一剂，水煎服");
-
-            if (saved)
-            {
-                // 如果从MedicalCase导航过来，更新MedicalCase状态
-                if (IsNavigatedFromMedicalCase && MedicalCaseId.HasValue)
+                // UltraThink四层架构：使用模块化服务验证和保存
+                var validationResult = await _consultationModuleService.ValidateCurrentPrescriptionAsync();
+                if (!validationResult.IsSuccess)
                 {
-                    await UpdateMedicalCaseStatusAsync();
+                    await _dialogService.ShowWarningAsync(validationResult.ErrorMessage ?? "处方验证失败", "验证失败");
+                    return;
                 }
 
-                _eventHandler.PublishConsultationCompleted(CurrentConsultation);
-                
-                // 提示用户
-                await _dialogService.ShowSuccessAsync("看诊已完成并保存", "操作成功");
-                
-                // 如果从MedicalCase导航过来，返回到MedicalCase详情
-                if (IsNavigatedFromMedicalCase)
+                var saveResult = await _consultationModuleService.SaveConsultationWithPrescriptionAsync(
+                    CurrentConsultation.Id,
+                    CurrentConsultation.Diagnosis ?? "",
+                    "汤剂", 7, "每日一剂，水煎服");
+
+                if (saveResult.IsSuccess)
                 {
-                    NavigateBackToMedicalCase();
+                    // 如果从MedicalCase导航过来，更新MedicalCase状态
+                    if (IsNavigatedFromMedicalCase && MedicalCaseId.HasValue)
+                    {
+                        await UpdateMedicalCaseStatusAsync();
+                    }
+
+                    _eventAggregator.GetEvent<ConsultationCompletedEvent>()
+                        .Publish(new ConsultationCompletedEventArgs(CurrentConsultation));
+                    
+                    await _dialogService.ShowSuccessAsync("看诊已完成并保存", "操作成功");
+                    
+                    // 如果从MedicalCase导航过来，返回到MedicalCase详情
+                    if (IsNavigatedFromMedicalCase)
+                    {
+                        NavigateBackToMedicalCase();
+                    }
+                    else
+                    {
+                        CurrentConsultation = null;
+                        SelectedPatient = null;
+                    }
                 }
                 else
                 {
-                    CurrentConsultation = null;
-                    SelectedPatient = null;
+                    await _dialogService.ShowErrorAsync(saveResult.ErrorMessage ?? "保存看诊失败", "错误");
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "保存看诊失败");
+                await _dialogService.ShowErrorAsync($"保存看诊失败: {ex.Message}", "错误");
             }
         }
 
@@ -297,7 +342,6 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
             try
             {
-                // 更新医疗案例状态为已完成
                 var result = await _medicalCaseService.UpdateStatusAsync(
                     MedicalCaseId.Value, 
                     LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
@@ -325,36 +369,79 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 处方管理
 
-        private void AddHerbToPrescription(HerbInfo? herb)
+        private async void AddHerbToPrescription(HerbInfo? herb)
         {
-            if (herb != null)
+            if (herb != null && CurrentConsultation != null)
             {
-                // UltraThink四层架构：HerbInfo → HerbDto转换
-                var herbDto = _mapper.Map<HerbDto>(herb);
-                if (_prescriptionManager.AddHerbToPrescription(herbDto))
+                try
                 {
-                    RaisePropertyChanged(nameof(TotalPrice));
+                    var result = await _consultationModuleService.AddHerbToPrescriptionAsync(CurrentConsultation.Id, herb.Id, 10m);
+                    if (result.IsSuccess)
+                    {
+                        RaisePropertyChanged(nameof(TotalPrice));
+                        RaisePropertyChanged(nameof(PrescriptionItems));
+                    }
+                    else
+                    {
+                        await _dialogService.ShowWarningAsync(result.ErrorMessage ?? "添加药材失败", "提示");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "添加药材到处方失败");
+                    await _dialogService.ShowErrorAsync($"添加药材失败: {ex.Message}", "错误");
                 }
             }
         }
 
-        private void RemoveHerbFromPrescription(PrescriptionItemInfo? item)
+        private async void RemoveHerbFromPrescription(PrescriptionItemInfo? item)
         {
-            if (item != null && _prescriptionManager.RemoveHerbFromPrescription(item.HerbId))
+            if (item != null && CurrentConsultation != null)
             {
-                RaisePropertyChanged(nameof(TotalPrice));
+                try
+                {
+                    var result = await _consultationModuleService.RemoveHerbFromPrescriptionAsync(CurrentConsultation.Id, item.HerbId);
+                    if (result.IsSuccess)
+                    {
+                        RaisePropertyChanged(nameof(TotalPrice));
+                        RaisePropertyChanged(nameof(PrescriptionItems));
+                    }
+                    else
+                    {
+                        await _dialogService.ShowWarningAsync(result.ErrorMessage ?? "移除药材失败", "提示");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "从处方移除药材失败");
+                    await _dialogService.ShowErrorAsync($"移除药材失败: {ex.Message}", "错误");
+                }
             }
         }
 
         private async Task ApplyFormulaAsync(FormulaInfo? formula)
         {
-            if (formula == null) return;
+            if (formula == null || CurrentConsultation == null) return;
 
-            var items = _formulaManager.ApplyFormulaTemplate(formula);
-            _prescriptionManager.ImportPrescriptionItems(items);
-            RaisePropertyChanged(nameof(TotalPrice));
-
-            await Task.CompletedTask;
+            try
+            {
+                var result = await _consultationModuleService.ApplyFormulaTemplateAsync(CurrentConsultation.Id, formula);
+                if (result.IsSuccess)
+                {
+                    RaisePropertyChanged(nameof(TotalPrice));
+                    RaisePropertyChanged(nameof(PrescriptionItems));
+                    await _dialogService.ShowSuccessAsync($"验方 {formula.Name} 已应用到处方", "提示");
+                }
+                else
+                {
+                    await _dialogService.ShowWarningAsync(result.ErrorMessage ?? "应用验方失败", "提示");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "应用验方失败");
+                await _dialogService.ShowErrorAsync($"应用验方失败: {ex.Message}", "错误");
+            }
         }
 
         #endregion
@@ -363,11 +450,31 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private void SubscribeToEvents()
         {
-            _eventHandler.SubscribeToDataRefreshRequest(async args => 
+            _eventAggregator.GetEvent<DataRefreshRequestEvent>()
+                .Subscribe(async args => 
+                {
+                    if (args.RefreshType == DataRefreshType.All)
+                        await RefreshDataAsync();
+                });
+
+            // 订阅模块化服务的事件
+            _consultationModuleService.PrescriptionItemsChanged += OnPrescriptionItemsChanged;
+            _consultationModuleService.ConsultationStatusChanged += OnConsultationStatusChanged;
+        }
+
+        private void OnPrescriptionItemsChanged(object? sender, EventArgs e)
+        {
+            RaisePropertyChanged(nameof(PrescriptionItems));
+            RaisePropertyChanged(nameof(TotalPrice));
+        }
+
+        private void OnConsultationStatusChanged(object? sender, ConsultationStatusChangedEventArgs e)
+        {
+            if (e.ConsultationId == CurrentConsultation?.Id)
             {
-                if (args.RefreshType == DataRefreshType.All)
-                    await RefreshDataAsync();
-            });
+                CurrentConsultation.Status = e.NewStatus;
+                RaisePropertyChanged(nameof(CurrentConsultation));
+            }
         }
 
         #endregion
@@ -422,6 +529,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 _dialogService.ShowInformationAsync("看诊尚未完成，数据已自动保存", "提示");
             }
+
+            // 取消事件订阅
+            _consultationModuleService.PrescriptionItemsChanged -= OnPrescriptionItemsChanged;
+            _consultationModuleService.ConsultationStatusChanged -= OnConsultationStatusChanged;
         }
 
         #endregion
@@ -445,8 +556,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
                         Id = dto.Id,
                         PatientId = dto.PatientId,
                         PatientName = dto.PatientName,
-                        UserId = Guid.Empty, // 使用默认值
-                        Status = dto.Status, // UltraThink：直接使用枚举值，不需要解析
+                        UserId = Guid.Empty,
+                        Status = dto.Status,
                         CreateTime = dto.CreateTime
                     };
                     Title = $"看诊工作台 - {CurrentMedicalCase?.PatientName}";
@@ -476,8 +587,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
             try
             {
-                // 尝试获取现有的看诊记录
-                var result = await _consultationService.GetByMedicalCaseIdAsync(MedicalCaseId.Value);
+                // UltraThink四层架构：使用模块化服务获取看诊记录
+                var result = await _consultationModuleService.GetByMedicalCaseIdAsync(MedicalCaseId.Value);
                 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -501,23 +612,17 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
             try
             {
-                // UltraThink四层架构：使用Info模型创建请求，然后通过AutoMapper转换为DTO
-                var startInfo = new ConsultationStartInfo
-                {
-                    MedicalCaseId = MedicalCaseId.Value,
-                    PatientId = CurrentMedicalCase.PatientId,
-                    DoctorId = Guid.Empty, // TODO: 需要从用户会话中获取医生ID
-                    EstimatedDuration = 30,
-                    ConsultationType = "常规看诊"
-                };
-
-                var startDto = _mapper.Map<ConsultationStartDto>(startInfo);
-                var result = await _consultationService.StartConsultationAsync(startDto);
+                // UltraThink四层架构：使用模块化服务开始看诊
+                var result = await _consultationModuleService.StartConsultationForMedicalCaseAsync(
+                    MedicalCaseId.Value,
+                    CurrentMedicalCase.PatientId,
+                    Guid.Empty); // TODO: 需要从用户会话中获取医生ID
                 
                 if (result.IsSuccess && result.Data != null)
                 {
                     CurrentConsultation = result.Data;
-                    _eventHandler.PublishConsultationStarted(CurrentConsultation);
+                    _eventAggregator.GetEvent<ConsultationStartedEvent>()
+                        .Publish(new ConsultationStartedEventArgs(CurrentConsultation));
                     await _dialogService.ShowSuccessAsync("看诊已开始", "提示");
                 }
                 else

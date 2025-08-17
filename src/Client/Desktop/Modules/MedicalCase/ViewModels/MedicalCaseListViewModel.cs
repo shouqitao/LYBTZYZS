@@ -1,25 +1,30 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
+using System.Linq;
+using System.Collections.Generic;
 using LYBT.Desktop.Core.Models.MedicalCase;
+using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.MedicalCase.Services.Interfaces;
 using AutoMapper;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 using LYBT.Desktop.Core.Interfaces.Services;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 医疗案例列表视图模型 - 完整版
+    /// 医疗案例列表视图模型 - UltraThink架构重构版
+    /// UltraThink模块化架构：使用IMedicalCaseModuleService，实现模块自包含
     /// </summary>
-    public class MedicalCaseListViewModel : ServiceViewModel
+    public class MedicalCaseListViewModel : BindableBase
     {
-        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly IMedicalCaseModuleService _medicalCaseModuleService;
         private readonly ICustomDialogService _dialogService;
         private readonly IDialogService _prismDialogService;
         private readonly IRegionManager _regionManager;
@@ -82,6 +87,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             get => _totalPages;
             set => SetProperty(ref _totalPages, value);
         }
+        
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
 
         #endregion
 
@@ -101,18 +113,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #endregion
 
         public MedicalCaseListViewModel(
-            IMedicalCaseService medicalCaseService,
+            IMedicalCaseModuleService medicalCaseModuleService,
             ICustomDialogService dialogService,
             IDialogService prismDialogService,
             IRegionManager regionManager,
-            IEventAggregator eventAggregator,
             IMapper mapper)
-            : base(eventAggregator)
         {
-            _medicalCaseService = medicalCaseService;
-            _dialogService = dialogService;
-            _prismDialogService = prismDialogService;
-            _regionManager = regionManager;
+            _medicalCaseModuleService = medicalCaseModuleService ?? throw new ArgumentNullException(nameof(medicalCaseModuleService));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
+            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             MedicalCases = new ObservableCollection<MedicalCaseInfo>();
@@ -141,8 +151,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 IsLoading = true;
 
-                // UltraThink四层架构：使用ServiceResult模式获取数据
-                var result = await _medicalCaseService.GetAllAsync(); // 暂时使用GetAllAsync避免分页DTO实现复杂性
+                // UltraThink四层架构：使用模块化服务获取分页数据
+                var query = new PagedQueryBaseDto
+                {
+                    PageIndex = CurrentPage,
+                    PageSize = PageSize,
+                    Keyword = SearchKeyword
+                };
+
+                var result = await _medicalCaseModuleService.GetPagedAsync(query);
 
                 if (!result.IsSuccess)
                 {
@@ -152,38 +169,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 if (result.Data != null)
                 {
-                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
-                    var allMedicalCaseInfos = _mapper.Map<List<MedicalCaseInfo>>(result.Data);
-                    
-                    // 应用搜索和筛选（前端过滤）
-                    var filteredInfos = allMedicalCaseInfos.AsEnumerable();
-                    
-                    if (!string.IsNullOrEmpty(SearchKeyword))
-                    {
-                        var searchLower = SearchKeyword.ToLowerInvariant();
-                        filteredInfos = filteredInfos.Where(item => 
-                            item.PatientName.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
-                            item.DoctorName.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
-                            (item.ChiefComplaint?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                            (item.Diagnosis?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
-                    }
-
+                    // 应用状态筛选（前端过滤）
+                    var allItems = result.Data.Items;
                     if (FilterStatus.HasValue)
                     {
-                        filteredInfos = filteredInfos.Where(item => item.Status == FilterStatus.Value);
+                        allItems = allItems.Where(item => item.Status == FilterStatus.Value).ToList();
                     }
                     
-                    // 分页处理（前端分页）
-                    var pagedInfos = filteredInfos
-                        .Skip((CurrentPage - 1) * PageSize)
-                        .Take(PageSize)
-                        .ToList();
-                    
-                    TotalCount = filteredInfos.Count();
+                    TotalCount = result.Data.TotalCount;
                     TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
 
                     MedicalCases.Clear();
-                    foreach (var item in pagedInfos)
+                    foreach (var item in allItems)
                     {
                         MedicalCases.Add(item);
                     }
@@ -259,13 +256,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                // 更新状态为看诊中
-                var updateResult = await _medicalCaseService.UpdateStatusAsync(item.Id, MedicalCaseStatus.InConsultation);
+                // 使用模块化服务开始看诊
+                var updateResult = await _medicalCaseModuleService.StartConsultationAsync(item.Id);
                 
                 if (updateResult.IsSuccess)
                 {
                     // 导航到看诊界面 - 使用字符串参数方式
                     _regionManager.RequestNavigate("MainContentRegion", $"ConsultationMainView?MedicalCaseId={item.Id}&PatientId={item.PatientId}&ConsultationMode=Start");
+                    
+                    // 刷新列表显示最新状态
+                    await LoadDataAsync();
                 }
                 else
                 {
@@ -310,6 +310,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
+                // 首先检查是否可以删除
+                var canDeleteResult = await _medicalCaseModuleService.CanDeleteAsync(item.Id);
+                if (!canDeleteResult.IsSuccess || !canDeleteResult.Data)
+                {
+                    await _dialogService.ShowErrorAsync(
+                        canDeleteResult.ErrorMessage ?? "当前医疗案例状态不允许删除", 
+                        "无法删除");
+                    return;
+                }
+
                 var confirmed = await _dialogService.ShowConfirmationAsync(
                     $"确定要删除患者 '{item.PatientName}' 的医疗案例吗？\n此操作不可恢复。", 
                     "确认删除");
@@ -317,7 +327,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (!confirmed) return;
 
                 IsLoading = true;
-                var result = await _medicalCaseService.DeleteAsync(item.Id);
+                var result = await _medicalCaseModuleService.DeleteAsync(item.Id);
                 
                 if (result.IsSuccess)
                 {

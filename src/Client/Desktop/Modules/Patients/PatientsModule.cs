@@ -2,6 +2,8 @@ using Prism.Ioc;
 using Prism.Modularity;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.Views;
+using LYBT.Desktop.Patients.Services;
+using LYBT.Desktop.Patients.Services.Interfaces;
 
 namespace LYBT.Desktop.Patients
 {
@@ -19,6 +21,9 @@ namespace LYBT.Desktop.Patients
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            // UltraThink模块化架构：注册模块核心业务服务
+            containerRegistry.RegisterSingleton<IPatientModuleService, PatientModuleService>();
+            
             // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModelSimple>();
             containerRegistry.RegisterForNavigation<PatientAddEditDialog, PatientAddEditDialogViewModel>();

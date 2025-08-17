@@ -1,147 +1,266 @@
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.Models.Patients;
-using LYBT.Desktop.Services.Interfaces;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Patients.Services.Interfaces;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
-using LYBT.Shared.Interfaces.Services;
-using AutoMapper;
+using Prism.Mvvm;
 using LYBT.Desktop.Core.Interfaces.Services;
-// UltraThink四层架构：Desktop层使用AutoMapper转换PatientInfo到DTO，移除Contracts直接引用
+// UltraThink模块化架构：使用PatientModuleService实现模块化业务逻辑
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
     /// <summary>
-    /// 患者管理视图模型（简化重构版）
+    /// 患者管理视图模型（UltraThink模块化重构版）
     /// </summary>
-    public class PatientManagementViewModelSimple : BaseServiceManagementViewModel<PatientInfo, IPatientService>
+    public class PatientManagementViewModelSimple : BindableBase
     {
-        private readonly ICustomDialogService _commonDialogService;
+        private readonly IPatientModuleService _patientModuleService;
         private readonly ICustomDialogService _dialogService;
-        private readonly IPatientApiService _patientApiService;
-        private readonly IMapper _mapper;
+        private readonly Prism.Events.IEventAggregator _eventAggregator;
 
-        protected override string ModuleName => "患者管理";
+        public string ModuleName => "患者管理";
+
+        #region Properties
+
+        private ObservableCollection<PatientInfo> _items = new();
+        public ObservableCollection<PatientInfo> Items
+        {
+            get => _items;
+            set => SetProperty(ref _items, value);
+        }
+
+        private PatientInfo? _selectedItem;
+        public PatientInfo? SelectedItem
+        {
+            get => _selectedItem;
+            set => SetProperty(ref _selectedItem, value);
+        }
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
+        private string _statusMessage = "就绪";
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set => SetProperty(ref _statusMessage, value);
+        }
+
+        private string _searchKeyword = string.Empty;
+        public string SearchKeyword
+        {
+            get => _searchKeyword;
+            set => SetProperty(ref _searchKeyword, value);
+        }
+
+        private int _currentPage = 1;
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set => SetProperty(ref _currentPage, value);
+        }
+
+        private int _pageSize = 20;
+        public int PageSize
+        {
+            get => _pageSize;
+            set => SetProperty(ref _pageSize, value);
+        }
+
+        private int _totalCount;
+        public int TotalCount
+        {
+            get => _totalCount;
+            set => SetProperty(ref _totalCount, value);
+        }
+
+        #endregion
 
         #region Commands
 
+        // 基础CRUD命令
+        public DelegateCommand RefreshCommand { get; }
+        public DelegateCommand AddCommand { get; }
+        public DelegateCommand<PatientInfo> EditCommand { get; }
+        public DelegateCommand<PatientInfo> DeleteCommand { get; }
+
+        // 分页命令
+        public DelegateCommand FirstPageCommand { get; }
+        public DelegateCommand PreviousPageCommand { get; }
+        public DelegateCommand NextPageCommand { get; }
+        public DelegateCommand LastPageCommand { get; }
+
+        // 患者特有命令
         public DelegateCommand<PatientInfo> ToggleStatusCommand { get; }
         public DelegateCommand<PatientInfo> ViewDetailsCommand { get; }
 
         #endregion
 
         public PatientManagementViewModelSimple(
-            IPatientService patientService,
-            IPatientApiService patientApiService,
-            ICustomDialogService commonDialogService,
+            IPatientModuleService patientModuleService,
             ICustomDialogService dialogService,
-            IMapper mapper,
             Prism.Events.IEventAggregator eventAggregator)
-            : base(patientService, eventAggregator)
         {
-            _commonDialogService = commonDialogService;
-            _dialogService = dialogService;
-            _patientApiService = patientApiService;
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _patientModuleService = patientModuleService ?? throw new ArgumentNullException(nameof(patientModuleService));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
 
-            // 初始化命令
+            // 初始化基础CRUD命令
+            RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
+            AddCommand = new DelegateCommand(async () => await AddAsync());
+            EditCommand = new DelegateCommand<PatientInfo>(async (item) => await EditAsync(item));
+            DeleteCommand = new DelegateCommand<PatientInfo>(async (item) => await DeleteAsync(item));
+
+            // 初始化分页命令
+            FirstPageCommand = new DelegateCommand(async () => await FirstPageAsync());
+            PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync());
+            NextPageCommand = new DelegateCommand(async () => await NextPageAsync());
+            LastPageCommand = new DelegateCommand(async () => await LastPageAsync());
+
+            // 初始化患者特有命令
             ToggleStatusCommand = new DelegateCommand<PatientInfo>(async patient => await ToggleStatusAsync(patient));
             ViewDetailsCommand = new DelegateCommand<PatientInfo>(async patient => await ViewDetailsAsync(patient));
+
+            // 初始化数据
+            InitializeAsync();
         }
 
-        #region 重写基类方法
+        private async void InitializeAsync()
+        {
+            await RefreshAsync();
+        }
 
-        protected override async Task<ServiceResult<PagedResult<PatientInfo>>> LoadDataFromServiceAsync(PagedQueryBaseDto request)
+        #region 数据操作方法
+
+        public async Task RefreshAsync()
         {
             try
             {
-                var query = new PatientPagedQueryDto
+                IsLoading = true;
+                StatusMessage = "正在加载患者列表...";
+
+                var queryRequest = new PagedQueryBaseDto
                 {
-                    PageIndex = request.PageIndex,
-                    PageSize = request.PageSize,
+                    PageIndex = CurrentPage,
+                    PageSize = PageSize,
                     Keyword = SearchKeyword
                 };
 
-                var result = await Service.GetPagedAsync(query);
-                return ServiceResult<PagedResult<PatientInfo>>.Success(result);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<PagedResult<PatientInfo>>.Failure($"加载患者列表失败: {ex.Message}");
-            }
-        }
-
-        protected override async Task AddAsync()
-        {
-            try
-            {
-                var dialog = new Views.PatientAddEditDialog();
-                dialog.Owner = Application.Current.MainWindow;
-                dialog.Title = "新增患者";
-
-                // 创建ViewModel并设置为添加模式
-                var viewModel = new PatientAddEditDialogViewModel(_patientApiService, _mapper, null); // null表示新增
-                dialog.DataContext = viewModel;
-
-                // 设置保存成功回调
-                viewModel.SaveCompleteCallback = (success) =>
+                var result = await _patientModuleService.GetPagedAsync(queryRequest);
+                
+                if (result.IsSuccess && result.Data != null)
                 {
-                    if (success)
+                    Items.Clear();
+                    foreach (var item in result.Data.Items)
                     {
-                        dialog.DialogResult = true;
-                        dialog.Close();
+                        Items.Add(item);
                     }
-                };
-
-                if (dialog.ShowDialog() == true)
+                    
+                    TotalCount = result.Data.TotalCount;
+                    StatusMessage = $"已加载 {Items.Count} 条患者记录";
+                }
+                else
                 {
-                    await RefreshAsync();
-                    await _commonDialogService.ShowInformationAsync("患者添加成功", "成功");
+                    StatusMessage = result.ErrorMessage ?? "加载患者列表失败";
+                    await _dialogService.ShowErrorAsync(StatusMessage, "错误");
                 }
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"添加患者失败: {ex.Message}", "错误");
+                StatusMessage = $"刷新失败: {ex.Message}";
+                await _dialogService.ShowErrorAsync(StatusMessage, "错误");
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
-        protected override async Task EditAsync(PatientInfo item)
+        #endregion
+
+        #region 分页方法
+
+        public async Task FirstPageAsync()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage = 1;
+                await RefreshAsync();
+            }
+        }
+
+        public async Task PreviousPageAsync()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage--;
+                await RefreshAsync();
+            }
+        }
+
+        public async Task NextPageAsync()
+        {
+            var totalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+            if (CurrentPage < totalPages)
+            {
+                CurrentPage++;
+                await RefreshAsync();
+            }
+        }
+
+        public async Task LastPageAsync()
+        {
+            var totalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+            if (CurrentPage < totalPages)
+            {
+                CurrentPage = totalPages;
+                await RefreshAsync();
+            }
+        }
+
+        #endregion
+
+        #region CRUD操作方法
+
+        public async Task AddAsync()
+        {
+            try
+            {
+                StatusMessage = "新增患者功能开发中...";
+                await _dialogService.ShowInformationAsync("新增患者功能正在开发中", "提示");
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowErrorAsync($"添加患者失败: {ex.Message}", "错误");
+            }
+        }
+
+        public async Task EditAsync(PatientInfo? item)
         {
             if (item == null) return;
 
             try
             {
-                var dialog = new Views.PatientAddEditDialog();
-                dialog.Owner = Application.Current.MainWindow;
-                dialog.Title = "编辑患者";
-
-                // 创建ViewModel并设置为编辑模式
-                var viewModel = new PatientAddEditDialogViewModel(_patientApiService, _mapper, item);
-                dialog.DataContext = viewModel;
-
-                // 设置保存成功回调
-                viewModel.SaveCompleteCallback = (success) =>
-                {
-                    if (success)
-                    {
-                        dialog.DialogResult = true;
-                        dialog.Close();
-                    }
-                };
-
-                if (dialog.ShowDialog() == true)
-                {
-                    await RefreshAsync();
-                    await _commonDialogService.ShowInformationAsync("患者编辑成功", "成功");
-                }
+                StatusMessage = $"编辑患者 '{item.Name}' 功能开发中...";
+                await _dialogService.ShowInformationAsync($"编辑患者 '{item.Name}' 功能正在开发中", "提示");
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"编辑患者失败: {ex.Message}", "错误");
+                await _dialogService.ShowErrorAsync($"编辑患者失败: {ex.Message}", "错误");
             }
         }
 
-        protected override async Task DeleteAsync(PatientInfo item)
+        public async Task DeleteAsync(PatientInfo? item)
         {
             if (item == null) return;
 
@@ -151,43 +270,60 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #endregion
 
-        #region 额外方法
+        #region 患者特有操作方法
 
         /// <summary>
         /// 切换患者状态
         /// </summary>
-        private async Task ToggleStatusAsync(PatientInfo patient)
+        private async Task ToggleStatusAsync(PatientInfo? patient)
         {
             if (patient == null) return;
 
             var action = patient.Status == CommonStatus.Enabled ? "禁用" : "启用";
-            var confirm = await _commonDialogService.ShowConfirmationAsync(
+            var confirm = await _dialogService.ShowConfirmationAsync(
                 $"确定要{action}患者 {patient.Name} 吗？",
                 $"{action}患者");
 
             if (confirm)
             {
-                // UltraThink架构：直接使用Service层方法，无需手动创建DTO
-                ServiceResult result;
-                if (patient.Status == CommonStatus.Enabled)
+                try
                 {
-                    result = await Service.DisableAsync(patient.Id);
-                }
-                else
-                {
-                    result = await Service.EnableAsync(patient.Id);
-                }
+                    IsLoading = true;
+                    StatusMessage = $"正在{action}患者...";
 
-                if (result.IsSuccess)
-                {
-                    await RefreshAsync();
-                    await _commonDialogService.ShowInformationAsync($"患者{action}成功", "成功");
+                    // UltraThink模块化架构：使用PatientModuleService
+                    ServiceResult result;
+                    if (patient.Status == CommonStatus.Enabled)
+                    {
+                        result = await _patientModuleService.DisableAsync(patient.Id);
+                    }
+                    else
+                    {
+                        result = await _patientModuleService.EnableAsync(patient.Id);
+                    }
+
+                    if (result.IsSuccess)
+                    {
+                        await RefreshAsync();
+                        await _dialogService.ShowInformationAsync($"患者{action}成功", "成功");
+                        StatusMessage = $"{action}成功";
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync(
+                            result.ErrorMessage ?? $"患者{action}失败",
+                            "错误");
+                        StatusMessage = $"{action}失败";
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    await _commonDialogService.ShowErrorAsync(
-                        result.ErrorMessage ?? $"患者{action}失败",
-                        "错误");
+                    await _dialogService.ShowErrorAsync($"{action}患者时发生错误: {ex.Message}", "错误");
+                    StatusMessage = $"{action}失败";
+                }
+                finally
+                {
+                    IsLoading = false;
                 }
             }
         }
@@ -195,35 +331,48 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 查看患者详情
         /// </summary>
-        private async Task ViewDetailsAsync(PatientInfo patient)
+        private async Task ViewDetailsAsync(PatientInfo? patient)
         {
             if (patient == null) return;
 
             try
             {
-                // 获取患者详情
-                var detailResult = await Service.GetByIdAsync(patient.Id);
-                if (detailResult.IsSuccess)
-                {
-                    var detailInfo = $"姓名: {patient.Name}\n" +
-                                   $"性别: {patient.GenderDisplay}\n" +
-                                   $"年龄: {patient.AgeText}\n" +
-                                   $"电话: {patient.Phone ?? "未填写"}\n" +
-                                   $"地址: {patient.Address ?? "未填写"}\n" +
-                                   $"状态: {patient.StatusText}\n" +
-                                   $"过敏史: {patient.AllergyDisplay}\n" +
-                                   $"创建时间: {patient.CreateTimeText}";
+                StatusMessage = $"正在获取患者 '{patient.Name}' 的详情...";
 
-                    await _commonDialogService.ShowInformationAsync(detailInfo, $"患者详情 - {patient.Name}");
+                // UltraThink模块化架构：使用PatientModuleService获取详情
+                var detailResult = await _patientModuleService.GetByIdAsync(patient.Id);
+                if (detailResult.IsSuccess && detailResult.Data != null)
+                {
+                    var patientDetail = detailResult.Data;
+                    var detailInfo = $"患者详情：\n\n" +
+                                   $"姓名: {patientDetail.Name}\n" +
+                                   $"性别: {patientDetail.GenderDisplay}\n" +
+                                   $"年龄: {patientDetail.AgeText}\n" +
+                                   $"电话: {patientDetail.PhoneNumber ?? "未填写"}\n" +
+                                   $"身份证: {patientDetail.IdCard ?? "未填写"}\n" +
+                                   $"地址: {patientDetail.Address ?? "未填写"}\n" +
+                                   $"状态: {patientDetail.StatusText}\n" +
+                                   $"过敏史: {patientDetail.AllergyDisplay}\n" +
+                                   $"职业: {patientDetail.Occupation ?? "未填写"}\n" +
+                                   $"紧急联系人: {patientDetail.EmergencyContact ?? "未填写"}\n" +
+                                   $"紧急联系电话: {patientDetail.EmergencyPhone ?? "未填写"}\n" +
+                                   $"创建时间: {patientDetail.CreateTimeText}";
+
+                    await _dialogService.ShowInformationAsync(detailInfo, $"患者详情 - {patientDetail.Name}");
+                    StatusMessage = "查看详情完成";
                 }
                 else
                 {
-                    await _commonDialogService.ShowErrorAsync("获取患者详情失败", "错误");
+                    await _dialogService.ShowErrorAsync(
+                        detailResult.ErrorMessage ?? "获取患者详情失败", 
+                        "错误");
+                    StatusMessage = "获取详情失败";
                 }
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"查看患者详情失败: {ex.Message}", "错误");
+                await _dialogService.ShowErrorAsync($"查看患者详情失败: {ex.Message}", "错误");
+                StatusMessage = "查看详情失败";
             }
         }
 

@@ -23,7 +23,10 @@ namespace LYBT.Desktop.Consultation
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册看诊模块内部服务
+            // UltraThink模块化架构：注册模块业务服务
+            containerRegistry.RegisterSingleton<IConsultationModuleService, ConsultationModuleService>();
+            
+            // 注册看诊模块内部服务（兼容性保留）
             containerRegistry.Register<IConsultationDataService, ConsultationDataService>();
             containerRegistry.Register<IPrescriptionManager, PrescriptionManager>();
             containerRegistry.Register<IFormulaManager, FormulaManager>();
