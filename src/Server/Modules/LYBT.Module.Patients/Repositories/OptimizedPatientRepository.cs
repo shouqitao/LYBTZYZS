@@ -145,37 +145,33 @@ namespace LYBT.Module.Patients.Repositories
         }
 
         /// <summary>
-        /// 批量禁用患者档案
+        /// 批量禁用患者档案（EF Core 7.0优化版）
         /// </summary>
         public async Task<int> BatchDisableAsync(List<Guid> ids)
         {
             if (!ids.Any()) return 0;
             
-            var patients = await _dbSet.Where(p => ids.Contains(p.Id)).ToListAsync();
-            foreach (var patient in patients)
-            {
-                patient.Status = CommonStatus.Disabled;
-                patient.UpdateTime = DateTime.Now;
-            }
-            
-            return await _context.SaveChangesAsync();
+            // ✅ 性能优化：使用EF Core 7.0 ExecuteUpdate方法，避免加载实体到内存
+            return await _context.Patients
+                .Where(p => ids.Contains(p.Id))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(p => p.Status, CommonStatus.Disabled)
+                    .SetProperty(p => p.UpdateTime, DateTime.Now));
         }
 
         /// <summary>
-        /// 批量启用患者档案
+        /// 批量启用患者档案（EF Core 7.0优化版）
         /// </summary>
         public async Task<int> BatchEnableAsync(List<Guid> ids)
         {
             if (!ids.Any()) return 0;
             
-            var patients = await _dbSet.Where(p => ids.Contains(p.Id)).ToListAsync();
-            foreach (var patient in patients)
-            {
-                patient.Status = CommonStatus.Enabled;
-                patient.UpdateTime = DateTime.Now;
-            }
-            
-            return await _context.SaveChangesAsync();
+            // ✅ 性能优化：使用EF Core 7.0 ExecuteUpdate方法，避免加载实体到内存
+            return await _context.Patients
+                .Where(p => ids.Contains(p.Id))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(p => p.Status, CommonStatus.Enabled)
+                    .SetProperty(p => p.UpdateTime, DateTime.Now));
         }
 
         /// <summary>

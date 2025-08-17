@@ -97,7 +97,7 @@ namespace LYBT.WebAPI.Controllers
                 var token = _jwtService.GenerateToken(
                     user.Id.ToString(),
                     user.Username, 
-                    new[] { "Admin" }, // Role字段已移除，默认Admin
+                    UserRole.Admin, // Role字段已移除，默认Admin
                     dto.RememberMe
                 );
 
@@ -165,7 +165,7 @@ namespace LYBT.WebAPI.Controllers
                 var token = _jwtService.GenerateToken(
                     adminUser.Id.ToString(),
                     adminUser.Username,
-                    new[] { "Admin" }, // Role字段已移除，默认Admin
+                    UserRole.Admin, // Role字段已移除，默认Admin
                     dto.RememberMe
                 );
 
@@ -299,11 +299,13 @@ namespace LYBT.WebAPI.Controllers
                     return Unauthorized<object>("无效的用户身份", ApiErrorCodes.AUTHENTICATION_FAILED);
                 }
 
-                var role = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                var roleString = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
                 
                 // 生成新的JWT令牌
-                var roles = role != null ? new[] { role } : new string[0];
-                var newToken = _jwtService.GenerateToken(operatorId.ToString(), operatorName, roles, false);
+                var userRole = !string.IsNullOrEmpty(roleString) && Enum.TryParse<UserRole>(roleString, out var parsedRole) 
+                    ? parsedRole 
+                    : UserRole.Doctor; // 默认角色
+                var newToken = _jwtService.GenerateToken(operatorId.ToString(), operatorName, userRole, false);
 
                 var response = new
                 {

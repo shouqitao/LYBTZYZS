@@ -177,13 +177,15 @@ namespace LYBT.Module.Users.Repositories
                 return new List<UserModel>();
             }
 
-            // 使用原生SQL避免EF Core的Contains转换问题
-            var idStrings = string.Join("','", ids.Select(id => id.ToString()));
-            var sql = includeDisabled
-                ? $"SELECT * FROM Users WHERE Id IN ('{idStrings}')"
-                : $"SELECT * FROM Users WHERE Id IN ('{idStrings}') AND Status = 0";
+            // ✅ 安全修复：使用LINQ查询替代原生SQL，防止SQL注入
+            var query = _context.Users.Where(u => ids.Contains(u.Id));
+            
+            if (!includeDisabled)
+            {
+                query = query.Where(u => u.Status == CommonStatus.Enabled);
+            }
 
-            return await _context.Users.FromSqlRaw(sql).ToListAsync();
+            return await query.ToListAsync();
         }
 
         /// <summary>
@@ -218,11 +220,12 @@ namespace LYBT.Module.Users.Repositories
                 return 0;
             }
 
-            // 使用原生SQL避免EF Core的Contains转换问题
-            var idStrings = string.Join("','", ids.Select(id => id.ToString()));
-            var sql = $"UPDATE Users SET Status = {(isActive ? 0 : 1)} WHERE Id IN ('{idStrings}')";
-
-            return await _context.Database.ExecuteSqlRawAsync(sql);
+            // ✅ 安全修复：使用EF Core 7.0 ExecuteUpdate方法，防止SQL注入
+            var status = isActive ? CommonStatus.Enabled : CommonStatus.Disabled;
+            return await _context.Users
+                .Where(u => ids.Contains(u.Id))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.Status, status));
         }
 
         /// <summary>

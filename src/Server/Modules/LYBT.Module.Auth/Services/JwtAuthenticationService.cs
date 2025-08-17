@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -26,7 +27,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 生成JWT令牌
         /// </summary>
-        public string GenerateToken(string userId, string userName, IEnumerable<string> roles, bool rememberMe = false)
+        public string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false)
         {
             var claims = new List<Claim> {
                 new(JwtRegisteredClaimNames.Sub, userId),
@@ -36,7 +37,7 @@ namespace LYBT.Module.Auth.Services
             };
 
             // 添加角色声明
-            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -97,9 +98,14 @@ namespace LYBT.Module.Auth.Services
 
             var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
             var userName = principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
-            var roles = principal.FindAll(ClaimTypes.Role).Select(c => c.Value);
-
-            return GenerateToken(userId, userName, roles);
+            var roleString = principal.FindFirst(ClaimTypes.Role)?.Value ?? "Doctor";
+            
+            if (Enum.TryParse<UserRole>(roleString, out var role))
+            {
+                return GenerateToken(userId, userName, role);
+            }
+            
+            return GenerateToken(userId, userName, UserRole.Doctor);
         }
 
         /// <summary>
@@ -113,13 +119,18 @@ namespace LYBT.Module.Auth.Services
 
                 var userId = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
                 var userName = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
-                var roles = jsonToken.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value);
+                var roleString = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Doctor";
+
+                if (!Enum.TryParse<UserRole>(roleString, out var role))
+                {
+                    role = UserRole.Doctor;
+                }
 
                 return new TokenUserInfo
                 {
                     UserId = userId,
                     UserName = userName,
-                    Role = roles,
+                    Role = role,
                     ExpiresAt = jsonToken.ValidTo
                 };
             }

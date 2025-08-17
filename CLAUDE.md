@@ -272,7 +272,11 @@ python api_test_automation.py
 
 - **后端**: .NET 8, ASP.NET Core Web API, Entity Framework Core 8.0.17, SQL Server
 - **前端**: WPF (.NET 8), Prism.DryIoc 9.0.537, Refit
-- **认证**: JWT Bearer Token
+- **认证**: JWT Bearer Token (类型安全UserRole枚举)
+- **数据访问**: EF Core LINQ查询 + ExecuteUpdate批量操作 (零SQL注入)
+- **缓存**: IMemoryCache智能缓存系统 (统计和性能监控)
+- **监控**: 全面健康检查体系 (8个端点覆盖数据库/缓存/系统资源)
+- **连接池**: 优化配置(Max=20, Min=2)适合小型部署
 - **API文档**: Swagger/Swashbuckle 9.0.1
 
 ### 项目结构
@@ -295,12 +299,24 @@ src/
    - Desktop层(Layer 4)完全使用Info模型，不直接引用Contracts(Layer 3)
    - 通过AutoMapper实现DTO↔Info自动转换，消除手工转换代码
    - 16个Info模型+46个AutoMapper映射规则+22个ViewModels重构完成
-2. **统一数据访问**: 所有模块共享 `AppDbContext`（在 Infrastructure 中）
-3. **模块化设计**: 每个业务模块独立但共享数据上下文
-4. **整洁架构**: 严格分离关注点
-5. **API 响应包装**: 所有响应包装在 `ApiResponse<T>` 中
-6. **依赖注入**: 构造函数注入模式，所有ViewModels注入IMapper
-7. **异步优先**: 数据库操作使用 async/await
+2. **🔒 安全数据访问** (Phase 2完成): 零SQL注入风险的Repository层
+   - 所有Repository使用LINQ和参数化查询
+   - EF Core 7.0 ExecuteUpdate批量操作优化
+   - 类型安全的JWT认证系统(UserRole枚举)
+3. **⚡ 性能优化** (Phase 2完成): 适合小型部署的高性能配置
+   - 数据库连接池(Max=20, Min=2)适合<20用户规模
+   - 批量操作使用EF Core ExecuteUpdate避免内存加载
+   - 智能内存缓存系统提升响应速度
+4. **📊 全面监控** (Phase 2完成): 生产就绪的健康检查体系
+   - 8个健康检查端点涵盖数据库、缓存、系统资源
+   - Kubernetes就绪探针支持容器化部署
+   - 实时性能指标和系统状态监控
+5. **统一数据访问**: 所有模块共享 `AppDbContext`（在 Infrastructure 中）
+6. **模块化设计**: 每个业务模块独立但共享数据上下文
+7. **整洁架构**: 严格分离关注点
+8. **API 响应包装**: 所有响应包装在 `ApiResponse<T>` 中
+9. **依赖注入**: 构造函数注入模式，所有ViewModels注入IMapper
+10. **异步优先**: 数据库操作使用 async/await
 
 ### 业务模块列表（实际存在的8个核心模块）
 
@@ -318,6 +334,131 @@ src/
 - **Formula模块**：管理验方模板，支持经典验方库和医生个人验方，可被Prescriptions引用组合
 - **MedicalCase模块**：作为诊疗流程的聚合根，包含了原Records（病历档案）的功能
 - **Patients模块**：整合了基础的患者接待功能，简化了原Registration（挂号）流程
+
+## 🏥 实用化架构要求 (2025-08-17)
+
+### 项目规模定位
+
+**适用场景**: 20人以下用户的中小型诊所
+- 👨‍⚕️ **医生**: 2-5人
+- 👩‍💼 **接待员**: 1-2人  
+- 👨‍💻 **管理员**: 1人
+- 📊 **并发用户**: <10人
+- 📈 **日访问量**: <1000次
+
+### 核心业务需求
+
+1. **✅ 异地组网**: 多个诊所分点统一管理
+2. **✅ 数据同步**: 患者档案、药材库存共享
+3. **✅ 简单维护**: 技术人员有限，要求系统稳定
+4. **✅ 成本控制**: 避免过度复杂的基础设施
+
+### 实用化设计原则
+
+#### ✅ 保持简单有效
+- **单一AppDbContext**: 所有模块共享，管理简单
+- **内存缓存优先**: MemoryCache足够，避免Redis等复杂方案
+- **传统部署**: IIS + Windows Server，成熟稳定
+- **统一错误处理**: 现有BaseController体系已经很好
+
+#### ✅ 避免过度设计
+- ❌ **微服务架构** - 20人以下系统完全不需要
+- ❌ **事件溯源** - 增加复杂性，收益有限  
+- ❌ **CQRS** - 读写量都不大，过度设计
+- ❌ **容器化** - 传统部署就够用
+- ❌ **分布式缓存** - 内存缓存完全够用
+- ❌ **消息队列** - 同步调用就够了
+
+#### 🎯 重构优先级与完成状态
+
+**Phase 1: 安全基础** ✅ **已完成** (2025-08-17)
+```csharp
+// ✅ 修复SQL注入风险，使用LINQ替代原生SQL
+return await _context.Users
+    .Where(u => ids.Contains(u.Id))
+    .ExecuteUpdateAsync(setters => setters
+        .SetProperty(u => u.Status, status)
+        .SetProperty(u => u.UpdateTime, DateTime.Now));
+```
+- ✅ 所有Repository使用LINQ和参数化查询
+- ✅ EF Core 7.0 ExecuteUpdate批量操作优化
+- ✅ 类型安全JWT认证(UserRole枚举)
+
+**Phase 2: 基础架构优化** ✅ **已完成** (2025-08-17)  
+```csharp
+// ✅ 智能缓存和全面健康检查
+public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan expiry)
+{
+    if (_cache.TryGetValue(key, out T value)) return value;
+    value = await factory();
+    _cache.Set(key, value, expiry);
+    return value;
+}
+```
+- ✅ 数据库连接池优化(Max=20, Min=2)
+- ✅ 智能内存缓存系统(统计和性能监控)
+- ✅ 全面健康检查体系(8个端点)
+- ✅ Kubernetes就绪探针支持
+
+**Phase 3: 异地组网** 🟡 **待定** (暂时搁置)
+```csharp
+// 🔄 多租户支持：简单的ClinicId软隔离 (按需实现)
+public class BaseEntity
+{
+    public Guid Id { get; set; }
+    public string ClinicId { get; set; } // 诊所标识
+    public DateTime CreateTime { get; set; }
+}
+```
+- 🔄 根据用户实际需求决定是否实施
+- 🔄 目前专注单诊所部署，以交付为优先
+
+### 技术栈选择 (实用版)
+
+- 🌐 **部署**: IIS + Windows Server (成熟稳定)
+- 💾 **数据库**: SQL Server Express (免费，够用) 
+- 📡 **实时通信**: SignalR (微软官方，简单)
+- 🗄️ **缓存**: MemoryCache (内置，零配置)
+- 📊 **监控**: 简单的健康检查页面
+- 🔄 **备份**: 数据库自动备份脚本
+
+### 异地组网架构
+
+```
+总部诊所 (主节点)
+    ├── 数据库主节点
+    ├── 文件服务器  
+    └── 备份服务
+    
+分点诊所A (从节点)
+    ├── 本地缓存
+    ├── 离线支持
+    └── 数据同步
+    
+分点诊所B (从节点)  
+    ├── 本地缓存
+    ├── 离线支持
+    └── 数据同步
+```
+
+### 开发约束
+
+**✅ 必须遵循**:
+1. **Repository层安全化** - 消除SQL注入风险
+2. **多租户数据隔离** - ClinicId自动过滤
+3. **简单缓存策略** - 常用数据10分钟内存缓存
+4. **基础健康监控** - 数据库连接、磁盘空间检查
+
+**❌ 禁止引入**:
+1. **复杂的分布式技术** - 保持单体架构
+2. **过度的抽象层** - Domain层等复杂设计模式
+3. **高级缓存方案** - Redis、分布式缓存
+4. **容器化部署** - 增加运维复杂度
+
+### 相关文档
+
+- [后台架构实用化建议](docs/ultrathink/backend-architecture-practical-recommendations-20250817.md) - 实用化重构方案
+- [后台架构深度分析](docs/ultrathink/backend-architecture-analysis-20250817.md) - 完整架构评估 (参考)
 
 ## 核心工作流
 
