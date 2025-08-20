@@ -82,5 +82,19 @@ namespace LYBT.Module.Auth.Repositories
             // 登录保护信息通过AuthSession或SecurityAuditLog记录，此方法仅保留接口兼容性
             await Task.CompletedTask;
         }
+
+        /// <summary>
+        /// 更新用户安全状态 - UltraThink Phase 3 安全增强
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="failedLoginCount">失败登录次数</param>
+        /// <param name="lockoutEnd">锁定结束时间</param>
+        public async Task UpdateUserSecurityAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
+        {
+            await _dbSet.Where(u => u.Id == userId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.FailedLoginCount, failedLoginCount)
+                    .SetProperty(u => u.LockoutEnd, lockoutEnd));
+        }
     }
 }

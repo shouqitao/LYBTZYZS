@@ -46,10 +46,11 @@ namespace LYBT.Module.Prescriptions.Helpers
         #region CRUD操作
 
         /// <summary>
-        /// 创建新处方
+        /// 创建新处方 - 使用事务确保数据一致性
         /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName)
         {
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
                 // 验证创建数据
@@ -80,6 +81,15 @@ namespace LYBT.Module.Prescriptions.Helpers
                     return ServiceResult<PrescriptionDto>.Failure("保存处方失败");
                 }
 
+                // 如果处方关联医疗案例，更新案例状态
+                if (dto.ConsultationId.HasValue)
+                {
+                    await UpdateMedicalCaseStatusAsync(dto.ConsultationId.Value, "处方已创建");
+                }
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 // 记录操作日志
                 _logger.LogInformation("处方新增 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
                     operatorName, operatorId, model.Id);
@@ -90,6 +100,7 @@ namespace LYBT.Module.Prescriptions.Helpers
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 _logger.LogError(ex, "创建处方失败 - 操作者: {OperatorName}", operatorName);
                 return ServiceResult<PrescriptionDto>.Failure("创建处方失败", ex);
             }
@@ -198,10 +209,11 @@ namespace LYBT.Module.Prescriptions.Helpers
         #region 工作流操作
 
         /// <summary>
-        /// 批准处方
+        /// 批准处方 - 使用事务确保数据一致性
         /// </summary>
         public async Task<ServiceResult<bool>> ApproveAsync(Guid id, string approvalNote, Guid operatorId, string operatorName)
         {
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
                 var prescription = await _repository.GetByIdAsync(id);
@@ -227,6 +239,15 @@ namespace LYBT.Module.Prescriptions.Helpers
                     return ServiceResult<bool>.Failure("批准处方失败");
                 }
 
+                // 如果处方关联医疗案例，更新案例状态
+                if (prescription.MedicalCaseId != Guid.Empty)
+                {
+                    await UpdateMedicalCaseStatusAsync(prescription.MedicalCaseId, "处方已批准");
+                }
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 // 记录操作日志
                 _logger.LogInformation("处方审批通过 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}, 备注: {Note}", 
                     operatorName, operatorId, id, approvalNote);
@@ -235,6 +256,7 @@ namespace LYBT.Module.Prescriptions.Helpers
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 _logger.LogError(ex, "批准处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);
                 return ServiceResult<bool>.Failure("批准处方失败", ex);
             }
@@ -597,6 +619,30 @@ namespace LYBT.Module.Prescriptions.Helpers
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "执行智能检查失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, prescriptionId);
+            }
+        }
+
+        /// <summary>
+        /// 更新医疗案例状态
+        /// </summary>
+        private async Task UpdateMedicalCaseStatusAsync(Guid medicalCaseId, string statusRemark)
+        {
+            try
+            {
+                var medicalCase = await _dbContext.MedicalCases.FindAsync(medicalCaseId);
+                if (medicalCase != null)
+                {
+                    medicalCase.Remark = string.IsNullOrEmpty(medicalCase.Remark) 
+                        ? statusRemark 
+                        : $"{medicalCase.Remark}\n{statusRemark}";
+                    
+                    _dbContext.MedicalCases.Update(medicalCase);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "更新医疗案例状态失败 - 案例ID: {MedicalCaseId}, 状态: {Status}", 
+                    medicalCaseId, statusRemark);
             }
         }
 

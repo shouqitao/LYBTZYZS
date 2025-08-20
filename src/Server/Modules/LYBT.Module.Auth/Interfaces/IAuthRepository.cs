@@ -36,5 +36,13 @@ namespace LYBT.Module.Auth.Interfaces
         /// 更新登录防护相关字段（失败次数、锁定时间）
         /// </summary>
         Task UpdateUserLoginProtectionAsync(User user);
+
+        /// <summary>
+        /// 更新用户安全状态 - UltraThink Phase 3 安全增强
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="failedLoginCount">失败登录次数</param>
+        /// <param name="lockoutEnd">锁定结束时间</param>
+        Task UpdateUserSecurityAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd);
     }
 }
