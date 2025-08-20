@@ -1,55 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using AutoMapper;
-using LYBT.Entities.MedicalCase;
-using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.MedicalCase.Helpers;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.MedicalCase.Services
 {
     /// <summary>
-    /// 医疗案例服务实现 - 重构为Shared接口标准
+    /// 医疗案例服务实现 - UltraThink Helper模式重构版
+    /// 委托具体业务逻辑给Helper类处理，提高代码组织性和可维护性
+    /// 实现医疗案例的完整生命周期管理：创建→进行→完成→归档
     /// </summary>
     public class MedicalCaseService : IMedicalCaseService
     {
-        private readonly IMedicalCaseRepository _repository;
-        private readonly LYBT.Infrastructure.Data.AppDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly MedicalCaseQueryHelper _queryHelper;
+        private readonly MedicalCaseValidationHelper _validationHelper;
+        private readonly MedicalCaseBusinessHelper _businessHelper;
         private readonly ILogger<MedicalCaseService> _logger;
 
         public MedicalCaseService(
-            LYBT.Infrastructure.Data.AppDbContext context,
-            IMedicalCaseRepository repository,
-            IMapper mapper,
+            MedicalCaseQueryHelper queryHelper,
+            MedicalCaseValidationHelper validationHelper,
+            MedicalCaseBusinessHelper businessHelper,
             ILogger<MedicalCaseService> logger)
         {
-            _context = context;
-            _repository = repository;
-            _mapper = mapper;
-            _logger = logger;
+            _queryHelper = queryHelper ?? throw new ArgumentNullException(nameof(queryHelper));
+            _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
+            _businessHelper = businessHelper ?? throw new ArgumentNullException(nameof(businessHelper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        #region Shared Interface Implementation (委托给Helper模式)
+
         /// <summary>
-        /// 根据ID获取医疗案例详情 (实现Shared接口)
+        /// 根据ID获取医疗案例详情 (委托给QueryHelper)
         /// </summary>
         public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                    return ServiceResult<MedicalCaseDetailDto>.Failure("医疗案例不存在");
-
-                var detailDto = _mapper.Map<MedicalCaseDetailDto>(model);
-                return ServiceResult<MedicalCaseDetailDto>.Success(detailDto);
+                return await _queryHelper.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -59,54 +53,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 分页查询医疗案例 (实现Shared接口)
+        /// 分页查询医疗案例 (委托给QueryHelper)
         /// </summary>
         public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query)
         {
             try
             {
-                var dbQuery = _context.MedicalCases
-                    .Include(x => x.Consultation)
-                    .Where(x => x.Status == MedicalCaseStatus.InConsultation || x.Status == MedicalCaseStatus.Completed)
-                    .AsQueryable();
-
-                // 关键词搜索
-                if (!string.IsNullOrWhiteSpace(query.Keyword))
-                {
-                    dbQuery = dbQuery.Where(x =>
-                        x.Id.ToString().Contains(query.Keyword) ||
-                        x.PatientId.ToString().Contains(query.Keyword) ||
-                        x.DoctorId.ToString().Contains(query.Keyword) ||
-                        (x.Remark != null && x.Remark.Contains(query.Keyword))
-                    );
-                }
-
-                // 按ConsultationDate排序
-                dbQuery = query.IsDescending
-                    ? dbQuery.OrderByDescending(x => x.ConsultationDate)
-                    : dbQuery.OrderBy(x => x.ConsultationDate);
-
-                // 获取总数
-                var totalCount = await dbQuery.CountAsync();
-
-                // 分页
-                var items = await dbQuery
-                    .Skip((query.PageIndex - 1) * query.PageSize)
-                    .Take(query.PageSize)
-                    .ToListAsync();
-
-                // 映射到DTO
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(items);
-
-                var result = new PagedResult<MedicalCaseDto>
-                {
-                    Items = dtos,
-                    TotalCount = totalCount,
-                    CurrentPage = query.PageIndex,
-                    PageSize = query.PageSize
-                };
-
-                return ServiceResult<PagedResult<MedicalCaseDto>>.Success(result);
+                return await _queryHelper.GetPagedAsync(query);
             }
             catch (Exception ex)
             {
@@ -116,20 +69,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 创建新的医疗案例 (实现Shared接口)
+        /// 创建医疗案例 (委托给BusinessHelper)
         /// </summary>
         public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto)
         {
             try
             {
-                var model = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(dto);
-                model.Id = Guid.NewGuid();
-                model.Status = MedicalCaseStatus.InConsultation;
-
-                var created = await _repository.AddAsync(model);
-                var createdDto = _mapper.Map<MedicalCaseDto>(created);
-
-                return ServiceResult<MedicalCaseDto>.Success(createdDto);
+                return await _businessHelper.CreateAsync(dto);
             }
             catch (Exception ex)
             {
@@ -139,31 +85,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 更新医疗案例 (实现Shared接口)
+        /// 更新医疗案例 (委托给BusinessHelper)
         /// </summary>
         public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseUpdateDto dto)
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                    return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
-
-                // 更新字段
-                if (!string.IsNullOrWhiteSpace(dto.Status))
-                {
-                    if (Enum.TryParse<MedicalCaseStatus>(dto.Status, out var status))
-                        model.Status = status;
-                }
-                if (!string.IsNullOrWhiteSpace(dto.Remark))
-                    model.Remark = dto.Remark;
-
-                var updated = await _repository.UpdateAsync(model);
-                if (updated == null)
-                    return ServiceResult<MedicalCaseDto>.Failure("更新医疗案例失败");
-
-                var updatedDto = _mapper.Map<MedicalCaseDto>(updated);
-                return ServiceResult<MedicalCaseDto>.Success(updatedDto);
+                return await _businessHelper.UpdateAsync(id, dto);
             }
             catch (Exception ex)
             {
@@ -173,19 +101,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 删除医疗案例 (实现Shared接口)
+        /// 删除医疗案例 (委托给BusinessHelper)
         /// </summary>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-
-                model.Status = MedicalCaseStatus.Cancelled;
-                var result = await _repository.UpdateAsync(model);
-                return ServiceResult<bool>.Success(result != null);
+                return await _businessHelper.DeleteAsync(id);
             }
             catch (Exception ex)
             {
@@ -195,15 +117,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 根据患者ID获取医疗案例 (实现Shared接口)
+        /// 根据患者ID获取医疗案例 (委托给QueryHelper)
         /// </summary>
         public async Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId)
         {
             try
             {
-                var models = await _repository.GetByPatientIdAsync(patientId);
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(models);
-                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
+                return await _queryHelper.GetByPatientIdAsync(patientId);
             }
             catch (Exception ex)
             {
@@ -213,25 +133,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 获取患者的活跃医疗案例 (实现Shared接口)
+        /// 获取患者的活跃医疗案例 (委托给QueryHelper)
         /// </summary>
         public async Task<ServiceResult<MedicalCaseDto>> GetActiveByPatientIdAsync(Guid patientId)
         {
             try
             {
-                var activeCase = await _context.MedicalCases
-                    .Where(m => m.PatientId == patientId && 
-                               m.Status != MedicalCaseStatus.Cancelled && 
-                               (m.Status == MedicalCaseStatus.Registered || 
-                                m.Status == MedicalCaseStatus.InConsultation))
-                    .OrderByDescending(m => m.ConsultationDate)
-                    .FirstOrDefaultAsync();
-
-                if (activeCase == null)
-                    return ServiceResult<MedicalCaseDto>.Failure("患者没有活跃的医疗案例");
-
-                var dto = _mapper.Map<MedicalCaseDto>(activeCase);
-                return ServiceResult<MedicalCaseDto>.Success(dto);
+                return await _queryHelper.GetActiveByPatientIdAsync(patientId);
             }
             catch (Exception ex)
             {
@@ -241,23 +149,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 完成医疗案例 (实现Shared接口)
+        /// 完成医疗案例 (委托给BusinessHelper)
         /// </summary>
         public async Task<ServiceResult<bool>> CompleteAsync(Guid id, string completionReason)
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-
-                model.Status = MedicalCaseStatus.Completed;
-
-                if (!string.IsNullOrWhiteSpace(completionReason))
-                    model.Remark = completionReason;
-
-                var result = await _repository.UpdateAsync(model);
-                return ServiceResult<bool>.Success(result != null);
+                return await _businessHelper.CompleteAsync(id, completionReason);
             }
             catch (Exception ex)
             {
@@ -267,22 +165,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 暂停医疗案例 (实现Shared接口)
+        /// 暂停医疗案例 (委托给BusinessHelper)
         /// </summary>
         public async Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason)
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-
-                model.Status = MedicalCaseStatus.Suspended;
-                if (!string.IsNullOrWhiteSpace(reason))
-                    model.Remark = reason;
-
-                var result = await _repository.UpdateAsync(model);
-                return ServiceResult<bool>.Success(result != null);
+                return await _businessHelper.SuspendAsync(id, reason);
             }
             catch (Exception ex)
             {
@@ -292,19 +181,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 恢复医疗案例 (实现Shared接口)
+        /// 恢复医疗案例 (委托给BusinessHelper)
         /// </summary>
         public async Task<ServiceResult<bool>> ResumeAsync(Guid id)
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-
-                model.Status = MedicalCaseStatus.InConsultation;
-                var result = await _repository.UpdateAsync(model);
-                return ServiceResult<bool>.Success(result != null);
+                return await _businessHelper.ResumeAsync(id);
             }
             catch (Exception ex)
             {
@@ -314,22 +197,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 归档医疗案例 (实现Shared接口)
+        /// 归档医疗案例 (委托给BusinessHelper)
         /// </summary>
         public async Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason)
         {
             try
             {
-                var model = await _repository.GetByIdAsync(id);
-                if (model == null)
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-
-                model.Status = MedicalCaseStatus.Archived;
-                if (!string.IsNullOrWhiteSpace(archiveReason))
-                    model.Remark = archiveReason;
-
-                var result = await _repository.UpdateAsync(model);
-                return ServiceResult<bool>.Success(result != null);
+                return await _businessHelper.ArchiveAsync(id, archiveReason);
             }
             catch (Exception ex)
             {
@@ -339,67 +213,29 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 获取医疗案例统计信息 (实现Shared接口)
+        /// 获取医疗案例统计数据 (委托给QueryHelper)
         /// </summary>
         public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
             try
             {
-                var query = _context.MedicalCases
-                    .Where(m => m.Status != MedicalCaseStatus.Cancelled);
-
-                if (startDate.HasValue)
-                    query = query.Where(m => m.ConsultationDate >= startDate.Value);
-
-                if (endDate.HasValue)
-                    query = query.Where(m => m.ConsultationDate <= endDate.Value);
-
-                var totalCount = await query.CountAsync();
-                var completedCount = await query.Where(m => m.Status == MedicalCaseStatus.Completed).CountAsync();
-                var inProgressCount = await query.Where(m => m.Status == MedicalCaseStatus.InConsultation).CountAsync();
-                var pendingCount = await query.Where(m => m.Status == MedicalCaseStatus.Registered).CountAsync();
-
-                var statistics = new
-                {
-                    TotalCases = totalCount,
-                    CompletedCases = completedCount,
-                    InProgressCases = inProgressCount,
-                    PendingCases = pendingCount,
-                    CompletionRate = totalCount > 0 ? Math.Round((double)completedCount / totalCount * 100, 2) : 0
-                };
-
-                return ServiceResult<object>.Success(statistics);
+                return await _queryHelper.GetStatisticsAsync(startDate, endDate);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取医疗案例统计失败");
-                return ServiceResult<object>.Failure("获取医疗案例统计失败", ex);
+                _logger.LogError(ex, "获取医疗案例统计数据失败");
+                return ServiceResult<object>.Failure("获取统计数据失败", ex);
             }
         }
 
         /// <summary>
-        /// 搜索医疗案例 (实现Shared接口)
+        /// 搜索医疗案例 (委托给QueryHelper)
         /// </summary>
         public async Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(keyword))
-                    return ServiceResult<List<MedicalCaseDto>>.Success(new List<MedicalCaseDto>());
-
-                var cases = await _context.MedicalCases
-                    .Where(m => m.Status != MedicalCaseStatus.Cancelled && (
-                        m.Id.ToString().Contains(keyword) ||
-                        m.PatientId.ToString().Contains(keyword) ||
-                        m.DoctorId.ToString().Contains(keyword) ||
-                        (m.Remark != null && m.Remark.Contains(keyword))
-                    ))
-                    .OrderByDescending(m => m.ConsultationDate)
-                    .Take(20)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(cases);
-                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
+                return await _queryHelper.SearchAsync(keyword);
             }
             catch (Exception ex)
             {
@@ -409,76 +245,95 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 获取医疗案例历史记录 (实现Shared接口)
+        /// 获取医疗案例历史记录 (委托给QueryHelper)
         /// </summary>
         public async Task<ServiceResult<List<object>>> GetHistoryAsync(Guid id)
         {
             try
             {
-                // 简化实现，返回基本历史信息
-                var medicalCase = await _repository.GetByIdAsync(id);
-                if (medicalCase == null)
-                    return ServiceResult<List<object>>.Failure("医疗案例不存在");
-
-                var history = new List<object>
-                {
-                    new
-                    {
-                        Action = "创建",
-                        Time = medicalCase.ConsultationDate,
-                        Status = medicalCase.Status.ToString(),
-                        Remark = "医疗案例创建"
-                    }
-                };
-
-                if (medicalCase.Status == MedicalCaseStatus.Completed)
-                {
-                    history.Add(new
-                    {
-                        Action = "完成",
-                        Time = medicalCase.ConsultationDate,
-                        Status = medicalCase.Status.ToString(),
-                        Remark = "案例已完成"
-                    });
-                }
-
-                return ServiceResult<List<object>>.Success(history);
+                return await _queryHelper.GetHistoryAsync(id);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取医疗案例历史记录失败: {Id}", id);
-                return ServiceResult<List<object>>.Failure("获取医疗案例历史记录失败", ex);
+                return ServiceResult<List<object>>.Failure("获取历史记录失败", ex);
             }
         }
 
         /// <summary>
-        /// 更新医疗案例状态
+        /// 更新医疗案例状态 (委托给BusinessHelper)
         /// </summary>
         public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status)
         {
             try
             {
-                var medicalCase = await _repository.GetByIdAsync(id);
-                if (medicalCase == null)
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-
-                // 将int转换为MedicalCaseStatus枚举
-                if (!Enum.IsDefined(typeof(MedicalCaseStatus), status))
-                    return ServiceResult<bool>.Failure("无效的状态值");
-
-                medicalCase.Status = (MedicalCaseStatus)status;
-
-
-                await _context.SaveChangesAsync();
-                
-                _logger.LogInformation("更新医疗案例状态成功: {Id}, 新状态: {Status}", id, (MedicalCaseStatus)status);
-                return ServiceResult<bool>.Success(true);
+                return await _businessHelper.UpdateStatusAsync(id, status);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新医疗案例状态失败: {Id}", id);
-                return ServiceResult<bool>.Failure("更新医疗案例状态失败", ex);
+                return ServiceResult<bool>.Failure("更新案例状态失败", ex);
             }
         }
+
+        #endregion
+
+        #region 扩展方法 (利用Helper实现额外功能)
+
+        /// <summary>
+        /// 批量更新案例状态
+        /// </summary>
+        public async Task<ServiceResult<int>> BatchUpdateStatusAsync(Guid[] ids, int status)
+        {
+            try
+            {
+                if (!Enum.IsDefined(typeof(Shared.Models.Enums.MedicalCaseStatus), status))
+                {
+                    return ServiceResult<int>.Failure($"无效的状态值: {status}");
+                }
+
+                var medicalCaseStatus = (Shared.Models.Enums.MedicalCaseStatus)status;
+                return await _businessHelper.BatchUpdateStatusAsync(ids, medicalCaseStatus);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量更新医疗案例状态失败");
+                return ServiceResult<int>.Failure("批量更新失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 复制医疗案例
+        /// </summary>
+        public async Task<ServiceResult<MedicalCaseDto>> CloneAsync(Guid id)
+        {
+            try
+            {
+                return await _businessHelper.CloneAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "复制医疗案例失败: {Id}", id);
+                return ServiceResult<MedicalCaseDto>.Failure("复制医疗案例失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 检查患者是否有活跃案例
+        /// </summary>
+        public async Task<ServiceResult<bool>> HasActiveCaseAsync(Guid patientId)
+        {
+            try
+            {
+                return await _queryHelper.HasActiveCaseAsync(patientId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "检查患者活跃案例失败: {PatientId}", patientId);
+                return ServiceResult<bool>.Failure("检查患者活跃案例失败", ex);
+            }
+        }
+
+        #endregion
     }
 }

@@ -2,6 +2,7 @@ using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Repositories;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Module.MedicalCase.Mapping;
+using LYBT.Module.MedicalCase.Helpers;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,11 @@ namespace LYBT.Module.MedicalCase
         {
             // 注册仓储服务
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
+
+            // UltraThink Helper模式：注册业务助手类
+            services.AddScoped<MedicalCaseQueryHelper>();
+            services.AddScoped<MedicalCaseValidationHelper>();
+            services.AddScoped<MedicalCaseBusinessHelper>();
 
             // 注册业务服务
             services.AddScoped<IMedicalCaseService, MedicalCaseService>();

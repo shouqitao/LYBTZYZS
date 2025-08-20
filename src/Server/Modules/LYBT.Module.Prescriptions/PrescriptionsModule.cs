@@ -2,6 +2,7 @@ using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
+using LYBT.Module.Prescriptions.Helpers;
 using LYBT.Module.Prescriptions.Mapping;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +25,11 @@ namespace LYBT.Module.Prescriptions
             // 注册业务服务 - UltraThink Phase 7: 使用Shared接口
             services.AddScoped<LYBT.Shared.Interfaces.Services.IPrescriptionService, PrescriptionService>();
             services.AddScoped<IIntelligentPrescriptionService, IntelligentPrescriptionService>();
+
+            // Helper类 - UltraThink分层架构
+            services.AddScoped<PrescriptionQueryHelper>();
+            services.AddScoped<PrescriptionValidationHelper>();
+            services.AddScoped<PrescriptionBusinessHelper>();
 
             // 注册AutoMapper配置  
             services.AddAutoMapper(cfg =>

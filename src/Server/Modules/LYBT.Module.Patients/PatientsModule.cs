@@ -2,6 +2,7 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
+using LYBT.Module.Patients.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Patients;
@@ -25,6 +26,11 @@ public static class PatientsModule
         services.AddScoped<PatientValidationService>();
         services.AddScoped<PatientArchiveService>();
         services.AddScoped<PatientStatisticsService>();
+        
+        // Helper类 - UltraThink Helper模式
+        services.AddScoped<PatientQueryHelper>();
+        services.AddScoped<PatientValidationHelper>();
+        services.AddScoped<PatientBusinessHelper>();
         
         return services;
     }

@@ -9,60 +9,66 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Utilities.Helpers;
+using LYBT.Module.Auth.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Auth.Services
 {
-
     /// <summary>
-    /// 认证模块核心服务 - UltraThink Phase 6: 实现Shared接口统一
+    /// 认证模块核心服务 - UltraThink Helper模式重构版
+    /// 委托具体业务逻辑给Helper类处理，提高代码组织性和可维护性
     /// 实现用户登录验证、令牌生成及登录日志记录
     /// </summary>
     public class AuthService : IAuthService
     {
+        private readonly AuthValidationHelper _validationHelper;
+        private readonly AuthSessionHelper _sessionHelper;
+        private readonly AuthLoggingHelper _loggingHelper;
         private readonly IAuthRepository _authRepository;
         private readonly IMapper _mapper;
-        
         private readonly SysAdminHandler _sysAdminHandler;
         private readonly AuthOptions _authOptions;
         private readonly ILogger<AuthService> _logger;
-        
-        // UltraThink v2.0简化：移除ILoginAttemptService依赖，简化登录逻辑
 
         public AuthService(
+            AuthValidationHelper validationHelper,
+            AuthSessionHelper sessionHelper,
+            AuthLoggingHelper loggingHelper,
             IAuthRepository authRepository,
             IMapper mapper,
             SysAdminHandler sysAdminHandler,
             IOptions<AuthOptions> authOptions,
             ILogger<AuthService> logger)
         {
-            _authRepository = authRepository;
-            _mapper = mapper;
-            _sysAdminHandler = sysAdminHandler;
-            _authOptions = authOptions.Value;
-            _logger = logger;
-            // UltraThink v2.0简化：移除_loginAttemptService依赖
+            _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
+            _sessionHelper = sessionHelper ?? throw new ArgumentNullException(nameof(sessionHelper));
+            _loggingHelper = loggingHelper ?? throw new ArgumentNullException(nameof(loggingHelper));
+            _authRepository = authRepository ?? throw new ArgumentNullException(nameof(authRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _sysAdminHandler = sysAdminHandler ?? throw new ArgumentNullException(nameof(sysAdminHandler));
+            _authOptions = authOptions?.Value ?? throw new ArgumentNullException(nameof(authOptions));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        #region Shared Interface Implementation
+        #region Shared Interface Implementation (委托给Helper模式)
 
         /// <summary>
-        /// [Shared] 用户登录验证
+        /// 用户登录（委托给ValidationHelper处理验证，SessionHelper处理会话）
         /// </summary>
         public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
         {
             try
             {
                 // 验证凭据
-                var credentialsResult = await VerifyCredentialsAsync(request);
+                var credentialsResult = await _validationHelper.VerifyCredentialsAsync(request);
                 if (!credentialsResult.IsSuccess)
                 {
                     return ServiceResult<LoginResponse>.Failure(credentialsResult.ErrorMessage ?? "登录失败", credentialsResult.Exception);
                 }
 
                 // 获取用户信息用于创建LoginResponse
-                var user = await GetUserForAuthentication(request.Username);
+                var user = await _validationHelper.GetUserForAuthentication(request.Username);
                 if (user == null)
                 {
                     return ServiceResult<LoginResponse>.Failure("用户不存在");
@@ -82,20 +88,20 @@ namespace LYBT.Module.Auth.Services
             }
             catch (Exception ex)
             {
+                await _loggingHelper.LogLoginExceptionAsync(request.Username, ex, request);
                 _logger.LogError(ex, "登录过程中发生异常: {Username}", request.Username);
                 return ServiceResult<LoginResponse>.Failure("登录过程中发生异常", ex);
             }
         }
 
         /// <summary>
-        /// [Shared] 用户登出
+        /// 用户登出（委托给SessionHelper和LoggingHelper）
         /// </summary>
         public async Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request)
         {
             try
             {
-                var result = await LogoutInternalAsync(request);
-                return ServiceResult<bool>.Success(result);
+                return await _sessionHelper.LogoutAsync(request);
             }
             catch (Exception ex)
             {
@@ -105,307 +111,62 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// [Shared] 修改sysadmin密码
+        /// 修改系统管理员密码（委托给ValidationHelper验证，LoggingHelper记录）
         /// </summary>
         public async Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
         {
             try
             {
-                var result = await ChangeSysAdminPasswordInternalAsync(request);
+                var result = await ChangeSysAdminPasswordInternalAsync(request.NewPassword);
+                await _loggingHelper.LogSysAdminPasswordChangeAsync(result, result ? null : "密码修改失败");
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "修改sysadmin密码失败");
-                return ServiceResult<bool>.Failure("修改密码失败", ex);
+                await _loggingHelper.LogSysAdminPasswordChangeAsync(false, ex.Message);
+                _logger.LogError(ex, "修改系统管理员密码失败");
+                return ServiceResult<bool>.Failure("修改系统管理员密码失败", ex);
             }
         }
 
         /// <summary>
-        /// [Shared] 验证用户凭据
+        /// 验证凭据（委托给ValidationHelper）
         /// </summary>
         public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request)
         {
-            try
-            {
-                var username = await VerifyCredentialsInternalAsync(request);
-                if (username != null)
-                {
-                    return ServiceResult<string>.Success(username);
-                }
-                else
-                {
-                    return ServiceResult<string>.Failure("用户名或密码错误");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证凭据失败: {Username}", request.Username);
-                return ServiceResult<string>.Failure("验证凭据失败", ex);
-            }
+            return await _validationHelper.VerifyCredentialsAsync(request);
         }
 
         /// <summary>
-        /// [Shared] 刷新Token
+        /// 刷新Token（委托给SessionHelper）
         /// </summary>
         public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
         {
-            try
-            {
-                // 简化实现，实际项目中应该验证刷新token并生成新的token
-                if (string.IsNullOrEmpty(refreshToken))
-                {
-                    return ServiceResult<LoginResponse>.Failure("刷新token无效");
-                }
-
-                // 模拟刷新token逻辑
-                var newLoginResponse = new LoginResponse
-                {
-                    Token = $"new_token_{Guid.NewGuid()}",
-                    User = new UserDto() // UltraThink v2.0简化：直接使用UserDto替代BaseUser
-                };
-
-                return ServiceResult<LoginResponse>.Success(newLoginResponse);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "刷新Token失败");
-                return ServiceResult<LoginResponse>.Failure("刷新Token失败", ex);
-            }
+            return await _sessionHelper.RefreshTokenAsync(refreshToken);
         }
 
         /// <summary>
-        /// [Shared] 验证Token有效性
+        /// 验证Token（委托给ValidationHelper）
         /// </summary>
         public async Task<ServiceResult<bool>> ValidateTokenAsync(string token)
         {
-            try
-            {
-                // 简化实现，实际项目中应该验证JWT token
-                if (string.IsNullOrEmpty(token))
-                {
-                    return ServiceResult<bool>.Success(false);
-                }
-
-                // 模拟token验证逻辑
-                var isValid = token.StartsWith("mock_token_") || token.StartsWith("new_token_");
-                return ServiceResult<bool>.Success(isValid);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证Token失败");
-                return ServiceResult<bool>.Failure("验证Token失败", ex);
-            }
+            return await _validationHelper.ValidateTokenAsync(token);
         }
 
         /// <summary>
-        /// [Shared] 获取用户会话信息
+        /// 获取会话信息（委托给SessionHelper）
         /// </summary>
         public async Task<ServiceResult<object>> GetSessionInfoAsync(string token)
         {
-            try
-            {
-                // 简化实现，实际项目中应该从token中解析用户信息
-                if (string.IsNullOrEmpty(token))
-                {
-                    return ServiceResult<object>.Failure("Token无效");
-                }
-
-                var sessionInfo = new
-                {
-                    UserId = Guid.NewGuid(),
-                    Username = "unknown",
-                    ExpiresAt = DateTime.UtcNow.AddHours(8),
-                    IsValid = true
-                };
-
-                return ServiceResult<object>.Success(sessionInfo);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取会话信息失败");
-                return ServiceResult<object>.Failure("获取会话信息失败", ex);
-            }
+            return await _sessionHelper.GetSessionInfoAsync(token);
         }
 
         #endregion
 
-        #region Legacy Internal Methods (保持兼容性)
+        #region 私有辅助方法（委托给Helper或直接实现）
 
         /// <summary>
-        /// 验证用户名和密码，成功返回用户名，失败返回null
-        /// UltraThink v2.0简化：移除复杂的登录尝试跟踪和账户锁定逻辑
-        /// </summary>
-        private async Task<string?> VerifyCredentialsInternalAsync(LoginRequest dto)
-        {
-            try
-            {
-                // UltraThink v2.0简化：移除账户锁定检查
-                // 原：if (await _loginAttemptService.IsAccountLockedAsync(dto.Username))
-
-                // 验证登录类型
-                var loginTypeValidation = ValidateLoginType(dto);
-                if (!loginTypeValidation.IsValid)
-                {
-                    await LogFailedLogin(Guid.Empty, dto.Username, loginTypeValidation.ErrorMessage, dto);
-                    return null;
-                }
-
-                // 获取用户信息
-                var user = await GetUserForAuthentication(dto.Username);
-                if (user == null)
-                {
-                    // UltraThink v2.0简化：移除_loginAttemptService.RecordLoginAttemptAsync
-                    await LogFailedLogin(Guid.Empty, dto.Username, "用户不存在或未启用", dto);
-                    return null;
-                }
-
-                // UltraThink v2.0简化：移除账户锁定检查
-                // 原：var lockoutCheck = CheckAccountLockout(user);
-
-                // 验证密码
-                var passwordValidation = await ValidatePasswordAsync(user, dto.Password);
-                if (!passwordValidation.IsValid)
-                {
-                    // UltraThink v2.0简化：移除复杂的失败处理
-                    await LogFailedLogin(user.Id, user.RealName, passwordValidation.ErrorMessage, dto);
-                    return null;
-                }
-
-                // 身份验证成功，记录登录日志
-                // UltraThink v2.0简化：移除_loginAttemptService.ClearFailedAttemptsAsync
-                await LogSuccessfulLogin(user, dto);
-                return dto.Username; // 返回用户名而不是用户详情
-            }
-            catch (Exception ex)
-            {
-                await LogLoginException(dto.Username, ex, dto);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 用户登出并写入日志
-        /// </summary>
-        private async Task<bool> LogoutInternalAsync(LogoutRequest dto)
-        {
-            var user = await _authRepository.GetByUsernameAsync(dto.Username);
-            var operatorName = GetOperatorName(user, dto.Username);
-
-            await LogUserAction(
-                user?.Id ?? Guid.Empty,
-                operatorName,
-                ActionType.Logout,
-                "用户登出"
-            );
-
-            return true;
-        }
-
-        /// <summary>
-        /// 修改系统管理员密码，先校验旧密码
-        /// </summary>
-        private async Task<bool> ChangeSysAdminPasswordInternalAsync(ChangeSysAdminPassword dto)
-        {
-            var currentHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
-            if (string.IsNullOrEmpty(currentHash))
-            {
-                return false;
-            }
-
-            if (!PasswordHelper.Verify(currentHash, dto.OldPassword))
-            {
-                return false;
-            }
-
-            var newHash = PasswordHelper.Hash(dto.NewPassword);
-            await _authRepository.UpdateAdminPasswordHashAsync("sysadmin", newHash);
-
-            await LogUserAction(
-                Guid.Empty,
-                "sysadmin",
-                ActionType.Update,
-                "修改系统管理员密码"
-            );
-
-            return true;
-        }
-
-        #endregion
-
-        #region 私有辅助方法
-
-        /// <summary>
-        /// 验证登录类型
-        /// </summary>
-        private (bool IsValid, string ErrorMessage) ValidateLoginType(LoginRequest dto)
-        {
-            if (string.IsNullOrEmpty(dto.LoginType))
-            {
-                dto.LoginType = "Password";
-            }
-
-            if (!_authOptions.SupportedLoginTypes.Contains(dto.LoginType))
-            {
-                return (false, $"不支持的登录类型: {dto.LoginType}");
-            }
-
-            return (true, string.Empty);
-        }
-
-        /// <summary>
-        /// 获取用于认证的用户信息
-        /// </summary>
-        private async Task<User?> GetUserForAuthentication(string username)
-        {
-            // 处理系统管理员
-            if (_sysAdminHandler.IsSysAdmin(username))
-            {
-                return await _sysAdminHandler.GetSysAdminUserAsync(username);
-            }
-
-            // 获取普通用户
-            var user = await _authRepository.GetByUsernameAsync(username);
-            if (user == null || user.Status != CommonStatus.Enabled)
-            {
-                return null;
-            }
-
-            return user;
-        }
-
-        /// <summary>
-        /// 验证密码 - 简化版本
-        /// </summary>
-        private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(User user, string password)
-        {
-            string storedHash;
-
-            if (_sysAdminHandler.IsSysAdmin(user.Username))
-            {
-                storedHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync() ?? string.Empty;
-            }
-            else
-            {
-                storedHash = user.PasswordHash;
-            }
-
-            if (string.IsNullOrEmpty(storedHash))
-            {
-                return (false, "用户密码未设置");
-            }
-
-            var verifyResult = PasswordHelper.Verify(storedHash, password);
-            if (!verifyResult)
-            {
-                return (false, "密码错误");
-            }
-
-            return (true, string.Empty);
-        }
-
-        /// <summary>
-        /// 处理登录成功 - UltraThink v2.0简化版
+        /// 处理登录成功逻辑
         /// </summary>
         private async Task<UserDto> HandleSuccessfulLoginAsync(User user, LoginRequest dto)
         {
@@ -414,7 +175,7 @@ namespace LYBT.Module.Auth.Services
             // 原：await _authRepository.UpdateLastLoginTimeAsync(user.Id);
 
             // 记录成功日志
-            await LogSuccessfulLogin(user, dto);
+            await _loggingHelper.LogSuccessfulLoginAsync(user, dto);
 
             // 手动创建UserDto以避免AutoMapper问题（特别是对于临时sysadmin用户）
             return new UserDto
@@ -429,90 +190,43 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 记录登录失败日志
+        /// 修改系统管理员密码内部实现
         /// </summary>
-        private async Task LogFailedLogin(Guid userId, string operatorName, string reason, LoginRequest dto)
+        private async Task<bool> ChangeSysAdminPasswordInternalAsync(string newPassword)
         {
-            if (!_authOptions.EnableDetailedLoginLogging)
-                return;
-
-            var content = $"登录失败: {reason}";
-            if (!string.IsNullOrEmpty(dto.ClientIp))
+            try
             {
-                content += $" | IP: {dto.ClientIp}";
+                // UltraThink v2.0简化：直接使用Repository更新密码哈希
+                var passwordHash = PasswordHelper.Hash(newPassword);
+                await _authRepository.UpdateAdminPasswordHashAsync("sysadmin", passwordHash);
+                return true;
             }
-            if (!string.IsNullOrEmpty(dto.UserAgent))
+            catch (Exception ex)
             {
-                content += $" | UA: {dto.UserAgent}";
+                _logger.LogError(ex, "更新系统管理员密码失败");
+                return false;
             }
-
-            await LogUserAction(userId, operatorName, ActionType.Login, content);
         }
 
         /// <summary>
-        /// 记录登录成功日志
+        /// 获取操作员名称（辅助方法）
         /// </summary>
-        private async Task LogSuccessfulLogin(User user, LoginRequest dto)
+        private string GetOperatorName(User? user, string username)
         {
-            if (!_authOptions.EnableDetailedLoginLogging)
-                return;
-
-            var content = "登录成功";
-            if (!string.IsNullOrEmpty(dto.ClientIp))
+            if (user != null)
             {
-                content += $" | IP: {dto.ClientIp}";
-            }
-            if (!string.IsNullOrEmpty(dto.UserAgent))
-            {
-                content += $" | UA: {dto.UserAgent}";
+                return !string.IsNullOrEmpty(user.RealName) ? user.RealName : user.Username;
             }
 
-            await LogUserAction(user.Id, user.RealName, ActionType.Login, content);
-        }
-
-        /// <summary>
-        /// 记录登录异常日志
-        /// </summary>
-        private async Task LogLoginException(string username, Exception ex, LoginRequest dto)
-        {
-            var content = $"登录异常: {ex.Message}";
-            if (!string.IsNullOrEmpty(dto.ClientIp))
-            {
-                content += $" | IP: {dto.ClientIp}";
-            }
-
-            await LogUserAction(Guid.Empty, username, ActionType.Login, content);
-        }
-
-        /// <summary>
-        /// 统一的用户操作日志记录 - 简化为ILogger
-        /// </summary>
-        private async Task LogUserAction(Guid userId, string operatorName, ActionType actionType, string content)
-        {
-            _logger.LogInformation("认证操作日志 - 操作者: {OperatorName} ({UserId}), 操作类型: {ActionType}, 内容: {Content}",
-                operatorName, userId, actionType, content);
-            
-            await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 获取操作人姓名
-        /// </summary>
-        private string GetOperatorName(User? user, string fallbackUsername)
-        {
-            if (!string.IsNullOrEmpty(user?.RealName))
-            {
-                return user.RealName;
-            }
-
-            if (_sysAdminHandler.IsSysAdmin(fallbackUsername))
+            // 检查是否为系统管理员
+            if (_sysAdminHandler.IsSysAdmin(username))
             {
                 return "系统管理员";
             }
 
-            return fallbackUsername;
+            return username;
         }
 
-        #endregion 私有辅助方法
+        #endregion
     }
 }

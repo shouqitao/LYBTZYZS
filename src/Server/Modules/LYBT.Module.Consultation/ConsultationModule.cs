@@ -3,6 +3,7 @@ using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;
 using LYBT.Module.Consultation.Mapping;
+using LYBT.Module.Consultation.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Consultation
@@ -14,12 +15,17 @@ namespace LYBT.Module.Consultation
     public static class ConsultationModule
     {
         /// <summary>
-        /// 注册看诊模块服务
+        /// 注册看诊模块服务 - UltraThink Helper模式
         /// </summary>
         public static IServiceCollection AddConsultationModule(this IServiceCollection services)
         {
             // 注册仓储服务
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
+
+            // 注册Helper服务 (UltraThink Helper模式)
+            services.AddScoped<ConsultationQueryHelper>();
+            services.AddScoped<ConsultationValidationHelper>();
+            services.AddScoped<ConsultationWorkflowHelper>();
 
             // 注册业务服务
             services.AddScoped<IConsultationService, ConsultationService>();

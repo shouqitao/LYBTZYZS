@@ -4,6 +4,7 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
+using LYBT.Module.Auth.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Auth
@@ -38,6 +39,11 @@ namespace LYBT.Module.Auth
             // 注册JWT相关服务（从Infrastructure迁移而来）
             services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
             services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthorizationService, LYBT.Module.Auth.Services.AuthorizationService>();
+
+            // Helper类 - UltraThink Helper模式
+            services.AddScoped<AuthValidationHelper>();
+            services.AddScoped<AuthSessionHelper>();
+            services.AddScoped<AuthLoggingHelper>();
 
             // 注册配置选项
             services.AddOptions<AuthOptions>();

@@ -6,9 +6,7 @@
 // using LYBT.Module.Consultation.Interfaces;
 // using LYBT.Module.Consultation.Repositories;
 // using LYBT.Module.Consultation.Services;
-// using LYBT.Module.Formula.Interfaces;
-// using LYBT.Module.Formula.Repositories;
-// using LYBT.Module.Formula.Services;
+using LYBT.Module.Formula.Extensions;
 // using LYBT.Module.MedicalCase.Interfaces;
 // using LYBT.Module.MedicalCase.Repositories;
 // using LYBT.Module.MedicalCase.Services;
@@ -65,10 +63,8 @@ public static class ServiceCollectionExtension
         services.AddScoped<IHerbService, HerbService>();
         services.AddScoped<IHerbRepository, HerbRepository>();
 
-        // TODO: UltraThink v2.0 Refactor - 暂时禁用Formula服务，等待修复
-        // 验方模块（原Formulas）
-        // services.AddScoped<IFormulaService, FormulaService>();
-        // services.AddScoped<IFormulaRepository, FormulaRepository>();
+        // 验方模块（重构完成）
+        services.AddFormulaModule();
 
         // TODO: UltraThink v2.0 Refactor - 暂时禁用整个Prescription模块
         // 处方模块
