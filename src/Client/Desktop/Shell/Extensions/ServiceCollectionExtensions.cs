@@ -100,7 +100,8 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
-            // TODO: 添加实际存在的API接口
+            // 注册认证API - 使用Refit生成的客户端
+            RegisterBasicApiService<LYBT.Shared.Interfaces.Api.IAuthApi>(containerRegistry);
             
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IApiService, LYBT.Desktop.Services.ApiService>();
@@ -130,10 +131,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.INotificationService, 
                 LYBT.Desktop.Core.Services.NotificationService>();
 
-            // 认证服务
-            containerRegistry.RegisterSingleton<AuthenticationService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(
-                container => container.Resolve<AuthenticationService>());
+            // 认证服务 - 使用简化版本
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService, SimplifiedAuthenticationService>();
         }
 
         /// <summary>

@@ -369,6 +369,45 @@ src/
 - ❌ **分布式缓存** - 内存缓存完全够用
 - ❌ **消息队列** - 同步调用就够了
 
+#### 🖥️ 客户端架构简化 (UltraThink Phase 4 - 2025-08-20)
+
+**问题识别**：
+- ❌ **过度复杂的服务** - 认证服务481行代码，职责混合
+- ❌ **冗余接口实现** - 同时实现多个不必要的接口
+- ❌ **复杂的IoC注册** - 多层包装和工厂方法
+- ❌ **不必要的抽象层** - 通用API服务等过度抽象
+
+**简化原则**：
+1. **单一职责** - 每个服务只做一件事
+2. **依赖最少** - 减少不必要的依赖注入
+3. **代码精简** - 移除冗余功能和方法
+4. **接口统一** - 避免混合实现多个接口
+
+**实施效果**：
+- ✅ **认证服务精简** - 481行 → 135行 (72%减少)
+- ✅ **IoC异常修复** - 注册IAuthApi依赖
+- ✅ **服务注册简化** - 单行注册替代复杂工厂
+- ✅ **职责清晰** - 每个服务单一接口实现
+
+**开发指导**：
+```csharp
+// ✅ 好的做法 - 简化服务
+public class SimplifiedAuthenticationService : IAuthenticationService
+{
+    // 最少依赖，清晰职责
+    private readonly IAuthApi _authApi;
+    private readonly ITokenManager _tokenManager;
+}
+
+// ❌ 避免 - 过度复杂
+public class AuthenticationService : IAuthenticationService, ISharedAuthService
+{
+    // 过多依赖，职责混合
+    private readonly IAsyncPolicy<HttpResponseMessage> _retryPolicy;
+    private readonly SemaphoreSlim _authSemaphore;
+}
+```
+
 #### 🎯 重构优先级与完成状态
 
 **Phase 1: 安全基础** ✅ **已完成** (2025-08-17)
