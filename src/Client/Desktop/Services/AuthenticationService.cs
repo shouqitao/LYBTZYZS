@@ -1,25 +1,23 @@
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
-
-using LYBT.Desktop.Core.Services;
-using LYBT.Desktop.Core.Models;
-using LYBT.Shared.Models.Contracts.Common;
-using LoginResponse = LYBT.Shared.Models.Contracts.Auth.LoginResponse;
-using LoginRequest = LYBT.Shared.Models.Contracts.Auth.LoginRequest;
-using LYBT.Desktop.Services.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Models.Core;
-using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Desktop.Core.Models;
+using LYBT.Desktop.Core.Services;
+using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
-// UltraThink重构v2.0: 使用UserDto替代UserInfo，简化四层架构
-using Microsoft.Extensions.Logging;
+using LoginRequest = LYBT.Shared.Models.Contracts.Auth.LoginRequest;
+using LoginResponse = LYBT.Shared.Models.Contracts.Auth.LoginResponse;
 
 namespace LYBT.Desktop.Services
 {
@@ -414,7 +412,7 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// UltraThink重构v2.0: 简化UserDto转换 - 直接使用UserDto
+        /// 简化UserDto转换 - 直接使用UserDto
         /// </summary>
         private UserDto PassThroughUserDto(UserDto userInfo)
         {

@@ -201,7 +201,7 @@ namespace LYBT.Desktop.Services
         /// <returns>工作台类型</returns>
         public string GetCurrentUserWorkbench()
         {
-            // UltraThink架构师统一：所有角色使用统一的ConsultationWorkbench
+            // 所有角色使用统一的ConsultationWorkbench
             // 通过权限控制功能访问，避免工作台架构冗余
             var currentRole = GetCurrentUserRole();
             return currentRole switch

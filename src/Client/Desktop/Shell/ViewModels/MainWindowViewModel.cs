@@ -1,25 +1,21 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Core;
-using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Core.Configuration;
-using LYBT.Desktop.Auth.Views;
-using LYBT.Desktop.Auth.ViewModels;
-using LYBT.Desktop.Services;
-using LYBT.Desktop.Workbench.Core;
+using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
-// using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
-using Prism.Events;
-using Prism.Commands;
-
+using LYBT.Desktop.Auth.ViewModels;
+using LYBT.Desktop.Auth.Views;
+using LYBT.Desktop.Core.Configuration;
+using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Services;
+using LYBT.Desktop.Workbench.Core;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-// UltraThink v2.0: 移除Info模型引用，直接使用DTO
-// using LYBT.Desktop.Core.Models.Users;
+using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
@@ -146,7 +142,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         }
 
         /// <summary>
-        /// 检查登录状态 - 简化版本
+        /// 检查登录状态
         /// </summary>
         private async Task CheckLoginStatusAsync()
         {
@@ -197,7 +193,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         }
 
         /// <summary>
-        /// 加载主界面内容 - 使用新的WorkbenchRouter系统
+        /// 加载主界面内容
         /// </summary>
         private async void LoadMainContent()
         {
@@ -207,7 +203,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 return;
             }
 
-            // UltraThink重构: 使用UserDto的Role属性判断用户角色
+            // 判断用户角色
             string userRole;
             if (CurrentUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
             {
@@ -216,7 +212,6 @@ namespace LYBT.Desktop.Shell.ViewModels
             else if (CurrentUser.Role?.Equals("Doctor", StringComparison.OrdinalIgnoreCase) == true ||
                      CurrentUser.Role?.Equals("医生", StringComparison.OrdinalIgnoreCase) == true)
             {
-                // 基于Role字段判断是否为医生
                 userRole = "医生";
             }
             else if (CurrentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true ||
@@ -226,7 +221,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
             else
             {
-                // 默认为医生用户（看诊界面）
+                // 默认角色
                 userRole = "医生";
             }
 
@@ -316,11 +311,10 @@ namespace LYBT.Desktop.Shell.ViewModels
         #region 私有转换方法
 
         /// <summary>
-        /// UltraThink v2.0简化：直接使用UserDto，无需转换
+        /// 转换用户数据
         /// </summary>
         private static UserDto ConvertToUserDto(UserDto userDto)
         {
-            // UltraThink v2.0: 由于AuthenticationService直接返回UserDto，无需转换
             return userDto;
         }
 

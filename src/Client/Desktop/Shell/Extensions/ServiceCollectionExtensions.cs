@@ -1,27 +1,28 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Caching.Memory;
+using AutoMapper;
 using Prism.Ioc;
 using Refit;
-using AutoMapper;
+using LYBT.Desktop.Core.Configuration;
+using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Mapping;
+using LYBT.Desktop.Core.Services;
+using LYBT.Desktop.Infrastructure;
+using LYBT.Desktop.Services;
+using LYBT.Desktop.Services.Handlers;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Interfaces;
-using LYBT.Desktop.Services;
-using LYBT.Desktop.Core.Configuration;
-using LYBT.Desktop.Core.Mapping;
-using LYBT.Desktop.Infrastructure;
-using LYBT.Desktop.Services.Handlers;
-using LYBT.Desktop.Core.Services;
-using LYBT.Desktop.Core.Events;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
     /// <summary>
-    /// 服务注册扩展方法 - UltraThink v2.0简化版
+    /// 服务注册扩展方法
     /// </summary>
     public static class ServiceCollectionExtensions
     {
@@ -99,7 +100,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
-            // UltraThink v2.0: 暂时简化API服务注册
             // TODO: 添加实际存在的API接口
             
             // 注册通用API服务
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager, UserSessionManager>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPermissionService, PermissionService>();
             
-            // UltraThink v2.0: SessionManager和NotificationService
+            // SessionManager和NotificationService
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ISessionManager, 
                 LYBT.Desktop.Core.Services.SessionManager>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.INotificationService, 
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterDomainServices(IContainerRegistry containerRegistry)
         {
-            // UltraThink v2.0: API测试服务
+            // API测试服务
             containerRegistry.RegisterSingleton<ApiTestService>();
         }
 
@@ -150,7 +150,7 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
-            // UltraThink v2.0: 使用简化的对话框服务
+            // 使用简化的对话框服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService, 
                 LYBT.Desktop.Core.Services.WpfDialogService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.SimpleDialogService>();
@@ -161,8 +161,7 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterViewModels(IContainerRegistry containerRegistry)
         {
-            // UltraThink v2.0: 简化ViewModel注册，只注册必要的ViewModels
-            // ViewModels通常通过Prism自动解析，这里只注册特殊需要的
+            // ViewModels通过Prism自动解析
         }
 
         /// <summary>
@@ -170,7 +169,7 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterViews(IContainerRegistry containerRegistry)
         {
-            // UltraThink v2.0: Views通过Prism的ViewModelLocator自动注册
+            // Views通过Prism的ViewModelLocator自动注册
         }
 
         #region 辅助方法

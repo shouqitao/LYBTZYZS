@@ -1,29 +1,24 @@
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
-using Prism.Events;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
-// UltraThink v2.0: 添加SessionAware相关依赖
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
     /// <summary>
-    /// 主页视图模型 - 基于角色显示不同内容
-    /// </summary>
-    /// <summary>
-    /// 主页视图模型 - 基于角色显示不同内容
-    /// UltraThink v2.0: 重构为SessionAware架构，集成统一会话管理
+    /// 主页视图模型 - 基于角色显示不同内容，集成统一会话管理
     /// </summary>
     public class HomeViewModel : SessionAwareViewModel, INavigationAware
     {
@@ -179,26 +174,17 @@ namespace LYBT.Desktop.Shell.ViewModels
             // 初始化
             _ = InitializeAsync();
             
-            LogInfo("HomeViewModel 已初始化，使用 UltraThink SessionManager 架构");
+            LogInfo("HomeViewModel 已初始化");
         }
 
         #endregion
 
-        #region UltraThink SessionAware 重写方法
-
-        /// <summary>
-        /// 当SessionManager中的用户状态变化时调用
-        /// </summary>
         protected override void OnUserChanged(UserChangedEventArgs args)
         {
             base.OnUserChanged(args);
-            
-            // 用户状态变化时重新初始化界面
             _ = Task.Run(async () => await InitializeAsync());
             LogInfo($"用户状态变化，重新初始化HomeViewModel: {args.NewUser?.UserName ?? "null"}");
         }
-
-        #endregion
 
         #region 初始化
 
@@ -212,14 +198,14 @@ namespace LYBT.Desktop.Shell.ViewModels
                 WelcomeMessage = "欢迎使用系统";
                 SubTitle = "加载中...";
                 
-                // UltraThink SessionManager: 优先使用SessionManager中的用户信息
+                // 获取当前用户信息
                 var currentUser = CurrentUser ?? await _authService.GetCurrentUserAsync();
                 
                 if (currentUser != null)
                 {
                     WelcomeMessage = $"欢迎，{currentUser.RealName}";
                     
-                    // 判断角色 - 使用Role属性字符串比较
+                    // 判断用户角色
                     if (currentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
                     {
                         IsAdminRole = true;
@@ -232,7 +218,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                         IsAdminRole = false;
                         SubTitle = "医生工作台";
                         
-                        // 尝试加载今日统计，但不让它阻塞界面显示
+                        // 异步加载今日统计
                         _ = Task.Run(async () =>
                         {
                             try
@@ -242,7 +228,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                             catch (Exception ex)
                             {
                                 LogError(ex, "加载今日统计失败");
-                                // 设置默认统计值
+                                // 设置默认值
                                 TodayCompletedCount = 0;
                                 TodayInProgressCount = 0;
                                 TodayTotalAmount = 0;
@@ -252,9 +238,8 @@ namespace LYBT.Desktop.Shell.ViewModels
                 }
                 else
                 {
-                    // 如果无法获取用户信息，设置默认显示
                     WelcomeMessage = "用户信息获取失败";
-                    IsAdminRole = true; // 默认显示管理员界面
+                    IsAdminRole = true;
                     IsDoctorRole = false;
                     SubTitle = "系统管理工作台（默认）";
                 }
@@ -267,9 +252,9 @@ namespace LYBT.Desktop.Shell.ViewModels
                 LogError(ex, "初始化主页失败");
                 ShowError("初始化主页失败，请重试");
                 
-                // 即使出错也要设置基本的界面状态
+                // 错误恢复：设置基本界面状态
                 WelcomeMessage = "初始化失败，请重试";
-                IsAdminRole = true; // 默认显示管理员界面
+                IsAdminRole = true;
                 IsDoctorRole = false;
                 SubTitle = "系统管理工作台（错误恢复）";
                 UpdateDateTime();
@@ -295,15 +280,14 @@ namespace LYBT.Desktop.Shell.ViewModels
 
                 if (result != null && result.IsSuccess && result.Data?.Items != null)
                 {
-                    // 使用CaseStatus专用状态字段进行正确的医疗案例状态统计
                     TodayCompletedCount = result.Data.Items
                         .Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
                     
                     TodayInProgressCount = result.Data.Items
                         .Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation);
                     
-                    // TODO: 计算今日收入（需要从处方模块获取）
-                    TodayTotalAmount = TodayCompletedCount * 150; // 临时模拟数据
+                    // TODO: 计算今日收入
+                    TodayTotalAmount = TodayCompletedCount * 150;
                     
                     LogInfo($"今日统计加载完成 - 完成: {TodayCompletedCount}, 进行中: {TodayInProgressCount}");
                 }
@@ -341,26 +325,22 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         private void StartConsultation()
         {
-            // 导航到患者接待，开始看诊流程
             NavigateTo("PatientReceptionView");
             StatusMessage = "开始看诊流程";
         }
 
         private void EnterSystemManagementWithUserModule()
         {
-            // 使用字符串参数方式导航 - Prism 9兼容
             _regionManager.RequestNavigate("ContentRegion", "AdminMainView?DefaultModule=UserManagement");
         }
 
         private void EnterSystemManagementWithHerbModule()
         {
-            // 使用字符串参数方式导航 - Prism 9兼容
             _regionManager.RequestNavigate("ContentRegion", "AdminMainView?DefaultModule=HerbManagement");
         }
 
         private void EnterSystemManagementWithFormulaModule()
         {
-            // 使用字符串参数方式导航 - Prism 9兼容
             _regionManager.RequestNavigate("ContentRegion", "AdminMainView?DefaultModule=FormulaManagement");
         }
 
@@ -373,7 +353,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 {
                     await _authService.LogoutAsync();
                     
-                    // UltraThink SessionManager: 清除会话状态
+                    // 清除会话状态
                     SessionManager.ClearUserSession();
                     
                     _eventAggregator.GetEvent<LogoutEvent>().Publish();
