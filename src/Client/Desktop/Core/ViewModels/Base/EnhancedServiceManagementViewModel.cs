@@ -9,6 +9,7 @@ using System.Windows.Data;
 using Prism.Commands;
 using Prism.Events;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Core.ViewModels.Base

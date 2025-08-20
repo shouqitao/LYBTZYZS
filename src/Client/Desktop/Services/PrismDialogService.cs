@@ -9,37 +9,45 @@ using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 基于 ICustomDialogService 的通用对话框服务实现
+    /// 基于 ICustomDialogService 的通用对话框服务实现 - 简化版本，接口不存在
     /// </summary>
-    public class PrismDialogService : ICommonDialogService
+    public class PrismDialogService // : ICommonDialogService // 接口不存在：ICommonDialogService
     {
-        private readonly ICustomDialogService _dialogService;
+        // private readonly ICustomDialogService _dialogService; // 接口不存在：ICustomDialogService
 
-        public PrismDialogService(ICustomDialogService dialogService)
+        public PrismDialogService() // 简化构造函数，移除不存在的接口参数
         {
-            _dialogService = dialogService;
+            // _dialogService = dialogService; // 接口不存在
         }
 
         #region 消息对话框（异步）
 
         public Task<bool> ShowConfirmationAsync(string message, string title = "确认")
         {
-            return _dialogService.ShowConfirmationAsync(message, title);
+            // return _dialogService.ShowConfirmationAsync(message, title); // 服务不存在
+            var result = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
+            return Task.FromResult(result == MessageBoxResult.Yes);
         }
 
         public Task ShowInformationAsync(string message, string title = "信息")
         {
-            return _dialogService.ShowInformationAsync(message, title);
+            // return _dialogService.ShowInformationAsync(message, title); // 服务不存在
+            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            return Task.CompletedTask;
         }
 
         public Task ShowWarningAsync(string message, string title = "警告")
         {
-            return _dialogService.ShowWarningAsync(message, title);
+            // return _dialogService.ShowWarningAsync(message, title); // 服务不存在
+            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            return Task.CompletedTask;
         }
 
         public Task ShowErrorAsync(string message, string title = "错误")
         {
-            return _dialogService.ShowErrorAsync(message, title);
+            // return _dialogService.ShowErrorAsync(message, title); // 服务不存在
+            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            return Task.CompletedTask;
         }
 
         #endregion

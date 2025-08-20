@@ -19,21 +19,21 @@ namespace LYBT.Infrastructure.Repositories
     /// 用户Repository实现 - UltraThink重构架构
     /// 基于DDD Repository模式的用户数据访问层
     /// </summary>
-    public interface IUserRepository : IRepository<UserModel>
+    public interface IUserRepository : IRepository<User>
     {
-        Task<UserModel> GetByUserNameAsync(string userName);
-        Task<UserModel> GetByEmailAsync(string email);
-        Task<List<UserModel>> GetDoctorsAsync();
+        Task<User> GetByUserNameAsync(string userName);
+        Task<User> GetByEmailAsync(string email);
+        Task<List<User>> GetDoctorsAsync();
         Task<bool> ExistsAsync(string userName, string email = null);
-        Task<PagedResult<UserModel>> GetPagedAsync(UserPagedQueryDto query);
-        Task<List<UserModel>> SearchAsync(string keyword);
+        Task<PagedResult<User>> GetPagedAsync(UserPagedQueryDto query);
+        Task<List<User>> SearchAsync(string keyword);
         Task<UserStatisticsDto> GetStatisticsAsync(DateTime? startDate, DateTime? endDate);
         Task<bool> UpdatePasswordAsync(Guid userId, string passwordHash);
         Task<bool> UpdateLastLoginAsync(Guid userId, DateTime loginTime);
         Task<int> GetActiveCountAsync();
     }
 
-    public class UserRepository : RepositoryBase<UserModel>, IUserRepository
+    public class UserRepository : RepositoryBase<User>, IUserRepository
     {
         public UserRepository(AppDbContext context, ILogger<UserRepository> logger) 
             : base(context, logger)
@@ -42,7 +42,7 @@ namespace LYBT.Infrastructure.Repositories
 
         #region Specific Query Methods
 
-        public async Task<UserModel> GetByUserNameAsync(string userName)
+        public async Task<User> GetByUserNameAsync(string userName)
         {
             Logger.LogDebug("Getting user by username: {UserName}", userName);
             
@@ -51,7 +51,7 @@ namespace LYBT.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Username == userName);
         }
 
-        public async Task<UserModel> GetByEmailAsync(string email)
+        public async Task<User> GetByEmailAsync(string email)
         {
             Logger.LogDebug("Getting user by email: {Email}", email);
             
@@ -60,7 +60,7 @@ namespace LYBT.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public async Task<List<UserModel>> GetDoctorsAsync()
+        public async Task<List<User>> GetDoctorsAsync()
         {
             Logger.LogDebug("Getting all doctors");
             
@@ -85,7 +85,7 @@ namespace LYBT.Infrastructure.Repositories
             return await query.AnyAsync(u => u.Username == userName);
         }
 
-        public async Task<PagedResult<UserModel>> GetPagedAsync(UserPagedQueryDto query)
+        public async Task<PagedResult<User>> GetPagedAsync(UserPagedQueryDto query)
         {
             Logger.LogDebug("Getting paged users: Page {Page}, Size {Size}, Search: {Search}", 
                 query.PageIndex, query.PageSize, query.Keyword);
@@ -118,21 +118,13 @@ namespace LYBT.Infrastructure.Repositories
                     (u.PhoneNumber != null && u.PhoneNumber.Contains(searchTerm)));
             }
 
-            // 日期范围过滤
-            if (query.StartDate.HasValue)
-            {
-                queryable = queryable.Where(u => u.CreateTime >= query.StartDate.Value);
-            }
-            
-            if (query.EndDate.HasValue)
-            {
-                queryable = queryable.Where(u => u.CreateTime <= query.EndDate.Value);
-            }
+            // UltraThink v2.0简化：移除日期范围过滤（时间字段已删除）
+            // 如需时间过滤，可通过审计日志实现
 
             // 总数统计
             var totalCount = await queryable.CountAsync();
 
-            // 排序
+            // 排序 - UltraThink v2.0简化：使用Username作为默认排序
             queryable = query.SortField?.ToLower() switch
             {
                 "username" => query.IsDescending 
@@ -147,11 +139,11 @@ namespace LYBT.Infrastructure.Repositories
                     ? queryable.OrderByDescending(u => u.Email)
                     : queryable.OrderBy(u => u.Email),
                     
-                "createtime" => query.IsDescending 
-                    ? queryable.OrderByDescending(u => u.CreateTime)
-                    : queryable.OrderBy(u => u.CreateTime),
+                "role" => query.IsDescending 
+                    ? queryable.OrderByDescending(u => u.Role)
+                    : queryable.OrderBy(u => u.Role),
                     
-                _ => queryable.OrderByDescending(u => u.CreateTime) // 默认排序
+                _ => queryable.OrderBy(u => u.Username) // 默认按用户名排序
             };
 
             // 分页
@@ -160,7 +152,7 @@ namespace LYBT.Infrastructure.Repositories
                 .Take(query.PageSize)
                 .ToListAsync();
 
-            return new PagedResult<UserModel>
+            return new PagedResult<User>
             {
                 Items = items,
                 TotalCount = totalCount,
@@ -169,13 +161,13 @@ namespace LYBT.Infrastructure.Repositories
             };
         }
 
-        public async Task<List<UserModel>> SearchAsync(string keyword)
+        public async Task<List<User>> SearchAsync(string keyword)
         {
             Logger.LogDebug("Searching users with keyword: {Keyword}", keyword);
             
             if (string.IsNullOrEmpty(keyword))
             {
-                return new List<UserModel>();
+                return new List<User>();
             }
 
             var searchTerm = keyword.ToLower();
@@ -197,15 +189,8 @@ namespace LYBT.Infrastructure.Repositories
 
             var query = DbSet.AsNoTracking();
             
-            if (startDate.HasValue)
-            {
-                query = query.Where(u => u.CreateTime >= startDate.Value);
-            }
-            
-            if (endDate.HasValue)
-            {
-                query = query.Where(u => u.CreateTime <= endDate.Value);
-            }
+            // UltraThink v2.0简化：移除日期范围过滤（时间字段已删除）
+            // 统计直接基于当前所有用户
 
             var stats = await query.GroupBy(u => u.Role)
                 .Select(g => new { Role = g.Key, Count = g.Count() })
@@ -242,29 +227,28 @@ namespace LYBT.Infrastructure.Repositories
             }
 
             user.PasswordHash = passwordHash;
-            user.UpdateTime = DateTime.Now;
+            // UltraThink v2.0简化：移除UpdateTime字段
             
             Context.Entry(user).Property(u => u.PasswordHash).IsModified = true;
-            Context.Entry(user).Property(u => u.UpdateTime).IsModified = true;
             
             return await SaveChangesAsync() > 0;
         }
 
         public async Task<bool> UpdateLastLoginAsync(Guid userId, DateTime loginTime)
         {
-            Logger.LogDebug("Updating last login time for user: {UserId}", userId);
+            Logger.LogDebug("Last login tracking - UltraThink v2.0简化：登录时间通过AuthSession记录，User实体不再存储");
             
+            // UltraThink v2.0简化：User实体不再包含LastLoginTime字段
+            // 登录时间信息通过AuthSession表记录
             var user = await GetByIdAsync(userId);
             if (user == null)
             {
                 return false;
             }
 
-            user.LastLoginTime = loginTime;
-            
-            Context.Entry(user).Property(u => u.LastLoginTime).IsModified = true;
-            
-            return await SaveChangesAsync() > 0;
+            // 仅记录日志，不修改User实体
+            Logger.LogInformation("User {UserId} logged in at {LoginTime}", userId, loginTime);
+            return true;
         }
 
         public async Task<int> GetActiveCountAsync()
@@ -280,7 +264,7 @@ namespace LYBT.Infrastructure.Repositories
 
         #region Protected Override Methods
 
-        protected override IQueryable<UserModel> ApplySearch(IQueryable<UserModel> queryable, string searchTerm)
+        protected override IQueryable<User> ApplySearch(IQueryable<User> queryable, string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
@@ -296,9 +280,10 @@ namespace LYBT.Infrastructure.Repositories
                 (u.PhoneNumber != null && u.PhoneNumber.Contains(lowerSearchTerm)));
         }
 
-        protected override IQueryable<UserModel> ApplyDefaultSorting(IQueryable<UserModel> queryable)
+        protected override IQueryable<User> ApplyDefaultSorting(IQueryable<User> queryable)
         {
-            return queryable.OrderByDescending(u => u.CreateTime)
+            // UltraThink v2.0简化：使用Username作为默认排序（User实体已删除CreateTime字段）
+            return queryable.OrderBy(u => u.Username)
                            .ThenBy(u => u.RealName);
         }
 

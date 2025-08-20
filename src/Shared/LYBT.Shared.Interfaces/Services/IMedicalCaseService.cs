@@ -60,6 +60,11 @@ namespace LYBT.Shared.Interfaces.Services
         /// 恢复医疗案例
         /// </summary>
         Task<ServiceResult<bool>> ResumeAsync(Guid id);
+
+        /// <summary>
+        /// 更新医疗案例状态
+        /// </summary>
+        Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status);
         
         /// <summary>
         /// 归档医疗案例

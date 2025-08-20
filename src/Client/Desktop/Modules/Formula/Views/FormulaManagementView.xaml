@@ -91,14 +91,17 @@
                 <!-- 分类 -->
                 <DataGridTextColumn Header="分类" Binding="{Binding Category}" Width="100" />
                 
-                <!-- 适应症 -->
-                <DataGridTextColumn Header="适应症" Binding="{Binding Indications}" Width="*" />
+                <!-- 功效 -->
+                <DataGridTextColumn Header="功效" Binding="{Binding Effect}" Width="*" />
                 
                 <!-- 来源 -->
                 <DataGridTextColumn Header="来源" Binding="{Binding Source}" Width="120" />
                 
-                <!-- 创建时间 -->
-                <DataGridTextColumn Header="创建时间" Binding="{Binding CreateTime, StringFormat='{}{0:yyyy-MM-dd}'}" Width="100" />
+                <!-- 价格信息 -->
+                <DataGridTextColumn Header="总价(元)" Binding="{Binding TotalPrice, StringFormat='{}{0:F2}'}" Width="80" />
+                
+                <!-- 药材数量 -->
+                <DataGridTextColumn Header="药材数" Binding="{Binding HerbCount}" Width="60" />
                 
                 <!-- 操作列 -->
                 <DataGridTemplateColumn Header="操作" Width="200">

@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Patients;
-using LYBT.Desktop.Core.Models.MedicalCase;
+// UltraThink v2.0: 移除Info模型引用，直接使用DTO
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.ViewModels.Base;
 using Prism.Commands;
 using Prism.Events;
@@ -32,15 +35,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _title, value);
         }
 
-        private ObservableCollection<PatientInfo> _patients = new();
-        public ObservableCollection<PatientInfo> Patients
+        private ObservableCollection<PatientDto> _patients = new();
+        public ObservableCollection<PatientDto> Patients
         {
             get => _patients;
             set => SetProperty(ref _patients, value);
         }
 
-        private PatientInfo? _selectedPatient;
-        public PatientInfo? SelectedPatient
+        private PatientDto? _selectedPatient;
+        public PatientDto? SelectedPatient
         {
             get => _selectedPatient;
             set
@@ -51,7 +54,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     PatientName = value.Name;
                     PatientPhone = value.PhoneNumber ?? "";
                     PatientGender = value.Gender.ToString();
-                    PatientAge = CalculateAge(value.BirthDate);
+                    PatientAge = value.Age; // UltraThink v2.0: 使用计算属性Age
                 }
                 SaveCommand.RaiseCanExecuteChanged();
             }
@@ -166,18 +169,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 IsLoading = true;
                 StatusMessage = "加载患者列表...";
 
-                // Get active patients
-                var result = await _patientService.GetActivePatientsAsync();
+                // Get active patients using SearchAsync
+                var result = await _patientService.SearchAsync(""); // 获取所有活跃患者
                 if (result.IsSuccess && result.Data != null)
                 {
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         Patients.Clear();
-                        // UltraThink四层架构：使用AutoMapper转换DTO → Info
-                        var patientInfoList = _mapper.Map<List<PatientInfo>>(result.Data);
-                        foreach (var patientInfo in patientInfoList)
+                        // UltraThink v2.0: 直接使用DTO，SearchAsync已返回PatientDto列表
+                        foreach (var patientDto in result.Data)
                         {
-                            Patients.Add(patientInfo);
+                            Patients.Add(patientDto);
                         }
                     });
                 }
@@ -206,16 +208,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        // Convert PatientDetailDto to PatientInfo
-                        var patientInfo = new PatientInfo
+                        // UltraThink v2.0: 直接使用DTO，从DetailDto转换为Dto
+                        var patientDetail = result.Data;
+                        // 创建基础PatientDto对象
+                        var patientDto = new PatientDto
                         {
-                            Id = result.Data.Id,
-                            Name = result.Data.Name,
-                            Phone = result.Data.PhoneNumber,
-                            Gender = result.Data.Gender,
-                            BirthDate = result.Data.DateOfBirth
+                            Id = patientDetail.Id,
+                            Name = patientDetail.Name,
+                            PhoneNumber = patientDetail.PhoneNumber,
+                            Gender = patientDetail.Gender,
+                            BirthDate = patientDetail.DateOfBirth, // UltraThink v2.0: 将DetailDto的DateOfBirth映射到Dto的BirthDate
+                            Status = patientDetail.Status
+                            // UltraThink v2.0: 移除已删除的字段 CreateTime, UpdateTime, Remark
                         };
-                        SelectedPatient = patientInfo;
+                        SelectedPatient = patientDto;
                     });
                 }
             }
@@ -242,18 +248,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (result.IsSuccess && result.Data != null)
                 {
                     Patients.Clear();
-                    foreach (var patientDetail in result.Data)
+                    // UltraThink v2.0: SearchAsync已返回PatientDto列表，直接使用
+                    foreach (var patientDto in result.Data)
                     {
-                        // Convert PatientDetailDto to PatientInfo
-                        var patientInfo = new PatientInfo
-                        {
-                            Id = patientDetail.Id,
-                            Name = patientDetail.Name,
-                            Phone = patientDetail.PhoneNumber,
-                            Gender = patientDetail.Gender,
-                            BirthDate = patientDetail.DateOfBirth
-                        };
-                        Patients.Add(patientInfo);
+                        Patients.Add(patientDto);
                     }
                 }
                 else
@@ -296,18 +294,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 IsLoading = true;
                 StatusMessage = "创建医疗案例...";
 
-                // UltraThink四层架构：创建Info模型然后转换为DTO
-                var medicalCaseInfo = new MedicalCaseInfo
+                // UltraThink v2.0: 直接创建DTO，移除Info层
+                var createDto = new MedicalCaseCreateDto
                 {
                     PatientId = SelectedPatient.Id,
                     DoctorId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
-                    PatientName = SelectedPatient.Name,
-                    DoctorName = _userSessionManager.CurrentUser?.RealName ?? "未知医生",
-                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim(),
-                    CreateTime = DateTime.Now
+                    DiagnosisSummary = string.IsNullOrWhiteSpace(Remark) ? "初次就诊" : Remark.Trim(),
+                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim()
                 };
-                
-                var createDto = _mapper.Map<MedicalCaseCreateDto>(medicalCaseInfo);
 
                 var result = await _medicalCaseService.CreateAsync(createDto);
                 if (result.IsSuccess)
@@ -340,16 +334,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             RequestClose?.Invoke(new Prism.Services.Dialogs.DialogResult(Prism.Services.Dialogs.ButtonResult.Cancel));
         }
 
-        private static int CalculateAge(DateTime? birthDate)
-        {
-            if (!birthDate.HasValue) return 0;
-            
-            var today = DateTime.Today;
-            var age = today.Year - birthDate.Value.Year;
-            if (birthDate.Value.Date > today.AddYears(-age)) age--;
-            
-            return age;
-        }
+        // UltraThink v2.0: CalculateAge方法已移除，直接使用PatientDto.Age计算属性
 
         #endregion
     }

@@ -25,16 +25,16 @@ namespace LYBT.Module.Patients.Repositories
     /// 4. 连接复用
     /// 5. 批量操作优化
     /// </summary>
-    public class OptimizedPatientRepository : OptimizedBaseRepository<PatientModel>, IPatientRepository
+    public class OptimizedPatientRepository : OptimizedBaseRepository<Patient>, IPatientRepository
     {
         // 预编译查询
-        private static readonly Func<AppDbContext, string, Task<PatientModel?>> _compiledGetByPhone =
+        private static readonly Func<AppDbContext, string, Task<Patient?>> _compiledGetByPhone =
             EF.CompileAsyncQuery((AppDbContext ctx, string phone) =>
-                ctx.Set<PatientModel>().FirstOrDefault(p => p.PhoneNumber == phone));
+                ctx.Set<Patient>().FirstOrDefault(p => p.PhoneNumber == phone));
         
-        private static readonly Func<AppDbContext, string, IAsyncEnumerable<PatientModel>> _compiledSearchByName =
+        private static readonly Func<AppDbContext, string, IAsyncEnumerable<Patient>> _compiledSearchByName =
             EF.CompileAsyncQuery((AppDbContext ctx, string name) =>
-                ctx.Set<PatientModel>().Where(p => p.Name.Contains(name)));
+                ctx.Set<Patient>().Where(p => p.Name.Contains(name)));
         
         // 简化实现，移除预编译查询以避免类型匹配问题
 
@@ -54,7 +54,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 智能搜索患者
         /// </summary>
-        public async Task<IEnumerable<PatientModel>> SmartSearchAsync(
+        public async Task<IEnumerable<Patient>> SmartSearchAsync(
             PatientSearchCriteria criteria,
             CancellationToken cancellationToken = default)
         {
@@ -78,13 +78,13 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 按电话查询（使用预编译查询）
         /// </summary>
-        public async Task<PatientModel?> GetByPhoneAsync(
+        public async Task<Patient?> GetByPhoneAsync(
             string phone,
             CancellationToken cancellationToken = default)
         {
             var cacheKey = $"{CacheKeyPrefix}phone:{phone}";
             
-            if (_cache.TryGetValue<PatientModel>(cacheKey, out var cached))
+            if (_cache.TryGetValue<Patient>(cacheKey, out var cached))
             {
                 return cached;
             }
@@ -106,7 +106,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 根据主键ID查询病人（支持权限控制）
         /// </summary>
-        public async Task<PatientModel?> GetByIdAsync(Guid id, bool includeDisabled = false)
+        public async Task<Patient?> GetByIdAsync(Guid id, bool includeDisabled = false)
         {
             var query = _dbSet.AsNoTracking().Where(p => p.Id == id);
             if (!includeDisabled)
@@ -125,7 +125,7 @@ namespace LYBT.Module.Patients.Repositories
             if (patient == null) return false;
             
             patient.Status = CommonStatus.Enabled;
-            patient.UpdateTime = DateTime.Now;
+            // UltraThink v2.0: 删除UpdateTime字段
             
             return await _context.SaveChangesAsync() > 0;
         }
@@ -139,7 +139,7 @@ namespace LYBT.Module.Patients.Repositories
             if (patient == null) return false;
             
             patient.Status = CommonStatus.Disabled;
-            patient.UpdateTime = DateTime.Now;
+            // UltraThink v2.0: 删除UpdateTime字段
             
             return await _context.SaveChangesAsync() > 0;
         }
@@ -152,11 +152,11 @@ namespace LYBT.Module.Patients.Repositories
             if (!ids.Any()) return 0;
             
             // ✅ 性能优化：使用EF Core 7.0 ExecuteUpdate方法，避免加载实体到内存
+            // UltraThink v2.0: 删除UpdateTime字段
             return await _context.Patients
                 .Where(p => ids.Contains(p.Id))
                 .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(p => p.Status, CommonStatus.Disabled)
-                    .SetProperty(p => p.UpdateTime, DateTime.Now));
+                    .SetProperty(p => p.Status, CommonStatus.Disabled));
         }
 
         /// <summary>
@@ -167,17 +167,17 @@ namespace LYBT.Module.Patients.Repositories
             if (!ids.Any()) return 0;
             
             // ✅ 性能优化：使用EF Core 7.0 ExecuteUpdate方法，避免加载实体到内存
+            // UltraThink v2.0: 删除UpdateTime字段
             return await _context.Patients
                 .Where(p => ids.Contains(p.Id))
                 .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(p => p.Status, CommonStatus.Enabled)
-                    .SetProperty(p => p.UpdateTime, DateTime.Now));
+                    .SetProperty(p => p.Status, CommonStatus.Enabled));
         }
 
         /// <summary>
         /// 通过身份证号查找病人（包括禁用的患者档案）
         /// </summary>
-        public async Task<PatientModel?> GetByIdNumberAsync(string idNumber)
+        public async Task<Patient?> GetByIdNumberAsync(string idNumber)
         {
             return await _dbSet.AsNoTracking()
                 .FirstOrDefaultAsync(p => p.IdNumber == idNumber);
@@ -186,7 +186,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 通过手机号查找病人（包括禁用的患者档案）
         /// </summary>
-        public async Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber)
+        public async Task<Patient?> GetByPhoneNumberAsync(string phoneNumber)
         {
             return await _dbSet.AsNoTracking()
                 .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber);
@@ -221,7 +221,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 根据关键词搜索患者档案
         /// </summary>
-        public async Task<List<PatientModel>> SearchAsync(string keyword, bool includeDisabled = false)
+        public async Task<List<Patient>> SearchAsync(string keyword, bool includeDisabled = false)
         {
             var query = _dbSet.AsNoTracking()
                 .Where(p => p.Name.Contains(keyword) || 
@@ -239,7 +239,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 精确匹配搜索（手机号、身份证号）
         /// </summary>
-        public async Task<List<PatientModel>> ExactSearchAsync(string keyword, bool includeDisabled = false)
+        public async Task<List<Patient>> ExactSearchAsync(string keyword, bool includeDisabled = false)
         {
             var query = _dbSet.AsNoTracking()
                 .Where(p => p.PhoneNumber == keyword || p.IdNumber == keyword);
@@ -255,18 +255,19 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 获取启用的患者档案列表
         /// </summary>
-        public async Task<List<PatientModel>> GetActivePatientsAsync()
+        public async Task<List<Patient>> GetActivePatientsAsync()
         {
+            // UltraThink v2.0: 使用LastVisitTime替代已删除的UpdateTime
             return await _dbSet.AsNoTracking()
                 .Where(p => p.Status == CommonStatus.Enabled)
-                .OrderByDescending(p => p.UpdateTime)
+                .OrderByDescending(p => p.LastVisitTime ?? DateTime.MinValue)
                 .ToListAsync();
         }
 
         /// <summary>
         /// 根据身份证号获取患者档案列表（用于重复检查）
         /// </summary>
-        public async Task<List<PatientModel>> GetPatientsByIdNumberAsync(string idNumber)
+        public async Task<List<Patient>> GetPatientsByIdNumberAsync(string idNumber)
         {
             return await _dbSet.AsNoTracking()
                 .Where(p => p.IdNumber == idNumber)
@@ -276,7 +277,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 根据姓名和手机号获取患者档案列表（用于重复检查）
         /// </summary>
-        public async Task<List<PatientModel>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber)
+        public async Task<List<Patient>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber)
         {
             return await _dbSet.AsNoTracking()
                 .Where(p => p.Name == name && p.PhoneNumber == phoneNumber)
@@ -286,7 +287,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 根据相似姓名获取患者档案列表（用于重复检查）
         /// </summary>
-        public async Task<List<PatientModel>> GetPatientsBySimilarNameAsync(string name)
+        public async Task<List<Patient>> GetPatientsBySimilarNameAsync(string name)
         {
             return await _dbSet.AsNoTracking()
                 .Where(p => p.Name.Contains(name))
@@ -296,7 +297,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 根据姓名获取患者档案列表（用于查询或创建场景）
         /// </summary>
-        public async Task<List<PatientModel>> GetByNameAsync(string name)
+        public async Task<List<Patient>> GetByNameAsync(string name)
         {
             return await _dbSet.AsNoTracking()
                 .Where(p => p.Name == name && p.Status == CommonStatus.Enabled)
@@ -306,11 +307,11 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 按姓名搜索（使用预编译查询）
         /// </summary>
-        public async Task<IEnumerable<PatientModel>> SearchByNameAsync(
+        public async Task<IEnumerable<Patient>> SearchByNameAsync(
             string name,
             CancellationToken cancellationToken = default)
         {
-            var results = new List<PatientModel>();
+            var results = new List<Patient>();
             
             await foreach (var patient in _compiledSearchByName(_context, name)
                 .WithCancellation(cancellationToken))
@@ -324,7 +325,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 获取最近就诊患者（简化实现）
         /// </summary>
-        public async Task<IEnumerable<PatientModel>> GetRecentPatientsAsync(
+        public async Task<IEnumerable<Patient>> GetRecentPatientsAsync(
             int days = 7,
             int limit = 20,
             CancellationToken cancellationToken = default)
@@ -334,7 +335,7 @@ namespace LYBT.Module.Patients.Repositories
             
             var cacheKey = $"{CacheKeyPrefix}recent:{days}:{limit}";
             
-            if (_cache.TryGetValue<List<PatientModel>>(cacheKey, out var cached))
+            if (_cache.TryGetValue<List<Patient>>(cacheKey, out var cached))
             {
                 return cached!;
             }
@@ -353,19 +354,19 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 批量查询优化
         /// </summary>
-        public async Task<Dictionary<string, PatientModel>> GetByPhonesAsync(
+        public async Task<Dictionary<string, Patient>> GetByPhonesAsync(
             IEnumerable<string> phones,
             CancellationToken cancellationToken = default)
         {
             var phoneList = phones.ToList();
-            var result = new Dictionary<string, PatientModel>();
+            var result = new Dictionary<string, Patient>();
             
             // 先从缓存获取
             var uncachedPhones = new List<string>();
             foreach (var phone in phoneList)
             {
                 var cacheKey = $"{CacheKeyPrefix}phone:{phone}";
-                if (_cache.TryGetValue<PatientModel>(cacheKey, out var cached))
+                if (_cache.TryGetValue<Patient>(cacheKey, out var cached))
                 {
                     result[phone] = cached!;
                 }
@@ -415,14 +416,15 @@ namespace LYBT.Module.Patients.Repositories
             // 并行执行多个统计查询
             var query = _dbSet.AsNoTracking();
             
+            // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime进行日期过滤
             if (startDate.HasValue && endDate.HasValue)
             {
-                query = query.Where(p => p.CreateTime >= startDate && p.CreateTime <= endDate);
+                query = query.Where(p => p.LastVisitTime >= startDate && p.LastVisitTime <= endDate);
             }
             
             var totalTask = query.CountAsync(cancellationToken);
             var newThisMonthTask = query
-                .Where(p => p.CreateTime >= DateTime.Now.AddMonths(-1))
+                .Where(p => p.LastVisitTime >= DateTime.Now.AddMonths(-1))
                 .CountAsync(cancellationToken);
             var activeTask = query
                 .Where(p => p.LastVisitTime >= DateTime.Now.AddMonths(-3))
@@ -464,7 +466,7 @@ namespace LYBT.Module.Patients.Repositories
         /// 批量导入患者（事务优化）
         /// </summary>
         public async Task<BatchImportResult> BatchImportAsync(
-            IEnumerable<PatientModel> patients,
+            IEnumerable<Patient> patients,
             CancellationToken cancellationToken = default)
         {
             var patientList = patients.ToList();
@@ -480,7 +482,7 @@ namespace LYBT.Module.Patients.Repositories
                     {
                         // 检查重复
                         var phones = batch.Select(p => p.PhoneNumber).ToList();
-                        var existingPhones = await context.Set<PatientModel>()
+                        var existingPhones = await context.Set<Patient>()
                             .Where(p => phones.Contains(p.PhoneNumber))
                             .Select(p => p.PhoneNumber)
                             .ToListAsync(cancellationToken);
@@ -489,7 +491,7 @@ namespace LYBT.Module.Patients.Repositories
                         
                         if (newPatients.Any())
                         {
-                            await context.Set<PatientModel>().AddRangeAsync(newPatients, cancellationToken);
+                            await context.Set<Patient>().AddRangeAsync(newPatients, cancellationToken);
                             await context.SaveChangesAsync(cancellationToken);
                             successCount += newPatients.Count;
                             
@@ -597,7 +599,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 构建搜索查询
         /// </summary>
-        private IQueryable<PatientModel> BuildSearchQuery(PatientSearchCriteria criteria)
+        private IQueryable<Patient> BuildSearchQuery(PatientSearchCriteria criteria)
         {
             var query = _dbSet.AsNoTracking();
             
@@ -634,14 +636,15 @@ namespace LYBT.Module.Patients.Repositories
                 query = query.Where(p => p.BirthDate >= minBirthDate);
             }
             
+            // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime
             if (criteria.StartDate.HasValue)
             {
-                query = query.Where(p => p.CreateTime >= criteria.StartDate.Value);
+                query = query.Where(p => p.LastVisitTime >= criteria.StartDate.Value);
             }
             
             if (criteria.EndDate.HasValue)
             {
-                query = query.Where(p => p.CreateTime <= criteria.EndDate.Value);
+                query = query.Where(p => p.LastVisitTime <= criteria.EndDate.Value);
             }
             
             return query;
@@ -650,8 +653,8 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 应用智能排序
         /// </summary>
-        private IQueryable<PatientModel> ApplySmartOrdering(
-            IQueryable<PatientModel> query,
+        private IQueryable<Patient> ApplySmartOrdering(
+            IQueryable<Patient> query,
             PatientSearchCriteria criteria)
         {
             // 根据搜索条件智能决定排序策略
@@ -662,13 +665,13 @@ namespace LYBT.Module.Patients.Repositories
             }
             else if (criteria.StartDate.HasValue || criteria.EndDate.HasValue)
             {
-                // 如果有日期条件，按日期排序
-                query = query.OrderByDescending(p => p.CreateTime);
+                // UltraThink v2.0: 按LastVisitTime排序替代已删除的CreateTime
+                query = query.OrderByDescending(p => p.LastVisitTime ?? DateTime.MinValue);
             }
             else
             {
                 // 默认按最后就诊时间排序
-                query = query.OrderByDescending(p => p.LastVisitTime ?? p.CreateTime);
+                query = query.OrderByDescending(p => p.LastVisitTime ?? DateTime.MinValue);
             }
             
             return query;
@@ -677,7 +680,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 重写默认包含
         /// </summary>
-        protected override IQueryable<PatientModel> ApplyDefaultIncludes(IQueryable<PatientModel> query)
+        protected override IQueryable<Patient> ApplyDefaultIncludes(IQueryable<Patient> query)
         {
             // 默认不包含关联数据，需要时显式Include
             return query;
@@ -686,7 +689,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <summary>
         /// 重写全局过滤器
         /// </summary>
-        protected override IQueryable<PatientModel> ApplyGlobalFilters(IQueryable<PatientModel> query)
+        protected override IQueryable<Patient> ApplyGlobalFilters(IQueryable<Patient> query)
         {
             // 只显示启用和禁用的患者，不显示软删除的（这里我们使用Status来过滤）
             return query.Where(p => p.Status == CommonStatus.Enabled || p.Status == CommonStatus.Disabled);
@@ -741,7 +744,7 @@ namespace LYBT.Module.Patients.Repositories
     /// </summary>
     public class ImportResult
     {
-        public PatientModel Patient { get; set; } = null!;
+        public Patient Patient { get; set; } = null!;
         public bool Success { get; set; }
         public string? ErrorMessage { get; set; }
     }

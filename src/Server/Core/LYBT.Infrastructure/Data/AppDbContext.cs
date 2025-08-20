@@ -30,62 +30,46 @@ namespace LYBT.Infrastructure.Data
         }
 
         // 用户管理
-        public DbSet<UserModel> Users { get; set; }
+        public DbSet<User> Users { get; set; }
 
         // 管理员密钥
         public DbSet<AdminSecretModel> AdminSecrets { get; set; }
 
         // 认证管理
-        public DbSet<AuthSessionModel> AuthSessions { get; set; }
-        public DbSet<LoginAttemptModel> LoginAttempts { get; set; }
-        public DbSet<SecurityLogModel> SecurityLogs { get; set; }
+        public DbSet<AuthSession> AuthSessions { get; set; }
+        // public DbSet<LoginAttempt> LoginAttempts { get; set; } // UltraThink简化：暂时移除
+        // public DbSet<SecurityLog> SecurityLogs { get; set; } // UltraThink简化：暂时移除
 
         // 安全审计 - UltraThink重构安全架构
         public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }
 
         // 患者管理
-        public DbSet<PatientModel> Patients { get; set; }
+        public DbSet<Patient> Patients { get; set; }
 
         // 医疗案例
-        public DbSet<MedicalCaseModel> MedicalCases { get; set; }
+        public DbSet<MedicalCase> MedicalCases { get; set; }
 
         // 看诊
-        public DbSet<ConsultationModel> Consultations { get; set; }
+        public DbSet<Consultation> Consultations { get; set; }
 
         // 处方管理
-        public DbSet<PrescriptionModel> Prescriptions { get; set; }
+        public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<PrescriptionItemModel> PrescriptionItems { get; set; }
 
         // 药材管理
-        public DbSet<HerbModel> Herbs { get; set; }
+        public DbSet<Herb> Herbs { get; set; }
 
         // 验方管理
-        public DbSet<FormulaModel> Formulas { get; set; }
+        public DbSet<Formula> Formulas { get; set; }
 
 
         // ==================== 日志相关实体 - UltraThink重构：简化 ====================
 
-        /// <summary>
-        /// 简化日志模型 - 仅保留必要功能
-        /// </summary>
-        public DbSet<SimpleLog> Logs { get; set; }
+
 
         // ==================== 配置相关实体 ====================
 
-        /// <summary>
-        /// 全局设置
-        /// </summary>
-        public DbSet<GlobalSettingsModel> GlobalSettings { get; set; }
-
-        /// <summary>
-        /// 系统设置
-        /// </summary>
-        public DbSet<SettingsModel> Settings { get; set; }
-
-        /// <summary>
-        /// 诊断目录
-        /// </summary>
-        public DbSet<DiagnosisCatalogModel> DiagnosisCatalogs { get; set; }
+        // UltraThink v2.0简化：配置相关实体已移除，使用简化的配置管理
 
         /// <summary>
         /// 治疗目录
@@ -110,14 +94,14 @@ namespace LYBT.Infrastructure.Data
             // ConfigureCashiers(modelBuilder); // 模块已删除
             // ConfigureTreatmentTasks(modelBuilder); // 模块已删除
             // ConfigureSyncs(modelBuilder); // MVP阶段暂不需要
-            ConfigureLogModels(modelBuilder);
-            ConfigureConfigurationModels(modelBuilder);
+
+            // ConfigureConfigurationModels(modelBuilder); // UltraThink v2.0简化：配置实体已移除
             ConfigureSecurityAudit(modelBuilder);
         }
 
         private static void ConfigureUsers(ModelBuilder modelBuilder)
         {
-            var entity = modelBuilder.Entity<UserModel>();
+            var entity = modelBuilder.Entity<User>();
             entity.ToTable("Users");
             entity.HasKey(u => u.Id);
             // 明确配置字段映射以解决命名冲突
@@ -125,18 +109,13 @@ namespace LYBT.Infrastructure.Data
             entity.Property(u => u.Username).HasMaxLength(50).HasColumnName("UserName");
             entity.Property(u => u.RealName).HasMaxLength(100);
             entity.Property(u => u.PasswordHash).HasMaxLength(255);
-            entity.Property(u => u.CreateTime).HasColumnName("CreatedTime");
-            entity.Property(u => u.PinYinCode).HasMaxLength(20);
-            entity.Property(u => u.WuBiCode).HasMaxLength(20);
+            // CreateTime字段已删除（UltraThink v2.0简化）
+            entity.Property(u => u.PinYinCode).HasMaxLength(50);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
-            entity.Property(u => u.Remark).HasMaxLength(500);
+            // UltraThink v2.0: Remark字段已删除（简化用户管理）
             // 配置Status枚举字段
             entity.Property(u => u.Status).HasConversion<int>();
-            // 医生专属字段配置
-            entity.Property(u => u.Specialty).HasMaxLength(200);
-            entity.Property(u => u.RegistrationFee).HasColumnType("decimal(18,2)");
-            entity.Property(u => u.LicenseNumber).HasMaxLength(50);
-            entity.Property(u => u.Introduction).HasMaxLength(1000);
+
         }
 
         private static void ConfigureAdminSecrets(ModelBuilder modelBuilder)
@@ -150,8 +129,7 @@ namespace LYBT.Infrastructure.Data
 
             // 添加默认的 sysadmin 种子数据
             // 密码: Admin@123456
-            entity.HasData(new AdminSecretModel
-            {
+            entity.HasData(new AdminSecretModel {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Username = "sysadmin",
                 PasswordHash = "AQAAAAIAAYagAAAAEBZtKH/jLrWSCIstrn4KyQtIopjqYQNrjJ8ZTIZxjKrpJ1l0obDU19hLQMSNwBjbeQ=="
@@ -164,110 +142,40 @@ namespace LYBT.Infrastructure.Data
         private static void ConfigureAuth(ModelBuilder modelBuilder)
         {
             // 认证会话配置
-            modelBuilder.Entity<AuthSessionModel>(entity =>
+            modelBuilder.Entity<AuthSession>(entity =>
             {
                 entity.ToTable("AuthSessions");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Username).HasMaxLength(32).IsRequired();
-                entity.Property(e => e.LoginType).HasConversion<string>();
-                entity.Property(e => e.Status).HasConversion<string>();
-                entity.Property(e => e.ClientIp).HasMaxLength(45);
-                entity.Property(e => e.UserAgent).HasMaxLength(512);
-                entity.Property(e => e.JwtTokenHash).HasMaxLength(256);
-                entity.Property(e => e.RevokeReason).HasMaxLength(200);
-                entity.Property(e => e.RefreshTokenHash).HasMaxLength(256);
-                entity.Property(e => e.ExtendedData).HasMaxLength(1000);
-                entity.Property(e => e.ServerInfo).HasMaxLength(100);
-                entity.Property(e => e.GeoLocation).HasMaxLength(200);
-                entity.Property(e => e.DeviceInfo).HasMaxLength(200);
-                entity.Property(e => e.AnomaliesDescription).HasMaxLength(500);
-                entity.HasIndex(e => e.Username);
+                entity.Property(e => e.TokenHash).HasMaxLength(256);
+                entity.Property(e => e.IpAddress).HasMaxLength(45);
+                entity.Property(e => e.UserAgent).HasMaxLength(500);
+                entity.Property(e => e.Status).HasConversion<int>();
+                entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.LoginTime);
                 entity.HasIndex(e => e.Status);
-                entity.HasIndex(e => e.UserId);
             });
 
-            // 登录尝试配置
-            modelBuilder.Entity<LoginAttemptModel>(entity =>
-            {
-                entity.ToTable("LoginAttempts");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Username).HasMaxLength(32).IsRequired();
-                entity.Property(e => e.FailureReason).HasMaxLength(200);
-                entity.Property(e => e.ClientIp).HasMaxLength(45);
-                entity.Property(e => e.UserAgent).HasMaxLength(512);
-                entity.Property(e => e.LoginType).HasConversion<string>();
-                entity.Property(e => e.RiskLevel).HasConversion<string>();
-                entity.Property(e => e.Location).HasMaxLength(100);
-                entity.Property(e => e.DeviceFingerprint).HasMaxLength(100);
-                entity.Property(e => e.ServerInfo).HasMaxLength(100);
-                entity.Property(e => e.ProcessingNode).HasMaxLength(50);
-                entity.Property(e => e.DetailedError).HasMaxLength(1000);
-                entity.Property(e => e.AdditionalData).HasMaxLength(2000);
-                entity.Property(e => e.RequestId).HasMaxLength(64);
-                entity.Property(e => e.GeoLocationDetails).HasMaxLength(300);
-                entity.Property(e => e.ThreatIndicators).HasMaxLength(500);
-                entity.Property(e => e.BlockReason).HasMaxLength(200);
-                entity.Property(e => e.UserAgentParsed).HasMaxLength(300);
-                entity.Property(e => e.ReviewNotes).HasMaxLength(500);
-                entity.HasIndex(e => e.Username);
-                entity.HasIndex(e => e.AttemptTime);
-                entity.HasIndex(e => e.IsSuccess);
-                entity.HasIndex(e => e.ClientIp);
-                entity.HasIndex(e => e.RiskLevel);
-            });
 
-            // 安全日志配置
-            modelBuilder.Entity<SecurityLogModel>(entity =>
-            {
-                entity.ToTable("SecurityLogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.EventType).HasConversion<string>();
-                entity.Property(e => e.Description).HasMaxLength(500).IsRequired();
-                entity.Property(e => e.Username).HasMaxLength(32);
-                entity.Property(e => e.ClientIp).HasMaxLength(45);
-                entity.Property(e => e.UserAgent).HasMaxLength(512);
-                entity.Property(e => e.Level).HasConversion<string>();
-                entity.Property(e => e.AffectedResource).HasMaxLength(200);
-                entity.Property(e => e.Result).HasConversion<string>();
-                entity.Property(e => e.Details).HasMaxLength(2000);
-                entity.Property(e => e.StackTrace).HasMaxLength(4000);
-                entity.Property(e => e.RequestData).HasMaxLength(2000);
-                entity.Property(e => e.ResponseData).HasMaxLength(2000);
-                entity.Property(e => e.HttpMethod).HasMaxLength(10);
-                entity.Property(e => e.RequestPath).HasMaxLength(500);
-                entity.Property(e => e.RequestId).HasMaxLength(64);
-                entity.Property(e => e.ProcessingNotes).HasMaxLength(1000);
-                entity.Property(e => e.NotificationMethod).HasMaxLength(50);
-                entity.Property(e => e.CategoryTags).HasMaxLength(200);
-                entity.Property(e => e.AutoAnalysisResult).HasMaxLength(1000);
-                entity.Property(e => e.RemediationSuggestions).HasMaxLength(1000);
-                entity.Property(e => e.ComplianceFlags).HasMaxLength(200);
-                entity.HasIndex(e => e.EventType);
-                entity.HasIndex(e => e.EventTime);
-                entity.HasIndex(e => e.Level);
-                entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.RequiresNotification);
-                entity.HasIndex(e => e.IsProcessed);
-            });
+
+
         }
 
         private static void ConfigurePatients(ModelBuilder modelBuilder)
         {
-            var entity = modelBuilder.Entity<PatientModel>();
+            var entity = modelBuilder.Entity<Patient>();
             entity.ToTable("Patients");
             entity.HasKey(p => p.Id);
             entity.Property(p => p.Name).HasMaxLength(100);
-            entity.Property(p => p.WuBiCode).HasMaxLength(20);
+
             entity.Property(p => p.PinYinCode).HasMaxLength(20);
-            entity.Property(p => p.CreateTime).HasColumnName("CreatedAt");
+            // CreateTime字段已删除（UltraThink v2.0简化）
             entity.Property(p => p.PhoneNumber).HasMaxLength(20);
             entity.Property(p => p.Address).HasMaxLength(256);
             entity.Property(p => p.IdType).HasMaxLength(20);
             entity.Property(p => p.IdNumber).HasMaxLength(50);
             // Occupation、MaritalStatus、Ethnicity、Education字段已删除
             entity.Property(p => p.AllergyHistory).HasMaxLength(500);
-            entity.Property(p => p.DisableReason).HasMaxLength(128);
+
             // 配置Status枚举字段
             entity.Property(p => p.Status).HasConversion<int>();
         }
@@ -290,52 +198,52 @@ namespace LYBT.Infrastructure.Data
 
         private static void ConfigureMedicalCases(ModelBuilder modelBuilder)
         {
-            var entity = modelBuilder.Entity<MedicalCaseModel>();
+            var entity = modelBuilder.Entity<MedicalCase>();
             entity.ToTable("MedicalCases");
             entity.HasKey(m => m.Id);
             entity.Property(m => m.Status).HasConversion<string>();
             entity.Property(m => m.Remark).HasMaxLength(500);
             entity.HasIndex(m => m.PatientId);
-            entity.HasIndex(m => m.UserId);
-            entity.HasIndex(m => m.CreateTime);
+            entity.HasIndex(m => m.DoctorId);
+            // CreateTime字段已删除（UltraThink v2.0简化）
             entity.HasIndex(m => m.Status);
 
             // 配置关联关系
             // entity.HasOne(m => m.Registration).WithMany().HasForeignKey(m => m.RegistrationId); // 模块已删除
-            entity.HasOne(m => m.Consultation).WithMany().HasForeignKey(m => m.ConsultationId);
+            entity.HasOne(m => m.Consultation).WithOne().HasForeignKey<MedicalCase>(m => m.ConsultationId).IsRequired(false);
+            entity.HasOne(m => m.Prescription).WithOne().HasForeignKey<MedicalCase>(m => m.PrescriptionId).IsRequired(false);
         }
 
         private static void ConfigureConsultations(ModelBuilder modelBuilder)
         {
-            var entity = modelBuilder.Entity<ConsultationModel>();
+            var entity = modelBuilder.Entity<Consultation>();
             entity.ToTable("Consultations");
             entity.HasKey(c => c.Id);
             entity.Property(c => c.ChiefComplaint).HasMaxLength(500);
             entity.Property(c => c.PresentIllness).HasMaxLength(1000);
-            entity.Property(c => c.PastHistory).HasMaxLength(500);
-            entity.Property(c => c.AllergyHistory).HasMaxLength(200);
-            entity.Property(c => c.PhysicalExamination).HasMaxLength(1000);
+
             entity.Property(c => c.Inspection).HasMaxLength(500);
             entity.Property(c => c.AuscultationOlfaction).HasMaxLength(500);
             entity.Property(c => c.Inquiry).HasMaxLength(1000);
             entity.Property(c => c.Palpation).HasMaxLength(500);
-            entity.Property(c => c.TongueInspection).HasMaxLength(200);
-            entity.Property(c => c.PulseCondition).HasMaxLength(200);
+
             entity.Property(c => c.TCMDiagnosis).HasMaxLength(500);
-            entity.Property(c => c.WesternDiagnosis).HasMaxLength(500);
-            entity.Property(c => c.Diagnosis).HasMaxLength(500);
-            entity.Property(c => c.TreatmentPrinciple).HasMaxLength(200);
+
+            entity.Property(c => c.TreatmentPrinciple).HasMaxLength(500);
             entity.Property(c => c.MedicalAdvice).HasMaxLength(500);
             entity.Property(c => c.Remark).HasMaxLength(1000);
             entity.HasIndex(c => c.MedicalCaseId);
             entity.HasIndex(c => c.PatientId);
             entity.HasIndex(c => c.UserId);
-            entity.HasIndex(c => c.ConsultationTime);
+            
+            // 配置与MedicalCase的关系
+            entity.HasOne<MedicalCase>().WithOne(m => m.Consultation).HasForeignKey<Consultation>(c => c.MedicalCaseId);
+
         }
 
         private static void ConfigurePrescriptions(ModelBuilder modelBuilder)
         {
-            var prescriptionEntity = modelBuilder.Entity<PrescriptionModel>();
+            var prescriptionEntity = modelBuilder.Entity<Prescription>();
             prescriptionEntity.ToTable("Prescriptions");
             prescriptionEntity.HasKey(p => p.Id);
 
@@ -346,7 +254,7 @@ namespace LYBT.Infrastructure.Data
 
         private static void ConfigureHerbs(ModelBuilder modelBuilder)
         {
-            var entity = modelBuilder.Entity<HerbModel>();
+            var entity = modelBuilder.Entity<Herb>();
             entity.ToTable("Herbs");
             entity.HasKey(h => h.Id);
             entity.Property(h => h.Name).HasMaxLength(100);
@@ -365,7 +273,7 @@ namespace LYBT.Infrastructure.Data
 
         private static void ConfigureFormulas(ModelBuilder modelBuilder)
         {
-            var entity = modelBuilder.Entity<FormulaModel>();
+            var entity = modelBuilder.Entity<Formula>();
             entity.ToTable("Formulas");
             entity.HasKey(f => f.Id);
             entity.Property(f => f.Name).HasMaxLength(200);
@@ -459,105 +367,9 @@ namespace LYBT.Infrastructure.Data
 
         // Sync模块MVP阶段暂不需要
 
-        /// <summary>
-        /// 配置日志相关实体 - UltraThink重构：极简版
-        /// </summary>
-        private static void ConfigureLogModels(ModelBuilder modelBuilder)
-        {
-            // 简化日志配置 - 只保留核心字段
-            modelBuilder.Entity<SimpleLog>(entity =>
-            {
-                entity.ToTable("SimpleLogs");
-                entity.HasKey(e => new { e.Time, e.Level }); // 使用复合主键避免Guid
-                entity.Property(e => e.Level).HasMaxLength(20);
-                entity.Property(e => e.Message).HasMaxLength(1000);
-                entity.Property(e => e.Exception).HasMaxLength(2000);
-                entity.Property(e => e.UserId).HasMaxLength(50);
-                entity.HasIndex(e => e.Time);
-                entity.HasIndex(e => e.Level);
-            });
-        }
 
-        /// <summary>
-        /// 配置配置相关实体
-        /// </summary>
-        private static void ConfigureConfigurationModels(ModelBuilder modelBuilder)
-        {
-            // 全局设置配置
-            modelBuilder.Entity<GlobalSettingsModel>(entity =>
-            {
-                entity.ToTable("GlobalSettings");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.SystemName).HasMaxLength(100);
-                entity.Property(e => e.SystemVersion).HasMaxLength(20);
-                entity.Property(e => e.SystemLogo).HasMaxLength(255);
-                entity.Property(e => e.DefaultRecordSharing).HasMaxLength(20);
-                entity.Property(e => e.SyncMode).HasMaxLength(20);
-                entity.Property(e => e.UpdatedByName).HasMaxLength(50);
-            });
 
-            // 系统设置配置
-            modelBuilder.Entity<SettingsModel>(entity =>
-            {
-                entity.ToTable("Settings");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Key).HasMaxLength(128).IsRequired();
-                entity.Property(e => e.Value).HasMaxLength(1000).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(200);
-                entity.Property(e => e.ValueType).HasMaxLength(20);
-                entity.Property(e => e.Group).HasMaxLength(50);
-                entity.Property(e => e.Remark).HasMaxLength(500);
-                entity.HasIndex(e => e.Key).IsUnique();
-                entity.HasIndex(e => e.Group);
-                entity.HasIndex(e => e.IsEnabled);
-            });
 
-            // 诊断目录配置
-            modelBuilder.Entity<DiagnosisCatalogModel>(entity =>
-            {
-                entity.ToTable("DiagnosisCatalogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Code).HasMaxLength(20);
-                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(500);
-                entity.Property(e => e.IcdCode).HasMaxLength(20);
-                entity.Property(e => e.TcmSyndrome).HasMaxLength(100);
-                entity.Property(e => e.Remark).HasMaxLength(500);
-                entity.HasIndex(e => e.Code);
-                entity.HasIndex(e => e.Name);
-                entity.HasIndex(e => e.ParentId);
-                entity.HasIndex(e => e.IsEnabled);
-                entity.HasIndex(e => e.IsCommon);
-
-                // 自引用关系
-                entity.HasOne<DiagnosisCatalogModel>()
-                      .WithMany()
-                      .HasForeignKey(e => e.ParentId)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            // 治疗目录配置 - 模块已删除
-            /*
-            modelBuilder.Entity<TreatmentCatalogModel>(entity => {
-                entity.ToTable("TreatmentCatalogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(500);
-                entity.Property(e => e.Price).HasColumnType("decimal(18,2)").IsRequired();
-                entity.Property(e => e.Indications).HasMaxLength(500);
-                entity.Property(e => e.Contraindications).HasMaxLength(500);
-                entity.Property(e => e.Precautions).HasMaxLength(500);
-                entity.Property(e => e.CreatedBy).HasMaxLength(50);
-                entity.Property(e => e.UpdatedBy).HasMaxLength(50);
-                entity.HasIndex(e => e.Code);
-                entity.HasIndex(e => e.Name);
-                entity.HasIndex(e => e.Category);
-                entity.HasIndex(e => e.IsActive);
-            });
-            */
-        }
 
         /// <summary>
         /// 配置安全审计实体 - UltraThink重构安全审计架构

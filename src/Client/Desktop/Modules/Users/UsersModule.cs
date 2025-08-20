@@ -3,7 +3,6 @@ using Prism.Modularity;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Desktop.Users.Views;
 using LYBT.Desktop.Users.Services;
-using LYBT.Desktop.Users.Services.Interfaces;
 
 namespace LYBT.Desktop.Users
 {
@@ -21,11 +20,11 @@ namespace LYBT.Desktop.Users
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink模块化架构：注册模块业务服务
-            containerRegistry.RegisterSingleton<IUserModuleService, UserModuleService>();
+            // UltraThink v2.0简化架构：直接注册服务实现
+            containerRegistry.RegisterSingleton<UserModuleService>();
             
             // 注册视图和视图模型
-            containerRegistry.RegisterForNavigation<UserManagementView, UserManagementViewModelSimple>();
+            containerRegistry.RegisterForNavigation<UserManagementView, UserManagementViewModel>();
             containerRegistry.RegisterForNavigation<UserAddEditDialog, UserAddEditDialogViewModel>();
         }
     }

@@ -109,46 +109,58 @@ namespace LYBT.Desktop.Core.Controls
         /// </summary>
         private async void DataGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (!(DataContext is VirtualizedDataGridViewModel viewModel) || viewModel.IsLoading)
-                return;
-
-            var scrollViewer = e.OriginalSource as ScrollViewer;
-            if (scrollViewer == null)
-                return;
-
-            // 计算滚动位置
-            var verticalOffset = scrollViewer.VerticalOffset;
-            var scrollableHeight = scrollViewer.ScrollableHeight;
-            
-            // 接近底部的阈值（距底部20%时开始预加载）
-            var nearBottomThreshold = scrollableHeight * 0.8;
-            var isCurrentlyNearBottom = verticalOffset >= nearBottomThreshold;
-
-            // 检测向下滚动且接近底部
-            if (isCurrentlyNearBottom && !_isNearBottom && verticalOffset > _lastVerticalOffset)
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                _isNearBottom = true;
-                
-                // 触发懒加载
-                if (viewModel.CanLoadMore)
+                try
                 {
-                    await viewModel.LoadNextPageAsync();
+                    if (!(DataContext is VirtualizedDataGridViewModel viewModel) || viewModel.IsLoading)
+                        return;
+
+                    var scrollViewer = e.OriginalSource as ScrollViewer;
+                    if (scrollViewer == null)
+                        return;
+
+                    // 计算滚动位置
+                    var verticalOffset = scrollViewer.VerticalOffset;
+                    var scrollableHeight = scrollViewer.ScrollableHeight;
+                    
+                    // 接近底部的阈值（距底部20%时开始预加载）
+                    var nearBottomThreshold = scrollableHeight * 0.8;
+                    var isCurrentlyNearBottom = verticalOffset >= nearBottomThreshold;
+
+                    // 检测向下滚动且接近底部
+                    if (isCurrentlyNearBottom && !_isNearBottom && verticalOffset > _lastVerticalOffset)
+                    {
+                        _isNearBottom = true;
+                        
+                        // 触发懒加载
+                        if (viewModel.CanLoadMore)
+                        {
+                            await viewModel.LoadNextPageAsync();
+                        }
+                    }
+                    else if (!isCurrentlyNearBottom)
+                    {
+                        _isNearBottom = false;
+                    }
+
+                    _lastVerticalOffset = verticalOffset;
+
+                    // 虚拟化优化：根据滚动速度调整渲染策略
+                    var scrollSpeed = Math.Abs(e.VerticalChange);
+                    if (scrollSpeed > 50) // 快速滚动时
+                    {
+                        // 可以在这里添加快速滚动优化逻辑
+                        // 例如降低渲染频率、简化数据模板等
+                    }
                 }
-            }
-            else if (!isCurrentlyNearBottom)
-            {
-                _isNearBottom = false;
-            }
-
-            _lastVerticalOffset = verticalOffset;
-
-            // 虚拟化优化：根据滚动速度调整渲染策略
-            var scrollSpeed = Math.Abs(e.VerticalChange);
-            if (scrollSpeed > 50) // 快速滚动时
-            {
-                // 可以在这里添加快速滚动优化逻辑
-                // 例如降低渲染频率、简化数据模板等
-            }
+                catch (Exception ex)
+                {
+                    // 记录滚动处理错误，避免影响用户体验
+                    System.Diagnostics.Debug.WriteLine($"滚动处理失败: {ex.Message}");
+                }
+            });
         }
 
         #endregion
@@ -397,46 +409,130 @@ namespace LYBT.Desktop.Core.Controls
 
         private async void ExecuteSearch()
         {
-            await LoadDataAsync(1);
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await LoadDataAsync(1);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "搜索操作失败");
+                    // 可以在这里添加用户通知逻辑
+                }
+            });
         }
 
         private async void ExecuteRefresh()
         {
-            await LoadDataAsync(CurrentPage);
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await LoadDataAsync(CurrentPage);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "刷新操作失败");
+                    // 可以在这里添加用户通知逻辑
+                }
+            });
         }
 
         private async void ExecuteFirstPage()
         {
-            await LoadDataAsync(1);
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await LoadDataAsync(1);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "首页导航失败");
+                    // 可以在这里添加用户通知逻辑
+                }
+            });
         }
 
         private async void ExecutePreviousPage()
         {
-            if (CanGoToPreviousPage)
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                await LoadDataAsync(CurrentPage - 1);
-            }
+                try
+                {
+                    if (CanGoToPreviousPage)
+                    {
+                        await LoadDataAsync(CurrentPage - 1);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "上一页导航失败");
+                    // 可以在这里添加用户通知逻辑
+                }
+            });
         }
 
         private async void ExecuteNextPage()
         {
-            if (CanGoToNextPage)
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                await LoadDataAsync(CurrentPage + 1);
-            }
+                try
+                {
+                    if (CanGoToNextPage)
+                    {
+                        await LoadDataAsync(CurrentPage + 1);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "下一页导航失败");
+                    // 可以在这里添加用户通知逻辑
+                }
+            });
         }
 
         private async void ExecuteLastPage()
         {
-            await LoadDataAsync(TotalPages);
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await LoadDataAsync(TotalPages);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "末页导航失败");
+                    // 可以在这里添加用户通知逻辑
+                }
+            });
         }
 
         private async void ExecuteGoToPage(int pageNumber)
         {
-            if (pageNumber >= 1 && pageNumber <= TotalPages)
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                await LoadDataAsync(pageNumber);
-            }
+                try
+                {
+                    if (pageNumber >= 1 && pageNumber <= TotalPages)
+                    {
+                        await LoadDataAsync(pageNumber);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "页面导航失败，目标页码: {PageNumber}", pageNumber);
+                    // 可以在这里添加用户通知逻辑
+                }
+            });
         }
 
         #endregion

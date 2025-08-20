@@ -508,7 +508,7 @@ namespace LYBT.Module.Users.Services
                     TotalCount = allUsers.Count(),
                     ActiveCount = allUsers.Count(u => u.Status == CommonStatus.Enabled),
                     InactiveCount = allUsers.Count(u => u.Status == CommonStatus.Disabled),
-                    RecentCount = allUsers.Count(u => u.CreateTime >= DateTime.Today.AddDays(-30))
+                    RecentCount = 0 // UltraThink v2.0简化：User实体已删除CreateTime字段，暂不统计近期创建用户
                 };
 
                 return ServiceResult<object>.Success(statistics);
@@ -567,7 +567,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 映射用户模型到DTO (现已使用AutoMapper，此方法保留用于兼容性)
         /// </summary>
-        private UserDto MapToUserDto(UserModel model)
+        private UserDto MapToUserDto(User model)
         {
             return _mapper.Map<UserDto>(model);
         }
@@ -575,9 +575,9 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 从DTO创建用户模型
         /// </summary>
-        private UserModel CreateUserFromDto(UserCreateDto dto)
+        private User CreateUserFromDto(UserCreateDto dto)
         {
-            return new UserModel
+            return new User
             {
                 Id = Guid.NewGuid(),
                 Username = dto.Username,
@@ -585,7 +585,7 @@ namespace LYBT.Module.Users.Services
                 PinYinCode = CommonHelper.GetPinyinCode(dto.RealName),
                 Status = dto.Status,
                 PhoneNumber = dto.PhoneNumber,
-                CreateTime = DateTime.Now,
+                // CreateTime字段已删除（UltraThink v2.0简化）
                 PasswordHash = PasswordHelper.Hash(_options.DefaultUserPassword)
             };
         }
@@ -593,7 +593,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 从DTO更新用户模型
         /// </summary>
-        private void UpdateUserFromDto(UserModel user, UserUpdateDto dto)
+        private void UpdateUserFromDto(User user, UserUpdateDto dto)
         {
             user.RealName = dto.RealName;
             user.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName);
@@ -617,7 +617,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 获取现有用户（不存在时抛出异常）
         /// </summary>
-        private async Task<UserModel> GetExistingUser(Guid id)
+        private async Task<User> GetExistingUser(Guid id)
         {
             // 内部方法总是包含禁用用户，确保操作能正常进行
             var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
@@ -631,7 +631,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 根据ID列表获取用户列表
         /// </summary>
-        private async Task<List<UserModel>> GetUsersByIds(List<Guid> ids)
+        private async Task<List<User>> GetUsersByIds(List<Guid> ids)
         {
             // 内部方法总是包含禁用用户，确保批量操作能正常进行
             return await _userRepository.GetUsersByIdsAsync(ids, includeDisabled: true);
@@ -671,7 +671,7 @@ namespace LYBT.Module.Users.Services
         /// 批量操作日志记录
         /// </summary>
         private async Task LogBatchUserOperation(
-            List<UserModel> users, ActionType actionType, Guid operatorId, string operatorName,
+            List<User> users, ActionType actionType, Guid operatorId, string operatorName,
             string content)
         {
             if (!_options.EnableDetailedAuditLogging)
@@ -687,7 +687,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 发送密码重置通知（待实现）
         /// </summary>
-        private async Task SendPasswordResetNotification(UserModel user)
+        private async Task SendPasswordResetNotification(User user)
         {
 
             // 可以发送邮件、短信或系统内通知

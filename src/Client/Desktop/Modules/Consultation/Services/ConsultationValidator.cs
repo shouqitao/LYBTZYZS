@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Consultation;
-using LYBT.Desktop.Core.Models.Patients;
-using LYBT.Desktop.Core.Models.Prescriptions;
+// UltraThink v2.0: 移除已删除的Info模型引用，直接使用DTO
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Desktop.Core.Models.Validation;
-using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -15,8 +15,9 @@ namespace LYBT.Desktop.Consultation.Services
 {
     /// <summary>
     /// 看诊验证器 - 负责看诊流程中的所有验证逻辑
+    /// UltraThink v2.0: 移除已删除的接口，直接实现验证逻辑
     /// </summary>
-    public class ConsultationValidator : IConsultationValidator
+    public class ConsultationValidator
     {
         #region 验证规则常量
 
@@ -43,7 +44,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 验证患者是否可以开始看诊
         /// </summary>
-        public ValidationResult ValidatePatientForConsultation(PatientInfo patient)
+        public ValidationResult ValidatePatientForConsultation(PatientDto patient)
         {
             var result = new ValidationResult { IsValid = true };
 
@@ -95,7 +96,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 验证看诊基本信息
         /// </summary>
-        public ValidationResult ValidateConsultationBasicInfo(ConsultationInfo consultation)
+        public ValidationResult ValidateConsultationBasicInfo(ConsultationDto consultation)
         {
             var result = new ValidationResult { IsValid = true };
 
@@ -150,9 +151,9 @@ namespace LYBT.Desktop.Consultation.Services
         }
 
         /// <summary>
-        /// 验证中医四诊信息
+        /// 验证中医四诊信息 - UltraThink v2.0: 直接使用ConsultationDto
         /// </summary>
-        public ValidationResult ValidateTCMDiagnosis(TCMDiagnosisInfo diagnosis)
+        public ValidationResult ValidateTCMDiagnosis(ConsultationDto diagnosis)
         {
             var result = new ValidationResult { IsValid = true };
 
@@ -239,11 +240,11 @@ namespace LYBT.Desktop.Consultation.Services
         #region 处方验证
 
         /// <summary>
-        /// 验证处方是否可以保存
+        /// 验证处方是否可以保存 - UltraThink v2.0: 直接使用DTO
         /// </summary>
         public async Task<ValidationResult> ValidatePrescriptionForSaveAsync(
-            PrescriptionInfo prescription,
-            ConsultationInfo consultation)
+            PrescriptionDto prescription,
+            ConsultationDto consultation)
         {
             var result = new ValidationResult { IsValid = true };
 
@@ -341,7 +342,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 验证处方项目
         /// </summary>
-        private ValidationResult ValidatePrescriptionItem(PrescriptionItemInfo item)
+        private ValidationResult ValidatePrescriptionItem(PrescriptionItemDto item)
         {
             var result = new ValidationResult { IsValid = true };
 
@@ -395,7 +396,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 验证看诊是否可以完成
         /// </summary>
-        public ValidationResult ValidateConsultationCompletion(ConsultationInfo consultation)
+        public ValidationResult ValidateConsultationCompletion(ConsultationDto consultation)
         {
             var result = new ValidationResult { IsValid = true };
 

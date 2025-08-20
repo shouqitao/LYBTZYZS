@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Consultation;
-using LYBT.Desktop.Core.Models.Patients;
-using LYBT.Desktop.Core.Models.Prescriptions;
+// UltraThink v2.0: 移除已删除的Info模型引用，直接使用DTO
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
 // UltraThink重构: 使用新的统一事件架构
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Desktop.Core.Models.Formulas;
 
 namespace LYBT.Desktop.Consultation.Services
 {
@@ -22,7 +21,7 @@ namespace LYBT.Desktop.Consultation.Services
     /// 使用新的统一事件架构，提供类型安全的事件处理
     /// 通过EventMigrationAdapter保持向后兼容性
     /// </summary>
-    public class ConsultationEventHandler : IConsultationEventHandler, IDisposable
+    public class ConsultationEventHandler : IDisposable
     {
         #region 依赖注入
 
@@ -52,7 +51,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 发布患者选择事件
         /// </summary>
-        public void PublishPatientSelected(PatientInfo patient)
+        public void PublishPatientSelected(PatientDto patient)
         {
             try
             {
@@ -79,7 +78,7 @@ namespace LYBT.Desktop.Consultation.Services
                 // 使用适配器订阅，自动转换事件数据格式
                 _eventAdapter.SubscribeToPatientSelection(patientInfo =>
                 {
-                    // 将PatientInfo转换为PatientSelectedEventArgs以保持兼容性
+                    // UltraThink v2.0: 将PatientDto转换为PatientSelectedEventArgs以保持兼容性
                     var eventArgs = new PatientSelectedEventArgs
                     {
                         PatientId = patientInfo.Id,
@@ -104,7 +103,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 发布诊疗开始事件
         /// </summary>
-        public void PublishConsultationStarted(ConsultationInfo consultation)
+        public void PublishConsultationStarted(ConsultationDto consultation)
         {
             try
             {
@@ -153,7 +152,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 发布诊疗完成事件
         /// </summary>
-        public void PublishConsultationCompleted(ConsultationInfo consultation)
+        public void PublishConsultationCompleted(ConsultationDto consultation)
         {
             try
             {
@@ -203,9 +202,9 @@ namespace LYBT.Desktop.Consultation.Services
         #region 处方相关事件
 
         /// <summary>
-        /// 发布处方保存事件
+        /// 发布处方保存事件 - UltraThink v2.0: 直接使用DTO
         /// </summary>
-        public void PublishPrescriptionSaved(PrescriptionInfo prescription)
+        public void PublishPrescriptionSaved(PrescriptionDto prescription)
         {
             try
             {

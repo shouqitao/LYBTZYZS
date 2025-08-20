@@ -5,8 +5,9 @@ using System.Windows.Controls;
 using AutoMapper;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Models.Auth;
-using LYBT.Desktop.Auth.Services.Interfaces;
+using LYBT.Desktop.Auth.Services;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Users;
 using Prism.Commands;
 using Prism.Events;
 
@@ -14,16 +15,16 @@ namespace LYBT.Desktop.Auth.ViewModels
 {
     /// <summary>
     /// 登录窗口视图模型 - UltraThink架构标准版本
-    /// 完全使用IAuthModuleService实现模块自包含，符合四层架构规范
-    /// Layer 4: Desktop层，使用LoginInfo模型，通过模块化服务与底层交互
+    /// 完全使用AuthModuleService实现模块自包含，符合四层架构规范
+    /// Layer 4: Desktop层，使用DTO模型，通过模块化服务与底层交互
     /// </summary>
     public class LoginViewModel : ServiceViewModel
     {
         #region 私有字段
 
-        private readonly IAuthModuleService _authModuleService;
+        private readonly AuthModuleService _authModuleService;
         private readonly IMapper _mapper;
-        private LoginInfo _loginInfo = new();
+        private LoginRequest _loginRequest = new();
         private string _apiStatus = "正在检测API连接...";
 
         #endregion
@@ -33,13 +34,13 @@ namespace LYBT.Desktop.Auth.ViewModels
         public DelegateCommand LoginCommand { get; }
         public DelegateCommand<PasswordBox>? PasswordChangedCommand { get; set; }
 
-        /// <summary>登录信息模型</summary>
-        public LoginInfo LoginInfo
+        /// <summary>登录请求模型</summary>
+        public LoginRequest LoginRequest
         {
-            get => _loginInfo;
+            get => _loginRequest;
             set
             {
-                SetProperty(ref _loginInfo, value);
+                SetProperty(ref _loginRequest, value);
                 LoginCommand.RaiseCanExecuteChanged();
             }
         }
@@ -47,60 +48,52 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>用户名</summary>
         public string Username
         {
-            get => LoginInfo.Username;
+            get => LoginRequest.Username;
             set
             {
-                LoginInfo.Username = value;
-                OnPropertyChanged();
-                LoginCommand.RaiseCanExecuteChanged();
+                if (LoginRequest.Username != value)
+                {
+                    LoginRequest.Username = value;
+                    RaisePropertyChanged(nameof(Username));
+                    LoginCommand.RaiseCanExecuteChanged();
+                }
             }
         }
 
         /// <summary>密码</summary>
         public string Password
         {
-            get => LoginInfo.Password;
+            get => LoginRequest.Password;
             set
             {
-                LoginInfo.Password = value;
-                OnPropertyChanged();
-                LoginCommand.RaiseCanExecuteChanged();
+                if (LoginRequest.Password != value)
+                {
+                    LoginRequest.Password = value;
+                    RaisePropertyChanged(nameof(Password));
+                    LoginCommand.RaiseCanExecuteChanged();
+                }
             }
         }
 
         /// <summary>记住我</summary>
         public bool RememberMe
         {
-            get => LoginInfo.RememberMe;
+            get => LoginRequest.RememberMe;
             set
             {
-                LoginInfo.RememberMe = value;
-                OnPropertyChanged();
+                if (LoginRequest.RememberMe != value)
+                {
+                    LoginRequest.RememberMe = value;
+                    RaisePropertyChanged(nameof(RememberMe));
+                }
             }
         }
 
         /// <summary>是否有保存的密码</summary>
-        public bool HasSavedPassword
-        {
-            get => LoginInfo.HasSavedPassword;
-            set
-            {
-                LoginInfo.HasSavedPassword = value;
-                OnPropertyChanged();
-            }
-        }
+        public bool HasSavedPassword { get; set; }
 
         /// <summary>API是否在线</summary>
-        public bool IsApiOnline
-        {
-            get => LoginInfo.IsApiOnline;
-            set
-            {
-                LoginInfo.IsApiOnline = value;
-                OnPropertyChanged();
-                LoginCommand.RaiseCanExecuteChanged();
-            }
-        }
+        public bool IsApiOnline { get; set; } = true;
 
         /// <summary>API状态信息</summary>
         public string ApiStatus
@@ -115,7 +108,7 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         public LoginViewModel(
             IEventAggregator eventAggregator,
-            IAuthModuleService authModuleService,
+            AuthModuleService authModuleService,
             IMapper mapper)
             : base(eventAggregator)
         {
@@ -123,9 +116,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化登录信息
-            LoginInfo.UserAgent = "LYBT.WPF.Client";
-            LoginInfo.LoginType = "Password";
-            LoginInfo.ClientIp = _authModuleService.GetClientIpAddress();
+            LoginRequest.UserAgent = "LYBT.WPF.Client";
+            LoginRequest.LoginType = "Password";
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
 
@@ -154,7 +146,9 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         private bool CanExecuteLogin()
         {
-            return !IsLoading && LoginInfo.CanLogin;
+            return !IsLoading && IsApiOnline && 
+                   !string.IsNullOrWhiteSpace(LoginRequest.Username) && 
+                   !string.IsNullOrWhiteSpace(LoginRequest.Password);
         }
 
         private async Task ExecuteLoginAsync()
@@ -162,25 +156,21 @@ namespace LYBT.Desktop.Auth.ViewModels
             try
             {
                 IsLoading = true;
-                LoginInfo.IsLoggingIn = true;
                 ClearError();
 
                 // UltraThink四层架构：使用模块化服务执行登录
-                var result = await _authModuleService.LoginAsync(LoginInfo);
+                var result = await _authModuleService.LoginAsync(LoginRequest);
 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // 更新登录信息
-                    LoginInfo = result.Data;
-
                     // 设置状态消息
-                    if (LoginInfo.User?.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
+                    if (result.Data.User?.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
                     {
                         StatusMessage = "超级管理员登录成功，正在跳转...";
                     }
                     else
                     {
-                        StatusMessage = $"{LoginInfo.RoleDisplay}登录成功，正在跳转...";
+                        StatusMessage = $"用户登录成功，正在跳转...";
                     }
 
                     // 等待一下让用户看到成功消息
@@ -201,7 +191,6 @@ namespace LYBT.Desktop.Auth.ViewModels
             finally
             {
                 IsLoading = false;
-                LoginInfo.IsLoggingIn = false;
             }
         }
 
@@ -218,7 +207,11 @@ namespace LYBT.Desktop.Auth.ViewModels
             ClearStatus();
 
             // 清除登录状态
-            LoginInfo.ClearLoginState();
+            LoginRequest = new LoginRequest
+            {
+                UserAgent = "LYBT.WPF.Client",
+                LoginType = "Password"
+            };
 
             // 登出时重新加载保存的凭据（如果有）
             LoadSavedCredentials();
@@ -227,7 +220,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>
         /// 认证状态变更事件处理
         /// </summary>
-        private void OnAuthStatusChanged(object? sender, AuthStatusChangedEventArgs e)
+        private void OnAuthStatusChanged(object? sender, (bool IsLoggedIn, string? Username, string? Message) e)
         {
             try
             {
@@ -254,17 +247,17 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
         }
 
-        private void UpdateAuthStatus(AuthStatusChangedEventArgs e)
+        private void UpdateAuthStatus((bool IsLoggedIn, string? Username, string? Message) e)
         {
-            if (!string.IsNullOrEmpty(e.StatusMessage))
+            if (!string.IsNullOrEmpty(e.Message))
             {
                 if (e.IsLoggedIn)
                 {
-                    StatusMessage = e.StatusMessage;
+                    StatusMessage = e.Message;
                 }
                 else
                 {
-                    ErrorMessage = e.StatusMessage;
+                    ErrorMessage = e.Message;
                 }
             }
         }
@@ -272,7 +265,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>
         /// API连接状态变更事件处理
         /// </summary>
-        private void OnApiConnectionChanged(object? sender, ApiConnectionChangedEventArgs e)
+        private void OnApiConnectionChanged(object? sender, (bool IsConnected, string Message) e)
         {
             try
             {
@@ -299,11 +292,12 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
         }
 
-        private void UpdateApiConnectionStatus(ApiConnectionChangedEventArgs e)
+        private void UpdateApiConnectionStatus((bool IsConnected, string Message) e)
         {
             IsApiOnline = e.IsConnected;
-            ApiStatus = e.StatusMessage;
-            OnPropertyChanged(nameof(IsApiOnline));
+            ApiStatus = e.Message;
+            RaisePropertyChanged(nameof(IsApiOnline));
+            LoginCommand.RaiseCanExecuteChanged();
         }
 
         #endregion
@@ -321,27 +315,27 @@ namespace LYBT.Desktop.Auth.ViewModels
                 var result = _authModuleService.LoadSavedCredentials();
                 if (result.IsSuccess && result.Data != null)
                 {
-                    var savedInfo = result.Data;
-                    LoginInfo.Username = savedInfo.Username;
-                    LoginInfo.Password = savedInfo.Password;
-                    LoginInfo.RememberMe = savedInfo.RememberMe;
-                    LoginInfo.HasSavedPassword = savedInfo.HasSavedPassword;
+                    var savedRequest = result.Data;
+                    LoginRequest.Username = savedRequest.Username;
+                    LoginRequest.Password = savedRequest.Password;
+                    LoginRequest.RememberMe = savedRequest.RememberMe;
+                    HasSavedPassword = !string.IsNullOrEmpty(savedRequest.Password);
                 }
                 else
                 {
-                    LoginInfo.HasSavedPassword = false;
+                    HasSavedPassword = false;
                 }
 
                 // 触发属性变更通知
-                OnPropertyChanged(nameof(Username));
-                OnPropertyChanged(nameof(Password));
-                OnPropertyChanged(nameof(RememberMe));
-                OnPropertyChanged(nameof(HasSavedPassword));
+                RaisePropertyChanged(nameof(Username));
+                RaisePropertyChanged(nameof(Password));
+                RaisePropertyChanged(nameof(RememberMe));
+                RaisePropertyChanged(nameof(HasSavedPassword));
             }
             catch (Exception ex)
             {
                 // 静默处理错误，避免影响用户体验
-                LoginInfo.HasSavedPassword = false;
+                HasSavedPassword = false;
                 HandleError("加载凭据", ex);
             }
         }

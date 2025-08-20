@@ -3,8 +3,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+// UltraThink v2.0: 直接使用HerbDto，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -30,22 +31,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Properties
 
-        private ObservableCollection<HerbInfo> _herbs = new();
-        public ObservableCollection<HerbInfo> Herbs
+        private ObservableCollection<HerbDto> _herbs = new();
+        public ObservableCollection<HerbDto> Herbs
         {
             get => _herbs;
             set => SetProperty(ref _herbs, value);
         }
 
-        private ObservableCollection<HerbInfo> _filteredHerbs = new();
-        public ObservableCollection<HerbInfo> FilteredHerbs
+        private ObservableCollection<HerbDto> _filteredHerbs = new();
+        public ObservableCollection<HerbDto> FilteredHerbs
         {
             get => _filteredHerbs;
             set => SetProperty(ref _filteredHerbs, value);
         }
 
-        private HerbInfo? _selectedHerb;
-        public HerbInfo? SelectedHerb
+        private HerbDto? _selectedHerb;
+        public HerbDto? SelectedHerb
         {
             get => _selectedHerb;
             set => SetProperty(ref _selectedHerb, value);
@@ -91,7 +92,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             set => SetProperty(ref _isEditMode, value);
         }
 
-        private PrescriptionItemInfo? _editingItem;
+        private PrescriptionItemDto? _editingItem;
 
         private bool _isLoading;
         public bool IsLoading
@@ -175,8 +176,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 if (herbsResult.IsSuccess && herbsResult.Data != null)
                 {
                     // UltraThink四层架构：使用AutoMapper转换DTO → Info
-                    var herbInfoList = _mapper.Map<List<HerbInfo>>(herbsResult.Data);
-                    Herbs = new ObservableCollection<HerbInfo>(herbInfoList);
+                    // UltraThink v2.0: 直接使用HerbDto，无需映射
+                    Herbs = new ObservableCollection<HerbDto>(herbsResult.Data);
                     FilterHerbs();
 
                     // 如果是编辑模式，选中对应的药材
@@ -218,7 +219,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     (h.Name?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
-            FilteredHerbs = new ObservableCollection<HerbInfo>(filtered);
+            FilteredHerbs = new ObservableCollection<HerbDto>(filtered);
         }
 
         private bool CanConfirm()

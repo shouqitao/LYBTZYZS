@@ -199,6 +199,10 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>理疗师</summary>
         [Description("理疗师")]
-        Therapist = 6
+        Therapist = 6,
+
+        /// <summary>普通用户</summary>
+        [Description("普通用户")]
+        User = 7
     }
 }

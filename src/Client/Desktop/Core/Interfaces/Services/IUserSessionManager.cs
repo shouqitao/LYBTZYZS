@@ -1,8 +1,9 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System;
-using LYBT.Desktop.Core.Models.Users;
+using LYBT.Desktop.Core.Redux.States;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {
@@ -14,7 +15,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>
         /// 当前登录用户
         /// </summary>
-        UserInfo? CurrentUser { get; }
+        UserDto? CurrentUser { get; }
 
         /// <summary>
         /// 是否已登录
@@ -36,7 +37,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         /// <param name="user">用户信息</param>
         /// <param name="token">会话令牌</param>
-        void SetUserSession(UserInfo user, string token);
+        void SetUserSession(UserDto user, string token);
 
         /// <summary>
         /// 清除用户会话
@@ -79,7 +80,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// 刷新用户信息
         /// </summary>
         /// <param name="user">更新的用户信息</param>
-        void RefreshUserInfo(UserInfo user);
+        void RefreshUserInfo(UserDto user);
 
         // UltraThink Phase 4.3: 基于UserRole枚举的新方法
 

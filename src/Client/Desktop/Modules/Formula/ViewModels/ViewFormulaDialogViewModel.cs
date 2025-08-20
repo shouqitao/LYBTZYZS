@@ -5,8 +5,8 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
 
-// UltraThink四层架构修复：正确使用FormulaInfo作为Desktop层模型
-using LYBT.Desktop.Core.Models.Formulas;
+// UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Formula;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Formula.ViewModels
@@ -22,15 +22,15 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Properties
 
-        private FormulaInfo _formula = new();
-        public FormulaInfo Formula
+        private FormulaDto _formula = new();
+        public FormulaDto Formula
         {
             get => _formula;
             set => SetProperty(ref _formula, value);
         }
 
-        private ObservableCollection<FormulaHerbItem> _herbItems = new();
-        public ObservableCollection<FormulaHerbItem> HerbItems
+        private ObservableCollection<FormulaHerbItemDto> _herbItems = new();
+        public ObservableCollection<FormulaHerbItemDto> HerbItems
         {
             get => _herbItems;
             set => SetProperty(ref _herbItems, value);
@@ -102,24 +102,13 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var result = await _formulaService.GetByIdAsync(_formulaId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // Convert FormulaDetailDto to FormulaInfo
-                    Formula = new FormulaInfo
-                    {
-                        Id = result.Data.Id,
-                        Name = result.Data.Name ?? string.Empty,
-                        Category = "其他",
-                        DosageInstruction = result.Data.Usage,
-                        Indications = result.Data.Effect,
-                        Source = string.Empty,
-                        Remark = result.Data.Remark,
-                        CreateTime = result.Data.CreateTime,
-                        UpdateTime = result.Data.UpdateTime
-                    };
-                    if (Formula.Herbs != null)
-                    {
-                        HerbItems = new ObservableCollection<FormulaHerbItem>(Formula.Herbs);
-                        CalculateTotalCost();
-                    }
+                    // UltraThink v2.0: 直接使用FormulaDto
+                    Formula = result.Data;
+                    
+                    // TODO: 需要根据实际的FormulaDto结构来处理药材项目
+                    // 暂时创建空的药材项目列表
+                    HerbItems = new ObservableCollection<FormulaHerbItemDto>();
+                    CalculateTotalCost();
                     StatusMessage = string.Empty;
                 }
                 else

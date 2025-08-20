@@ -7,24 +7,19 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Shared.Models.Contracts.Herbs
 {
     /// <summary>
-    /// 药材基础DTO - 继承基础DTO架构
-    /// 用于中药材信息的传输和展示
+    /// 药材信息DTO - UltraThink v2.0简化版
+    /// 与Herb实体对齐，删除库存管理和时间字段
     /// </summary>
-    public class HerbDto : StatusDto, ICodeable
+    public class HerbDto : StatusDto, IRemarkable
     {
         /// <summary>药材名称</summary>
         [DisplayName("药材名称")]
         public string Name { get; set; } = string.Empty;
 
-        /// <summary>拼音码（用于快速搜索）</summary>
+        /// <summary>拼音码</summary>
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
-
-        /// <summary>五笔码（用于快速搜索）</summary>
-        [StringLength(50, ErrorMessage = "五笔码长度不能超过50个字符")]
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
 
         /// <summary>产地</summary>
         [DisplayName("产地")]
@@ -42,11 +37,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [DisplayName("单价")]
         public decimal Price { get; set; }
 
-        /// <summary>功效</summary>
+        /// <summary>功效说明</summary>
         [DisplayName("功效")]
         public string? Effect { get; set; }
 
-        /// <summary>用法</summary>
+        /// <summary>用法用量</summary>
         [DisplayName("用法")]
         public string? Usage { get; set; }
 
@@ -54,10 +49,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
-
-        /// <summary>库存数量 - UltraThink兼容性属性</summary>
-        [DisplayName("库存数量")]
-        public int Stock { get; set; } = 0;
     }
 
     /// <summary>

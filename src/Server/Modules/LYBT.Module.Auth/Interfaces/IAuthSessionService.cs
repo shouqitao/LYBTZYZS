@@ -11,11 +11,9 @@ namespace LYBT.Module.Auth.Interfaces
     public interface IAuthSessionService
     {
         /// <summary>
-        /// 创建新的认证会话
+        /// 创建新的认证会话 - UltraThink v2.0简化版
         /// </summary>
-        Task<BaseAuthSession> CreateSessionAsync(string username, Guid userId, LoginType loginType, 
-                                                string ipAddress, string? userAgent = null, 
-                                                bool rememberMe = false, string? deviceInfo = null);
+        Task<BaseAuthSession> CreateSessionAsync(string username, Guid userId, string ipAddress, string? userAgent = null);
 
         /// <summary>
         /// 根据令牌哈希验证会话
@@ -73,9 +71,9 @@ namespace LYBT.Module.Auth.Interfaces
         Task MarkSessionAnomalyAsync(Guid sessionId, string description);
 
         /// <summary>
-        /// 批量更新会话状态
+        /// 批量更新会话状态 - UltraThink v2.0简化版
         /// </summary>
-        Task UpdateSessionStatusBatchAsync(List<Guid> sessionIds, AuthSessionStatus status, string? reason = null);
+        Task UpdateSessionStatusBatchAsync(List<Guid> sessionIds, CommonStatus status, string? reason = null);
 
         /// <summary>
         /// 根据设备信息查找会话
@@ -88,9 +86,9 @@ namespace LYBT.Module.Auth.Interfaces
         Task<List<BaseAuthSession>> GetSessionsByIpAddressAsync(string ipAddress, TimeSpan? timeWindow = null);
 
         /// <summary>
-        /// 检查是否为可疑登录位置
+        /// 检查是否为可疑登录位置 - UltraThink v2.0简化版
         /// </summary>
-        Task<bool> IsSuspiciousLocationAsync(string username, string ipAddress, string? location = null);
+        Task<bool> IsSuspiciousLocationAsync(Guid userId, string ipAddress, string? location = null);
 
         /// <summary>
         /// 设置会话扩展数据

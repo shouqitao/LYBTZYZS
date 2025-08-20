@@ -4,7 +4,6 @@ using Prism.Mvvm;
 using LYBT.Desktop.Consultation.Views;
 using LYBT.Desktop.Consultation.ViewModels;
 using LYBT.Desktop.Consultation.Services;
-using LYBT.Desktop.Consultation.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -24,14 +23,15 @@ namespace LYBT.Desktop.Consultation
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块化架构：注册模块业务服务
-            containerRegistry.RegisterSingleton<IConsultationModuleService, ConsultationModuleService>();
+            containerRegistry.RegisterSingleton<ConsultationModuleService>();
             
-            // 注册看诊模块内部服务（兼容性保留）
-            containerRegistry.Register<IConsultationDataService, ConsultationDataService>();
-            containerRegistry.Register<IPrescriptionManager, PrescriptionManager>();
-            containerRegistry.Register<IFormulaManager, FormulaManager>();
-            containerRegistry.Register<IConsultationValidator, ConsultationValidator>();
-            containerRegistry.Register<IConsultationEventHandler, ConsultationEventHandler>();
+            // UltraThink简化：只注册核心服务，移除凗余的管理器
+            containerRegistry.Register<ConsultationDataService>();
+            // 移除了以下服务（功能可以整合到ConsultationModuleService中）：
+            // - PrescriptionManager (已有全局PrescriptionService)
+            // - FormulaManager (已有全局FormulaService)
+            // - ConsultationValidator (可以在Service层做验证)
+            containerRegistry.Register<ConsultationEventHandler>();
 
             // 注册视图模型
             containerRegistry.Register<ConsultationMainViewModel>();

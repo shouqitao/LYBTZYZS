@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Consultation;
-using LYBT.Desktop.Core.Models.MedicalCase;
-using LYBT.Desktop.Core.Models.Prescriptions;
+// UltraThink v2.0: 移除已删除的Info模型引用，直接使用DTO
 using LYBT.Desktop.Consultation.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -53,7 +53,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 加载医疗案例详情
         /// </summary>
-        public async Task<MedicalCaseInfo?> LoadMedicalCaseAsync(Guid medicalCaseId)
+        public async Task<MedicalCaseDto?> LoadMedicalCaseAsync(Guid medicalCaseId)
         {
             try
             {
@@ -61,14 +61,8 @@ namespace LYBT.Desktop.Consultation.Services
                 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // 需要进行类型转换或映射
-                    var dto = result.Data;
-                    return new MedicalCaseInfo
-                    {
-                        Id = dto.Id,
-                        PatientId = dto.PatientId,
-                        // 添加其他必要的属性映射
-                    };
+                    // UltraThink v2.0: 直接返回DTO，无需手动映射
+                    return result.Data;
                 }
                 
                 _logger.LogWarning($"加载医疗案例失败: {result.ErrorMessage}");
@@ -88,13 +82,13 @@ namespace LYBT.Desktop.Consultation.Services
         {
             try
             {
-                var updateDto = new MedicalCaseEditDto
+                var updateDto = new MedicalCaseUpdateDto
                 {
                     Status = status.ToString()
                     // 添加其他必要的字段
                 };
 
-                var result = await _medicalCaseService.UpdateAsync(updateDto);
+                var result = await _medicalCaseService.UpdateAsync(medicalCaseId, updateDto);
                 
                 if (result.IsSuccess)
                 {
@@ -119,14 +113,14 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 保存诊疗记录
         /// </summary>
-        public async Task<ConsultationInfo?> SaveConsultationAsync(ConsultationCreateDto consultationDto)
+        public async Task<ConsultationDto?> SaveConsultationAsync(ConsultationCreateDto consultationDto)
         {
             try
             {
-                // 暂时返回模拟数据，待实际接口调整
+                // UltraThink v2.0: 返回ConsultationDto模拟数据
                 _logger.LogInformation("诊疗记录保存功能待实现");
                 await Task.CompletedTask;
-                return new ConsultationInfo
+                return new ConsultationDto
                 {
                     Id = Guid.NewGuid(),
                     MedicalCaseId = consultationDto.MedicalCaseId
@@ -143,7 +137,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 加载诊疗记录
         /// </summary>
-        public async Task<ConsultationInfo?> LoadConsultationAsync(Guid consultationId)
+        public async Task<ConsultationDto?> LoadConsultationAsync(Guid consultationId)
         {
             try
             {
@@ -151,7 +145,34 @@ namespace LYBT.Desktop.Consultation.Services
                 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    return result.Data as ConsultationInfo;
+                    // 将ConsultationDetailDto转换为ConsultationDto
+                    var detailDto = result.Data;
+                    return new ConsultationDto
+                    {
+                        Id = detailDto.Id,
+                        MedicalCaseId = detailDto.MedicalCaseId,
+                        PatientId = detailDto.PatientId,
+                        UserId = detailDto.DoctorId,
+                        DoctorName = detailDto.DoctorName,
+                        ConsultationTime = detailDto.ConsultationTime,
+                        ChiefComplaint = detailDto.ChiefComplaint,
+                        PresentIllness = detailDto.PresentIllness,
+                        Inspection = detailDto.Inspection,
+                        AuscultationOlfaction = detailDto.AuscultationOlfaction,
+                        Inquiry = detailDto.Inquiry,
+                        Palpation = detailDto.Palpation,
+                        TongueInspection = detailDto.TongueInspection,
+                        PulseCondition = detailDto.PulseCondition,
+                        DifferentiationAnalysis = detailDto.PatternDifferentiation,
+                        TCMDiagnosis = detailDto.TCMDiagnosis ?? string.Empty,
+                        Diagnosis = detailDto.Diagnosis,
+                        TreatmentPrinciple = detailDto.TreatmentPrinciple,
+                        MedicalAdvice = detailDto.MedicalAdvice,
+                        Remark = detailDto.Remark,
+                        Status = (CommonStatus)detailDto.Status,
+                        CreateTime = detailDto.CreateTime,
+                        UpdateTime = detailDto.UpdateTime
+                    };
                 }
 
                 _logger.LogWarning($"加载诊疗记录失败: {result.ErrorMessage}");
@@ -169,46 +190,59 @@ namespace LYBT.Desktop.Consultation.Services
         #region 处方操作
 
         /// <summary>
-        /// 保存处方
+        /// 保存处方 - UltraThink v2.0: 直接使用DTO
         /// </summary>
-        public async Task<PrescriptionInfo?> SavePrescriptionAsync(PrescriptionCreateDto prescriptionDto)
+        public async Task<PrescriptionDto?> SavePrescriptionAsync(PrescriptionCreateDto prescriptionDto)
         {
             try
             {
-                // 暂时返回模拟数据，待实际接口调整
-                _logger.LogInformation("处方保存功能待实现");
-                await Task.CompletedTask;
-                return new PrescriptionInfo
+                // UltraThink v2.0: 调用处方服务创建处方
+                var result = await _prescriptionService.CreateAsync(prescriptionDto);
+                
+                if (result.IsSuccess && result.Data != null)
                 {
-                    Id = Guid.NewGuid(),
-                    PatientId = prescriptionDto.PatientId
-                };
+                    _logger.LogInformation($"处方保存成功，ID: {result.Data.Id}");
+                    return result.Data;
+                }
+                
+                _logger.LogWarning($"处方保存失败: {result.ErrorMessage}");
+                return null;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "保存处方时发生错误");
-                await Task.CompletedTask;
                 return null;
             }
         }
 
         /// <summary>
-        /// 加载患者历史处方
+        /// 加载患者历史处方 - UltraThink v2.0: 直接使用DTO
         /// </summary>
-        public async Task<List<PrescriptionInfo>> LoadPatientPrescriptionsAsync(Guid patientId, int count = 10)
+        public async Task<List<PrescriptionDto>> LoadPatientPrescriptionsAsync(Guid patientId, int count = 10)
         {
             try
             {
-                // 暂时返回空列表，待实际接口调整
-                _logger.LogInformation($"加载患者 {patientId} 历史处方功能待实现");
-                await Task.CompletedTask;
-                return new List<PrescriptionInfo>();
+                // UltraThink v2.0: 调用处方服务获取患者历史处方
+                var query = new PrescriptionQueryDto { 
+                    PatientId = patientId,
+                    PageIndex = 1, 
+                    PageSize = count 
+                };
+                var result = await _prescriptionService.GetPagedAsync(query);
+                
+                if (result.IsSuccess && result.Data?.Items != null)
+                {
+                    _logger.LogInformation($"成功加载患者 {patientId} 的 {result.Data.Items.Count} 条历史处方");
+                    return result.Data.Items.ToList();
+                }
+                
+                _logger.LogWarning($"加载患者历史处方失败: {result.ErrorMessage}");
+                return new List<PrescriptionDto>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"加载患者 {patientId} 历史处方时发生错误");
-                await Task.CompletedTask;
-                return new List<PrescriptionInfo>();
+                return new List<PrescriptionDto>();
             }
         }
 

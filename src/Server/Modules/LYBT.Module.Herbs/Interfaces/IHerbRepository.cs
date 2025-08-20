@@ -8,7 +8,7 @@ namespace LYBT.Module.Herbs.Interfaces
     /// 药材仓储接口 - 数据层统一化重构
     /// 继承BaseRepository提供通用CRUD，扩展药材特定业务方法
     /// </summary>
-    public interface IHerbRepository : IBaseRepository<HerbModel>
+    public interface IHerbRepository : IBaseRepository<Herb>
     {
         // 注意：基础CRUD方法由IBaseRepository提供
         // 这里只定义药材特有的业务方法
@@ -21,11 +21,11 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <summary>
         /// 根据拼音码搜索药材
         /// </summary>
-        Task<List<HerbModel>> SearchByPinyinAsync(string pinyin);
+        Task<List<Herb>> SearchByPinyinAsync(string pinyin);
 
         /// <summary>
         /// 批量新增药材
         /// </summary>
-        Task<bool> AddRangeAsync(List<HerbModel> herbs);
+        Task<bool> AddRangeAsync(List<Herb> herbs);
     }
 }

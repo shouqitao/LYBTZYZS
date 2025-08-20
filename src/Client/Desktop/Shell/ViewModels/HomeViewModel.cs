@@ -11,13 +11,21 @@ using Prism.Events;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
+// UltraThink v2.0: 添加SessionAware相关依赖
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
     /// <summary>
     /// 主页视图模型 - 基于角色显示不同内容
     /// </summary>
-    public class HomeViewModel : BindableBase, INavigationAware
+    /// <summary>
+    /// 主页视图模型 - 基于角色显示不同内容
+    /// UltraThink v2.0: 重构为SessionAware架构，集成统一会话管理
+    /// </summary>
+    public class HomeViewModel : SessionAwareViewModel, INavigationAware
     {
         #region 依赖服务
 
@@ -25,9 +33,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         private readonly IAuthenticationService _authService;
         private readonly IUserSessionManager _userSessionManager;
         private readonly IMedicalCaseService _medicalCaseService;
-        private readonly ICommonDialogService _dialogService;
         private readonly IEventAggregator _eventAggregator;
-        private readonly ILogger<HomeViewModel> _logger;
         private readonly DispatcherTimer _timer;
 
         #endregion
@@ -130,17 +136,17 @@ namespace LYBT.Desktop.Shell.ViewModels
             IAuthenticationService authService,
             IUserSessionManager userSessionManager,
             IMedicalCaseService medicalCaseService,
-            ICommonDialogService dialogService,
             IEventAggregator eventAggregator,
+            ISessionManager sessionManager,
+            INotificationService notificationService,
             ILogger<HomeViewModel> logger)
+            : base(sessionManager, notificationService, logger)
         {
-            _regionManager = regionManager;
-            _authService = authService;
-            _userSessionManager = userSessionManager;
-            _medicalCaseService = medicalCaseService;
-            _dialogService = dialogService;
-            _eventAggregator = eventAggregator;
-            _logger = logger;
+            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _userSessionManager = userSessionManager ?? throw new ArgumentNullException(nameof(userSessionManager));
+            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
 
             // 初始化命令
             LogoutCommand = new DelegateCommand(async () => await LogoutAsync());
@@ -172,6 +178,24 @@ namespace LYBT.Desktop.Shell.ViewModels
 
             // 初始化
             _ = InitializeAsync();
+            
+            LogInfo("HomeViewModel 已初始化，使用 UltraThink SessionManager 架构");
+        }
+
+        #endregion
+
+        #region UltraThink SessionAware 重写方法
+
+        /// <summary>
+        /// 当SessionManager中的用户状态变化时调用
+        /// </summary>
+        protected override void OnUserChanged(UserChangedEventArgs args)
+        {
+            base.OnUserChanged(args);
+            
+            // 用户状态变化时重新初始化界面
+            _ = Task.Run(async () => await InitializeAsync());
+            LogInfo($"用户状态变化，重新初始化HomeViewModel: {args.NewUser?.UserName ?? "null"}");
         }
 
         #endregion
@@ -182,18 +206,21 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             try
             {
+                ShowLoading("正在加载主页...");
+                
                 // 先设置默认值，确保界面能显示
                 WelcomeMessage = "欢迎使用系统";
                 SubTitle = "加载中...";
                 
-                // 获取当前用户信息
-                var currentUser = await _authService.GetCurrentUserAsync();
+                // UltraThink SessionManager: 优先使用SessionManager中的用户信息
+                var currentUser = CurrentUser ?? await _authService.GetCurrentUserAsync();
+                
                 if (currentUser != null)
                 {
                     WelcomeMessage = $"欢迎，{currentUser.RealName}";
                     
-                    // 判断角色 - 使用Role属性
-                    if (currentUser.Role == UserRole.Admin)
+                    // 判断角色 - 使用Role属性字符串比较
+                    if (currentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
                     {
                         IsAdminRole = true;
                         IsDoctorRole = false;
@@ -214,7 +241,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(ex, "加载今日统计失败");
+                                LogError(ex, "加载今日统计失败");
                                 // 设置默认统计值
                                 TodayCompletedCount = 0;
                                 TodayInProgressCount = 0;
@@ -233,16 +260,23 @@ namespace LYBT.Desktop.Shell.ViewModels
                 }
 
                 UpdateDateTime();
+                ShowSuccess("主页加载完成");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "初始化主页失败");
+                LogError(ex, "初始化主页失败");
+                ShowError("初始化主页失败，请重试");
+                
                 // 即使出错也要设置基本的界面状态
                 WelcomeMessage = "初始化失败，请重试";
                 IsAdminRole = true; // 默认显示管理员界面
                 IsDoctorRole = false;
                 SubTitle = "系统管理工作台（错误恢复）";
                 UpdateDateTime();
+            }
+            finally
+            {
+                HideLoading();
             }
         }
 
@@ -251,23 +285,33 @@ namespace LYBT.Desktop.Shell.ViewModels
             try
             {
                 // 获取今日医疗案例统计
-                var result = await _medicalCaseService.GetPagedAsync(1, 100);
-
-                if (result != null && result.Items != null && string.IsNullOrEmpty(result.ErrorMessage))
+                var query = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto
                 {
-                    TodayCompletedCount = result.Items
-                        .Count(c => c.Status == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
+                    PageIndex = 1,
+                    PageSize = 100,
+                    IsDescending = true
+                };
+                var result = await _medicalCaseService.GetPagedAsync(query);
+
+                if (result != null && result.IsSuccess && result.Data?.Items != null)
+                {
+                    // 使用CaseStatus专用状态字段进行正确的医疗案例状态统计
+                    TodayCompletedCount = result.Data.Items
+                        .Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
                     
-                    TodayInProgressCount = result.Items
-                        .Count(c => c.Status == LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation);
+                    TodayInProgressCount = result.Data.Items
+                        .Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation);
                     
                     // TODO: 计算今日收入（需要从处方模块获取）
                     TodayTotalAmount = TodayCompletedCount * 150; // 临时模拟数据
+                    
+                    LogInfo($"今日统计加载完成 - 完成: {TodayCompletedCount}, 进行中: {TodayInProgressCount}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载今日统计失败");
+                LogError(ex, "加载今日统计失败");
+                throw; // 重新抛出，让调用方处理
             }
         }
 
@@ -286,11 +330,12 @@ namespace LYBT.Desktop.Shell.ViewModels
             {
                 _regionManager.RequestNavigate("ContentRegion", viewName);
                 StatusMessage = $"已导航到 {GetViewDisplayName(viewName)}";
+                ShowInfo($"已导航到 {GetViewDisplayName(viewName)}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导航失败: {ViewName}", viewName);
-                _dialogService.ShowErrorAsync($"导航到 {viewName} 失败", "错误");
+                LogError(ex, "导航失败: {ViewName}", viewName);
+                ShowError($"导航到 {GetViewDisplayName(viewName)} 失败");
             }
         }
 
@@ -321,11 +366,25 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         private async Task LogoutAsync()
         {
-            var confirm = await _dialogService.ShowConfirmationAsync("确定要退出登录吗？", "退出确认");
-            if (confirm)
+            try
             {
-                await _authService.LogoutAsync();
-                _eventAggregator.GetEvent<LogoutEvent>().Publish();
+                var confirm = await NotificationService.ShowConfirmAsync("确定要退出登录吗？", "退出确认");
+                if (confirm)
+                {
+                    await _authService.LogoutAsync();
+                    
+                    // UltraThink SessionManager: 清除会话状态
+                    SessionManager.ClearUserSession();
+                    
+                    _eventAggregator.GetEvent<LogoutEvent>().Publish();
+                    ShowSuccess("已成功退出登录");
+                    LogInfo("用户已退出登录");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "退出登录失败");
+                ShowError("退出登录失败，请重试");
             }
         }
 
@@ -363,6 +422,8 @@ namespace LYBT.Desktop.Shell.ViewModels
                 refreshTimer.Tick += async (s, e) => await LoadTodayStatisticsAsync();
                 refreshTimer.Start();
             }
+            
+            LogInfo("HomeViewModel 导航进入");
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -374,6 +435,23 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             // 停止定时器
             _timer?.Stop();
+            LogInfo("HomeViewModel 导航离开");
+        }
+
+        #endregion
+
+        #region IDisposable 补充实现
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // 停止定时器
+                _timer?.Stop();
+                LogInfo("HomeViewModel 定时器已停止");
+            }
+            
+            base.Dispose(disposing);
         }
 
         #endregion

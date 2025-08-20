@@ -1,369 +1,832 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Linq;
-using System.Collections.Generic;
-using LYBT.Desktop.Core.Models.MedicalCase;
-using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.MedicalCase.Services.Interfaces;
+using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Shared.Models.Enums;
+using LYBT.Desktop.Core.Coordinators;
+using LYBT.Desktop.Core.Managers;
+// UltraThink v2.0: 移除Info模型引用，直接使用DTO
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.ViewModels.MedicalCase;
+using LYBT.Desktop.Services;
+using LYBT.Desktop.MedicalCase.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using LYBT.Desktop.Core.Interfaces.Services;
-using Prism.Mvvm;
+// UltraThink四层架构重构：使用新的三层架构组件实现医疗案例管理
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 医疗案例列表视图模型 - UltraThink架构重构版
-    /// UltraThink模块化架构：使用IMedicalCaseModuleService，实现模块自包含
+    /// 医疗案例管理视图模型（UltraThink架构重构版）
+    /// 使用新的三层架构：PaginationCoordinator + SearchManager + NewBaseListViewModel
+    /// 实现完全的关注点分离和单一职责原则
     /// </summary>
-    public class MedicalCaseListViewModel : BindableBase
+    public class MedicalCaseListViewModel : NewBaseListViewModel<MedicalCaseDto>
     {
-        private readonly IMedicalCaseModuleService _medicalCaseModuleService;
+        #region Fields
+
+        private readonly MedicalCaseModuleService _medicalCaseService;
         private readonly ICustomDialogService _dialogService;
-        private readonly IDialogService _prismDialogService;
         private readonly IRegionManager _regionManager;
         private readonly IMapper _mapper;
+        
+        private ObservableCollection<MedicalCaseViewModel> _medicalCaseViewModels = new();
+        private MedicalCaseViewModel? _selectedMedicalCaseViewModel;
+        private ObservableCollection<string> _statusFilters = new();
+        private string _selectedStatusFilter = "全部";
+        private DateTime? _startDate;
+        private DateTime? _endDate;
+        private bool _onlyUrgent;
+
+        #endregion
 
         #region Properties
 
-        private ObservableCollection<MedicalCaseInfo> _medicalCases = new();
-        public ObservableCollection<MedicalCaseInfo> MedicalCases
+        /// <summary>医疗案例视图模型集合 - 替代原始的MedicalCaseInfo集合</summary>
+        public ObservableCollection<MedicalCaseViewModel> MedicalCaseViewModels
         {
-            get => _medicalCases;
-            set => SetProperty(ref _medicalCases, value);
+            get => _medicalCaseViewModels;
+            set => SetProperty(ref _medicalCaseViewModels, value);
         }
 
-        private MedicalCaseInfo? _selectedMedicalCase;
-        public MedicalCaseInfo? SelectedMedicalCase
+        /// <summary>选中的医疗案例视图模型</summary>
+        public MedicalCaseViewModel? SelectedMedicalCaseViewModel
         {
-            get => _selectedMedicalCase;
-            set => SetProperty(ref _selectedMedicalCase, value);
+            get => _selectedMedicalCaseViewModel;
+            set
+            {
+                if (SetProperty(ref _selectedMedicalCaseViewModel, value))
+                {
+                    // 更新命令状态
+                    EditCommand.RaiseCanExecuteChanged();
+                    DeleteCommand.RaiseCanExecuteChanged();
+                    ViewDetailsCommand.RaiseCanExecuteChanged();
+                    StartConsultationCommand.RaiseCanExecuteChanged();
+                    CompleteCommand.RaiseCanExecuteChanged();
+                    CancelCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
-        private string _searchKeyword = string.Empty;
-        public string SearchKeyword
+        /// <summary>状态筛选列表</summary>
+        public ObservableCollection<string> StatusFilters
         {
-            get => _searchKeyword;
-            set => SetProperty(ref _searchKeyword, value);
+            get => _statusFilters;
+            set => SetProperty(ref _statusFilters, value);
         }
 
-        private MedicalCaseStatus? _filterStatus;
-        public MedicalCaseStatus? FilterStatus
+        /// <summary>选中的状态筛选</summary>
+        public string SelectedStatusFilter
         {
-            get => _filterStatus;
-            set => SetProperty(ref _filterStatus, value);
+            get => _selectedStatusFilter;
+            set
+            {
+                if (SetProperty(ref _selectedStatusFilter, value))
+                {
+                    // 状态变更时重新加载数据
+                    _ = RefreshDataAsync();
+                }
+            }
         }
 
-        private int _currentPage = 1;
-        public int CurrentPage
+        /// <summary>开始日期筛选</summary>
+        public DateTime? StartDate
         {
-            get => _currentPage;
-            set => SetProperty(ref _currentPage, value);
+            get => _startDate;
+            set
+            {
+                if (SetProperty(ref _startDate, value))
+                {
+                    // 日期变更时重新加载数据
+                    _ = RefreshDataAsync();
+                }
+            }
         }
 
-        private int _pageSize = 20;
-        public int PageSize
+        /// <summary>结束日期筛选</summary>
+        public DateTime? EndDate
         {
-            get => _pageSize;
-            set => SetProperty(ref _pageSize, value);
+            get => _endDate;
+            set
+            {
+                if (SetProperty(ref _endDate, value))
+                {
+                    // 日期变更时重新加载数据
+                    _ = RefreshDataAsync();
+                }
+            }
         }
 
-        private int _totalCount;
-        public int TotalCount
+        /// <summary>只显示紧急案例</summary>
+        public bool OnlyUrgent
         {
-            get => _totalCount;
-            set => SetProperty(ref _totalCount, value);
+            get => _onlyUrgent;
+            set
+            {
+                if (SetProperty(ref _onlyUrgent, value))
+                {
+                    // 紧急筛选变更时重新加载数据
+                    _ = RefreshDataAsync();
+                }
+            }
         }
 
-        private int _totalPages;
-        public int TotalPages
-        {
-            get => _totalPages;
-            set => SetProperty(ref _totalPages, value);
-        }
-        
-        private bool _isLoading;
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
+        /// <summary>批量选中的医疗案例数量</summary>
+        public int SelectedMedicalCasesCount => MedicalCaseViewModels.Count(mc => mc.IsSelected);
+
+        /// <summary>是否有选中的医疗案例</summary>
+        public bool HasSelectedMedicalCases => SelectedMedicalCasesCount > 0;
+
+        /// <summary>紧急案例数量</summary>
+        public int UrgentCasesCount => MedicalCaseViewModels.Count(mc => mc.IsUrgent);
+
+        /// <summary>今日案例数量</summary>
+        public int TodayCasesCount => MedicalCaseViewModels.Count(mc => mc.IsToday);
 
         #endregion
 
         #region Commands
 
-        public DelegateCommand LoadDataCommand { get; }
-        public DelegateCommand SearchCommand { get; }
-        public DelegateCommand AddCommand { get; }
-        public new DelegateCommand RefreshCommand { get; }
-        public DelegateCommand<MedicalCaseInfo> ViewDetailCommand { get; }
-        public DelegateCommand<MedicalCaseInfo> StartConsultationCommand { get; }
-        public DelegateCommand<MedicalCaseInfo> EditCommand { get; }
-        public DelegateCommand<MedicalCaseInfo> DeleteCommand { get; }
-        public DelegateCommand PreviousPageCommand { get; }
-        public DelegateCommand NextPageCommand { get; }
+        public DelegateCommand AddCommand { get; private set; }
+        public DelegateCommand<MedicalCaseViewModel> EditCommand { get; private set; }
+        public DelegateCommand<MedicalCaseViewModel> DeleteCommand { get; private set; }
+        public DelegateCommand<MedicalCaseViewModel> ViewDetailsCommand { get; private set; }
+        public DelegateCommand<MedicalCaseViewModel> StartConsultationCommand { get; private set; }
+        public DelegateCommand<MedicalCaseViewModel> CompleteCommand { get; private set; }
+        public DelegateCommand<MedicalCaseViewModel> CancelCommand { get; private set; }
+        public DelegateCommand BatchStartConsultationCommand { get; private set; }
+        public DelegateCommand BatchCompleteCommand { get; private set; }
+        public DelegateCommand BatchCancelCommand { get; private set; }
+        public DelegateCommand ClearSelectionCommand { get; private set; }
+        public DelegateCommand SelectAllCommand { get; private set; }
+        public DelegateCommand ClearFiltersCommand { get; private set; }
+        public DelegateCommand ExportCommand { get; private set; }
+        public DelegateCommand ShowTodayCasesCommand { get; private set; }
+        public DelegateCommand ShowUrgentCasesCommand { get; private set; }
 
         #endregion
 
+        #region Constructor
+
         public MedicalCaseListViewModel(
-            IMedicalCaseModuleService medicalCaseModuleService,
+            MedicalCaseModuleService medicalCaseService,
             ICustomDialogService dialogService,
-            IDialogService prismDialogService,
             IRegionManager regionManager,
-            IMapper mapper)
+            IMapper mapper,
+            ISessionManager sessionManager,
+            INotificationService notificationService,
+            ILogger<MedicalCaseListViewModel> logger,
+            IPaginationCoordinator? paginationCoordinator = null,
+            ISearchManager? searchManager = null)
+            : base(sessionManager, notificationService, logger, paginationCoordinator, searchManager)
         {
-            _medicalCaseModuleService = medicalCaseModuleService ?? throw new ArgumentNullException(nameof(medicalCaseModuleService));
+            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            
+            // 初始化协调器 - 不需要赋值，通过构造函数参数传递给基类
+            // PaginationCoordinator和SearchManager在基类中已经定义
 
-            MedicalCases = new ObservableCollection<MedicalCaseInfo>();
+            InitializeCommands();
+            InitializeStatusFilters();
+            
+            // 监听选择状态变化
+            MedicalCaseViewModels.CollectionChanged += (s, e) => UpdateSelectionProperties();
+            
+            // 初始化数据
+            _ = InitializeAsync();
+        }
 
-            // Initialize Commands
-            LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
-            SearchCommand = new DelegateCommand(async () => await SearchAsync());
+        #endregion
+
+        #region Command Initialization
+
+        private new void InitializeCommands()
+        {
             AddCommand = new DelegateCommand(async () => await AddMedicalCaseAsync());
-            RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
-            ViewDetailCommand = new DelegateCommand<MedicalCaseInfo>(async (item) => await ViewDetailAsync(item));
-            StartConsultationCommand = new DelegateCommand<MedicalCaseInfo>(async (item) => await StartConsultationAsync(item));
-            EditCommand = new DelegateCommand<MedicalCaseInfo>(async (item) => await EditAsync(item));
-            DeleteCommand = new DelegateCommand<MedicalCaseInfo>(async (item) => await DeleteAsync(item));
-            PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync(), () => CurrentPage > 1);
-            NextPageCommand = new DelegateCommand(async () => await NextPageAsync(), () => CurrentPage < TotalPages);
-
-            // Load initial data
-            LoadDataCommand.Execute();
+            EditCommand = new DelegateCommand<MedicalCaseViewModel>(async medicalCase => await EditMedicalCaseAsync(medicalCase), CanExecuteMedicalCaseCommand);
+            DeleteCommand = new DelegateCommand<MedicalCaseViewModel>(async medicalCase => await DeleteMedicalCaseAsync(medicalCase), CanExecuteMedicalCaseCommand);
+            ViewDetailsCommand = new DelegateCommand<MedicalCaseViewModel>(async medicalCase => await ViewDetailsAsync(medicalCase), CanExecuteMedicalCaseCommand);
+            StartConsultationCommand = new DelegateCommand<MedicalCaseViewModel>(async medicalCase => await StartConsultationAsync(medicalCase), CanExecuteMedicalCaseCommand);
+            CompleteCommand = new DelegateCommand<MedicalCaseViewModel>(async medicalCase => await CompleteMedicalCaseAsync(medicalCase), CanExecuteMedicalCaseCommand);
+            CancelCommand = new DelegateCommand<MedicalCaseViewModel>(async medicalCase => await CancelMedicalCaseAsync(medicalCase), CanExecuteMedicalCaseCommand);
+            
+            BatchStartConsultationCommand = new DelegateCommand(async () => await BatchStartConsultationAsync(), () => HasSelectedMedicalCases);
+            BatchCompleteCommand = new DelegateCommand(async () => await BatchCompleteAsync(), () => HasSelectedMedicalCases);
+            BatchCancelCommand = new DelegateCommand(async () => await BatchCancelAsync(), () => HasSelectedMedicalCases);
+            ClearSelectionCommand = new DelegateCommand(ClearSelection, () => HasSelectedMedicalCases);
+            SelectAllCommand = new DelegateCommand(SelectAll);
+            ClearFiltersCommand = new DelegateCommand(ClearFilters);
+            
+            ExportCommand = new DelegateCommand(async () => await ExportMedicalCasesAsync());
+            ShowTodayCasesCommand = new DelegateCommand(ShowTodayCases);
+            ShowUrgentCasesCommand = new DelegateCommand(ShowUrgentCases);
         }
 
-        #region Private Methods
-
-        private async Task LoadDataAsync()
+        private bool CanExecuteMedicalCaseCommand(MedicalCaseViewModel medicalCase)
         {
-            try
-            {
-                IsLoading = true;
+            return medicalCase != null && !IsLoading;
+        }
 
-                // UltraThink四层架构：使用模块化服务获取分页数据
-                var query = new PagedQueryBaseDto
+        #endregion
+
+        #region Initialization
+
+        private async Task InitializeAsync()
+        {
+            await RefreshDataAsync();
+        }
+
+        private void InitializeStatusFilters()
+        {
+            StatusFilters.Clear();
+            StatusFilters.Add("全部");
+            StatusFilters.Add("已挂号");
+            StatusFilters.Add("看诊中");
+            StatusFilters.Add("已完成");
+            StatusFilters.Add("已取消");
+            SelectedStatusFilter = "全部";
+        }
+
+        #endregion
+
+        #region Data Loading Override
+
+        protected override async Task<ServiceResult<PagedResult<MedicalCaseDto>>> LoadDataAsync(PagedQueryBaseDto request)
+        {
+            // 转换为医疗案例查询DTO，包含筛选条件
+            var medicalCaseQuery = new MedicalCaseQueryDto
+            {
+                PageIndex = request.CurrentPage,
+                PageSize = request.PageSize,
+                Keyword = request.SearchKeyword,
+                // Status = GetStatusFromFilter(SelectedStatusFilter), // 移除不匹配的属性
+                StartDate = StartDate,
+                EndDate = EndDate,
+                // OnlyUrgent = OnlyUrgent // MedicalCaseQueryDto没有这个属性
+            };
+
+            return await _medicalCaseService.GetPagedAsync(medicalCaseQuery);
+        }
+
+        protected override void OnDataLoaded(PagedResult<MedicalCaseDto> data)
+        {
+            base.OnDataLoaded(data);
+            
+            // 将MedicalCaseDto转换为MedicalCaseViewModel
+            UpdateMedicalCaseViewModels(data.Items);
+        }
+
+        protected override void OnDataLoadFailed(string errorMessage)
+        {
+            base.OnDataLoadFailed(errorMessage);
+            
+            // 清空医疗案例视图模型
+            MedicalCaseViewModels.Clear();
+            UpdateSelectionProperties();
+            
+            // 显示错误
+            _ = _dialogService.ShowErrorAsync(errorMessage, "加载失败");
+        }
+
+        #endregion
+        
+        #region Medical Case ViewModels Management
+
+        private void UpdateMedicalCaseViewModels(System.Collections.Generic.List<MedicalCaseDto> medicalCaseDtos)
+        {
+            // 保存当前选择状态
+            var selectedIds = MedicalCaseViewModels.Where(mc => mc.IsSelected).Select(mc => mc.Id).ToHashSet();
+            
+            // 清空并重新创建
+            MedicalCaseViewModels.Clear();
+            
+            foreach (var dto in medicalCaseDtos)
+            {
+                // UltraThink v2.0: 直接使用DTO创建MedicalCaseViewModel
+                var medicalCaseViewModel = MedicalCaseViewModel.Create(dto);
+                
+                // 恢复选择状态
+                if (selectedIds.Contains(medicalCaseViewModel.Id))
                 {
-                    PageIndex = CurrentPage,
-                    PageSize = PageSize,
-                    Keyword = SearchKeyword
+                    medicalCaseViewModel.IsSelected = true;
+                }
+                
+                // 监听选择状态变化
+                medicalCaseViewModel.State.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(MedicalCaseStateViewModel.IsSelected))
+                    {
+                        UpdateSelectionProperties();
+                    }
                 };
-
-                var result = await _medicalCaseModuleService.GetPagedAsync(query);
-
-                if (!result.IsSuccess)
-                {
-                    await _dialogService.ShowErrorAsync($"加载数据失败: {result.ErrorMessage}", "错误");
-                    return;
-                }
-
-                if (result.Data != null)
-                {
-                    // 应用状态筛选（前端过滤）
-                    var allItems = result.Data.Items;
-                    if (FilterStatus.HasValue)
-                    {
-                        allItems = allItems.Where(item => item.Status == FilterStatus.Value).ToList();
-                    }
-                    
-                    TotalCount = result.Data.TotalCount;
-                    TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
-
-                    MedicalCases.Clear();
-                    foreach (var item in allItems)
-                    {
-                        MedicalCases.Add(item);
-                    }
-                }
-
-                // Update command states
-                PreviousPageCommand.RaiseCanExecuteChanged();
-                NextPageCommand.RaiseCanExecuteChanged();
+                
+                MedicalCaseViewModels.Add(medicalCaseViewModel);
             }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"加载数据失败: {ex.Message}", "错误");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+            
+            UpdateSelectionProperties();
+            UpdateStatistics();
         }
 
-        private async Task SearchAsync()
+        private void UpdateSelectionProperties()
         {
-            CurrentPage = 1;
-            await LoadDataAsync();
+            RaisePropertyChanged(nameof(SelectedMedicalCasesCount));
+            RaisePropertyChanged(nameof(HasSelectedMedicalCases));
+            
+            BatchStartConsultationCommand.RaiseCanExecuteChanged();
+            BatchCompleteCommand.RaiseCanExecuteChanged();
+            BatchCancelCommand.RaiseCanExecuteChanged();
+            ClearSelectionCommand.RaiseCanExecuteChanged();
         }
 
-        private async Task RefreshAsync()
+        private void UpdateStatistics()
         {
-            SearchKeyword = string.Empty;
-            FilterStatus = null;
-            CurrentPage = 1;
-            await LoadDataAsync();
+            RaisePropertyChanged(nameof(UrgentCasesCount));
+            RaisePropertyChanged(nameof(TodayCasesCount));
         }
+
+        #endregion
+
+        #region CRUD Operations
 
         private async Task AddMedicalCaseAsync()
         {
             try
             {
-                var dialogParameters = new DialogParameters();
-                
-                _prismDialogService.ShowDialog("CreateMedicalCaseDialog", dialogParameters, result =>
-                {
-                    if (result.Result == ButtonResult.OK)
-                    {
-                        // 刷新列表
-                        LoadDataCommand.Execute();
-                    }
-                });
+                // TODO: 实现医疗案例创建对话框
+                await _dialogService.ShowInformationAsync("新增医疗案例功能开发中", "提示");
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"操作失败: {ex.Message}", "错误");
+                Logger.LogError(ex, "添加医疗案例失败");
+                await _dialogService.ShowErrorAsync($"添加医疗案例失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task ViewDetailAsync(MedicalCaseInfo item)
+        private async Task EditMedicalCaseAsync(MedicalCaseViewModel medicalCaseViewModel)
         {
-            if (item == null) return;
-
+            if (medicalCaseViewModel == null) return;
+            
             try
             {
-                // 导航到详情界面 - 使用字符串参数方式
-                _regionManager.RequestNavigate("MainContentRegion", $"MedicalCaseDetailView?MedicalCaseId={item.Id}&ViewMode=Detail");
+                // TODO: 实现医疗案例编辑对话框
+                await _dialogService.ShowInformationAsync($"编辑医疗案例 {medicalCaseViewModel.PatientName} 功能开发中", "提示");
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"查看详情失败: {ex.Message}", "错误");
+                Logger.LogError(ex, "编辑医疗案例失败: {MedicalCaseId}", medicalCaseViewModel.Id);
+                await _dialogService.ShowErrorAsync($"编辑医疗案例失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task StartConsultationAsync(MedicalCaseInfo item)
+        private async Task DeleteMedicalCaseAsync(MedicalCaseViewModel medicalCaseViewModel)
         {
-            if (item == null) return;
+            if (medicalCaseViewModel == null) return;
+            
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"确定要删除医疗案例吗？\n患者：{medicalCaseViewModel.PatientName}\n医生：{medicalCaseViewModel.DoctorName}\n此操作不可恢复。",
+                "确认删除");
 
-            try
+            if (confirm)
             {
-                // 使用模块化服务开始看诊
-                var updateResult = await _medicalCaseModuleService.StartConsultationAsync(item.Id);
-                
-                if (updateResult.IsSuccess)
+                try
                 {
-                    // 导航到看诊界面 - 使用字符串参数方式
-                    _regionManager.RequestNavigate("MainContentRegion", $"ConsultationMainView?MedicalCaseId={item.Id}&PatientId={item.PatientId}&ConsultationMode=Start");
+                    medicalCaseViewModel.StartDeleting();
                     
-                    // 刷新列表显示最新状态
-                    await LoadDataAsync();
-                }
-                else
-                {
-                    await _dialogService.ShowErrorAsync(updateResult.ErrorMessage ?? "无法开始看诊", "错误");
-                }
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"启动看诊失败: {ex.Message}", "错误");
-            }
-        }
+                    var result = await _medicalCaseService.DeleteAsync(medicalCaseViewModel.Id);
 
-        private async Task EditAsync(MedicalCaseInfo item)
-        {
-            if (item == null) return;
-
-            try
-            {
-                var dialogParameters = new DialogParameters()
-                {
-                    { "MedicalCaseId", item.Id },
-                    { "EditMode", true }
-                };
-                
-                _prismDialogService.ShowDialog("CreateMedicalCaseDialog", dialogParameters, result =>
-                {
-                    if (result.Result == ButtonResult.OK)
+                    if (result.IsSuccess)
                     {
-                        LoadDataCommand.Execute();
+                        await RefreshDataAsync();
+                        await _dialogService.ShowInformationAsync("医疗案例删除成功", "成功");
                     }
-                });
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"编辑失败: {ex.Message}", "错误");
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync(
+                            result.ErrorMessage ?? "医疗案例删除失败",
+                            "错误");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "删除医疗案例失败: {MedicalCaseId}", medicalCaseViewModel.Id);
+                    await _dialogService.ShowErrorAsync($"医疗案例删除失败: {ex.Message}", "错误");
+                }
+                finally
+                {
+                    medicalCaseViewModel.EndDeleting();
+                }
             }
         }
 
-        private async Task DeleteAsync(MedicalCaseInfo item)
+        #endregion
+
+        #region Business Operations
+
+        private async Task ViewDetailsAsync(MedicalCaseViewModel medicalCaseViewModel)
         {
-            if (item == null) return;
+            if (medicalCaseViewModel == null) return;
 
             try
             {
-                // 首先检查是否可以删除
-                var canDeleteResult = await _medicalCaseModuleService.CanDeleteAsync(item.Id);
-                if (!canDeleteResult.IsSuccess || !canDeleteResult.Data)
-                {
-                    await _dialogService.ShowErrorAsync(
-                        canDeleteResult.ErrorMessage ?? "当前医疗案例状态不允许删除", 
-                        "无法删除");
-                    return;
-                }
+                // 导航到详情界面
+                _regionManager.RequestNavigate("MainContentRegion", $"MedicalCaseDetailView?MedicalCaseId={medicalCaseViewModel.Id}&ViewMode=Detail");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "查看医疗案例详情失败: {MedicalCaseId}", medicalCaseViewModel.Id);
+                await _dialogService.ShowErrorAsync($"查看医疗案例详情失败: {ex.Message}", "错误");
+            }
+        }
 
-                var confirmed = await _dialogService.ShowConfirmationAsync(
-                    $"确定要删除患者 '{item.PatientName}' 的医疗案例吗？\n此操作不可恢复。", 
-                    "确认删除");
+        private async Task StartConsultationAsync(MedicalCaseViewModel medicalCaseViewModel)
+        {
+            if (medicalCaseViewModel == null) return;
 
-                if (!confirmed) return;
+            if (!medicalCaseViewModel.CanStartConsultation)
+            {
+                await _dialogService.ShowWarningAsync("当前医疗案例状态不允许开始看诊", "无法操作");
+                return;
+            }
 
-                IsLoading = true;
-                var result = await _medicalCaseModuleService.DeleteAsync(item.Id);
+            try
+            {
+                medicalCaseViewModel.StartStartingConsultation();
                 
+                var result = await _medicalCaseService.StartConsultationAsync(medicalCaseViewModel.Id);
+
                 if (result.IsSuccess)
                 {
-                    await _dialogService.ShowSuccessAsync("删除成功!", "操作完成");
-                    await LoadDataAsync();
+                    // 导航到看诊界面
+                    _regionManager.RequestNavigate("MainContentRegion", 
+                        $"ConsultationMainView?MedicalCaseId={medicalCaseViewModel.Id}&PatientId={medicalCaseViewModel.PatientId}&ConsultationMode=Start");
+                    
+                    await RefreshDataAsync();
+                    await _dialogService.ShowInformationAsync("已成功开始看诊", "成功");
                 }
                 else
                 {
-                    await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "删除失败", "错误");
+                    await _dialogService.ShowErrorAsync(
+                        result.ErrorMessage ?? "开始看诊失败",
+                        "错误");
                 }
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"删除失败: {ex.Message}", "错误");
+                Logger.LogError(ex, "开始看诊失败: {MedicalCaseId}", medicalCaseViewModel.Id);
+                await _dialogService.ShowErrorAsync($"开始看诊失败: {ex.Message}", "错误");
             }
             finally
             {
-                IsLoading = false;
+                medicalCaseViewModel.EndStartingConsultation();
             }
         }
 
-        private async Task PreviousPageAsync()
+        private async Task CompleteMedicalCaseAsync(MedicalCaseViewModel medicalCaseViewModel)
         {
-            if (CurrentPage > 1)
+            if (medicalCaseViewModel == null) return;
+
+            if (!medicalCaseViewModel.CanComplete)
             {
-                CurrentPage--;
-                await LoadDataAsync();
+                await _dialogService.ShowWarningAsync("当前医疗案例状态不允许完成", "无法操作");
+                return;
+            }
+
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"确定要完成医疗案例吗？\n患者：{medicalCaseViewModel.PatientName}",
+                "确认完成");
+
+            if (confirm)
+            {
+                try
+                {
+                    medicalCaseViewModel.StartCompleting();
+                    
+                    // TODO: 可以添加诊断输入对话框
+                    var result = await _medicalCaseService.CompleteConsultationAsync(medicalCaseViewModel.Id);
+
+                    if (result.IsSuccess)
+                    {
+                        await RefreshDataAsync();
+                        await _dialogService.ShowInformationAsync("医疗案例已完成", "成功");
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync(
+                            result.ErrorMessage ?? "完成医疗案例失败",
+                            "错误");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "完成医疗案例失败: {MedicalCaseId}", medicalCaseViewModel.Id);
+                    await _dialogService.ShowErrorAsync($"完成医疗案例失败: {ex.Message}", "错误");
+                }
+                finally
+                {
+                    medicalCaseViewModel.EndCompleting();
+                }
             }
         }
 
-        private async Task NextPageAsync()
+        private async Task CancelMedicalCaseAsync(MedicalCaseViewModel medicalCaseViewModel)
         {
-            if (CurrentPage < TotalPages)
+            if (medicalCaseViewModel == null) return;
+
+            if (!medicalCaseViewModel.CanCancel)
             {
-                CurrentPage++;
-                await LoadDataAsync();
+                await _dialogService.ShowWarningAsync("当前医疗案例状态不允许取消", "无法操作");
+                return;
+            }
+
+            // TODO: 实现取消原因输入对话框
+            var reason = "用户取消"; // 临时使用固定原因
+
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"确定要取消医疗案例吗？\n患者：{medicalCaseViewModel.PatientName}\n原因：{reason}",
+                "确认取消");
+
+            if (confirm)
+            {
+                try
+                {
+                    medicalCaseViewModel.StartCancelling();
+                    
+                    var result = await _medicalCaseService.CancelAsync(medicalCaseViewModel.Id, reason);
+
+                    if (result.IsSuccess)
+                    {
+                        await RefreshDataAsync();
+                        await _dialogService.ShowInformationAsync("医疗案例已取消", "成功");
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync(
+                            result.ErrorMessage ?? "取消医疗案例失败",
+                            "错误");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "取消医疗案例失败: {MedicalCaseId}", medicalCaseViewModel.Id);
+                    await _dialogService.ShowErrorAsync($"取消医疗案例失败: {ex.Message}", "错误");
+                }
+                finally
+                {
+                    medicalCaseViewModel.EndCancelling();
+                }
+            }
+        }
+
+        #endregion
+
+        #region Batch Operations
+
+        private async Task BatchStartConsultationAsync()
+        {
+            var selectedMedicalCases = MedicalCaseViewModels.Where(mc => mc.IsSelected && mc.CanStartConsultation).ToList();
+            if (!selectedMedicalCases.Any())
+            {
+                await _dialogService.ShowWarningAsync("没有可以开始看诊的医疗案例", "警告");
+                return;
+            }
+
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"确定要批量开始看诊选中的 {selectedMedicalCases.Count} 个医疗案例吗？",
+                "批量开始看诊");
+
+            if (confirm)
+            {
+                try
+                {
+                    // UltraThink v2.0: 移除了批量操作，使用单个操作循环
+                    var successCount = 0;
+                    var failureCount = 0;
+                    
+                    foreach (var medicalCase in selectedMedicalCases)
+                    {
+                        var result = await _medicalCaseService.StartConsultationAsync(medicalCase.Id);
+                        if (result.IsSuccess)
+                        {
+                            successCount++;
+                        }
+                        else
+                        {
+                            failureCount++;
+                        }
+                    }
+                    
+                    await RefreshDataAsync();
+                    if (successCount > 0)
+                    {
+                        await _dialogService.ShowInformationAsync($"已成功开始看诊 {successCount} 个医疗案例" + 
+                            (failureCount > 0 ? $"，{failureCount} 个失败" : ""), "成功");
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync("批量开始看诊失败", "错误");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "批量开始看诊失败");
+                    await _dialogService.ShowErrorAsync($"批量开始看诊失败: {ex.Message}", "错误");
+                }
+            }
+        }
+
+        private async Task BatchCompleteAsync()
+        {
+            var selectedMedicalCases = MedicalCaseViewModels.Where(mc => mc.IsSelected && mc.CanComplete).ToList();
+            if (!selectedMedicalCases.Any())
+            {
+                await _dialogService.ShowWarningAsync("没有可以完成的医疗案例", "警告");
+                return;
+            }
+
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"确定要批量完成选中的 {selectedMedicalCases.Count} 个医疗案例吗？",
+                "批量完成");
+
+            if (confirm)
+            {
+                try
+                {
+                    // UltraThink v2.0: 移除了批量操作，使用单个操作循环
+                    var successCount = 0;
+                    var failureCount = 0;
+                    
+                    foreach (var medicalCase in selectedMedicalCases)
+                    {
+                        var result = await _medicalCaseService.CompleteConsultationAsync(medicalCase.Id);
+                        if (result.IsSuccess)
+                        {
+                            successCount++;
+                        }
+                        else
+                        {
+                            failureCount++;
+                        }
+                    }
+                    
+                    await RefreshDataAsync();
+                    if (successCount > 0)
+                    {
+                        await _dialogService.ShowInformationAsync($"已成功完成 {successCount} 个医疗案例" + 
+                            (failureCount > 0 ? $"，{failureCount} 个失败" : ""), "成功");
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync("批量完成失败", "错误");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "批量完成医疗案例失败");
+                    await _dialogService.ShowErrorAsync($"批量完成失败: {ex.Message}", "错误");
+                }
+            }
+        }
+
+        private async Task BatchCancelAsync()
+        {
+            var selectedMedicalCases = MedicalCaseViewModels.Where(mc => mc.IsSelected && mc.CanCancel).ToList();
+            if (!selectedMedicalCases.Any())
+            {
+                await _dialogService.ShowWarningAsync("没有可以取消的医疗案例", "警告");
+                return;
+            }
+
+            // TODO: 实现取消原因输入对话框
+            var reason = "批量取消"; // 临时使用固定原因
+
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"确定要批量取消选中的 {selectedMedicalCases.Count} 个医疗案例吗？\n原因：{reason}",
+                "批量取消");
+
+            if (confirm)
+            {
+                try
+                {
+                    // UltraThink v2.0: 移除了批量操作，使用单个操作循环
+                    var successCount = 0;
+                    var failureCount = 0;
+                    
+                    foreach (var medicalCase in selectedMedicalCases)
+                    {
+                        var result = await _medicalCaseService.CancelAsync(medicalCase.Id, reason);
+                        if (result.IsSuccess)
+                        {
+                            successCount++;
+                        }
+                        else
+                        {
+                            failureCount++;
+                        }
+                    }
+                    
+                    await RefreshDataAsync();
+                    if (successCount > 0)
+                    {
+                        await _dialogService.ShowInformationAsync($"已成功取消 {successCount} 个医疗案例" + 
+                            (failureCount > 0 ? $"，{failureCount} 个失败" : ""), "成功");
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync("批量取消失败", "错误");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "批量取消医疗案例失败");
+                    await _dialogService.ShowErrorAsync($"批量取消失败: {ex.Message}", "错误");
+                }
+            }
+        }
+
+        #endregion
+
+        #region Filter Operations
+
+        private void ClearFilters()
+        {
+            SelectedStatusFilter = "全部";
+            StartDate = null;
+            EndDate = null;
+            OnlyUrgent = false;
+            SearchManager?.ClearSearch();
+        }
+
+        private void ShowTodayCases()
+        {
+            StartDate = DateTime.Today;
+            EndDate = DateTime.Today.AddDays(1).AddTicks(-1);
+            SelectedStatusFilter = "全部";
+        }
+
+        private void ShowUrgentCases()
+        {
+            OnlyUrgent = true;
+            SelectedStatusFilter = "全部";
+        }
+
+        private LYBT.Shared.Models.Enums.MedicalCaseStatus? GetStatusFromFilter(string statusFilter)
+        {
+            return statusFilter switch
+            {
+                "已挂号" => LYBT.Shared.Models.Enums.MedicalCaseStatus.Registered,
+                "看诊中" => LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation,
+                "已完成" => LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed,
+                "已取消" => LYBT.Shared.Models.Enums.MedicalCaseStatus.Cancelled,
+                _ => null
+            };
+        }
+
+        #endregion
+
+        #region Export Operations
+
+        private async Task ExportMedicalCasesAsync()
+        {
+            try
+            {
+                // TODO: 实现医疗案例导出功能
+                await _dialogService.ShowInformationAsync("医疗案例导出功能开发中", "提示");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出医疗案例失败");
+                await _dialogService.ShowErrorAsync($"导出医疗案例失败: {ex.Message}", "错误");
+            }
+        }
+
+        #endregion
+
+        #region Selection Management
+
+        private void ClearSelection()
+        {
+            foreach (var medicalCase in MedicalCaseViewModels)
+            {
+                medicalCase.IsSelected = false;
+            }
+        }
+
+        private void SelectAll()
+        {
+            foreach (var medicalCase in MedicalCaseViewModels)
+            {
+                medicalCase.IsSelected = true;
             }
         }
 

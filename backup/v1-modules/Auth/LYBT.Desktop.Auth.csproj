@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
+    <ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

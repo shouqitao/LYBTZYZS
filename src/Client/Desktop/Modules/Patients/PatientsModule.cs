@@ -3,7 +3,7 @@ using Prism.Modularity;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.Views;
 using LYBT.Desktop.Patients.Services;
-using LYBT.Desktop.Patients.Services.Interfaces;
+using LYBT.Desktop.Patients.Coordinators;
 
 namespace LYBT.Desktop.Patients
 {
@@ -22,10 +22,13 @@ namespace LYBT.Desktop.Patients
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块化架构：注册模块核心业务服务
-            containerRegistry.RegisterSingleton<IPatientModuleService, PatientModuleService>();
+            containerRegistry.RegisterSingleton<PatientModuleService>();
+            
+            // UltraThink P1重构：注册模块业务协调器
+            containerRegistry.RegisterSingleton<PatientCoordinator>();
             
             // 注册视图和视图模型
-            containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModelSimple>();
+            containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();
             containerRegistry.RegisterForNavigation<PatientAddEditDialog, PatientAddEditDialogViewModel>();
         }
     }

@@ -57,11 +57,10 @@ namespace LYBT.Module.Patients.Services
                 var detailDto = _mapper.Map<PatientDetailDto>(dto);
                 await _validationService.ValidateForCreateAsync(detailDto);
 
-                var model = _mapper.Map<PatientModel>(dto);
+                var model = _mapper.Map<Patient>(dto);
                 model.Id = Guid.NewGuid();
                 model.PinYinCode = CommonHelper.GetPinyinCode(model.Name);
-                model.CreateTime = DateTime.Now;
-                model.UpdateTime = DateTime.Now;
+                // CreateTime、UpdateTime字段已删除（UltraThink v2.0简化）
 
                 // 处理身份证信息
                 _validationService.ProcessIdNumberInfo(model);
@@ -103,7 +102,7 @@ namespace LYBT.Module.Patients.Services
 
                 _mapper.Map(dto, model);
                 model.PinYinCode = CommonHelper.GetPinyinCode(model.Name);
-                model.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
 
                 // 处理身份证信息
                 _validationService.ProcessIdNumberInfo(model);
@@ -171,8 +170,8 @@ namespace LYBT.Module.Patients.Services
                     p => string.IsNullOrEmpty(query.Name) || p.Name.Contains(query.Name),
                     query.PageIndex, 
                     query.PageSize,
-                    p => p.CreateTime,
-                    false  // 按创建时间降序排列
+                    p => p.Name,  // UltraThink v2.0简化：改为按姓名排序，CreateTime字段已删除
+                    true  // 按姓名升序排列
                 );
                 
                 var result = new PagedResult<PatientDto>
@@ -360,7 +359,7 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<bool>.Failure("患者不存在");
 
                 model.Status = CommonStatus.Disabled;
-                model.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
 
                 var result = await _patientRepository.UpdateAsync(model);
                 _logger.LogInformation("患者删除成功: {PatientId}", id);
@@ -385,7 +384,7 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<bool>.Failure("患者不存在");
 
                 model.Status = CommonStatus.Enabled;
-                model.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
 
                 var result = await _patientRepository.UpdateAsync(model);
                 _logger.LogInformation("患者启用成功: {PatientId}", id);
@@ -410,7 +409,7 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<bool>.Failure("患者不存在");
 
                 model.Status = CommonStatus.Disabled;
-                model.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
 
                 var result = await _patientRepository.UpdateAsync(model);
                 _logger.LogInformation("患者禁用成功: {PatientId}", id);

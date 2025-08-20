@@ -55,7 +55,7 @@ namespace LYBT.Module.Patients.Services
                 PatientName = patient.Name,
                 TotalVisits = patient.VisitCount,
                 LastVisitDate = patient.LastVisitTime,
-                FirstVisitDate = patient.CreateTime,
+                FirstVisitDate = patient.LastVisitTime ?? DateTime.Now,
                 VisitRecords = new List<VisitRecordDto>()
                 // AverageVisitInterval 是计算属性，会自动计算
             };
@@ -74,7 +74,7 @@ namespace LYBT.Module.Patients.Services
 
             var oldValue = patient.AllergyHistory;
             patient.AllergyHistory = allergyHistory;
-            patient.UpdateTime = DateTime.Now;
+            // UpdateTime字段已删除 - UltraThink v2.0简化
 
             var result = await _patientRepository.UpdateAsync(patient);
             if (result != null)
@@ -112,7 +112,7 @@ namespace LYBT.Module.Patients.Services
                     }
 
                     // 创建患者
-                    var model = CreatePatientModel(dto);
+                    var model = CreatePatient(dto);
                     
                     var addResult = await _patientRepository.AddAsync(model);
                     if (addResult != null)
@@ -150,14 +150,14 @@ namespace LYBT.Module.Patients.Services
             {
                 Name = p.Name,
                 Gender = p.Gender.ToString(),
-                Age = p.Age,
+                Age = p.Age ?? 0,
                 IdCardNumber = p.IdNumber,
                 PhoneNumber = p.PhoneNumber,
                 Address = p.Address,
                 AllergyHistory = p.AllergyHistory,
                 VisitCount = p.VisitCount,
                 LastVisitDate = p.LastVisitTime?.ToString("yyyy-MM-dd"),
-                CreateTime = p.CreateTime.ToString("yyyy-MM-dd HH:mm:ss")
+                // CreateTime字段已删除 - UltraThink v2.0简化
             }).ToList();
         }
 
@@ -246,13 +246,12 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 创建患者模型
         /// </summary>
-        private PatientModel CreatePatientModel(PatientImportDto dto)
+        private Patient CreatePatient(PatientImportDto dto)
         {
-            var model = _mapper.Map<PatientModel>(dto);
+            var model = _mapper.Map<Patient>(dto);
             model.Id = Guid.NewGuid();
             model.PinYinCode = CommonHelper.GetPinyinCode(model.Name);
-            model.CreateTime = DateTime.Now;
-            model.UpdateTime = DateTime.Now;
+            // CreateTime和UpdateTime字段已删除 - UltraThink v2.0简化
 
             // 处理身份证信息
             _validationService.ProcessIdNumberInfo(model);

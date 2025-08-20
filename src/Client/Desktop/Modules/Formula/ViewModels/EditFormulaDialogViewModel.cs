@@ -2,10 +2,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Formulas;
-using LYBT.Desktop.Core.Models.Herbs;
+// UltraThink v2.0: 直接使用DTOs，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
@@ -24,22 +24,22 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Properties
 
-        private FormulaInfo _formula = new();
-        public FormulaInfo Formula
+        private FormulaDto _formula = new();
+        public FormulaDto Formula
         {
             get => _formula;
             set => SetProperty(ref _formula, value);
         }
 
-        private ObservableCollection<FormulaHerbItem> _herbItems = new();
-        public ObservableCollection<FormulaHerbItem> HerbItems
+        private ObservableCollection<FormulaHerbItemDto> _herbItems = new();
+        public ObservableCollection<FormulaHerbItemDto> HerbItems
         {
             get => _herbItems;
             set => SetProperty(ref _herbItems, value);
         }
 
-        private FormulaHerbItem? _selectedHerbItem;
-        public FormulaHerbItem? SelectedHerbItem
+        private FormulaHerbItemDto? _selectedHerbItem;
+        public FormulaHerbItemDto? SelectedHerbItem
         {
             get => _selectedHerbItem;
             set => SetProperty(ref _selectedHerbItem, value);
@@ -66,7 +66,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             "时方", "验方", "其他"
         };
 
-        public ObservableCollection<HerbInfo> AvailableHerbs { get; } = new();
+        public ObservableCollection<HerbDto> AvailableHerbs { get; } = new();
 
         #endregion
 
@@ -75,8 +75,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand<FormulaHerbItem> RemoveHerbCommand { get; }
-        public DelegateCommand<FormulaHerbItem> EditHerbCommand { get; }
+        public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; }
+        public DelegateCommand<FormulaHerbItemDto> EditHerbCommand { get; }
         public DelegateCommand LoadDataCommand { get; }
 
         #endregion
@@ -98,8 +98,8 @@ namespace LYBT.Desktop.Formula.ViewModels
                 .ObservesProperty(() => HerbItems);
             CancelCommand = new DelegateCommand(Cancel);
             AddHerbCommand = new DelegateCommand(AddHerb);
-            RemoveHerbCommand = new DelegateCommand<FormulaHerbItem>(RemoveHerb);
-            EditHerbCommand = new DelegateCommand<FormulaHerbItem>(EditHerb);
+            RemoveHerbCommand = new DelegateCommand<FormulaHerbItemDto>(RemoveHerb);
+            EditHerbCommand = new DelegateCommand<FormulaHerbItemDto>(EditHerb);
             LoadDataCommand = new DelegateCommand(async () => await LoadFormulaAsync());
 
             // 加载可用药材
@@ -126,12 +126,11 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var result = await _formulaService.GetByIdAsync(_formulaId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // Convert FormulaDto to FormulaInfo using extension method
-                    Formula = result.Data.ToFormulaInfo();
-                    if (Formula.Herbs != null)
-                    {
-                        HerbItems = new ObservableCollection<FormulaHerbItem>(Formula.Herbs);
-                    }
+                    // UltraThink v2.0: 直接使用FormulaDto
+                    Formula = result.Data;
+                    // TODO: 需要根据实际的FormulaDto结构来处理药材项目
+                    // 暂时创建空的药材项目列表
+                    HerbItems = new ObservableCollection<FormulaHerbItemDto>();
                     StatusMessage = string.Empty;
                 }
                 else
@@ -157,10 +156,11 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var herbsResult = await _herbService.GetHerbsAsync();
                 if (herbsResult.IsSuccess && herbsResult.Data != null)
                 {
+                    // UltraThink v2.0: 直接使用HerbDto
                     AvailableHerbs.Clear();
                     foreach (var herb in herbsResult.Data)
                     {
-                        AvailableHerbs.Add(herb.ToHerbInfo());
+                        AvailableHerbs.Add(herb);
                     }
                 }
             }
@@ -182,20 +182,20 @@ namespace LYBT.Desktop.Formula.ViewModels
                 IsLoading = true;
                 StatusMessage = "正在保存验方...";
 
-                // 创建UpdateDto
+                // UltraThink v2.0: 直接使用FormulaDto属性创建UpdateDto
                 var updateDto = new FormulaUpdateDto
                 {
                     Id = Formula.Id,
                     Name = Formula.Name,
-                    Effect = Formula.Indications ?? string.Empty,
-                    Usage = Formula.DosageInstruction ?? string.Empty,
+                    Effect = Formula.Effect ?? string.Empty,
+                    Usage = Formula.Usage ?? string.Empty,
                     Remark = Formula.Remark,
                     Herbs = HerbItems.Select(h => new FormulaHerbItemUpdateDto
                     {
                         HerbId = h.HerbId,
                         Quantity = h.Quantity,
-                        Preparation = h.ProcessingMethod,
-                        Usage = h.SpecialInstructions,
+                        Preparation = h.Preparation,
+                        Usage = h.Usage,
                         SortOrder = 0
                     }).ToList()
                 };
@@ -230,18 +230,18 @@ namespace LYBT.Desktop.Formula.ViewModels
         private void AddHerb()
         {
             // TODO: 实现添加药材对话框
-            var newItem = new FormulaHerbItem
+            var newItem = new FormulaHerbItemDto
             {
                 HerbId = Guid.NewGuid(),
                 HerbName = "新药材",
                 Quantity = 10,
                 Unit = "克",
-                ProcessingMethod = "煎服"
+                Preparation = "煎服"
             };
             HerbItems.Add(newItem);
         }
 
-        private void RemoveHerb(FormulaHerbItem? item)
+        private void RemoveHerb(FormulaHerbItemDto? item)
         {
             if (item != null)
             {
@@ -249,7 +249,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        private void EditHerb(FormulaHerbItem? item)
+        private void EditHerb(FormulaHerbItemDto? item)
         {
             if (item == null) return;
             

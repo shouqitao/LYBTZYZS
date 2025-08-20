@@ -126,7 +126,7 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<List<PatientDetailDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
         {
-            var duplicates = new List<PatientModel>();
+            var duplicates = new List<Patient>();
 
             if (!string.IsNullOrEmpty(idNumber))
             {
@@ -152,16 +152,13 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 处理身份证信息（提取生日和年龄）
         /// </summary>
-        public void ProcessIdNumberInfo(PatientModel model)
+        public void ProcessIdNumberInfo(Patient model)
         {
             if (!string.IsNullOrEmpty(model.IdNumber) && 
                 LYBT.Shared.Utilities.Helpers.CommonHelper.CheckIdNumber(model.IdNumber))
             {
                 model.BirthDate = ExtractBirthDateFromIdNumber(model.IdNumber);
-                if (model.BirthDate.HasValue)
-                {
-                    model.Age = CalculateAge(model.BirthDate.Value);
-                }
+                // Age字段已删除（UltraThink v2.0简化）- Age现在是计算属性
             }
         }
     }

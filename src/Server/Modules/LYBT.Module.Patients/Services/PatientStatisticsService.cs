@@ -46,10 +46,12 @@ namespace LYBT.Module.Patients.Services
                 TotalVisits = allPatients.Sum(p => p.VisitCount),
                 AverageVisits = allPatients.Any() ? (decimal)allPatients.Average(p => p.VisitCount) : 0,
                 PatientsWithAllergy = allPatients.Count(p => !string.IsNullOrEmpty(p.AllergyHistory)),
-                TodayNewPatients = allPatients.Count(p => p.CreateTime.Date == today),
+                // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime
+                TodayNewPatients = allPatients.Count(p => p.LastVisitTime.HasValue && p.LastVisitTime.Value.Date == today),
                 NewPatients = allPatients.Count(p =>
-                    (!startDate.HasValue || p.CreateTime >= startDate) &&
-                    (!endDate.HasValue || p.CreateTime <= endDate)),
+                    p.LastVisitTime.HasValue &&
+                    (!startDate.HasValue || p.LastVisitTime.Value >= startDate) &&
+                    (!endDate.HasValue || p.LastVisitTime.Value <= endDate)),
                 LostPatients = allPatients.Count(p => p.LastVisitTime.HasValue &&
                     (now - p.LastVisitTime.Value).TotalDays > PatientConstants.InactivePatientsDefaultDays)
             };
@@ -111,9 +113,10 @@ namespace LYBT.Module.Patients.Services
             var patients = await _patientRepository.GetAllAsync();
             var startDate = DateTime.Now.AddMonths(-months);
 
+            // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime
             var monthlyData = patients
-                .Where(p => p.CreateTime >= startDate)
-                .GroupBy(p => new { p.CreateTime.Year, p.CreateTime.Month })
+                .Where(p => p.LastVisitTime.HasValue && p.LastVisitTime.Value >= startDate)
+                .GroupBy(p => new { p.LastVisitTime.Value.Year, p.LastVisitTime.Value.Month })
                 .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
                 .Select(g =>
                 {
@@ -173,9 +176,10 @@ namespace LYBT.Module.Patients.Services
         {
             var today = DateTime.Today;
             var patients = await _patientRepository.GetActivePatientsAsync();
+            // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime
             var todayPatients = patients
-                .Where(p => p.CreateTime.Date == today)
-                .OrderByDescending(p => p.CreateTime)
+                .Where(p => p.LastVisitTime.HasValue && p.LastVisitTime.Value.Date == today)
+                .OrderByDescending(p => p.LastVisitTime)
                 .ToList();
 
             return todayPatients.Select(_mapper.Map<PatientDetailDto>).ToList();

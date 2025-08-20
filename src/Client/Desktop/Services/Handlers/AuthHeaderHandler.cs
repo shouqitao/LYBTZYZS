@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Services.Handlers
 {

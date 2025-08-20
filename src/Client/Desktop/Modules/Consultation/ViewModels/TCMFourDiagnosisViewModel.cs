@@ -10,6 +10,7 @@ using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Consultation.Components;
+using LYBT.Desktop.Modules.Consultation.Api;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Consultation;
 
@@ -373,7 +374,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 构造函数
 
         public TCMFourDiagnosisViewModel(
-            IConsultationApiService consultationApiService,
+            IConsultationApi consultationApiService,
             ICustomDialogService dialogService,
             IMapper mapper,
             ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null,
@@ -424,17 +425,17 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// 映射到看诊更新信息模型
         /// UltraThink四层架构：先获取协调器DTO，然后转换为Info模型
         /// </summary>
-        public ConsultationInfo MapToConsultationUpdateInfo()
+        public ConsultationDto MapToConsultationUpdateInfo()
         {
             var updateDto = _coordinator.MapToConsultationUpdateDto();
-            return _mapper.Map<ConsultationInfo>(updateDto);
+            return _mapper.Map<ConsultationDto>(updateDto);
         }
 
         /// <summary>
         /// 从看诊详情信息中映射数据
         /// UltraThink四层架构：先将Info转换为DTO，然后传递给协调器
         /// </summary>
-        public void MapFromConsultationDetail(ConsultationInfo consultationInfo)
+        public void MapFromConsultationDetail(ConsultationDto consultationInfo)
         {
             var detailDto = _mapper.Map<ConsultationDetailDto>(consultationInfo);
             _coordinator.LoadFromConsultationDetail(detailDto);

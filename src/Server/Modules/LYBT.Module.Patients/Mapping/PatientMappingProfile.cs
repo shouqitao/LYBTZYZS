@@ -13,54 +13,39 @@ namespace LYBT.Module.Patients.Mapping
     {
 
         public PatientMappingProfile()
-        {
-            // ==================== 共享契约映射 ====================
+{
+    // ==================== UltraThink v2.0简化映射 ====================
 
-            // 患者实体转共享PatientDetailDto（API响应）
-            CreateMap<PatientModel, PatientDetailDto>()
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreateTime))
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdateTime))
-                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
-                .ForMember(dest => dest.IDNumber, opt => opt.MapFrom(src => src.IdNumber));
+    // 患者实体转PatientDetailDto（API响应）
+    CreateMap<Patient, PatientDetailDto>()
+        .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
+        .ForMember(dest => dest.IDNumber, opt => opt.MapFrom(src => src.IdNumber));
 
-            // 共享PatientCreateDto转患者实体
-            CreateMap<PatientCreateDto, PatientModel>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
-                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
-                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
+    // PatientCreateDto转患者实体
+    CreateMap<PatientCreateDto, Patient>()
+        .ForMember(dest => dest.Id, opt => opt.Ignore())
+        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+        .ForMember(dest => dest.DisableReason, opt => opt.Ignore());
 
-            // 共享PatientUpdateDto转患者实体
-            CreateMap<PatientUpdateDto, PatientModel>()
-                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
-                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
-                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
+    // PatientUpdateDto转患者实体
+    CreateMap<PatientUpdateDto, Patient>()
+        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+        .ForMember(dest => dest.DisableReason, opt => opt.Ignore());
 
-            // 共享PatientDetailDto转患者实体（用于新增/更新）
-            CreateMap<PatientDetailDto, PatientModel>()
-                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
-                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
-                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
-                .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IDNumber));
+    // PatientDetailDto转患者实体（用于新增/更新）
+    CreateMap<PatientDetailDto, Patient>()
+        .ForMember(dest => dest.Id, opt => opt.Ignore())
+        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+        .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
+        .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
+        .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IDNumber));
 
-            // 患者实体转共享PatientDto（列表显示）
-            CreateMap<PatientModel, PatientDto>();
-        }
+    // 患者实体转PatientDto（列表显示）- Age字段在DTO中为计算属性
+    CreateMap<Patient, PatientDto>();
+
+}
     }
 }

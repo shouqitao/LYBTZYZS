@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Core;
 using LYBT.Desktop.Core.Configuration;
-
-using LYBT.Desktop.Core.Models.Users;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Services
 {
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 检查用户是否有指定权限
         /// </summary>
-        public bool HasPermission(UserInfo user, string permission)
+        public bool HasPermission(UserDto user, string permission)
         {
             if (user == null) return false;
             // 只有sysadmin有所有权限
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 检查用户是否有管理员权限
         /// </summary>
-        public bool HasAdminPermission(UserInfo user)
+        public bool HasAdminPermission(UserDto user)
         {
             return user?.Username == "sysadmin";
         }
@@ -36,7 +36,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 检查用户是否有超级管理员权限
         /// </summary>
-        public bool HasSuperAdminPermission(UserInfo user)
+        public bool HasSuperAdminPermission(UserDto user)
         {
             return user?.Username == "sysadmin";
         }
@@ -44,7 +44,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取用户可访问的模块列表
         /// </summary>
-        public List<string> GetAccessibleModules(UserInfo user)
+        public List<string> GetAccessibleModules(UserDto user)
         {
             if (user == null) return new List<string>();
 

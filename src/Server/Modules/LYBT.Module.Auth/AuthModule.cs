@@ -16,26 +16,24 @@ namespace LYBT.Module.Auth
     {
 
         /// <summary>
-        /// 注册登录验证相关服务
+        /// 注册登录验证相关服务 - UltraThink v2.0简化版
         /// </summary>
         public static IServiceCollection AddAuthModule(this IServiceCollection services)
         {
             // 注册原有仓储
             services.AddScoped<IAuthRepository, AuthRepository>();
 
-            // 注册UltraThink Auth仓储
+            // 注册UltraThink Auth仓储（简化版）
             services.AddScoped<IAuthSessionRepository, AuthSessionRepository>();
-            services.AddScoped<ILoginAttemptRepository, LoginAttemptRepository>();
-            services.AddScoped<ISecurityLogRepository, SecurityLogRepository>();
+            // UltraThink v2.0简化：移除ILoginAttemptRepository、ISecurityLogRepository
 
             // 注册原有服务
             services.AddScoped<SysAdminHandler>();
             services.AddScoped<IAuthService, AuthService>();
 
-            // 注册UltraThink Auth服务
+            // 注册UltraThink Auth服务（简化版）
             services.AddScoped<IAuthSessionService, AuthSessionService>();
-            services.AddScoped<ILoginAttemptService, LoginAttemptService>();
-            services.AddScoped<ISecurityLogService, SecurityLogService>();
+            // UltraThink v2.0简化：移除ILoginAttemptService、ISecurityLogService
 
             // 注册JWT相关服务（从Infrastructure迁移而来）
             services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();

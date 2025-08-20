@@ -399,35 +399,39 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         private async void OnConfigFileChanged(object sender, FileSystemEventArgs e)
         {
-            try
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                // 防抖处理
-                await Task.Delay(500);
-                
-                if (_reloadStrategy == ReloadStrategy.Manual)
+                try
                 {
-                    _logger.LogInformation("检测到配置文件变更，但当前策略为手动重载: {File}", e.Name);
-                    return;
+                    // 防抖处理
+                    await Task.Delay(500);
+                    
+                    if (_reloadStrategy == ReloadStrategy.Manual)
+                    {
+                        _logger.LogInformation("检测到配置文件变更，但当前策略为手动重载: {File}", e.Name);
+                        return;
+                    }
+                    
+                    _logger.LogInformation("检测到配置文件变更，开始热更新: {File}", e.Name);
+                    
+                    await _configService.ReloadAsync();
+                    await CheckAndNotifyAllChangesAsync();
+                    
+                    // 记录历史
+                    AddHistory(new ReloadHistoryEntry
+                    {
+                        Timestamp = DateTime.Now,
+                        Type = ReloadType.FileChange,
+                        ConfigKey = e.Name,
+                        Description = $"文件变更触发: {e.Name}"
+                    });
                 }
-                
-                _logger.LogInformation("检测到配置文件变更，开始热更新: {File}", e.Name);
-                
-                await _configService.ReloadAsync();
-                await CheckAndNotifyAllChangesAsync();
-                
-                // 记录历史
-                AddHistory(new ReloadHistoryEntry
+                catch (Exception ex)
                 {
-                    Timestamp = DateTime.Now,
-                    Type = ReloadType.FileChange,
-                    ConfigKey = e.Name,
-                    Description = $"文件变更触发: {e.Name}"
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理配置文件变更失败");
-            }
+                    _logger.LogError(ex, "处理配置文件变更失败");
+                }
+            });
         }
 
         private async Task PollForChangesAsync()

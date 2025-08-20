@@ -4,6 +4,7 @@ using System.Windows;
 using Microsoft.Win32;
 using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 

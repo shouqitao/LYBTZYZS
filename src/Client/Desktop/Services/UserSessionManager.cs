@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using LYBT.Desktop.Core.Configuration;
-
-using LYBT.Desktop.Core.Models.Users;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Services
 {
@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Services
     public class UserSessionManager : IUserSessionManager
     {
         private readonly IPermissionService _permissionService;
-        private UserInfo? _currentUser;
+        private UserDto? _currentUser;
         private string? _sessionToken;
         private DateTime? _loginTime;
 
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 当前登录用户
         /// </summary>
-        public UserInfo? CurrentUser => _currentUser;
+        public UserDto? CurrentUser => _currentUser;
 
         /// <summary>
         /// 是否已登录
@@ -50,7 +50,7 @@ namespace LYBT.Desktop.Services
         /// </summary>
         /// <param name="user">用户信息</param>
         /// <param name="token">会话令牌</param>
-        public void SetUserSession(UserInfo user, string token)
+        public void SetUserSession(UserDto user, string token)
         {
             _currentUser = user ?? throw new ArgumentNullException(nameof(user));
             _sessionToken = token ?? throw new ArgumentNullException(nameof(token));
@@ -121,7 +121,7 @@ namespace LYBT.Desktop.Services
         /// 刷新用户信息
         /// </summary>
         /// <param name="user">更新的用户信息</param>
-        public void RefreshUserInfo(UserInfo user)
+        public void RefreshUserInfo(UserDto user)
         {
             if (_currentUser != null && user.Id == _currentUser.Id)
             {

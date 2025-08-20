@@ -1,8 +1,8 @@
 using System;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Models.Patients;
-using LYBT.Desktop.Core.Models.Consultation;
-using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Core.Events
 {
@@ -29,9 +29,9 @@ namespace LYBT.Desktop.Core.Events
 
         /// <summary>
         /// 适配旧的患者选择事件
-        /// 兼容 PatientInfo 和 PatientSelectedEventArgs
+        /// 兼容 PatientDto 和 PatientSelectedEventArgs
         /// </summary>
-        public void PublishPatientSelected(PatientInfo patient)
+        public void PublishPatientSelected(PatientDto patient)
         {
             try
             {
@@ -60,20 +60,20 @@ namespace LYBT.Desktop.Core.Events
 
         /// <summary>
         /// 向后兼容的患者选择事件订阅
-        /// 将新事件数据转换为旧的PatientInfo格式
+        /// 将新事件数据转换为旧的PatientDto格式
         /// </summary>
-        public void SubscribeToPatientSelection(Action<PatientInfo> handler)
+        public void SubscribeToPatientSelection(Action<PatientDto> handler)
         {
             _unifiedEventHandler.SubscribeToPatientSelection(data =>
             {
                 try
                 {
-                    var patientInfo = new PatientInfo
+                    var patientInfo = new PatientDto
                     {
                         Id = data.PatientId,
                         Name = data.PatientName,
                         IdNumber = data.PatientIdNumber,
-                        Age = data.PatientAge
+                        BirthDate = data.PatientAge > 0 ? DateTime.Today.AddYears(-data.PatientAge) : null
                         // 转换其他必要字段
                     };
 
@@ -93,7 +93,7 @@ namespace LYBT.Desktop.Core.Events
         /// <summary>
         /// 适配诊疗开始事件
         /// </summary>
-        public void PublishConsultationStarted(ConsultationInfo consultation)
+        public void PublishConsultationStarted(ConsultationDto consultation)
         {
             try
             {
@@ -103,9 +103,9 @@ namespace LYBT.Desktop.Core.Events
                 {
                     ConsultationId = consultation.Id,
                     PatientId = consultation.PatientId,
-                    PatientName = consultation.PatientName ?? "未知患者",
-                    DoctorId = Guid.Empty, // ConsultationInfo没有DoctorId字段，使用默认值
-                    DoctorName = "未指定医生", // ConsultationInfo没有DoctorName字段，使用默认值
+                    PatientName = "患者", // ConsultationDto没有PatientName属性，使用固定值
+                    DoctorId = Guid.Empty, // ConsultationDto没有DoctorId字段，使用默认值
+                    DoctorName = "未指定医生", // ConsultationDto没有DoctorName字段，使用默认值
                     MedicalCaseId = consultation.MedicalCaseId,
                     SourceModule = "EventMigrationAdapter",
                     Message = "诊疗已开始"
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Core.Events
         /// <summary>
         /// 适配诊疗完成事件
         /// </summary>
-        public void PublishConsultationCompleted(ConsultationInfo consultation)
+        public void PublishConsultationCompleted(ConsultationDto consultation)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace LYBT.Desktop.Core.Events
                 {
                     ConsultationId = consultation.Id,
                     PatientId = consultation.PatientId,
-                    PatientName = consultation.PatientName ?? "未知患者",
+                    PatientName = "患者", // ConsultationDto没有PatientName属性，使用固定值
                     IsSuccessful = true, // 根据业务逻辑判断
                     SourceModule = "EventMigrationAdapter",
                     Message = "诊疗已完成"
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.Core.Events
         /// <summary>
         /// 适配处方保存事件
         /// </summary>
-        public void PublishPrescriptionSaved(PrescriptionInfo prescription)
+        public void PublishPrescriptionSaved(PrescriptionDto prescription)
         {
             try
             {
@@ -167,11 +167,11 @@ namespace LYBT.Desktop.Core.Events
                 {
                     PrescriptionId = prescription.Id,
                     PatientId = prescription.PatientId,
-                    PatientName = prescription.PatientName ?? "未知患者",
-                    ConsultationId = Guid.Empty, // PrescriptionInfo没有ConsultationId字段，使用默认值
-                    TotalAmount = prescription.TotalAmount,
+                    PatientName = "患者", // PrescriptionDto没有PatientName属性，使用固定值
+                    ConsultationId = Guid.Empty, // PrescriptionDto没有ConsultationId字段，使用默认值
+                    TotalAmount = prescription.TotalPrice,
                     HerbCount = prescription.Items?.Count ?? 0,
-                    PrescriptionNumber = prescription.PrescriptionNumber,
+                    PrescriptionNumber = prescription.Id.ToString(),
                     SourceModule = "EventMigrationAdapter",
                     Message = "处方已保存"
                 };

@@ -1,15 +1,15 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Patients;
+// UltraThink v2.0: 移除已删除的Info模型引用，直接使用DTO
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Consultation.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Consultation.Services
 {
@@ -17,11 +17,11 @@ namespace LYBT.Desktop.Consultation.Services
     /// 诊疗-处方集成服务
     /// 负责协调诊疗流程与处方管理之间的数据流动和状态同步
     /// </summary>
-    public class ConsultationPrescriptionIntegration : IConsultationPrescriptionIntegration
+    public class ConsultationPrescriptionIntegration
     {
         private readonly IPrescriptionService _prescriptionService;
-        private readonly IPrescriptionManager _prescriptionManager;
-        private readonly IConsultationDataService _consultationDataService;
+        private readonly PrescriptionManager _prescriptionManager;
+        private readonly ConsultationDataService _consultationDataService;
         private readonly IUserSessionManager _userSessionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<ConsultationPrescriptionIntegration> _logger;
@@ -34,8 +34,8 @@ namespace LYBT.Desktop.Consultation.Services
 
         public ConsultationPrescriptionIntegration(
             IPrescriptionService prescriptionService,
-            IPrescriptionManager prescriptionManager,
-            IConsultationDataService consultationDataService,
+            PrescriptionManager prescriptionManager,
+            ConsultationDataService consultationDataService,
             IUserSessionManager userSessionManager,
             IEventAggregator eventAggregator,
             ILogger<ConsultationPrescriptionIntegration> logger)
@@ -98,14 +98,14 @@ namespace LYBT.Desktop.Consultation.Services
                 // 创建新的诊疗记录
                 _currentConsultationId = Guid.NewGuid();
 
-                // 初始化处方管理器
-                _prescriptionManager.CurrentPrescription = new PrescriptionInfo
+                // UltraThink v2.0: 简化处方初始化，使用PrescriptionDto
+                _prescriptionManager.CurrentPrescription = new PrescriptionDto
                 {
                     Id = Guid.NewGuid(),
                     PatientId = patientId,
                     MedicalCaseId = _currentMedicalCaseId ?? Guid.Empty,
                     UserId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
-                    Status = PrescriptionStatus.Draft,
+                    Status = (int)PrescriptionStatus.Draft,
                     CreateTime = DateTime.Now
                 };
 
@@ -145,7 +145,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 从诊疗流程创建处方
         /// </summary>
-        public async Task<PrescriptionInfo?> CreatePrescriptionFromConsultation()
+        public async Task<PrescriptionDto?> CreatePrescriptionFromConsultation()
         {
             try
             {
@@ -188,15 +188,15 @@ namespace LYBT.Desktop.Consultation.Services
 
                 // 调用服务创建处方
                 var result = await _prescriptionService.CreateAsync(createDto);
-                if (result != null)
+                if (result != null && result.IsSuccess && result.Data != null)
                 {
-                    _logger.LogInformation($"处方创建成功 - ID: {result.Id}");
+                    _logger.LogInformation($"处方创建成功 - ID: {result.Data.Id}");
 
                     // 发布处方创建事件
                     _eventAggregator.GetEvent<PrescriptionCreatedEvent>()
                         .Publish(new PrescriptionCreatedData
                         {
-                            PrescriptionId = result.Id,
+                            PrescriptionId = result.Data.Id,
                             PatientId = prescription.PatientId,
                             MedicalCaseId = _currentMedicalCaseId ?? Guid.Empty,
                             ConsultationId = _currentConsultationId ?? Guid.Empty
@@ -284,7 +284,7 @@ namespace LYBT.Desktop.Consultation.Services
             }
         }
 
-        private void OnPatientSelected(PatientInfo patient)
+        private void OnPatientSelected(PatientDto patient)
         {
             // 初始化诊疗会话
             _ = InitializeConsultationSession(patient.Id);
@@ -362,7 +362,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         Task<bool> InitializeConsultationSession(Guid patientId, Guid? medicalCaseId = null);
         void UpdateDiagnosis(string diagnosis);
-        Task<PrescriptionInfo?> CreatePrescriptionFromConsultation();
+        Task<PrescriptionDto?> CreatePrescriptionFromConsultation();
         Task<bool> CompleteConsultationFlow();
     }
 

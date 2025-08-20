@@ -9,6 +9,7 @@ using Prism.Events;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
 
 using LYBT.Desktop.Core.Models.Consultation;

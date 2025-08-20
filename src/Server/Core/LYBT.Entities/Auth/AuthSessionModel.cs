@@ -1,85 +1,62 @@
-using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LYBT.Entities.Auth
 {
     /// <summary>
-    /// 认证会话数据模型 - 继承共享基础模型，数据库映射
-    /// 用于管理用户登录会话的完整生命周期，包含令牌管理和安全控制
+    /// 认证会话实体 - UltraThink v2.0架构简化版
+    /// 用于基本用户登录会话管理，适合20人以下诊所使用
     /// </summary>
-    public class AuthSessionModel : BaseAuthSession
+    [Table("AuthSessions")]
+    public class AuthSession
     {
-        /// <summary>JWT令牌哈希（用于撤销验证）</summary>
-        [DisplayName("JWT令牌哈希")]
+        /// <summary>会话ID</summary>
+        [Key]
+        [DisplayName("会话ID")]
+        public Guid Id { get; set; }
+
+        /// <summary>用户ID</summary>
+        [Required]
+        [DisplayName("用户ID")]
+        public Guid UserId { get; set; }
+
+        /// <summary>会话令牌哈希</summary>
+        [Required]
         [StringLength(256)]
-        public string? JwtTokenHash { get; set; }
+        [DisplayName("会话令牌哈希")]
+        public string TokenHash { get; set; } = string.Empty;
 
-        /// <summary>令牌过期时间</summary>
-        [DisplayName("令牌过期时间")]
-        public DateTime? TokenExpiryTime { get; set; }
+        /// <summary>登录时间</summary>
+        [DisplayName("登录时间")]
+        public DateTime LoginTime { get; set; } = DateTime.Now;
 
-        /// <summary>是否已撤销令牌</summary>
-        [DisplayName("令牌已撤销")]
-        public bool IsTokenRevoked { get; set; } = false;
+        /// <summary>登出时间</summary>
+        [DisplayName("登出时间")]
+        public DateTime? LogoutTime { get; set; }
 
-        /// <summary>撤销原因</summary>
-        [DisplayName("撤销原因")]
-        [StringLength(200)]
-        public string? RevokeReason { get; set; }
+        /// <summary>过期时间</summary>
+        [DisplayName("过期时间")]
+        public DateTime ExpiryTime { get; set; }
 
-        /// <summary>撤销时间</summary>
-        [DisplayName("撤销时间")]
-        public DateTime? RevokeTime { get; set; }
+        /// <summary>IP地址</summary>
+        [Required]
+        [StringLength(45)]
+        [DisplayName("IP地址")]
+        public string IpAddress { get; set; } = string.Empty;
 
-        /// <summary>撤销操作者ID</summary>
-        [DisplayName("撤销操作者")]
-        public Guid? RevokedBy { get; set; }
-
-        /// <summary>令牌刷新次数</summary>
-        [DisplayName("刷新次数")]
-        public int RefreshCount { get; set; } = 0;
-
-        /// <summary>最后刷新时间</summary>
-        [DisplayName("最后刷新时间")]
-        public DateTime? LastRefreshTime { get; set; }
-
-        /// <summary>原始刷新令牌哈希</summary>
-        [DisplayName("刷新令牌哈希")]
-        [StringLength(256)]
-        public string? RefreshTokenHash { get; set; }
-
-        /// <summary>会话扩展数据（JSON格式）</summary>
-        [DisplayName("扩展数据")]
-        [StringLength(1000)]
-        public string? ExtendedData { get; set; }
-
-        /// <summary>服务器信息</summary>
-        [DisplayName("服务器信息")]
-        [StringLength(100)]
-        public string? ServerInfo { get; set; }
-
-        /// <summary>地理位置信息</summary>
-        [DisplayName("地理位置")]
-        [StringLength(200)]
-        public string? GeoLocation { get; set; }
-
-        /// <summary>设备信息</summary>
-        [DisplayName("设备信息")]
-        [StringLength(200)]
-        public string? DeviceInfo { get; set; }
-
-        /// <summary>是否自动登出</summary>
-        [DisplayName("自动登出")]
-        public bool IsAutoLogout { get; set; } = false;
-
-        /// <summary>异常标记</summary>
-        [DisplayName("异常标记")]
-        public bool HasAnomalies { get; set; } = false;
-
-        /// <summary>异常描述</summary>
-        [DisplayName("异常描述")]
+        /// <summary>用户代理</summary>
         [StringLength(500)]
-        public string? AnomaliesDescription { get; set; }
+        [DisplayName("用户代理")]
+        public string? UserAgent { get; set; }
+
+        /// <summary>是否已撤销</summary>
+        [DisplayName("已撤销")]
+        public bool IsRevoked { get; set; } = false;
+
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 }

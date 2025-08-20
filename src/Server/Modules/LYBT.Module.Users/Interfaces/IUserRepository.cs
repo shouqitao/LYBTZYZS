@@ -9,7 +9,7 @@ namespace LYBT.Module.Users.Interfaces
     /// 用户仓储接口 - 数据层统一化重构
     /// 继承BaseRepository提供通用CRUD，扩展用户特定业务方法
     /// </summary>
-    public interface IUserRepository : IBaseRepository<UserModel>
+    public interface IUserRepository : IBaseRepository<User>
     {
         // 注意：基础CRUD方法由IBaseRepository提供
         // 这里只定义用户特有的业务方法
@@ -28,23 +28,23 @@ namespace LYBT.Module.Users.Interfaces
         /// 分页条件查找用户（支持关键词、角色、状态筛选）
         /// 管理员可以查询所有用户（包括禁用的），普通用户只能查询启用的用户
         /// </summary>
-        Task<(IList<UserModel> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false);
+        Task<(IList<User> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false);
 
         /// <summary>
         /// 根据用户名查找用户（登录或唯一性校验）
         /// </summary>
-        Task<UserModel?> GetByUsernameAsync(string userName);
+        Task<User?> GetByUsernameAsync(string userName);
 
         /// <summary>
         /// 根据用户ID查找（支持权限控制）
         /// 管理员可以查询所有用户，普通用户只能查询启用的用户
         /// </summary>
-        Task<UserModel?> GetByIdAsync(Guid id, bool includeDisabled = false);
+        Task<User?> GetByIdAsync(Guid id, bool includeDisabled = false);
 
         /// <summary>
         /// 根据ID列表批量获取用户
         /// </summary>
-        Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false);
+        Task<List<User>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false);
 
         /// <summary>
         /// 校验用户名是否存在（包括禁用用户）
@@ -64,6 +64,6 @@ namespace LYBT.Module.Users.Interfaces
         /// <summary>
         /// 获取启用的用户列表
         /// </summary>
-        Task<List<UserModel>> GetActiveUsersAsync();
+        Task<List<User>> GetActiveUsersAsync();
     }
 }

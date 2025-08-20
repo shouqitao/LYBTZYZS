@@ -700,19 +700,23 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         private async void OnConfigFileChanged(object sender, FileSystemEventArgs e)
         {
-            try
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                // 防抖处理
-                await Task.Delay(500);
-                
-                _logger.LogInformation("检测到配置文件变更: {FileName}", e.Name);
-                
-                await ReloadAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理配置文件变更失败");
-            }
+                try
+                {
+                    // 防抖处理
+                    await Task.Delay(500);
+                    
+                    _logger.LogInformation("检测到配置文件变更: {FileName}", e.Name);
+                    
+                    await ReloadAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "处理配置文件变更失败");
+                }
+            });
         }
 
         #endregion
@@ -726,19 +730,24 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         private async void AutoSave(object? state)
         {
-            try
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                // 自动保存动态配置到用户配置
-                if (_statistics.WriteCount > 0)
+                try
                 {
-                    _logger.LogDebug("执行配置自动保存");
-                    // 实现自动保存逻辑
+                    // 自动保存动态配置到用户配置
+                    if (_statistics.WriteCount > 0)
+                    {
+                        _logger.LogDebug("执行配置自动保存");
+                        // 实现自动保存逻辑
+                        await Task.CompletedTask; // Placeholder for async operation
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "自动保存配置失败");
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "自动保存配置失败");
+                }
+            });
         }
 
         #endregion

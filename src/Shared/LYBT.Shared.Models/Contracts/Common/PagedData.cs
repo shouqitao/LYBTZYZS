@@ -15,6 +15,16 @@ namespace LYBT.Shared.Models.Contracts.Common
         public IList<T> Items { get; set; } = new List<T>();
 
         /// <summary>
+        /// 数据项列表别名（兼容性）
+        /// </summary>
+        [JsonPropertyName("data")]
+        public IList<T> Data 
+        { 
+            get => Items; 
+            set => Items = value; 
+        }
+
+        /// <summary>
         /// 总记录数
         /// </summary>
         [JsonPropertyName("totalCount")]

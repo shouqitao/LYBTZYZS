@@ -14,7 +14,7 @@ namespace LYBT.Module.Users.Repositories
     /// 继承BaseRepository提供通用CRUD，实现用户特定业务逻辑
     /// 实现软删除策略：用户只能禁用/启用，不能物理删除
     /// </summary>
-    public class UserRepository : BaseRepository<UserModel>, LYBT.Module.Users.Interfaces.IUserRepository
+    public class UserRepository : BaseRepository<User>, LYBT.Module.Users.Interfaces.IUserRepository
     {
         public UserRepository(AppDbContext dbContext) : base(dbContext)
         {
@@ -55,7 +55,7 @@ namespace LYBT.Module.Users.Repositories
         /// 分页条件查找用户
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<(IList<UserModel> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false)
+        public async Task<(IList<User> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false)
         {
             var dbSet = _context.Users.AsQueryable();
 
@@ -112,28 +112,13 @@ namespace LYBT.Module.Users.Repositories
             // 获取总数
             int total = await dbSet.CountAsync();
 
-            // 日期范围筛选
-            if (query.StartDate.HasValue)
-            {
-                dbSet = dbSet.Where(u => u.CreateTime >= query.StartDate.Value);
-            }
-            if (query.EndDate.HasValue)
-            {
-                dbSet = dbSet.Where(u => u.CreateTime <= query.EndDate.Value);
-            }
-            if (query.LoginStartDate.HasValue)
-            {
-                dbSet = dbSet.Where(u => u.LastLoginTime >= query.LoginStartDate.Value);
-            }
-            if (query.LoginEndDate.HasValue)
-            {
-                dbSet = dbSet.Where(u => u.LastLoginTime <= query.LoginEndDate.Value);
-            }
+            // UltraThink v2.0: 时间字段已删除（CreateTime, LastLoginTime）
+            // 日期范围筛选功能已简化移除，相关查询条件将被忽略
 
-            // 分页查询
+            // 分页查询 - UltraThink v2.0: 使用用户名排序替代已删除的CreateTime
             int skip = (query.PageIndex - 1) * query.PageSize;
             var users = await dbSet
-                .OrderByDescending(u => u.CreateTime)
+                .OrderBy(u => u.Username) // 简化排序：按用户名
                 .Skip(skip)
                 .Take(query.PageSize)
                 .ToListAsync();
@@ -144,7 +129,7 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 根据用户名查找（包括禁用用户，用于登录验证）
         /// </summary>
-        public async Task<UserModel?> GetByUsernameAsync(string userName)
+        public async Task<User?> GetByUsernameAsync(string userName)
         {
             return await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == userName);
@@ -154,7 +139,7 @@ namespace LYBT.Module.Users.Repositories
         /// 根据ID查找
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<UserModel?> GetByIdAsync(Guid id, bool includeDisabled = false)
+        public async Task<User?> GetByIdAsync(Guid id, bool includeDisabled = false)
         {
             var query = _context.Users.AsQueryable();
 
@@ -170,11 +155,11 @@ namespace LYBT.Module.Users.Repositories
         /// 根据ID列表批量获取用户
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<List<UserModel>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false)
+        public async Task<List<User>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false)
         {
             if (!ids.Any())
             {
-                return new List<UserModel>();
+                return new List<User>();
             }
 
             // ✅ 安全修复：使用LINQ查询替代原生SQL，防止SQL注入
@@ -231,7 +216,7 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 获取启用的用户列表
         /// </summary>
-        public async Task<List<UserModel>> GetActiveUsersAsync()
+        public async Task<List<User>> GetActiveUsersAsync()
         {
             return await _context.Users
                 .Where(u => u.Status == CommonStatus.Enabled && u.Username != "sysadmin")

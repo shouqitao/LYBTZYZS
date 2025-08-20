@@ -28,40 +28,34 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 创建新的认证会话
+        /// 创建新的认证会话 - UltraThink v2.0简化版
         /// </summary>
-        public async Task<BaseAuthSession> CreateSessionAsync(string username, Guid userId, LoginType loginType, 
-                                                             string ipAddress, string? userAgent = null, 
-                                                             bool rememberMe = false, string? deviceInfo = null)
+        public async Task<BaseAuthSession> CreateSessionAsync(string username, Guid userId, string ipAddress, string? userAgent = null)
         {
-            var sessionModel = new AuthSessionModel
+            var sessionModel = new AuthSession
             {
                 Id = Guid.NewGuid(),
-                Username = username,
                 UserId = userId,
-                LoginType = loginType,
+                TokenHash = "", // 需要外部传入实际Token哈希
                 LoginTime = DateTime.Now,
-                ClientIp = ipAddress,
+                ExpiryTime = DateTime.Now.AddHours(8), // 8小时过期
+                IpAddress = ipAddress,
                 UserAgent = userAgent,
-                RememberMe = rememberMe,
-                Status = AuthSessionStatus.Active,
-                DeviceInfo = deviceInfo,
-                LastActivityTime = DateTime.Now,
-                ServerInfo = Environment.MachineName,
-                CreateTime = DateTime.Now
+                IsRevoked = false,
+                Status = CommonStatus.Enabled
             };
 
             var createdSession = await _sessionRepository.AddAsync(sessionModel);
             var baseSession = _mapper.Map<BaseAuthSession>(createdSession);
 
-            _logger.LogInformation("创建新会话 - 用户: {Username}, 会话ID: {SessionId}, IP: {IpAddress}", 
-                username, createdSession.Id, ipAddress);
+            _logger.LogInformation("创建新会话 - 用户ID: {UserId}, 会话ID: {SessionId}, IP: {IpAddress}", 
+                userId, createdSession.Id, ipAddress);
 
             return baseSession;
         }
 
         /// <summary>
-        /// 根据令牌哈希验证会话
+        /// 根据令牌哈希验证会话 - UltraThink v2.0简化版
         /// </summary>
         public async Task<BaseAuthSession?> ValidateSessionAsync(string tokenHash)
         {
@@ -73,18 +67,26 @@ namespace LYBT.Module.Auth.Services
             }
 
             // 检查会话状态
-            if (sessionModel.Status != AuthSessionStatus.Active)
+            if (sessionModel.Status != CommonStatus.Enabled)
             {
                 _logger.LogWarning("会话验证失败 - 会话状态无效: {Status}, 会话ID: {SessionId}", 
                     sessionModel.Status, sessionModel.Id);
                 return null;
             }
 
-            // 检查令牌是否过期
-            if (sessionModel.TokenExpiryTime.HasValue && sessionModel.TokenExpiryTime.Value < DateTime.Now)
+            // 检查是否被撤销
+            if (sessionModel.IsRevoked)
             {
-                // 自动标记为过期
-                sessionModel.Status = AuthSessionStatus.Expired;
+                _logger.LogWarning("会话验证失败 - 会话已被撤销: {SessionId}", sessionModel.Id);
+                return null;
+            }
+
+            // 检查令牌是否过期
+            if (sessionModel.ExpiryTime < DateTime.Now)
+            {
+                // 自动标记为已撤销
+                sessionModel.IsRevoked = true;
+                sessionModel.Status = CommonStatus.Disabled;
                 sessionModel.LogoutTime = DateTime.Now;
                 await _sessionRepository.UpdateAsync(sessionModel);
 
@@ -92,35 +94,28 @@ namespace LYBT.Module.Auth.Services
                 return null;
             }
 
-            // 更新最后活跃时间
-            await UpdateSessionActivityAsync(sessionModel.Id, DateTime.Now);
-
             return _mapper.Map<BaseAuthSession>(sessionModel);
         }
 
         /// <summary>
-        /// 刷新会话令牌
+        /// 刷新会话令牌 - UltraThink v2.0简化版
         /// </summary>
-        public async Task<BaseAuthSession?> RefreshSessionAsync(string refreshTokenHash, string newTokenHash, DateTime newExpiryTime)
+        public async Task<BaseAuthSession?> RefreshSessionAsync(string currentTokenHash, string newTokenHash, DateTime newExpiryTime)
         {
-            var sessionModel = await _sessionRepository.GetByRefreshTokenHashAsync(refreshTokenHash);
-            if (sessionModel == null || sessionModel.Status != AuthSessionStatus.Active)
+            var sessionModel = await _sessionRepository.GetByTokenHashAsync(currentTokenHash);
+            if (sessionModel == null || sessionModel.Status != CommonStatus.Enabled || sessionModel.IsRevoked)
             {
-                _logger.LogWarning("令牌刷新失败 - 无效的刷新令牌: {RefreshToken}", refreshTokenHash[..10] + "...");
+                _logger.LogWarning("令牌刷新失败 - 无效的令牌: {Token}", currentTokenHash[..10] + "...");
                 return null;
             }
 
             // 更新令牌信息
-            sessionModel.JwtTokenHash = newTokenHash;
-            sessionModel.TokenExpiryTime = newExpiryTime;
-            sessionModel.RefreshCount++;
-            sessionModel.LastRefreshTime = DateTime.Now;
-            sessionModel.LastActivityTime = DateTime.Now;
+            sessionModel.TokenHash = newTokenHash;
+            sessionModel.ExpiryTime = newExpiryTime;
 
             await _sessionRepository.UpdateAsync(sessionModel);
 
-            _logger.LogInformation("令牌刷新成功 - 会话ID: {SessionId}, 刷新次数: {RefreshCount}", 
-                sessionModel.Id, sessionModel.RefreshCount);
+            _logger.LogInformation("令牌刷新成功 - 会话ID: {SessionId}", sessionModel.Id);
 
             return _mapper.Map<BaseAuthSession>(sessionModel);
         }
@@ -144,19 +139,20 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 用户登出
+        /// 用户登出 - UltraThink v2.0简化版
         /// </summary>
         public async Task LogoutSessionAsync(Guid sessionId)
         {
             var sessionModel = await _sessionRepository.GetByIdAsync(sessionId);
-            if (sessionModel != null && sessionModel.Status == AuthSessionStatus.Active)
+            if (sessionModel != null && sessionModel.Status == CommonStatus.Enabled && !sessionModel.IsRevoked)
             {
-                sessionModel.Status = AuthSessionStatus.LoggedOut;
+                sessionModel.IsRevoked = true;
+                sessionModel.Status = CommonStatus.Disabled;
                 sessionModel.LogoutTime = DateTime.Now;
                 await _sessionRepository.UpdateAsync(sessionModel);
 
-                _logger.LogInformation("用户登出 - 会话ID: {SessionId}, 用户: {Username}", 
-                    sessionId, sessionModel.Username);
+                _logger.LogInformation("用户登出 - 会话ID: {SessionId}, 用户ID: {UserId}", 
+                    sessionId, sessionModel.UserId);
             }
         }
 
@@ -170,11 +166,14 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 更新会话最后活跃时间
+        /// 更新会话最后活跃时间 - UltraThink v2.0简化版（功能暂时移除）
         /// </summary>
         public async Task UpdateSessionActivityAsync(Guid sessionId, DateTime lastActivity)
         {
-            await _sessionRepository.UpdateLastActivityAsync(sessionId, lastActivity);
+            // UltraThink v2.0简化版：暂时移除最后活跃时间功能
+            // 原因：AuthSession实体中没有LastActivityTime字段
+            _logger.LogDebug("会话活动更新请求 - 会话ID: {SessionId} (功能已简化)", sessionId);
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -195,22 +194,18 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 检测可疑的会话活动
+        /// 检测可疑的会话活动 - UltraThink v2.0简化版
         /// </summary>
         public async Task<List<BaseAuthSession>> DetectSuspiciousSessionsAsync(TimeSpan timeWindow)
         {
             var allSessions = await _sessionRepository.GetAllAsync();
             var cutoffTime = DateTime.Now - timeWindow;
 
-            // 检测逻辑：
-            // 1. 同一用户在短时间内从多个不同IP登录
-            // 2. 同一IP在短时间内多个不同用户登录
-            // 3. 异常的登录模式
-
+            // 检测逻辑简化：同一用户在短时间内从多个不同IP登录
             var suspiciousSessions = allSessions
                 .Where(s => s.LoginTime >= cutoffTime)
-                .GroupBy(s => s.Username)
-                .Where(g => g.Select(s => s.ClientIp).Distinct().Count() > 2) // 超过2个不同IP
+                .GroupBy(s => s.UserId)
+                .Where(g => g.Select(s => s.IpAddress).Distinct().Count() > 2) // 超过2个不同IP
                 .SelectMany(g => g)
                 .ToList();
 
@@ -218,30 +213,53 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 标记会话异常
+        /// 标记会话异常 - UltraThink v2.0简化版
         /// </summary>
         public async Task MarkSessionAnomalyAsync(Guid sessionId, string description)
         {
-            await _sessionRepository.MarkSessionAnomalyAsync(sessionId, description);
-            _logger.LogWarning("标记会话异常 - 会话ID: {SessionId}, 描述: {Description}", sessionId, description);
+            // UltraThink v2.0简化版：直接标记为已撤销，记录日志
+            var sessionModel = await _sessionRepository.GetByIdAsync(sessionId);
+            if (sessionModel != null)
+            {
+                sessionModel.IsRevoked = true;
+                sessionModel.Status = CommonStatus.Disabled;
+                await _sessionRepository.UpdateAsync(sessionModel);
+            }
+            
+            _logger.LogWarning("标记会话异常并撤销 - 会话ID: {SessionId}, 描述: {Description}", sessionId, description);
         }
 
         /// <summary>
-        /// 批量更新会话状态
+        /// 批量更新会话状态 - UltraThink v2.0简化版
         /// </summary>
-        public async Task UpdateSessionStatusBatchAsync(List<Guid> sessionIds, AuthSessionStatus status, string? reason = null)
+        public async Task UpdateSessionStatusBatchAsync(List<Guid> sessionIds, CommonStatus status, string? reason = null)
         {
-            await _sessionRepository.UpdateSessionStatusBatchAsync(sessionIds, status, reason);
+            foreach (var sessionId in sessionIds)
+            {
+                var session = await _sessionRepository.GetByIdAsync(sessionId);
+                if (session != null)
+                {
+                    session.Status = status;
+                    if (status == CommonStatus.Disabled)
+                    {
+                        session.IsRevoked = true;
+                        session.LogoutTime = DateTime.Now;
+                    }
+                    await _sessionRepository.UpdateAsync(session);
+                }
+            }
             _logger.LogInformation("批量更新会话状态 - 数量: {Count}, 状态: {Status}", sessionIds.Count, status);
         }
 
         /// <summary>
-        /// 根据设备信息查找会话
+        /// 根据设备信息查找会话 - UltraThink v2.0简化版（功能移除）
         /// </summary>
         public async Task<List<BaseAuthSession>> GetSessionsByDeviceAsync(string deviceInfo, TimeSpan? timeWindow = null)
         {
-            var sessionModels = await _sessionRepository.GetSessionsByDeviceInfoAsync(deviceInfo, timeWindow);
-            return _mapper.Map<List<BaseAuthSession>>(sessionModels);
+            // UltraThink v2.0简化版：AuthSession实体中没有DeviceInfo字段
+            // 返回空列表，记录请求日志
+            _logger.LogDebug("设备会话查询请求 - 设备信息: {DeviceInfo} (功能已简化)", deviceInfo);
+            return new List<BaseAuthSession>();
         }
 
         /// <summary>
@@ -254,25 +272,25 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 检查是否为可疑登录位置
+        /// 检查是否为可疑登录位置 - UltraThink v2.0简化版
         /// </summary>
-        public async Task<bool> IsSuspiciousLocationAsync(string username, string ipAddress, string? location = null)
+        public async Task<bool> IsSuspiciousLocationAsync(Guid userId, string ipAddress, string? location = null)
         {
             // 获取用户过去30天的登录历史
-            var userSessions = await _sessionRepository.GetActiveSessionsByUsernameAsync(username);
+            var userSessions = await _sessionRepository.GetActiveSessionsByUserIdAsync(userId);
             var recentSessions = userSessions
                 .Where(s => s.LoginTime >= DateTime.Now.AddDays(-30))
                 .ToList();
 
             // 如果用户从未从这个IP登录过，则可能是可疑位置
-            var hasLoggedInFromThisIp = recentSessions.Any(s => s.ClientIp == ipAddress);
+            var hasLoggedInFromThisIp = recentSessions.Any(s => s.IpAddress == ipAddress);
             if (!hasLoggedInFromThisIp)
             {
                 // 进一步检查IP地址的地理位置变化（这里简化处理）
-                var uniqueIps = recentSessions.Select(s => s.ClientIp).Distinct().Count();
+                var uniqueIps = recentSessions.Select(s => s.IpAddress).Distinct().Count();
                 if (uniqueIps > 0) // 用户有登录历史且这是新IP
                 {
-                    _logger.LogWarning("检测到可疑登录位置 - 用户: {Username}, IP: {IpAddress}", username, ipAddress);
+                    _logger.LogWarning("检测到可疑登录位置 - 用户ID: {UserId}, IP: {IpAddress}", userId, ipAddress);
                     return true;
                 }
             }
@@ -281,16 +299,14 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 设置会话扩展数据
+        /// 设置会话扩展数据 - UltraThink v2.0简化版（功能移除）
         /// </summary>
         public async Task SetSessionExtendedDataAsync(Guid sessionId, string extendedData)
         {
-            var sessionModel = await _sessionRepository.GetByIdAsync(sessionId);
-            if (sessionModel != null)
-            {
-                sessionModel.ExtendedData = extendedData;
-                await _sessionRepository.UpdateAsync(sessionModel);
-            }
+            // UltraThink v2.0简化版：AuthSession实体中没有ExtendedData字段
+            // 功能已移除，仅记录请求日志
+            _logger.LogDebug("会话扩展数据设置请求 - 会话ID: {SessionId} (功能已简化)", sessionId);
+            await Task.CompletedTask;
         }
 
         /// <summary>

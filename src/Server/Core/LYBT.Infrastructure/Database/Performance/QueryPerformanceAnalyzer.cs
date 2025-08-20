@@ -71,13 +71,13 @@ namespace LYBT.Infrastructure.Database.Performance
                     .FirstOrDefaultAsync(u => u.Username == "sysadmin")
             ));
 
-            // 2. 用户分页查询测试 - IX_Users_Role_Status_CreateTime  
+            // 2. 用户分页查询测试 - IX_Users_Role_Status  
             tests.Add(await MeasureQueryAsync(
                 "GetUsersPagedByRole",
-                "SELECT * FROM Users WHERE Role = 1 AND Status = 1 ORDER BY CreateTime DESC OFFSET 0 ROWS FETCH NEXT 20 ROWS ONLY",
+                "SELECT * FROM Users WHERE Role = 1 AND Status = 1 ORDER BY Id DESC OFFSET 0 ROWS FETCH NEXT 20 ROWS ONLY",
                 async () => await _context.Users.AsNoTracking()
                     .Where(u => u.Role == UserRole.Doctor && u.Status == CommonStatus.Enabled)
-                    .OrderByDescending(u => u.CreateTime)
+                    .OrderByDescending(u => u.Id)
                     .Skip(0).Take(20)
                     .ToListAsync()
             ));
@@ -104,13 +104,13 @@ namespace LYBT.Infrastructure.Database.Performance
                     .ToListAsync()
             ));
 
-            // 5. 用户日期范围查询测试 - IX_Users_CreateTime_Role
+            // 5. 用户状态查询测试 - IX_Users_Status_Role
             tests.Add(await MeasureQueryAsync(
-                "GetUsersByDateRange",
-                "SELECT * FROM Users WHERE CreateTime >= @startDate AND CreateTime <= @endDate ORDER BY CreateTime DESC",
+                "GetUsersByStatus",
+                "SELECT * FROM Users WHERE Status = 1 ORDER BY Id DESC",
                 async () => await _context.Users.AsNoTracking()
-                    .Where(u => u.CreateTime >= DateTime.Now.AddDays(-30))
-                    .OrderByDescending(u => u.CreateTime)
+                    .Where(u => u.Status == CommonStatus.Enabled)
+                    .OrderByDescending(u => u.Id)
                     .ToListAsync()
             ));
 
@@ -128,7 +128,7 @@ namespace LYBT.Infrastructure.Database.Performance
             tests.Add(await MeasureQueryAsync(
                 "GetPatientsByName",
                 "SELECT * FROM Patients WHERE Name LIKE '%张%' AND Status = 1",
-                async () => await _context.Set<PatientModel>().AsNoTracking()
+                async () => await _context.Set<Patient>().AsNoTracking()
                     .Where(p => p.Name.Contains("张") && p.Status == CommonStatus.Enabled)
                     .ToListAsync()
             ));
@@ -137,17 +137,17 @@ namespace LYBT.Infrastructure.Database.Performance
             tests.Add(await MeasureQueryAsync(
                 "GetPatientByPhoneNumber", 
                 "SELECT * FROM Patients WHERE PhoneNumber = '13800138000'",
-                async () => await _context.Set<PatientModel>().AsNoTracking()
+                async () => await _context.Set<Patient>().AsNoTracking()
                     .FirstOrDefaultAsync(p => p.PhoneNumber == "13800138000")
             ));
 
-            // 3. 患者搜索测试 - IX_Patients_Name_PhoneNumber_CreateTime
+            // 3. 患者搜索测试 - IX_Patients_Name_PhoneNumber
             tests.Add(await MeasureQueryAsync(
                 "SearchPatients",
-                "SELECT * FROM Patients WHERE Name LIKE '%王%' OR PhoneNumber LIKE '%138%' ORDER BY CreateTime DESC",
-                async () => await _context.Set<PatientModel>().AsNoTracking()
+                "SELECT * FROM Patients WHERE Name LIKE '%王%' OR PhoneNumber LIKE '%138%' ORDER BY Id DESC",
+                async () => await _context.Set<Patient>().AsNoTracking()
                     .Where(p => p.Name.Contains("王") || p.PhoneNumber.Contains("138"))
-                    .OrderByDescending(p => p.CreateTime)
+                    .OrderByDescending(p => p.Id)
                     .Take(20)
                     .ToListAsync()
             ));
@@ -166,7 +166,7 @@ namespace LYBT.Infrastructure.Database.Performance
             tests.Add(await MeasureQueryAsync(
                 "GetHerbsByName",
                 "SELECT * FROM Herbs WHERE Name LIKE '%甘草%' AND Status = 1",
-                async () => await _context.Set<HerbModel>().AsNoTracking()
+                async () => await _context.Set<Herb>().AsNoTracking()
                     .Where(h => h.Name.Contains("甘草") && h.Status == CommonStatus.Enabled)
                     .ToListAsync()
             ));
@@ -175,7 +175,7 @@ namespace LYBT.Infrastructure.Database.Performance
             tests.Add(await MeasureQueryAsync(
                 "GetHerbsByOrigin",
                 "SELECT * FROM Herbs WHERE Origin = '安徽' AND Status = 1 ORDER BY Name",
-                async () => await _context.Set<HerbModel>().AsNoTracking()
+                async () => await _context.Set<Herb>().AsNoTracking()
                     .Where(h => h.Origin == "安徽" && h.Status == CommonStatus.Enabled)
                     .OrderBy(h => h.Name)
                     .ToListAsync()
@@ -185,7 +185,7 @@ namespace LYBT.Infrastructure.Database.Performance
             tests.Add(await MeasureQueryAsync(
                 "GetHerbsByPrice",
                 "SELECT * FROM Herbs WHERE Price > 10 AND Status = 1 ORDER BY Price ASC",
-                async () => await _context.Set<HerbModel>().AsNoTracking()
+                async () => await _context.Set<Herb>().AsNoTracking()
                     .Where(h => h.Price > 10 && h.Status == CommonStatus.Enabled)
                     .OrderBy(h => h.Price)
                     .ToListAsync()
@@ -203,40 +203,40 @@ namespace LYBT.Infrastructure.Database.Performance
 
             // 注意：这些查询假设相关的模型存在，如果不存在需要根据实际情况调整
 
-            // 1. 患者处方查询测试 - IX_Prescriptions_PatientId_CreateTime
+            // 1. 患者处方查询测试 - IX_Prescriptions_PatientId
             tests.Add(await MeasureQueryAsync(
                 "GetPrescriptionsByPatient",
-                "SELECT * FROM Prescriptions WHERE PatientId = @patientId ORDER BY CreateTime DESC",
+                "SELECT * FROM Prescriptions WHERE PatientId = @patientId ORDER BY Id DESC",
                 async () => {
-                    var samplePatientId = await _context.Set<PatientModel>().AsNoTracking()
+                    var samplePatientId = await _context.Set<Patient>().AsNoTracking()
                         .Select(p => p.Id).FirstOrDefaultAsync();
                     if (samplePatientId != Guid.Empty)
                     {
-                        return await _context.Set<PrescriptionModel>().AsNoTracking()
+                        return await _context.Set<Prescription>().AsNoTracking()
                             .Where(p => p.PatientId == samplePatientId)
-                            .OrderByDescending(p => p.CreateTime)
+                            .OrderByDescending(p => p.Id)
                             .ToListAsync();
                     }
-                    return new List<PrescriptionModel>();
+                    return new List<Prescription>();
                 }
             ));
 
-            // 2. 医生处方查询测试 - IX_Prescriptions_UserId_CreateTime
+            // 2. 医生处方查询测试 - IX_Prescriptions_UserId
             tests.Add(await MeasureQueryAsync(
                 "GetPrescriptionsByDoctor",
-                "SELECT * FROM Prescriptions WHERE UserId = @doctorId ORDER BY CreateTime DESC",
+                "SELECT * FROM Prescriptions WHERE UserId = @doctorId ORDER BY Id DESC",
                 async () => {
                     var sampleDoctorId = await _context.Users.AsNoTracking()
                         .Where(u => u.Role == UserRole.Doctor)
                         .Select(u => u.Id).FirstOrDefaultAsync();
                     if (sampleDoctorId != Guid.Empty)
                     {
-                        return await _context.Set<PrescriptionModel>().AsNoTracking()
+                        return await _context.Set<Prescription>().AsNoTracking()
                             .Where(p => p.UserId == sampleDoctorId)
-                            .OrderByDescending(p => p.CreateTime)
+                            .OrderByDescending(p => p.Id)
                             .ToListAsync();
                     }
-                    return new List<PrescriptionModel>();
+                    return new List<Prescription>();
                 }
             ));
 

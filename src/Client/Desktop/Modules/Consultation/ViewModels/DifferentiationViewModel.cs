@@ -10,6 +10,7 @@ using Prism.Events;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Consultation.ViewModels;
 
 using LYBT.Desktop.Core.Models.Consultation;
@@ -282,12 +283,16 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 var result = await _consultationService.GetByMedicalCaseIdAsync(MedicalCaseId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    var data = result.Data;
-                    TCMSyndrome = data.TCMDiagnosis ?? "";
-                    DifferentiationAnalysis = data.DifferentiationAnalysis ?? "";
-                    TreatmentPrinciple = data.TreatmentPrinciple ?? "";
-                    WesternDiagnosis = data.Diagnosis ?? "";
-                    Remark = data.Remark ?? "";
+                    var consultations = result.Data;
+                    if (consultations != null && consultations.Any())
+                    {
+                        var latestConsultation = consultations.OrderByDescending(c => c.CreateTime).First();
+                        TCMSyndrome = latestConsultation.TCMDiagnosis ?? "";
+                        DifferentiationAnalysis = latestConsultation.DifferentiationAnalysis ?? "";
+                        TreatmentPrinciple = latestConsultation.TreatmentPrinciple ?? "";
+                        WesternDiagnosis = latestConsultation.Diagnosis ?? "";
+                        Remark = latestConsultation.Remark ?? "";
+                    }
                     
                     // 重置更改标记
                     HasChanges = false;
@@ -431,13 +436,22 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 IsLoading = true;
 
                 // 获取四诊数据进行智能分析
-                var fourDiagnosisResult = await _consultationService.GetFourDiagnosisByMedicalCaseIdAsync(MedicalCaseId);
-                if (fourDiagnosisResult.IsSuccess && fourDiagnosisResult.Data != null)
+                var consultationResult = await _consultationService.GetByMedicalCaseIdAsync(MedicalCaseId);
+                if (consultationResult.IsSuccess && consultationResult.Data != null && consultationResult.Data.Any())
                 {
-                    var data = fourDiagnosisResult.Data;
+                    var data = consultationResult.Data.First(); // 获取最新的看诊记录
                     
                     // 基于规则的简单分析
-                    var suggestedSyndrome = AnalyzeSyndrome(data);
+                    // 将ConsultationDto转换为FourDiagnosisData
+                    var fourDiagnosisData = new FourDiagnosisData
+                    {
+                        Inspection = data.Inspection ?? string.Empty,
+                        Auscultation = data.Auscultation ?? string.Empty,
+                        Inquiry = data.Inquiry ?? string.Empty,
+                        Palpation = data.Palpation ?? string.Empty,
+                        ImportSource = "ConsultationData"
+                    };
+                    var suggestedSyndrome = AnalyzeSyndrome(fourDiagnosisData);
                     if (!string.IsNullOrWhiteSpace(suggestedSyndrome))
                     {
                         TCMSyndrome = suggestedSyndrome;

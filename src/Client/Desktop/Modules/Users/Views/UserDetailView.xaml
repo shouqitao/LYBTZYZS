@@ -298,8 +298,6 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="30"/>
                             <RowDefinition Height="30"/>
-                            <RowDefinition Height="30"/>
-                            <RowDefinition Height="30"/>
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="最后登录时间：" 
@@ -314,17 +312,6 @@
                                    Text="{Binding User.LastLoginIp, TargetNullValue='--'}" 
                                    VerticalAlignment="Center"/>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="创建时间：" 
-                                   Foreground="#666" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" 
-                                   Text="{Binding User.CreateTime, StringFormat='yyyy-MM-dd HH:mm:ss'}" 
-                                   VerticalAlignment="Center"/>
-
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="更新时间：" 
-                                   Foreground="#666" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" 
-                                   Text="{Binding User.UpdateTime, StringFormat='yyyy-MM-dd HH:mm:ss', TargetNullValue='--'}" 
-                                   VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </Border>

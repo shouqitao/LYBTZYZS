@@ -7,10 +7,10 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Shared.Models.Contracts.Users
 {
     /// <summary>
-    /// 用户信息DTO - 继承完整基础DTO + 编码接口
-    /// 用于用户信息的展示和传输（不包含敏感信息）
+    /// 用户信息DTO - UltraThink v2.0简化版
+    /// 与User实体对齐，删除时间字段和不存在字段
     /// </summary>
-    public class UserDto : FullBaseDto, ICodeable
+    public class UserDto : StatusDto
     {
         /// <summary>用户名</summary>
         [DisplayName("用户名")]
@@ -28,33 +28,21 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("电话号码")]
         public string? PhoneNumber { get; set; }
 
+        /// <summary>邮箱地址</summary>
+        [DisplayName("邮箱地址")]
+        public string? Email { get; set; }
+
         /// <summary>拼音码</summary>
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
-        /// <summary>五笔码</summary>
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
-
-        /// <summary>头像URL</summary>
-        [DisplayName("头像")]
-        public string? Avatar { get; set; }
-
-        /// <summary>是否在线</summary>
-        [DisplayName("是否在线")]
-        public bool IsOnline { get; set; }
-
-        /// <summary>最后登录时间</summary>
-        [DisplayName("最后登录时间")]
-        public DateTime? LastLoginTime { get; set; }
-
-        /// <summary>最后登录IP</summary>
-        [DisplayName("最后登录IP")]
-        public string? LastLoginIp { get; set; }
-
         /// <summary>账号启用状态 - UltraThink兼容性别名</summary>
         [DisplayName("账号启用状态")]
         public bool IsActive => Status == CommonStatus.Enabled;
+
+        /// <summary>用户名(兼容性别名)</summary>
+        [DisplayName("用户名")]
+        public string UserName => RealName ?? Username;
     }
 
     /// <summary>
@@ -89,7 +77,7 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// 用户创建DTO - 继承创建基类
     /// 用于创建新用户账户的请求模型
     /// </summary>
-    public class UserCreateDto : CreateDtoBase
+    public class UserCreateDto : BaseDto
     {
         /// <summary>用户名</summary>
         [Required(ErrorMessage = "用户名不能为空")]
@@ -116,18 +104,27 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("真实姓名")]
         public string RealName { get; set; } = string.Empty;
 
+        /// <summary>用户角色</summary>
+        [Required(ErrorMessage = "用户角色不能为空")]
+        [DisplayName("用户角色")]
+        public string Role { get; set; } = "User";
+
         /// <summary>电话号码</summary>
         [Phone(ErrorMessage = "电话号码格式不正确")]
         [StringLength(20, ErrorMessage = "电话号码长度不能超过20个字符")]
         [DisplayName("电话号码")]
         public string? PhoneNumber { get; set; }
+
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 
     /// <summary>
     /// 用户更新DTO - 继承更新基类
     /// 用于更新用户信息的请求模型
     /// </summary>
-    public class UserUpdateDto : UpdateDtoBase
+    public class UserUpdateDto : BaseDto
     {
         /// <summary>用户名</summary>
         [Required(ErrorMessage = "用户名不能为空")]
@@ -152,6 +149,10 @@ namespace LYBT.Shared.Models.Contracts.Users
         [StringLength(20, ErrorMessage = "电话号码长度不能超过20个字符")]
         [DisplayName("电话号码")]
         public string? PhoneNumber { get; set; }
+
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 
     /// <summary>

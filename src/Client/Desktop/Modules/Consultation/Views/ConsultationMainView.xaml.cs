@@ -2,8 +2,9 @@ using System;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows;
-using LYBT.Desktop.Core.Models.Herbs;
-using LYBT.Desktop.Core.Models.Formulas;
+// UltraThink v2.0: 直接使用DTOs，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Desktop.Core.Models.Prescriptions;
 
 namespace LYBT.Desktop.Consultation.Views
@@ -22,7 +23,7 @@ namespace LYBT.Desktop.Consultation.Views
         {
             try
             {
-                if (sender is ComboBoxItem item && item.DataContext is HerbInfo herb)
+                if (sender is ComboBoxItem item && item.DataContext is HerbDto herb)
                 {
                     if (DataContext is ViewModels.ConsultationMainViewModel viewModel && viewModel.AddHerbCommand != null)
                     {
@@ -44,7 +45,7 @@ namespace LYBT.Desktop.Consultation.Views
         {
             try
             {
-                if (sender is ComboBoxItem item && item.DataContext is FormulaInfo formula)
+                if (sender is ComboBoxItem item && item.DataContext is FormulaDto formula)
                 {
                     if (DataContext is ViewModels.ConsultationMainViewModel viewModel && viewModel.ApplyFormulaCommand != null)
                     {

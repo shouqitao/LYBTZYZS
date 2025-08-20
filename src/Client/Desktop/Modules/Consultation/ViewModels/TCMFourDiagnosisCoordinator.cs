@@ -8,6 +8,8 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Desktop.Consultation.Components;
+using LYBT.Desktop.Modules.Consultation.Api;
+using LYBT.Desktop.Core.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Consultation.ViewModels
@@ -30,7 +32,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 服务依赖
 
-        private readonly IConsultationApiService _consultationApiService;
+        private readonly IConsultationApi _consultationApiService;
         private readonly ICustomDialogService _dialogService;
         private readonly ILogger<TCMFourDiagnosisCoordinator>? _logger;
 
@@ -49,7 +51,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 构造函数
 
         public TCMFourDiagnosisCoordinator(
-            IConsultationApiService consultationApiService,
+            IConsultationApi consultationApiService,
             ICustomDialogService dialogService,
             ITCMDiagnosisAnalyzer? diagnosisAnalyzer = null,
             ILogger<TCMFourDiagnosisCoordinator>? logger = null)

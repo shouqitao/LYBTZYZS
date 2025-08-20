@@ -2,10 +2,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Formulas;
-using LYBT.Desktop.Core.Models.Herbs;
+// UltraThink v2.0: 直接使用DTOs，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
@@ -65,15 +65,15 @@ namespace LYBT.Desktop.Formula.ViewModels
             set => SetProperty(ref _remark, value);
         }
 
-        private ObservableCollection<FormulaHerbItem> _herbItems = new();
-        public ObservableCollection<FormulaHerbItem> HerbItems
+        private ObservableCollection<FormulaHerbItemDto> _herbItems = new();
+        public ObservableCollection<FormulaHerbItemDto> HerbItems
         {
             get => _herbItems;
             set => SetProperty(ref _herbItems, value);
         }
 
-        private FormulaHerbItem? _selectedHerbItem;
-        public FormulaHerbItem? SelectedHerbItem
+        private FormulaHerbItemDto? _selectedHerbItem;
+        public FormulaHerbItemDto? SelectedHerbItem
         {
             get => _selectedHerbItem;
             set => SetProperty(ref _selectedHerbItem, value);
@@ -100,7 +100,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             "时方", "验方", "其他"
         };
 
-        public ObservableCollection<HerbInfo> AvailableHerbs { get; } = new();
+        public ObservableCollection<HerbDto> AvailableHerbs { get; } = new();
 
         #endregion
 
@@ -109,7 +109,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand<FormulaHerbItem> RemoveHerbCommand { get; }
+        public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; }
         public DelegateCommand LoadHerbsCommand { get; }
 
         #endregion
@@ -131,7 +131,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 .ObservesProperty(() => HerbItems);
             CancelCommand = new DelegateCommand(Cancel);
             AddHerbCommand = new DelegateCommand(AddHerb);
-            RemoveHerbCommand = new DelegateCommand<FormulaHerbItem>(RemoveHerb);
+            RemoveHerbCommand = new DelegateCommand<FormulaHerbItemDto>(RemoveHerb);
             LoadHerbsCommand = new DelegateCommand(async () => await LoadAvailableHerbsAsync());
 
             // 加载可用药材
@@ -153,7 +153,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                     AvailableHerbs.Clear();
                     foreach (var herb in herbsResult.Data)
                     {
-                        AvailableHerbs.Add(herb.ToHerbInfo());
+                        AvailableHerbs.Add(herb);
                     }
                 }
             }
@@ -189,8 +189,8 @@ namespace LYBT.Desktop.Formula.ViewModels
                     {
                         HerbId = h.HerbId,
                         Quantity = h.Quantity,
-                        Preparation = h.ProcessingMethod,
-                        Usage = h.SpecialInstructions,
+                        Preparation = h.Preparation,
+                        Usage = h.Usage,
                         SortOrder = 0
                     }).ToList()
                 };
@@ -226,18 +226,18 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             // TODO: 实现添加药材对话框
             // 暂时添加一个示例药材
-            var newItem = new FormulaHerbItem
+            var newItem = new FormulaHerbItemDto
             {
                 HerbId = Guid.NewGuid(),
                 HerbName = "示例药材",
                 Quantity = 10,
                 Unit = "克",
-                ProcessingMethod = "煎服"
+                Preparation = "煎服"
             };
             HerbItems.Add(newItem);
         }
 
-        private void RemoveHerb(FormulaHerbItem? item)
+        private void RemoveHerb(FormulaHerbItemDto? item)
         {
             if (item != null)
             {

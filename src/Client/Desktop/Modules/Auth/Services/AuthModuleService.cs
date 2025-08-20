@@ -5,12 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Auth.Services.Interfaces;
-using LYBT.Desktop.Core.Models.Auth;
-using LYBT.Shared.Models.Common;
+// UltraThink v2.0: 移除Info模型引用，直接使用DTO
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Core;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Services;
 
@@ -20,29 +18,29 @@ namespace LYBT.Desktop.Auth.Services
     /// Auth模块业务服务实现 - UltraThink四层架构标准
     /// 统一管理认证相关的所有业务逻辑，封装底层服务调用
     /// </summary>
-    public class AuthModuleService : IAuthModuleService, IDisposable
+    public class AuthModuleService : IDisposable
     {
         #region 私有字段
 
         private readonly IAuthenticationService _authenticationService;
-        private readonly ICredentialService _credentialService;
+        private readonly SecureCredentialService _credentialService;
         private readonly IMapper _mapper;
         private readonly ILogger<AuthModuleService> _logger;
         private Timer? _apiCheckTimer;
         private readonly object _lockObject = new();
         private bool _disposed = false;
 
-        // 状态缓存
-        private LoginInfo? _currentLoginInfo;
-        private ApiStatusInfo _currentApiStatus;
+        // UltraThink v2.0: 状态缓存使用Response和匿名对象
+        private LoginResponse? _currentLoginResponse;
+        private object _currentApiStatus;
         private bool _isMonitoring;
 
         #endregion
 
         #region 事件
 
-        public event EventHandler<AuthStatusChangedEventArgs>? AuthStatusChanged;
-        public event EventHandler<ApiConnectionChangedEventArgs>? ApiConnectionChanged;
+        public event EventHandler<(bool IsLoggedIn, string? Username, string? Message)>? AuthStatusChanged;
+        public event EventHandler<(bool IsConnected, string Message)>? ApiConnectionChanged;
 
         #endregion
 
@@ -50,7 +48,7 @@ namespace LYBT.Desktop.Auth.Services
 
         public AuthModuleService(
             IAuthenticationService authenticationService,
-            ICredentialService credentialService,
+            SecureCredentialService credentialService,
             IMapper mapper,
             ILogger<AuthModuleService> logger)
         {
@@ -59,11 +57,13 @@ namespace LYBT.Desktop.Auth.Services
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _currentApiStatus = new ApiStatusInfo
+            // UltraThink v2.0: 使用匿名对象替代ApiStatusInfo
+            _currentApiStatus = new
             {
                 IsOnline = false,
                 StatusMessage = "正在检测API连接...",
-                LastCheckTime = DateTime.Now
+                LastCheckTime = DateTime.Now,
+                ResponseTime = (TimeSpan?)null
             };
 
             // 启动API连接监控
@@ -74,73 +74,53 @@ namespace LYBT.Desktop.Auth.Services
 
         #region 登录认证
 
-        public async Task<ServiceResult<LoginInfo>> LoginAsync(LoginInfo loginInfo)
+        public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest loginRequest)
         {
             try
             {
-                _logger.LogInformation("开始用户登录: {Username}", loginInfo.Username);
+                _logger.LogInformation("开始用户登录: {Username}", loginRequest.Username);
 
-                // 1. 验证登录信息
-                var validation = ValidateLoginInfo(loginInfo);
+                // UltraThink v2.0: 直接使用DTO进行业务验证
+                var validation = await ValidateLoginRequestAsync(loginRequest);
                 if (!validation.IsSuccess)
                 {
-                    return ServiceResult<LoginInfo>.Failure(validation.ErrorMessage ?? "登录信息验证失败");
+                    return ServiceResult<LoginResponse>.Failure(validation.ErrorMessage ?? "登录信息验证失败");
                 }
 
-                // 2. 设置登录状态
-                loginInfo.IsLoggingIn = true;
-                loginInfo.ErrorMessage = null;
-
-                // 3. 转换为DTO并调用底层服务
-                var request = _mapper.Map<LoginRequest>(loginInfo);
-                var response = await _authenticationService.LoginAsync(request);
+                // UltraThink v2.0: 直接调用API服务
+                var response = await _authenticationService.LoginAsync(loginRequest);
 
                 if (response.IsSuccess && response.Data != null)
                 {
-                    // 4. 使用AutoMapper合并响应到LoginInfo
-                    var updatedLoginInfo = _mapper.Map<(LoginInfo, LoginResponse), LoginInfo>((loginInfo, response.Data));
-                    updatedLoginInfo.IsLoggingIn = false;
-                    updatedLoginInfo.ErrorMessage = null;
-                    updatedLoginInfo.StatusMessage = "登录成功";
+                    // 保存到缓存
+                    _currentLoginResponse = response.Data;
 
-                    // 5. 保存到缓存
-                    _currentLoginInfo = updatedLoginInfo;
-
-                    // 6. 保存凭据（如果选择了记住我）
-                    if (loginInfo.RememberMe)
+                    // 保存凭据（如果选择了记住我）
+                    if (loginRequest.RememberMe)
                     {
-                        SaveCredentials(loginInfo.Username, loginInfo.Password, true);
+                        SaveCredentials(loginRequest.Username, loginRequest.Password, true);
                     }
 
-                    // 7. 触发事件
-                    OnAuthStatusChanged(true, updatedLoginInfo.Username, "登录成功");
+                    // 触发事件
+                    OnAuthStatusChanged(true, response.Data.User.Username, "登录成功");
 
-                    _logger.LogInformation("用户登录成功: {Username}", loginInfo.Username);
-                    return ServiceResult<LoginInfo>.Success(updatedLoginInfo, "登录成功");
+                    _logger.LogInformation("用户登录成功: {Username}", loginRequest.Username);
+                    return ServiceResult<LoginResponse>.Success(response.Data);
                 }
                 else
                 {
                     var errorMessage = response.ErrorMessage ?? "登录失败，请检查用户名和密码";
-                    loginInfo.SetLoginFailure(errorMessage);
-                    OnAuthStatusChanged(false, loginInfo.Username, errorMessage);
-                    _logger.LogWarning("用户登录失败: {Username}, 错误: {Error}", loginInfo.Username, errorMessage);
-                    return ServiceResult<LoginInfo>.Failure(errorMessage);
+                    OnAuthStatusChanged(false, loginRequest.Username, errorMessage);
+                    _logger.LogWarning("用户登录失败: {Username}, 错误: {Error}", loginRequest.Username, errorMessage);
+                    return ServiceResult<LoginResponse>.Failure(errorMessage);
                 }
             }
             catch (Exception ex)
             {
                 var errorMessage = $"登录异常: {ex.Message}";
-                loginInfo?.SetLoginFailure(errorMessage);
-                OnAuthStatusChanged(false, loginInfo?.Username, errorMessage);
-                _logger.LogError(ex, "用户登录异常: {Username}", loginInfo?.Username);
-                return ServiceResult<LoginInfo>.Failure(errorMessage);
-            }
-            finally
-            {
-                if (loginInfo != null)
-                {
-                    loginInfo.IsLoggingIn = false;
-                }
+                OnAuthStatusChanged(false, loginRequest?.Username, errorMessage);
+                _logger.LogError(ex, "用户登录异常: {Username}", loginRequest?.Username);
+                return ServiceResult<LoginResponse>.Failure(errorMessage);
             }
         }
 
@@ -152,9 +132,8 @@ namespace LYBT.Desktop.Auth.Services
 
                 var result = await _authenticationService.LogoutAsync();
                 
-                // 清除本地状态
-                _currentLoginInfo?.ClearLoginState();
-                _currentLoginInfo = null;
+                // UltraThink v2.0: 清除本地状态
+                _currentLoginResponse = null;
 
                 // 触发事件
                 OnAuthStatusChanged(false, null, "已登出");
@@ -171,40 +150,33 @@ namespace LYBT.Desktop.Auth.Services
 
         public bool IsLoggedIn => _authenticationService.IsLoggedIn;
 
-        public async Task<ServiceResult<LoginInfo?>> GetCurrentUserAsync()
+        public async Task<ServiceResult<UserDto?>> GetCurrentUserAsync()
         {
             try
             {
-                if (_currentLoginInfo != null && _currentLoginInfo.IsLoggedIn)
+                if (_currentLoginResponse != null)
                 {
-                    return ServiceResult<LoginInfo?>.Success(_currentLoginInfo);
+                    return ServiceResult<UserDto?>.Success(_currentLoginResponse.User);
                 }
 
                 var userInfo = await _authenticationService.GetCurrentUserAsync();
                 if (userInfo != null)
                 {
-                    // 转换为LoginInfo
-                    var loginInfo = new LoginInfo
-                    {
-                        User = _mapper.Map<LYBT.Shared.Models.Core.BaseUser>(userInfo),
-                        IsLoggedIn = true,
-                        Token = _authenticationService.GetToken() ?? string.Empty
-                    };
-                    
-                    _currentLoginInfo = loginInfo;
-                    return ServiceResult<LoginInfo?>.Success(loginInfo);
+                    // UltraThink v2.0: 转换为UserDto
+                    var userDto = _mapper.Map<UserDto>(userInfo);
+                    return ServiceResult<UserDto?>.Success(userDto);
                 }
 
-                return ServiceResult<LoginInfo?>.Success(null, "未登录");
+                return ServiceResult<UserDto?>.Success(null);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取当前用户信息异常");
-                return ServiceResult<LoginInfo?>.Failure($"获取用户信息失败: {ex.Message}");
+                return ServiceResult<UserDto?>.Failure($"获取用户信息失败: {ex.Message}");
             }
         }
 
-        public async Task<ServiceResult<LoginInfo>> RefreshTokenAsync()
+        public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync()
         {
             try
             {
@@ -214,12 +186,12 @@ namespace LYBT.Desktop.Auth.Services
                 // 这里需要根据后端API实现Token刷新机制
                 
                 await Task.CompletedTask;
-                return ServiceResult<LoginInfo>.Failure("Token刷新功能尚未实现");
+                return ServiceResult<LoginResponse>.Failure("Token刷新功能尚未实现");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "刷新Token异常");
-                return ServiceResult<LoginInfo>.Failure($"刷新Token失败: {ex.Message}");
+                return ServiceResult<LoginResponse>.Failure($"刷新Token失败: {ex.Message}");
             }
         }
 
@@ -240,12 +212,12 @@ namespace LYBT.Desktop.Auth.Services
                 var token = GetToken();
                 if (string.IsNullOrEmpty(token))
                 {
-                    return ServiceResult<bool>.Success(false, "Token不存在");
+                    return ServiceResult<bool>.Success(false);
                 }
 
                 // 尝试获取当前用户来验证Token有效性
                 var result = await GetCurrentUserAsync();
-                return ServiceResult<bool>.Success(result.IsSuccess, result.IsSuccess ? "Token有效" : "Token无效");
+                return ServiceResult<bool>.Success(result.IsSuccess);
             }
             catch (Exception ex)
             {
@@ -257,8 +229,8 @@ namespace LYBT.Desktop.Auth.Services
         public void ClearAuthInfo()
         {
             _authenticationService.ClearAuthInfo();
-            _currentLoginInfo?.ClearLoginState();
-            _currentLoginInfo = null;
+            // UltraThink v2.0: 直接清空Response缓存
+            _currentLoginResponse = null;
             OnAuthStatusChanged(false, null, "认证信息已清除");
         }
 
@@ -287,7 +259,7 @@ namespace LYBT.Desktop.Auth.Services
             {
                 _credentialService.SaveCredentials(username, password, rememberMe);
                 _logger.LogInformation("保存用户凭据成功: {Username}", username);
-                return ServiceResult.Success("凭据保存成功");
+                return ServiceResult.Success();
             }
             catch (Exception ex)
             {
@@ -296,34 +268,31 @@ namespace LYBT.Desktop.Auth.Services
             }
         }
 
-        public ServiceResult<LoginInfo?> LoadSavedCredentials()
+        public ServiceResult<LoginRequest?> LoadSavedCredentials()
         {
             try
             {
                 var savedCredentials = _credentialService.LoadCredentials();
                 if (savedCredentials != null)
                 {
-                    var loginInfo = new LoginInfo
+                    // UltraThink v2.0: 创建LoginRequest对象
+                    var loginRequest = new LoginRequest
                     {
                         Username = savedCredentials.Username,
                         Password = savedCredentials.Password,
-                        RememberMe = savedCredentials.RememberMe,
-                        HasSavedPassword = !string.IsNullOrEmpty(savedCredentials.Password),
-                        UserAgent = "LYBT.WPF.Client",
-                        LoginType = "Password",
-                        ClientIp = GetClientIpAddress()
+                        RememberMe = savedCredentials.RememberMe
                     };
 
                     _logger.LogInformation("加载保存的凭据成功: {Username}", savedCredentials.Username);
-                    return ServiceResult<LoginInfo?>.Success(loginInfo, "加载凭据成功");
+                    return ServiceResult<LoginRequest?>.Success(loginRequest);
                 }
 
-                return ServiceResult<LoginInfo?>.Success(null, "无保存的凭据");
+                return ServiceResult<LoginRequest?>.Success(null);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载保存的凭据异常");
-                return ServiceResult<LoginInfo?>.Failure($"加载凭据失败: {ex.Message}");
+                return ServiceResult<LoginRequest?>.Failure($"加载凭据失败: {ex.Message}");
             }
         }
 
@@ -333,7 +302,7 @@ namespace LYBT.Desktop.Auth.Services
             {
                 _credentialService.ClearCredentials();
                 _logger.LogInformation("清除保存的凭据成功");
-                return ServiceResult.Success("凭据清除成功");
+                return ServiceResult.Success();
             }
             catch (Exception ex)
             {
@@ -370,8 +339,9 @@ namespace LYBT.Desktop.Auth.Services
 
                 lock (_lockObject)
                 {
-                    var oldStatus = _currentApiStatus.IsOnline;
-                    _currentApiStatus = new ApiStatusInfo
+                    // UltraThink v2.0: 使用dynamic访问旧状态
+                    var oldStatus = ((dynamic)_currentApiStatus).IsOnline;
+                    _currentApiStatus = new
                     {
                         IsOnline = isOnline,
                         StatusMessage = isOnline ? "✅ API连接正常" : "❌ API服务不可用",
@@ -382,11 +352,11 @@ namespace LYBT.Desktop.Auth.Services
                     // 如果状态发生变化，触发事件
                     if (oldStatus != isOnline)
                     {
-                        OnApiConnectionChanged(isOnline, _currentApiStatus.StatusMessage);
+                        OnApiConnectionChanged(isOnline, ((dynamic)_currentApiStatus).StatusMessage);
                     }
                 }
 
-                return ServiceResult<bool>.Success(isOnline, _currentApiStatus.StatusMessage);
+                return ServiceResult<bool>.Success(isOnline);
             }
             catch (Exception ex)
             {
@@ -394,12 +364,14 @@ namespace LYBT.Desktop.Auth.Services
                 
                 lock (_lockObject)
                 {
-                    var oldStatus = _currentApiStatus.IsOnline;
-                    _currentApiStatus = new ApiStatusInfo
+                    // UltraThink v2.0: 使用dynamic访问旧状态
+                    var oldStatus = ((dynamic)_currentApiStatus).IsOnline;
+                    _currentApiStatus = new
                     {
                         IsOnline = false,
                         StatusMessage = errorMessage,
-                        LastCheckTime = DateTime.Now
+                        LastCheckTime = DateTime.Now,
+                        ResponseTime = (TimeSpan?)null
                     };
 
                     if (oldStatus)
@@ -409,15 +381,15 @@ namespace LYBT.Desktop.Auth.Services
                 }
 
                 _logger.LogError(ex, "检查API连接异常");
-                return ServiceResult<bool>.Success(false, errorMessage);
+                return ServiceResult<bool>.Success(false);
             }
         }
 
-        public ServiceResult<ApiStatusInfo> GetApiStatus()
+        public ServiceResult<object> GetApiStatus()
         {
             lock (_lockObject)
             {
-                return ServiceResult<ApiStatusInfo>.Success(_currentApiStatus);
+                return ServiceResult<object>.Success(_currentApiStatus);
             }
         }
 
@@ -463,12 +435,37 @@ namespace LYBT.Desktop.Auth.Services
 
         #region 安全功能
 
-        public ServiceResult ValidateLoginInfo(LoginInfo loginInfo)
+        // UltraThink v2.0: 新增DTO验证方法
+        public async Task<ServiceResult> ValidateLoginRequestAsync(LoginRequest loginRequest)
         {
             try
             {
-                var (isValid, errorMessage) = loginInfo.Validate();
-                return isValid ? ServiceResult.Success("验证通过") : ServiceResult.Failure(errorMessage ?? "验证失败");
+                if (loginRequest == null)
+                {
+                    return ServiceResult.Failure("登录信息不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(loginRequest.Username))
+                {
+                    return ServiceResult.Failure("用户名不能为空");
+                }
+
+                if (loginRequest.Username.Length < 3 || loginRequest.Username.Length > 32)
+                {
+                    return ServiceResult.Failure("用户名长度必须在3到32个字符之间");
+                }
+
+                if (string.IsNullOrWhiteSpace(loginRequest.Password))
+                {
+                    return ServiceResult.Failure("密码不能为空");
+                }
+
+                if (loginRequest.Password.Length < 6)
+                {
+                    return ServiceResult.Failure("密码长度不能少于6个字符");
+                }
+
+                return ServiceResult.Success();
             }
             catch (Exception ex)
             {
@@ -477,182 +474,17 @@ namespace LYBT.Desktop.Auth.Services
             }
         }
 
-        public string GetClientIpAddress()
-        {
-            try
-            {
-                var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
-                foreach (var ip in host.AddressList)
-                {
-                    if (ip.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        return ip.ToString();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取客户端IP地址异常");
-            }
-            return "127.0.0.1";
-        }
-
-        public string GenerateDeviceFingerprint()
-        {
-            try
-            {
-                var deviceInfo = $"{Environment.MachineName}_{Environment.UserName}_{Environment.OSVersion}";
-                return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(deviceInfo));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "生成设备指纹异常");
-                return "unknown_device";
-            }
-        }
-
-        public async Task<ServiceResult<AccountLockInfo>> CheckAccountLockStatusAsync(string username)
-        {
-            try
-            {
-                // TODO: 实现账户锁定状态检查
-                // 这里需要调用后端API检查账户锁定状态
-                await Task.CompletedTask;
-                
-                var lockInfo = new AccountLockInfo
-                {
-                    IsLocked = false,
-                    FailedAttempts = 0,
-                    MaxAttempts = 5
-                };
-
-                return ServiceResult<AccountLockInfo>.Success(lockInfo);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "检查账户锁定状态异常: {Username}", username);
-                return ServiceResult<AccountLockInfo>.Failure($"检查锁定状态失败: {ex.Message}");
-            }
-        }
+        // UltraThink v2.0: 移除过度设计的安全功能 - IP地址获取、设备指纹、账户锁定检查
 
         #endregion
 
         #region 密码管理
 
-        public async Task<ServiceResult> ChangePasswordAsync(string oldPassword, string newPassword)
-        {
-            try
-            {
-                // TODO: 实现密码修改功能
-                // 这里需要调用后端API修改密码
-                await Task.CompletedTask;
-                
-                _logger.LogInformation("修改密码功能调用");
-                return ServiceResult.Failure("密码修改功能尚未实现");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "修改密码异常");
-                return ServiceResult.Failure($"修改密码失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult> RequestPasswordResetAsync(string username, string email)
-        {
-            try
-            {
-                // TODO: 实现密码重置功能
-                // 这里需要调用后端API发送重置邮件
-                await Task.CompletedTask;
-                
-                _logger.LogInformation("密码重置请求: {Username}, {Email}", username, email);
-                return ServiceResult.Failure("密码重置功能尚未实现");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "请求密码重置异常: {Username}", username);
-                return ServiceResult.Failure($"密码重置失败: {ex.Message}");
-            }
-        }
-
-        public ServiceResult<PasswordStrengthInfo> ValidatePasswordStrength(string password)
-        {
-            try
-            {
-                var strengthInfo = new PasswordStrengthInfo();
-                var suggestions = new List<string>();
-
-                // 计算密码强度分数
-                int score = 0;
-                
-                if (password.Length >= 8) score += 1;
-                else suggestions.Add("密码长度至少8位");
-
-                if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[a-z]")) score += 1;
-                else suggestions.Add("包含小写字母");
-
-                if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[A-Z]")) score += 1;
-                else suggestions.Add("包含大写字母");
-
-                if (System.Text.RegularExpressions.Regex.IsMatch(password, @"\d")) score += 1;
-                else suggestions.Add("包含数字");
-
-                if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[!@#$%^&*]")) score += 1;
-                else suggestions.Add("包含特殊字符");
-
-                strengthInfo.Score = score;
-                strengthInfo.Level = (PasswordStrengthLevel)Math.Min(score, 5);
-                strengthInfo.Suggestions = suggestions;
-                strengthInfo.MeetsPolicy = score >= 3;
-
-                return ServiceResult<PasswordStrengthInfo>.Success(strengthInfo);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证密码强度异常");
-                return ServiceResult<PasswordStrengthInfo>.Failure($"验证密码强度失败: {ex.Message}");
-            }
-        }
+        // UltraThink v2.0: 移除密码管理功能 - 删除过度设计的密码修改、重置、强度验证功能
 
         #endregion
 
-        #region 多因子认证（预留）
-
-        public async Task<ServiceResult> SendVerificationCodeAsync(string phoneNumber)
-        {
-            try
-            {
-                // TODO: 实现验证码发送功能
-                await Task.CompletedTask;
-                
-                _logger.LogInformation("发送验证码: {PhoneNumber}", phoneNumber);
-                return ServiceResult.Failure("验证码功能尚未实现");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "发送验证码异常: {PhoneNumber}", phoneNumber);
-                return ServiceResult.Failure($"发送验证码失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<bool>> VerifyCodeAsync(string phoneNumber, string code)
-        {
-            try
-            {
-                // TODO: 实现验证码验证功能
-                await Task.CompletedTask;
-                
-                _logger.LogInformation("验证验证码: {PhoneNumber}", phoneNumber);
-                return ServiceResult<bool>.Failure("验证码功能尚未实现");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证验证码异常: {PhoneNumber}", phoneNumber);
-                return ServiceResult<bool>.Failure($"验证验证码失败: {ex.Message}");
-            }
-        }
-
-        #endregion
+        // UltraThink v2.0: 移除多因子认证功能 - 删除过度设计的预留功能
 
         #region 私有方法
 
@@ -660,7 +492,7 @@ namespace LYBT.Desktop.Auth.Services
         {
             try
             {
-                AuthStatusChanged?.Invoke(this, new AuthStatusChangedEventArgs(isLoggedIn, username, statusMessage));
+                AuthStatusChanged?.Invoke(this, (isLoggedIn, username, statusMessage));
             }
             catch (Exception ex)
             {
@@ -672,7 +504,7 @@ namespace LYBT.Desktop.Auth.Services
         {
             try
             {
-                ApiConnectionChanged?.Invoke(this, new ApiConnectionChangedEventArgs(isConnected, statusMessage));
+                ApiConnectionChanged?.Invoke(this, (isConnected, statusMessage));
             }
             catch (Exception ex)
             {
@@ -681,6 +513,8 @@ namespace LYBT.Desktop.Auth.Services
         }
 
         #endregion
+
+        // UltraThink v2.0: 移除私有辅助方法 - 删除过度设计的密码强度等级映射
 
         #region IDisposable
 

@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 用户通知服务 - 显示各种通知消息
     /// </summary>
-    public class UserNotificationService : IUserNotificationService
+    public class UserNotificationService : IUserNotificationService, IDisposable
     {
         private readonly ILogger<UserNotificationService> _loggingService;
         private readonly ILogger<UserNotificationService>? _logger;
@@ -579,6 +579,40 @@ namespace LYBT.Desktop.Core.Services
                 
                 Loaded += (s, e) => _inputTextBox.Focus();
             }
+        }
+        
+        #endregion
+        
+        #region IDisposable Support
+        
+        private bool _disposed = false;
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // 停止并释放DispatcherTimer
+                    _displayTimer?.Stop();
+                    if (_displayTimer != null)
+                    {
+                        _displayTimer.Tick -= ProcessNotificationQueue;
+                    }
+                    
+                    // 清理通知队列
+                    while (_messageQueue.TryDequeue(out _)) { }
+                    
+                    _logger?.LogInformation("用户通知服务已释放资源");
+                }
+                _disposed = true;
+            }
+        }
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
         
         #endregion

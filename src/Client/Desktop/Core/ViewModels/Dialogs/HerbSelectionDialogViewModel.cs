@@ -8,7 +8,8 @@ using LYBT.Desktop.Core.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.Core.Models.Herbs;
+// UltraThink v2.0: 直接使用HerbDto，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Desktop.Core.Mvvm;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.Extensions;
@@ -24,7 +25,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         private string _title = "选择中药材";
         private string _searchKeyword = string.Empty;
         private bool _isLoading;
-        private HerbInfo? _selectedHerb;
+        private HerbDto? _selectedHerb;
         private decimal _quantity = 10;
         private string _unit = "g";
 
@@ -64,7 +65,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 选中的中药材
         /// </summary>
-        public HerbInfo? SelectedHerb
+        public HerbDto? SelectedHerb
         {
             get => _selectedHerb;
             set
@@ -101,7 +102,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 中药材列表
         /// </summary>
-        public ObservableCollection<HerbInfo> Herbs { get; } = new();
+        public ObservableCollection<HerbDto> Herbs { get; } = new();
 
         /// <summary>
         /// 搜索命令
@@ -187,7 +188,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                         Herbs.Clear();
                         foreach (var herbDto in result.Data)
                         {
-                            Herbs.Add(herbDto.ToHerbInfo());
+                            Herbs.Add(herbDto);
                         }
                     });
                 }
@@ -223,7 +224,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                         Herbs.Clear();
                         foreach (var herbDto in filteredHerbs)
                         {
-                            Herbs.Add(herbDto.ToHerbInfo());
+                            Herbs.Add(herbDto);
                         }
                     });
                 }

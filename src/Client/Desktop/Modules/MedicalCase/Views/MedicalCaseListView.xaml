@@ -133,10 +133,7 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 
-                <!-- 创建时间 -->
-                <DataGridTextColumn Header="创建时间" 
-                                    Binding="{Binding CreateTimeText}" 
-                                    Width="150"/>
+
                 
                 <!-- 操作列 -->
                 <DataGridTemplateColumn Header="操作" Width="200">

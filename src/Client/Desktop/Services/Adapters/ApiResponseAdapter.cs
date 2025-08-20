@@ -97,7 +97,7 @@ namespace LYBT.Desktop.Services.Adapters
                 Gender = patientDto.Gender,
                 Age = patientDto.Age,
                 PhoneNumber = patientDto.PhoneNumber,
-                IDNumber = patientDto.IDNumber,
+                IDNumber = patientDto.IdNumber,
                 Address = patientDto.Address,
                 AllergyHistory = patientDto.AllergyHistory,
                 PinYinCode = patientDto.PinYinCode,
@@ -135,7 +135,7 @@ namespace LYBT.Desktop.Services.Adapters
                 IDNumber = patientDetail.IDNumber ?? string.Empty,
                 Address = patientDetail.Address ?? string.Empty,
                 AllergyHistory = patientDetail.AllergyHistory ?? "无已知过敏史",
-                Remark = patientDetail.Remark
+                // Remark已在UltraThink v2.0中移除
             };
         }
 
@@ -158,7 +158,7 @@ namespace LYBT.Desktop.Services.Adapters
                 Address = patientDetail.Address ?? string.Empty,
                 AllergyHistory = patientDetail.AllergyHistory ?? string.Empty,
                 Status = patientDetail.Status,
-                Remark = patientDetail.Remark
+                // Remark已在UltraThink v2.0中移除
             };
         }
     }

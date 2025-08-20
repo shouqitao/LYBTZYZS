@@ -27,22 +27,22 @@ namespace LYBT.Module.Auth.Services
         private readonly SysAdminHandler _sysAdminHandler;
         private readonly AuthOptions _authOptions;
         private readonly ILogger<AuthService> _logger;
-        private readonly ILoginAttemptService _loginAttemptService;
+        
+        // UltraThink v2.0简化：移除ILoginAttemptService依赖，简化登录逻辑
 
         public AuthService(
             IAuthRepository authRepository,
             IMapper mapper,
             SysAdminHandler sysAdminHandler,
             IOptions<AuthOptions> authOptions,
-            ILogger<AuthService> logger,
-            ILoginAttemptService loginAttemptService)
+            ILogger<AuthService> logger)
         {
             _authRepository = authRepository;
             _mapper = mapper;
             _sysAdminHandler = sysAdminHandler;
             _authOptions = authOptions.Value;
             _logger = logger;
-            _loginAttemptService = loginAttemptService;
+            // UltraThink v2.0简化：移除_loginAttemptService依赖
         }
 
         #region Shared Interface Implementation
@@ -75,7 +75,7 @@ namespace LYBT.Module.Auth.Services
                 var loginResponse = new LoginResponse
                 {
                     Token = $"mock_token_{Guid.NewGuid()}", // 实际应该生成JWT
-                    User = _mapper.Map<BaseUser>(userDto)
+                    User = userDto // UltraThink v2.0简化：直接使用UserDto，移除BaseUser转换
                 };
 
                 return ServiceResult<LoginResponse>.Success(loginResponse);
@@ -162,7 +162,7 @@ namespace LYBT.Module.Auth.Services
                 var newLoginResponse = new LoginResponse
                 {
                     Token = $"new_token_{Guid.NewGuid()}",
-                    User = new BaseUser() // 简化实现，实际应该从token中解析用户信息
+                    User = new UserDto() // UltraThink v2.0简化：直接使用UserDto替代BaseUser
                 };
 
                 return ServiceResult<LoginResponse>.Success(newLoginResponse);
@@ -234,21 +234,16 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 验证用户名和密码，成功返回用户名，失败返回null
+        /// UltraThink v2.0简化：移除复杂的登录尝试跟踪和账户锁定逻辑
         /// </summary>
         private async Task<string?> VerifyCredentialsInternalAsync(LoginRequest dto)
         {
             try
             {
-                // 1. 检查账户是否被锁定（防暴力破解）
-                if (await _loginAttemptService.IsAccountLockedAsync(dto.Username))
-                {
-                    var remainingSeconds = await _loginAttemptService.GetRemainingLockTimeAsync(dto.Username);
-                    var remainingMinutes = Math.Ceiling(remainingSeconds / 60.0);
-                    await LogFailedLogin(Guid.Empty, dto.Username, $"账户已被锁定，请{remainingMinutes}分钟后再试", dto);
-                    return null;
-                }
+                // UltraThink v2.0简化：移除账户锁定检查
+                // 原：if (await _loginAttemptService.IsAccountLockedAsync(dto.Username))
 
-                // 2. 验证登录类型
+                // 验证登录类型
                 var loginTypeValidation = ValidateLoginType(dto);
                 if (!loginTypeValidation.IsValid)
                 {
@@ -256,34 +251,29 @@ namespace LYBT.Module.Auth.Services
                     return null;
                 }
 
-                // 3. 获取用户信息
+                // 获取用户信息
                 var user = await GetUserForAuthentication(dto.Username);
                 if (user == null)
                 {
-                    await _loginAttemptService.RecordLoginAttemptAsync(dto.Username, false, "用户不存在或未启用");
+                    // UltraThink v2.0简化：移除_loginAttemptService.RecordLoginAttemptAsync
                     await LogFailedLogin(Guid.Empty, dto.Username, "用户不存在或未启用", dto);
                     return null;
                 }
 
-                // 4. 检查账户状态
-                var lockoutCheck = CheckAccountLockout(user);
-                if (lockoutCheck.IsLocked)
-                {
-                    await LogFailedLogin(user.Id, user.RealName, lockoutCheck.ErrorMessage, dto);
-                    return null;
-                }
+                // UltraThink v2.0简化：移除账户锁定检查
+                // 原：var lockoutCheck = CheckAccountLockout(user);
 
-                // 5. 验证密码
+                // 验证密码
                 var passwordValidation = await ValidatePasswordAsync(user, dto.Password);
                 if (!passwordValidation.IsValid)
                 {
-                    await _loginAttemptService.RecordLoginAttemptAsync(dto.Username, false, passwordValidation.ErrorMessage, user.Id);
-                    await HandleFailedLoginAsync(user, dto, passwordValidation.ErrorMessage);
+                    // UltraThink v2.0简化：移除复杂的失败处理
+                    await LogFailedLogin(user.Id, user.RealName, passwordValidation.ErrorMessage, dto);
                     return null;
                 }
 
-                // 6. 身份验证成功，清除失败尝试记录并记录登录日志
-                await _loginAttemptService.ClearFailedAttemptsAsync(dto.Username);
+                // 身份验证成功，记录登录日志
+                // UltraThink v2.0简化：移除_loginAttemptService.ClearFailedAttemptsAsync
                 await LogSuccessfulLogin(user, dto);
                 return dto.Username; // 返回用户名而不是用户详情
             }
@@ -366,7 +356,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 获取用于认证的用户信息
         /// </summary>
-        private async Task<UserModel?> GetUserForAuthentication(string username)
+        private async Task<User?> GetUserForAuthentication(string username)
         {
             // 处理系统管理员
             if (_sysAdminHandler.IsSysAdmin(username))
@@ -385,23 +375,9 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 检查账户锁定状态
-        /// </summary>
-        private (bool IsLocked, string ErrorMessage) CheckAccountLockout(UserModel user)
-        {
-            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.Now)
-            {
-                var lockoutEndTime = user.LockoutEnd.Value.ToString("yyyy-MM-dd HH:mm:ss");
-                return (true, $"账户已锁定至 {lockoutEndTime}");
-            }
-
-            return (false, string.Empty);
-        }
-
-        /// <summary>
         /// 验证密码 - 简化版本
         /// </summary>
-        private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(UserModel user, string password)
+        private async Task<(bool IsValid, string ErrorMessage)> ValidatePasswordAsync(User user, string password)
         {
             string storedHash;
 
@@ -429,50 +405,13 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 处理登录失败
+        /// 处理登录成功 - UltraThink v2.0简化版
         /// </summary>
-        private async Task HandleFailedLoginAsync(UserModel user, LoginRequest dto, string reason)
+        private async Task<UserDto> HandleSuccessfulLoginAsync(User user, LoginRequest dto)
         {
-            // 增加失败次数
-            user.FailedLoginCount++;
-
-            // 检查是否需要锁定账户
-            if (user.FailedLoginCount >= _authOptions.MaxFailedLoginAttempts)
-            {
-                user.LockoutEnd = DateTime.Now.Add(_authOptions.AccountLockoutDuration);
-            }
-
-            // 更新用户锁定信息（仅对非sysadmin用户）
-            if (!_sysAdminHandler.IsSysAdmin(user.Username))
-            {
-                await _authRepository.UpdateUserLoginProtectionAsync(user);
-            }
-
-            var message = $"{reason}，失败次数: {user.FailedLoginCount}";
-            if (user.LockoutEnd.HasValue)
-            {
-                message += $"，账户已锁定至: {user.LockoutEnd.Value:yyyy-MM-dd HH:mm:ss}";
-            }
-
-            await LogFailedLogin(user.Id, user.RealName, message, dto);
-        }
-
-        /// <summary>
-        /// 处理登录成功
-        /// </summary>
-        private async Task<UserDto> HandleSuccessfulLoginAsync(UserModel user, LoginRequest dto)
-        {
-            // 重置失败计数和锁定状态
-            user.FailedLoginCount = 0;
-            user.LockoutEnd = null;
-            user.LastLoginTime = DateTime.Now;
-
-            // 更新数据库（仅对非sysadmin用户）
-            if (!_sysAdminHandler.IsSysAdmin(user.Username))
-            {
-                await _authRepository.UpdateLastLoginTimeAsync(user.Id, user.LastLoginTime.Value);
-                await _authRepository.UpdateUserLoginProtectionAsync(user);
-            }
+            // UltraThink v2.0简化：移除复杂的锁定状态重置和最后登录时间更新
+            // 原：user.FailedLoginCount = 0; user.LockoutEnd = null;
+            // 原：await _authRepository.UpdateLastLoginTimeAsync(user.Id);
 
             // 记录成功日志
             await LogSuccessfulLogin(user, dto);
@@ -484,8 +423,7 @@ namespace LYBT.Module.Auth.Services
                 Username = user.Username,
                 RealName = user.RealName,
                 Status = user.Status,
-                CreateTime = user.CreateTime,
-                LastLoginTime = user.LastLoginTime,
+                // CreateTime、LastLoginTime字段已删除（UltraThink v2.0简化）
                 PhoneNumber = user.PhoneNumber
             };
         }
@@ -514,7 +452,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 记录登录成功日志
         /// </summary>
-        private async Task LogSuccessfulLogin(UserModel user, LoginRequest dto)
+        private async Task LogSuccessfulLogin(User user, LoginRequest dto)
         {
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
@@ -560,7 +498,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 获取操作人姓名
         /// </summary>
-        private string GetOperatorName(UserModel? user, string fallbackUsername)
+        private string GetOperatorName(User? user, string fallbackUsername)
         {
             if (!string.IsNullOrEmpty(user?.RealName))
             {

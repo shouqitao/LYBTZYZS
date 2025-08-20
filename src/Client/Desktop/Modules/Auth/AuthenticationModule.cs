@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Auth.Views;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Auth.Services;
-using LYBT.Desktop.Auth.Services.Interfaces;
 
 namespace LYBT.Desktop.Auth
 {
@@ -25,7 +24,7 @@ namespace LYBT.Desktop.Auth
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块化架构：注册模块业务服务
-            containerRegistry.RegisterSingleton<IAuthModuleService, AuthModuleService>();
+            containerRegistry.RegisterSingleton<AuthModuleService>();
             
             // 注册视图模型
             containerRegistry.Register<LoginViewModel>();

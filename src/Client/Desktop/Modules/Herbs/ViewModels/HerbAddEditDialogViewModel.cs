@@ -1,5 +1,5 @@
 using System.Windows;
-using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.Herbs.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// </summary>
     public class HerbAddEditDialogViewModel : BindableBase
     {
-        private readonly IHerbApiService _herbApiService;
+        private readonly HerbModuleService _herbApiService;
         private readonly HerbDto? _originalHerb;
         private bool _isEditMode;
 
@@ -125,7 +125,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         /// <param name="herbApiService">中药材API服务</param>
         /// <param name="herb">要编辑的药材信息（null表示新增模式）</param>
-        public HerbAddEditDialogViewModel(IHerbApiService herbApiService, HerbDto? herb = null)
+        public HerbAddEditDialogViewModel(HerbModuleService herbApiService, HerbDto? herb = null)
         {
             _herbApiService = herbApiService ?? throw new ArgumentNullException(nameof(herbApiService));
             _originalHerb = herb;
@@ -218,8 +218,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                         Remark = Remark?.Trim()
                     };
 
-                    var response = await _herbApiService.UpdateHerbAsync(_originalHerb.Id, updateDto);
-                    result = response.IsSuccessStatusCode;
+                    var response = await _herbApiService.UpdateAsync(updateDto);
+                    result = response.IsSuccess;
                     
                     if (!result)
                     {
@@ -243,8 +243,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                         Status = CommonStatus.Enabled
                     };
 
-                    var response = await _herbApiService.CreateHerbAsync(createDto);
-                    result = response.IsSuccessStatusCode;
+                    var response = await _herbApiService.CreateAsync(createDto);
+                    result = response.IsSuccess;
                     
                     if (!result)
                     {

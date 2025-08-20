@@ -2,8 +2,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Models.MedicalCase;
-using LYBT.Desktop.Core.Models.Patients;
+// ❌ 已删除，MedicalCaseInfo和PatientInfo不存在
+// using LYBT.Desktop.Core.Models.MedicalCase;
+// using LYBT.Desktop.Core.Models.Patients;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Prism.Mvvm;
@@ -35,15 +37,15 @@ namespace LYBT.Desktop.Consultation.Services
             set => SetProperty(ref _medicalCaseId, value);
         }
 
-        private MedicalCaseInfo? _medicalCase;
-        public MedicalCaseInfo? MedicalCase
+        private MedicalCaseDto? _medicalCase;
+        public MedicalCaseDto? MedicalCase
         {
             get => _medicalCase;
             set => SetProperty(ref _medicalCase, value);
         }
 
-        private PatientInfo? _patient;
-        public PatientInfo? Patient
+        private PatientDto? _patient;
+        public PatientDto? Patient
         {
             get => _patient;
             set
@@ -162,17 +164,21 @@ namespace LYBT.Desktop.Consultation.Services
                 var result = await _patientService.GetByIdAsync(patientId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // 简化转换逻辑
-                    Patient = new PatientInfo
+                    // UltraThink v2.0: 将PatientDetailDto转换为PatientDto
+                    var detailDto = result.Data;
+                    Patient = new PatientDto
                     {
-                        Id = result.Data.Id,
-                        Name = result.Data.Name,
-                        Gender = result.Data.Gender,
-                        Age = result.Data.Age,
-                        BirthDate = result.Data.DateOfBirth,
-                        PhoneNumber = result.Data.PhoneNumber,
-                        Address = result.Data.Address ?? string.Empty
-                        // 暂时省略不匹配的属性
+                        Id = detailDto.Id,
+                        Name = detailDto.Name,
+                        Gender = detailDto.Gender,
+                        BirthDate = detailDto.DateOfBirth,
+                        IdNumber = detailDto.IDNumber,
+                        PhoneNumber = detailDto.PhoneNumber,
+                        Address = detailDto.Address,
+                        AllergyHistory = detailDto.AllergyHistory,
+                        Status = detailDto.Status,
+                        CreateTime = detailDto.CreateTime,
+                        UpdateTime = detailDto.UpdateTime
                     };
                     HasSelectedPatient = true;
                     
@@ -281,13 +287,8 @@ namespace LYBT.Desktop.Consultation.Services
                 var result = await _medicalCaseService.GetByIdAsync(MedicalCaseId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // 简化MedicalCaseInfo创建
-                    MedicalCase = new MedicalCaseInfo
-                    {
-                        Id = result.Data.Id,
-                        PatientId = result.Data.PatientId
-                        // 暂时省略不匹配的属性
-                    };
+                    // UltraThink v2.0: 直接使用DTO，无需手动创建
+                    MedicalCase = result.Data;
                     
                     // 加载关联的患者信息
                     if (MedicalCase.PatientId != Guid.Empty)

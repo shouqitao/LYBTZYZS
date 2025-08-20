@@ -1,9 +1,10 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System;
-using LYBT.Desktop.Core.Models.Users;
+using LYBT.Desktop.Core.Redux.States;
 using System.Collections.Generic;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {
@@ -23,28 +24,28 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <param name="user">用户信息</param>
         /// <param name="permission">权限名称</param>
         /// <returns>是否有权限</returns>
-        bool HasPermission(UserInfo user, string permission);
+        bool HasPermission(UserDto user, string permission);
 
         /// <summary>
         /// 检查用户是否有管理员权限
         /// </summary>
         /// <param name="user">用户信息</param>
         /// <returns>是否有管理员权限</returns>
-        bool HasAdminPermission(UserInfo user);
+        bool HasAdminPermission(UserDto user);
 
         /// <summary>
         /// 检查用户是否有超级管理员权限
         /// </summary>
         /// <param name="user">用户信息</param>
         /// <returns>是否有超级管理员权限</returns>
-        bool HasSuperAdminPermission(UserInfo user);
+        bool HasSuperAdminPermission(UserDto user);
 
         /// <summary>
         /// 获取用户可访问的模块列表
         /// </summary>
         /// <param name="user">用户信息</param>
         /// <returns>可访问的模块列表</returns>
-        List<string> GetAccessibleModules(UserInfo user);
+        List<string> GetAccessibleModules(UserDto user);
 
         /// <summary>
         /// 获取用户角色的显示名称

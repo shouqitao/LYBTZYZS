@@ -248,10 +248,10 @@ namespace LYBT.Desktop.Consultation.Services
 
             try
             {
-                var prescriptions = await _prescriptionService.GetByPatientIdAsync(patientId);
-                if (prescriptions != null && prescriptions.Any())
+                var prescriptionsResult = await _prescriptionService.GetByPatientIdAsync(patientId);
+                if (prescriptionsResult != null && prescriptionsResult.IsSuccess && prescriptionsResult.Data != null && prescriptionsResult.Data.Any())
                 {
-                    foreach (var prescription in prescriptions)
+                    foreach (var prescription in prescriptionsResult.Data)
                     {
                         history.Add(new HistoryRecord
                         {

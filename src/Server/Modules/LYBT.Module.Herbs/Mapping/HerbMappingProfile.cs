@@ -17,42 +17,27 @@ namespace LYBT.Module.Herbs.Mapping
             // ==================== 共享契约映射 ====================
 
             // 药材实体转HerbDetailDto（API响应）
-            CreateMap<HerbModel, HerbDetailDto>()
-                .IncludeBase<LYBT.Shared.Models.Core.BaseHerb, HerbDetailDto>();
+            CreateMap<Herb, HerbDetailDto>();
 
             // HerbCreateDto转药材实体
-            CreateMap<HerbCreateDto, HerbModel>()
+            CreateMap<HerbCreateDto, Herb>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                                                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore())
-                // Specification字段已删除
                 .ForMember(dest => dest.Usage, opt => opt.Ignore());
 
             // HerbUpdateDto转药材实体
-            CreateMap<HerbUpdateDto, HerbModel>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                                                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore());
+            CreateMap<HerbUpdateDto, Herb>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
 
             // 药材实体转HerbDto（列表显示）
-            CreateMap<HerbModel, HerbDto>()
-                .IncludeBase<LYBT.Shared.Models.Core.BaseHerb, HerbDto>();
+            CreateMap<Herb, HerbDto>();
 
             // HerbImportDto转药材实体
-            CreateMap<HerbImportDto, HerbModel>()
+            CreateMap<HerbImportDto, Herb>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                                                .ForMember(dest => dest.LastOperatorId, opt => opt.Ignore())
-                .ForMember(dest => dest.LastOperatorName, opt => opt.Ignore())
-                // Specification字段已删除
                 .ForMember(dest => dest.Usage, opt => opt.Ignore());
 
-            // ==================== 基础模型映射 ====================
-
-            // BaseHerb转HerbDetailDto
-            CreateMap<LYBT.Shared.Models.Core.BaseHerb, HerbDetailDto>();
-
-            // BaseHerb转HerbDto（列表显示）
-            CreateMap<LYBT.Shared.Models.Core.BaseHerb, HerbDto>();
+            // ==================== UltraThink v2.0简化映射 ====================
+            // 不再使用基础模型继承，直接映射
         }
     }
 }

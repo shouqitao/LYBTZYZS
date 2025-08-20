@@ -67,7 +67,7 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 var dbQuery = _context.MedicalCases
                     .Include(x => x.Consultation)
-                    .Where(x => x.IsActive)
+                    .Where(x => x.Status == MedicalCaseStatus.InConsultation || x.Status == MedicalCaseStatus.Completed)
                     .AsQueryable();
 
                 // 关键词搜索
@@ -76,15 +76,15 @@ namespace LYBT.Module.MedicalCase.Services
                     dbQuery = dbQuery.Where(x =>
                         x.Id.ToString().Contains(query.Keyword) ||
                         x.PatientId.ToString().Contains(query.Keyword) ||
-                        x.UserId.ToString().Contains(query.Keyword) ||
+                        x.DoctorId.ToString().Contains(query.Keyword) || // UltraThink v2.0简化：UserId改为DoctorId
                         (x.Remark != null && x.Remark.Contains(query.Keyword))
                     );
                 }
 
-                // 排序
+                // 排序 - UltraThink v2.0简化：改为按ConsultationDate排序，CreateTime字段已删除
                 dbQuery = query.IsDescending
-                    ? dbQuery.OrderByDescending(x => x.CreateTime)
-                    : dbQuery.OrderBy(x => x.CreateTime);
+                    ? dbQuery.OrderByDescending(x => x.ConsultationDate)
+                    : dbQuery.OrderBy(x => x.ConsultationDate);
 
                 // 获取总数
                 var totalCount = await dbQuery.CountAsync();
@@ -122,11 +122,12 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
-                var model = _mapper.Map<MedicalCaseModel>(dto);
+                var model = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(dto);
                 model.Id = Guid.NewGuid();
-                model.CreateTime = DateTime.Now;
+                // CreateTime字段已删除（UltraThink v2.0简化）
                 model.Status = MedicalCaseStatus.Registered;
-                model.IsActive = true;
+                // UltraThink v2.0简化：IsActive属性已删除，使用Status代替
+                model.Status = MedicalCaseStatus.InConsultation;
 
                 var created = await _repository.AddAsync(model);
                 var createdDto = _mapper.Map<MedicalCaseDto>(created);
@@ -159,10 +160,10 @@ namespace LYBT.Module.MedicalCase.Services
                 }
                 if (!string.IsNullOrWhiteSpace(dto.Remark))
                     model.Remark = dto.Remark;
-                if (dto.CompleteTime.HasValue)
-                    model.CompleteTime = dto.CompleteTime.Value;
+                // UltraThink v2.0简化：CompleteTime属性已删除
+                // 原：if (dto.CompleteTime.HasValue) model.CompleteTime = dto.CompleteTime.Value;
 
-                model.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
 
                 var updated = await _repository.UpdateAsync(model);
                 if (updated == null)
@@ -189,8 +190,9 @@ namespace LYBT.Module.MedicalCase.Services
                 if (model == null)
                     return ServiceResult<bool>.Failure("医疗案例不存在");
 
-                model.IsActive = false;
-                model.UpdateTime = DateTime.Now;
+                // UltraThink v2.0简化：IsActive属性已删除，使用Status代替
+                model.Status = MedicalCaseStatus.Cancelled;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
 
                 var result = await _repository.UpdateAsync(model);
                 return ServiceResult<bool>.Success(result != null);
@@ -229,10 +231,10 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 var activeCase = await _context.MedicalCases
                     .Where(m => m.PatientId == patientId && 
-                               m.IsActive && 
+                               m.Status != MedicalCaseStatus.Cancelled && 
                                (m.Status == MedicalCaseStatus.Registered || 
                                 m.Status == MedicalCaseStatus.InConsultation))
-                    .OrderByDescending(m => m.CreateTime)
+                    .OrderByDescending(m => m.ConsultationDate) // UltraThink v2.0简化：改为按ConsultationDate排序，CreateTime字段已删除
                     .FirstOrDefaultAsync();
 
                 if (activeCase == null)
@@ -260,8 +262,10 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<bool>.Failure("医疗案例不存在");
 
                 model.Status = MedicalCaseStatus.Completed;
-                model.CompleteTime = DateTime.Now;
-                model.UpdateTime = DateTime.Now;
+                // UltraThink v2.0简化：CompleteTime属性已删除
+                // 原：model.CompleteTime = DateTime.Now;
+                model.Status = MedicalCaseStatus.Completed;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
                 if (!string.IsNullOrWhiteSpace(completionReason))
                     model.Remark = completionReason;
 
@@ -287,7 +291,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<bool>.Failure("医疗案例不存在");
 
                 model.Status = MedicalCaseStatus.Suspended;
-                model.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
                 if (!string.IsNullOrWhiteSpace(reason))
                     model.Remark = reason;
 
@@ -313,7 +317,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<bool>.Failure("医疗案例不存在");
 
                 model.Status = MedicalCaseStatus.InConsultation;
-                model.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
 
                 var result = await _repository.UpdateAsync(model);
                 return ServiceResult<bool>.Success(result != null);
@@ -337,7 +341,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<bool>.Failure("医疗案例不存在");
 
                 model.Status = MedicalCaseStatus.Archived;
-                model.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
                 if (!string.IsNullOrWhiteSpace(archiveReason))
                     model.Remark = archiveReason;
 
@@ -359,13 +363,13 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 var query = _context.MedicalCases
-                    .Where(m => m.IsActive);
+                    .Where(m => m.Status != MedicalCaseStatus.Cancelled);
 
                 if (startDate.HasValue)
-                    query = query.Where(m => m.CreateTime >= startDate.Value);
+                    query = query.Where(m => m.ConsultationDate >= startDate.Value); // UltraThink v2.0简化：改为按ConsultationDate筛选，CreateTime字段已删除
 
                 if (endDate.HasValue)
-                    query = query.Where(m => m.CreateTime <= endDate.Value);
+                    query = query.Where(m => m.ConsultationDate <= endDate.Value); // UltraThink v2.0简化：改为按ConsultationDate筛选，CreateTime字段已删除
 
                 var totalCount = await query.CountAsync();
                 var completedCount = await query.Where(m => m.Status == MedicalCaseStatus.Completed).CountAsync();
@@ -401,13 +405,13 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<List<MedicalCaseDto>>.Success(new List<MedicalCaseDto>());
 
                 var cases = await _context.MedicalCases
-                    .Where(m => m.IsActive && (
+                    .Where(m => m.Status != MedicalCaseStatus.Cancelled && (
                         m.Id.ToString().Contains(keyword) ||
                         m.PatientId.ToString().Contains(keyword) ||
-                        m.UserId.ToString().Contains(keyword) ||
+                        m.DoctorId.ToString().Contains(keyword) || // UltraThink v2.0简化：UserId改为DoctorId
                         (m.Remark != null && m.Remark.Contains(keyword))
                     ))
-                    .OrderByDescending(m => m.CreateTime)
+                    .OrderByDescending(m => m.ConsultationDate) // UltraThink v2.0简化：改为按ConsultationDate排序，CreateTime字段已删除
                     .Take(20)
                     .ToListAsync();
 
@@ -438,31 +442,23 @@ namespace LYBT.Module.MedicalCase.Services
                     new
                     {
                         Action = "创建",
-                        Time = medicalCase.CreateTime,
+                        Time = medicalCase.ConsultationDate, // UltraThink v2.0简化：改为使用ConsultationDate，CreateTime字段已删除
                         Status = medicalCase.Status.ToString(),
                         Remark = "医疗案例创建"
                     }
                 };
 
-                if (medicalCase.UpdateTime.HasValue)
-                {
-                    history.Add(new
-                    {
-                        Action = "更新",
-                        Time = medicalCase.UpdateTime.Value,
-                        Status = medicalCase.Status.ToString(),
-                        Remark = medicalCase.Remark ?? "医疗案例更新"
-                    });
-                }
+                // UpdateTime字段已删除（UltraThink v2.0简化）
 
-                if (medicalCase.CompleteTime.HasValue)
+                // UltraThink v2.0简化：CompleteTime属性已删除，使用简化时间显示
+                if (medicalCase.Status == MedicalCaseStatus.Completed)
                 {
                     history.Add(new
                     {
                         Action = "完成",
-                        Time = medicalCase.CompleteTime.Value,
-                        Status = "Completed",
-                        Remark = "医疗案例完成"
+                        Time = medicalCase.ConsultationDate,
+                        Status = medicalCase.Status.ToString(),
+                        Remark = "案例已完成"
                     });
                 }
 
@@ -472,6 +468,36 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 _logger.LogError(ex, "获取医疗案例历史记录失败: {Id}", id);
                 return ServiceResult<List<object>>.Failure("获取医疗案例历史记录失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 更新医疗案例状态 (UltraThink v2.0 新增接口实现)
+        /// </summary>
+        public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status)
+        {
+            try
+            {
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                    return ServiceResult<bool>.Failure("医疗案例不存在");
+
+                // 将int转换为MedicalCaseStatus枚举
+                if (!Enum.IsDefined(typeof(MedicalCaseStatus), status))
+                    return ServiceResult<bool>.Failure("无效的状态值");
+
+                medicalCase.Status = (MedicalCaseStatus)status;
+                // UltraThink v2.0简化：UpdateTime字段已删除
+
+                await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("更新医疗案例状态成功: {Id}, 新状态: {Status}", id, (MedicalCaseStatus)status);
+                return ServiceResult<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新医疗案例状态失败: {Id}", id);
+                return ServiceResult<bool>.Failure("更新医疗案例状态失败", ex);
             }
         }
     }

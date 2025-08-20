@@ -4,7 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Models.Formulas;
+// UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Formula;
 using AutoMapper;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
@@ -32,22 +33,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Properties
 
-        private ObservableCollection<FormulaInfo> _formulas = new();
-        public ObservableCollection<FormulaInfo> Formulas
+        private ObservableCollection<FormulaDto> _formulas = new();
+        public ObservableCollection<FormulaDto> Formulas
         {
             get => _formulas;
             set => SetProperty(ref _formulas, value);
         }
 
-        private ObservableCollection<FormulaInfo> _filteredFormulas = new();
-        public ObservableCollection<FormulaInfo> FilteredFormulas
+        private ObservableCollection<FormulaDto> _filteredFormulas = new();
+        public ObservableCollection<FormulaDto> FilteredFormulas
         {
             get => _filteredFormulas;
             set => SetProperty(ref _filteredFormulas, value);
         }
 
-        private FormulaInfo? _selectedFormula;
-        public FormulaInfo? SelectedFormula
+        private FormulaDto? _selectedFormula;
+        public FormulaDto? SelectedFormula
         {
             get => _selectedFormula;
             set => SetProperty(ref _selectedFormula, value);
@@ -99,7 +100,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public DelegateCommand SelectCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand RefreshCommand { get; }
-        public DelegateCommand<FormulaInfo> ViewDetailsCommand { get; }
+        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; }
 
         #endregion
 
@@ -119,7 +120,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 .ObservesProperty(() => SelectedFormula);
             CancelCommand = new DelegateCommand(Cancel);
             RefreshCommand = new DelegateCommand(async () => await LoadFormulasAsync());
-            ViewDetailsCommand = new DelegateCommand<FormulaInfo>(ViewDetails);
+            ViewDetailsCommand = new DelegateCommand<FormulaDto>(ViewDetails);
 
             // 初始加载数据
             Task.Run(async () => await LoadFormulasAsync());
@@ -158,8 +159,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 if (result.IsSuccess && result.Data != null)
                 {
                     // UltraThink四层架构：使用AutoMapper转换DTO → Info
-                    var formulaInfoList = _mapper.Map<List<FormulaInfo>>(result.Data);
-                    Formulas = new ObservableCollection<FormulaInfo>(formulaInfoList);
+                    // UltraThink v2.0: 直接使用FormulaDto，无需映射
+                    Formulas = new ObservableCollection<FormulaDto>(result.Data);
                     FilterFormulas();
                 }
                 else
@@ -197,7 +198,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     (f.DosageInstruction?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
-            FilteredFormulas = new ObservableCollection<FormulaInfo>(filtered);
+            FilteredFormulas = new ObservableCollection<FormulaDto>(filtered);
         }
 
         private bool CanSelect()
@@ -224,7 +225,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
-        private void ViewDetails(FormulaInfo? formula)
+        private void ViewDetails(FormulaDto? formula)
         {
             if (formula == null) return;
 

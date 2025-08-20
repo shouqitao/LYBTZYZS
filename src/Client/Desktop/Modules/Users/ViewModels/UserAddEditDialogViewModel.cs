@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Windows;
-using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.Users.Services;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.Desktop.Core.Models.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using AutoMapper;
-// UltraThink四层架构：Desktop层使用AutoMapper转换UserInfo到DTO，移除Contracts直接引用
+// UltraThink v2.0: Desktop层直接使用DTO，移除Info层转换
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -15,9 +15,9 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserAddEditDialogViewModel : BindableBase
     {
-        private readonly IUserApiService _userService;
+        private readonly UserModuleService _userService;
         private readonly IMapper _mapper;
-        private readonly UserInfo? _originalUser;
+        private readonly UserDto? _originalUser;
 
         private string _userName = string.Empty;
         private string _realName = string.Empty;
@@ -108,7 +108,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>关闭对话框回调</summary>
         public Action? CloseDialogCallback { get; set; }
 
-        public UserAddEditDialogViewModel(IUserApiService userService, IMapper mapper, UserInfo? user = null)
+        public UserAddEditDialogViewModel(UserModuleService userService, IMapper mapper, UserDto? user = null)
         {
             _userService = userService;
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -150,7 +150,7 @@ namespace LYBT.Desktop.Users.ViewModels
             };
         }
 
-        private void LoadUserData(UserInfo user)
+        private void LoadUserData(UserDto user)
         {
             UserName = user.Username;
             RealName = user.RealName;
@@ -181,24 +181,18 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 if (IsNewUser)
                 {
-                    // UltraThink架构：使用AutoMapper从UserInfo转换到UserCreateDto
-                    var userInfo = new UserInfo
+                    // UltraThink v2.0: 直接创建UserCreateDto
+                    var createRequest = new UserCreateDto
                     {
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        Role = SelectedRole!.Value,
-                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
+                        Role = "User", // 新建用户固定为普通用户角色
+                        Password = "ChangeMe123", // 默认密码
+                        ConfirmPassword = "ChangeMe123" // 确认密码
                     };
-                    
-                    var createRequest = _mapper.Map<UserCreateDto>(userInfo);
-                    // DTO特有字段手动设置
-                    createRequest.Password = "ChangeMe123"; // 默认密码
-                    createRequest.ConfirmPassword = "ChangeMe123"; // 确认密码
 
-                    var response = await Services.ApiErrorHandler.HandleApiResponseAsync(async () =>
-                        await _userService.CreateUserAsync(createRequest)
-                    );
+                    var response = await _userService.CreateAsync(createRequest);
                     success = response.IsSuccess;
 
                     if (!success)
@@ -216,22 +210,17 @@ namespace LYBT.Desktop.Users.ViewModels
                         return;
                     }
 
-                    // UltraThink架构：使用AutoMapper从UserInfo转换到UserUpdateDto
-                    var userInfo = new UserInfo
+                    // UltraThink v2.0: 直接创建UserUpdateDto
+                    var updateRequest = new UserUpdateDto
                     {
                         Id = _originalUser.Id,
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
-                        Role = SelectedRole!.Value,
-                        PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
+                        Role = "User", // 编辑时固定为普通用户角色
+                        PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim()
                     };
-                    
-                    var updateRequest = _mapper.Map<UserUpdateDto>(userInfo);
 
-                    var response = await Services.ApiErrorHandler.HandleApiResponseAsync(async () =>
-                        await _userService.UpdateUserAsync(_originalUser.Id, updateRequest)
-                    );
+                    var response = await _userService.UpdateAsync(updateRequest);
                     success = response.IsSuccess;
 
                     if (!success)

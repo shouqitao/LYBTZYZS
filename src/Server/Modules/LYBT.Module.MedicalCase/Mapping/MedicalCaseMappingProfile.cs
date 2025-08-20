@@ -1,5 +1,4 @@
 using AutoMapper;
-using LYBT.Entities.MedicalCase;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Mapping
@@ -11,27 +10,29 @@ namespace LYBT.Module.MedicalCase.Mapping
     {
         public MedicalCaseMappingProfile()
         {
-            // Model -> DTO
-            CreateMap<MedicalCaseModel, MedicalCaseDto>()
-                .ForMember(dest => dest.DiagnosisSummary, opt => opt.MapFrom(src => src.Consultation != null ? src.Consultation.Diagnosis : string.Empty));
+            // Model -> DTO - 基础映射，Status映射到CaseStatus
+            CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDto>()
+                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.Status));
 
-            CreateMap<MedicalCaseModel, MedicalCaseDetailDto>();
+            CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDetailDto>()
+                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.Status));
 
-            // DTO -> Model
-            CreateMap<MedicalCaseCreateDto, MedicalCaseModel>()
+            // DTO -> Model - CaseStatus映射到Status，忽略计算属性和已删除字段
+            CreateMap<MedicalCaseCreateDto, LYBT.Entities.MedicalCase.MedicalCase>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.IsActive, opt => opt.Ignore())
-                .ForMember(dest => dest.Consultation, opt => opt.Ignore());
-
-            CreateMap<MedicalCaseUpdateDto, MedicalCaseModel>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
-                .ForMember(dest => dest.IsActive, opt => opt.Ignore())
                 .ForMember(dest => dest.Consultation, opt => opt.Ignore())
+                .ForMember(dest => dest.Prescription, opt => opt.Ignore());
+
+            CreateMap<MedicalCaseUpdateDto, LYBT.Entities.MedicalCase.MedicalCase>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Consultation, opt => opt.Ignore())
+                .ForMember(dest => dest.Prescription, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            CreateMap<MedicalCaseDto, LYBT.Entities.MedicalCase.MedicalCase>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.CaseStatus))
+                .ForMember(dest => dest.Consultation, opt => opt.Ignore())
+                .ForMember(dest => dest.Prescription, opt => opt.Ignore());
         }
     }
 }

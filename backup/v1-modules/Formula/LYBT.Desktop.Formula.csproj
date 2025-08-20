@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>LYBT.Desktop.Formula</RootNamespace>
+    <AssemblyName>LYBT.Desktop.Formula</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
+    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
+    <ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -75,7 +75,8 @@ namespace LYBT.Module.Prescriptions.Services
             result.DuplicateHerbWarning = string.Join("；", duplicateWarnings);
             result.IsAvailable = availabilityCheck.IsFullyAvailable;
             result.MissingHerbs = availabilityCheck.MissingHerbs;
-            result.SingleDosePrice = priceCalculation.SingleDosePrice;
+            // SingleDosePrice字段已删除（UltraThink v2.0简化）
+            // result.SingleDosePrice = priceCalculation.SingleDosePrice;
             result.TotalPrice = priceCalculation.TotalPrice;
             result.TotalWeight = priceCalculation.TotalWeight;
             result.DosageCount = dosageCount;
@@ -206,7 +207,8 @@ namespace LYBT.Module.Prescriptions.Services
                 totalWeight += item.Quantity;
             }
 
-            result.SingleDosePrice = singleDosePrice;
+            // SingleDosePrice字段已删除（UltraThink v2.0简化）
+            // result.SingleDosePrice = singleDosePrice;
             result.TotalPrice = singleDosePrice * dosageCount;
             result.TotalWeight = totalWeight * dosageCount;
             result.DosageCount = dosageCount;

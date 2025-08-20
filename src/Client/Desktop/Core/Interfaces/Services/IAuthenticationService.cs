@@ -2,7 +2,8 @@ using LYBT.Shared.Models.Contracts.Common;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Desktop.Core.Models.Users;
+using LYBT.Desktop.Core.Redux.States;
+using LYBT.Shared.Models.Contracts.Users;
 
 // UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
 
@@ -18,7 +19,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         /// <param name="request">登录请求</param>
         /// <returns>登录响应</returns>
-        Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request);
+        Task<ServiceResult<LYBT.Shared.Models.Contracts.Auth.LoginResponse>> LoginAsync(LYBT.Shared.Models.Contracts.Auth.LoginRequest request);
 
         /// <summary>
         /// 用户登出
@@ -36,7 +37,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// 获取当前用户信息
         /// </summary>
         /// <returns></returns>
-        Task<UserInfo?> GetCurrentUserAsync();
+        Task<UserDto?> GetCurrentUserAsync();
 
         /// <summary>
         /// 获取存储的Token

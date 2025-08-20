@@ -292,12 +292,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
             try
             {
-                // UltraThink重构: 适配Shared接口的返回类型 List<PrescriptionDto>
+                // UltraThink重构: 适配Shared接口的返回类型 ServiceResult<List<PrescriptionDto>>
                 // 注意：在看诊流程中，MedicalCaseId实际上对应ConsultationId
-                var prescriptions = await _prescriptionService.GetByConsultationIdAsync(MedicalCaseId);
-                if (prescriptions != null && prescriptions.Any())
+                var result = await _prescriptionService.GetByConsultationIdAsync(MedicalCaseId);
+                if (result != null && result.IsSuccess && result.Data != null && result.Data.Any())
                 {
-                    var prescription = prescriptions.First(); // 取第一个处方
+                    var prescription = result.Data.First(); // 取第一个处方
                     
                     // 加载处方项
                     PrescriptionItems.Clear();

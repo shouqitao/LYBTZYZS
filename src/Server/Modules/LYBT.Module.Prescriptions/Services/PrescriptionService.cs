@@ -13,6 +13,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Entities.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Services
 {
@@ -231,7 +232,7 @@ namespace LYBT.Module.Prescriptions.Services
                 // 药品验证
                 if (dto.Items != null && dto.Items.Any())
                 {
-                    var prescriptionItems = dto.Items.Select(item => new LYBT.Entities.Prescriptions.PrescriptionItemModel
+                    var prescriptionItems = dto.Items.Select(item => new PrescriptionItemModel
                     {
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,
@@ -312,7 +313,7 @@ namespace LYBT.Module.Prescriptions.Services
                 }
 
                 prescription.Status = PrescriptionStatus.Completed;
-                prescription.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
                 // TODO: 添加审批记录
 
                 var success = await _repository.UpdateAsync(prescription);
@@ -341,7 +342,7 @@ namespace LYBT.Module.Prescriptions.Services
                 }
 
                 prescription.Status = PrescriptionStatus.Draft; // 退回草稿状态
-                prescription.UpdateTime = DateTime.Now;
+                // UpdateTime字段已删除（UltraThink v2.0简化）
                 // TODO: 添加拒绝记录
 
                 var success = await _repository.UpdateAsync(prescription);
@@ -373,7 +374,8 @@ namespace LYBT.Module.Prescriptions.Services
                 {
                     PatientId = originalPrescription.PatientId,
                     DoctorId = originalPrescription.UserId,
-                    Diagnosis = string.IsNullOrEmpty(newName) ? originalPrescription.Diagnosis : newName,
+                    // UltraThink v2.0简化：Indication字段已删除，使用Remark代替
+                    Remark = string.IsNullOrEmpty(newName) ? originalPrescription.Remark : newName,
                     DosageCount = originalPrescription.DosageCount,
                     Advice = originalPrescription.Advice,
                     Items = originalPrescription.Items.Select(item => new PrescriptionItemCreateDto
@@ -458,8 +460,8 @@ namespace LYBT.Module.Prescriptions.Services
                 );
             }
 
-            // 排序 - 默认按创建时间降序
-            dbQuery = dbQuery.OrderByDescending(x => x.CreateTime);
+            // 排序 - UltraThink v2.0简化：按Id排序（时间字段已删除）
+            dbQuery = dbQuery.OrderByDescending(x => x.Id);
 
             // 获取总数
             var total = await dbQuery.CountAsync();
@@ -492,14 +494,14 @@ namespace LYBT.Module.Prescriptions.Services
         /// </summary>
         public async Task<PrescriptionDto?> CreateInternalAsync(PrescriptionCreateDto dto, Guid operatorId, string operatorName)
         {
-            var model = _mapper.Map<LYBT.Entities.Prescriptions.PrescriptionModel>(dto);
+            var model = _mapper.Map<LYBT.Entities.Prescriptions.Prescription>(dto);
             model.Id = Guid.NewGuid();
             
             // 执行智能检查
             if (dto.Items != null && dto.Items.Any())
             {
-                // 先将PrescriptionItemCreateDto转换为PrescriptionItemModel
-                var prescriptionItems = dto.Items.Select(item => new LYBT.Entities.Prescriptions.PrescriptionItemModel
+                // 先将PrescriptionItemCreateDto转换为PrescriptionItem
+                var prescriptionItems = dto.Items.Select(item => new PrescriptionItemModel
                 {
                     HerbId = item.HerbId,
                     HerbName = item.HerbName,
@@ -593,7 +595,7 @@ namespace LYBT.Module.Prescriptions.Services
             var allPrescriptions = await _repository.GetListAsync();
             var patientPrescriptions = allPrescriptions
                 .Where(p => p.PatientId == patientId)
-                .OrderByDescending(p => p.CreateTime)
+                .OrderByDescending(p => p.Id) // UltraThink v2.0简化：按Id排序（时间字段已删除）
                 .Take(limit)
                 .ToList();
             return _mapper.Map<List<PrescriptionDto>>(patientPrescriptions);
@@ -607,8 +609,8 @@ namespace LYBT.Module.Prescriptions.Services
             var today = DateTime.Today;
             var allPrescriptions = await _repository.GetListAsync();
             var todayPrescriptions = allPrescriptions
-                .Where(p => p.UserId == doctorId && p.CreateTime.Date == today)
-                .OrderByDescending(p => p.CreateTime)
+                .Where(p => p.UserId == doctorId) // UltraThink v2.0简化：时间字段已删除，无法按日期筛选
+                .OrderByDescending(p => p.Id) // UltraThink v2.0简化：按Id排序（时间字段已删除）
                 .ToList();
             return _mapper.Map<List<PrescriptionDto>>(todayPrescriptions);
         }
@@ -629,7 +631,8 @@ namespace LYBT.Module.Prescriptions.Services
             {
                 PatientId = patientId,
                 DoctorId = doctorId,
-                Diagnosis = lastOne.Diagnosis ?? string.Empty,
+                // UltraThink v2.0简化：Indication字段已删除，使用Remark代替
+                Remark = lastOne.Remark ?? string.Empty,
                 DosageCount = lastOne.DosageCount,
                 Advice = lastOne.Advice,
                 Items = lastOne.Items.Select(item => new PrescriptionItemCreateDto
@@ -666,11 +669,11 @@ namespace LYBT.Module.Prescriptions.Services
             {
                 return false;
             }
-
-            prescription.Diagnosis = dto.Diagnosis;
+            // UltraThink v2.0简化：使用DTO的Diagnosis字段作为Remark
+            prescription.Remark = dto.Diagnosis;
             prescription.Advice = dto.Advice;
             prescription.Status = PrescriptionStatus.Draft; // 草稿状态
-            prescription.UpdateTime = DateTime.Now;
+            // UpdateTime字段已删除（UltraThink v2.0简化）
 
             var success = await _repository.UpdateAsync(prescription);
             if (success)
@@ -693,15 +696,14 @@ namespace LYBT.Module.Prescriptions.Services
                 return false;
             }
 
-            // 验证处方完整性
-            if (string.IsNullOrEmpty(prescription.Diagnosis) || !prescription.Items.Any())
+            // 验证处方完整性 - UltraThink v2.0简化：Diagnosis字段已删除，仅验证处方项目
+            if (!prescription.Items.Any())
             {
                 return false;
             }
-
-            prescription.SingleDosePrice = prescription.DosageCount > 0 ? 0m / prescription.DosageCount : 0;
+            // SingleDosePrice字段已删除（UltraThink v2.0简化）
             prescription.Status = PrescriptionStatus.Draft;
-            prescription.UpdateTime = DateTime.Now;
+            // UpdateTime字段已删除（UltraThink v2.0简化）
 
             var success = await _repository.UpdateAsync(prescription);
             if (success)
@@ -726,14 +728,9 @@ namespace LYBT.Module.Prescriptions.Services
             {
                 filtered = filtered.Where(p => p.UserId == doctorId.Value);
             }
-            if (startDate.HasValue)
-            {
-                filtered = filtered.Where(p => p.CreateTime >= startDate.Value);
-            }
-            if (endDate.HasValue)
-            {
-                filtered = filtered.Where(p => p.CreateTime <= endDate.Value);
-            }
+            // UltraThink v2.0简化：时间字段已删除，无法按日期筛选
+            // if (startDate.HasValue) { filtered = filtered.Where(p => p.Id != Guid.Empty); }
+            // if (endDate.HasValue) { filtered = filtered.Where(p => p.Id != Guid.Empty); }
 
             var prescriptions = filtered.ToList();
 

@@ -1,0 +1,225 @@
+<UserControl x:Class="LYBT.Desktop.Consultation.Views.ConsultationWorkflowView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:local="clr-namespace:LYBT.Desktop.Consultation.Views"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 工作流进度条 -->
+        <Border Grid.Row="0" Background="#2E86AB" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="诊疗流程：" 
+                          Foreground="White" 
+                          VerticalAlignment="Center"
+                          Margin="0,0,10,0"/>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Border Background="{Binding IsPatientStepActive, Converter={StaticResource BoolToColorConverter}}"
+                           CornerRadius="15" Padding="10,5">
+                        <TextBlock Text="1.患者选择" Foreground="White"/>
+                    </Border>
+                    <TextBlock Text="→" Foreground="White" VerticalAlignment="Center" Margin="10,0"/>
+                    
+                    <Border Background="{Binding IsFourDiagnosisStepActive, Converter={StaticResource BoolToColorConverter}}"
+                           CornerRadius="15" Padding="10,5">
+                        <TextBlock Text="2.四诊采集" Foreground="White"/>
+                    </Border>
+                    <TextBlock Text="→" Foreground="White" VerticalAlignment="Center" Margin="10,0"/>
+                    
+                    <Border Background="{Binding IsDifferentiationStepActive, Converter={StaticResource BoolToColorConverter}}"
+                           CornerRadius="15" Padding="10,5">
+                        <TextBlock Text="3.辩证分析" Foreground="White"/>
+                    </Border>
+                    <TextBlock Text="→" Foreground="White" VerticalAlignment="Center" Margin="10,0"/>
+                    
+                    <Border Background="{Binding IsPrescriptionStepActive, Converter={StaticResource BoolToColorConverter}}"
+                           CornerRadius="15" Padding="10,5">
+                        <TextBlock Text="4.处方开具" Foreground="White"/>
+                    </Border>
+                </StackPanel>
+                
+                <Button Grid.Column="2" Content="退出流程" 
+                       Command="{Binding ExitWorkflowCommand}"
+                       Background="Transparent"
+                       Foreground="White"
+                       BorderBrush="White"
+                       BorderThickness="1"
+                       Padding="10,5"/>
+            </Grid>
+        </Border>
+
+        <!-- 患者信息栏 -->
+        <Border Grid.Row="1" Background="#F5F5F5" 
+               Visibility="{Binding HasSelectedPatient, Converter={StaticResource BooleanToVisibilityConverter}}"
+               BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Grid Margin="10,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="当前患者：" FontWeight="Bold" Margin="0,0,5,0"/>
+                <TextBlock Grid.Column="1" Text="{Binding PatientName}" Margin="0,0,20,0"/>
+                <TextBlock Grid.Column="2" Text="{Binding PatientGenderAge}" Margin="0,0,20,0"/>
+                <TextBlock Grid.Column="3" Text="{Binding PatientPhone}" Margin="0,0,20,0"/>
+                
+                <Button Grid.Column="5" Content="查看历史" 
+                       Command="{Binding ToggleHistoryPanelCommand}"
+                       Padding="10,2"/>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区 -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300" x:Name="HistoryColumn"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 工作区 -->
+            <Border Grid.Column="0" Background="White">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- 动态内容区域 -->
+                    <ContentControl Grid.Row="0" Content="{Binding CurrentStepContent}"/>
+                    
+                    <!-- 导航按钮 -->
+                    <Border Grid.Row="1" Background="#F5F5F5" Padding="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button Grid.Column="1" Content="上一步" 
+                                   Command="{Binding PreviousStepCommand}"
+                                   IsEnabled="{Binding CanGoPrevious}"
+                                   Padding="20,10" Margin="5,0"/>
+                            
+                            <Button Grid.Column="2" Content="保存草稿" 
+                                   Command="{Binding SaveDraftCommand}"
+                                   Padding="20,10" Margin="5,0"/>
+                            
+                            <Button Grid.Column="3" Content="{Binding NextButtonText}" 
+                                   Command="{Binding NextStepCommand}"
+                                   IsEnabled="{Binding CanGoNext}"
+                                   Background="#2E86AB"
+                                   Foreground="White"
+                                   Padding="20,10" Margin="5,0"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- 分隔线 -->
+            <GridSplitter Grid.Column="1" Width="3" 
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Stretch"
+                         Background="#E0E0E0"
+                         Visibility="{Binding IsHistoryPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+            <!-- 历史记录面板 -->
+            <Border Grid.Column="2" Background="White" 
+                   Visibility="{Binding IsHistoryPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                   BorderBrush="#E0E0E0" BorderThickness="1,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Border Grid.Row="0" Background="#F5F5F5" Padding="10">
+                        <Grid>
+                            <TextBlock Text="历史就诊记录" FontWeight="Bold"/>
+                            <Button Content="×" HorizontalAlignment="Right"
+                                   Command="{Binding CloseHistoryPanelCommand}"
+                                   Background="Transparent"
+                                   BorderThickness="0"
+                                   FontSize="18"/>
+                        </Grid>
+                    </Border>
+                    
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding PatientHistory}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" 
+                                           Padding="10" Margin="5">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            
+                                            <TextBlock Grid.Row="0" FontWeight="Bold">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0:yyyy-MM-dd} ({1})">
+                                                        <Binding Path="VisitDate"/>
+                                                        <Binding Path="TimeAgo"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                            
+                                            <TextBlock Grid.Row="1" Text="{Binding Diagnosis}" 
+                                                      Margin="0,5,0,0"/>
+                                            
+                                            <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                                                       Margin="0,5,0,0">
+                                                <Button Content="查看详情" 
+                                                       Command="{Binding DataContext.ViewHistoryDetailCommand, 
+                                                                RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"
+                                                       Padding="5,2" Margin="0,0,5,0"/>
+                                                <Button Content="导入四诊" 
+                                                       Command="{Binding DataContext.ImportFourDiagnosisCommand, 
+                                                                RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"
+                                                       Padding="5,2" Margin="0,0,5,0"/>
+                                                <Button Content="导入处方" 
+                                                       Command="{Binding DataContext.ImportPrescriptionCommand, 
+                                                                RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"
+                                                       Padding="5,2"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+
+    <UserControl.Resources>
+        <!-- 布尔转背景色转换器 -->
+        <converters:BooleanToBackgroundConverter x:Key="BoolToColorConverter"/>
+    </UserControl.Resources>
+</UserControl>

@@ -9,7 +9,7 @@ namespace LYBT.Module.Patients.Interfaces
     /// 继承BaseRepository提供通用CRUD，扩展患者特定业务方法
     /// 实现软删除策略：患者档案只能禁用/启用，不能物理删除
     /// </summary>
-    public interface IPatientRepository : IBaseRepository<PatientModel>
+    public interface IPatientRepository : IBaseRepository<Patient>
     {
         // 注意：基础CRUD方法由IBaseRepository提供
         // 这里只定义患者特有的业务方法
@@ -18,7 +18,7 @@ namespace LYBT.Module.Patients.Interfaces
         /// 根据主键ID查询病人（支持权限控制）
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
-        Task<PatientModel?> GetByIdAsync(Guid id, bool includeDisabled = false);
+        Task<Patient?> GetByIdAsync(Guid id, bool includeDisabled = false);
 
         /// <summary>
         /// 启用患者档案
@@ -43,12 +43,12 @@ namespace LYBT.Module.Patients.Interfaces
         /// <summary>
         /// 通过身份证号查找病人（包括禁用的患者档案）
         /// </summary>
-        Task<PatientModel?> GetByIdNumberAsync(string idNumber);
+        Task<Patient?> GetByIdNumberAsync(string idNumber);
 
         /// <summary>
         /// 通过手机号查找病人（包括禁用的患者档案）
         /// </summary>
-        Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber);
+        Task<Patient?> GetByPhoneNumberAsync(string phoneNumber);
 
         /// <summary>
         /// 检查身份证号是否存在（排除指定ID，包括禁用患者档案）
@@ -64,37 +64,37 @@ namespace LYBT.Module.Patients.Interfaces
         /// 根据关键词搜索患者档案
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
-        Task<List<PatientModel>> SearchAsync(string keyword, bool includeDisabled = false);
+        Task<List<Patient>> SearchAsync(string keyword, bool includeDisabled = false);
 
         /// <summary>
         /// 精确匹配搜索（手机号、身份证号）
         /// 权限控制：禁用的患者档案仅管理员可查询
         /// </summary>
-        Task<List<PatientModel>> ExactSearchAsync(string keyword, bool includeDisabled = false);
+        Task<List<Patient>> ExactSearchAsync(string keyword, bool includeDisabled = false);
 
         /// <summary>
         /// 获取启用的患者档案列表
         /// </summary>
-        Task<List<PatientModel>> GetActivePatientsAsync();
+        Task<List<Patient>> GetActivePatientsAsync();
 
         /// <summary>
         /// 根据身份证号获取患者档案列表（用于重复检查）
         /// </summary>
-        Task<List<PatientModel>> GetPatientsByIdNumberAsync(string idNumber);
+        Task<List<Patient>> GetPatientsByIdNumberAsync(string idNumber);
 
         /// <summary>
         /// 根据姓名和手机号获取患者档案列表（用于重复检查）
         /// </summary>
-        Task<List<PatientModel>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber);
+        Task<List<Patient>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber);
 
         /// <summary>
         /// 根据相似姓名获取患者档案列表（用于重复检查）
         /// </summary>
-        Task<List<PatientModel>> GetPatientsBySimilarNameAsync(string name);
+        Task<List<Patient>> GetPatientsBySimilarNameAsync(string name);
 
         /// <summary>
         /// 根据姓名获取患者档案列表（用于查询或创建场景）
         /// </summary>
-        Task<List<PatientModel>> GetByNameAsync(string name);
+        Task<List<Patient>> GetByNameAsync(string name);
     }
 }

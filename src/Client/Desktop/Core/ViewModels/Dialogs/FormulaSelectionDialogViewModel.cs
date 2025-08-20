@@ -7,11 +7,11 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.Core.Models.Formulas;
+// UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Desktop.Core.Mvvm;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Desktop.Core.Extensions;
 
 namespace LYBT.Desktop.Core.ViewModels.Dialogs
@@ -47,15 +47,15 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             set => SetProperty(ref _isLoading, value);
         }
 
-        private ObservableCollection<FormulaInfo> _formulas = new();
-        public ObservableCollection<FormulaInfo> Formulas
+        private ObservableCollection<FormulaDto> _formulas = new();
+        public ObservableCollection<FormulaDto> Formulas
         {
             get => _formulas;
             set => SetProperty(ref _formulas, value);
         }
 
-        private FormulaInfo? _selectedFormula;
-        public FormulaInfo? SelectedFormula
+        private FormulaDto? _selectedFormula;
+        public FormulaDto? SelectedFormula
         {
             get => _selectedFormula;
             set
@@ -174,11 +174,9 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                 {
                     var formulaDtos = result.Data ?? new List<FormulaDto>();
                     
-                    // 转换DTO为FormulaInfo
-                    var formulaInfos = formulaDtos.Select(dto => dto.ToFormulaInfo()).ToList();
-
+                    // UltraThink v2.0: 直接使用FormulaDto，无需转换
                     Formulas.Clear();
-                    foreach (var formula in formulaInfos)
+                    foreach (var formula in formulaDtos)
                     {
                         Formulas.Add(formula);
                     }

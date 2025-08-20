@@ -68,7 +68,7 @@ namespace LYBT.WebAPI.Controllers
                 var userCount = await _context.Users.CountAsync();
                 _logger.LogInformation($"用户表中有 {userCount} 条记录");
 
-                // 尝试获取前5个用户
+                // 尝试获取前5个用户 - UltraThink v2.0: 删除CreateTime字段
                 var users = await _context.Users
                     .Take(5)
                     .Select(u => new
@@ -76,7 +76,6 @@ namespace LYBT.WebAPI.Controllers
                         u.Id,
                         u.Username,
                         u.RealName,
-                        u.CreateTime,
                         Status = u.Status == CommonStatus.Enabled
                     })
                     .ToListAsync();
@@ -125,7 +124,7 @@ namespace LYBT.WebAPI.Controllers
                             p.Id,
                             p.Name,
                             p.Gender,
-                            p.CreateTime,
+                            p.LastVisitTime, // UltraThink v2.0: 替代已删除的CreateTime
                             p.Status
                         })
                         .ToListAsync();

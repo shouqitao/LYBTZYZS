@@ -1,14 +1,14 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Prism.Events;
-using LYBT.Desktop.Core.Models.Patients;
+using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Desktop.Core.Events
 {
     /// <summary>
     /// 患者选择事件
     /// </summary>
-    public class PatientSelectedEvent : PubSubEvent<PatientInfo>
+    public class PatientSelectedEvent : PubSubEvent<PatientDto>
     {
     }
 
@@ -16,6 +16,13 @@ namespace LYBT.Desktop.Core.Events
     /// 诊疗会话开始事件
     /// </summary>
     public class ConsultationSessionStartedEvent : PubSubEvent<ConsultationSessionData>
+    {
+    }
+
+    /// <summary>
+    /// 看诊开始事件(兼容性别名)
+    /// </summary>
+    public class ConsultationStartedEvent : PubSubEvent<ConsultationSessionData>
     {
     }
 

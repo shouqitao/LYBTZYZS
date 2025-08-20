@@ -12,11 +12,13 @@ using LoginResponse = LYBT.Shared.Models.Contracts.Auth.LoginResponse;
 using LoginRequest = LYBT.Shared.Models.Contracts.Auth.LoginRequest;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Desktop.Core.Models.Users;
-// UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
+using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Models.Enums;
+// UltraThink重构v2.0: 使用UserDto替代UserInfo，简化四层架构
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services
@@ -29,7 +31,7 @@ namespace LYBT.Desktop.Services
     {
         #region 依赖服务
         
-        private readonly IAuthApiService _authApiService;
+        private readonly IAuthApi _authApiService;
         private readonly ITokenManager _tokenManager;
         private readonly ILogger<AuthenticationService>? _logger;
         private readonly IAsyncPolicy<HttpResponseMessage> _retryPolicy;
@@ -54,7 +56,7 @@ namespace LYBT.Desktop.Services
         #region 构造函数
         
         public AuthenticationService(
-            IAuthApiService authApiService,
+            IAuthApi authApiService,
             ITokenManager tokenManager,
             ILogger<AuthenticationService>? logger = null)
         {
@@ -183,7 +185,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取当前用户信息 - UI接口实现
         /// </summary>
-        Task<UserInfo?> LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService.GetCurrentUserAsync()
+        Task<UserDto?> LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService.GetCurrentUserAsync()
         {
             return Task.FromResult(_authState.CurrentUser);
         }
@@ -191,7 +193,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取当前用户信息 - UI层兼容方法
         /// </summary>
-        public Task<UserInfo?> GetCurrentUserForUIAsync()
+        public Task<UserDto?> GetCurrentUserForUIAsync()
         {
             return Task.FromResult(_authState.CurrentUser);
         }
@@ -250,7 +252,7 @@ namespace LYBT.Desktop.Services
                 var response = new LoginResponse
                 {
                     Token = _tokenManager.GetToken() ?? string.Empty,
-                    User = ConvertToBaseUser(_authState.CurrentUser)
+                    User = _authState.CurrentUser ?? new UserDto()
                 };
 
                 return ServiceResult<LoginResponse>.Success(response);
@@ -311,14 +313,12 @@ namespace LYBT.Desktop.Services
                 var response = await _authApiService.LoginAsync(request);
                 
                 // 处理Refit包装的响应
-                if (response.IsSuccessStatusCode && response.Content?.Success == true)
+                if (response.IsSuccessStatusCode && response.Content != null)
                 {
                     return ServiceResult<dynamic>.Success(response.Content);
                 }
                 
-                var errorMessage = response.Content?.Message ?? 
-                                  response.Error?.Content ?? 
-                                  "登录失败";
+                var errorMessage = response.Error?.Content ?? "登录失败";
                                   
                 return ServiceResult<dynamic>.Failure(errorMessage);
             }
@@ -340,7 +340,7 @@ namespace LYBT.Desktop.Services
                 return new LoginResponse
                 {
                     Token = data.Token?.ToString() ?? string.Empty,
-                    User = ConvertToUserInfo(data.User)
+                    User = ConvertToUserDto(data.User)
                 };
             }
             catch (Exception ex)
@@ -350,31 +350,29 @@ namespace LYBT.Desktop.Services
             }
         }
         
-        private UserInfo ConvertToUserInfo(dynamic userObj)
+        private UserDto ConvertToUserDto(dynamic userObj)
         {
             if (userObj == null)
-                return new UserInfo();
+                return new UserDto();
             
             try
             {
-                return new UserInfo
+                return new UserDto
                 {
                     Id = Guid.TryParse(userObj.Id?.ToString(), out Guid id) ? id : Guid.Empty,
                     Username = userObj.Username?.ToString() ?? string.Empty,
                     RealName = userObj.RealName?.ToString() ?? string.Empty,
                     PhoneNumber = userObj.PhoneNumber?.ToString(),
                     Email = userObj.Email?.ToString(),
-                    Role = Enum.TryParse<LYBT.Shared.Models.Enums.UserRole>(userObj.Role?.ToString(), out LYBT.Shared.Models.Enums.UserRole role) ? role : LYBT.Shared.Models.Enums.UserRole.Receptionist,
+                    Role = userObj.Role?.ToString() ?? "User",
                     Status = Enum.TryParse<LYBT.Shared.Models.Enums.CommonStatus>(userObj.Status?.ToString(), out LYBT.Shared.Models.Enums.CommonStatus status) ? status : LYBT.Shared.Models.Enums.CommonStatus.Enabled,
-                    CreateTime = DateTime.TryParse(userObj.CreateTime?.ToString(), out DateTime createTime) ? createTime : DateTime.Now,
-                    UpdateTime = DateTime.TryParse(userObj.UpdateTime?.ToString(), out DateTime updateTime) ? updateTime : DateTime.Now,
-                    IsSelected = false  // UI状态，默认未选中
+                    PinYinCode = userObj.PinYinCode?.ToString()
                 };
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "转换用户信息失败");
-                return new UserInfo();
+                return new UserDto();
             }
         }
         
@@ -383,7 +381,7 @@ namespace LYBT.Desktop.Services
             _authState = new AuthenticationState
             {
                 IsAuthenticated = true,
-                CurrentUser = ConvertToFrontendUserInfo(response.User),
+                CurrentUser = response.User,
                 Token = response.Token,
                 AuthenticatedAt = DateTime.Now
             };
@@ -397,58 +395,53 @@ namespace LYBT.Desktop.Services
             _tokenManager.ClearToken();
         }
         
-        private UserInfo? ConvertToFrontendUserInfo(BaseUser? authUser)
+        private UserDto? ConvertToFrontendUserInfo(BaseUser? authUser)
         {
             if (authUser == null)
                 return null;
             
-            return new UserInfo
+            return new UserDto
             {
                 Id = authUser.Id,
                 Username = authUser.Username,
                 RealName = authUser.RealName,
                 PhoneNumber = authUser.PhoneNumber,
-                Role = authUser.Role,
+                Role = authUser.Role.ToString(),
                 Status = authUser.Status,
                 Email = authUser.Email,
-                CreateTime = authUser.CreateTime,
-                UpdateTime = authUser.UpdateTime,
-                IsSelected = false  // UI状态，默认未选中
+                PinYinCode = string.Empty
             };
         }
 
         /// <summary>
-        /// UltraThink重构: UserInfo转换为UserDto - 四层架构适配
+        /// UltraThink重构v2.0: 简化UserDto转换 - 直接使用UserDto
         /// </summary>
-        private UserDto ConvertToUserDto(UserInfo userInfo)
+        private UserDto PassThroughUserDto(UserDto userInfo)
         {
-            return new UserDto
-            {
-                Id = userInfo.Id,
-                Username = userInfo.Username,
-                RealName = userInfo.RealName,
-                PhoneNumber = userInfo.PhoneNumber,
-                Role = userInfo.Role.ToString(),
-                Status = userInfo.Status,
-                CreateTime = userInfo.CreateTime,
-                UpdateTime = userInfo.UpdateTime
-            };
+            return userInfo; // 直接返回，不需要转换
         }
 
         /// <summary>
         /// 转换UserDto到BaseUser - 新接口适配方法
         /// </summary>
-        private BaseUser ConvertToBaseUser(UserInfo? userInfo)
+        private BaseUser ConvertToBaseUser(UserDto? userInfo)
         {
             if (userInfo == null)
                 return new BaseUser();
+            
+            // 需要转换Role字符串回UserRole枚举
+            var userRole = Enum.TryParse<UserRole>(userInfo.Role, out var role) ? role : UserRole.User;
             
             return new BaseUser
             {
                 Id = userInfo.Id,
                 Username = userInfo.Username,
                 RealName = userInfo.RealName,
-                PhoneNumber = userInfo.PhoneNumber
+                PhoneNumber = userInfo.PhoneNumber,
+                Role = userRole,
+                Status = userInfo.Status,
+                Email = userInfo.Email,
+                PinYinCode = userInfo.PinYinCode
             };
         }
         
@@ -480,7 +473,7 @@ namespace LYBT.Desktop.Services
         private class AuthenticationState
         {
             public bool IsAuthenticated { get; set; }
-            public UserInfo? CurrentUser { get; set; }
+            public UserDto? CurrentUser { get; set; }
             public string? Token { get; set; }
             public DateTime? AuthenticatedAt { get; set; }
         }

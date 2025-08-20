@@ -17,12 +17,12 @@ using TimeoutException = System.TimeoutException;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 统一错误处理服务实现
+    /// 统一错误处理服务实现 - 简化版本，接口不存在
     /// </summary>
-    public class ErrorHandlingService : IErrorHandlingService
+    public class ErrorHandlingService // : IErrorHandlingService // 接口不存在：IErrorHandlingService
     {
-        private readonly ICommonDialogService _dialogService;
-        private readonly IUserSessionManager _sessionManager;
+        // private readonly ICommonDialogService _dialogService; // 接口不存在：ICommonDialogService
+        // private readonly IUserSessionManager _sessionManager; // 接口不存在：IUserSessionManager
         
         // 错误消息映射表
         private readonly Dictionary<Type, Func<Exception, string>> _messageMapping;
@@ -33,10 +33,10 @@ namespace LYBT.Desktop.Services
         public event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
         public event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
 
-        public ErrorHandlingService(ICommonDialogService dialogService, IUserSessionManager sessionManager)
+        public ErrorHandlingService() // 简化构造函数，移除不存在的接口参数
         {
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+            // _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService)); // 接口不存在
+            // _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager)); // 接口不存在
 
             _messageMapping = InitializeMessageMapping();
             _categoryMapping = InitializeCategoryMapping();
@@ -86,10 +86,12 @@ namespace LYBT.Desktop.Services
                         switch (handledError.Severity)
                         {
                             case ErrorSeverity.Info:
-                                await _dialogService.ShowInformationAsync("提示", handledError.UserMessage);
+                                // await _dialogService.ShowInformationAsync("提示", handledError.UserMessage); // 服务不存在
+                                MessageBox.Show(handledError.UserMessage, "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                                 break;
                             case ErrorSeverity.Warning:
-                                await _dialogService.ShowWarningAsync("警告", handledError.UserMessage);
+                                // await _dialogService.ShowWarningAsync("警告", handledError.UserMessage); // 服务不存在
+                                MessageBox.Show(handledError.UserMessage, "警告", MessageBoxButton.OK, MessageBoxImage.Warning);
                                 break;
                             case ErrorSeverity.Error:
                             case ErrorSeverity.Critical:
@@ -427,48 +429,112 @@ namespace LYBT.Desktop.Services
         private async void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
-            var context = new ErrorContext
-            {
-                OperationName = "UI线程异常",
-                ModuleName = "WPF",
-                ViewName = "Global"
-            };
             
-            var handledError = await HandleExceptionAsync(e.Exception, context);
-            await ShowErrorAsync(handledError);
+            // Fire-and-forget pattern with proper exception isolation
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var context = new ErrorContext
+                    {
+                        OperationName = "UI线程异常",
+                        ModuleName = "WPF",
+                        ViewName = "Global"
+                    };
+                    
+                    var handledError = await HandleExceptionAsync(e.Exception, context);
+                    await ShowErrorAsync(handledError);
+                }
+                catch (Exception ex)
+                {
+                    // 最后一道防线：确保异常处理器本身不会崩溃
+                    Debug.WriteLine($"异常处理器失败: {ex.Message}");
+                    try
+                    {
+                        MessageBox.Show($"系统发生严重错误：{e.Exception.Message}", "系统错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    catch
+                    {
+                        // 静默失败，避免无限递归
+                    }
+                }
+            });
         }
 
         private async void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             e.SetObserved();
-            var context = new ErrorContext
+            
+            // Fire-and-forget pattern with proper exception isolation
+            _ = Task.Run(async () =>
             {
-                OperationName = "后台任务异常",
-                ModuleName = "Task",
-                ViewName = "Background"
-            };
+                try
+                {
+                    var context = new ErrorContext
+                    {
+                        OperationName = "后台任务异常",
+                        ModuleName = "Task",
+                        ViewName = "Background"
+                    };
 
-            foreach (var exception in e.Exception.InnerExceptions)
-            {
-                var handledError = await HandleExceptionAsync(exception, context);
-                await ShowErrorAsync(handledError);
-            }
+                    foreach (var exception in e.Exception.InnerExceptions)
+                    {
+                        try
+                        {
+                            var handledError = await HandleExceptionAsync(exception, context);
+                            await ShowErrorAsync(handledError);
+                        }
+                        catch (Exception handlingEx)
+                        {
+                            Debug.WriteLine($"处理后台任务异常失败: {handlingEx.Message}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 最后一道防线：确保异常处理器本身不会崩溃
+                    Debug.WriteLine($"后台任务异常处理器失败: {ex.Message}");
+                }
+            });
         }
 
         private async void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            if (e.ExceptionObject is Exception exception)
+            // Fire-and-forget pattern with proper exception isolation
+            _ = Task.Run(async () =>
             {
-                var context = new ErrorContext
+                try
                 {
-                    OperationName = "应用程序域异常",
-                    ModuleName = "AppDomain",
-                    ViewName = "Global"
-                };
+                    if (e.ExceptionObject is Exception exception)
+                    {
+                        var context = new ErrorContext
+                        {
+                            OperationName = "应用程序域异常",
+                            ModuleName = "AppDomain",
+                            ViewName = "Global"
+                        };
 
-                var handledError = await HandleExceptionAsync(exception, context);
-                await ShowErrorAsync(handledError);
-            }
+                        var handledError = await HandleExceptionAsync(exception, context);
+                        await ShowErrorAsync(handledError);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 最后一道防线：确保异常处理器本身不会崩溃
+                    Debug.WriteLine($"应用程序域异常处理器失败: {ex.Message}");
+                    try
+                    {
+                        if (e.ExceptionObject is Exception originalEx)
+                        {
+                            MessageBox.Show($"系统发生致命错误：{originalEx.Message}", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    catch
+                    {
+                        // 静默失败，避免无限递归
+                    }
+                }
+            });
         }
 
         #endregion

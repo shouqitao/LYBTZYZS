@@ -6,10 +6,10 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Shared.Models.Contracts.Consultation
 {
     /// <summary>
-    /// 看诊信息DTO - 继承基础DTO
-    /// 用于看诊列表展示
+    /// 看诊信息DTO - UltraThink v2.0简化版
+    /// 与Consultation实体对齐，专注中医四诊
     /// </summary>
-    public class ConsultationDto : BaseDto
+    public class ConsultationDto : StatusDto, IRemarkable
     {
         /// <summary>医疗案例ID</summary>
         [DisplayName("医疗案例ID")]
@@ -19,29 +19,137 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
-        /// <summary>患者姓名</summary>
-        [DisplayName("患者姓名")]
-        public string PatientName { get; set; } = string.Empty;
-
         /// <summary>用户ID（医生）</summary>
         [DisplayName("用户ID")]
         public Guid UserId { get; set; }
 
-        /// <summary>医生姓名</summary>
-        [DisplayName("医生姓名")]
-        public string DoctorName { get; set; } = string.Empty;
-
-        /// <summary>诊断</summary>
-        [DisplayName("诊断")]
-        public string Diagnosis { get; set; } = string.Empty;
+        /// <summary>医生ID（兼容性别名）</summary>
+        [DisplayName("医生ID")]
+        public Guid DoctorId 
+        { 
+            get => UserId; 
+            set => UserId = value; 
+        }
 
         /// <summary>看诊时间</summary>
         [DisplayName("看诊时间")]
-        public DateTime ConsultationTime { get; set; }
+        public DateTime ConsultationTime { get; set; } = DateTime.Now;
 
-        /// <summary>状态</summary>
-        [DisplayName("状态")]
-        public string Status { get; set; } = string.Empty;
+        /// <summary>医生姓名（展示用）</summary>
+        [DisplayName("医生姓名")]
+        public string? DoctorName { get; set; }
+
+        /// <summary>主诉</summary>
+        [StringLength(500, ErrorMessage = "主诉长度不能超过500个字符")]
+        [DisplayName("主诉")]
+        public string? ChiefComplaint { get; set; }
+
+        /// <summary>现病史</summary>
+        [StringLength(1000, ErrorMessage = "现病史长度不能超过1000个字符")]
+        [DisplayName("现病史")]
+        public string? PresentIllness { get; set; }
+
+        /// <summary>症状</summary>
+        [StringLength(800, ErrorMessage = "症状长度不能超过800个字符")]
+        [DisplayName("症状")]
+        public string? Symptoms { get; set; }
+
+        /// <summary>望诊</summary>
+        [StringLength(500, ErrorMessage = "望诊长度不能超过500个字符")]
+        [DisplayName("望诊")]
+        public string? Inspection { get; set; }
+
+        /// <summary>闻诊</summary>
+        [StringLength(500, ErrorMessage = "闻诊长度不能超过500个字符")]
+        [DisplayName("闻诊")]
+        public string? AuscultationOlfaction { get; set; }
+
+        /// <summary>闻诊（兼容性别名）</summary>
+        [DisplayName("闻诊")]
+        public string? Auscultation 
+        { 
+            get => AuscultationOlfaction; 
+            set => AuscultationOlfaction = value; 
+        }
+
+        /// <summary>问诊</summary>
+        [StringLength(500, ErrorMessage = "问诊长度不能超过500个字符")]
+        [DisplayName("问诊")]
+        public string? Inquiry { get; set; }
+
+        /// <summary>切诊（包含脉诊、舌诊等）</summary>
+        [StringLength(500, ErrorMessage = "切诊长度不能超过500个字符")]
+        [DisplayName("切诊")]
+        public string? Palpation { get; set; }
+
+        /// <summary>舌诊</summary>
+        [StringLength(300, ErrorMessage = "舌诊长度不能超过300个字符")]
+        [DisplayName("舌诊")]
+        public string? TongueInspection { get; set; }
+
+        /// <summary>脉诊</summary>
+        [StringLength(300, ErrorMessage = "脉诊长度不能超过300个字符")]
+        [DisplayName("脉诊")]
+        public string? PulseCondition { get; set; }
+
+        /// <summary>辨证分析</summary>
+        [StringLength(800, ErrorMessage = "辨证分析长度不能超过800个字符")]
+        [DisplayName("辨证分析")]
+        public string? DifferentiationAnalysis { get; set; }
+
+        /// <summary>中医辨证</summary>
+        [Required(ErrorMessage = "中医辨证不能为空")]
+        [StringLength(500, ErrorMessage = "中医辨证长度不能超过500个字符")]
+        [DisplayName("中医辨证")]
+        public string TCMDiagnosis { get; set; } = string.Empty;
+
+        /// <summary>中医证候（兼容性别名）</summary>
+        [DisplayName("证候")]
+        public string? Syndrome 
+        { 
+            get => TCMDiagnosis; 
+            set => TCMDiagnosis = value ?? string.Empty; 
+        }
+
+        /// <summary>诊断结果</summary>
+        [StringLength(500, ErrorMessage = "诊断结果长度不能超过500个字符")]
+        [DisplayName("诊断")]
+        public string? Diagnosis { get; set; }
+
+        /// <summary>治疗方案</summary>
+        [StringLength(800, ErrorMessage = "治疗方案长度不能超过800个字符")]
+        [DisplayName("治疗方案")]
+        public string? Treatment { get; set; }
+
+        /// <summary>治疗方案（兼容性别名）</summary>
+        [DisplayName("治疗方案")]
+        public string? TreatmentPlan 
+        { 
+            get => Treatment; 
+            set => Treatment = value; 
+        }
+
+        /// <summary>治疗原则</summary>
+        [StringLength(500, ErrorMessage = "治疗原则长度不能超过500个字符")]
+        [DisplayName("治疗原则")]
+        public string? TreatmentPrinciple { get; set; }
+
+        /// <summary>医嘱</summary>
+        [StringLength(1000, ErrorMessage = "医嘱长度不能超过1000个字符")]
+        [DisplayName("医嘱")]
+        public string? MedicalAdvice { get; set; }
+
+        /// <summary>备注</summary>
+        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
+        [DisplayName("备注")]
+        public string? Remark { get; set; }
+
+        /// <summary>是否完成(计算属性)</summary>
+        [DisplayName("是否完成")]
+        public bool IsCompleted 
+        { 
+            get => Status == CommonStatus.Enabled; // 简化判断，启用状态表示完成
+        }
     }
 
     /// <summary>
@@ -199,6 +307,18 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("开始时间")]
         public DateTime StartTime { get; set; } = DateTime.Now;
 
+        /// <summary>患者姓名(展示用)</summary>
+        [DisplayName("患者姓名")]
+        public string? PatientName { get; set; }
+
+        /// <summary>医生姓名(展示用)</summary>
+        [DisplayName("医生姓名")]
+        public string? DoctorName { get; set; }
+
+        /// <summary>创建时间(展示用)</summary>
+        [DisplayName("创建时间")]
+        public DateTime CreateTime { get; set; } = DateTime.Now;
+
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
@@ -280,5 +400,17 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>医生ID</summary>
+        [DisplayName("医生ID")]
+        public Guid? DoctorId { get; set; }
+
+        /// <summary>是否完成</summary>
+        [DisplayName("是否完成")]
+        public bool? IsCompleted { get; set; }
+
+        /// <summary>患者ID</summary>
+        [DisplayName("患者ID")]
+        public Guid? PatientId { get; set; }
     }
 }

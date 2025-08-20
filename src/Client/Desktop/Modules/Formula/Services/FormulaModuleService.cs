@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Desktop.Core.Models.Formulas;
+using Refit;
+// UltraThink v2.0: 移除Info模型引用，直接使用DTO
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.Formula.Services.Interfaces;
-using LYBT.Desktop.Services;
+using LYBT.Desktop.Modules.Formula.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
@@ -14,14 +14,14 @@ namespace LYBT.Desktop.Formula.Services
 {
     /// <summary>
     /// Formula模块核心业务服务实现
-    /// UltraThink模块化架构：封装模块业务逻辑，使用AutoMapper进行DTO↔Info转换
+    /// UltraThink v2.0架构：直接使用DTO，实现价格计算功能
     /// </summary>
-    public class FormulaModuleService : IFormulaModuleService
+    public class FormulaModuleService
     {
-        private readonly IFormulaApiService _apiService;
+        private readonly IFormulaApi _apiService;
         private readonly IMapper _mapper;
         
-        public FormulaModuleService(IFormulaApiService apiService, IMapper mapper)
+        public FormulaModuleService(IFormulaApi apiService, IMapper mapper)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -29,122 +29,109 @@ namespace LYBT.Desktop.Formula.Services
         
         #region 基础CRUD操作
         
-        public async Task<ServiceResult<PagedResult<FormulaInfo>>> GetPagedAsync(PagedQueryBaseDto query)
+        public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(PagedQueryBaseDto query)
         {
             try
             {
-                // UltraThink四层架构：API调用获取DTOs
-                var apiResult = await _apiService.GetPagedAsync(query);
-                if (!apiResult.IsSuccess || apiResult.Data == null)
+                // UltraThink v2.0: 直接使用API调用获取DTOs
+                var apiResponse = await _apiService.GetPagedFormulasAsync(query);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
-                    return ServiceResult<PagedResult<FormulaInfo>>.Failure(
-                        apiResult.ErrorMessage ?? "获取验方模板列表失败");
+                    return ServiceResult<PagedResult<FormulaDto>>.Failure("获取验方模板列表失败");
                 }
                 
-                // UltraThink四层架构：使用AutoMapper转换 DTOs → Infos
-                var formulaInfos = _mapper.Map<List<FormulaInfo>>(apiResult.Data.Items);
-                var result = new PagedResult<FormulaInfo>(
-                    formulaInfos,
-                    apiResult.Data.TotalCount,
-                    apiResult.Data.CurrentPage,
-                    apiResult.Data.PageSize);
+                // UltraThink v2.0: 直接使用DTO，无需映射
+                var pagedData = apiResponse.Content;
+                var result = new PagedResult<FormulaDto>(
+                    pagedData.Items.ToList(),
+                    pagedData.TotalCount,
+                    pagedData.CurrentPage,
+                    pagedData.PageSize);
                 
-                return ServiceResult<PagedResult<FormulaInfo>>.Success(result);
+                return ServiceResult<PagedResult<FormulaDto>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<PagedResult<FormulaInfo>>.Failure($"获取验方模板列表异常: {ex.Message}");
+                return ServiceResult<PagedResult<FormulaDto>>.Failure($"获取验方模板列表异常: {ex.Message}");
             }
         }
         
-        public async Task<ServiceResult<FormulaInfo>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult<FormulaInfo>.Failure("验方模板ID不能为空");
+                    return ServiceResult<FormulaDto>.Failure("验方模板ID不能为空");
                 }
                 
-                // UltraThink四层架构：API调用获取DTO
-                var apiResult = await _apiService.GetByIdAsync(id);
-                if (!apiResult.IsSuccess || apiResult.Data == null)
+                // UltraThink v2.0：API调用获取DTO
+                var apiResponse = await _apiService.GetFormulaByIdAsync(id);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
-                    return ServiceResult<FormulaInfo>.Failure(
-                        apiResult.ErrorMessage ?? "获取验方模板详情失败");
+                    return ServiceResult<FormulaDto>.Failure("获取验方模板详情失败");
                 }
                 
-                // UltraThink四层架构：使用AutoMapper转换 DTO → Info
-                var formulaInfo = _mapper.Map<FormulaInfo>(apiResult.Data);
-                return ServiceResult<FormulaInfo>.Success(formulaInfo);
+                // UltraThink v2.0: 直接使用DTO，无需映射
+                return ServiceResult<FormulaDto>.Success(apiResponse.Content);
             }
             catch (Exception ex)
             {
-                return ServiceResult<FormulaInfo>.Failure($"获取验方模板详情异常: {ex.Message}");
+                return ServiceResult<FormulaDto>.Failure($"获取验方模板详情异常: {ex.Message}");
             }
         }
         
-        public async Task<ServiceResult<FormulaInfo>> CreateAsync(FormulaCreateInfo createInfo)
+        public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto createDto)
         {
             try
             {
-                // 业务验证
-                var validationResult = await ValidateAsync(_mapper.Map<FormulaInfo>(createInfo));
+                // UltraThink v2.0: 直接使用CreateDto进行业务验证
+                var validationResult = await ValidateCreateDtoAsync(createDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<FormulaInfo>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<FormulaDto>.Failure(validationResult.ErrorMessage);
                 }
-                
-                // UltraThink四层架构：使用AutoMapper转换 Info → DTO
-                var createDto = _mapper.Map<FormulaCreateDto>(createInfo);
                 
                 // API调用
-                var apiResult = await _apiService.CreateAsync(createDto);
-                if (!apiResult.IsSuccess || apiResult.Data == null)
+                var apiResponse = await _apiService.CreateFormulaAsync(createDto);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
-                    return ServiceResult<FormulaInfo>.Failure(
-                        apiResult.ErrorMessage ?? "创建验方模板失败");
+                    return ServiceResult<FormulaDto>.Failure("创建验方模板失败");
                 }
                 
-                // UltraThink四层架构：使用AutoMapper转换 DTO → Info
-                var formulaInfo = _mapper.Map<FormulaInfo>(apiResult.Data);
-                return ServiceResult<FormulaInfo>.Success(formulaInfo);
+                // UltraThink v2.0: 直接返回DTO
+                return ServiceResult<FormulaDto>.Success(apiResponse.Content);
             }
             catch (Exception ex)
             {
-                return ServiceResult<FormulaInfo>.Failure($"创建验方模板异常: {ex.Message}");
+                return ServiceResult<FormulaDto>.Failure($"创建验方模板异常: {ex.Message}");
             }
         }
         
-        public async Task<ServiceResult<FormulaInfo>> UpdateAsync(FormulaUpdateInfo updateInfo)
+        public async Task<ServiceResult<FormulaDto>> UpdateAsync(FormulaUpdateDto updateDto)
         {
             try
             {
-                // 业务验证
-                var validationResult = await ValidateAsync(_mapper.Map<FormulaInfo>(updateInfo));
+                // UltraThink v2.0: 直接使用UpdateDto进行业务验证
+                var validationResult = await ValidateUpdateDtoAsync(updateDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<FormulaInfo>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<FormulaDto>.Failure(validationResult.ErrorMessage);
                 }
-                
-                // UltraThink四层架构：使用AutoMapper转换 Info → DTO
-                var updateDto = _mapper.Map<FormulaUpdateDto>(updateInfo);
                 
                 // API调用
-                var apiResult = await _apiService.UpdateAsync(updateDto);
-                if (!apiResult.IsSuccess || apiResult.Data == null)
+                var apiResponse = await _apiService.UpdateFormulaAsync(updateDto.Id, updateDto);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
-                    return ServiceResult<FormulaInfo>.Failure(
-                        apiResult.ErrorMessage ?? "更新验方模板失败");
+                    return ServiceResult<FormulaDto>.Failure("更新验方模板失败");
                 }
                 
-                // UltraThink四层架构：使用AutoMapper转换 DTO → Info
-                var formulaInfo = _mapper.Map<FormulaInfo>(apiResult.Data);
-                return ServiceResult<FormulaInfo>.Success(formulaInfo);
+                // UltraThink v2.0: 直接返回DTO
+                return ServiceResult<FormulaDto>.Success(apiResponse.Content);
             }
             catch (Exception ex)
             {
-                return ServiceResult<FormulaInfo>.Failure($"更新验方模板异常: {ex.Message}");
+                return ServiceResult<FormulaDto>.Failure($"更新验方模板异常: {ex.Message}");
             }
         }
         
@@ -157,10 +144,11 @@ namespace LYBT.Desktop.Formula.Services
                     return ServiceResult.Failure("验方模板ID不能为空");
                 }
                 
-                var apiResult = await _apiService.DeleteAsync(id);
-                if (!apiResult.IsSuccess)
+                // UltraThink v2.0: 使用状态切换代替硬删除
+                var apiResponse = await _apiService.ToggleFormulaStatusAsync(id);
+                if (!apiResponse.IsSuccessStatusCode)
                 {
-                    return ServiceResult.Failure(apiResult.ErrorMessage ?? "删除验方模板失败");
+                    return ServiceResult.Failure("删除验方模板失败");
                 }
                 
                 return ServiceResult.Success();
@@ -175,7 +163,7 @@ namespace LYBT.Desktop.Formula.Services
         
         #region 业务特定操作
         
-        public async Task<ServiceResult<PagedResult<FormulaInfo>>> SearchFormulasAsync(PagedQueryBaseDto request)
+        public async Task<ServiceResult<PagedResult<FormulaDto>>> SearchFormulasAsync(PagedQueryBaseDto request)
         {
             try
             {
@@ -184,45 +172,43 @@ namespace LYBT.Desktop.Formula.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<PagedResult<FormulaInfo>>.Failure($"搜索验方模板异常: {ex.Message}");
+                return ServiceResult<PagedResult<FormulaDto>>.Failure($"搜索验方模板异常: {ex.Message}");
             }
         }
         
-        public async Task<ServiceResult<FormulaInfo>> CopyAsync(Guid id, string newName)
+        public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
         {
             try
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult<FormulaInfo>.Failure("验方模板ID不能为空");
+                    return ServiceResult<FormulaDto>.Failure("验方模板ID不能为空");
                 }
                 
                 if (string.IsNullOrWhiteSpace(newName))
                 {
-                    return ServiceResult<FormulaInfo>.Failure("新验方模板名称不能为空");
+                    return ServiceResult<FormulaDto>.Failure("新验方模板名称不能为空");
                 }
                 
                 // 获取原始验方模板
                 var originalResult = await GetByIdAsync(id);
                 if (!originalResult.IsSuccess)
                 {
-                    return ServiceResult<FormulaInfo>.Failure("获取原始验方模板失败");
+                    return ServiceResult<FormulaDto>.Failure("获取原始验方模板失败");
                 }
                 
-                // 创建副本
-                var copyInfo = new FormulaCreateInfo
+                // UltraThink v2.0: 直接使用API复制功能
+                var apiResponse = await _apiService.CopyFormulaAsync(id, newName);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
-                    Name = newName,
-                    Category = originalResult.Data.Category,
-                    Indications = originalResult.Data.Indications,
-                    Herbs = originalResult.Data.Herbs?.ToList() ?? new List<FormulaHerbItem>()
-                };
+                    return ServiceResult<FormulaDto>.Failure("复制验方模板失败");
+                }
                 
-                return await CreateAsync(copyInfo);
+                return ServiceResult<FormulaDto>.Success(apiResponse.Content);
             }
             catch (Exception ex)
             {
-                return ServiceResult<FormulaInfo>.Failure($"复制验方模板异常: {ex.Message}");
+                return ServiceResult<FormulaDto>.Failure($"复制验方模板异常: {ex.Message}");
             }
         }
         
@@ -230,14 +216,20 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                // 返回预定义的分类列表
-                var categories = new[]
+                // UltraThink v2.0: 从 API 获取分类列表
+                var apiResponse = await _apiService.GetCategoriesAsync();
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
-                    "全部", "内科方", "外科方", "妇科方", "儿科方",
-                    "皮肤科方", "五官科方", "骨伤科方", "经典方", "时方", "验方", "其他"
-                };
+                    // 如果 API 调用失败，返回默认分类
+                    var defaultCategories = new[]
+                    {
+                        "全部", "内科方", "外科方", "妇科方", "儿科方",
+                        "皮肤科方", "五官科方", "骨伤科方", "经典方", "时方", "验方", "其他"
+                    };
+                    return ServiceResult<IEnumerable<string>>.Success(defaultCategories);
+                }
                 
-                return ServiceResult<IEnumerable<string>>.Success(categories);
+                return ServiceResult<IEnumerable<string>>.Success(apiResponse.Content);
             }
             catch (Exception ex)
             {
@@ -245,7 +237,7 @@ namespace LYBT.Desktop.Formula.Services
             }
         }
         
-        public async Task<ServiceResult<IEnumerable<FormulaInfo>>> GetByCategoryAsync(string category)
+        public async Task<ServiceResult<IEnumerable<FormulaDto>>> GetByCategoryAsync(string category)
         {
             try
             {
@@ -255,76 +247,83 @@ namespace LYBT.Desktop.Formula.Services
                     var allResult = await GetPagedAsync(new PagedQueryBaseDto { PageIndex = 1, PageSize = 1000 });
                     if (!allResult.IsSuccess)
                     {
-                        return ServiceResult<IEnumerable<FormulaInfo>>.Failure(allResult.ErrorMessage);
+                        return ServiceResult<IEnumerable<FormulaDto>>.Failure(allResult.ErrorMessage);
                     }
                     
-                    return ServiceResult<IEnumerable<FormulaInfo>>.Success(allResult.Data.Items);
+                    return ServiceResult<IEnumerable<FormulaDto>>.Success(allResult.Data.Items);
                 }
                 
                 // 根据分类筛选
                 var categoryResult = await GetPagedAsync(new PagedQueryBaseDto { PageIndex = 1, PageSize = 1000 });
                 if (!categoryResult.IsSuccess)
                 {
-                    return ServiceResult<IEnumerable<FormulaInfo>>.Failure(categoryResult.ErrorMessage);
+                    return ServiceResult<IEnumerable<FormulaDto>>.Failure(categoryResult.ErrorMessage);
                 }
                 
                 var filteredFormulas = categoryResult.Data.Items.Where(f => f.Category == category);
-                return ServiceResult<IEnumerable<FormulaInfo>>.Success(filteredFormulas);
+                return ServiceResult<IEnumerable<FormulaDto>>.Success(filteredFormulas);
             }
             catch (Exception ex)
             {
-                return ServiceResult<IEnumerable<FormulaInfo>>.Failure($"根据分类获取验方模板异常: {ex.Message}");
+                return ServiceResult<IEnumerable<FormulaDto>>.Failure($"根据分类获取验方模板异常: {ex.Message}");
             }
         }
         
-        public async Task<ServiceResult> ValidateAsync(FormulaInfo formulaInfo)
+        // UltraThink v2.0: 为CreateDto和UpdateDto创建单独的验证方法
+        public async Task<ServiceResult> ValidateCreateDtoAsync(FormulaCreateDto createDto)
         {
             try
             {
-                if (formulaInfo == null)
+                if (createDto == null)
                 {
-                    return ServiceResult.Failure("验方模板信息不能为空");
+                    return ServiceResult.Failure("创建验方模板信息不能为空");
                 }
                 
-                if (string.IsNullOrWhiteSpace(formulaInfo.Name))
+                if (string.IsNullOrWhiteSpace(createDto.Name))
                 {
                     return ServiceResult.Failure("验方模板名称不能为空");
                 }
                 
-                if (formulaInfo.Name.Length > 100)
+                if (createDto.Name.Length > 100)
                 {
                     return ServiceResult.Failure("验方模板名称长度不能超过100个字符");
                 }
                 
-                if (string.IsNullOrWhiteSpace(formulaInfo.Category))
+                // UltraThink v2.0: 移除Category验证 - Category由系统根据Name自动计算
+                // 验方分类将根据验方名称智能判断，无需手动输入
+                
+                return ServiceResult.Success();
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult.Failure($"验证创建验方模板异常: {ex.Message}");
+            }
+        }
+        
+        public async Task<ServiceResult> ValidateUpdateDtoAsync(FormulaUpdateDto updateDto)
+        {
+            try
+            {
+                if (updateDto == null)
                 {
-                    return ServiceResult.Failure("验方模板分类不能为空");
+                    return ServiceResult.Failure("更新验方模板信息不能为空");
                 }
                 
-                if (formulaInfo.Herbs == null || !formulaInfo.Herbs.Any())
+                if (string.IsNullOrWhiteSpace(updateDto.Name))
                 {
-                    return ServiceResult.Failure("验方模板必须包含至少一味药材");
+                    return ServiceResult.Failure("验方模板名称不能为空");
                 }
                 
-                // 验证药材信息
-                foreach (var herb in formulaInfo.Herbs)
+                if (updateDto.Name.Length > 100)
                 {
-                    if (string.IsNullOrWhiteSpace(herb.Name))
-                    {
-                        return ServiceResult.Failure("药材名称不能为空");
-                    }
-                    
-                    if (herb.Dosage <= 0)
-                    {
-                        return ServiceResult.Failure($"药材 {herb.Name} 的用量必须大于0");
-                    }
+                    return ServiceResult.Failure("验方模板名称长度不能超过100个字符");
                 }
                 
                 return ServiceResult.Success();
             }
             catch (Exception ex)
             {
-                return ServiceResult.Failure($"验证验方模板异常: {ex.Message}");
+                return ServiceResult.Failure($"验证更新验方模板异常: {ex.Message}");
             }
         }
         
@@ -341,8 +340,13 @@ namespace LYBT.Desktop.Formula.Services
                     return ServiceResult.Failure("验方模板ID不能为空");
                 }
                 
-                // 这里可以调用API的启用接口，如果后端支持
-                // 目前先返回成功，表示功能预留
+                // UltraThink v2.0: 使用状态切换 API
+                var apiResponse = await _apiService.ToggleFormulaStatusAsync(id);
+                if (!apiResponse.IsSuccessStatusCode)
+                {
+                    return ServiceResult.Failure("启用验方模板失败");
+                }
+                
                 return ServiceResult.Success();
             }
             catch (Exception ex)
@@ -360,8 +364,13 @@ namespace LYBT.Desktop.Formula.Services
                     return ServiceResult.Failure("验方模板ID不能为空");
                 }
                 
-                // 这里可以调用API的禁用接口，如果后端支持
-                // 目前先返回成功，表示功能预留
+                // UltraThink v2.0: 使用状态切换 API
+                var apiResponse = await _apiService.ToggleFormulaStatusAsync(id);
+                if (!apiResponse.IsSuccessStatusCode)
+                {
+                    return ServiceResult.Failure("禁用验方模板失败");
+                }
+                
                 return ServiceResult.Success();
             }
             catch (Exception ex)
@@ -371,68 +380,54 @@ namespace LYBT.Desktop.Formula.Services
         }
         
         #endregion
+
+        #region 价格计算功能
         
-        #region 导入导出功能
-        
-        public async Task<ServiceResult<IEnumerable<FormulaInfo>>> ImportAsync(string filePath)
+        /// <summary>
+        /// 获取验方总价格（FormulaDto已包含计算属性）
+        /// </summary>
+        public async Task<ServiceResult<decimal>> GetFormulaTotalPriceAsync(Guid formulaId)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(filePath))
+                var formulaResult = await GetByIdAsync(formulaId);
+                if (!formulaResult.IsSuccess)
                 {
-                    return ServiceResult<IEnumerable<FormulaInfo>>.Failure("文件路径不能为空");
+                    return ServiceResult<decimal>.Failure(formulaResult.ErrorMessage);
                 }
                 
-                // TODO: 实现实际的导入逻辑
-                // 这里是预留功能，返回空列表表示功能开发中
-                return ServiceResult<IEnumerable<FormulaInfo>>.Success(new List<FormulaInfo>());
+                // FormulaDto 已包含 TotalPrice 计算属性
+                return ServiceResult<decimal>.Success(formulaResult.Data.TotalPrice);
             }
             catch (Exception ex)
             {
-                return ServiceResult<IEnumerable<FormulaInfo>>.Failure($"导入验方模板异常: {ex.Message}");
+                return ServiceResult<decimal>.Failure($"获取验方总价格异常: {ex.Message}");
             }
         }
         
-        public async Task<ServiceResult> ExportAsync(IEnumerable<Guid> formulaIds, string filePath)
+        /// <summary>
+        /// 批量获取验方价格
+        /// </summary>
+        public async Task<ServiceResult<Dictionary<Guid, decimal>>> GetBatchFormulaPricesAsync(IEnumerable<Guid> formulaIds)
         {
             try
             {
-                if (formulaIds == null || !formulaIds.Any())
+                var prices = new Dictionary<Guid, decimal>();
+                
+                foreach (var formulaId in formulaIds)
                 {
-                    return ServiceResult.Failure("导出的验方模板ID列表不能为空");
+                    var priceResult = await GetFormulaTotalPriceAsync(formulaId);
+                    if (priceResult.IsSuccess)
+                    {
+                        prices[formulaId] = priceResult.Data;
+                    }
                 }
                 
-                if (string.IsNullOrWhiteSpace(filePath))
-                {
-                    return ServiceResult.Failure("导出文件路径不能为空");
-                }
-                
-                // TODO: 实现实际的导出逻辑
-                // 这里是预留功能，返回成功表示功能开发中
-                return ServiceResult.Success();
+                return ServiceResult<Dictionary<Guid, decimal>>.Success(prices);
             }
             catch (Exception ex)
             {
-                return ServiceResult.Failure($"导出验方模板异常: {ex.Message}");
-            }
-        }
-        
-        public async Task<ServiceResult> GenerateImportTemplateAsync(string filePath)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(filePath))
-                {
-                    return ServiceResult.Failure("模板文件路径不能为空");
-                }
-                
-                // TODO: 实现实际的模板生成逻辑
-                // 这里是预留功能，返回成功表示功能开发中
-                return ServiceResult.Success();
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult.Failure($"生成导入模板异常: {ex.Message}");
+                return ServiceResult<Dictionary<Guid, decimal>>.Failure($"批量获取验方价格异常: {ex.Message}");
             }
         }
         

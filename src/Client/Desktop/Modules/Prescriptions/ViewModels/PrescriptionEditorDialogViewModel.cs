@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using AutoMapper;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Enums;
 using SharedEnums = LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -35,22 +36,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Properties
 
-        private PrescriptionInfo _prescription = new();
-        public PrescriptionInfo Prescription
+        private PrescriptionDto _prescription = new();
+        public PrescriptionDto Prescription
         {
             get => _prescription;
             set => SetProperty(ref _prescription, value);
         }
 
-        private ObservableCollection<PrescriptionItemInfo> _prescriptionItems = new();
-        public ObservableCollection<PrescriptionItemInfo> PrescriptionItems
+        private ObservableCollection<PrescriptionItemDto> _prescriptionItems = new();
+        public ObservableCollection<PrescriptionItemDto> PrescriptionItems
         {
             get => _prescriptionItems;
             set => SetProperty(ref _prescriptionItems, value);
         }
 
-        private PrescriptionItemInfo? _selectedItem;
-        public PrescriptionItemInfo? SelectedItem
+        private PrescriptionItemDto? _selectedItem;
+        public PrescriptionItemDto? SelectedItem
         {
             get => _selectedItem;
             set => SetProperty(ref _selectedItem, value);
@@ -118,8 +119,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand<PrescriptionItemInfo> RemoveHerbCommand { get; }
-        public DelegateCommand<PrescriptionItemInfo> EditHerbCommand { get; }
+        public DelegateCommand<PrescriptionItemDto> RemoveHerbCommand { get; }
+        public DelegateCommand<PrescriptionItemDto> EditHerbCommand { get; }
         public DelegateCommand LoadFormulaTemplateCommand { get; }
         public DelegateCommand SelectPatientCommand { get; }
         public DelegateCommand PreviewCommand { get; }
@@ -149,9 +150,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             CancelCommand = new DelegateCommand(Cancel);
             AddHerbCommand = new DelegateCommand(AddHerb, () => !IsViewMode)
                 .ObservesProperty(() => IsViewMode);
-            RemoveHerbCommand = new DelegateCommand<PrescriptionItemInfo>(RemoveHerb, (item) => !IsViewMode && item != null)
+            RemoveHerbCommand = new DelegateCommand<PrescriptionItemDto>(RemoveHerb, (item) => !IsViewMode && item != null)
                 .ObservesProperty(() => IsViewMode);
-            EditHerbCommand = new DelegateCommand<PrescriptionItemInfo>(EditHerb, (item) => !IsViewMode && item != null)
+            EditHerbCommand = new DelegateCommand<PrescriptionItemDto>(EditHerb, (item) => !IsViewMode && item != null)
                 .ObservesProperty(() => IsViewMode);
             LoadFormulaTemplateCommand = new DelegateCommand(LoadFormulaTemplate, () => !IsViewMode)
                 .ObservesProperty(() => IsViewMode);
@@ -218,12 +219,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         private void InitializeNewPrescription()
         {
-            Prescription = new PrescriptionInfo
+            Prescription = new PrescriptionDto
             {
-                PrescriptionNumber = GeneratePrescriptionNo(),
-                CreateTime = DateTime.Now,
                 UserId = Guid.Empty, // TODO: 从当前登录用户获取
-                Status = SharedEnums.PrescriptionStatus.Draft,
+                Status = CommonStatus.Enabled, // UltraThink v2.0: 使用CommonStatus，通过业务逻辑映射到处方状态
                 DosageCount = 1
             };
             TotalDoses = 1;
@@ -244,20 +243,16 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 var result = await _prescriptionService.GetByIdAsync(prescriptionId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
-                    Prescription = _mapper.Map<PrescriptionInfo>(result.Data);
+                    // 直接使用DTO
+                    Prescription = result.Data;
                     
-                    // 确保处方编号存在
-                    if (string.IsNullOrEmpty(Prescription.PrescriptionNumber))
-                    {
-                        Prescription.PrescriptionNumber = GeneratePrescriptionNo();
-                    }
+                    // 处方数据已加载
                     
                     // 映射处方项目
                     if (result.Data.Items != null)
                     {
-                        var items = _mapper.Map<List<PrescriptionItemInfo>>(result.Data.Items);
-                        PrescriptionItems = new ObservableCollection<PrescriptionItemInfo>(items);
+                        var items = result.Data.Items ?? new List<PrescriptionItemDto>();
+                        PrescriptionItems = new ObservableCollection<PrescriptionItemDto>(items);
                     }
                     
                     TotalDoses = Prescription.DosageCount;
@@ -287,9 +282,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 // 复制处方时重置一些字段
                 Prescription.Id = Guid.Empty;
-                Prescription.PrescriptionNumber = GeneratePrescriptionNo();
-                Prescription.CreateTime = DateTime.Now;
-                Prescription.Status = SharedEnums.PrescriptionStatus.Draft;
+                Prescription.Status = CommonStatus.Enabled; // UltraThink v2.0: 使用CommonStatus
                 StatusMessage = "已复制处方内容，请修改后保存";
             }
         }
@@ -314,8 +307,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private void CalculateTotalAmount()
         {
             TotalAmount = PrescriptionItems.Sum(item => item.Quantity * item.UnitPrice) * TotalDoses;
-            // TotalAmount is read-only, update TotalPrice instead
-            Prescription.TotalPrice = TotalAmount;
+            // UltraThink v2.0: TotalPrice是计算属性，无需手动赋值
+            // 总价会根据Items和DosageCount自动计算
         }
 
         private bool CanSave()
@@ -335,13 +328,24 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 // 更新处方信息
                 Prescription.Items = PrescriptionItems.ToList();
                 Prescription.DosageCount = TotalDoses;
-                Prescription.TotalPrice = TotalAmount;
+                // UltraThink v2.0: TotalPrice是计算属性，无需手动赋值
 
                 if (IsEditMode && Prescription.Id != Guid.Empty)
                 {
-                    // UltraThink四层架构：使用AutoMapper转换Info → DTO
-                    var updateDto = _mapper.Map<PrescriptionEditDto>(Prescription);
-                    updateDto.Items = _mapper.Map<List<PrescriptionItemCreateDto>>(PrescriptionItems);
+                    // 直接使用DTO
+                    var updateDto = new PrescriptionEditDto
+                    {
+                        Id = Prescription.Id,
+                        PatientId = Prescription.PatientId,
+                        DosageCount = Prescription.DosageCount,
+                        TotalPrice = Prescription.TotalPrice,
+                        Items = PrescriptionItems.Select(item => new PrescriptionItemCreateDto
+                        {
+                            HerbId = item.HerbId,
+                            Quantity = item.Quantity,
+                            UnitPrice = item.UnitPrice
+                        }).ToList()
+                    };
                     
                     var result = await _prescriptionService.UpdateAsync(Prescription.Id, updateDto);
                     if (result.IsSuccess)
@@ -358,10 +362,20 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 }
                 else
                 {
-                    // UltraThink四层架构：使用AutoMapper转换Info → DTO
-                    var createDto = _mapper.Map<PrescriptionCreateDto>(Prescription);
-                    createDto.Items = _mapper.Map<List<PrescriptionItemCreateDto>>(PrescriptionItems);
-                    createDto.TotalAmount = TotalAmount;
+                    // 直接使用DTO
+                    var createDto = new PrescriptionCreateDto
+                    {
+                        PatientId = Prescription.PatientId,
+                        DoctorId = Prescription.UserId, // UltraThink v2.0: 使用正确的属性名
+                        DosageCount = Prescription.DosageCount,
+                        TotalAmount = TotalAmount,
+                        Items = PrescriptionItems.Select(item => new PrescriptionItemCreateDto
+                        {
+                            HerbId = item.HerbId,
+                            Quantity = item.Quantity,
+                            UnitPrice = item.UnitPrice
+                        }).ToList()
+                    };
                     
                     var result = await _prescriptionService.CreateAsync(createDto);
                     if (result.IsSuccess)
@@ -402,7 +416,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // {
             //     if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedHerb"))
             //     {
-            //         var herb = result.Parameters.GetValue<HerbInfo>("SelectedHerb");
+            //         var herb = result.Parameters.GetValue<HerbDto>("SelectedHerb");
             //         var quantity = result.Parameters.GetValue<decimal>("Quantity");
                     
             //         var item = new PrescriptionItemInfo
@@ -422,7 +436,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // });
         }
 
-        private void RemoveHerb(PrescriptionItemInfo? item)
+        private void RemoveHerb(PrescriptionItemDto? item)
         {
             if (item != null)
             {
@@ -431,7 +445,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             }
         }
 
-        private void EditHerb(PrescriptionItemInfo? item)
+        private void EditHerb(PrescriptionItemDto? item)
         {
             if (item == null) return;
 
@@ -458,7 +472,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // {
             //     if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedFormula"))
             //     {
-            //         var formula = result.Parameters.GetValue<FormulaInfo>("SelectedFormula");
+            //         var formula = result.Parameters.GetValue<FormulaDto>("SelectedFormula");
             //         // 加载验方模板中的药材
             //         if (formula.Items != null)
             //         {

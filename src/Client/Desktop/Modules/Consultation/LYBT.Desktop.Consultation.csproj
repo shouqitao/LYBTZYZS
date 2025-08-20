@@ -16,6 +16,10 @@
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
     <ProjectReference Include="..\..\Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+    <ProjectReference Include="..\Patients\LYBT.Desktop.Patients.csproj" />
+    <ProjectReference Include="..\Formula\LYBT.Desktop.Formula.csproj" />
+    <ProjectReference Include="..\Herbs\LYBT.Desktop.Herbs.csproj" />
+    <ProjectReference Include="..\MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
   </ItemGroup>
 
 </Project>

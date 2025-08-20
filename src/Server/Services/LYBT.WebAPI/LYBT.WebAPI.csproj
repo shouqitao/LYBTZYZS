@@ -33,13 +33,14 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
+		<!-- UltraThink v2.0 Phase 10 Testing: 专注核心3个模块，Auth模块待修复 -->
+		<!-- <ProjectReference Include="..\..\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" /> -->
+		<!-- <ProjectReference Include="..\..\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" /> -->
+		<!-- <ProjectReference Include="..\..\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" /> -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
+		<!-- <ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" /> -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
+		<!-- <ProjectReference Include="..\..\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" /> -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
 	</ItemGroup>
 

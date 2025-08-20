@@ -3,7 +3,8 @@ using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
 using LYBT.Module.Users;
-using LYBT.Module.Auth;
+// Auth模块暂时禁用，待修复字段不匹配问题
+// using LYBT.Module.Auth;
 using LYBT.WebAPI.Services;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -245,14 +246,15 @@ public static class UnifiedServiceRegistration
         // 注册Users模块服务
         services.AddUsersModuleServices();
         
-        // 注册认证模块服务（UltraThink统一管理）
-        services.AddAuthModule();
+        // Auth模块暂时禁用，待修复字段不匹配问题
+        // services.AddAuthModule();
         
         // 注册所有LYBT业务模块服务
         services.AddAllModules();
 
+        // TODO: UltraThink v2.0 Refactor - 暂时禁用Formula服务注册，等待修复
         // 注册验方模块服务
-        services.AddScoped<LYBT.Shared.Interfaces.Services.IFormulaService, LYBT.Module.Formula.Services.FormulaService>();
+        // services.AddScoped<LYBT.Shared.Interfaces.Services.IFormulaService, LYBT.Module.Formula.Services.FormulaService>();
 
         return services;
     }

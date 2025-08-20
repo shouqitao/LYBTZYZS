@@ -18,6 +18,10 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>已完成 - 处方已完成</summary>
         [Description("已完成")]
-        Completed = 1
+        Completed = 1,
+
+        /// <summary>已作废 - 处方已作废</summary>
+        [Description("已作废")]
+        Voided = 2
     }
 }

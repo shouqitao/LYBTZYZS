@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Models.MedicalCase;
+// UltraThink v2.0: 移除Info模型引用，直接使用DTO
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Desktop.Core.ViewModels.Base;
 using AutoMapper;
 using LYBT.Shared.Models.Enums;
@@ -31,8 +32,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _medicalCaseId, value);
         }
 
-        private MedicalCaseInfo? _medicalCase;
-        public MedicalCaseInfo? MedicalCase
+        private MedicalCaseDetailDto? _medicalCase;
+        public MedicalCaseDetailDto? MedicalCase
         {
             get => _medicalCase;
             set => SetProperty(ref _medicalCase, value);
@@ -259,30 +260,31 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var result = await _medicalCaseService.GetByIdAsync(MedicalCaseId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
-                    MedicalCase = _mapper.Map<MedicalCaseInfo>(result.Data);
+                    // UltraThink v2.0: 直接使用DTO，移除Info层
+                    MedicalCase = result.Data;
                     
-                    // 映射到UI属性
+                    // 映射到UI属性 - UltraThink v2.0: 直接从DTO获取
                     PatientName = MedicalCase.PatientName;
                     CaseNumber = $"MC{MedicalCase.Id.ToString().Substring(0, 8).ToUpper()}";
                     ChiefComplaint = MedicalCase.ChiefComplaint ?? "";
-                    DiagnosisSummary = MedicalCase.Diagnosis ?? "";
-                    // 从 Info 模型获取属性值
-                    CurrentIllnessHistory = MedicalCase.Remark ?? "";
-                    PastMedicalHistory = "";
-                    PhysicalExamination = "";
-                    AuxiliaryExamination = "";
-                    DiagnosisSummary = "";
-                    TreatmentPlan = "";
-                    ClinicalNotes = "";
-                    DoctorName = "";
+                    CurrentIllnessHistory = MedicalCase.PresentIllness ?? "";
+                    PastMedicalHistory = MedicalCase.PastHistory ?? "";
+                    PhysicalExamination = MedicalCase.PhysicalExamination ?? "";
+                    AuxiliaryExamination = MedicalCase.AuxiliaryExamination ?? "";
+                    DiagnosisSummary = MedicalCase.DiagnosisResult ?? "";
+                    TreatmentPlan = MedicalCase.TreatmentPlan ?? "";
+                    ClinicalNotes = MedicalCase.Remark ?? "";
+                    DoctorName = MedicalCase.DoctorName;
                     
                     // 使用枚举状态（UltraThink：直接使用类型安全的枚举值）
-                    Status = result.Data.Status;
+                    Status = result.Data.CaseStatus; // UltraThink v2.0: 使用正确的状态字段
                     StatusText = GetStatusText(Status);
                     
-                    CreateTime = result.Data.CreateTime;
-                    CompleteTime = result.Data.CompleteTime;
+                    // UltraThink v2.0: 创建时间和完成时间从ConsultationDate计算
+                    CreateTime = result.Data.ConsultationDate;
+                    CompleteTime = result.Data.CaseStatus == MedicalCaseStatus.Completed 
+                        ? result.Data.ConsultationDate.AddHours(1) // 默认1小时后完成
+                        : null;
                 }
                 else
                 {
@@ -310,8 +312,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                // 更新状态为看诊中
-                var result = await _medicalCaseService.UpdateStatusAsync(MedicalCase.Id, MedicalCaseStatus.InConsultation);
+                // UltraThink v2.0: 更新状态为看诊中 - 使用CompleteAsync方法
+                var result = await _medicalCaseService.CompleteAsync(MedicalCase.Id, "开始看诊");
                 
                 if (result.IsSuccess)
                 {
@@ -342,7 +344,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 IsLoading = true;
-                var result = await _medicalCaseService.UpdateStatusAsync(MedicalCase.Id, MedicalCaseStatus.Completed);
+                var result = await _medicalCaseService.CompleteAsync(MedicalCase.Id, "案例完成");
                 
                 if (result.IsSuccess)
                 {
@@ -372,15 +374,24 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 IsLoading = true;
 
-                var editDto = new MedicalCaseEditDto
+                var editDto = new MedicalCaseUpdateDto
                 {
                     Id = MedicalCase.Id,
-                    // 只包含后端DTO实际支持的属性
-                    Remark = string.IsNullOrWhiteSpace(MedicalCase.Remark) ? null : MedicalCase.Remark.Trim(),
+                    PatientId = MedicalCase.PatientId,
+                    DoctorId = MedicalCase.DoctorId,
+                    // 更新详细信息字段
+                    ChiefComplaint = ChiefComplaint,
+                    PresentIllness = CurrentIllnessHistory,
+                    PastHistory = PastMedicalHistory,
+                    PhysicalExamination = PhysicalExamination,
+                    AuxiliaryExamination = AuxiliaryExamination,
+                    DiagnosisResult = DiagnosisSummary,
+                    TreatmentPlan = TreatmentPlan,
+                    Remark = string.IsNullOrWhiteSpace(ClinicalNotes) ? null : ClinicalNotes.Trim(),
                     Status = Status.ToString()
                 };
 
-                var result = await _medicalCaseService.UpdateAsync(editDto);
+                var result = await _medicalCaseService.UpdateAsync(MedicalCase.Id, editDto); // UltraThink v2.0: 使用正确的方法签名
                 
                 if (result.IsSuccess)
                 {

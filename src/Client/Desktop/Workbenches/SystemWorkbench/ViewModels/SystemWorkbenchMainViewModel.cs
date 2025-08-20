@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using LYBT.Desktop.Workbench.Core;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
@@ -166,24 +167,39 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
         /// </summary>
         public async void QuickCreatePatient()
         {
-            if (_patientService != null)
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                // 使用患者服务创建患者（UltraThink：使用正确的创建DTO类型）
-                var patientDto = new LYBT.Shared.Models.Contracts.Patients.PatientCreateDto
+                try
                 {
-                    Name = "测试患者",
-                    PhoneNumber = "13800138000",
-                    Gender = LYBT.Shared.Models.Enums.Gender.Male,
-                    Age = 30
-                };
+                    if (_patientService != null)
+                    {
+                        // 使用患者服务创建患者（UltraThink：使用正确的创建DTO类型）
+                        var patientDto = new LYBT.Shared.Models.Contracts.Patients.PatientCreateDto
+                        {
+                            Name = "测试患者",
+                            PhoneNumber = "13800138000",
+                            Gender = LYBT.Shared.Models.Enums.Gender.Male,
+                            Age = 30
+                        };
 
-                var result = await _patientService.CreateAsync(patientDto);
-                if (result.IsSuccess)
-                {
-                    // 创建成功，刷新列表
-                    ExecuteRefresh();
+                        var result = await _patientService.CreateAsync(patientDto);
+                        if (result.IsSuccess)
+                        {
+                            // 创建成功，刷新列表（需要在UI线程执行）
+                            Application.Current.Dispatcher.BeginInvoke(() =>
+                            {
+                                ExecuteRefresh();
+                            });
+                        }
+                    }
                 }
-            }
+                catch (Exception ex)
+                {
+                    // 记录异常，防止async void异常逃逸
+                    System.Diagnostics.Debug.WriteLine($"快速创建患者失败: {ex.Message}");
+                }
+            });
         }
 
         #endregion

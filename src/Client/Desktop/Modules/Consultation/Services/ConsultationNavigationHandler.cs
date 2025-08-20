@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Mvvm;
+using CoreWorkflowStep = LYBT.Desktop.Core.Models.Consultation.WorkflowStep;
 
 namespace LYBT.Desktop.Consultation.Services
 {

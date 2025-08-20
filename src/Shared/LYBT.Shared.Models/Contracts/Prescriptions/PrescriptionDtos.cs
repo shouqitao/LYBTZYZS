@@ -8,45 +8,90 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 {
 
     /// <summary>
-    /// 处方基础DTO - 继承审计DTO提供ID、创建时间等基础字段
+    /// 处方信息DTO - UltraThink v2.0简化版
+    /// 与Prescription实体对齐，价格改为计算属性
     /// </summary>
-    public class PrescriptionDto : AuditableDto
+    public class PrescriptionDto : StatusDto, IRemarkable
     {
+        [DisplayName("医疗案例ID")]
+        public Guid MedicalCaseId { get; set; }
+        
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
         
+        [DisplayName("医生ID")]
+        public Guid UserId { get; set; }
+
         [DisplayName("患者姓名")]
         public string? PatientName { get; set; }
-        
-        [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
-        
-        [DisplayName("医生姓名")]
+
+        [DisplayName("医生姓名")]  
         public string? DoctorName { get; set; }
         
         [DisplayName("诊断")]
+        [StringLength(500, ErrorMessage = "诊断长度不能超过500个字符")]
         public string? Diagnosis { get; set; }
         
+        [DisplayName("用法")]
+        [StringLength(200, ErrorMessage = "用法长度不能超过200个字符")]
+        public string? Usage { get; set; }
+        
+        [DisplayName("主治")]
+        public string? Indication { get; set; }
+        
         [DisplayName("剂数")]
-        public int DosageCount { get; set; }
+        public int DosageCount { get; set; } = 7;
         
-        [DisplayName("单剂价格")]
-        public decimal SingleDosePrice { get; set; }
+        [DisplayName("折扣")]
+        public decimal Discount { get; set; } = 1.0m;
         
-        [DisplayName("总价格")]
-        public decimal TotalPrice { get; set; }
-        
-        [DisplayName("总重量")]
-        public decimal TotalWeight { get; set; }
-        
-        [DisplayName("状态")]
-        public PrescriptionStatus Status { get; set; }
-        
-        [DisplayName("用药建议")]
+        [DisplayName("医嘱")]
         public string? Advice { get; set; }
+        
+        [DisplayName("验方来源")]
+        public string? FormulaSource { get; set; }
+        
+        [DisplayName("备注")]
+        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
+        public string? Remark { get; set; }
         
         [DisplayName("处方项目")]
         public List<PrescriptionItemDto> Items { get; set; } = new();
+
+        /// <summary>单帖价格（计算属性）</summary>
+        [DisplayName("单帖价格")]
+        public decimal SingleDosePrice
+        {
+            get
+            {
+                if (Items == null || !Items.Any()) return 0m;
+                var subtotal = Items.Sum(item => item.UnitPrice * item.Quantity);
+                return subtotal * Discount;
+            }
+        }
+
+        /// <summary>总价格（计算属性）</summary>
+        [DisplayName("总价格")]
+        public decimal TotalPrice => SingleDosePrice * DosageCount;
+
+        /// <summary>总金额（兼容性别名）</summary>
+        [DisplayName("总金额")]
+        public decimal TotalAmount => TotalPrice;
+
+        /// <summary>剂型</summary>
+        [DisplayName("剂型")]
+        public string? DosageForm { get; set; } = "汤剂";
+
+        /// <summary>总重量（计算属性）</summary>
+        [DisplayName("总重量")]
+        public decimal TotalWeight
+        {
+            get
+            {
+                if (Items == null || !Items.Any()) return 0m;
+                return Items.Sum(item => item.Quantity) * DosageCount;
+            }
+        }
     }
 
     /// <summary>
@@ -152,6 +197,22 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [Required(ErrorMessage = "处方ID不能为空")]
         [DisplayName("处方ID")]
         public Guid Id { get; set; }
+
+        [Required(ErrorMessage = "患者ID不能为空")]
+        [DisplayName("患者ID")]
+        public Guid PatientId { get; set; }
+
+        [Required(ErrorMessage = "医生ID不能为空")]
+        [DisplayName("医生ID")]
+        public Guid UserId { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "总价格必须大于等于0")]
+        [DisplayName("总价格")]
+        public decimal TotalPrice { get; set; }
+
+        [Range(0, 1, ErrorMessage = "折扣必须在0-1之间")]
+        [DisplayName("折扣")]
+        public decimal Discount { get; set; } = 1.0m;
     }
 
     /// <summary>
@@ -173,6 +234,14 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         
         [DisplayName("单价")]
         public decimal UnitPrice { get; set; }
+        
+        /// <summary>价格（兼容属性，映射到UnitPrice）</summary>
+        [DisplayName("价格")]
+        public decimal Price 
+        { 
+            get => UnitPrice; 
+            set => UnitPrice = value; 
+        }
         
         [DisplayName("总价")]
         public decimal TotalPrice { get; set; }

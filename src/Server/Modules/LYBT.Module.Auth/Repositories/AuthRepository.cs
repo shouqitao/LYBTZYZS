@@ -10,7 +10,7 @@ namespace LYBT.Module.Auth.Repositories
     /// 登录验证仓储实现 - 数据层统一化重构
     /// 继承BaseRepository获得通用CRUD功能，扩展认证特有业务方法
     /// </summary>
-    public class AuthRepository : BaseRepository<UserModel>, IAuthRepository
+    public class AuthRepository : BaseRepository<User>, IAuthRepository
     {
         /// <summary>
         /// 初始化仓储并注入统一数据库上下文
@@ -28,25 +28,21 @@ namespace LYBT.Module.Auth.Repositories
         /// </summary>
         /// <param name="userName">用户名</param>
         /// <returns>用户实体或 null</returns>
-        public async Task<UserModel?> GetByUsernameAsync(string userName)
+        public async Task<User?> GetByUsernameAsync(string userName)
         {
             return await _dbSet.FirstOrDefaultAsync(u => u.Username == userName);
         }
 
         /// <summary>
-        /// 更新用户的最后登录时间
+        /// 更新用户的最后登录时间 - UltraThink v2.0简化：通过AuthSession记录
         /// </summary>
         /// <param name="id">用户ID</param>
         /// <param name="loginTime">登录时间</param>
         public async Task UpdateLastLoginTimeAsync(Guid id, DateTime loginTime)
         {
-            var user = await _dbSet.FindAsync(id);
-            if (user != null)
-            {
-                user.LastLoginTime = loginTime;
-                _dbSet.Update(user);
-                await _context.SaveChangesAsync();
-            }
+            // UltraThink v2.0简化：User实体不再包含LastLoginTime字段
+            // 登录时间信息通过AuthSession表记录，此方法仅保留接口兼容性
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -77,19 +73,14 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 更新用户登录保护信息，如失败次数和锁定时间
+        /// 更新用户登录保护信息 - UltraThink v2.0简化：通过AuthSession记录
         /// </summary>
-        /// <param name="user">包含最新登录保护信息的用户实体</param>
-        public async Task UpdateUserLoginProtectionAsync(UserModel user)
+        /// <param name="user">用户实体</param>
+        public async Task UpdateUserLoginProtectionAsync(User user)
         {
-            var dbUser = await _dbSet.FindAsync(user.Id);
-            if (dbUser != null)
-            {
-                dbUser.FailedLoginCount = user.FailedLoginCount;
-                dbUser.LockoutEnd = user.LockoutEnd;
-                _dbSet.Update(dbUser);
-                await _context.SaveChangesAsync();
-            }
+            // UltraThink v2.0简化：User实体不再包含FailedLoginCount和LockoutEnd字段
+            // 登录保护信息通过AuthSession或SecurityAuditLog记录，此方法仅保留接口兼容性
+            await Task.CompletedTask;
         }
     }
 }

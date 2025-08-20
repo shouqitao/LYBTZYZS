@@ -18,7 +18,8 @@ using Prism.Events;
 using Prism.Commands;
 
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Desktop.Core.Models.Users;
+// UltraThink v2.0: 移除Info模型引用，直接使用DTO
+// using LYBT.Desktop.Core.Models.Users;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
@@ -27,12 +28,12 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// </summary>
     public class MainWindowViewModel : BindableBase
     {
-        private readonly ICommonDialogService _commonDialogService;
+        private readonly LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService _commonDialogService;
 
-        private readonly IAuthenticationService _authService;
+        private readonly LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService _authService;
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
-        private readonly IPermissionService _permissionService;
+        private readonly LYBT.Desktop.Core.Interfaces.Services.IPermissionService _permissionService;
         private readonly IUserService _userService;
         private readonly IWorkbenchRouter _workbenchRouter;
         private readonly ApiTestService _apiTestService;
@@ -48,10 +49,10 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         public MainWindowViewModel(IRegionManager regionManager,
             IEventAggregator eventAggregator,
-            IAuthenticationService authService,
-            IPermissionService permissionService,
+            LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService authService,
+            LYBT.Desktop.Core.Interfaces.Services.IPermissionService permissionService,
             IUserService userService,
-            ICommonDialogService commonDialogService,
+            LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService commonDialogService,
             IWorkbenchRouter workbenchRouter,
             ApiTestService apiTestService,
             LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer uiOptimizer)
@@ -139,7 +140,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    _commonDialogService.ShowErrorAsync($"退出登录失败：{ex.Message}", "错误").GetAwaiter().GetResult();
+                    await _commonDialogService.ShowErrorAsync($"退出登录失败：{ex.Message}", "错误");
                 }
             }
         }
@@ -198,11 +199,11 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// <summary>
         /// 加载主界面内容 - 使用新的WorkbenchRouter系统
         /// </summary>
-        private void LoadMainContent()
+        private async void LoadMainContent()
         {
             if (CurrentUser == null)
             {
-                _commonDialogService.ShowErrorAsync("当前用户信息为空，无法加载主界面", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync("当前用户信息为空，无法加载主界面", "错误");
                 return;
             }
 
@@ -253,15 +254,15 @@ namespace LYBT.Desktop.Shell.ViewModels
                     }
 
                     // 根据角色导航到对应的工作台主视图
-                    _regionManager.RequestNavigate("ContentRegion", workbenchView, navigationResult =>
+                    _regionManager.RequestNavigate("ContentRegion", workbenchView, async navigationResult =>
                     {
                         if (navigationResult.Result != true)
                         {
                             // 如果导航失败，显示错误信息
                             var errorMessage = "导航失败";
-                            _commonDialogService.ShowWarningAsync(
+                            await _commonDialogService.ShowWarningAsync(
                                 $"{welcomeMessage}\n\n注意：工作台模块加载失败。\n错误详情：{errorMessage}", 
-                                "登录成功").GetAwaiter().GetResult();
+                                "登录成功");
                         }
                         else
                         {
@@ -273,13 +274,13 @@ namespace LYBT.Desktop.Shell.ViewModels
                 catch (Exception ex)
                 {
                     // 显示欢迎消息和错误
-                    _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：工作台模块加载失败。\n错误详情：{ex.Message}", "登录成功").GetAwaiter().GetResult();
+                    await _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：工作台模块加载失败。\n错误详情：{ex.Message}", "登录成功");
                 }
             }
             else
             {
                 // RegionManager为空的错误处理
-                _commonDialogService.ShowWarningAsync($"RegionManager为空\n{welcomeMessage}", "登录成功").GetAwaiter().GetResult();
+                await _commonDialogService.ShowWarningAsync($"RegionManager为空\n{welcomeMessage}", "登录成功");
             }
         }
 
@@ -299,7 +300,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
         }
 
-        private void ExecuteShowControlExamples()
+        private async void ExecuteShowControlExamples()
         {
             try
             {
@@ -308,27 +309,19 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
             catch (Exception ex)
             {
-                _commonDialogService.ShowErrorAsync($"打开控件示例页面失败: {ex.Message}", "错误").GetAwaiter().GetResult();
+                await _commonDialogService.ShowErrorAsync($"打开控件示例页面失败: {ex.Message}", "错误");
             }
         }
 
         #region 私有转换方法
 
         /// <summary>
-        /// UltraThink转换：UserInfo → UserDto（UI层到传输层）
+        /// UltraThink v2.0简化：直接使用UserDto，无需转换
         /// </summary>
-        private static UserDto ConvertToUserDto(UserInfo userInfo)
+        private static UserDto ConvertToUserDto(UserDto userDto)
         {
-            return new UserDto
-            {
-                Id = userInfo.Id,
-                Username = userInfo.Username,
-                RealName = userInfo.RealName,
-                PhoneNumber = userInfo.PhoneNumber,
-                Role = userInfo.Role.ToString(), // 枚举转字符串
-                LastLoginTime = userInfo.LastLoginTime,
-                CreateTime = userInfo.CreateTime
-            };
+            // UltraThink v2.0: 由于AuthenticationService直接返回UserDto，无需转换
+            return userDto;
         }
 
         #endregion

@@ -95,6 +95,18 @@ namespace LYBT.Shared.Models.Contracts.Common
         }
 
         /// <summary>
+        /// 创建带消息的成功结果
+        /// </summary>
+        public static ServiceResult Success(string message)
+        {
+            return new ServiceResult
+            {
+                IsSuccess = true,
+                ErrorMessage = message // 用于存储成功消息
+            };
+        }
+
+        /// <summary>
         /// 创建失败的结果
         /// </summary>
         public static ServiceResult Failure(string errorMessage, Exception? exception = null)

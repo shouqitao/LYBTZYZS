@@ -79,8 +79,10 @@
                 <DataGridTextColumn Header="处方日期" Binding="{Binding PrescriptionDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="100"/>
                 <DataGridTextColumn Header="医生" Binding="{Binding DoctorName}" Width="100"/>
                 <DataGridTextColumn Header="诊断" Binding="{Binding Diagnosis}" Width="*"/>
-                <DataGridTextColumn Header="剂数" Binding="{Binding TotalDoses}" Width="60"/>
-                <DataGridTextColumn Header="总金额" Binding="{Binding TotalAmount, StringFormat='￥{0:F2}'}" Width="100"/>
+                <DataGridTextColumn Header="剂数" Binding="{Binding DosageCount}" Width="60"/>
+                <DataGridTextColumn Header="原价" Binding="{Binding TotalPrice, StringFormat='￥{0:F2}'}" Width="80"/>
+                <DataGridTextColumn Header="折扣" Binding="{Binding DiscountAmount, StringFormat='￥{0:F2}'}" Width="80"/>
+                <DataGridTextColumn Header="应付" Binding="{Binding PayableAmount, StringFormat='￥{0:F2}'}" Width="80"/>
                 <DataGridTemplateColumn Header="状态" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

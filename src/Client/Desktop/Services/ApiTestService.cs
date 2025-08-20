@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
@@ -122,7 +123,12 @@ namespace LYBT.Desktop.Services
                     Keyword = null
                 };
 
-                var users = await _userService.SearchUsersAsync(queryRequest);
+                var usersResult = await _userService.GetPagedAsync(queryRequest);
+                if (!usersResult.IsSuccess)
+                {
+                    return $"❌ 用户分页查询失败: {usersResult.ErrorMessage}";
+                }
+                var users = usersResult.Data;
                 result += $"✅ 用户分页查询成功\n";
                 result += $"   总用户数: {users.TotalCount}\n";
                 result += $"   当前页用户数: {users.Items.Count}\n";

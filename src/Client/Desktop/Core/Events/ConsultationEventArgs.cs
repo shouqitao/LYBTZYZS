@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace LYBT.Desktop.Core.Events
 {
@@ -138,10 +139,53 @@ namespace LYBT.Desktop.Core.Events
             Exception = exception;
         }
 
-        public ConsultationErrorEventArgs(string message, string module, ErrorSeverity severity)
+        public ConsultationErrorEventArgs(string message, string module)
         {
             ErrorMessage = message;
             Module = module;
+        }
+    }
+
+    /// <summary>
+    /// TCM数据更新事件参数
+    /// </summary>
+    public class TCMDataUpdatedEventArgs : ConsultationEventArgsBase
+    {
+        public Guid ConsultationId { get; set; }
+        public string UpdatedSection { get; set; } = string.Empty;
+        public Dictionary<string, object> UpdatedData { get; set; } = new();
+
+        public TCMDataUpdatedEventArgs() { }
+
+        public TCMDataUpdatedEventArgs(Guid consultationId, string section, Dictionary<string, object> data)
+        {
+            ConsultationId = consultationId;
+            UpdatedSection = section;
+            UpdatedData = data;
+            Id = consultationId;
+            Message = $"TCM数据已更新: {section}";
+        }
+    }
+
+    /// <summary>
+    /// 诊疗导航请求事件参数（避免与Core的NavigationEventArgs冲突）
+    /// </summary>
+    public class ConsultationNavigationEventArgs : EventArgs
+    {
+        public string Target { get; set; } = string.Empty;
+        public Dictionary<string, object> Parameters { get; set; } = new();
+
+        public ConsultationNavigationEventArgs() { }
+
+        public ConsultationNavigationEventArgs(string target)
+        {
+            Target = target;
+        }
+
+        public ConsultationNavigationEventArgs(string target, Dictionary<string, object> parameters)
+        {
+            Target = target;
+            Parameters = parameters;
         }
     }
 }

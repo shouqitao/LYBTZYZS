@@ -10,6 +10,7 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Consultation.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Regions;
 using CoreWorkflowStep = LYBT.Desktop.Core.Models.Consultation.WorkflowStep;
 
@@ -315,7 +316,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             // 在这里可以处理数据更新的逻辑
         }
 
-        private void OnNavigationCompleted(ConsultationNavigationEventArgs args)
+        private void OnNavigationCompleted(LYBT.Desktop.Consultation.Services.ConsultationNavigationEventArgs args)
         {
             _logger.LogDebug("导航完成: {ViewName}, Success: {Success}", args.ViewName, args.Success);
             

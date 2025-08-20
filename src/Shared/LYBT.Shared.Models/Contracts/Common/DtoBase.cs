@@ -99,6 +99,14 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <summary>是否启用 - 根据Status计算得出</summary>
         [DisplayName("是否启用")]
         public bool IsEnabled => Status == CommonStatus.Enabled;
+
+        /// <summary>创建时间(兼容性属性)</summary>
+        [DisplayName("创建时间")]
+        public virtual DateTime CreateTime { get; set; } = DateTime.Now;
+
+        /// <summary>更新时间(兼容性属性)</summary>
+        [DisplayName("更新时间")]
+        public virtual DateTime? UpdateTime { get; set; }
     }
 
     /// <summary>

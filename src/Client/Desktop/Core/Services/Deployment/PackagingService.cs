@@ -164,7 +164,11 @@ namespace LYBT.Desktop.Core.Services.Deployment
                     {
                         Directory.Delete(tempDir, true);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        // 记录清理临时目录失败，但不影响主流程
+                        _logger.LogWarning(ex, "清理临时目录失败: {TempDir}", tempDir);
+                    }
                 }
                 
                 return result;
@@ -482,7 +486,11 @@ namespace LYBT.Desktop.Core.Services.Deployment
                         Directory.Delete(tempToDir, true);
                         Directory.Delete(deltaDir, true);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        // 记录清理临时目录失败，但不影响主流程
+                        _logger.LogWarning(ex, "清理增量包临时目录失败");
+                    }
                 }
                 
                 return result;

@@ -75,7 +75,20 @@ namespace LYBT.Desktop.Core.Mvvm
         /// </summary>
         public async void Execute(object? parameter)
         {
-            await ExecuteAsync(parameter);
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await ExecuteAsync(parameter);
+                }
+                catch (Exception ex)
+                {
+                    // 记录异常，防止async void异常逃逸
+                    System.Diagnostics.Debug.WriteLine($"AsyncRelayCommand Execute失败: {ex.Message}");
+                    _errorHandler?.Invoke(ex);
+                }
+            });
         }
         
         /// <summary>
@@ -210,7 +223,20 @@ namespace LYBT.Desktop.Core.Mvvm
         
         public async void Execute(object? parameter)
         {
-            await ExecuteAsync((T?)parameter);
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await ExecuteAsync((T?)parameter);
+                }
+                catch (Exception ex)
+                {
+                    // 记录异常，防止async void异常逃逸
+                    System.Diagnostics.Debug.WriteLine($"AsyncRelayCommand<T> Execute失败: {ex.Message}");
+                    _errorHandler?.Invoke(ex);
+                }
+            });
         }
         
         public async Task ExecuteAsync(object? parameter)
@@ -395,18 +421,27 @@ namespace LYBT.Desktop.Core.Mvvm
         
         public async void Execute(object? parameter)
         {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
-            
-            try
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
             {
-                await Task.Delay(_delay, _cts.Token);
-                _command.Execute(parameter);
-            }
-            catch (TaskCanceledException)
-            {
-                // 正常取消
-            }
+                try
+                {
+                    _cts?.Cancel();
+                    _cts = new CancellationTokenSource();
+                    
+                    await Task.Delay(_delay, _cts.Token);
+                    _command.Execute(parameter);
+                }
+                catch (TaskCanceledException)
+                {
+                    // 正常取消，不需要处理
+                }
+                catch (Exception ex)
+                {
+                    // 记录异常，防止async void异常逃逸
+                    System.Diagnostics.Debug.WriteLine($"DebouncedCommand Execute失败: {ex.Message}");
+                }
+            });
         }
     }
     

@@ -104,14 +104,9 @@
                                        Foreground="Gray"
                                        Margin="0,4,0,0"/>
                             
-                            <TextBlock Margin="0,4,0,0">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="状态: {0} | 创建时间: {1}">
-                                        <Binding Path="MedicalCase.StatusText"/>
-                                        <Binding Path="MedicalCase.CreateTimeText"/>
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
+                            <TextBlock Text="{Binding MedicalCase.StatusText}" 
+                                       Margin="0,4,0,0"
+                                       Foreground="Gray"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -211,17 +206,14 @@
                                               CanUserAddRows="False"
                                               MaxHeight="300">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="开方时间" 
-                                                                Binding="{Binding CreateTime}" 
-                                                                Width="150"/>
                                             <DataGridTextColumn Header="处方编号" 
-                                                                Binding="{Binding PrescriptionNumber}" 
+                                                                Binding="{Binding PrescriptionNo}" 
                                                                 Width="150"/>
                                             <DataGridTextColumn Header="剂数" 
-                                                                Binding="{Binding TotalDoses}" 
+                                                                Binding="{Binding DosageCount}" 
                                                                 Width="80"/>
-                                            <DataGridTextColumn Header="总价" 
-                                                                Binding="{Binding TotalAmount, StringFormat={}{0:C}}" 
+                                            <DataGridTextColumn Header="应付金额" 
+                                                                Binding="{Binding PayableAmount, StringFormat='￥{0:F2}'}" 
                                                                 Width="100"/>
                                             <DataGridTemplateColumn Header="操作" Width="80">
                                                 <DataGridTemplateColumn.CellTemplate>

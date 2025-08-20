@@ -10,13 +10,13 @@ namespace LYBT.Module.Prescriptions.Repositories
     public interface IPrescriptionRepository
     {
 
-        Task<PrescriptionModel?> GetByIdAsync(Guid id);
+        Task<Prescription?> GetByIdAsync(Guid id);
 
-        Task<List<PrescriptionModel>> GetListAsync();
+        Task<List<Prescription>> GetListAsync();
 
-        Task<bool> AddAsync(PrescriptionModel model);
+        Task<bool> AddAsync(Prescription model);
 
-        Task<bool> UpdateAsync(PrescriptionModel model);
+        Task<bool> UpdateAsync(Prescription model);
 
         Task<bool> DeleteAsync(Guid id);
 

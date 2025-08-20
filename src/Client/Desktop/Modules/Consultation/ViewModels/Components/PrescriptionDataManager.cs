@@ -8,7 +8,6 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Models.Prescriptions;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Consultation.ViewModels.Components
 {

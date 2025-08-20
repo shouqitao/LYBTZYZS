@@ -1,4 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -222,32 +224,31 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 应用模板到处方
         /// </summary>
-        public PrescriptionInfo ApplyToNewPrescription(Guid patientId)
+        public PrescriptionDto ApplyToNewPrescription(Guid patientId)
         {
-            var prescription = new PrescriptionInfo
+            var prescription = new PrescriptionDto
             {
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
-                Diagnosis = Diagnosis,
+                Indication = Diagnosis,
                 DosageCount = DosageCount,
-                Usage = Usage,
+                Advice = Usage,
                 Remark = $"应用模板：{Name}\n{Remark}",
-                CreateTime = DateTime.Now,
-                Status = Shared.Models.Enums.PrescriptionStatus.Draft,
-                Items = new List<PrescriptionItemInfo>()
+                Status = CommonStatus.Disabled, // 草稿状态
+                Items = new List<PrescriptionItemDto>()
             };
 
             // 复制药材项目
             foreach (var templateItem in Items)
             {
-                prescription.Items.Add(new PrescriptionItemInfo
+                prescription.Items.Add(new PrescriptionItemDto
                 {
                     HerbId = templateItem.HerbId,
                     HerbName = templateItem.HerbName,
                     Quantity = templateItem.Quantity,
-                    Unit = templateItem.Unit,
-                    Price = templateItem.EstimatedPrice,
-                    Subtotal = templateItem.Quantity * templateItem.EstimatedPrice
+                    Unit = templateItem.Unit
+                    // Price = templateItem.EstimatedPrice, // 属性不存在：PrescriptionItemDto.Price
+                    // Subtotal = templateItem.Quantity * templateItem.EstimatedPrice
                 });
             }
 

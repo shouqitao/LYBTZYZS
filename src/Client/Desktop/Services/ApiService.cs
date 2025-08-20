@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Auth;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;

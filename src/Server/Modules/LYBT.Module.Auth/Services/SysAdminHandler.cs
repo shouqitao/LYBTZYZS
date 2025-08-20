@@ -29,7 +29,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 获取系统管理员用户（如果不存在则创建临时用户）
         /// </summary>
-        public async Task<UserModel?> GetSysAdminUserAsync(string username)
+        public async Task<User?> GetSysAdminUserAsync(string username)
         {
             if (!IsSysAdmin(username))
             {
@@ -62,16 +62,16 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 创建临时的系统管理员用户对象
         /// </summary>
-        private UserModel CreateTempSysAdminUser()
+        private User CreateTempSysAdminUser()
         {
-            return new UserModel
+            return new User
             {
                 Id = Guid.NewGuid(),
                 Username = SYSADMIN_USERNAME,
                 RealName = "系统管理员",
                 PinYinCode = "XTGLY",
                 Status = CommonStatus.Enabled,
-                CreateTime = DateTime.Now,
+                // UltraThink v2.0简化：CreateTime字段已删除
                 PasswordHash = string.Empty // 密码从AdminSecrets表获取
             };
         }
@@ -79,7 +79,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 确保用户具有管理员角色（已移除Role字段）
         /// </summary>
-        private void EnsureAdminRole(UserModel user)
+        private void EnsureAdminRole(User user)
         {
             // Role字段已移除，管理员权限通过其他机制实现
         }

@@ -8,8 +8,8 @@ using Prism.Regions;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Models.MedicalCase;
-using LYBT.Desktop.Core.Models.Patients;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Consultation.Services;
 // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
@@ -94,7 +94,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <summary>
         /// 医疗案例
         /// </summary>
-        public MedicalCaseInfo? MedicalCase 
+        public MedicalCaseDto? MedicalCase 
         {
             get => DataManager.MedicalCase;
             set => DataManager.MedicalCase = value;
@@ -103,7 +103,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <summary>
         /// 患者信息
         /// </summary>
-        public PatientInfo? Patient 
+        public PatientDto? Patient 
         {
             get => DataManager.Patient;
             set => DataManager.Patient = value;

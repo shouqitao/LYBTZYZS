@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Services
     /// <summary>
     /// 简单的对话框服务实现，不依赖 Prism 对话框
     /// </summary>
-    public class SimpleDialogService : ICommonDialogService
+    public class SimpleDialogService // : ICommonDialogService // 接口不存在：ICommonDialogService
     {
         // 异步方法
         public Task<bool> ShowConfirmationAsync(string message, string title = "确认")

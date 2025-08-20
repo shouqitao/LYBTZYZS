@@ -177,7 +177,7 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                var model = _mapper.Map<HerbModel>(dto);
+                var model = _mapper.Map<Herb>(dto);
                 model.Id = Guid.NewGuid();
                 model.PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode)
                     ? GetSimplePinyinCode(model.Name)
@@ -397,10 +397,10 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                var models = new List<HerbModel>();
+                var models = new List<Herb>();
                 foreach (var dto in herbs)
                 {
-                    var model = _mapper.Map<HerbModel>(dto);
+                    var model = _mapper.Map<Herb>(dto);
                     model.Id = Guid.NewGuid();
                     model.PinYinCode = GetSimplePinyinCode(model.Name);
                     model.Status = CommonStatus.Enabled; // 导入的药材默认启用

@@ -11,7 +11,7 @@ namespace LYBT.Module.Herbs.Repositories
     /// 药材仓储实现类 - 数据层统一化重构
     /// 继承BaseRepository提供通用CRUD，实现药材特定业务逻辑
     /// </summary>
-    public class HerbRepository : BaseRepository<HerbModel>, IHerbRepository
+    public class HerbRepository : BaseRepository<Herb>, IHerbRepository
     {
         public HerbRepository(AppDbContext context) : base(context)
         {
@@ -23,7 +23,7 @@ namespace LYBT.Module.Herbs.Repositories
         /// <summary>
         /// 批量新增药材
         /// </summary>
-        public async Task<bool> AddRangeAsync(List<HerbModel> herbs)
+        public async Task<bool> AddRangeAsync(List<Herb> herbs)
         {
             if (herbs == null || herbs.Count == 0)
                 return false;
@@ -52,7 +52,7 @@ namespace LYBT.Module.Herbs.Repositories
         /// <summary>
         /// 根据拼音码搜索药材
         /// </summary>
-        public async Task<List<HerbModel>> SearchByPinyinAsync(string pinyin)
+        public async Task<List<Herb>> SearchByPinyinAsync(string pinyin)
         {
             return await _dbSet
                 .Where(h => h.PinYinCode != null && h.PinYinCode.Contains(pinyin.ToUpperInvariant()))

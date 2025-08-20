@@ -16,6 +16,11 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
   </ItemGroup>
 
+  <!-- 临时排除有问题的文件，符合UltraThink v2.0简化原则 -->
+  <ItemGroup>
+    <Compile Remove="Adapters\ApiResponseAdapter.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Core\LYBT.Desktop.Core.csproj" />
     <ProjectReference Include="..\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj" />

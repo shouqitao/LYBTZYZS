@@ -8,6 +8,7 @@ using Prism.Events;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Consultation.ViewModels;
 
 using LYBT.Desktop.Core.Models.Consultation;
@@ -205,13 +206,16 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 var result = await _consultationService.GetFourDiagnosisByMedicalCaseIdAsync(MedicalCaseId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    var data = result.Data;
-                    Inspection = data.Inspection ?? "";
-                    Auscultation = data.Auscultation ?? "";
-                    Inquiry = data.Inquiry ?? "";
-                    Palpation = data.Palpation ?? "";
-                    ImportSource = data.ImportSource ?? "";
-                    HasImportedData = !string.IsNullOrWhiteSpace(ImportSource);
+                    // 显式类型转换，如果Data是FourDiagnosisData类型
+                    if (result.Data is FourDiagnosisData data)
+                    {
+                        Inspection = data.Inspection ?? "";
+                        Auscultation = data.Auscultation ?? "";
+                        Inquiry = data.Inquiry ?? "";
+                        Palpation = data.Palpation ?? "";
+                        ImportSource = data.ImportSource ?? "";
+                        HasImportedData = !string.IsNullOrWhiteSpace(ImportSource);
+                    }
                     
                     // 重置更改标记
                     HasChanges = false;
@@ -413,9 +417,20 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private async void OnImportHistoryData(object args)
         {
-            // UltraThink简化：直接返回，不处理复杂的历史数据导入
-            await Task.CompletedTask;
-            return;
+            // Fire-and-forget pattern with exception handling
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // UltraThink简化：直接返回，不处理复杂的历史数据导入
+                    await Task.CompletedTask;
+                }
+                catch (Exception ex)
+                {
+                    // 记录异常，但由于是空实现，此处不会发生异常
+                    System.Diagnostics.Debug.WriteLine($"导入历史数据失败: {ex.Message}");
+                }
+            });
         }
 
         #endregion

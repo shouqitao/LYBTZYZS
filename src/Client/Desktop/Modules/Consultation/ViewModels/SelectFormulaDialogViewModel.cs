@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.Shared.Interfaces.Services;
 
-// UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
-using LYBT.Desktop.Core.Models.Formulas;
+// UltraThink v2.0重构: 直接使用FormulaDto，移除Info模型引用
+using LYBT.Shared.Models.Contracts.Formula;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -27,8 +27,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private bool _isLoading;
         private string _searchKeyword = string.Empty;
         private string _selectedCategory = "全部";
-        private FormulaInfo? _selectedFormula;
-        private ObservableCollection<FormulaInfo> _formulas;
+        private FormulaDto? _selectedFormula;
+        private ObservableCollection<FormulaDto> _formulas;
         private ObservableCollection<string> _categories;
         private string _previewText = string.Empty;
         
@@ -74,9 +74,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         }
 
         /// <summary>
-        /// 选中的验方
+        /// 选中的验方 - UltraThink v2.0: 直接使用FormulaDto
         /// </summary>
-        public FormulaInfo? SelectedFormula
+        public FormulaDto? SelectedFormula
         {
             get => _selectedFormula;
             set
@@ -90,9 +90,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         }
 
         /// <summary>
-        /// 验方列表
+        /// 验方列表 - UltraThink v2.0: 直接使用FormulaDto
         /// </summary>
-        public ObservableCollection<FormulaInfo> Formulas
+        public ObservableCollection<FormulaDto> Formulas
         {
             get => _formulas;
             set => SetProperty(ref _formulas, value);
@@ -144,19 +144,19 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand ConfirmCommand { get; }
         public DelegateCommand CancelCommand { get; }
-        public DelegateCommand<FormulaInfo> SelectFormulaCommand { get; }
-        public DelegateCommand<FormulaInfo> ViewDetailsCommand { get; }
+        public DelegateCommand<FormulaDto> SelectFormulaCommand { get; }
+        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; }
 
         #endregion
 
         #region 回调
 
-        public Action<FormulaInfo>? OnFormulaSelected { get; set; }
+        public Action<FormulaDto>? OnFormulaSelected { get; set; }
         public Action? OnCancelled { get; set; }
 
         #endregion
 
-        private List<FormulaInfo> _allFormulas = new();
+        private List<FormulaDto> _allFormulas = new();
 
         public SelectFormulaDialogViewModel(
             IFormulaService formulaService,
@@ -165,7 +165,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             _formulaService = formulaService;
             _dialogService = dialogService;
             
-            _formulas = new ObservableCollection<FormulaInfo>();
+            _formulas = new ObservableCollection<FormulaDto>();
             _categories = new ObservableCollection<string> { "全部" };
 
             // 初始化命令
@@ -173,8 +173,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             RefreshCommand = new DelegateCommand(async () => await LoadFormulasAsync());
             ConfirmCommand = new DelegateCommand(ExecuteConfirm, CanExecuteConfirm);
             CancelCommand = new DelegateCommand(ExecuteCancel);
-            SelectFormulaCommand = new DelegateCommand<FormulaInfo>(ExecuteSelectFormula);
-            ViewDetailsCommand = new DelegateCommand<FormulaInfo>(ExecuteViewDetails);
+            SelectFormulaCommand = new DelegateCommand<FormulaDto>(ExecuteSelectFormula);
+            ViewDetailsCommand = new DelegateCommand<FormulaDto>(ExecuteViewDetails);
 
             // 初始加载
             Task.Run(async () => await LoadFormulasAsync());
@@ -186,24 +186,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 IsLoading = true;
 
-                // 加载验方列表
+                // UltraThink v2.0: 直接使用FormulaService获取DTOs
                 var result = await _formulaService.GetFormulasAsync();
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // 使用AutoMapper转换FormulaDto到FormulaInfo
-                    // 临时手动转换，因为AutoMapper需要配置
-                    _allFormulas = result.Data.Select(dto => new FormulaInfo
-                    {
-                        Id = dto.Id,
-                        Name = dto.Name,
-                        Category = "其他", // 默认分类
-                        Description = dto.Effect,
-                        Source = dto.Source ?? "",
-                        CreateTime = dto.CreateTime,
-                        UpdateTime = dto.UpdateTime,
-                        // Status = CommonStatus.Enabled, // 默认启用状态
-                        Remark = dto.Remark
-                    }).ToList();
+                    // UltraThink v2.0: 直接使用DTOs，无需转换
+                    _allFormulas = result.Data.ToList();
                     
                     // 提取分类
                     var categories = _allFormulas
@@ -221,7 +209,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     }
                     
                     // 显示所有验方
-                    Formulas = new ObservableCollection<FormulaInfo>(_allFormulas);
+                    Formulas = new ObservableCollection<FormulaDto>(_allFormulas);
                     RaisePropertyChanged(nameof(ShowEmptyState));
                     RaisePropertyChanged(nameof(EmptyStateMessage));
                 }
@@ -264,14 +252,14 @@ namespace LYBT.Desktop.Consultation.ViewModels
                         if (SelectedCategory != "全部" && f.Category != SelectedCategory)
                             return false;
                         
-                        // 关键词搜索（名称、描述、适应症）
+                        // 关键词搜索（名称、效果、备注）
                         var keyword = SearchKeyword.ToLower();
                         return f.Name.ToLower().Contains(keyword) ||
-                               (!string.IsNullOrWhiteSpace(f.Description) && f.Description.ToLower().Contains(keyword)) ||
-                               (!string.IsNullOrWhiteSpace(f.Indications) && f.Indications.ToLower().Contains(keyword));
+                               (!string.IsNullOrWhiteSpace(f.Effect) && f.Effect.ToLower().Contains(keyword)) ||
+                               (!string.IsNullOrWhiteSpace(f.Remark) && f.Remark.ToLower().Contains(keyword));
                     }).ToList();
                     
-                    Formulas = new ObservableCollection<FormulaInfo>(filteredFormulas);
+                    Formulas = new ObservableCollection<FormulaDto>(filteredFormulas);
                     RaisePropertyChanged(nameof(ShowEmptyState));
                     RaisePropertyChanged(nameof(EmptyStateMessage));
                 }
@@ -288,12 +276,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             if (SelectedCategory == "全部")
             {
-                Formulas = new ObservableCollection<FormulaInfo>(_allFormulas);
+                Formulas = new ObservableCollection<FormulaDto>(_allFormulas);
             }
             else
             {
                 var filtered = _allFormulas.Where(f => f.Category == SelectedCategory).ToList();
-                Formulas = new ObservableCollection<FormulaInfo>(filtered);
+                Formulas = new ObservableCollection<FormulaDto>(filtered);
             }
             
             RaisePropertyChanged(nameof(ShowEmptyState));
@@ -308,6 +296,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 return;
             }
 
+            // UltraThink v2.0: 直接使用DTO属性构建预览
             var preview = $"【{SelectedFormula.Name}】\n\n";
             
             if (!string.IsNullOrWhiteSpace(SelectedFormula.Category))
@@ -316,42 +305,23 @@ namespace LYBT.Desktop.Consultation.ViewModels
             if (!string.IsNullOrWhiteSpace(SelectedFormula.Source))
                 preview += $"来源：{SelectedFormula.Source}\n";
             
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Indications))
-                preview += $"适应症：{SelectedFormula.Indications}\n";
+            if (!string.IsNullOrWhiteSpace(SelectedFormula.Effect))
+                preview += $"功效：{SelectedFormula.Effect}\n";
             
-            preview += $"\n组成（{SelectedFormula.HerbCount}味）：\n";
+            if (!string.IsNullOrWhiteSpace(SelectedFormula.Remark))
+                preview += $"备注：{SelectedFormula.Remark}\n";
             
-            foreach (var herb in SelectedFormula.Herbs.Take(10))
-            {
-                preview += $"  {herb.HerbName} {herb.Quantity}{herb.Unit}";
-                if (!string.IsNullOrWhiteSpace(herb.ProcessingMethod))
-                    preview += $"（{herb.ProcessingMethod}）";
-                preview += "\n";
-            }
-            
-            if (SelectedFormula.Herbs.Count > 10)
-                preview += $"  ... 还有 {SelectedFormula.Herbs.Count - 10} 味药材\n";
-            
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Description))
-                preview += $"\n功效：{SelectedFormula.Description}\n";
-            
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.DosageInstruction))
-                preview += $"用法：{SelectedFormula.DosageInstruction}\n";
-            
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Contraindications))
-                preview += $"禁忌：{SelectedFormula.Contraindications}\n";
-            
-            preview += $"\n参考价格：¥{SelectedFormula.TotalPrice:F2}";
+            preview += $"\n创建时间：{SelectedFormula.CreateTime:yyyy-MM-dd HH:mm}";
 
             PreviewText = preview;
         }
 
-        private void ExecuteSelectFormula(FormulaInfo formula)
+        private void ExecuteSelectFormula(FormulaDto formula)
         {
             SelectedFormula = formula;
         }
 
-        private void ExecuteViewDetails(FormulaInfo formula)
+        private void ExecuteViewDetails(FormulaDto formula)
         {
             if (formula == null) return;
             

@@ -1,14 +1,16 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
     /// <summary>
-    /// 医疗案例基础DTO - 继承审计DTO提供ID和时间字段
+    /// 医疗案例DTO - UltraThink v2.0简化版
+    /// 与MedicalCase实体对齐，保留ConsultationDate
     /// </summary>
-    public class MedicalCaseDto : AuditableDto, IRemarkable
+    public class MedicalCaseDto : StatusDto, IRemarkable
     {
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
@@ -22,18 +24,57 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("医生姓名")]
         public string DoctorName { get; set; } = string.Empty;
 
-        [DisplayName("诊断摘要")]
-        public string DiagnosisSummary { get; set; } = string.Empty;
+        [DisplayName("诊断ID")]
+        public Guid? ConsultationId { get; set; }
 
-        [DisplayName("状态")]
-        public string Status { get; set; } = string.Empty;
+        [DisplayName("处方ID")]
+        public Guid? PrescriptionId { get; set; }
 
-        [DisplayName("完成时间")]
-        public DateTime? CompleteTime { get; set; }
+        [DisplayName("看诊时间")]
+        public DateTime ConsultationDate { get; set; } = DateTime.Now;
+
+        /// <summary>医疗案例专用状态</summary>
+        [DisplayName("案例状态")]
+        public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Registered;
 
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
+
+        /// <summary>获取优先级 - 基于看诊时间</summary>
+        public int GetPriority()
+        {
+            var hoursElapsed = (DateTime.Now - ConsultationDate).TotalHours;
+            if (hoursElapsed > 48) return 3; // 高优先级
+            if (hoursElapsed > 24) return 2; // 中优先级
+            return 1; // 低优先级
+        }
+
+        /// <summary>是否紧急</summary>
+        public bool IsUrgent() => GetPriority() >= 3;
+
+        /// <summary>是否需要医生注意 - 基于看诊时间</summary>
+        public bool NeedsDoctorAttention() => CaseStatus != MedicalCaseStatus.Completed && (DateTime.Now - ConsultationDate).TotalHours > 24;
+
+        /// <summary>是否可以开始诊疗</summary>
+        public bool CanStartConsultation() => CaseStatus == MedicalCaseStatus.Registered;
+
+        /// <summary>是否可以完成</summary>
+        public bool CanComplete() => CaseStatus == MedicalCaseStatus.InConsultation;
+
+        /// <summary>是否可以取消</summary>
+        public bool CanCancel() => CaseStatus == MedicalCaseStatus.Registered || CaseStatus == MedicalCaseStatus.InConsultation;
+
+        /// <summary>是否可以删除</summary>
+        public bool CanDelete() => CaseStatus == MedicalCaseStatus.Cancelled || CaseStatus == MedicalCaseStatus.Completed;
+
+        /// <summary>是否可以编辑</summary>
+        public bool CanEdit() => CaseStatus != MedicalCaseStatus.Completed && CaseStatus != MedicalCaseStatus.Cancelled;
+
+        /// <summary>是否已完成</summary>
+        public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Completed;
+
+
     }
 
     /// <summary>
@@ -139,8 +180,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("状态")]
         public string? Status { get; set; }
 
-        [DisplayName("完成时间")]
-        public DateTime? CompleteTime { get; set; }
+
     }
 
     /// <summary>

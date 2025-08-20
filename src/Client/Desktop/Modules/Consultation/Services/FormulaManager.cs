@@ -2,23 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Core.Enums;
-using LYBT.Desktop.Consultation.Services.Interfaces;
+// UltraThink v2.0: 移除已删除的Info模型和接口引用，直接使用DTO
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+using LYBT.Desktop.Core.Enums;
 
-// UltraThink重构: 统一FormulaInfo和FormulaDto，使用FormulaDto作为统一模型
-using LYBT.Desktop.Core.Models.Formulas;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Consultation.Services
 {
     /// <summary>
     /// 验方管理器 - 负责验方模板的应用、合并和管理
+    /// UltraThink v2.0: 移除已删除的接口，直接实现验方管理逻辑
     /// </summary>
-    public class FormulaManager : IFormulaManager
+    public class FormulaManager
     {
         #region 常量定义
 
@@ -39,7 +38,7 @@ namespace LYBT.Desktop.Consultation.Services
         #region 缓存字段
 
         private readonly Dictionary<Guid, int> _formulaUsageCount = new();
-        private List<FormulaInfo>? _cachedFormulas;
+        private List<FormulaDto>? _cachedFormulas;
 
         #endregion
 
@@ -58,21 +57,21 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 应用验方模板到处方
         /// </summary>
-        public List<PrescriptionItemInfo> ApplyFormulaTemplate(FormulaInfo formula)
+        public List<PrescriptionItemDto> ApplyFormulaTemplate(FormulaDto formula)
         {
             try
             {
                 if (formula?.Items == null || !formula.Items.Any())
                 {
                     _logger.LogWarning("验方模板为空或没有药材");
-                    return new List<PrescriptionItemInfo>();
+                    return new List<PrescriptionItemDto>();
                 }
 
-                var prescriptionItems = new List<PrescriptionItemInfo>();
+                var prescriptionItems = new List<PrescriptionItemDto>();
 
                 foreach (var item in formula.Items)
                 {
-                    var prescriptionItem = new PrescriptionItemInfo
+                    var prescriptionItem = new PrescriptionItemDto
                     {
                         Id = Guid.NewGuid(),
                         HerbId = item.HerbId,
@@ -96,16 +95,16 @@ namespace LYBT.Desktop.Consultation.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"应用验方模板 {formula?.Name} 时发生异常");
-                return new List<PrescriptionItemInfo>();
+                return new List<PrescriptionItemDto>();
             }
         }
 
         /// <summary>
         /// 合并验方到现有处方
         /// </summary>
-        public List<PrescriptionItemInfo> MergeFormulaToPrescription(
-            FormulaInfo formula,
-            IEnumerable<PrescriptionItemInfo> existingItems,
+        public List<PrescriptionItemDto> MergeFormulaToPrescription(
+            FormulaDto formula,
+            IEnumerable<PrescriptionItemDto> existingItems,
             FormulaMergeMode mergeMode = FormulaMergeMode.Merge)
         {
             try
@@ -114,7 +113,7 @@ namespace LYBT.Desktop.Consultation.Services
                 if (!validation.IsValid)
                 {
                     _logger.LogWarning($"验方验证失败: {validation.ErrorMessage}");
-                    return existingItems?.ToList() ?? new List<PrescriptionItemInfo>();
+                    return existingItems?.ToList() ?? new List<PrescriptionItemDto>();
                 }
 
                 var formulaItems = ApplyFormulaTemplate(formula);
@@ -125,7 +124,7 @@ namespace LYBT.Desktop.Consultation.Services
                         return formulaItems;
 
                     case FormulaMergeMode.Append:
-                        var appendedList = existingItems?.ToList() ?? new List<PrescriptionItemInfo>();
+                        var appendedList = existingItems?.ToList() ?? new List<PrescriptionItemDto>();
                         appendedList.AddRange(formulaItems);
                         return appendedList;
 
@@ -133,13 +132,13 @@ namespace LYBT.Desktop.Consultation.Services
                         return MergeItems(existingItems, formulaItems);
 
                     default:
-                        return existingItems?.ToList() ?? new List<PrescriptionItemInfo>();
+                        return existingItems?.ToList() ?? new List<PrescriptionItemDto>();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "合并验方到处方时发生异常");
-                return existingItems?.ToList() ?? new List<PrescriptionItemInfo>();
+                return existingItems?.ToList() ?? new List<PrescriptionItemDto>();
             }
         }
 
@@ -150,9 +149,9 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 创建自定义验方
         /// </summary>
-        public async Task<FormulaInfo?> CreateCustomFormulaAsync(
+        public async Task<FormulaDto?> CreateCustomFormulaAsync(
             string name,
-            IEnumerable<PrescriptionItemInfo> items,
+            IEnumerable<PrescriptionItemDto> items,
             string? description = null)
         {
             try
@@ -186,7 +185,7 @@ namespace LYBT.Desktop.Consultation.Services
                 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    var formula = _mapper.Map<FormulaInfo>(result.Data);
+                    var formula = result.Data; // 直接使用DTO，不需要映射
                     _logger.LogInformation($"成功创建自定义验方: {name}");
                     
                     // 清除缓存以便重新加载
@@ -212,7 +211,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 验证验方是否可用
         /// </summary>
-        public (bool IsValid, string? ErrorMessage) ValidateFormula(FormulaInfo formula)
+        public (bool IsValid, string? ErrorMessage) ValidateFormula(FormulaDto formula)
         {
             if (formula == null)
             {
@@ -265,7 +264,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 计算验方价格
         /// </summary>
-        public decimal CalculateFormulaPrice(FormulaInfo formula)
+        public decimal CalculateFormulaPrice(FormulaDto formula)
         {
             if (formula?.Items == null || !formula.Items.Any())
             {
@@ -282,7 +281,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 获取常用验方列表
         /// </summary>
-        public async Task<List<FormulaInfo>> GetFrequentlyUsedFormulasAsync(int count = DEFAULT_FREQUENTLY_USED_COUNT)
+        public async Task<List<FormulaDto>> GetFrequentlyUsedFormulasAsync(int count = DEFAULT_FREQUENTLY_USED_COUNT)
         {
             try
             {
@@ -292,11 +291,11 @@ namespace LYBT.Desktop.Consultation.Services
                     var formulaResult = await _formulaService.GetFormulasAsync();
                     if (formulaResult.IsSuccess && formulaResult.Data != null)
                     {
-                        _cachedFormulas = _mapper.Map<List<FormulaInfo>>(formulaResult.Data);
+                        _cachedFormulas = formulaResult.Data; // 直接使用DTO列表
                     }
                     else
                     {
-                        _cachedFormulas = new List<FormulaInfo>();
+                        _cachedFormulas = new List<FormulaDto>();
                     }
                 }
 
@@ -322,20 +321,20 @@ namespace LYBT.Desktop.Consultation.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取常用验方列表时发生异常");
-                return new List<FormulaInfo>();
+                return new List<FormulaDto>();
             }
         }
 
         /// <summary>
         /// 按症状推荐验方
         /// </summary>
-        public async Task<List<FormulaInfo>> RecommendFormulasBySymptoms(IEnumerable<string> symptoms)
+        public async Task<List<FormulaDto>> RecommendFormulasBySymptoms(IEnumerable<string> symptoms)
         {
             try
             {
                 if (symptoms == null || !symptoms.Any())
                 {
-                    return new List<FormulaInfo>();
+                    return new List<FormulaDto>();
                 }
 
                 // 如果没有缓存的验方列表，先加载
@@ -344,11 +343,11 @@ namespace LYBT.Desktop.Consultation.Services
                     var formulaResult = await _formulaService.GetFormulasAsync();
                     if (formulaResult.IsSuccess && formulaResult.Data != null)
                     {
-                        _cachedFormulas = _mapper.Map<List<FormulaInfo>>(formulaResult.Data);
+                        _cachedFormulas = formulaResult.Data; // 直接使用DTO列表
                     }
                     else
                     {
-                        _cachedFormulas = new List<FormulaInfo>();
+                        _cachedFormulas = new List<FormulaDto>();
                     }
                 }
 
@@ -370,7 +369,7 @@ namespace LYBT.Desktop.Consultation.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "按症状推荐验方时发生异常");
-                return new List<FormulaInfo>();
+                return new List<FormulaDto>();
             }
         }
 
@@ -381,11 +380,11 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 合并处方项目
         /// </summary>
-        private List<PrescriptionItemInfo> MergeItems(
-            IEnumerable<PrescriptionItemInfo>? existingItems,
-            List<PrescriptionItemInfo> newItems)
+        private List<PrescriptionItemDto> MergeItems(
+            IEnumerable<PrescriptionItemDto>? existingItems,
+            List<PrescriptionItemDto> newItems)
         {
-            var mergedItems = existingItems?.ToList() ?? new List<PrescriptionItemInfo>();
+            var mergedItems = existingItems?.ToList() ?? new List<PrescriptionItemDto>();
 
             foreach (var newItem in newItems)
             {
@@ -431,7 +430,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 检查验方是否匹配症状
         /// </summary>
-        private bool MatchesSymptoms(FormulaInfo formula, List<string> symptomKeywords)
+        private bool MatchesSymptoms(FormulaDto formula, List<string> symptomKeywords)
         {
             if (string.IsNullOrWhiteSpace(formula.Description))
             {
@@ -448,7 +447,7 @@ namespace LYBT.Desktop.Consultation.Services
         /// <summary>
         /// 计算症状匹配分数
         /// </summary>
-        private int CalculateMatchScore(FormulaInfo formula, List<string> symptomKeywords)
+        private int CalculateMatchScore(FormulaDto formula, List<string> symptomKeywords)
         {
             int score = 0;
             var description = (formula.Description ?? string.Empty).ToLower();
