@@ -208,9 +208,8 @@ namespace LYBT.Infrastructure.Data
             // CreateTime字段已删除（UltraThink v2.0简化）
             entity.HasIndex(m => m.Status);
 
-            // 配置关联关系
-            // entity.HasOne(m => m.Registration).WithMany().HasForeignKey(m => m.RegistrationId); // 模块已删除
-            entity.HasOne(m => m.Consultation).WithOne().HasForeignKey<MedicalCase>(m => m.ConsultationId).IsRequired(false);
+            // 配置关联关系 - 修复：一对多关系
+            // entity.HasOne(m => m.Consultation).WithOne().HasForeignKey<MedicalCase>(m => m.ConsultationId).IsRequired(false); // 删除：循环引用错误
             entity.HasOne(m => m.Prescription).WithOne().HasForeignKey<MedicalCase>(m => m.PrescriptionId).IsRequired(false);
         }
 
@@ -236,8 +235,15 @@ namespace LYBT.Infrastructure.Data
             entity.HasIndex(c => c.PatientId);
             entity.HasIndex(c => c.UserId);
             
-            // 配置与MedicalCase的关系
-            entity.HasOne<MedicalCase>().WithOne(m => m.Consultation).HasForeignKey<Consultation>(c => c.MedicalCaseId);
+            // 明确配置外键属性和导航属性关系
+            entity.Property(c => c.MedicalCaseId).HasColumnName("MedicalCaseId").IsRequired();
+            
+            // 配置与MedicalCase的一对多关系 - 明确指定导航属性
+            entity.HasOne(c => c.MedicalCase)
+                  .WithMany(m => m.Consultations)
+                  .HasForeignKey(c => c.MedicalCaseId)
+                  .IsRequired()
+                  .OnDelete(DeleteBehavior.Restrict); // 防止级联删除
 
         }
 

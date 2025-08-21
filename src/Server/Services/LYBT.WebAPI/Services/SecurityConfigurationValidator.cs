@@ -1,6 +1,7 @@
 using LYBT.Infrastructure.Configuration.Options;
 using AuthOptions = LYBT.Infrastructure.Options.AuthOptions;
 using SecurityOptions = LYBT.Infrastructure.Configuration.Options.SecurityOptions;
+using LYBT.Module.Users;
 using Microsoft.Extensions.Options;
 using System.Net;
 
@@ -34,6 +35,8 @@ namespace LYBT.WebAPI.Services
     {
         private readonly SecurityOptions _securityOptions;
         private readonly JwtOptions _jwtOptions;
+        private readonly SysAdminOptions _sysAdminOptions;
+        private readonly UserOptions _userOptions;
         private readonly IWebHostEnvironment _environment;
         private readonly IConfiguration _configuration;
         private readonly ILogger<SecurityConfigurationValidator> _logger;
@@ -41,12 +44,16 @@ namespace LYBT.WebAPI.Services
         public SecurityConfigurationValidator(
             IOptions<SecurityOptions> securityOptions,
             IOptions<JwtOptions> jwtOptions,
+            IOptions<SysAdminOptions> sysAdminOptions,
+            IOptions<UserOptions> userOptions,
             IWebHostEnvironment environment,
             IConfiguration configuration,
             ILogger<SecurityConfigurationValidator> logger)
         {
             _securityOptions = securityOptions.Value;
             _jwtOptions = jwtOptions.Value;
+            _sysAdminOptions = sysAdminOptions.Value;
+            _userOptions = userOptions.Value;
             _environment = environment;
             _configuration = configuration;
             _logger = logger;
@@ -205,8 +212,9 @@ namespace LYBT.WebAPI.Services
 
         private void ValidateDefaultPasswords(SecurityValidationResult result)
         {
-            var sysAdminPassword = _configuration.GetSection("SysAdminOptions:DefaultPassword").Value;
-            var userPassword = _configuration.GetSection("UserOptions:DefaultUserPassword").Value;
+            // 从配置选项获取密码（优先使用环境变量）
+            var sysAdminPassword = _sysAdminOptions?.DefaultPassword;
+            var userPassword = _userOptions?.DefaultUserPassword;
 
             if (!string.IsNullOrEmpty(sysAdminPassword) && IsWeakPassword(sysAdminPassword))
             {

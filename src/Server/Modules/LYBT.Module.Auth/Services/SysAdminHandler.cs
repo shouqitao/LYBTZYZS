@@ -61,12 +61,16 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 创建临时的系统管理员用户对象
+        /// UltraThink修复：使用固定GUID确保sysadmin用户ID一致性
         /// </summary>
         private User CreateTempSysAdminUser()
         {
+            // 使用固定的系统管理员GUID，确保每次登录ID一致
+            var sysadminId = new Guid("00000000-0000-0000-0000-000000000001");
+            
             return new User
             {
-                Id = Guid.NewGuid(),
+                Id = sysadminId,
                 Username = SYSADMIN_USERNAME,
                 RealName = "系统管理员",
                 PinYinCode = "XTGLY",

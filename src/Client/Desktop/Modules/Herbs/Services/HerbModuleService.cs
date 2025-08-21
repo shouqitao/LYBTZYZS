@@ -389,74 +389,90 @@ namespace LYBT.Desktop.Herbs.Services
             }
         }
         
-        public async Task<ServiceResult<int>> BatchUpdateStatusAsync(IEnumerable<Guid> ids, bool isEnabled, string reason = "")
-        {
-            try
-            {
-                if (ids == null || !ids.Any())
-                {
-                    return ServiceResult<int>.Failure("中药材ID列表不能为空");
-                }
-                
-                // UltraThink v2.0: 由于CommonStatusUpdateDto只支持单个ID，需要循环处理
-                var successCount = 0;
-                var failedCount = 0;
-                var errors = new List<string>();
-
-                foreach (var id in ids)
-                {
-                    try
-                    {
-                        var statusUpdateDto = new CommonStatusUpdateDto
-                        {
-                            Id = id,
-                            Status = isEnabled ? CommonStatus.Enabled : CommonStatus.Disabled,
-                            IsEnabled = isEnabled,
-                            Reason = reason
-                        };
-                        
-                        var apiResult = await _apiService.UpdateStatusAsync(statusUpdateDto);
-                        if (apiResult.IsSuccessStatusCode)
-                        {
-                            successCount++;
-                        }
-                        else
-                        {
-                            failedCount++;
-                            errors.Add($"ID {id}: {apiResult.Error?.Message}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        failedCount++;
-                        errors.Add($"ID {id}: {ex.Message}");
-                    }
-                }
-                
-                if (failedCount > 0 && successCount == 0)
-                {
-                    return ServiceResult<int>.Failure($"批量更新全部失败: {string.Join("; ", errors)}");
-                }
-                
-                if (failedCount > 0)
-                {
-                    return ServiceResult<int>.Failure($"部分更新失败（成功: {successCount}, 失败: {failedCount}）: {string.Join("; ", errors)}");
-                }
-                
-                return ServiceResult<int>.Success(successCount);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<int>.Failure($"批量更新状态异常: {ex.Message}");
-            }
-        }
+        // UltraThink v2.0: 删除批量状态更新功能 - 20人以下小诊所不需要复杂的批量操作
+        // 小诊所的药材数量有限，通过单个状态切换即可满足需求
         
         #endregion
         
         // UltraThink v2.0: 移除库存管理功能 - 根据架构要求，Herbs模块只管理药材信息和单价，不涉及库存
         
-                // UltraThink v2.0: 移除分类和统计功能 - 删除过度设计的分类统计功能，简化药材管理职责
+        // UltraThink v2.0: 移除分类和统计功能 - 删除过度设计的分类统计功能，简化药材管理职责
         
-                // UltraThink v2.0: 移除导入导出功能 - 删除过度设计的导入导出功能
+        #region 基础数据导入导出功能 - UltraThink精简版保留
+        
+        /// <summary>
+        /// 批量导入药材数据 - 基础数据功能保留
+        /// </summary>
+        public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
+        {
+            try
+            {
+                if (herbs == null || !herbs.Any())
+                {
+                    return ServiceResult<int>.Failure("导入药材列表不能为空");
+                }
+
+                // API调用批量导入
+                var apiResponse = await _apiService.ImportHerbsAsync(herbs);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                {
+                    return ServiceResult<int>.Failure("批量导入药材失败");
+                }
+
+                return ServiceResult<int>.Success(apiResponse.Content);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<int>.Failure($"批量导入药材异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 导出药材数据 - 基础数据功能保留
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> ExportHerbsAsync()
+        {
+            try
+            {
+                // API调用导出
+                var apiResponse = await _apiService.ExportHerbsAsync();
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                {
+                    return ServiceResult<List<HerbDto>>.Failure("导出药材数据失败");
+                }
+
+                // 使用AutoMapper将HerbDetailDto转换为HerbDto
+                var herbDtos = _mapper.Map<List<HerbDto>>(apiResponse.Content);
+                return ServiceResult<List<HerbDto>>.Success(herbDtos);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure($"导出药材数据异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 获取药材导入模板 - 基础数据功能保留 (拼音码自动生成)
+        /// </summary>
+        public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
+        {
+            try
+            {
+                // API调用获取导入模板
+                var apiResponse = await _apiService.GetImportTemplateAsync();
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                {
+                    return ServiceResult<byte[]>.Failure("获取药材导入模板失败");
+                }
+
+                return ServiceResult<byte[]>.Success(apiResponse.Content);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<byte[]>.Failure($"获取药材导入模板异常: {ex.Message}");
+            }
+        }
+        
+        #endregion
     }
 }

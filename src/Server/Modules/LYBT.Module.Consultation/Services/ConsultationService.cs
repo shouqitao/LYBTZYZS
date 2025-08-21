@@ -107,13 +107,17 @@ namespace LYBT.Module.Consultation.Services
             return await _queryHelper.SearchAsync(keyword);
         }
 
+        #region 已废弃功能 - 统计分析
+        /*
         /// <summary>
-        /// 获取看诊统计信息
+        /// 获取看诊统计信息（已废弃）
         /// </summary>
         public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
-            return await _queryHelper.GetStatisticsAsync(startDate, endDate);
+            // 看诊统计功能已废弃，小诊所不需要复杂统计分析
         }
+        */
+        #endregion
 
         #endregion
 
@@ -146,6 +150,25 @@ namespace LYBT.Module.Consultation.Services
         /// <summary>
         /// 完成看诊
         /// </summary>
+        /// <summary>
+        /// 获取看诊统计信息 (已废弃)
+        /// UltraThink v2.0: 统计功能已删除 - 小诊所不需要复杂统计分析
+        /// </summary>
+        public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
+        {
+            try
+            {
+                await Task.CompletedTask;
+                var emptyStats = new { Message = "统计功能已废弃 - UltraThink精简", TotalCount = 0 };
+                return ServiceResult<object>.Success(emptyStats);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取看诊统计失败");
+                return ServiceResult<object>.Failure("获取看诊统计失败", ex);
+            }
+        }
+
         public async Task<ServiceResult<bool>> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
         {
             return await _workflowHelper.CompleteConsultationAsync(id, dto);

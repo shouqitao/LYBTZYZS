@@ -110,6 +110,20 @@ namespace LYBT.Desktop.Core.Events
     {
     }
 
+    /// <summary>
+    /// 医疗案例选择事件 - UltraThink Step5
+    /// </summary>
+    public class MedicalCaseSelectedEvent : PubSubEvent<MedicalCaseSelectedEventArgs>
+    {
+    }
+
+    /// <summary>
+    /// 处方编辑器关闭事件 - UltraThink简化版
+    /// </summary>
+    public class PrescriptionComposerClosedEvent : PubSubEvent<PrescriptionComposerClosedEventArgs>
+    {
+    }
+
     #region 事件数据模型
 
     /// <summary>
@@ -187,7 +201,53 @@ namespace LYBT.Desktop.Core.Events
         public DateTime DiagnosisTime { get; set; } = DateTime.Now;
     }
 
+    /// <summary>
+    /// 医疗案例选择事件参数 - UltraThink Step5
+    /// </summary>
+    public class MedicalCaseSelectedEventArgs
+    {
+        public Guid MedicalCaseId { get; set; }
+        public Guid PatientId { get; set; }
+        public string PatientName { get; set; } = string.Empty;
+        public DateTime SelectionTime { get; set; } = DateTime.Now;
 
+        public MedicalCaseSelectedEventArgs()
+        {
+        }
+
+        public MedicalCaseSelectedEventArgs(Guid medicalCaseId)
+        {
+            MedicalCaseId = medicalCaseId;
+        }
+
+        public MedicalCaseSelectedEventArgs(Guid medicalCaseId, Guid patientId, string patientName = "")
+        {
+            MedicalCaseId = medicalCaseId;
+            PatientId = patientId;
+            PatientName = patientName;
+        }
+    }
+
+
+    /// <summary>
+    /// 处方编辑器关闭事件参数 - UltraThink简化版
+    /// </summary>
+    public class PrescriptionComposerClosedEventArgs
+    {
+        public Guid? PrescriptionId { get; set; }
+        public bool IsSaved { get; set; }
+        public DateTime CloseTime { get; set; } = DateTime.Now;
+
+        public PrescriptionComposerClosedEventArgs()
+        {
+        }
+
+        public PrescriptionComposerClosedEventArgs(Guid? prescriptionId, bool isSaved = false)
+        {
+            PrescriptionId = prescriptionId;
+            IsSaved = isSaved;
+        }
+    }
 
     #endregion
 

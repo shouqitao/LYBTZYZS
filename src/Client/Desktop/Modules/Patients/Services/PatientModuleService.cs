@@ -392,6 +392,79 @@ namespace LYBT.Desktop.Patients.Services
         
         // UltraThink v2.0: 移除统计查询功能 - 删除过度设计的统计功能
         
-        // UltraThink v2.0: 移除导入导出功能 - 删除过度设计的导入导出功能
+        #region 基础数据导入导出功能 - UltraThink精简版保留
+        
+        /// <summary>
+        /// 批量导入患者数据 - 基础数据功能保留
+        /// </summary>
+        public async Task<ServiceResult<int>> ImportPatientsAsync(List<PatientImportDto> patients)
+        {
+            try
+            {
+                if (patients == null || !patients.Any())
+                {
+                    return ServiceResult<int>.Failure("导入患者列表不能为空");
+                }
+
+                // API调用批量导入
+                var apiResponse = await _apiService.ImportPatientsAsync(patients);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                {
+                    return ServiceResult<int>.Failure("批量导入患者失败");
+                }
+
+                return ServiceResult<int>.Success(apiResponse.Content);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<int>.Failure($"批量导入患者异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 导出患者数据 - 基础数据功能保留
+        /// </summary>
+        public async Task<ServiceResult<List<PatientDto>>> ExportPatientsAsync()
+        {
+            try
+            {
+                // API调用导出
+                var apiResponse = await _apiService.ExportPatientsAsync();
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                {
+                    return ServiceResult<List<PatientDto>>.Failure("导出患者数据失败");
+                }
+
+                return ServiceResult<List<PatientDto>>.Success(apiResponse.Content.ToList());
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<PatientDto>>.Failure($"导出患者数据异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 获取患者导入模板 - 基础数据功能保留 (拼音码自动生成)
+        /// </summary>
+        public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
+        {
+            try
+            {
+                // API调用获取导入模板
+                var apiResponse = await _apiService.GetImportTemplateAsync();
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                {
+                    return ServiceResult<byte[]>.Failure("获取患者导入模板失败");
+                }
+
+                return ServiceResult<byte[]>.Success(apiResponse.Content);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<byte[]>.Failure($"获取患者导入模板异常: {ex.Message}");
+            }
+        }
+        
+        #endregion
     }
 }

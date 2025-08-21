@@ -457,43 +457,8 @@ namespace LYBT.Desktop.Users.Services
             }
         }
         
-        public async Task<ServiceResult> LockAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult.Failure("用户ID不能为空");
-                }
-                
-                // 这里应该调用API的锁定接口
-                // 目前模拟实现
-                return ServiceResult.Success();
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult.Failure($"锁定用户异常: {ex.Message}");
-            }
-        }
-        
-        public async Task<ServiceResult> UnlockAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult.Failure("用户ID不能为空");
-                }
-                
-                // 这里应该调用API的解锁接口
-                // 目前模拟实现
-                return ServiceResult.Success();
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult.Failure($"解锁用户异常: {ex.Message}");
-            }
-        }
+        // UltraThink v2.0: 删除锁定/解锁功能 - 20人以下小诊所不需要复杂的用户锁定机制
+        // 启用/禁用功能已经足够管理用户状态
         
         #endregion
         
@@ -571,56 +536,7 @@ namespace LYBT.Desktop.Users.Services
         
         // UltraThink v2.0: 移除导入导出功能 - 删除过度设计的导入导出功能
         
-        #region 批量操作
-        
-        public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
-        {
-            try
-            {
-                if (ids == null || !ids.Any())
-                {
-                    return ServiceResult<int>.Failure("用户ID列表不能为空");
-                }
-
-                var batchDto = new BatchIdsDto { Ids = ids };
-                var apiResponse = await _apiService.BatchEnableAsync(batchDto);
-                if (!apiResponse.IsSuccessStatusCode)
-                {
-                    return ServiceResult<int>.Failure("批量启用用户失败");
-                }
-
-                return ServiceResult<int>.Success(ids.Count);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<int>.Failure($"批量启用用户异常: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
-        {
-            try
-            {
-                if (ids == null || !ids.Any())
-                {
-                    return ServiceResult<int>.Failure("用户ID列表不能为空");
-                }
-
-                var batchDto = new BatchIdsDto { Ids = ids };
-                var apiResponse = await _apiService.BatchDisableAsync(batchDto);
-                if (!apiResponse.IsSuccessStatusCode)
-                {
-                    return ServiceResult<int>.Failure("批量禁用用户失败");
-                }
-
-                return ServiceResult<int>.Success(ids.Count);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<int>.Failure($"批量禁用用户异常: {ex.Message}");
-            }
-        }
-        
-        #endregion
+        // UltraThink v2.0: 删除批量操作功能 - 20人以下小诊所不需要复杂的批量用户管理
+        // 小诊所用户数量有限，通过单个操作就能满足需求
     }
 }

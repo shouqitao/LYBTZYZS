@@ -64,5 +64,23 @@ namespace LYBT.Desktop.Modules.Patients.Api
         /// </summary>
         [Get("/api/v1/patients/active")]
         Task<Refit.ApiResponse<List<PatientDto>>> GetActivePatientsAsync();
+        
+        /// <summary>
+        /// 批量导入患者数据
+        /// </summary>
+        [Post("/api/v1/patients/import")]
+        Task<Refit.ApiResponse<int>> ImportPatientsAsync([Body] List<PatientImportDto> patients);
+        
+        /// <summary>
+        /// 导出患者数据
+        /// </summary>
+        [Get("/api/v1/patients/export")]
+        Task<Refit.ApiResponse<List<PatientDto>>> ExportPatientsAsync();
+        
+        /// <summary>
+        /// 获取患者导入模板
+        /// </summary>
+        [Get("/api/v1/patients/import-template")]
+        Task<Refit.ApiResponse<byte[]>> GetImportTemplateAsync();
     }
 }

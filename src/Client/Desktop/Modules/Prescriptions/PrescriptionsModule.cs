@@ -3,6 +3,7 @@ using Prism.Modularity;
 using LYBT.Desktop.Prescriptions.ViewModels;
 using LYBT.Desktop.Prescriptions.Views;
 using LYBT.Desktop.Prescriptions.Services;
+using LYBT.Desktop.Prescriptions.Components;
 
 namespace LYBT.Desktop.Prescriptions
 {
@@ -20,14 +21,33 @@ namespace LYBT.Desktop.Prescriptions
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink模块化架构：注册模块业务服务
+            // UltraThink简化架构：注册核心组件和服务
+            
+            // 核心组件（简化版）
+            containerRegistry.RegisterSingleton<PriceCalculator>();
+            containerRegistry.RegisterSingleton<BasicValidator>();
+            
+            // 简化服务
+            containerRegistry.RegisterSingleton<IPrescriptionComposerService, PrescriptionComposerService>();
             containerRegistry.RegisterSingleton<PrescriptionsModuleService>();
             
-            // UltraThink四层架构：注册标准ViewModel
+            // UltraThink核心视图：专注处方组成编辑
+            
+            // 主视图：处方组成编辑器（简化版核心）
+            containerRegistry.RegisterForNavigation<PrescriptionComposerView, PrescriptionComposerViewModel>();
+            
+            // 主入口视图（兼容性保持）
+            containerRegistry.RegisterForNavigation<PrescriptionsMainView, PrescriptionsMainViewModel>();
+            
+            // 保留的处方工作流视图（向后兼容）
+            // containerRegistry.RegisterForNavigation<PrescriptionView, PrescriptionViewModel>(); // Temporarily disabled - legacy code
             containerRegistry.RegisterForNavigation<PrescriptionManagementView, PrescriptionManagementViewModel>();
+            
+            // 对话框视图（向后兼容）
             containerRegistry.RegisterForNavigation<PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();
             containerRegistry.RegisterForNavigation<HerbSelectionDialog, HerbSelectionDialogViewModel>();
             containerRegistry.RegisterForNavigation<FormulaTemplateDialog, FormulaTemplateDialogViewModel>();
+            containerRegistry.RegisterForNavigation<SelectFormulaDialog, SelectFormulaDialogViewModel>();
         }
     }
 }

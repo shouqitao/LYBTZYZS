@@ -22,14 +22,14 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
     public override async Task<LYBT.Entities.MedicalCase.MedicalCase?> GetByIdAsync(Guid id)
     {
         return await _dbSet
-            .Include(m => m.Consultation)
+            .Include(m => m.Consultations)
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
     public override async Task<IEnumerable<LYBT.Entities.MedicalCase.MedicalCase>> GetAllAsync()
     {
         return await _dbSet
-            .Include(m => m.Consultation)
+            .Include(m => m.Consultations)
             .ToListAsync();
     }
 
@@ -42,7 +42,7 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
         bool ascending = true)
     {
         var query = _dbSet
-            .Include(m => m.Consultation)
+            .Include(m => m.Consultations)
             .AsQueryable();
 
         if (predicate != null)
@@ -81,7 +81,7 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByPatientIdAsync(Guid patientId)
     {
         return await _dbSet
-            .Include(m => m.Consultation)
+            .Include(m => m.Consultations)
             .Where(m => m.PatientId == patientId)
             .OrderByDescending(m => m.ConsultationDate)
             .ToListAsync();
@@ -90,7 +90,7 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByUserIdAsync(Guid userId)
     {
         return await _dbSet
-            .Include(m => m.Consultation)
+            .Include(m => m.Consultations)
             .Where(m => m.DoctorId == userId)
             .OrderByDescending(m => m.ConsultationDate)
             .ToListAsync();
@@ -99,7 +99,7 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByStatusAsync(MedicalCaseStatus status)
     {
         return await _dbSet
-            .Include(m => m.Consultation)
+            .Include(m => m.Consultations)
             .Where(m => m.Status == status)
             .OrderByDescending(m => m.ConsultationDate)
             .ToListAsync();
@@ -108,7 +108,7 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
         return await _dbSet
-            .Include(m => m.Consultation)
+            .Include(m => m.Consultations)
             .Where(m => m.ConsultationDate >= startDate && m.ConsultationDate <= endDate)
             .OrderByDescending(m => m.ConsultationDate)
             .ToListAsync();
@@ -117,7 +117,7 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
     public async Task<LYBT.Entities.MedicalCase.MedicalCase?> GetLatestByPatientIdAsync(Guid patientId)
     {
         return await _dbSet
-            .Include(m => m.Consultation)
+            .Include(m => m.Consultations)
             .Where(m => m.PatientId == patientId)
             .OrderByDescending(m => m.ConsultationDate)
             .FirstOrDefaultAsync();

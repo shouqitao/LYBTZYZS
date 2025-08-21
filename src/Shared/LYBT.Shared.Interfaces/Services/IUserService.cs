@@ -91,11 +91,15 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword);
         
+        #region 已废弃功能 - UltraThink精简
+        /*
         /// <summary>
-        /// 获取用户统计信息
+        /// 获取用户统计信息 (已废弃)
         /// </summary>
         Task<ServiceResult<object>> GetStatisticsAsync();
-        
+        */
+        #endregion
+
         /// <summary>
         /// 验证用户名是否可用
         /// </summary>

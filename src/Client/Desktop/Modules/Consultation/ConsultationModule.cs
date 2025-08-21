@@ -22,19 +22,14 @@ namespace LYBT.Desktop.Consultation
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink模块化架构：注册模块业务服务
-            containerRegistry.RegisterSingleton<ConsultationModuleService>();
-            
-            // UltraThink简化：只注册核心服务，移除凗余的管理器
-            containerRegistry.Register<ConsultationDataService>();
-            // 移除了以下服务（功能可以整合到ConsultationModuleService中）：
-            // - PrescriptionManager (已有全局PrescriptionService)
-            // - FormulaManager (已有全局FormulaService)
-            // - ConsultationValidator (可以在Service层做验证)
-            containerRegistry.Register<ConsultationEventHandler>();
+            // UltraThink Phase 1: 注册简化后的核心服务
+            containerRegistry.RegisterSingleton<ConsultationService>();
+            containerRegistry.RegisterSingleton<TCMDiagnosisService>();
 
             // 注册视图模型
             containerRegistry.Register<ConsultationMainViewModel>();
+            containerRegistry.Register<TCMDiagnosisViewModel>();
+            containerRegistry.Register<DifferentiationViewModel>();
 
             // 注册视图导航
             containerRegistry.RegisterForNavigation<ConsultationMainView>();

@@ -21,9 +21,9 @@ using LYBT.Desktop.Core.Interfaces.Services;
 namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
-    /// 中药材管理视图模型（UltraThink架构重构版）
-    /// 使用新的三层架构：PaginationCoordinator + SearchManager + NewBaseListViewModel
-    /// 实现完全的关注点分离和单一职责原则
+    /// 中药材管理视图模型（UltraThink v2.0 小诊所精简版）
+    /// 移除过度设计的批量操作、多选功能，专注核心CRUD操作
+    /// 适用于20人以下小诊所的简单直接的药材管理需求
     /// </summary>
     public class HerbManagementViewModel : NewBaseListViewModel<HerbDto>
     {
@@ -33,27 +33,20 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
         
-        private ObservableCollection<HerbViewModel> _herbViewModels = new();
-        private HerbViewModel? _selectedHerbViewModel;
+        // UltraThink v2.0: 直接使用DTO，移除复杂的ViewModel包装
+        private HerbDto? _selectedHerb;
 
         #endregion
 
         #region Properties
 
-        /// <summary>药材视图模型集合 - 替代原始的HerbInfo集合</summary>
-        public ObservableCollection<HerbViewModel> HerbViewModels
+        /// <summary>选中的药材 - UltraThink v2.0: 直接使用DTO</summary>
+        public HerbDto? SelectedHerb
         {
-            get => _herbViewModels;
-            set => SetProperty(ref _herbViewModels, value);
-        }
-
-        /// <summary>选中的药材视图模型</summary>
-        public HerbViewModel? SelectedHerbViewModel
-        {
-            get => _selectedHerbViewModel;
+            get => _selectedHerb;
             set
             {
-                if (SetProperty(ref _selectedHerbViewModel, value))
+                if (SetProperty(ref _selectedHerb, value))
                 {
                     // 更新命令状态
                     EditCommand.RaiseCanExecuteChanged();
@@ -64,25 +57,22 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        /// <summary>批量选中的药材数量</summary>
-        public int SelectedHerbsCount => HerbViewModels.Count(h => h.IsSelected);
-
-        /// <summary>是否有选中的药材</summary>
-        public bool HasSelectedHerbs => SelectedHerbsCount > 0;
+        // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
+        // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
 
         #endregion
 
         #region Commands
 
         public DelegateCommand AddCommand { get; private set; }
-        public DelegateCommand<HerbViewModel> EditCommand { get; private set; }
-        public DelegateCommand<HerbViewModel> DeleteCommand { get; private set; }
-        public DelegateCommand<HerbViewModel> ToggleStatusCommand { get; private set; }
-        public DelegateCommand<HerbViewModel> ViewDetailsCommand { get; private set; }
-        public DelegateCommand BatchEnableCommand { get; private set; }
-        public DelegateCommand BatchDisableCommand { get; private set; }
-        public DelegateCommand ClearSelectionCommand { get; private set; }
-        public DelegateCommand SelectAllCommand { get; private set; }
+        public DelegateCommand<HerbDto> EditCommand { get; private set; }
+        public DelegateCommand<HerbDto> DeleteCommand { get; private set; }
+        public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; }
+        public DelegateCommand<HerbDto> ViewDetailsCommand { get; private set; }
+
+        // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
+        // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
+        // - ClearSelectionCommand/SelectAllCommand: 多选功能过度设计
 
         #endregion
 
@@ -105,11 +95,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             InitializeCommands();
             
-            // 监听选择状态变化
-            HerbViewModels.CollectionChanged += (s, e) => UpdateSelectionProperties();
-            
-            // 初始化加载数据
-            _ = RefreshDataAsync();
+            // UltraThink v2.0: 删除复杂初始化逻辑
+            // - 删除选择状态变化监听: 多选功能已移除
+            // - 删除RefreshDataAsync(): 直接使用基类的数据加载机制
         }
 
         #endregion
@@ -119,18 +107,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
         protected override void InitializeCommands()
         {
             AddCommand = new DelegateCommand(async () => await AddHerbAsync());
-            EditCommand = new DelegateCommand<HerbViewModel>(async herb => await EditHerbAsync(herb), CanExecuteHerbCommand);
-            DeleteCommand = new DelegateCommand<HerbViewModel>(async herb => await DeleteHerbAsync(herb), CanExecuteHerbCommand);
-            ToggleStatusCommand = new DelegateCommand<HerbViewModel>(async herb => await ToggleStatusAsync(herb), CanExecuteHerbCommand);
-            ViewDetailsCommand = new DelegateCommand<HerbViewModel>(async herb => await ViewDetailsAsync(herb), CanExecuteHerbCommand);
+            EditCommand = new DelegateCommand<HerbDto>(async herb => await EditHerbAsync(herb), CanExecuteHerbCommand);
+            DeleteCommand = new DelegateCommand<HerbDto>(async herb => await DeleteHerbAsync(herb), CanExecuteHerbCommand);
+            ToggleStatusCommand = new DelegateCommand<HerbDto>(async herb => await ToggleStatusAsync(herb), CanExecuteHerbCommand);
+            ViewDetailsCommand = new DelegateCommand<HerbDto>(async herb => await ViewDetailsAsync(herb), CanExecuteHerbCommand);
             
-            BatchEnableCommand = new DelegateCommand(async () => await BatchEnableAsync(), () => HasSelectedHerbs);
-            BatchDisableCommand = new DelegateCommand(async () => await BatchDisableAsync(), () => HasSelectedHerbs);
-            ClearSelectionCommand = new DelegateCommand(ClearSelection, () => HasSelectedHerbs);
-            SelectAllCommand = new DelegateCommand(SelectAll);
+            // UltraThink v2.0: 删除批量操作命令初始化 - 20人以下小诊所不需要复杂的批量操作
         }
 
-        private bool CanExecuteHerbCommand(HerbViewModel herb)
+        private bool CanExecuteHerbCommand(HerbDto herb)
         {
             return herb != null && !IsLoading;
         }
@@ -152,75 +137,13 @@ namespace LYBT.Desktop.Herbs.ViewModels
             return await _herbService.GetPagedAsync(herbQuery);
         }
 
-        protected override void OnDataLoaded(PagedResult<HerbDto> data)
-        {
-            base.OnDataLoaded(data);
-            
-            // 将HerbDto转换为HerbViewModel
-            UpdateHerbViewModels(data.Items);
-        }
-
-        protected override void OnDataLoadFailed(string errorMessage)
-        {
-            base.OnDataLoadFailed(errorMessage);
-            
-            // 清空药材视图模型
-            HerbViewModels.Clear();
-            UpdateSelectionProperties();
-            
-            // 显示错误
-            _ = _dialogService.ShowErrorAsync(errorMessage, "加载失败");
-        }
+        // UltraThink v2.0: 删除复杂的ViewModel转换和选择状态管理
+        // 直接使用基类的标准数据加载处理，无需自定义OnDataLoaded和OnDataLoadFailed
 
         #endregion
         
-        #region Herb ViewModels Management
-
-        private void UpdateHerbViewModels(System.Collections.Generic.List<HerbDto> herbDtos)
-        {
-            // 保存当前选择状态
-            var selectedIds = HerbViewModels.Where(h => h.IsSelected).Select(h => h.Id).ToHashSet();
-            
-            // 清空并重新创建
-            HerbViewModels.Clear();
-            
-            foreach (var dto in herbDtos)
-            {
-                // UltraThink v2.0: 直接使用DTO创建HerbViewModel
-                var herbViewModel = HerbViewModel.Create(dto);
-                
-                // 恢复选择状态
-                if (selectedIds.Contains(herbViewModel.Id))
-                {
-                    herbViewModel.IsSelected = true;
-                }
-                
-                // 监听选择状态变化
-                herbViewModel.State.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(HerbStateViewModel.IsSelected))
-                    {
-                        UpdateSelectionProperties();
-                    }
-                };
-                
-                HerbViewModels.Add(herbViewModel);
-            }
-            
-            UpdateSelectionProperties();
-        }
-
-        private void UpdateSelectionProperties()
-        {
-            RaisePropertyChanged(nameof(SelectedHerbsCount));
-            RaisePropertyChanged(nameof(HasSelectedHerbs));
-            
-            BatchEnableCommand.RaiseCanExecuteChanged();
-            BatchDisableCommand.RaiseCanExecuteChanged();
-            ClearSelectionCommand.RaiseCanExecuteChanged();
-        }
-
-        #endregion
+        // UltraThink v2.0: 删除复杂的ViewModel管理 - 20人以下小诊所不需要复杂的选择状态管理
+        // 直接使用基类提供的Data属性访问PagedResult<HerbDto>数据
 
         #region CRUD Operations
 
@@ -239,60 +162,58 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
-        private async Task EditHerbAsync(HerbViewModel herbViewModel)
+        private async Task EditHerbAsync(HerbDto herb)
         {
-            if (herbViewModel == null) return;
+            if (herb == null) return;
             
             try
             {
                 // TODO: 实现药材编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑药材 {herbViewModel.DisplayName} 功能开发中", "提示");
+                await _dialogService.ShowInformationAsync($"编辑药材 {herb.Name} 功能开发中", "提示");
             }
             catch (Exception ex)
             {
-                LogError(ex, "编辑药材失败: {HerbId}", herbViewModel.Id);
+                LogError(ex, "编辑药材失败: {HerbId}", herb.Id);
                 ShowError($"编辑药材失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"编辑药材失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task DeleteHerbAsync(HerbViewModel herbViewModel)
+        private async Task DeleteHerbAsync(HerbDto herb)
         {
-            if (herbViewModel == null) return;
+            if (herb == null) return;
             
             // 药材信息不支持真正删除，只能禁用
-            await ToggleStatusAsync(herbViewModel);
+            await ToggleStatusAsync(herb);
         }
 
         #endregion
 
         #region Business Operations
 
-        private async Task ToggleStatusAsync(HerbViewModel herbViewModel)
+        private async Task ToggleStatusAsync(HerbDto herb)
         {
-            if (herbViewModel == null) return;
+            if (herb == null) return;
 
-            var isEnabled = herbViewModel.HerbData.Status == CommonStatus.Enabled;
+            var isEnabled = herb.Status == CommonStatus.Enabled;
             var action = isEnabled ? "禁用" : "启用";
             
             var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要{action}药材 {herbViewModel.DisplayName} 吗？",
+                $"确定要{action}药材 {herb.Name} 吗？",
                 $"{action}药材");
 
             if (confirm)
             {
                 try
                 {
-                    herbViewModel.IsLoading = true;
-                    
                     ServiceResult result;
                     if (isEnabled)
                     {
-                        result = await _herbService.DisableAsync(herbViewModel.Id);
+                        result = await _herbService.DisableAsync(herb.Id);
                     }
                     else
                     {
-                        result = await _herbService.EnableAsync(herbViewModel.Id);
+                        result = await _herbService.EnableAsync(herb.Id);
                     }
 
                     if (result.IsSuccess)
@@ -309,41 +230,35 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex, "切换药材状态失败: {HerbId}", herbViewModel.Id);
+                    LogError(ex, "切换药材状态失败: {HerbId}", herb.Id);
                     ShowError($"药材{action}失败: {ex.Message}");
                     await _dialogService.ShowErrorAsync($"药材{action}失败: {ex.Message}", "错误");
-                }
-                finally
-                {
-                    herbViewModel.IsLoading = false;
                 }
             }
         }
 
-        private async Task ViewDetailsAsync(HerbViewModel herbViewModel)
+        private async Task ViewDetailsAsync(HerbDto herb)
         {
-            if (herbViewModel == null) return;
+            if (herb == null) return;
 
             try
             {
-                herbViewModel.IsLoading = true;
-                
-                var result = await _herbService.GetByIdAsync(herbViewModel.Id);
+                var result = await _herbService.GetByIdAsync(herb.Id);
                 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    var herb = result.Data;
+                    var herbDetail = result.Data;
                     var detailInfo = $"药材详情：\n\n" +
-                                   $"名称: {herb.Name}\n" +
-                                   $"产地: {herb.Origin ?? "未知"}\n" +
-                                   $"规格: {herb.Spec ?? "未知"}\n" +
-                                   $"单价: ¥{herb.Price:F2}/{herb.Unit}\n" +
-                                   $"功效: {herb.Effect ?? "未录入"}\n" +
-                                   $"用法: {herb.Usage ?? "未录入"}\n" +
-                                   $"状态: {(herb.Status == CommonStatus.Enabled ? "正常" : "禁用")}\n" +
-                                   $"备注: {herb.Remark ?? "无"}";
+                                   $"名称: {herbDetail.Name}\n" +
+                                   $"产地: {herbDetail.Origin ?? "未知"}\n" +
+                                   $"规格: {herbDetail.Spec ?? "未知"}\n" +
+                                   $"单价: ¥{herbDetail.Price:F2}/{herbDetail.Unit}\n" +
+                                   $"功效: {herbDetail.Effect ?? "未录入"}\n" +
+                                   $"用法: {herbDetail.Usage ?? "未录入"}\n" +
+                                   $"状态: {(herbDetail.Status == CommonStatus.Enabled ? "正常" : "禁用")}\n" +
+                                   $"备注: {herbDetail.Remark ?? "无"}";
 
-                    await _dialogService.ShowInformationAsync(detailInfo, $"药材详情 - {herb.Name}");
+                    await _dialogService.ShowInformationAsync(detailInfo, $"药材详情 - {herbDetail.Name}");
                 }
                 else
                 {
@@ -354,118 +269,18 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "查看药材详情失败: {HerbId}", herbViewModel.Id);
+                LogError(ex, "查看药材详情失败: {HerbId}", herb.Id);
                 ShowError($"查看药材详情失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"查看药材详情失败: {ex.Message}", "错误");
             }
-            finally
-            {
-                herbViewModel.IsLoading = false;
-            }
         }
 
         #endregion
 
-        #region Batch Operations
+        // UltraThink v2.0: 删除所有批量操作功能 - 20人以下小诊所不需要复杂的批量操作
+        // 包括: BatchEnableAsync, BatchDisableAsync 等功能
 
-        private async Task BatchEnableAsync()
-        {
-            var selectedHerbs = HerbViewModels.Where(h => h.IsSelected).ToList();
-            if (!selectedHerbs.Any()) return;
-
-            var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要启用选中的 {selectedHerbs.Count} 个药材吗？",
-                "批量启用");
-
-            if (confirm)
-            {
-                try
-                {
-                    var ids = selectedHerbs.Select(h => h.Id).ToList();
-                    var result = await _herbService.BatchUpdateStatusAsync(ids, true, "批量启用");
-
-                    if (result.IsSuccess)
-                    {
-                        await RefreshDataAsync();
-                        await _dialogService.ShowInformationAsync($"已成功启用 {result.Data} 个药材", "成功");
-                    }
-                    else
-                    {
-                        await _dialogService.ShowErrorAsync(
-                            result.ErrorMessage ?? "批量启用失败",
-                            "错误");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "批量启用药材失败");
-                    ShowError($"批量启用失败: {ex.Message}");
-                    await _dialogService.ShowErrorAsync($"批量启用失败: {ex.Message}", "错误");
-                }
-            }
-        }
-
-        private async Task BatchDisableAsync()
-        {
-            var selectedHerbs = HerbViewModels.Where(h => h.IsSelected).ToList();
-            if (!selectedHerbs.Any())
-            {
-                await _dialogService.ShowWarningAsync("没有选中的药材", "警告");
-                return;
-            }
-
-            var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要禁用选中的 {selectedHerbs.Count} 个药材吗？",
-                "批量禁用");
-
-            if (confirm)
-            {
-                try
-                {
-                    var ids = selectedHerbs.Select(h => h.Id).ToList();
-                    var result = await _herbService.BatchUpdateStatusAsync(ids, false, "批量禁用");
-
-                    if (result.IsSuccess)
-                    {
-                        await RefreshDataAsync();
-                        await _dialogService.ShowInformationAsync($"已成功禁用 {result.Data} 个药材", "成功");
-                    }
-                    else
-                    {
-                        await _dialogService.ShowErrorAsync(
-                            result.ErrorMessage ?? "批量禁用失败",
-                            "错误");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "批量禁用药材失败");
-                    ShowError($"批量禁用失败: {ex.Message}");
-                    await _dialogService.ShowErrorAsync($"批量禁用失败: {ex.Message}", "错误");
-                }
-            }
-        }
-
-        #endregion
-
-        #region Selection Management
-
-        private void ClearSelection()
-        {
-            foreach (var herb in HerbViewModels)
-            {
-                herb.IsSelected = false;
-            }
-        }
-
-        private void SelectAll()
-        {
-            foreach (var herb in HerbViewModels)
-            {
-                herb.IsSelected = true;
-            }
-        }
-
-        #endregion
+        // UltraThink v2.0: 删除所有选择管理功能 - 20人以下小诊所不需要复杂的多选功能
+        // 包括: ClearSelection, SelectAll 等功能
     }
 }

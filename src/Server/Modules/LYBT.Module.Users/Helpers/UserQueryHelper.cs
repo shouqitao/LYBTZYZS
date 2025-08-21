@@ -157,30 +157,12 @@ namespace LYBT.Module.Users.Helpers
             }
         }
 
-        /// <summary>
-        /// 获取用户统计信息
-        /// </summary>
-        public async Task<ServiceResult<object>> GetStatisticsAsync()
-        {
-            try
-            {
-                var allUsers = await _userRepository.GetAllAsync();
-                var statistics = new
-                {
-                    TotalCount = allUsers.Count(),
-                    ActiveCount = allUsers.Count(u => u.Status == CommonStatus.Enabled),
-                    InactiveCount = allUsers.Count(u => u.Status == CommonStatus.Disabled),
-                    RecentCount = 0 // UltraThink v2.0简化：User实体已删除CreateTime字段，暂不统计近期创建用户
-                };
-
-                return ServiceResult<object>.Success(statistics);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取用户统计信息失败");
-                return ServiceResult<object>.Failure($"获取用户统计信息失败: {ex.Message}", ex);
-            }
-        }
+        #region 已废弃功能 - 统计分析
+        /*
+        // 用户统计功能已删除 - UltraThink精简
+        // GetStatisticsAsync方法已废弃，小诊所不需要复杂统计分析
+        */
+        #endregion
 
         /// <summary>
         /// 根据ID列表获取用户列表
@@ -264,25 +246,17 @@ namespace LYBT.Module.Users.Helpers
             }
         }
 
-        /// <summary>
-        /// 根据科室获取医生
-        /// </summary>
-        public async Task<ServiceResult<List<UserDto>>> GetDoctorsByDepartmentAsync(string department)
-        {
-            try
-            {
-                var users = await _userRepository.GetAllAsync();
-                var all = _mapper.Map<List<UserDto>>(users);
-                // Department字段已删除，返回所有用户
-                return ServiceResult<List<UserDto>>.Success(all.ToList());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据科室获取医生失败, Department: {Department}", department);
-                return ServiceResult<List<UserDto>>.Failure($"根据科室获取医生失败: {ex.Message}", ex);
-            }
-        }
+        #endregion
 
+        #region 已废弃功能 - 科室管理
+        /*
+        // 科室管理功能已删除 - 小诊所无需科室划分
+        // GetDoctorsByDepartmentAsync方法已废弃
+        */
+        #endregion
+
+        #region 医生可用性检查
+        
         /// <summary>
         /// 获取医生的今日排班（简化版，默认都在班）
         /// </summary>

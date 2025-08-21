@@ -222,30 +222,35 @@ namespace LYBT.Module.Formula.Services
             return await _queryHelper.GetCategoriesAsync();
         }
 
+        /*
         /// <summary>
-        /// 分析验方 - 委托给CalculationHelper
+        /// 分析验方 (已废弃)
         /// </summary>
         public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
         {
-            return await _calculationHelper.AnalyzeFormulaAsync(formulaId);
+            // 验方分析功能已删除 - 小诊所医生凭经验判断
         }
+        */
 
+        #region 已废弃功能 - UltraThink精简
+        /*
         /// <summary>
-        /// 获取推荐验方 - 委托给CalculationHelper
+        /// 获取推荐验方 (已废弃)
         /// </summary>
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
         {
-            return await _calculationHelper.GetRecommendationsBySyndromeAsync(syndrome);
+            // 智能推荐功能已删除 - 小诊所医生凭经验选方
         }
 
         /// <summary>
-        /// 获取推荐验方（三参数重载） - 委托给CalculationHelper
+        /// 获取推荐验方（三参数重载） (已废弃)
         /// </summary>
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(
             string symptoms, string diagnosis, Guid doctorId)
         {
-            return await _calculationHelper.GetIntelligentRecommendationsAsync(symptoms, diagnosis, doctorId);
+            // 智能推荐功能已删除 - 小诊所医生凭经验选方
         }
+        */
 
         /// <summary>
         /// 从处方创建验方 - 委托给CalculationHelper
@@ -268,8 +273,9 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
+        /*
         /// <summary>
-        /// 导入验方 - 委托给CalculationHelper
+        /// 导入验方 - 委托给CalculationHelper (基础数据功能保留)
         /// </summary>
         public async Task<ServiceResult<FormulaImportResultDto>> ImportFormulasAsync(
             List<FormulaImportDto> formulas, 
@@ -279,7 +285,7 @@ namespace LYBT.Module.Formula.Services
         }
 
         /// <summary>
-        /// 验证导入数据 - 委托给ValidationHelper
+        /// 验证导入数据 - 委托给ValidationHelper (基础数据功能保留)
         /// </summary>
         public async Task<ServiceResult<FormulaImportResultDto>> ValidateImportDataAsync(
             List<FormulaImportDto> formulas,
@@ -287,9 +293,11 @@ namespace LYBT.Module.Formula.Services
         {
             return await _validationHelper.ValidateImportDataAsync(formulas, options);
         }
+        */
 
+        /*
         /// <summary>
-        /// 导出验方 - 委托给QueryHelper
+        /// 导出验方 - 委托给QueryHelper (基础数据功能保留)
         /// </summary>
         public async Task<ServiceResult<List<FormulaExportDto>>> ExportFormulasAsync(List<Guid> formulaIds)
         {
@@ -297,7 +305,7 @@ namespace LYBT.Module.Formula.Services
         }
 
         /// <summary>
-        /// 导出所有验方 - 委托给QueryHelper
+        /// 导出所有验方 - 委托给QueryHelper (基础数据功能保留)
         /// </summary>
         public async Task<ServiceResult<List<FormulaExportDto>>> ExportAllFormulasAsync(
             bool includePrivate = false, 
@@ -305,17 +313,20 @@ namespace LYBT.Module.Formula.Services
         {
             return await _queryHelper.ExportAllFormulasAsync(includePrivate, category);
         }
+        */
 
+        /*
         /// <summary>
-        /// 获取导入历史 - 委托给QueryHelper
+        /// 获取导入历史 (已废弃)
         /// </summary>
         public async Task<ServiceResult<PagedResult<FormulaImportResultDto>>> GetImportHistoryAsync(
             int pageIndex = 1,
             int pageSize = 20,
             string? importBatch = null)
         {
-            return await _queryHelper.GetImportHistoryAsync(pageIndex, pageSize, importBatch);
+            // 导入历史功能已删除 - 小诊所不需要复杂导入追踪
         }
+        */
 
         /// <summary>
         /// 复制验方
@@ -447,81 +458,100 @@ namespace LYBT.Module.Formula.Services
             return result.IsSuccess ? result.Data! : new List<FormulaDto>();
         }
 
+        /*
         /// <summary>
-        /// 导出到Excel文件
+        /// 导出到Excel文件 (已废弃)
         /// </summary>
         public async Task<ServiceResult<byte[]>> ExportToExcelAsync(List<Guid> formulaIds)
         {
-            try
-            {
-                _logger.LogInformation("开始导出验方为Excel文件，数量: {Count}", formulaIds.Count);
-                var content = System.Text.Encoding.UTF8.GetBytes("Excel导出功能待实现，需要集成EPPlus或NPOI库");
-                return ServiceResult<byte[]>.Success(content);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出Excel文件异常");
-                return ServiceResult<byte[]>.Failure($"导出Excel文件异常: {ex.Message}", ex);
-            }
+            // Excel导出功能已删除 - 小诊所不需要复杂的Excel处理
         }
+        */
 
+        /*
         /// <summary>
-        /// 从Excel导入验方
+        /// 从Excel导入验方 (已废弃)
         /// </summary>
         public async Task<ServiceResult<FormulaImportResultDto>> ImportFromExcelAsync(
             byte[] fileData,
             string fileName,
             FormulaImportOptionsDto options)
         {
+            // Excel导入功能已删除 - 小诊所手动录入验方
+        }
+        */
+
+        /// <summary>
+        /// 分析验方 (已废弃)
+        /// UltraThink v2.0: 验方分析功能已删除 - 小诊所医生凭经验判断
+        /// </summary>
+        public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
+        {
             try
             {
-                _logger.LogInformation("开始从Excel文件导入验方，文件: {FileName}", fileName);
-
-                var result = new FormulaImportResultDto
-                {
-                    ImportBatch = options.ImportBatch ?? Guid.NewGuid().ToString("N")[..8],
-                    TotalCount = 0,
-                    SuccessCount = 0,
-                    FailedCount = 0,
-                    SkippedCount = 0,
-                    StartTime = DateTime.Now,
-                    EndTime = DateTime.Now,
-                    SuccessfulFormulas = new List<FormulaDto>(),
-                    FailedItems = new List<FormulaImportErrorDto>
-                    {
-                        new FormulaImportErrorDto
-                        {
-                            RowIndex = 1,
-                            FormulaName = "Excel导入",
-                            ErrorMessage = "Excel导入功能待实现，需要集成EPPlus或NPOI库"
-                        }
-                    }
-                };
-
-                return ServiceResult<FormulaImportResultDto>.Success(result);
+                await Task.CompletedTask;
+                var emptyResult = new FormulaAnalysisResult(); // 需要定义这个类或使用object
+                return ServiceResult<FormulaAnalysisResult>.Success(emptyResult);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "从Excel导入验方异常");
-                return ServiceResult<FormulaImportResultDto>.Failure($"从Excel导入验方异常: {ex.Message}", ex);
+                _logger.LogError(ex, "验方分析失败: {FormulaId}", formulaId);
+                return ServiceResult<FormulaAnalysisResult>.Failure($"验方分析失败: {ex.Message}", ex);
             }
         }
 
         /// <summary>
-        /// 获取导入模板
+        /// 获取推荐验方 (已废弃)
+        /// UltraThink v2.0: 智能推荐功能已删除 - 小诊所医生凭经验选方
         /// </summary>
+        public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
+        {
+            try
+            {
+                await Task.CompletedTask;
+                return ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取推荐验方失败: {Syndrome}", syndrome);
+                return ServiceResult<List<FormulaRecommendationDto>>.Failure($"获取推荐验方失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取推荐验方（三参数重载） (已废弃)
+        /// UltraThink v2.0: 智能推荐功能已删除 - 小诊所医生凭经验选方
+        /// </summary>
+        public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
+        {
+            try
+            {
+                await Task.CompletedTask;
+                return ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取推荐验方失败: {Symptoms}, {Diagnosis}, {DoctorId}", symptoms, diagnosis, doctorId);
+                return ServiceResult<List<FormulaRecommendationDto>>.Failure($"获取推荐验方失败: {ex.Message}", ex);
+            }
+        }
+
         public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
         {
             try
             {
                 _logger.LogInformation("获取验方导入模板");
 
-                var templateContent = @"验方导入模板列：
-验方名称, 功效, 用法, 性味归经, 是否共享, 用药指导, 主治症状, 禁忌症, 制备方法, 备注, 来源, 
-药材1名称, 药材1用量, 药材1单位, 药材1炮制, 药材1用法,
-药材2名称, 药材2用量, 药材2单位, 药材2炮制, 药材2用法,
-...
-（最多支持20味药材）";
+                var templateContent = @"验方导入模板 - UltraThink精简版
+必填列：验方名称, 功效, 用法
+可选列：性味归经, 是否共享(true/false), 备注
+
+注意：
+- 拼音码由系统自动生成，无需填写
+  规则：每个字拼音首字母大写组合（如：六味地黄丸 → LWDHW）
+- 验方名称不能重复
+- 功效和用法为必填项
+- 是否共享默认为false";
 
                 var content = System.Text.Encoding.UTF8.GetBytes(templateContent);
                 return ServiceResult<byte[]>.Success(content);
@@ -533,6 +563,8 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
+        #endregion
+        
         #endregion
     }
 }

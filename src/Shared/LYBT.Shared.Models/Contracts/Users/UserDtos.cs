@@ -3,6 +3,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Contracts.Users
 {
@@ -14,6 +15,7 @@ namespace LYBT.Shared.Models.Contracts.Users
     {
         /// <summary>用户名</summary>
         [DisplayName("用户名")]
+        [JsonPropertyName("username")]
         public string Username { get; set; } = string.Empty;
 
         /// <summary>真实姓名</summary>
@@ -42,6 +44,7 @@ namespace LYBT.Shared.Models.Contracts.Users
 
         /// <summary>用户名(兼容性别名)</summary>
         [DisplayName("用户名")]
+        [JsonPropertyName("userDisplayName")]
         public string UserName => RealName ?? Username;
     }
 

@@ -92,5 +92,11 @@ namespace LYBT.Desktop.Modules.Herbs.Api
         /// </summary>
         [Get("/api/v1/herbs/export")]
         Task<Refit.ApiResponse<List<HerbDetailDto>>> ExportHerbsAsync();
+        
+        /// <summary>
+        /// 获取药材导入模板
+        /// </summary>
+        [Get("/api/v1/herbs/import-template")]
+        Task<Refit.ApiResponse<byte[]>> GetImportTemplateAsync();
     }
 }

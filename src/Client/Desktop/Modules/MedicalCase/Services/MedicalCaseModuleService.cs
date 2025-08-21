@@ -316,34 +316,6 @@ namespace LYBT.Desktop.MedicalCase.Services
             }
         }
         
-        /// <summary>
-        /// UltraThink v2.0: 作为聚合根管理处方工作流 - 创建处方
-        /// </summary>
-        public async Task<ServiceResult> CreatePrescriptionAsync(Guid caseId, object prescriptionData)
-        {
-            try
-            {
-                // 检查案例状态是否允许创建处方
-                var caseResult = await GetByIdAsync(caseId);
-                if (!caseResult.IsSuccess)
-                {
-                    return ServiceResult.Failure("获取医疗案例信息失败");
-                }
-
-                if (caseResult.Data.CaseStatus != MedicalCaseStatus.InConsultation)
-                {
-                    return ServiceResult.Failure("只有进行中的看诊才能创建处方");
-                }
-
-                // TODO: 调用PrescriptionModule的API创建处方
-                // 这里返回成功表示功能框架已建立
-                return ServiceResult.Success();
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult.Failure($"创建处方异常: {ex.Message}");
-            }
-        }
 
         // UltraThink v2.0: 移除批量操作功能 - 删除过度设计的批量功能
         

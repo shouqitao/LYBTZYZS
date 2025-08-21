@@ -187,13 +187,37 @@ namespace LYBT.Module.Prescriptions.Helpers
         }
 
         /// <summary>
-        /// 根据看诊ID获取处方列表
+        /// 根据医疗案例ID获取处方列表
         /// </summary>
+        public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                var allPrescriptions = await _repository.GetListAsync();
+                var medicalCasePrescriptions = allPrescriptions
+                    .Where(p => p.MedicalCaseId == medicalCaseId) // 正确：根据MedicalCaseId查询
+                    .ToList();
+
+                var dtos = _mapper.Map<List<PrescriptionDto>>(medicalCasePrescriptions);
+                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医疗案例处方失败: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<List<PrescriptionDto>>.Failure("获取医疗案例处方失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 根据看诊ID获取处方列表 [已废弃 - 数据模型中处方直接关联医疗案例，不关联看诊]
+        /// </summary>
+        [Obsolete("请使用GetByMedicalCaseIdAsync方法。处方实体没有ConsultationId字段，应该通过MedicalCaseId关联。")]
         public async Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
         {
             try
             {
-                // 简化实现：根据consultationId查询处方
+                // 错误的实现：假设consultationId对应PatientId
+                // 保留此方法仅为向后兼容，应该使用GetByMedicalCaseIdAsync
                 var allPrescriptions = await _repository.GetListAsync();
                 var consultationPrescriptions = allPrescriptions
                     .Where(p => p.PatientId == consultationId) // 简化：假设consultationId对应PatientId

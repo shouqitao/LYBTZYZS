@@ -82,6 +82,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("剂型")]
         public string? DosageForm { get; set; } = "汤剂";
 
+        [DisplayName("处方编号")]
+        public string? PrescriptionNo { get; set; }
+
         /// <summary>总重量（计算属性）</summary>
         [DisplayName("总重量")]
         public decimal TotalWeight

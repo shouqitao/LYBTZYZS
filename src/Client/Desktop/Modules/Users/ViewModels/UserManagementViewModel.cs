@@ -21,9 +21,9 @@ using LYBT.Desktop.Core.Interfaces.Services;
 namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
-    /// 用户管理视图模型（UltraThink架构重构版）
-    /// 使用新的三层架构：PaginationCoordinator + SearchManager + NewBaseListViewModel
-    /// 实现完全的关注点分离和单一职责原则
+    /// 用户管理视图模型（UltraThink v2.0 小诊所精简版）
+    /// 移除过度设计的批量操作、锁定功能、多选功能，专注核心CRUD操作
+    /// 适用于20人以下小诊所的简单直接的用户管理需求
     /// </summary>
     public class UserManagementViewModel : NewBaseListViewModel<UserDto>
     {
@@ -33,27 +33,20 @@ namespace LYBT.Desktop.Users.ViewModels
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
         
-        private ObservableCollection<UserViewModel> _userViewModels = new();
-        private UserViewModel? _selectedUserViewModel;
+        // UltraThink v2.0: 直接使用DTO，移除复杂的ViewModel包装
+        private UserDto? _selectedUser;
 
         #endregion
 
         #region Properties
 
-        /// <summary>用户视图模型集合 - 替代原始的UserInfo集合</summary>
-        public ObservableCollection<UserViewModel> UserViewModels
+        /// <summary>选中的用户 - UltraThink v2.0: 直接使用DTO</summary>
+        public UserDto? SelectedUser
         {
-            get => _userViewModels;
-            set => SetProperty(ref _userViewModels, value);
-        }
-
-        /// <summary>选中的用户视图模型</summary>
-        public UserViewModel? SelectedUserViewModel
-        {
-            get => _selectedUserViewModel;
+            get => _selectedUser;
             set
             {
-                if (SetProperty(ref _selectedUserViewModel, value))
+                if (SetProperty(ref _selectedUser, value))
                 {
                     // 更新命令状态
                     EditCommand.RaiseCanExecuteChanged();
@@ -64,25 +57,22 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
 
-        /// <summary>批量选中的用户数量</summary>
-        public int SelectedUsersCount => UserViewModels.Count(u => u.IsSelected);
-
-        /// <summary>是否有选中的用户</summary>
-        public bool HasSelectedUsers => SelectedUsersCount > 0;
+        // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
+        // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
 
         #endregion
 
         #region Commands
 
-        public DelegateCommand AddCommand { get; private set; } = null!;
-        public DelegateCommand<UserViewModel> EditCommand { get; private set; } = null!;
-        public DelegateCommand<UserViewModel> DeleteCommand { get; private set; } = null!;
-        public DelegateCommand<UserViewModel> ResetPasswordCommand { get; private set; } = null!;
-        public DelegateCommand<UserViewModel> ToggleStatusCommand { get; private set; } = null!;
-        public DelegateCommand BatchEnableCommand { get; private set; } = null!;
-        public DelegateCommand BatchDisableCommand { get; private set; } = null!;
-        public DelegateCommand ClearSelectionCommand { get; private set; } = null!;
-        public DelegateCommand SelectAllCommand { get; private set; } = null!;
+        public DelegateCommand AddCommand { get; private set; }
+        public DelegateCommand<UserDto> EditCommand { get; private set; }
+        public DelegateCommand<UserDto> DeleteCommand { get; private set; }
+        public DelegateCommand<UserDto> ResetPasswordCommand { get; private set; }
+        public DelegateCommand<UserDto> ToggleStatusCommand { get; private set; }
+
+        // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
+        // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
+        // - ClearSelectionCommand/SelectAllCommand: 多选功能过度设计
 
         #endregion
 
@@ -105,11 +95,9 @@ namespace LYBT.Desktop.Users.ViewModels
 
             InitializeCommands();
             
-            // 监听选择状态变化
-            UserViewModels.CollectionChanged += (s, e) => UpdateSelectionProperties();
-            
-            // 初始化加载数据
-            _ = RefreshDataAsync();
+            // UltraThink v2.0: 删除复杂初始化逻辑
+            // - 删除选择状态变化监听: 多选功能已移除
+            // - 删除RefreshDataAsync(): 直接使用基类的数据加载机制
         }
 
         #endregion
@@ -119,18 +107,15 @@ namespace LYBT.Desktop.Users.ViewModels
         protected override void InitializeCommands()
         {
             AddCommand = new DelegateCommand(async () => await AddUserAsync());
-            EditCommand = new DelegateCommand<UserViewModel>(async user => await EditUserAsync(user), CanExecuteUserCommand);
-            DeleteCommand = new DelegateCommand<UserViewModel>(async user => await DeleteUserAsync(user), CanExecuteUserCommand);
-            ResetPasswordCommand = new DelegateCommand<UserViewModel>(async user => await ResetPasswordAsync(user), CanExecuteUserCommand);
-            ToggleStatusCommand = new DelegateCommand<UserViewModel>(async user => await ToggleStatusAsync(user), CanExecuteUserCommand);
+            EditCommand = new DelegateCommand<UserDto>(async user => await EditUserAsync(user), CanExecuteUserCommand);
+            DeleteCommand = new DelegateCommand<UserDto>(async user => await DeleteUserAsync(user), CanExecuteUserCommand);
+            ResetPasswordCommand = new DelegateCommand<UserDto>(async user => await ResetPasswordAsync(user), CanExecuteUserCommand);
+            ToggleStatusCommand = new DelegateCommand<UserDto>(async user => await ToggleStatusAsync(user), CanExecuteUserCommand);
             
-            BatchEnableCommand = new DelegateCommand(async () => await BatchEnableAsync(), () => HasSelectedUsers);
-            BatchDisableCommand = new DelegateCommand(async () => await BatchDisableAsync(), () => HasSelectedUsers);
-            ClearSelectionCommand = new DelegateCommand(ClearSelection, () => HasSelectedUsers);
-            SelectAllCommand = new DelegateCommand(SelectAll);
+            // UltraThink v2.0: 删除批量操作命令初始化 - 20人以下小诊所不需要复杂的批量操作
         }
 
-        private bool CanExecuteUserCommand(UserViewModel user)
+        private bool CanExecuteUserCommand(UserDto user)
         {
             return user != null && !IsLoading;
         }
@@ -152,75 +137,13 @@ namespace LYBT.Desktop.Users.ViewModels
             return await _userService.GetPagedAsync(userQuery);
         }
 
-        protected override void OnDataLoaded(PagedResult<UserDto> data)
-        {
-            base.OnDataLoaded(data);
-            
-            // 将UserDto转换为UserViewModel
-            UpdateUserViewModels(data.Items);
-        }
-
-        protected override void OnDataLoadFailed(string errorMessage)
-        {
-            base.OnDataLoadFailed(errorMessage);
-            
-            // 清空用户视图模型
-            UserViewModels.Clear();
-            UpdateSelectionProperties();
-            
-            // 显示错误
-            _ = _dialogService.ShowErrorAsync(errorMessage, "加载失败");
-        }
+        // UltraThink v2.0: 删除复杂的ViewModel转换和选择状态管理
+        // 直接使用基类的标准数据加载处理，无需自定义OnDataLoaded和OnDataLoadFailed
 
         #endregion
 
-        #region User ViewModels Management
-
-        private void UpdateUserViewModels(System.Collections.Generic.List<UserDto> userDtos)
-        {
-            // 保存当前选择状态
-            var selectedIds = UserViewModels.Where(u => u.IsSelected).Select(u => u.Id).ToHashSet();
-            
-            // 清空并重新创建
-            UserViewModels.Clear();
-            
-            foreach (var dto in userDtos)
-            {
-                // 直接使用UserDto创建UserViewModel
-                var userViewModel = UserViewModel.Create(dto);
-                
-                // 恢复选择状态
-                if (selectedIds.Contains(userViewModel.Id))
-                {
-                    userViewModel.IsSelected = true;
-                }
-                
-                // 监听选择状态变化
-                userViewModel.State.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(UserStateViewModel.IsSelected))
-                    {
-                        UpdateSelectionProperties();
-                    }
-                };
-                
-                UserViewModels.Add(userViewModel);
-            }
-            
-            UpdateSelectionProperties();
-        }
-
-        private void UpdateSelectionProperties()
-        {
-            RaisePropertyChanged(nameof(SelectedUsersCount));
-            RaisePropertyChanged(nameof(HasSelectedUsers));
-            
-            BatchEnableCommand.RaiseCanExecuteChanged();
-            BatchDisableCommand.RaiseCanExecuteChanged();
-            ClearSelectionCommand.RaiseCanExecuteChanged();
-        }
-
-        #endregion
+        // UltraThink v2.0: 删除复杂的ViewModel管理 - 20人以下小诊所不需要复杂的选择状态管理
+        // 直接使用基类提供的Data属性访问PagedResult<UserDto>数据
 
         #region CRUD Operations
 
@@ -239,57 +162,55 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
 
-        private async Task EditUserAsync(UserViewModel userViewModel)
+        private async Task EditUserAsync(UserDto user)
         {
-            if (userViewModel == null) return;
+            if (user == null) return;
             
             try
             {
                 // TODO: 实现用户编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑用户 {userViewModel.DisplayName} 功能开发中", "提示");
+                await _dialogService.ShowInformationAsync($"编辑用户 {user.RealName ?? user.UserName} 功能开发中", "提示");
             }
             catch (Exception ex)
             {
-                LogError(ex, "编辑用户失败: {UserId}", userViewModel.Id);
+                LogError(ex, "编辑用户失败: {UserId}", user.Id);
                 ShowError($"编辑用户失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"编辑用户失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task DeleteUserAsync(UserViewModel userViewModel)
+        private async Task DeleteUserAsync(UserDto user)
         {
-            if (userViewModel == null) return;
+            if (user == null) return;
             
             // 系统管理员不允许删除
-            if (userViewModel.Display.IsSysAdmin)
+            if (user.Role == "Admin")
             {
                 await _dialogService.ShowWarningAsync("不允许删除系统管理员账号", "警告");
                 return;
             }
             
             // 用户不支持真正删除，只能禁用
-            await ToggleStatusAsync(userViewModel);
+            await ToggleStatusAsync(user);
         }
 
         #endregion
 
         #region Business Operations
 
-        private async Task ResetPasswordAsync(UserViewModel userViewModel)
+        private async Task ResetPasswordAsync(UserDto user)
         {
-            if (userViewModel == null) return;
+            if (user == null) return;
 
             var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要重置用户 {userViewModel.DisplayName} 的密码吗？",
+                $"确定要重置用户 {user.RealName ?? user.UserName} 的密码吗？",
                 "重置密码");
 
             if (confirm)
             {
                 try
                 {
-                    userViewModel.IsLoading = true;
-                    
-                    var result = await _userService.ResetPasswordAsync(userViewModel.Id);
+                    var result = await _userService.ResetPasswordAsync(user.Id);
                     
                     if (result.IsSuccess)
                     {
@@ -310,38 +231,32 @@ namespace LYBT.Desktop.Users.ViewModels
                     ShowError($"用户操作失败: {ex.Message}");
                     await _dialogService.ShowErrorAsync($"用户操作失败: {ex.Message}", "错误");
                 }
-                finally
-                {
-                    userViewModel.IsLoading = false;
-                }
             }
         }
 
-        private async Task ToggleStatusAsync(UserViewModel userViewModel)
+        private async Task ToggleStatusAsync(UserDto user)
         {
-            if (userViewModel == null) return;
+            if (user == null) return;
 
-            var isEnabled = userViewModel.UserData.Status == CommonStatus.Enabled;
+            var isEnabled = user.Status == CommonStatus.Enabled;
             var action = isEnabled ? "禁用" : "启用";
             
             var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要{action}用户 {userViewModel.DisplayName} 吗？",
+                $"确定要{action}用户 {user.RealName ?? user.UserName} 吗？",
                 $"{action}用户");
 
             if (confirm)
             {
                 try
                 {
-                    userViewModel.IsLoading = true;
-                    
                     ServiceResult result;
                     if (isEnabled)
                     {
-                        result = await _userService.DisableAsync(userViewModel.Id);
+                        result = await _userService.DisableAsync(user.Id);
                     }
                     else
                     {
-                        result = await _userService.EnableAsync(userViewModel.Id);
+                        result = await _userService.EnableAsync(user.Id);
                     }
 
                     if (result.IsSuccess)
@@ -362,115 +277,15 @@ namespace LYBT.Desktop.Users.ViewModels
                     ShowError($"用户操作失败: {ex.Message}");
                     await _dialogService.ShowErrorAsync($"用户操作失败: {ex.Message}", "错误");
                 }
-                finally
-                {
-                    userViewModel.IsLoading = false;
-                }
             }
         }
 
         #endregion
 
-        #region Batch Operations
+        // UltraThink v2.0: 删除所有批量操作功能 - 20人以下小诊所不需要复杂的批量操作
+        // 包括: BatchEnableAsync, BatchDisableAsync 等功能
 
-        private async Task BatchEnableAsync()
-        {
-            var selectedUsers = UserViewModels.Where(u => u.IsSelected).ToList();
-            if (!selectedUsers.Any()) return;
-
-            var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要启用选中的 {selectedUsers.Count} 个用户吗？",
-                "批量启用");
-
-            if (confirm)
-            {
-                try
-                {
-                    var ids = selectedUsers.Select(u => u.Id).ToList();
-                    var result = await _userService.BatchEnableAsync(ids);
-
-                    if (result.IsSuccess)
-                    {
-                        await RefreshDataAsync();
-                        await _dialogService.ShowInformationAsync($"已成功启用 {result.Data} 个用户", "成功");
-                    }
-                    else
-                    {
-                        await _dialogService.ShowErrorAsync(
-                            result.ErrorMessage ?? "批量启用失败",
-                            "错误");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "用户操作失败");
-                    ShowError($"用户操作失败: {ex.Message}");
-                    await _dialogService.ShowErrorAsync($"用户操作失败: {ex.Message}", "错误");
-                }
-            }
-        }
-
-        private async Task BatchDisableAsync()
-        {
-            var selectedUsers = UserViewModels.Where(u => u.IsSelected && !u.Display.IsSysAdmin).ToList();
-            if (!selectedUsers.Any())
-            {
-                await _dialogService.ShowWarningAsync("没有可禁用的用户（系统管理员不能被禁用）", "警告");
-                return;
-            }
-
-            var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要禁用选中的 {selectedUsers.Count} 个用户吗？",
-                "批量禁用");
-
-            if (confirm)
-            {
-                try
-                {
-                    var ids = selectedUsers.Select(u => u.Id).ToList();
-                    var result = await _userService.BatchDisableAsync(ids);
-
-                    if (result.IsSuccess)
-                    {
-                        await RefreshDataAsync();
-                        await _dialogService.ShowInformationAsync($"已成功禁用 {result.Data} 个用户", "成功");
-                    }
-                    else
-                    {
-                        await _dialogService.ShowErrorAsync(
-                            result.ErrorMessage ?? "批量禁用失败",
-                            "错误");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "用户操作失败");
-                    ShowError($"用户操作失败: {ex.Message}");
-                    await _dialogService.ShowErrorAsync($"用户操作失败: {ex.Message}", "错误");
-                }
-            }
-        }
-
-        #endregion
-
-        #region Selection Management
-
-        private void ClearSelection()
-        {
-            foreach (var user in UserViewModels)
-            {
-                user.IsSelected = false;
-            }
-        }
-
-        private void SelectAll()
-        {
-            foreach (var user in UserViewModels)
-            {
-                user.IsSelected = true;
-            }
-        }
-
-        #endregion
+        // UltraThink v2.0: 删除所有选择管理功能 - 20人以下小诊所不需要复杂的多选功能
+        // 包括: ClearSelection, SelectAll 等功能
     }
 }

@@ -145,8 +145,19 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
         /// <summary>
-        /// [Shared] 根据看诊ID获取处方列表
+        /// [Shared] 根据医疗案例ID获取处方列表
         /// </summary>
+        public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            return await ExecuteSafelyAsync(
+                async () => await _queryHelper.GetByMedicalCaseIdAsync(medicalCaseId),
+                "获取医疗案例处方", medicalCaseId);
+        }
+
+        /// <summary>
+        /// [Shared] 根据看诊ID获取处方列表 [已废弃]
+        /// </summary>
+        [Obsolete("请使用GetByMedicalCaseIdAsync方法")]
         public async Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
         {
             return await ExecuteSafelyAsync(
@@ -164,54 +175,48 @@ namespace LYBT.Module.Prescriptions.Services
                 "验证处方数据", dto);
         }
 
+        #region 已废弃功能 - UltraThink精简
+        /*
         /// <summary>
-        /// [Shared] 导出处方为PDF
+        /// [Shared] 导出处方为PDF (已废弃 - 功能迁移到MedicalCase模块)
         /// </summary>
         public async Task<ServiceResult<byte[]>> ExportToPdfAsync(Guid id)
         {
-            var operatorId = Guid.Empty; // TODO: 从认证上下文获取
-            var operatorName = "System"; // TODO: 从认证上下文获取
-
-            return await ExecuteSafelyAsync(
-                async () => await _businessHelper.ExportToPdfAsync(id, operatorId, operatorName),
-                "导出处方PDF", id);
+            // 功能已迁移到MedicalCase.PrintMedicalRecordAsync
+            // 小诊所统一在病历层面打印，避免功能分散
         }
+        */
+        #endregion
 
+        /*
         /// <summary>
-        /// [Shared] 获取处方统计信息
+        /// [Shared] 获取处方统计信息 (已废弃)
         /// </summary>
         public async Task<ServiceResult<PrescriptionStatisticsDto>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
-            return await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetStatisticsAsync(null, startDate, endDate),
-                "获取处方统计", new { startDate, endDate });
+            // 统计功能已删除 - 小诊所不需要复杂统计分析
         }
+        */
 
+        /*
         /// <summary>
-        /// [Shared] 批准处方
+        /// [Shared] 批准处方 (已废弃)
         /// </summary>
         public async Task<ServiceResult<bool>> ApproveAsync(Guid id, string approvalNote)
         {
-            var operatorId = Guid.Empty; // TODO: 从认证上下文获取
-            var operatorName = "System"; // TODO: 从认证上下文获取
-
-            return await ExecuteSafelyAsync(
-                async () => await _businessHelper.ApproveAsync(id, approvalNote, operatorId, operatorName),
-                "批准处方", id);
+            // 审批功能已删除 - 小诊所无需复杂审批流程
         }
+        */
 
+        /*
         /// <summary>
-        /// [Shared] 拒绝处方
+        /// [Shared] 拒绝处方 (已废弃)
         /// </summary>
         public async Task<ServiceResult<bool>> RejectAsync(Guid id, string reason)
         {
-            var operatorId = Guid.Empty; // TODO: 从认证上下文获取
-            var operatorName = "System"; // TODO: 从认证上下文获取
-
-            return await ExecuteSafelyAsync(
-                async () => await _businessHelper.RejectAsync(id, reason, operatorId, operatorName),
-                "拒绝处方", id);
+            // 拒绝功能已删除 - 小诊所无需复杂审批流程
         }
+        */
 
         /// <summary>
         /// [Shared] 复制处方
@@ -297,14 +302,15 @@ namespace LYBT.Module.Prescriptions.Services
             return result.IsSuccess && result.Data;
         }
 
+        /*
         /// <summary>
-        /// 提交处方（从草稿变为待审核）
+        /// 提交处方（从草稿变为待审核） (已废弃)
         /// </summary>
         public async Task<bool> SubmitPrescriptionAsync(Guid prescriptionId, Guid operatorId, string operatorName)
         {
-            var result = await _businessHelper.SubmitAsync(prescriptionId, operatorId, operatorName);
-            return result.IsSuccess && result.Data;
+            // 提交审批功能已删除 - 小诊所无需复杂审批流程
         }
+        */
 
         /// <summary>
         /// 作废处方

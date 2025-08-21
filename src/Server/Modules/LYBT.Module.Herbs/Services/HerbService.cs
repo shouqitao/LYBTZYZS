@@ -223,7 +223,7 @@ namespace LYBT.Module.Herbs.Services
         }
 
         /// <summary>
-        /// 批量导入药材 - 委派给BusinessHelper
+        /// 批量导入药材 - 委派给BusinessHelper (基础数据功能保留)
         /// </summary>
         public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
         {
@@ -233,13 +233,44 @@ namespace LYBT.Module.Herbs.Services
         }
 
         /// <summary>
-        /// 导出药材数据 - 委派给BusinessHelper
+        /// 导出药材数据 - 委派给BusinessHelper (基础数据功能保留)
         /// </summary>
         public async Task<ServiceResult<List<HerbDto>>> ExportHerbsAsync()
         {
             return await ExecuteSafelyAsync(
                 async () => await _businessHelper.ExportHerbsAsync(),
                 "导出药材数据");
+        }
+
+        /// <summary>
+        /// 获取药材导入模板 - 基础数据功能 (拼音码自动生成)
+        /// </summary>
+        public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
+        {
+            try
+            {
+                _logger.LogInformation("获取药材导入模板");
+
+                var templateContent = @"药材导入模板 - UltraThink精简版
+必填列：药材名称, 产地, 规格, 单位, 价格
+可选列：功效, 用法, 备注, 状态(Enabled/Disabled)
+
+注意：
+- 拼音码由系统自动生成，无需填写
+  规则：每个字拼音首字母大写组合（如：当归 → DG）
+- 药材名称不能重复
+- 价格必须为有效数字
+- 状态默认为Enabled(启用)
+- 单位推荐：g(克), kg(公斤), 包, 盒等";
+
+                var content = System.Text.Encoding.UTF8.GetBytes(templateContent);
+                return ServiceResult<byte[]>.Success(content);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取药材导入模板异常");
+                return ServiceResult<byte[]>.Failure($"获取药材导入模板异常: {ex.Message}", ex);
+            }
         }
 
         /// <summary>
@@ -254,51 +285,51 @@ namespace LYBT.Module.Herbs.Services
             }, "批量更新状态", dto);
         }
 
+        #region 已废弃功能 - UltraThink精简
+
         /// <summary>
-        /// 获取统计数据 - 委派给QueryHelper
+        /// 获取统计数据 (已废弃)
+        /// UltraThink v2.0: 统计功能已删除 - 小诊所不需要复杂统计分析
         /// </summary>
         public async Task<ServiceResult<Dictionary<int, int>>> GetStatisticsAsync()
         {
-            return await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetStatisticsAsync(),
-                "获取统计数据");
+            await Task.CompletedTask;
+            return ServiceResult<Dictionary<int, int>>.Success(new Dictionary<int, int>());
         }
 
         /// <summary>
-        /// 更新药材价格 - 委派给BusinessHelper
+        /// 更新药材价格 (已废弃)
+        /// UltraThink v2.0: 价格历史功能已删除，直接使用UpdateAsync更新价格
         /// </summary>
         public async Task<ServiceResult<bool>> UpdatePriceAsync(Guid id, HerbPriceUpdateDto dto)
         {
-            return await ExecuteSafelyAsync(
-                async () => await _businessHelper.UpdatePriceWithHistoryAsync(id, dto),
-                "更新药材价格", new { id, dto });
+            await Task.CompletedTask;
+            return ServiceResult<bool>.Success(false); // 功能已废弃
         }
 
         /// <summary>
-        /// 批量更新价格 - 委派给BusinessHelper
-        /// </summary>
-        public async Task<ServiceResult<int>> BatchUpdatePriceAsync(List<HerbPriceUpdateDto> updates)
-        {
-            return await ExecuteSafelyAsync(
-                async () => await _businessHelper.BatchUpdatePriceAsync(updates),
-                "批量更新价格", updates?.Count);
-        }
-
-        #endregion
-
-        #region 简化版兼容接口 - 已禁用功能返回空结果
-
-        /// <summary>
-        /// 更新库存（已禁用功能 - 向后兼容）
+        /// 更新库存 (已废弃)
+        /// UltraThink v2.0: 库存功能已删除 - 小诊所不需要复杂库存管理
         /// </summary>
         public async Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
         {
             await Task.CompletedTask;
-            return ServiceResult<bool>.Success(true); // 简化版不支持库存，直接返回成功
+            return ServiceResult<bool>.Success(false); // 功能已废弃
         }
 
         /// <summary>
-        /// 获取缺货药材列表（已禁用功能 - 向后兼容）
+        /// 获取库存统计信息 (已废弃)
+        /// UltraThink v2.0: 库存统计功能已删除
+        /// </summary>
+        public async Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
+        {
+            await Task.CompletedTask;
+            return ServiceResult<HerbStockStatisticsDto>.Success(new HerbStockStatisticsDto());
+        }
+
+        /// <summary>
+        /// 获取缺货药材列表 (已废弃)
+        /// UltraThink v2.0: 库存功能已删除
         /// </summary>
         public async Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
         {
@@ -307,7 +338,8 @@ namespace LYBT.Module.Herbs.Services
         }
 
         /// <summary>
-        /// 获取即将过期的药材（已禁用功能 - 向后兼容）
+        /// 获取即将过期的药材 (已废弃)
+        /// UltraThink v2.0: 过期管理功能已删除
         /// </summary>
         public async Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
         {
@@ -315,100 +347,125 @@ namespace LYBT.Module.Herbs.Services
             return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
         }
 
+        /*
         /// <summary>
-        /// 获取库存统计信息 - 委派给QueryHelper（简化版）
+        /// 批量更新价格 (已废弃)
+        /// </summary>
+        public async Task<ServiceResult<int>> BatchUpdatePriceAsync(List<HerbPriceUpdateDto> updates)
+        {
+            // 批量价格更新功能已删除 - 小诊所逐个更新即可
+        }
+        */
+
+        #endregion
+
+        /*
+        /// <summary>
+        /// 更新库存 (已废弃)
+        /// </summary>
+        public async Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
+        {
+            // 库存功能已删除 - 小诊所不需要复杂库存管理
+        }
+
+        /// <summary>
+        /// 获取缺货药材列表 (已废弃)
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
+        {
+            // 库存功能已删除
+        }
+
+        /// <summary>
+        /// 获取即将过期的药材 (已废弃)
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
+        {
+            // 过期管理功能已删除
+        }
+
+        /// <summary>
+        /// 获取库存统计信息 (已废弃)
         /// </summary>
         public async Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
         {
-            return await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetStockStatisticsAsync(),
-                "获取库存统计");
+            // 库存统计功能已删除
         }
+        */
 
-        #region 已禁用的库存和特价功能 - 向后兼容接口
-
+        /*
         /// <summary>
-        /// 获取库存预警药材列表（已禁用 - 向后兼容）
+        /// 获取库存预警药材列表 (已废弃)
         /// </summary>
         public async Task<List<HerbStockWarningDto>> GetStockWarningListAsync()
         {
-            await Task.CompletedTask;
-            return new List<HerbStockWarningDto>();
+            // 库存预警功能已删除
         }
 
         /// <summary>
-        /// 更新药材库存量（已禁用 - 向后兼容）
+        /// 更新药材库存量 (已废弃)
         /// </summary>
         public async Task<bool> UpdateStockAsync(Guid id, decimal quantity, bool isIncrease)
         {
-            await Task.CompletedTask;
-            return true; // 简化版不支持库存，直接返回成功
+            // 库存管理功能已删除
         }
 
         /// <summary>
-        /// 批量更新库存量（已禁用 - 向后兼容）
+        /// 批量更新库存量 (已废弃)
         /// </summary>
         public async Task<int> BatchUpdateStockAsync(List<HerbStockUpdateDto> updates)
         {
-            await Task.CompletedTask;
-            return updates?.Count ?? 0; // 简化版不支持库存，返回传入的数量
+            // 批量库存更新功能已删除
         }
 
         /// <summary>
-        /// 设置库存预警值（已禁用 - 向后兼容）
+        /// 设置库存预警值 (已废弃)
         /// </summary>
         public async Task<bool> SetStockWarningLevelAsync(Guid id, decimal warningLevel, decimal maxStock)
         {
-            await Task.CompletedTask;
-            return true; // 简化版不支持库存预警，直接返回成功
+            // 库存预警功能已删除
         }
 
         /// <summary>
-        /// 获取即将过期的药材（已禁用 - 向后兼容）
+        /// 获取即将过期的药材 (已废弃)
         /// </summary>
         public async Task<List<HerbExpiryWarningDto>> GetExpiryWarningListAsync(int days = 30)
         {
-            await Task.CompletedTask;
-            return new List<HerbExpiryWarningDto>();
+            // 过期管理功能已删除
         }
 
         /// <summary>
-        /// 设置特价促销（已禁用 - 向后兼容）
+        /// 设置特价促销 (已废弃)
         /// </summary>
         public async Task<bool> SetSpecialPriceAsync(Guid id, decimal specialPrice, DateTime startTime, DateTime endTime)
         {
-            await Task.CompletedTask;
-            return true; // 简化版不支持特价，直接返回成功
+            // 特价促销功能已删除
         }
 
         /// <summary>
-        /// 取消特价促销（已禁用 - 向后兼容）
+        /// 取消特价促销 (已废弃)
         /// </summary>
         public async Task<bool> CancelSpecialPriceAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return true; // 简化版不支持特价，直接返回成功
+            // 特价促销功能已删除
         }
 
         /// <summary>
-        /// 获取当前特价药材列表（已禁用 - 向后兼容）
+        /// 获取当前特价药材列表 (已废弃)
         /// </summary>
         public async Task<List<HerbDto>> GetSpecialPriceHerbsAsync()
         {
-            await Task.CompletedTask;
-            return new List<HerbDto>();
+            // 特价促销功能已删除
         }
 
         /// <summary>
-        /// 获取价格历史记录（简化实现 - 向后兼容）
+        /// 获取价格历史记录 (已废弃)
         /// </summary>
         public async Task<List<HerbPriceHistoryDto>> GetPriceHistoryAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return new List<HerbPriceHistoryDto>();
+            // 价格历史功能已删除
         }
-
-        #endregion
+        */
 
         #endregion
     }

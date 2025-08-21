@@ -3,8 +3,7 @@ using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
 using LYBT.Module.Users;
-// Auth模块暂时禁用，待修复字段不匹配问题
-// using LYBT.Module.Auth;
+using LYBT.Module.Auth;
 using LYBT.WebAPI.Services;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -62,6 +61,7 @@ public static class UnifiedServiceRegistration
         services.AddUnifiedConfiguration(configuration);
         services.AddScoped<ISecretManager, SecretManager>();
         services.AddScoped<IEnvironmentManager, EnvironmentManager>();
+        services.AddScoped<IEnvironmentVariableReplacer, EnvironmentVariableReplacer>();
 
         // =========== 统一数据库上下文 ===========
         var configManager = services.BuildServiceProvider().GetRequiredService<LYBT.Infrastructure.Configuration.IConfigurationManager>();
@@ -101,6 +101,33 @@ public static class UnifiedServiceRegistration
             }
         });
         services.AddSingleton<ICacheService, CacheService>();
+
+        // =========== 配置选项绑定（支持环境变量覆盖）===========
+        // 注册SysAdminOptions，优先使用环境变量
+        services.Configure<LYBT.Infrastructure.Configuration.Options.SysAdminOptions>(options =>
+        {
+            // 从环境变量读取，如果不存在则从配置文件读取
+            var adminPassword = Environment.GetEnvironmentVariable("ADMIN_DEFAULT_PASSWORD")
+                ?? configuration["SysAdminOptions:DefaultPassword"];
+            if (!string.IsNullOrEmpty(adminPassword))
+            {
+                options.DefaultPassword = adminPassword;
+            }
+            configuration.GetSection("SysAdminOptions").Bind(options);
+        });
+
+        // 注册UserOptions，优先使用环境变量
+        services.Configure<LYBT.Module.Users.UserOptions>(options =>
+        {
+            // 从环境变量读取，如果不存在则从配置文件读取
+            var userPassword = Environment.GetEnvironmentVariable("USER_DEFAULT_PASSWORD")
+                ?? configuration["UserOptions:DefaultUserPassword"];
+            if (!string.IsNullOrEmpty(userPassword))
+            {
+                options.DefaultUserPassword = userPassword;
+            }
+            configuration.GetSection("UserOptions").Bind(options);
+        });
 
         // =========== 安全配置服务 ===========
         services.AddScoped<IPasswordValidationService, PasswordValidationService>();
@@ -145,7 +172,8 @@ public static class UnifiedServiceRegistration
         services.AddScoped<LYBT.Infrastructure.Performance.Cache.IUnifiedCacheManager, LYBT.Infrastructure.Performance.Cache.UnifiedCacheManager>();
 
         // =========== 数据库性能优化 ===========
-        services.AddScoped<LYBT.Infrastructure.Performance.Database.IUnifiedDatabaseOptimizer, LYBT.Infrastructure.Performance.Database.UnifiedDatabaseOptimizer>();
+        // UltraThink v2.0: 禁用复杂数据库性能优化 - 20人以下小诊所不需要复杂的数据库性能监控和优化
+        // services.AddScoped<LYBT.Infrastructure.Performance.Database.IUnifiedDatabaseOptimizer, LYBT.Infrastructure.Performance.Database.UnifiedDatabaseOptimizer>();
 
         // =========== 异步处理管理 ===========
         services.AddSingleton<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor, LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor>();
@@ -246,8 +274,8 @@ public static class UnifiedServiceRegistration
         // 注册Users模块服务
         services.AddUsersModuleServices();
         
-        // Auth模块暂时禁用，待修复字段不匹配问题
-        // services.AddAuthModule();
+        // 注册Auth模块服务
+        services.AddAuthModule();
         
         // 注册所有LYBT业务模块服务
         services.AddAllModules();

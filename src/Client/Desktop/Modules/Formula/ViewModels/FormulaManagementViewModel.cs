@@ -26,9 +26,9 @@ using LYBT.Desktop.Core.Interfaces.Services;
 namespace LYBT.Desktop.Formula.ViewModels
 {
     /// <summary>
-    /// 验方管理视图模型（UltraThink架构重构版）
-    /// 使用新的三层架构：PaginationCoordinator + SearchManager + NewBaseListViewModel
-    /// 实现完全的关注点分离和单一职责原则
+    /// 验方管理视图模型（UltraThink v2.0 小诊所精简版）
+    /// 移除过度设计的复制功能、分类筛选、批量操作，专注核心CRUD操作
+    /// 适用于20人以下小诊所的简单直接的验方管理需求
     /// </summary>
     public class FormulaManagementViewModel : NewBaseListViewModel<FormulaDto>
     {
@@ -38,83 +38,50 @@ namespace LYBT.Desktop.Formula.ViewModels
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
         
-        private ObservableCollection<FormulaViewModel> _formulaViewModels = new();
-        private FormulaViewModel? _selectedFormulaViewModel;
-        private ObservableCollection<string> _categories = new();
-        private string _selectedCategory = "全部";
+        // UltraThink v2.0: 直接使用DTO，移除复杂的ViewModel包装和分类筛选
+        private FormulaDto? _selectedFormula;
 
         #endregion
 
         #region Properties
 
-        /// <summary>验方视图模型集合 - 替代原始的FormulaInfo集合</summary>
-        public ObservableCollection<FormulaViewModel> FormulaViewModels
+        /// <summary>选中的验方 - UltraThink v2.0: 直接使用DTO</summary>
+        public FormulaDto? SelectedFormula
         {
-            get => _formulaViewModels;
-            set => SetProperty(ref _formulaViewModels, value);
-        }
-
-        /// <summary>选中的验方视图模型</summary>
-        public FormulaViewModel? SelectedFormulaViewModel
-        {
-            get => _selectedFormulaViewModel;
+            get => _selectedFormula;
             set
             {
-                if (SetProperty(ref _selectedFormulaViewModel, value))
+                if (SetProperty(ref _selectedFormula, value))
                 {
                     // 更新命令状态
                     EditCommand.RaiseCanExecuteChanged();
                     DeleteCommand.RaiseCanExecuteChanged();
-                    CopyCommand.RaiseCanExecuteChanged();
                     ViewDetailsCommand.RaiseCanExecuteChanged();
                     ToggleStatusCommand.RaiseCanExecuteChanged();
                 }
             }
         }
 
-        /// <summary>分类列表</summary>
-        public ObservableCollection<string> Categories
-        {
-            get => _categories;
-            set => SetProperty(ref _categories, value);
-        }
-
-        /// <summary>选中的分类</summary>
-        public string SelectedCategory
-        {
-            get => _selectedCategory;
-            set
-            {
-                if (SetProperty(ref _selectedCategory, value))
-                {
-                    // 分类变更时重新加载数据
-                    _ = RefreshDataAsync();
-                }
-            }
-        }
-
-        /// <summary>批量选中的验方数量</summary>
-        public int SelectedFormulasCount => FormulaViewModels.Count(f => f.IsSelected);
-
-        /// <summary>是否有选中的验方</summary>
-        public bool HasSelectedFormulas => SelectedFormulasCount > 0;
+        // UltraThink v2.0: 删除分类筛选功能 - 20人以下小诊所不需要复杂的分类筛选
+        // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
+        // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
 
         #endregion
 
         #region Commands
 
         public DelegateCommand AddCommand { get; private set; }
-        public DelegateCommand<FormulaViewModel> EditCommand { get; private set; }
-        public DelegateCommand<FormulaViewModel> DeleteCommand { get; private set; }
-        public DelegateCommand<FormulaViewModel> CopyCommand { get; private set; }
-        public DelegateCommand<FormulaViewModel> ViewDetailsCommand { get; private set; }
-        public DelegateCommand<FormulaViewModel> ToggleStatusCommand { get; private set; }
-        public DelegateCommand BatchEnableCommand { get; private set; }
-        public DelegateCommand BatchDisableCommand { get; private set; }
-        public DelegateCommand ClearSelectionCommand { get; private set; }
-        public DelegateCommand SelectAllCommand { get; private set; }
+        public DelegateCommand<FormulaDto> EditCommand { get; private set; }
+        public DelegateCommand<FormulaDto> DeleteCommand { get; private set; }
+        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; private set; }
+        public DelegateCommand<FormulaDto> ToggleStatusCommand { get; private set; }
         public DelegateCommand ExportCommand { get; private set; }
         public DelegateCommand ImportCommand { get; private set; }
+
+        // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
+        // - CopyCommand: 复制验方功能过度设计，医生直接新建即可
+        // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
+        // - ClearSelectionCommand/SelectAllCommand: 多选功能过度设计
 
         #endregion
 
@@ -137,179 +104,55 @@ namespace LYBT.Desktop.Formula.ViewModels
 
             InitializeCommands();
             
-            // 监听选择状态变化
-            FormulaViewModels.CollectionChanged += (s, e) => UpdateSelectionProperties();
-            
-            // 初始化分类和数据
-            _ = InitializeAsync();
+            // UltraThink v2.0: 删除复杂初始化逻辑
+            // - 删除选择状态变化监听: 多选功能已移除
+            // - 删除分类初始化: 分类筛选功能已移除
+            // - 删除InitializeAsync(): 直接使用基类的数据加载机制
         }
 
         #endregion
 
         #region Command Initialization
 
-        private void InitializeCommands()
+        protected override void InitializeCommands()
         {
             AddCommand = new DelegateCommand(async () => await AddFormulaAsync());
-            EditCommand = new DelegateCommand<FormulaViewModel>(async formula => await EditFormulaAsync(formula), CanExecuteFormulaCommand);
-            DeleteCommand = new DelegateCommand<FormulaViewModel>(async formula => await DeleteFormulaAsync(formula), CanExecuteFormulaCommand);
-            CopyCommand = new DelegateCommand<FormulaViewModel>(async formula => await CopyFormulaAsync(formula), CanExecuteFormulaCommand);
-            ViewDetailsCommand = new DelegateCommand<FormulaViewModel>(async formula => await ViewDetailsAsync(formula), CanExecuteFormulaCommand);
-            ToggleStatusCommand = new DelegateCommand<FormulaViewModel>(async formula => await ToggleStatusAsync(formula), CanExecuteFormulaCommand);
-            
-            BatchEnableCommand = new DelegateCommand(async () => await BatchEnableAsync(), () => HasSelectedFormulas);
-            BatchDisableCommand = new DelegateCommand(async () => await BatchDisableAsync(), () => HasSelectedFormulas);
-            ClearSelectionCommand = new DelegateCommand(ClearSelection, () => HasSelectedFormulas);
-            SelectAllCommand = new DelegateCommand(SelectAll);
+            EditCommand = new DelegateCommand<FormulaDto>(async formula => await EditFormulaAsync(formula), CanExecuteFormulaCommand);
+            DeleteCommand = new DelegateCommand<FormulaDto>(async formula => await DeleteFormulaAsync(formula), CanExecuteFormulaCommand);
+            ViewDetailsCommand = new DelegateCommand<FormulaDto>(async formula => await ViewDetailsAsync(formula), CanExecuteFormulaCommand);
+            ToggleStatusCommand = new DelegateCommand<FormulaDto>(async formula => await ToggleStatusAsync(formula), CanExecuteFormulaCommand);
             
             ExportCommand = new DelegateCommand(async () => await ExportFormulasAsync());
             ImportCommand = new DelegateCommand(async () => await ImportFormulasAsync());
+            
+            // UltraThink v2.0: 删除过度设计功能的命令初始化
         }
 
-        private bool CanExecuteFormulaCommand(FormulaViewModel formula)
+        private bool CanExecuteFormulaCommand(FormulaDto formula)
         {
             return formula != null && !IsLoading;
         }
 
         #endregion
 
-        #region Initialization
-
-        private async Task InitializeAsync()
-        {
-            await LoadCategoriesAsync();
-            await RefreshDataAsync();
-        }
-
-        private async Task LoadCategoriesAsync()
-        {
-            try
-            {
-                var result = await _formulaService.GetCategoriesAsync();
-                if (result.IsSuccess && result.Data != null)
-                {
-                    Categories.Clear();
-                    Categories.Add("全部");
-                    foreach (var category in result.Data)
-                    {
-                        Categories.Add(category);
-                    }
-                    SelectedCategory = "全部";
-                }
-                else
-                {
-                    // 使用默认分类
-                    InitializeDefaultCategories();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogError(ex, "加载验方分类失败");
-                ShowError("加载验方分类失败");
-                InitializeDefaultCategories();
-            }
-        }
-
-        private void InitializeDefaultCategories()
-        {
-            Categories.Clear();
-            Categories.Add("全部");
-            Categories.Add("内科方");
-            Categories.Add("外科方");
-            Categories.Add("妇科方");
-            Categories.Add("儿科方");
-            Categories.Add("经典方");
-            Categories.Add("验方");
-            SelectedCategory = "全部";
-        }
-
-        #endregion
+        // UltraThink v2.0: 删除分类初始化功能 - 20人以下小诊所不需要复杂的分类筛选
+        // 直接使用基类的数据加载机制，无需复杂的分类和初始化逻辑
 
         #region Data Loading Override
 
         protected override async Task<ServiceResult<PagedResult<FormulaDto>>> LoadDataAsync(PagedQueryBaseDto request)
         {
-            // 转换为验方查询DTO，包含分类筛选
-            var formulaQuery = new FormulaQueryDto
-            {
-                PageIndex = request.CurrentPage,
-                PageSize = request.PageSize,
-                Keyword = request.SearchKeyword
-                // UltraThink v2.0: FormulaQueryDto不支持Category筛选，分类在前端通过计算属性处理
-            };
-
-            return await _formulaService.GetPagedAsync(formulaQuery);
+            // UltraThink v2.0: 直接使用PagedQueryBaseDto进行验方查询，删除分类筛选
+            return await _formulaService.GetPagedAsync(request);
         }
 
-        protected override void OnDataLoaded(PagedResult<FormulaDto> data)
-        {
-            base.OnDataLoaded(data);
-            
-            // 将FormulaDto转换为FormulaViewModel
-            UpdateFormulaViewModels(data.Items);
-        }
-
-        protected override void OnDataLoadFailed(string errorMessage)
-        {
-            base.OnDataLoadFailed(errorMessage);
-            
-            // 清空验方视图模型
-            FormulaViewModels.Clear();
-            UpdateSelectionProperties();
-            
-            // 显示错误
-            _ = _dialogService.ShowErrorAsync(errorMessage, "加载失败");
-        }
+        // UltraThink v2.0: 删除复杂的ViewModel转换和选择状态管理
+        // 直接使用基类的标准数据加载处理，无需自定义OnDataLoaded和OnDataLoadFailed
 
         #endregion
         
-        #region Formula ViewModels Management
-
-        private void UpdateFormulaViewModels(System.Collections.Generic.List<FormulaDto> formulaDtos)
-        {
-            // 保存当前选择状态
-            var selectedIds = FormulaViewModels.Where(f => f.IsSelected).Select(f => f.Id).ToHashSet();
-            
-            // 清空并重新创建
-            FormulaViewModels.Clear();
-            
-            foreach (var dto in formulaDtos)
-            {
-                // UltraThink v2.0: 直接使用DTO创建FormulaViewModel
-                var formulaViewModel = FormulaViewModel.Create(dto);
-                
-                // 恢复选择状态
-                if (selectedIds.Contains(formulaViewModel.Id))
-                {
-                    formulaViewModel.IsSelected = true;
-                }
-                
-                // 监听选择状态变化
-                formulaViewModel.State.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(FormulaStateViewModel.IsSelected))
-                    {
-                        UpdateSelectionProperties();
-                    }
-                };
-                
-                FormulaViewModels.Add(formulaViewModel);
-            }
-            
-            UpdateSelectionProperties();
-        }
-
-        private void UpdateSelectionProperties()
-        {
-            RaisePropertyChanged(nameof(SelectedFormulasCount));
-            RaisePropertyChanged(nameof(HasSelectedFormulas));
-            
-            BatchEnableCommand.RaiseCanExecuteChanged();
-            BatchDisableCommand.RaiseCanExecuteChanged();
-            ClearSelectionCommand.RaiseCanExecuteChanged();
-        }
-
-        #endregion
+        // UltraThink v2.0: 删除复杂的ViewModel管理 - 20人以下小诊所不需要复杂的选择状态管理
+        // 直接使用基类提供的Data属性访问PagedResult<FormulaDto>数据
 
         #region CRUD Operations
 
@@ -328,77 +171,60 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        private async Task EditFormulaAsync(FormulaViewModel formulaViewModel)
+        private async Task EditFormulaAsync(FormulaDto formula)
         {
-            if (formulaViewModel == null) return;
+            if (formula == null) return;
             
             try
             {
                 // TODO: 实现验方编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑验方 {formulaViewModel.DisplayName} 功能开发中", "提示");
+                await _dialogService.ShowInformationAsync($"编辑验方 {formula.Name} 功能开发中", "提示");
             }
             catch (Exception ex)
             {
-                LogError(ex, "编辑验方失败: {FormulaId}", formulaViewModel.Id);
+                LogError(ex, "编辑验方失败: {FormulaId}", formula.Id);
                 ShowError($"编辑验方失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"编辑验方失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task DeleteFormulaAsync(FormulaViewModel formulaViewModel)
+        private async Task DeleteFormulaAsync(FormulaDto formula)
         {
-            if (formulaViewModel == null) return;
+            if (formula == null) return;
             
             // 验方信息不支持真正删除，只能禁用
-            await ToggleStatusAsync(formulaViewModel);
+            await ToggleStatusAsync(formula);
         }
 
-        private async Task CopyFormulaAsync(FormulaViewModel formulaViewModel)
-        {
-            if (formulaViewModel == null) return;
-            
-            try
-            {
-                // TODO: 实现验方复制功能
-                await _dialogService.ShowInformationAsync($"复制验方 {formulaViewModel.DisplayName} 功能开发中", "提示");
-            }
-            catch (Exception ex)
-            {
-                LogError(ex, "复制验方失败: {FormulaId}", formulaViewModel.Id);
-                ShowError($"复制验方失败: {ex.Message}");
-                await _dialogService.ShowErrorAsync($"复制验方失败: {ex.Message}", "错误");
-            }
-        }
+        // UltraThink v2.0: 删除CopyFormulaAsync - 复制功能过度设计，医生直接新建即可
 
         #endregion
 
         #region Business Operations
 
-        private async Task ToggleStatusAsync(FormulaViewModel formulaViewModel)
+        private async Task ToggleStatusAsync(FormulaDto formula)
         {
-            if (formulaViewModel == null) return;
+            if (formula == null) return;
 
-            var isEnabled = formulaViewModel.FormulaData.Status == CommonStatus.Enabled;
+            var isEnabled = formula.Status == CommonStatus.Enabled;
             var action = isEnabled ? "禁用" : "启用";
             
             var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要{action}验方 {formulaViewModel.DisplayName} 吗？",
+                $"确定要{action}验方 {formula.Name} 吗？",
                 $"{action}验方");
 
             if (confirm)
             {
                 try
                 {
-                    formulaViewModel.IsLoading = true;
-                    
                     ServiceResult result;
                     if (isEnabled)
                     {
-                        result = await _formulaService.DisableAsync(formulaViewModel.Id);
+                        result = await _formulaService.DisableAsync(formula.Id);
                     }
                     else
                     {
-                        result = await _formulaService.EnableAsync(formulaViewModel.Id);
+                        result = await _formulaService.EnableAsync(formula.Id);
                     }
 
                     if (result.IsSuccess)
@@ -415,33 +241,31 @@ namespace LYBT.Desktop.Formula.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex, "切换验方状态失败: {FormulaId}", formulaViewModel.Id);
+                    LogError(ex, "切换验方状态失败: {FormulaId}", formula.Id);
                     ShowError($"验方{action}失败: {ex.Message}");
                     await _dialogService.ShowErrorAsync($"验方{action}失败: {ex.Message}", "错误");
-                }
-                finally
-                {
-                    formulaViewModel.IsLoading = false;
                 }
             }
         }
 
-        private async Task ViewDetailsAsync(FormulaViewModel formulaViewModel)
+        private async Task ViewDetailsAsync(FormulaDto formula)
         {
-            if (formulaViewModel == null) return;
+            if (formula == null) return;
 
             try
             {
-                formulaViewModel.IsLoading = true;
-                
-                var result = await _formulaService.GetByIdAsync(formulaViewModel.Id);
+                var result = await _formulaService.GetByIdAsync(formula.Id);
                 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    var formula = result.Data;
-                    var detailInfo = formulaViewModel.Display.GetDetailedInfo();
+                    var formulaDetail = result.Data;
+                    var detailInfo = $"验方详情：\n\n" +
+                                   $"名称: {formulaDetail.Name}\n" +
+                                   $"分类: {formulaDetail.Category ?? "未分类"}\n" +
+                                   $"状态: {(formulaDetail.Status == CommonStatus.Enabled ? "正常" : "禁用")}\n" +
+                                   $"备注: {formulaDetail.Remark ?? "无"}";
 
-                    await _dialogService.ShowInformationAsync(detailInfo, $"验方详情 - {formula.Name}");
+                    await _dialogService.ShowInformationAsync(detailInfo, $"验方详情 - {formulaDetail.Name}");
                 }
                 else
                 {
@@ -452,139 +276,16 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "查看验方详情失败: {FormulaId}", formulaViewModel.Id);
+                LogError(ex, "查看验方详情失败: {FormulaId}", formula.Id);
                 ShowError($"查看验方详情失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"查看验方详情失败: {ex.Message}", "错误");
             }
-            finally
-            {
-                formulaViewModel.IsLoading = false;
-            }
         }
 
         #endregion
 
-        #region Batch Operations
-
-        private async Task BatchEnableAsync()
-        {
-            var selectedFormulas = FormulaViewModels.Where(f => f.IsSelected).ToList();
-            if (!selectedFormulas.Any()) return;
-
-            var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要启用选中的 {selectedFormulas.Count} 个验方吗？",
-                "批量启用");
-
-            if (confirm)
-            {
-                try
-                {
-                    var ids = selectedFormulas.Select(f => f.Id).ToList();
-                    
-                    // UltraThink v2.0: 移除批量操作，改为逐个启用
-                    int successCount = 0;
-                    var errors = new List<string>();
-                    
-                    foreach (var id in ids)
-                    {
-                        var result = await _formulaService.EnableAsync(id);
-                        if (result.IsSuccess)
-                        {
-                            successCount++;
-                        }
-                        else
-                        {
-                            errors.Add($"验方 {id}: {result.ErrorMessage}");
-                        }
-                    }
-
-                    await RefreshDataAsync();
-                    
-                    if (errors.Count == 0)
-                    {
-                        await _dialogService.ShowInformationAsync($"已成功启用 {successCount} 个验方", "成功");
-                    }
-                    else
-                    {
-                        var errorMsg = $"启用完成，成功 {successCount} 个，失败 {errors.Count} 个";
-                        if (errors.Count <= 3)
-                        {
-                            errorMsg += "\n失败详情:\n" + string.Join("\n", errors);
-                        }
-                        await _dialogService.ShowWarningAsync(errorMsg, "部分成功");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "批量启用验方失败");
-                    ShowError($"批量启用失败: {ex.Message}");
-                    await _dialogService.ShowErrorAsync($"批量启用失败: {ex.Message}", "错误");
-                }
-            }
-        }
-
-        private async Task BatchDisableAsync()
-        {
-            var selectedFormulas = FormulaViewModels.Where(f => f.IsSelected).ToList();
-            if (!selectedFormulas.Any())
-            {
-                await _dialogService.ShowWarningAsync("没有选中的验方", "警告");
-                return;
-            }
-
-            var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要禁用选中的 {selectedFormulas.Count} 个验方吗？",
-                "批量禁用");
-
-            if (confirm)
-            {
-                try
-                {
-                    var ids = selectedFormulas.Select(f => f.Id).ToList();
-                    
-                    // UltraThink v2.0: 移除批量操作，改为逐个禁用
-                    int successCount = 0;
-                    var errors = new List<string>();
-                    
-                    foreach (var id in ids)
-                    {
-                        var result = await _formulaService.DisableAsync(id);
-                        if (result.IsSuccess)
-                        {
-                            successCount++;
-                        }
-                        else
-                        {
-                            errors.Add($"验方 {id}: {result.ErrorMessage}");
-                        }
-                    }
-
-                    await RefreshDataAsync();
-                    
-                    if (errors.Count == 0)
-                    {
-                        await _dialogService.ShowInformationAsync($"已成功禁用 {successCount} 个验方", "成功");
-                    }
-                    else
-                    {
-                        var errorMsg = $"禁用完成，成功 {successCount} 个，失败 {errors.Count} 个";
-                        if (errors.Count <= 3)
-                        {
-                            errorMsg += "\n失败详情:\n" + string.Join("\n", errors);
-                        }
-                        await _dialogService.ShowWarningAsync(errorMsg, "部分成功");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "批量禁用验方失败");
-                    ShowError($"批量禁用失败: {ex.Message}");
-                    await _dialogService.ShowErrorAsync($"批量禁用失败: {ex.Message}", "错误");
-                }
-            }
-        }
-
-        #endregion
+        // UltraThink v2.0: 删除所有批量操作功能 - 20人以下小诊所不需要复杂的批量操作
+        // 包括: BatchEnableAsync, BatchDisableAsync 等功能
 
         #region Import/Export Operations
 
@@ -620,24 +321,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #endregion
 
-        #region Selection Management
-
-        private void ClearSelection()
-        {
-            foreach (var formula in FormulaViewModels)
-            {
-                formula.IsSelected = false;
-            }
-        }
-
-        private void SelectAll()
-        {
-            foreach (var formula in FormulaViewModels)
-            {
-                formula.IsSelected = true;
-            }
-        }
-
-        #endregion
+        // UltraThink v2.0: 删除所有选择管理功能 - 20人以下小诊所不需要复杂的多选功能
+        // 包括: ClearSelection, SelectAll 等功能
     }
 }

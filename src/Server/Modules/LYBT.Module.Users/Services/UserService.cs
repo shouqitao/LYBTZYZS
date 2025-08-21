@@ -102,12 +102,15 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 获取用户统计信息
         /// </summary>
+        #region 已废弃功能 - UltraThink精简
+        /*
+        // 用户统计功能已删除 - 小诊所不需要复杂统计
         public async Task<ServiceResult<object>> GetStatisticsAsync()
         {
-            return await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetStatisticsAsync(),
-                "获取用户统计信息");
+            // 功能已废弃，统计需求在前端实现简单计数即可
         }
+        */
+        #endregion
 
         /// <summary>
         /// 获取系统所有角色
@@ -270,13 +273,15 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 根据科室获取医生
         /// </summary>
+        #region 已废弃功能 - 科室管理
+        /*
+        // 科室管理功能已删除 - 小诊所无需科室划分
         public async Task<List<UserDto>> GetDoctorsByDepartmentAsync(string department)
         {
-            var result = await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetDoctorsByDepartmentAsync(department),
-                "根据科室获取医生", department);
-            return result.IsSuccess ? result.Data : new List<UserDto>();
+            // 功能已废弃，直接使用GetDoctorsAsync获取所有医生
         }
+        */
+        #endregion
 
         /// <summary>
         /// 获取医生的今日排班（简化版，默认都在班）

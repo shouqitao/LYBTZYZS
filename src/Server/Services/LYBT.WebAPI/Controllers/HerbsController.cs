@@ -157,6 +157,48 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 获取药材分类（基于功效分类） - 统一API响应格式
+        /// </summary>
+        [HttpGet("categories")]
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<string>>>> GetCategories()
+        {
+            try
+            {
+                // 获取所有启用的药材
+                var allHerbsResult = await _herbService.GetAvailableHerbsAsync();
+                if (!allHerbsResult.IsSuccess || allHerbsResult.Data == null)
+                {
+                    return Success(new List<string>(), "暂无药材分类");
+                }
+
+                // 提取所有非空的功效字段作为分类
+                var categories = allHerbsResult.Data
+                    .Where(h => !string.IsNullOrWhiteSpace(h.Effect))
+                    .Select(h => h.Effect!.Trim())
+                    .Distinct()
+                    .Where(effect => !string.IsNullOrWhiteSpace(effect))
+                    .OrderBy(effect => effect)
+                    .ToList();
+
+                // 如果没有分类，返回默认的中医分类
+                if (!categories.Any())
+                {
+                    categories = new List<string>
+                    {
+                        "清热类", "补益类", "解表类", "理气类", 
+                        "活血类", "止血类", "化痰类", "消食类", "其他"
+                    };
+                }
+
+                return Success(categories, $"获取分类成功，共{categories.Count}个分类");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<string>>(ex, "获取药材分类", null);
+            }
+        }
+
+        /// <summary>
         /// 搜索药材（用于处方配药） - 统一API响应格式
         /// </summary>
         [HttpGet("search")]

@@ -213,6 +213,9 @@ namespace LYBT.Module.Consultation.Helpers
         /// <summary>
         /// 更新医疗案例状态
         /// </summary>
+        /// <summary>
+        /// 更新医疗案例状态
+        /// </summary>
         private async Task UpdateMedicalCaseStatusAsync(Guid medicalCaseId, MedicalCaseStatus status, Guid? consultationId = null)
         {
             var medicalCase = await _context.MedicalCases
@@ -221,24 +224,27 @@ namespace LYBT.Module.Consultation.Helpers
             if (medicalCase != null)
             {
                 medicalCase.Status = status;
-                if (consultationId.HasValue)
-                {
-                    medicalCase.ConsultationId = consultationId.Value;
-                }
+                // 注意：MedicalCase不再有ConsultationId属性，因为现在是一对多关系
+                // 如果需要关联，应该通过Consultation.MedicalCaseId来建立关系
             }
         }
 
         /// <summary>
         /// 根据看诊ID更新医疗案例状态
         /// </summary>
+        /// <summary>
+        /// 根据看诊ID更新医疗案例状态
+        /// </summary>
         private async Task UpdateMedicalCaseStatusByConsultationAsync(Guid consultationId, MedicalCaseStatus status)
         {
-            var medicalCase = await _context.MedicalCases
-                .FirstOrDefaultAsync(m => m.ConsultationId == consultationId);
+            // 修复：通过Consultation找到对应的MedicalCase，因为现在是一对多关系
+            var consultation = await _context.Consultations
+                .Include(c => c.MedicalCase)
+                .FirstOrDefaultAsync(c => c.Id == consultationId);
 
-            if (medicalCase != null)
+            if (consultation?.MedicalCase != null)
             {
-                medicalCase.Status = status;
+                consultation.MedicalCase.Status = status;
             }
         }
 

@@ -176,41 +176,8 @@ namespace LYBT.Desktop.Formula.Services
             }
         }
         
-        public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<FormulaDto>.Failure("验方模板ID不能为空");
-                }
-                
-                if (string.IsNullOrWhiteSpace(newName))
-                {
-                    return ServiceResult<FormulaDto>.Failure("新验方模板名称不能为空");
-                }
-                
-                // 获取原始验方模板
-                var originalResult = await GetByIdAsync(id);
-                if (!originalResult.IsSuccess)
-                {
-                    return ServiceResult<FormulaDto>.Failure("获取原始验方模板失败");
-                }
-                
-                // UltraThink v2.0: 直接使用API复制功能
-                var apiResponse = await _apiService.CopyFormulaAsync(id, newName);
-                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
-                {
-                    return ServiceResult<FormulaDto>.Failure("复制验方模板失败");
-                }
-                
-                return ServiceResult<FormulaDto>.Success(apiResponse.Content);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<FormulaDto>.Failure($"复制验方模板异常: {ex.Message}");
-            }
-        }
+        // UltraThink v2.0: 删除复制功能 - 20人以下小诊所不需要复杂的复制功能
+        // 医生可以通过新建验方的方式实现类似功能，更简单直接
         
         public async Task<ServiceResult<IEnumerable<string>>> GetCategoriesAsync()
         {
@@ -381,53 +348,86 @@ namespace LYBT.Desktop.Formula.Services
         
         #endregion
 
-        #region 价格计算功能
+        // UltraThink v2.0: 删除价格计算功能 - 20人以下小诊所不需要复杂的价格计算
+        // FormulaDto已包含TotalPrice计算属性，前端可直接使用，无需额外的计算方法
+        
+        #region 基础数据导入导出功能 - UltraThink精简版保留
         
         /// <summary>
-        /// 获取验方总价格（FormulaDto已包含计算属性）
+        /// 批量导入验方数据 - 基础数据功能保留
         /// </summary>
-        public async Task<ServiceResult<decimal>> GetFormulaTotalPriceAsync(Guid formulaId)
+        public async Task<ServiceResult<int>> ImportFormulasAsync(List<FormulaImportDto> formulas)
         {
             try
             {
-                var formulaResult = await GetByIdAsync(formulaId);
-                if (!formulaResult.IsSuccess)
+                if (formulas == null || !formulas.Any())
                 {
-                    return ServiceResult<decimal>.Failure(formulaResult.ErrorMessage);
+                    return ServiceResult<int>.Failure("导入验方列表不能为空");
                 }
-                
-                // FormulaDto 已包含 TotalPrice 计算属性
-                return ServiceResult<decimal>.Success(formulaResult.Data.TotalPrice);
+
+                // API调用批量导入
+                var importOptions = new FormulaImportOptionsDto
+                {
+                    SkipDuplicates = true,
+                    UpdateExisting = false
+                };
+                var apiResponse = await _apiService.ImportFormulasAsync(formulas, importOptions);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                {
+                    return ServiceResult<int>.Failure("批量导入验方失败");
+                }
+
+                return ServiceResult<int>.Success(apiResponse.Content.SuccessCount);
             }
             catch (Exception ex)
             {
-                return ServiceResult<decimal>.Failure($"获取验方总价格异常: {ex.Message}");
+                return ServiceResult<int>.Failure($"批量导入验方异常: {ex.Message}");
             }
         }
-        
+
         /// <summary>
-        /// 批量获取验方价格
+        /// 导出验方数据 - 基础数据功能保留
         /// </summary>
-        public async Task<ServiceResult<Dictionary<Guid, decimal>>> GetBatchFormulaPricesAsync(IEnumerable<Guid> formulaIds)
+        public async Task<ServiceResult<List<FormulaDto>>> ExportFormulasAsync()
         {
             try
             {
-                var prices = new Dictionary<Guid, decimal>();
-                
-                foreach (var formulaId in formulaIds)
+                // API调用导出所有验方（使用ExportAllFormulasAsync）
+                var apiResponse = await _apiService.ExportAllFormulasAsync(includePrivate: false);
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
-                    var priceResult = await GetFormulaTotalPriceAsync(formulaId);
-                    if (priceResult.IsSuccess)
-                    {
-                        prices[formulaId] = priceResult.Data;
-                    }
+                    return ServiceResult<List<FormulaDto>>.Failure("导出验方数据失败");
                 }
-                
-                return ServiceResult<Dictionary<Guid, decimal>>.Success(prices);
+
+                // 使用AutoMapper将FormulaExportDto转换为FormulaDto
+                var formulaDtos = _mapper.Map<List<FormulaDto>>(apiResponse.Content);
+                return ServiceResult<List<FormulaDto>>.Success(formulaDtos);
             }
             catch (Exception ex)
             {
-                return ServiceResult<Dictionary<Guid, decimal>>.Failure($"批量获取验方价格异常: {ex.Message}");
+                return ServiceResult<List<FormulaDto>>.Failure($"导出验方数据异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 获取验方导入模板 - 基础数据功能保留 (拼音码自动生成)
+        /// </summary>
+        public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
+        {
+            try
+            {
+                // API调用获取导入模板
+                var apiResponse = await _apiService.GetImportTemplateAsync();
+                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                {
+                    return ServiceResult<byte[]>.Failure("获取验方导入模板失败");
+                }
+
+                return ServiceResult<byte[]>.Success(apiResponse.Content);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<byte[]>.Failure($"获取验方导入模板异常: {ex.Message}");
             }
         }
         

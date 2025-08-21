@@ -42,8 +42,14 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult<List<PrescriptionDto>>> GetByPatientIdAsync(Guid patientId);
         
         /// <summary>
-        /// 根据看诊ID获取处方列表
+        /// 根据医疗案例ID获取处方列表
         /// </summary>
+        Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+        
+        /// <summary>
+        /// 根据看诊ID获取处方列表 [已废弃 - 请使用GetByMedicalCaseIdAsync]
+        /// </summary>
+        [Obsolete("请使用GetByMedicalCaseIdAsync方法。处方应该通过MedicalCaseId关联，不直接关联ConsultationId。")]
         Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId);
         
         /// <summary>
@@ -51,25 +57,33 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto);
         
+        #region 已废弃功能 - UltraThink精简
+        /*
         /// <summary>
-        /// 导出处方为PDF
+        /// 导出处方为PDF (已废弃 - 功能迁移到MedicalCase模块)
         /// </summary>
         Task<ServiceResult<byte[]>> ExportToPdfAsync(Guid id);
+        */
         
+        /*
         /// <summary>
-        /// 获取处方统计信息
+        /// 获取处方统计信息 (已废弃)
         /// </summary>
         Task<ServiceResult<PrescriptionStatisticsDto>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate);
+        */
         
+        /*
         /// <summary>
-        /// 批准处方
+        /// 批准处方 (已废弃)
         /// </summary>
         Task<ServiceResult<bool>> ApproveAsync(Guid id, string approvalNote);
         
         /// <summary>
-        /// 拒绝处方
+        /// 拒绝处方 (已废弃)
         /// </summary>
         Task<ServiceResult<bool>> RejectAsync(Guid id, string reason);
+        */
+        #endregion
         
         /// <summary>
         /// 复制处方

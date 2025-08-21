@@ -69,63 +69,8 @@ public class UsersController : BaseApiController {
         }
     }
 
-    /// <summary>
-    /// 批量禁用用户 - 统一API响应格式
-    /// </summary>
-    [HttpPatch("batch-disable")]
-    public async Task<ActionResult<ApiResponse>> BatchDisable([FromBody] BatchIdsDto dto) {
-        try {
-            var validation = ValidateModel();
-            if (validation != null)
-                return validation;
-
-            if (dto.Ids == null || dto.Ids.Count == 0) {
-                return ValidationFail("用户ID列表不能为空");
-            }
-
-            var (operatorId, operatorName, _) = GetOperator();
-            var countResult = await _userService.BatchDisableAsync(dto.Ids);
-            if (!countResult.IsSuccess) {
-                return BusinessFail($"批量禁用失败：{countResult.ErrorMessage}", ApiErrorCodes.DATA_UPDATE_FAILED);
-            }
-            var count = countResult.Data;
-
-            var message = $"成功禁用 {count} 个用户，共 {dto.Ids.Count} 个";
-            LogOperation("批量禁用用户", new { count, total = dto.Ids.Count });
-            return Success(message);
-        } catch (Exception ex) {
-            return HandleException(ex, "批量禁用用户", dto);
-        }
-    }
-
-    /// <summary>
-    /// 批量启用用户 - 统一API响应格式
-    /// </summary>
-    [HttpPatch("batch-enable")]
-    public async Task<ActionResult<ApiResponse>> BatchEnable([FromBody] BatchIdsDto dto) {
-        try {
-            var validation = ValidateModel();
-            if (validation != null)
-                return validation;
-
-            if (dto.Ids == null || dto.Ids.Count == 0) {
-                return ValidationFail("用户ID列表不能为空");
-            }
-
-            var (operatorId, operatorName, _) = GetOperator();
-            var countResult = await _userService.BatchEnableAsync(dto.Ids);
-            if (!countResult.IsSuccess) {
-                return BusinessFail($"批量启用失败：{countResult.ErrorMessage}", ApiErrorCodes.DATA_UPDATE_FAILED);
-            }
-            var count = countResult.Data;
-
-            var message = $"成功启用 {count} 个用户，共 {dto.Ids.Count} 个";
-            LogOperation("批量启用用户", new { count, total = dto.Ids.Count });
-            return Success(message);
-        } catch (Exception ex) {
-            return HandleException(ex, "批量启用用户", dto);
-        }
-    }
+    // UltraThink v2.0: 删除批量操作功能 - 20人以下小诊所不需要复杂的批量启用/禁用功能
+    // 已删除 BatchDisable 和 BatchEnable 方法，使用 ToggleStatus 单个操作替代
 
     /// <summary>
     /// 管理员重置密码，恢复为默认值 - 统一API响应格式
@@ -177,6 +122,48 @@ public class UsersController : BaseApiController {
             return Success("密码修改成功");
         } catch (Exception ex) {
             return HandleException(ex, "修改密码", dto);
+        }
+    }
+
+    /// <summary>
+    /// 获取当前用户个人信息 - 统一API响应格式
+    /// UltraThink修复：支持sysadmin特殊用户处理
+    /// </summary>
+    [HttpGet("profile")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetProfile() {
+        try {
+            var (operatorId, operatorName, _) = GetOperator();
+            if (operatorId == Guid.Empty) {
+                return Unauthorized<UserDto>("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATION_FAILED);
+            }
+
+            // UltraThink修复：检查是否为sysadmin用户（使用固定ID）
+            var sysadminId = new Guid("00000000-0000-0000-0000-000000000001");
+            if (operatorId == sysadminId) {
+                // 对于sysadmin用户，创建虚拟UserDto
+                var sysadminDto = new UserDto {
+                    Id = sysadminId,
+                    Username = "sysadmin", 
+                    RealName = "系统管理员",
+                    Role = "Admin",
+                    Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
+                    // IsActive是计算属性，不需要设置
+                };
+                
+                LogOperation("获取个人信息", null, operatorId);
+                return Success(sysadminDto, "获取个人信息成功");
+            }
+
+            // 普通用户正常流程
+            var result = await _userService.GetByIdAsync(operatorId);
+            if (!result.IsSuccess || result.Data == null) {
+                return NotFound<UserDto>("用户不存在", ApiErrorCodes.USER_NOT_FOUND);
+            }
+
+            LogOperation("获取个人信息", null, operatorId);
+            return Success(result.Data, "获取个人信息成功");
+        } catch (Exception ex) {
+            return HandleException<UserDto>(ex, "获取个人信息", null);
         }
     }
 

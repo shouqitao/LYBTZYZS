@@ -216,35 +216,17 @@ namespace LYBT.Module.Consultation.Helpers
             }
         }
 
+        #region 已废弃功能 - 统计分析  
+        /*
         /// <summary>
-        /// 获取看诊统计信息
+        /// 获取看诊统计信息（已废弃）
         /// </summary>
         public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
-            try
-            {
-                var query = _context.Consultations
-                    .Where(c => c.Status == CommonStatus.Enabled);
-
-                var totalCount = await query.CountAsync();
-
-                var statistics = new
-                {
-                    TotalConsultations = totalCount,
-                    CompletedConsultations = totalCount, // 简化统计
-                    InProgressConsultations = 0,
-                    AverageDuration = 0.0, // Duration属性已删除
-                    CompletionRate = 100.0
-                };
-
-                return ServiceResult<object>.Success(statistics);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取看诊统计失败");
-                return ServiceResult<object>.Failure("获取看诊统计失败", ex);
-            }
+            // 看诊统计功能已废弃，小诊所不需要复杂统计分析
         }
+        */
+        #endregion
 
         /// <summary>
         /// 获取患者历史就诊记录 (UltraThink v2.0)

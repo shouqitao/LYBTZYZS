@@ -150,6 +150,130 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         { 
             get => Status == CommonStatus.Enabled; // 简化判断，启用状态表示完成
         }
+
+        #region 详细四诊属性（用于客户端四诊界面）
+
+        /// <summary>面色</summary>
+        [StringLength(200, ErrorMessage = "面色长度不能超过200个字符")]
+        [DisplayName("面色")]
+        public string? Complexion { get; set; }
+
+        /// <summary>神态</summary>
+        [StringLength(200, ErrorMessage = "神态长度不能超过200个字符")]
+        [DisplayName("神态")]
+        public string? Spirit { get; set; }
+
+        /// <summary>体型</summary>
+        [StringLength(200, ErrorMessage = "体型长度不能超过200个字符")]
+        [DisplayName("体型")]
+        public string? BodyShape { get; set; }
+
+        /// <summary>舌质</summary>
+        [StringLength(200, ErrorMessage = "舌质长度不能超过200个字符")]
+        [DisplayName("舌质")]
+        public string? TongueBody { get; set; }
+
+        /// <summary>舌苔</summary>
+        [StringLength(200, ErrorMessage = "舌苔长度不能超过200个字符")]
+        [DisplayName("舌苔")]
+        public string? TongueCoating { get; set; }
+
+        /// <summary>声音</summary>
+        [StringLength(200, ErrorMessage = "声音长度不能超过200个字符")]
+        [DisplayName("声音")]
+        public string? Voice { get; set; }
+
+        /// <summary>呼吸</summary>
+        [StringLength(200, ErrorMessage = "呼吸长度不能超过200个字符")]
+        [DisplayName("呼吸")]
+        public string? Breath { get; set; }
+
+        /// <summary>咳嗽</summary>
+        [StringLength(200, ErrorMessage = "咳嗽长度不能超过200个字符")]
+        [DisplayName("咳嗽")]
+        public string? Cough { get; set; }
+
+        /// <summary>气味</summary>
+        [StringLength(200, ErrorMessage = "气味长度不能超过200个字符")]
+        [DisplayName("气味")]
+        public string? Odor { get; set; }
+
+        /// <summary>寒热</summary>
+        [StringLength(200, ErrorMessage = "寒热长度不能超过200个字符")]
+        [DisplayName("寒热")]
+        public string? ColdHeat { get; set; }
+
+        /// <summary>汗出</summary>
+        [StringLength(200, ErrorMessage = "汗出长度不能超过200个字符")]
+        [DisplayName("汗出")]
+        public string? Sweat { get; set; }
+
+        /// <summary>头身</summary>
+        [StringLength(200, ErrorMessage = "头身长度不能超过200个字符")]
+        [DisplayName("头身")]
+        public string? HeadBody { get; set; }
+
+        /// <summary>胸腹</summary>
+        [StringLength(200, ErrorMessage = "胸腹长度不能超过200个字符")]
+        [DisplayName("胸腹")]
+        public string? ChestAbdomen { get; set; }
+
+        /// <summary>饮食</summary>
+        [StringLength(200, ErrorMessage = "饮食长度不能超过200个字符")]
+        [DisplayName("饮食")]
+        public string? Appetite { get; set; }
+
+        /// <summary>二便</summary>
+        [StringLength(200, ErrorMessage = "二便长度不能超过200个字符")]
+        [DisplayName("二便")]
+        public string? StoolUrine { get; set; }
+
+        /// <summary>睡眠</summary>
+        [StringLength(200, ErrorMessage = "睡眠长度不能超过200个字符")]
+        [DisplayName("睡眠")]
+        public string? Sleep { get; set; }
+
+        /// <summary>月经</summary>
+        [StringLength(200, ErrorMessage = "月经长度不能超过200个字符")]
+        [DisplayName("月经")]
+        public string? Menstruation { get; set; }
+
+        /// <summary>脉率</summary>
+        [StringLength(200, ErrorMessage = "脉率长度不能超过200个字符")]
+        [DisplayName("脉率")]
+        public string? PulseRate { get; set; }
+
+        /// <summary>脉律</summary>
+        [StringLength(200, ErrorMessage = "脉律长度不能超过200个字符")]
+        [DisplayName("脉律")]
+        public string? PulseRhythm { get; set; }
+
+        /// <summary>脉力</summary>
+        [StringLength(200, ErrorMessage = "脉力长度不能超过200个字符")]
+        [DisplayName("脉力")]
+        public string? PulseStrength { get; set; }
+
+        /// <summary>脉形</summary>
+        [StringLength(200, ErrorMessage = "脉形长度不能超过200个字符")]
+        [DisplayName("脉形")]
+        public string? PulseShape { get; set; }
+
+        /// <summary>左脉</summary>
+        [StringLength(200, ErrorMessage = "左脉长度不能超过200个字符")]
+        [DisplayName("左脉")]
+        public string? LeftPulse { get; set; }
+
+        /// <summary>右脉</summary>
+        [StringLength(200, ErrorMessage = "右脉长度不能超过200个字符")]
+        [DisplayName("右脉")]
+        public string? RightPulse { get; set; }
+
+        /// <summary>中医证候</summary>
+        [StringLength(500, ErrorMessage = "中医证候长度不能超过500个字符")]
+        [DisplayName("证候")]
+        public string? TCMSyndrome { get; set; }
+
+        #endregion
     }
 
     /// <summary>
@@ -270,6 +394,130 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        #region 详细四诊属性（用于客户端四诊界面）
+
+        /// <summary>面色</summary>
+        [StringLength(200, ErrorMessage = "面色长度不能超过200个字符")]
+        [DisplayName("面色")]
+        public string? Complexion { get; set; }
+
+        /// <summary>神态</summary>
+        [StringLength(200, ErrorMessage = "神态长度不能超过200个字符")]
+        [DisplayName("神态")]
+        public string? Spirit { get; set; }
+
+        /// <summary>体型</summary>
+        [StringLength(200, ErrorMessage = "体型长度不能超过200个字符")]
+        [DisplayName("体型")]
+        public string? BodyShape { get; set; }
+
+        /// <summary>舌质</summary>
+        [StringLength(200, ErrorMessage = "舌质长度不能超过200个字符")]
+        [DisplayName("舌质")]
+        public string? TongueBody { get; set; }
+
+        /// <summary>舌苔</summary>
+        [StringLength(200, ErrorMessage = "舌苔长度不能超过200个字符")]
+        [DisplayName("舌苔")]
+        public string? TongueCoating { get; set; }
+
+        /// <summary>声音</summary>
+        [StringLength(200, ErrorMessage = "声音长度不能超过200个字符")]
+        [DisplayName("声音")]
+        public string? Voice { get; set; }
+
+        /// <summary>呼吸</summary>
+        [StringLength(200, ErrorMessage = "呼吸长度不能超过200个字符")]
+        [DisplayName("呼吸")]
+        public string? Breath { get; set; }
+
+        /// <summary>咳嗽</summary>
+        [StringLength(200, ErrorMessage = "咳嗽长度不能超过200个字符")]
+        [DisplayName("咳嗽")]
+        public string? Cough { get; set; }
+
+        /// <summary>气味</summary>
+        [StringLength(200, ErrorMessage = "气味长度不能超过200个字符")]
+        [DisplayName("气味")]
+        public string? Odor { get; set; }
+
+        /// <summary>寒热</summary>
+        [StringLength(200, ErrorMessage = "寒热长度不能超过200个字符")]
+        [DisplayName("寒热")]
+        public string? ColdHeat { get; set; }
+
+        /// <summary>汗出</summary>
+        [StringLength(200, ErrorMessage = "汗出长度不能超过200个字符")]
+        [DisplayName("汗出")]
+        public string? Sweat { get; set; }
+
+        /// <summary>头身</summary>
+        [StringLength(200, ErrorMessage = "头身长度不能超过200个字符")]
+        [DisplayName("头身")]
+        public string? HeadBody { get; set; }
+
+        /// <summary>胸腹</summary>
+        [StringLength(200, ErrorMessage = "胸腹长度不能超过200个字符")]
+        [DisplayName("胸腹")]
+        public string? ChestAbdomen { get; set; }
+
+        /// <summary>饮食</summary>
+        [StringLength(200, ErrorMessage = "饮食长度不能超过200个字符")]
+        [DisplayName("饮食")]
+        public string? Appetite { get; set; }
+
+        /// <summary>二便</summary>
+        [StringLength(200, ErrorMessage = "二便长度不能超过200个字符")]
+        [DisplayName("二便")]
+        public string? StoolUrine { get; set; }
+
+        /// <summary>睡眠</summary>
+        [StringLength(200, ErrorMessage = "睡眠长度不能超过200个字符")]
+        [DisplayName("睡眠")]
+        public string? Sleep { get; set; }
+
+        /// <summary>月经</summary>
+        [StringLength(200, ErrorMessage = "月经长度不能超过200个字符")]
+        [DisplayName("月经")]
+        public string? Menstruation { get; set; }
+
+        /// <summary>脉率</summary>
+        [StringLength(200, ErrorMessage = "脉率长度不能超过200个字符")]
+        [DisplayName("脉率")]
+        public string? PulseRate { get; set; }
+
+        /// <summary>脉律</summary>
+        [StringLength(200, ErrorMessage = "脉律长度不能超过200个字符")]
+        [DisplayName("脉律")]
+        public string? PulseRhythm { get; set; }
+
+        /// <summary>脉力</summary>
+        [StringLength(200, ErrorMessage = "脉力长度不能超过200个字符")]
+        [DisplayName("脉力")]
+        public string? PulseStrength { get; set; }
+
+        /// <summary>脉形</summary>
+        [StringLength(200, ErrorMessage = "脉形长度不能超过200个字符")]
+        [DisplayName("脉形")]
+        public string? PulseShape { get; set; }
+
+        /// <summary>左脉</summary>
+        [StringLength(200, ErrorMessage = "左脉长度不能超过200个字符")]
+        [DisplayName("左脉")]
+        public string? LeftPulse { get; set; }
+
+        /// <summary>右脉</summary>
+        [StringLength(200, ErrorMessage = "右脉长度不能超过200个字符")]
+        [DisplayName("右脉")]
+        public string? RightPulse { get; set; }
+
+        /// <summary>中医证候</summary>
+        [StringLength(500, ErrorMessage = "中医证候长度不能超过500个字符")]
+        [DisplayName("证候")]
+        public string? TCMSyndrome { get; set; }
+
+        #endregion
     }
 
     /// <summary>
@@ -412,5 +660,134 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>患者ID</summary>
         [DisplayName("患者ID")]
         public Guid? PatientId { get; set; }
+
+        #region 详细四诊属性（用于客户端四诊界面）
+
+        /// <summary>面色</summary>
+        [StringLength(200, ErrorMessage = "面色长度不能超过200个字符")]
+        [DisplayName("面色")]
+        public string? Complexion { get; set; }
+
+        /// <summary>神态</summary>
+        [StringLength(200, ErrorMessage = "神态长度不能超过200个字符")]
+        [DisplayName("神态")]
+        public string? Spirit { get; set; }
+
+        /// <summary>体型</summary>
+        [StringLength(200, ErrorMessage = "体型长度不能超过200个字符")]
+        [DisplayName("体型")]
+        public string? BodyShape { get; set; }
+
+        /// <summary>舌质</summary>
+        [StringLength(200, ErrorMessage = "舌质长度不能超过200个字符")]
+        [DisplayName("舌质")]
+        public string? TongueBody { get; set; }
+
+        /// <summary>舌苔</summary>
+        [StringLength(200, ErrorMessage = "舌苔长度不能超过200个字符")]
+        [DisplayName("舌苔")]
+        public string? TongueCoating { get; set; }
+
+        /// <summary>声音</summary>
+        [StringLength(200, ErrorMessage = "声音长度不能超过200个字符")]
+        [DisplayName("声音")]
+        public string? Voice { get; set; }
+
+        /// <summary>呼吸</summary>
+        [StringLength(200, ErrorMessage = "呼吸长度不能超过200个字符")]
+        [DisplayName("呼吸")]
+        public string? Breath { get; set; }
+
+        /// <summary>咳嗽</summary>
+        [StringLength(200, ErrorMessage = "咳嗽长度不能超过200个字符")]
+        [DisplayName("咳嗽")]
+        public string? Cough { get; set; }
+
+        /// <summary>寒热</summary>
+        [StringLength(200, ErrorMessage = "寒热长度不能超过200个字符")]
+        [DisplayName("寒热")]
+        public string? ColdHeat { get; set; }
+
+        /// <summary>汗出</summary>
+        [StringLength(200, ErrorMessage = "汗出长度不能超过200个字符")]
+        [DisplayName("汗出")]
+        public string? Sweat { get; set; }
+
+        /// <summary>饮食</summary>
+        [StringLength(200, ErrorMessage = "饮食长度不能超过200个字符")]
+        [DisplayName("饮食")]
+        public string? Appetite { get; set; }
+
+        /// <summary>睡眠</summary>
+        [StringLength(200, ErrorMessage = "睡眠长度不能超过200个字符")]
+        [DisplayName("睡眠")]
+        public string? Sleep { get; set; }
+
+        /// <summary>二便</summary>
+        [StringLength(200, ErrorMessage = "二便长度不能超过200个字符")]
+        [DisplayName("二便")]
+        public string? StoolUrine { get; set; }
+
+        /// <summary>脉象</summary>
+        [StringLength(200, ErrorMessage = "脉象长度不能超过200个字符")]
+        [DisplayName("脉象")]
+        public string? Pulse { get; set; }
+
+        /// <summary>脉率</summary>
+        [StringLength(200, ErrorMessage = "脉率长度不能超过200个字符")]
+        [DisplayName("脉率")]
+        public string? PulseRate { get; set; }
+
+        /// <summary>脉力</summary>
+        [StringLength(200, ErrorMessage = "脉力长度不能超过200个字符")]
+        [DisplayName("脉力")]
+        public string? PulseStrength { get; set; }
+
+        /// <summary>气味</summary>
+        [StringLength(200, ErrorMessage = "气味长度不能超过200个字符")]
+        [DisplayName("气味")]
+        public string? Odor { get; set; }
+
+        /// <summary>头身</summary>
+        [StringLength(200, ErrorMessage = "头身长度不能超过200个字符")]
+        [DisplayName("头身")]
+        public string? HeadBody { get; set; }
+
+        /// <summary>胸腹</summary>
+        [StringLength(200, ErrorMessage = "胸腹长度不能超过200个字符")]
+        [DisplayName("胸腹")]
+        public string? ChestAbdomen { get; set; }
+
+        /// <summary>月经</summary>
+        [StringLength(200, ErrorMessage = "月经长度不能超过200个字符")]
+        [DisplayName("月经")]
+        public string? Menstruation { get; set; }
+
+        /// <summary>脉律</summary>
+        [StringLength(200, ErrorMessage = "脉律长度不能超过200个字符")]
+        [DisplayName("脉律")]
+        public string? PulseRhythm { get; set; }
+
+        /// <summary>脉形</summary>
+        [StringLength(200, ErrorMessage = "脉形长度不能超过200个字符")]
+        [DisplayName("脉形")]
+        public string? PulseShape { get; set; }
+
+        /// <summary>左脉</summary>
+        [StringLength(200, ErrorMessage = "左脉长度不能超过200个字符")]
+        [DisplayName("左脉")]
+        public string? LeftPulse { get; set; }
+
+        /// <summary>右脉</summary>
+        [StringLength(200, ErrorMessage = "右脉长度不能超过200个字符")]
+        [DisplayName("右脉")]
+        public string? RightPulse { get; set; }
+
+        /// <summary>中医证候</summary>
+        [StringLength(500, ErrorMessage = "中医证候长度不能超过500个字符")]
+        [DisplayName("证候")]
+        public string? TCMSyndrome { get; set; }
+
+        #endregion
     }
 }

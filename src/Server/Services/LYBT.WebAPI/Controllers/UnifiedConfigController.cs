@@ -137,33 +137,8 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 批量设置配置值
-        /// </summary>
-        /// <param name="settings">设置字典</param>
-        /// <returns>设置结果</returns>
-        [HttpPost("settings/batch")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> SetSettings([FromBody] Dictionary<string, object> settings)
-        {
-            try
-            {
-
-                var currentUserId = Guid.NewGuid(); // 临时使用
-
-                var result = await _configService.SetSettingsAsync(settings, currentUserId);
-                if (result)
-                {
-                    return Ok(new { Message = $"成功设置 {settings.Count} 个配置项" });
-                }
-                return BadRequest("批量设置失败");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量设置配置失败");
-                return StatusCode(500, "批量设置失败");
-            }
-        }
+        // UltraThink v2.0: 删除批量设置功能 - 20人以下小诊所不需要复杂的批量配置操作
+        // 已删除 SetSettings 批量设置方法，使用 SetSetting 单个操作替代
 
         /// <summary>
         /// 分页查询设置

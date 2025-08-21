@@ -30,6 +30,7 @@ namespace LYBT.Module.Auth.Services
         private readonly SysAdminHandler _sysAdminHandler;
         private readonly AuthOptions _authOptions;
         private readonly ILogger<AuthService> _logger;
+        private readonly IJwtAuthenticationService _jwtAuthenticationService;
 
         public AuthService(
             AuthValidationHelper validationHelper,
@@ -39,7 +40,8 @@ namespace LYBT.Module.Auth.Services
             IMapper mapper,
             SysAdminHandler sysAdminHandler,
             IOptions<AuthOptions> authOptions,
-            ILogger<AuthService> logger)
+            ILogger<AuthService> logger,
+            IJwtAuthenticationService jwtAuthenticationService)
         {
             _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
             _sessionHelper = sessionHelper ?? throw new ArgumentNullException(nameof(sessionHelper));
@@ -49,6 +51,7 @@ namespace LYBT.Module.Auth.Services
             _sysAdminHandler = sysAdminHandler ?? throw new ArgumentNullException(nameof(sysAdminHandler));
             _authOptions = authOptions?.Value ?? throw new ArgumentNullException(nameof(authOptions));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _jwtAuthenticationService = jwtAuthenticationService ?? throw new ArgumentNullException(nameof(jwtAuthenticationService));
         }
 
         #region Shared Interface Implementation (委托给Helper模式)
@@ -77,10 +80,17 @@ namespace LYBT.Module.Auth.Services
                 // 处理登录成功，更新用户状态
                 var userDto = await HandleSuccessfulLoginAsync(user, request);
 
-                // 创建登录响应（简化实现，实际项目中应该包含JWT token生成）
+                // 生成真正的JWT Token
+                var jwtToken = _jwtAuthenticationService.GenerateToken(
+                    user.Id.ToString(), 
+                    user.Username, 
+                    user.Role, 
+                    request.RememberMe);
+
+                // 创建登录响应
                 var loginResponse = new LoginResponse
                 {
-                    Token = $"mock_token_{Guid.NewGuid()}", // 实际应该生成JWT
+                    Token = jwtToken, // 使用真正的JWT Token
                     User = userDto // UltraThink v2.0简化：直接使用UserDto，移除BaseUser转换
                 };
 
@@ -211,21 +221,15 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 获取操作员名称（辅助方法）
         /// </summary>
+        #region 已废弃功能 - UltraThink精简
+        /*
+        // 此方法与AuthLoggingHelper.GetOperatorName重复，已删除
         private string GetOperatorName(User? user, string username)
         {
-            if (user != null)
-            {
-                return !string.IsNullOrEmpty(user.RealName) ? user.RealName : user.Username;
-            }
-
-            // 检查是否为系统管理员
-            if (_sysAdminHandler.IsSysAdmin(username))
-            {
-                return "系统管理员";
-            }
-
-            return username;
+            // 功能已迁移到AuthLoggingHelper中
         }
+        */
+        #endregion
 
         #endregion
     }

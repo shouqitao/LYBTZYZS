@@ -39,7 +39,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     {
         #region 依赖服务
 
-        private readonly ConsultationModuleService _consultationModuleService;
+        private readonly ConsultationService _consultationService;
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPatientApi _patientApiService;
         private readonly IHerbApi _herbApiService;
@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 构造函数
 
         public ConsultationMainViewModel(
-            ConsultationModuleService consultationModuleService,
+            ConsultationService consultationService,
             IMedicalCaseService medicalCaseService,
             IPatientApi patientApiService,
             IHerbApi herbApiService,
@@ -181,7 +181,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             IMapper mapper)
             : base(sessionManager, notificationService, logger)
         {
-            _consultationModuleService = consultationModuleService ?? throw new ArgumentNullException(nameof(consultationModuleService));
+            _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
             _patientApiService = patientApiService ?? throw new ArgumentNullException(nameof(patientApiService));
             _herbApiService = herbApiService ?? throw new ArgumentNullException(nameof(herbApiService));
@@ -196,7 +196,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             SaveConsultationCommand = new DelegateCommand(async () => await SaveConsultationAsync());
             AddHerbCommand = new DelegateCommand<HerbDto>(AddHerbToPrescription);
             RemoveHerbCommand = new DelegateCommand<PrescriptionItemDto>(RemoveHerbFromPrescription);
-            ApplyFormulaCommand = new DelegateCommand<FormulaDto>(async f => await ApplyFormulaAsync(f));
+            ApplyFormulaCommand = new DelegateCommand<FormulaDto>(ApplyFormula);
 
             SubscribeToEvents();
             _ = InitializeAsync();
@@ -378,7 +378,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     CreateTime = DateTime.Now
                 };
 
-                var result = await _consultationModuleService.CreateAsync(createDto);
+                var result = await _consultationService.CreateAsync(createDto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     CurrentConsultation = result.Data;
@@ -437,7 +437,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     IsCompleted = true
                 };
 
-                var result = await _consultationModuleService.UpdateAsync(updateDto);
+                var result = await _consultationService.UpdateAsync(updateDto);
                 if (result.IsSuccess)
                 {
                     // 如果从MedicalCase导航过来，更新MedicalCase状态
@@ -558,7 +558,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
         }
 
-        private async Task ApplyFormulaAsync(FormulaDto? formula)
+        private void ApplyFormula(FormulaDto? formula)
         {
             if (formula == null || CurrentConsultation == null) return;
 
@@ -566,10 +566,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 ShowLoading("正在应用验方...");
                 
-                // UltraThink v2.0: 简化验方应用逻辑，直接添加验方中的药材
-                // TODO: 从FormulaDto获取包含的药材列表并添加到处方
-                
-                ShowInfo($"验方 {formula.Name} 应用功能待实现", "提示");
+                // UltraThink v2.0: 简化验方应用逻辑 - 20人以下小诊所暂不实现复杂验方功能
+                ShowInfo($"验方 {formula.Name} 应用功能暂不支持", "提示");
                 RaisePropertyChanged(nameof(TotalPrice));
                 LogInfo($"应用验方: {formula.Name}");
             }
@@ -734,7 +732,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     CreateTime = DateTime.Now
                 };
                 
-                var result = await _consultationModuleService.CreateAsync(createDto);
+                var result = await _consultationService.CreateAsync(createDto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     CurrentConsultation = result.Data;
