@@ -38,6 +38,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
             RegisterDialogs(containerRegistry);
+            RegisterPerformanceServices(containerRegistry);
             RegisterViewModels(containerRegistry);
             RegisterViews(containerRegistry);
         }
@@ -153,6 +154,16 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService, 
                 LYBT.Desktop.Core.Services.WpfDialogService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.SimpleDialogService>();
+        }
+
+        /// <summary>
+        /// 注册性能优化服务
+        /// </summary>
+        private static void RegisterPerformanceServices(IContainerRegistry containerRegistry)
+        {
+            // 注册UI性能优化器
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer, 
+                LYBT.Desktop.Core.Services.Performance.UIPerformanceOptimizer>();
         }
 
         /// <summary>
