@@ -64,7 +64,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 创建处方工作流
         /// </summary>
-        public async Task<ServiceResult<Guid>> CreatePrescriptionWorkflowAsync(
+        public ServiceResult<Guid> CreatePrescriptionWorkflow(
             Guid patientId, 
             Guid doctorId, 
             PrescriptionCreationContext context)
@@ -154,7 +154,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 验证处方
         /// </summary>
-        public async Task<ServiceResult<PrescriptionValidationResult>> ValidatePrescriptionAsync(
+        public Task<ServiceResult<PrescriptionValidationResult>> ValidatePrescriptionAsync(
             PrescriptionDraft prescription)
         {
             try
@@ -172,16 +172,16 @@ namespace LYBT.Desktop.Core.Coordinators
                 ValidateBasicInformation(prescription, validation);
 
                 // 2. 药材验证
-                await ValidateHerbsAsync(prescription, validation);
+                ValidateHerbs(prescription, validation);
 
                 // 3. 剂量验证
                 ValidateDosages(prescription, validation);
 
                 // 4. 药物相互作用检查
-                await CheckDrugInteractionsAsync(prescription, validation);
+                CheckDrugInteractions(prescription, validation);
 
                 // 5. 患者特异性检查
-                await CheckPatientSpecificIssuesAsync(prescription, validation);
+                CheckPatientSpecificIssues(prescription, validation);
 
                 // 6. 计算总体安全评分
                 validation.OverallSafetyScore = CalculateSafetyScore(validation);
@@ -207,19 +207,19 @@ namespace LYBT.Desktop.Core.Coordinators
                     ValidationTime = validation.ValidationTime
                 });
 
-                return ServiceResult<PrescriptionValidationResult>.Success(validation);
+                return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(validation));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "验证处方失败: PrescriptionId={PrescriptionId}", prescription.Id);
-                return ServiceResult<PrescriptionValidationResult>.Failure($"验证处方失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Failure($"验证处方失败: {ex.Message}", ex));
             }
         }
 
         /// <summary>
         /// 更新处方状态
         /// </summary>
-        public async Task<ServiceResult<bool>> UpdatePrescriptionStatusAsync(
+        public Task<ServiceResult<bool>> UpdatePrescriptionStatusAsync(
             Guid prescriptionId, 
             PrescriptionStatus newStatus, 
             string reason = "")
@@ -231,7 +231,7 @@ namespace LYBT.Desktop.Core.Coordinators
 
                 if (workflow == null)
                 {
-                    return ServiceResult<bool>.Failure("找不到指定的处方");
+                    return Task.FromResult(ServiceResult<bool>.Failure("找不到指定的处方"));
                 }
 
                 var prescription = workflow.Prescriptions.First(p => p.Id == prescriptionId);
@@ -254,12 +254,12 @@ namespace LYBT.Desktop.Core.Coordinators
                     ChangeTime = prescription.UpdateTime.Value
                 });
 
-                return ServiceResult<bool>.Success(true);
+                return Task.FromResult(ServiceResult<bool>.Success(true));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新处方状态失败: PrescriptionId={PrescriptionId}", prescriptionId);
-                return ServiceResult<bool>.Failure($"更新处方状态失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<bool>.Failure($"更新处方状态失败: {ex.Message}", ex));
             }
         }
 
@@ -562,7 +562,7 @@ namespace LYBT.Desktop.Core.Coordinators
             }
         }
 
-        private async Task ValidateHerbsAsync(PrescriptionDraft prescription, PrescriptionValidationResult validation)
+        private void ValidateHerbs(PrescriptionDraft prescription, PrescriptionValidationResult validation)
         {
             foreach (var herb in prescription.Herbs)
             {
@@ -608,13 +608,13 @@ namespace LYBT.Desktop.Core.Coordinators
             }
         }
 
-        private async Task CheckDrugInteractionsAsync(PrescriptionDraft prescription, PrescriptionValidationResult validation)
+        private void CheckDrugInteractions(PrescriptionDraft prescription, PrescriptionValidationResult validation)
         {
             // 检查药物相互作用（简化实现）
             // 在实际系统中，这里会调用专门的药物相互作用数据库
         }
 
-        private async Task CheckPatientSpecificIssuesAsync(PrescriptionDraft prescription, PrescriptionValidationResult validation)
+        private void CheckPatientSpecificIssues(PrescriptionDraft prescription, PrescriptionValidationResult validation)
         {
             // 检查患者特异性问题，如过敏史、年龄、体重等
             // 实际实现会根据患者信息进行检查

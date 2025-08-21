@@ -134,7 +134,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
-            LoadCommand = new DelegateCommand(async () => await LoadAsync());
+            LoadCommand = new DelegateCommand(Load);  // 现在是同步方法
             ClearCommand = new DelegateCommand(Clear, () => !IsLoading);
             AnalyzeCommand = new DelegateCommand(async () => await AnalyzeAsync(), CanAnalyze);
             QuickInputCommand = new DelegateCommand<string>(QuickInput);
@@ -168,17 +168,18 @@ namespace LYBT.Desktop.Consultation.ViewModels
             (ExportDataCommand as DelegateCommand)?.RaiseCanExecuteChanged();
         }
 
-        private async void OnMedicalCaseSelected(MedicalCaseSelectedEventArgs args)
+        private void OnMedicalCaseSelected(MedicalCaseSelectedEventArgs args)
         {
             try
             {
                 MedicalCaseId = args.MedicalCaseId;
-                await LoadAsync();
+                Load();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "处理医疗案例选择事件时发生错误: {MedicalCaseId}", args.MedicalCaseId);
-                await _dialogService.ShowErrorAsync("加载患者数据失败", ex.Message);
+                // 事件处理器中的异常需要安全处理，不能让应用崩溃
+                // 可以通过其他机制通知用户，比如状态栏或者通知系统
             }
         }
 
@@ -225,7 +226,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             return !IsLoading && HasUnsavedChanges && _tcmDiagnosisService.IsDataValid();
         }
 
-        private async Task LoadAsync()
+        private void Load()
         {
             try
             {
@@ -250,7 +251,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载四诊数据时发生错误: {ConsultationId}", ConsultationId);
-                await _dialogService.ShowErrorAsync("加载失败", ex.Message);
+                // 抛出异常让调用者处理
+                throw new InvalidOperationException($"加载失败: {ex.Message}", ex);
             }
             finally
             {

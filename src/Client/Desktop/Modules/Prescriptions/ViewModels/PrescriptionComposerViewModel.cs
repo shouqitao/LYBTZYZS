@@ -182,14 +182,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region 命令属性
 
-        public ICommand AddHerbCommand { get; private set; }
-        public ICommand ImportFormulaCommand { get; private set; }
-        public ICommand EditHerbCommand { get; private set; }
-        public ICommand RemoveHerbCommand { get; private set; }
-        public ICommand ClearAllCommand { get; private set; }
-        public ICommand SaveDraftCommand { get; private set; }
-        public ICommand SavePrescriptionCommand { get; private set; }
-        public ICommand CloseCommand { get; private set; }
+        public ICommand AddHerbCommand { get; private set; } = null!;
+        public ICommand ImportFormulaCommand { get; private set; } = null!;
+        public ICommand EditHerbCommand { get; private set; } = null!;
+        public ICommand RemoveHerbCommand { get; private set; } = null!;
+        public ICommand ClearAllCommand { get; private set; } = null!;
+        public ICommand SaveDraftCommand { get; private set; } = null!;
+        public ICommand SavePrescriptionCommand { get; private set; } = null!;
+        public ICommand CloseCommand { get; private set; } = null!;
 
         #endregion
 

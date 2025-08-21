@@ -195,12 +195,11 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// <summary>
         /// 加载主界面内容
         /// </summary>
-        private async void LoadMainContent()
+        private void LoadMainContent()
         {
             if (CurrentUser == null)
             {
-                await _commonDialogService.ShowErrorAsync("当前用户信息为空，无法加载主界面", "错误");
-                return;
+                throw new InvalidOperationException("当前用户信息为空，无法加载主界面");
             }
 
             // 判断用户角色
@@ -232,50 +231,45 @@ namespace LYBT.Desktop.Shell.ViewModels
             
             Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
 
-            if (_regionManager != null)
+            if (_regionManager == null)
             {
-                try
-                {
-                    // 清除内容区域的旧内容
-                    if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
-                    {
-                        _regionManager.Regions["ContentRegion"].RemoveAll();
-                    }
-
-                    // 清除登录区域
-                    if (_regionManager.Regions.ContainsRegionWithName("LoginRegion"))
-                    {
-                        _regionManager.Regions["LoginRegion"].RemoveAll();
-                    }
-
-                    // 根据角色导航到对应的工作台主视图
-                    _regionManager.RequestNavigate("ContentRegion", workbenchView, async navigationResult =>
-                    {
-                        if (navigationResult.Result != true)
-                        {
-                            // 如果导航失败，显示错误信息
-                            var errorMessage = "导航失败";
-                            await _commonDialogService.ShowWarningAsync(
-                                $"{welcomeMessage}\n\n注意：工作台模块加载失败。\n错误详情：{errorMessage}", 
-                                "登录成功");
-                        }
-                        else
-                        {
-                            // 导航成功，显示欢迎消息（可选）
-                            System.Diagnostics.Debug.WriteLine($"成功导航到工作台：{workbenchView}");
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    // 显示欢迎消息和错误
-                    await _commonDialogService.ShowInformationAsync($"{welcomeMessage}\n\n注意：工作台模块加载失败。\n错误详情：{ex.Message}", "登录成功");
-                }
+                throw new InvalidOperationException("RegionManager为空");
             }
-            else
+
+            try
             {
-                // RegionManager为空的错误处理
-                await _commonDialogService.ShowWarningAsync($"RegionManager为空\n{welcomeMessage}", "登录成功");
+                // 清除内容区域的旧内容
+                if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
+                {
+                    _regionManager.Regions["ContentRegion"].RemoveAll();
+                }
+
+                // 清除登录区域
+                if (_regionManager.Regions.ContainsRegionWithName("LoginRegion"))
+                {
+                    _regionManager.Regions["LoginRegion"].RemoveAll();
+                }
+
+                // 根据角色导航到对应的工作台主视图
+                _regionManager.RequestNavigate("ContentRegion", workbenchView, navigationResult =>
+                {
+                    if (navigationResult.Result != true)
+                    {
+                        // 导航失败，记录到调试输出
+                        var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
+                        System.Diagnostics.Debug.WriteLine($"工作台模块加载失败: {errorMessage}");
+                    }
+                    else
+                    {
+                        // 导航成功
+                        System.Diagnostics.Debug.WriteLine($"成功导航到工作台：{workbenchView}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载主界面内容时发生错误: {ex.Message}");
+                throw new InvalidOperationException($"工作台模块加载失败：{ex.Message}", ex);
             }
         }
 
@@ -295,7 +289,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
         }
 
-        private async void ExecuteShowControlExamples()
+        private void ExecuteShowControlExamples()
         {
             try
             {
@@ -304,7 +298,9 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"打开控件示例页面失败: {ex.Message}", "错误");
+                // 简化错误处理，记录到调试输出
+                System.Diagnostics.Debug.WriteLine($"打开控件示例页面失败: {ex.Message}");
+                throw new InvalidOperationException($"打开控件示例页面失败: {ex.Message}", ex);
             }
         }
 

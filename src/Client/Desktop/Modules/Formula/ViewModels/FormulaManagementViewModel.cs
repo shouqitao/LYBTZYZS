@@ -70,13 +70,13 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Commands
 
-        public DelegateCommand AddCommand { get; private set; }
-        public DelegateCommand<FormulaDto> EditCommand { get; private set; }
-        public DelegateCommand<FormulaDto> DeleteCommand { get; private set; }
-        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; private set; }
-        public DelegateCommand<FormulaDto> ToggleStatusCommand { get; private set; }
-        public DelegateCommand ExportCommand { get; private set; }
-        public DelegateCommand ImportCommand { get; private set; }
+        public DelegateCommand AddCommand { get; private set; } = null!;
+        public DelegateCommand<FormulaDto> EditCommand { get; private set; } = null!;
+        public DelegateCommand<FormulaDto> DeleteCommand { get; private set; } = null!;
+        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; private set; } = null!;
+        public DelegateCommand<FormulaDto> ToggleStatusCommand { get; private set; } = null!;
+        public DelegateCommand ExportCommand { get; private set; } = null!;
+        public DelegateCommand ImportCommand { get; private set; } = null!;
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - CopyCommand: 复制验方功能过度设计，医生直接新建即可

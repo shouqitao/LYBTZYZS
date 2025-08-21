@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Workbench.Admin.Services
         private readonly IRegionManager _regionManager;
         private string _contentRegion = "SystemWorkbenchContent";
         private readonly Stack<string> _navigationHistory = new Stack<string>();
-        private string _currentView;
+        private string? _currentView;
 
         public SystemWorkbenchNavigator(IRegionManager regionManager)
         {
@@ -119,7 +119,7 @@ namespace LYBT.Desktop.Workbench.Admin.Services
 
         public string GetCurrentView()
         {
-            return _currentView;
+            return _currentView ?? string.Empty;
         }
 
         public void ClearHistory()

@@ -89,7 +89,7 @@ namespace LYBT.Desktop.Formula.Services
                 var validationResult = await ValidateCreateDtoAsync(createDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<FormulaDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<FormulaDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
                 }
                 
                 // API调用
@@ -116,7 +116,7 @@ namespace LYBT.Desktop.Formula.Services
                 var validationResult = await ValidateUpdateDtoAsync(updateDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<FormulaDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<FormulaDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
                 }
                 
                 // API调用
@@ -214,20 +214,20 @@ namespace LYBT.Desktop.Formula.Services
                     var allResult = await GetPagedAsync(new PagedQueryBaseDto { PageIndex = 1, PageSize = 1000 });
                     if (!allResult.IsSuccess)
                     {
-                        return ServiceResult<IEnumerable<FormulaDto>>.Failure(allResult.ErrorMessage);
+                        return ServiceResult<IEnumerable<FormulaDto>>.Failure(allResult.ErrorMessage ?? "获取验方列表失败");
                     }
                     
-                    return ServiceResult<IEnumerable<FormulaDto>>.Success(allResult.Data.Items);
+                    return ServiceResult<IEnumerable<FormulaDto>>.Success(allResult.Data?.Items ?? Enumerable.Empty<FormulaDto>());
                 }
                 
                 // 根据分类筛选
                 var categoryResult = await GetPagedAsync(new PagedQueryBaseDto { PageIndex = 1, PageSize = 1000 });
                 if (!categoryResult.IsSuccess)
                 {
-                    return ServiceResult<IEnumerable<FormulaDto>>.Failure(categoryResult.ErrorMessage);
+                    return ServiceResult<IEnumerable<FormulaDto>>.Failure(categoryResult.ErrorMessage ?? "获取验方列表失败");
                 }
                 
-                var filteredFormulas = categoryResult.Data.Items.Where(f => f.Category == category);
+                var filteredFormulas = categoryResult.Data?.Items?.Where(f => f.Category == category) ?? Enumerable.Empty<FormulaDto>();
                 return ServiceResult<IEnumerable<FormulaDto>>.Success(filteredFormulas);
             }
             catch (Exception ex)
@@ -237,60 +237,60 @@ namespace LYBT.Desktop.Formula.Services
         }
         
         // UltraThink v2.0: 为CreateDto和UpdateDto创建单独的验证方法
-        public async Task<ServiceResult> ValidateCreateDtoAsync(FormulaCreateDto createDto)
+        public Task<ServiceResult> ValidateCreateDtoAsync(FormulaCreateDto createDto)
         {
             try
             {
                 if (createDto == null)
                 {
-                    return ServiceResult.Failure("创建验方模板信息不能为空");
+                    return Task.FromResult(ServiceResult.Failure("创建验方模板信息不能为空"));
                 }
                 
                 if (string.IsNullOrWhiteSpace(createDto.Name))
                 {
-                    return ServiceResult.Failure("验方模板名称不能为空");
+                    return Task.FromResult(ServiceResult.Failure("验方模板名称不能为空"));
                 }
                 
                 if (createDto.Name.Length > 100)
                 {
-                    return ServiceResult.Failure("验方模板名称长度不能超过100个字符");
+                    return Task.FromResult(ServiceResult.Failure("验方模板名称长度不能超过100个字符"));
                 }
                 
                 // UltraThink v2.0: 移除Category验证 - Category由系统根据Name自动计算
                 // 验方分类将根据验方名称智能判断，无需手动输入
                 
-                return ServiceResult.Success();
+                return Task.FromResult(ServiceResult.Success());
             }
             catch (Exception ex)
             {
-                return ServiceResult.Failure($"验证创建验方模板异常: {ex.Message}");
+                return Task.FromResult(ServiceResult.Failure($"验证创建验方模板异常: {ex.Message}"));
             }
         }
         
-        public async Task<ServiceResult> ValidateUpdateDtoAsync(FormulaUpdateDto updateDto)
+        public Task<ServiceResult> ValidateUpdateDtoAsync(FormulaUpdateDto updateDto)
         {
             try
             {
                 if (updateDto == null)
                 {
-                    return ServiceResult.Failure("更新验方模板信息不能为空");
+                    return Task.FromResult(ServiceResult.Failure("更新验方模板信息不能为空"));
                 }
                 
                 if (string.IsNullOrWhiteSpace(updateDto.Name))
                 {
-                    return ServiceResult.Failure("验方模板名称不能为空");
+                    return Task.FromResult(ServiceResult.Failure("验方模板名称不能为空"));
                 }
                 
                 if (updateDto.Name.Length > 100)
                 {
-                    return ServiceResult.Failure("验方模板名称长度不能超过100个字符");
+                    return Task.FromResult(ServiceResult.Failure("验方模板名称长度不能超过100个字符"));
                 }
                 
-                return ServiceResult.Success();
+                return Task.FromResult(ServiceResult.Success());
             }
             catch (Exception ex)
             {
-                return ServiceResult.Failure($"验证更新验方模板异常: {ex.Message}");
+                return Task.FromResult(ServiceResult.Failure($"验证更新验方模板异常: {ex.Message}"));
             }
         }
         

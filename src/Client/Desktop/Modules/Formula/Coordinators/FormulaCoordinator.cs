@@ -201,7 +201,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 检查药材配伍
         /// </summary>
-        public async Task<ServiceResult<FormulaCompatibility>> CheckHerbCompatibilityAsync(List<FormulaHerb> herbs)
+        public Task<ServiceResult<FormulaCompatibility>> CheckHerbCompatibilityAsync(List<FormulaHerb> herbs)
         {
             try
             {
@@ -247,19 +247,19 @@ namespace LYBT.Desktop.Core.Coordinators
                     CheckTime = compatibility.CheckTime
                 });
 
-                return ServiceResult<FormulaCompatibility>.Success(compatibility);
+                return Task.FromResult(ServiceResult<FormulaCompatibility>.Success(compatibility));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "检查药材配伍失败");
-                return ServiceResult<FormulaCompatibility>.Failure($"检查药材配伍失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<FormulaCompatibility>.Failure($"检查药材配伍失败: {ex.Message}", ex));
             }
         }
 
         /// <summary>
         /// 优化验方组合
         /// </summary>
-        public async Task<ServiceResult<FormulaOptimizationResult>> OptimizeFormulaAsync(
+        public Task<ServiceResult<FormulaOptimizationResult>> OptimizeFormulaAsync(
             List<FormulaHerb> herbs, 
             OptimizationCriteria criteria)
         {
@@ -333,12 +333,12 @@ namespace LYBT.Desktop.Core.Coordinators
                     OptimizationTime = DateTime.Now
                 });
 
-                return ServiceResult<FormulaOptimizationResult>.Success(result);
+                return Task.FromResult(ServiceResult<FormulaOptimizationResult>.Success(result));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "优化验方组合失败");
-                return ServiceResult<FormulaOptimizationResult>.Failure($"优化验方组合失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<FormulaOptimizationResult>.Failure($"优化验方组合失败: {ex.Message}", ex));
             }
         }
 
@@ -349,7 +349,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 应用验方模板
         /// </summary>
-        public async Task<ServiceResult<AppliedFormula>> ApplyTemplateAsync(
+        public Task<ServiceResult<AppliedFormula>> ApplyTemplateAsync(
             Guid templateId, 
             Guid patientId, 
             FormulaApplicationContext context)
@@ -359,7 +359,7 @@ namespace LYBT.Desktop.Core.Coordinators
                 var templateResult = GetTemplate(templateId);
                 if (!templateResult.IsSuccess || templateResult.Data == null)
                 {
-                    return ServiceResult<AppliedFormula>.Failure("找不到指定的验方模板");
+                    return Task.FromResult(ServiceResult<AppliedFormula>.Failure("找不到指定的验方模板"));
                 }
 
                 var template = templateResult.Data;
@@ -406,12 +406,12 @@ namespace LYBT.Desktop.Core.Coordinators
                     HerbCount = appliedFormula.Herbs.Count
                 });
 
-                return ServiceResult<AppliedFormula>.Success(appliedFormula);
+                return Task.FromResult(ServiceResult<AppliedFormula>.Success(appliedFormula));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "应用验方模板失败: TemplateId={TemplateId}", templateId);
-                return ServiceResult<AppliedFormula>.Failure($"应用验方模板失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<AppliedFormula>.Failure($"应用验方模板失败: {ex.Message}", ex));
             }
         }
 
@@ -419,26 +419,26 @@ namespace LYBT.Desktop.Core.Coordinators
 
         #region Private Helper Methods
 
-        private async Task<ServiceResult<bool>> ValidateTemplateAsync(FormulaTemplate template)
+        private Task<ServiceResult<bool>> ValidateTemplateAsync(FormulaTemplate template)
         {
             // 验证模板基本信息
             if (string.IsNullOrWhiteSpace(template.Name))
-                return ServiceResult<bool>.Failure("验方模板名称不能为空");
+                return Task.FromResult(ServiceResult<bool>.Failure("验方模板名称不能为空"));
 
             if (template.Herbs == null || template.Herbs.Count == 0)
-                return ServiceResult<bool>.Failure("验方模板必须包含至少一味药材");
+                return Task.FromResult(ServiceResult<bool>.Failure("验方模板必须包含至少一味药材"));
 
             // 验证药材信息
             foreach (var herb in template.Herbs)
             {
                 if (herb.Quantity <= 0)
-                    return ServiceResult<bool>.Failure($"药材 {herb.HerbName} 的用量必须大于0");
+                    return Task.FromResult(ServiceResult<bool>.Failure($"药材 {herb.HerbName} 的用量必须大于0"));
 
                 if (string.IsNullOrWhiteSpace(herb.Unit))
-                    return ServiceResult<bool>.Failure($"药材 {herb.HerbName} 必须指定单位");
+                    return Task.FromResult(ServiceResult<bool>.Failure($"药材 {herb.HerbName} 必须指定单位"));
             }
 
-            return ServiceResult<bool>.Success(true);
+            return Task.FromResult(ServiceResult<bool>.Success(true));
         }
 
         private List<CompatibilityIssue> CheckEighteenAntagonisms(List<FormulaHerb> herbs)

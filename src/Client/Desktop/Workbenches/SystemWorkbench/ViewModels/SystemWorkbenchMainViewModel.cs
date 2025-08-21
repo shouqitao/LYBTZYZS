@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Workbench.Core;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Regions;
 using Prism.Events;
@@ -18,19 +18,19 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IWorkbenchRouter _workbenchRouter;
-        private readonly IPatientService _patientService;
-        private readonly IUserService _userService;
+        private readonly IPatientService? _patientService;
+        private readonly IUserService? _userService;
 
-        private ObservableCollection<NavigationItem> _navigationItems;
+        private ObservableCollection<NavigationItem> _navigationItems = null!;
         private string _currentViewTitle = "仪表板";
-        private NavigationItem _selectedNavigationItem;
+        private NavigationItem _selectedNavigationItem = null!;
 
         public SystemWorkbenchMainViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             IWorkbenchRouter workbenchRouter,
-            IPatientService patientService = null,
-            IUserService userService = null)
+            IPatientService? patientService = null,
+            IUserService? userService = null)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
@@ -78,9 +78,9 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
 
         #region Commands
 
-        public DelegateCommand<NavigationItem> NavigateCommand { get; private set; }
-        public DelegateCommand RefreshCommand { get; private set; }
-        public DelegateCommand SettingsCommand { get; private set; }
+        public DelegateCommand<NavigationItem> NavigateCommand { get; private set; } = null!;
+        public DelegateCommand RefreshCommand { get; private set; } = null!;
+        public DelegateCommand SettingsCommand { get; private set; } = null!;
 
         #endregion
 
@@ -165,41 +165,37 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
         /// 快速创建患者
         /// 演示共享服务的使用
         /// </summary>
-        public async void QuickCreatePatient()
+        public async Task QuickCreatePatientAsync()
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            try
             {
-                try
+                if (_patientService != null)
                 {
-                    if (_patientService != null)
+                    // 使用患者服务创建患者（UltraThink：使用正确的创建DTO类型）
+                    var patientDto = new LYBT.Shared.Models.Contracts.Patients.PatientCreateDto
                     {
-                        // 使用患者服务创建患者（UltraThink：使用正确的创建DTO类型）
-                        var patientDto = new LYBT.Shared.Models.Contracts.Patients.PatientCreateDto
-                        {
-                            Name = "测试患者",
-                            PhoneNumber = "13800138000",
-                            Gender = LYBT.Shared.Models.Enums.Gender.Male,
-                            Age = 30
-                        };
+                        Name = "测试患者",
+                        PhoneNumber = "13800138000",
+                        Gender = LYBT.Shared.Models.Enums.Gender.Male,
+                        Age = 30
+                    };
 
-                        var result = await _patientService.CreateAsync(patientDto);
-                        if (result.IsSuccess)
+                    var result = await _patientService.CreateAsync(patientDto);
+                    if (result.IsSuccess)
+                    {
+                        // 创建成功，刷新列表（需要在UI线程执行）
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            // 创建成功，刷新列表（需要在UI线程执行）
-                            Application.Current.Dispatcher.BeginInvoke(() =>
-                            {
-                                ExecuteRefresh();
-                            });
-                        }
+                            ExecuteRefresh();
+                        });
                     }
                 }
-                catch (Exception ex)
-                {
-                    // 记录异常，防止async void异常逃逸
-                    System.Diagnostics.Debug.WriteLine($"快速创建患者失败: {ex.Message}");
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                // 记录异常
+                System.Diagnostics.Debug.WriteLine($"快速创建患者失败: {ex.Message}");
+            }
         }
 
         #endregion

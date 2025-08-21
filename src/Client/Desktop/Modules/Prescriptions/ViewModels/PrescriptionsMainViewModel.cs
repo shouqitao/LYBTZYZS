@@ -6,6 +6,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Events;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Prescriptions.Views;
@@ -36,7 +37,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private Guid _currentMedicalCaseId = Guid.Empty;
         private bool _isLoading;
         private string _loadingMessage = "正在加载...";
-        private object _currentWorkflowContent;
+        private object? _currentWorkflowContent;
 
         /// <summary>当前医疗案例ID</summary>
         public Guid CurrentMedicalCaseId
@@ -70,7 +71,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         }
 
         /// <summary>当前工作流内容</summary>
-        public object CurrentWorkflowContent
+        public object? CurrentWorkflowContent
         {
             get => _currentWorkflowContent;
             set => SetProperty(ref _currentWorkflowContent, value);
@@ -99,7 +100,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
             // 初始化命令
             SwitchToManagementCommand = new DelegateCommand(ExecuteSwitchToManagement);
-            CreateNewPrescriptionCommand = new DelegateCommand(ExecuteCreateNewPrescription);
+            CreateNewPrescriptionCommand = new DelegateCommand(async () => await ExecuteCreateNewPrescription());
             ReturnToSourceCommand = new DelegateCommand(ExecuteReturnToSource);
 
             _logger.LogInformation("处方模块主视图模型已初始化");
@@ -153,7 +154,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         #region 私有方法
 
         /// <summary>加载工作流内容</summary>
-        private async void LoadWorkflowContent()
+        private void LoadWorkflowContent()
         {
             if (!HasMedicalCase)
             {
@@ -191,7 +192,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载处方工作流时发生错误");
-                await _dialogService.ShowErrorAsync($"加载处方编辑器失败：{ex.Message}", "错误");
+                // 抛出异常让调用者处理，而不是显示对话框
+                throw new InvalidOperationException($"加载处方编辑器失败：{ex.Message}", ex);
             }
             finally
             {
@@ -200,7 +202,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         }
 
         /// <summary>加载管理工作流</summary>
-        private async void LoadManagementWorkflow()
+        private void LoadManagementWorkflow()
         {
             try
             {
@@ -217,7 +219,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载处方管理工作流时发生错误");
-                await _dialogService.ShowErrorAsync($"加载处方管理失败：{ex.Message}", "错误");
+                // 抛出异常让调用者处理
+                throw new InvalidOperationException($"加载处方管理失败：{ex.Message}", ex);
             }
             finally
             {
@@ -236,7 +239,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             LoadManagementWorkflow();
         }
 
-        private async void ExecuteCreateNewPrescription()
+        private async Task ExecuteCreateNewPrescription()
         {
             _logger.LogInformation("创建新处方");
             
