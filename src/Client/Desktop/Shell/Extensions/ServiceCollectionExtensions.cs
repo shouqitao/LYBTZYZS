@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,6 +20,10 @@ using LYBT.Desktop.Services.Handlers;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Desktop.Users.Services;
+using LYBT.Desktop.Workbench.Core;
+using LYBT.Desktop.Modules.Users.Api;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -104,6 +110,12 @@ namespace LYBT.Desktop.Shell.Extensions
             // 注册认证API - 使用Refit生成的客户端
             RegisterBasicApiService<LYBT.Shared.Interfaces.Api.IAuthApi>(containerRegistry);
             
+            // 注册用户管理API - 支持UserModuleService
+            RegisterBasicApiService<IUserApi>(containerRegistry);
+            
+            // 注册患者管理API - 支持PatientModuleService
+            RegisterBasicApiService<IPatientApi>(containerRegistry);
+            
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IApiService, LYBT.Desktop.Services.ApiService>();
         }
@@ -134,6 +146,9 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // 认证服务 - 使用简化版本
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService, SimplifiedAuthenticationService>();
+
+            // 工作台路由服务 - MainWindowViewModel需要
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
         }
 
         /// <summary>
@@ -143,6 +158,24 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // API测试服务
             containerRegistry.RegisterSingleton<ApiTestService>();
+            
+            // 注册真实的IUserService实现 - UserModuleService
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService, LYBT.Desktop.Users.Services.UserModuleService>();
+            
+            // 注册真实的IPatientService实现 - PatientModuleService
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPatientService, LYBT.Desktop.Patients.Services.PatientModuleService>();
+                
+            // 注册模块服务到对应的业务接口（适配器模式）
+            RegisterModuleServiceAdapters(containerRegistry);
+        }
+        
+        /// <summary>
+        /// 注册模块服务适配器 - 将ModuleService适配到业务接口
+        /// </summary>
+        private static void RegisterModuleServiceAdapters(IContainerRegistry containerRegistry)
+        {
+            // 这里可以后续添加具体的ModuleService到接口的适配注册
+            // 目前先让应用正常启动，后续逐步完善
         }
 
         /// <summary>
