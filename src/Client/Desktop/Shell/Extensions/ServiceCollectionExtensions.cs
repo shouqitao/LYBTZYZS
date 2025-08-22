@@ -176,6 +176,9 @@ namespace LYBT.Desktop.Shell.Extensions
             
             // 注册真实的IConsultationService实现 - ConsultationService
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IConsultationService, LYBT.Desktop.Consultation.Services.ConsultationService>();
+            
+            // 注册真实的IMedicalCaseService实现 - MedicalCaseModuleService
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IMedicalCaseService, LYBT.Desktop.MedicalCase.Services.MedicalCaseModuleService>();
                 
             // 注册模块服务到对应的业务接口（适配器模式）
             RegisterModuleServiceAdapters(containerRegistry);

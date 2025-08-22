@@ -257,7 +257,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                var result = await _medicalCaseService.StartConsultationAsync(medicalCase.Id);
+                // 开始看诊 = 恢复医疗案例到诊断状态
+                var result = await _medicalCaseService.ResumeAsync(medicalCase.Id);
 
                 if (result.IsSuccess)
                 {
@@ -294,7 +295,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 try
                 {
-                    var result = await _medicalCaseService.CompleteConsultationAsync(medicalCase.Id);
+                    // 完成看诊，需要提供完成原因
+                    var result = await _medicalCaseService.CompleteAsync(medicalCase.Id, "诊断完成");
 
                     if (result.IsSuccess)
                     {
@@ -331,7 +333,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 try
                 {
-                    var result = await _medicalCaseService.CancelAsync(medicalCase.Id, reason);
+                    var result = await _medicalCaseService.CancelConsultationAsync(medicalCase.Id, reason);
 
                     if (result.IsSuccess)
                     {
