@@ -142,8 +142,16 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         protected override async Task<ServiceResult<PagedResult<FormulaDto>>> LoadDataAsync(PagedQueryBaseDto request)
         {
-            // UltraThink v2.0: 直接使用PagedQueryBaseDto进行验方查询，删除分类筛选
-            return await _formulaService.GetPagedAsync(request);
+            // UltraThink v2.0: 转换为FormulaQueryDto进行验方查询，删除分类筛选
+            var formulaQuery = new FormulaQueryDto
+            {
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
+                Keyword = request.Keyword,
+                SortField = request.SortField,
+                IsDescending = request.IsDescending
+            };
+            return await _formulaService.GetPagedAsync(formulaQuery);
         }
 
         // UltraThink v2.0: 删除复杂的ViewModel转换和选择状态管理

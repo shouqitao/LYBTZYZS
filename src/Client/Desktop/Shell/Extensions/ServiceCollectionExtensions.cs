@@ -164,6 +164,15 @@ namespace LYBT.Desktop.Shell.Extensions
             
             // 注册真实的IPatientService实现 - PatientModuleService
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPatientService, LYBT.Desktop.Patients.Services.PatientModuleService>();
+            
+            // 注册真实的IPrescriptionService实现 - PrescriptionsModuleService
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPrescriptionService, LYBT.Desktop.Prescriptions.Services.PrescriptionsModuleService>();
+            
+            // 注册真实的IHerbService实现 - HerbModuleService
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IHerbService, LYBT.Desktop.Herbs.Services.HerbModuleService>();
+            
+            // 注册真实的IFormulaService实现 - FormulaModuleService
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IFormulaService, LYBT.Desktop.Formula.Services.FormulaModuleService>();
                 
             // 注册模块服务到对应的业务接口（适配器模式）
             RegisterModuleServiceAdapters(containerRegistry);
