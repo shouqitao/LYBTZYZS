@@ -72,6 +72,9 @@ nul
 # Claude Code 工具文件 - 保留本地但不上传
 .claude/
 .serena/
+.ai/
+ai/
+ai-starter/
 
 # IDE和工具生成的文件 - 更新规则
 .vscode/
