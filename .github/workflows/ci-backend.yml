@@ -133,7 +133,7 @@ jobs:
           **/coverage.opencover.xml
 
     - name: 📈 发布代码覆盖率
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       if: matrix.configuration == 'Release' && matrix.os == 'ubuntu-latest'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
