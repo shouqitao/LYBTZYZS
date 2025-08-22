@@ -41,7 +41,7 @@ jobs:
       
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🔍 环境配置验证
       id: check
@@ -87,7 +87,7 @@ jobs:
     
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🔧 安装.NET
       uses: actions/setup-dotnet@v4
@@ -128,7 +128,7 @@ jobs:
       
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🔧 配置kubectl
       run: |
@@ -170,7 +170,7 @@ jobs:
       
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🔧 配置Azure CLI
       uses: azure/login@v2
@@ -236,7 +236,7 @@ jobs:
       
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🔐 生产环境审批检查
       uses: trstringer/manual-approval@v1
@@ -348,7 +348,7 @@ jobs:
     
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🧪 运行冒烟测试
       run: |

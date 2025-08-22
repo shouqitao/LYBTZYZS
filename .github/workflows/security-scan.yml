@@ -22,7 +22,7 @@ jobs:
     
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0  # 获取完整历史
 
@@ -55,7 +55,7 @@ jobs:
     
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🔧 安装.NET
       uses: actions/setup-dotnet@v4
@@ -101,7 +101,7 @@ jobs:
     
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🐳 构建Docker镜像
       run: |
@@ -138,7 +138,7 @@ jobs:
     
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🔍 Terraform安全扫描
       uses: triat/terraform-security-scan@v3
@@ -184,7 +184,7 @@ jobs:
     
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 🔍 Semgrep扫描
       uses: returntocorp/semgrep-action@v1
@@ -209,7 +209,7 @@ jobs:
     
     steps:
     - name: 📥 检出代码
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: 📜 许可证扫描
       uses: fossas/fossa-action@main
