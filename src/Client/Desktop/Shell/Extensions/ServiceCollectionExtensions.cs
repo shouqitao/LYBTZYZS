@@ -173,6 +173,9 @@ namespace LYBT.Desktop.Shell.Extensions
             
             // 注册真实的IFormulaService实现 - FormulaModuleService
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IFormulaService, LYBT.Desktop.Formula.Services.FormulaModuleService>();
+            
+            // 注册真实的IConsultationService实现 - ConsultationService
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IConsultationService, LYBT.Desktop.Consultation.Services.ConsultationService>();
                 
             // 注册模块服务到对应的业务接口（适配器模式）
             RegisterModuleServiceAdapters(containerRegistry);
