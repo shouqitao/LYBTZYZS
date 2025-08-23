@@ -14,7 +14,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 根据ID获取患者详情
         /// </summary>
-        Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id);
+        Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
         
         /// <summary>
         /// 分页查询患者

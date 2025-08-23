@@ -31,7 +31,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PagedData<PatientDto>>>> GetList(
+        public async Task<ActionResult<ApiResponse<PagedResult<PatientDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -71,24 +71,24 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者详情
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<PatientDetailDto>>> GetById(Guid id)
+        public async Task<ActionResult<ApiResponse<PatientDto>>> GetById(Guid id)
         {
             try
             {
-                var validationResult = ValidateGuid<PatientDetailDto>(id, "患者ID");
+                var validationResult = ValidateGuid<PatientDto>(id, "患者ID");
                 if (validationResult != null) return validationResult;
 
                 var result = await _service.GetByIdAsync(id);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return NotFound<PatientDetailDto>(result.ErrorMessage ?? "患者不存在", ApiErrorCodes.PATIENT_NOT_FOUND);
+                    return NotFound<PatientDto>(result.ErrorMessage ?? "患者不存在", ApiErrorCodes.PATIENT_NOT_FOUND);
                 }
 
                 return Success(result.Data, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PatientDetailDto>(ex, "获取患者详情", id);
+                return HandleException<PatientDto>(ex, "获取患者详情", id);
             }
         }
 

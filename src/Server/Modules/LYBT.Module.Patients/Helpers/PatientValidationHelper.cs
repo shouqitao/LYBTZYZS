@@ -47,8 +47,8 @@ namespace LYBT.Module.Patients.Helpers
         {
             try
             {
-                // 转换为PatientDetailDto进行验证
-                var detailDto = _mapper.Map<PatientDetailDto>(dto);
+                // 转换为PatientDto进行验证
+                var detailDto = _mapper.Map<PatientDto>(dto);
                 await _validationService.ValidateForCreateAsync(detailDto);
                 return ServiceResult<bool>.Success(true);
             }
@@ -66,8 +66,8 @@ namespace LYBT.Module.Patients.Helpers
         {
             try
             {
-                // 转换为PatientDetailDto进行验证
-                var detailDto = _mapper.Map<PatientDetailDto>(dto);
+                // 转换为PatientDto进行验证
+                var detailDto = _mapper.Map<PatientDto>(dto);
                 await _validationService.ValidateForCreateAsync(detailDto);
                 var result = new { IsValid = true, Message = "验证通过" };
                 return ServiceResult<object>.Success(result);
@@ -91,8 +91,8 @@ namespace LYBT.Module.Patients.Helpers
         {
             try
             {
-                // 转换为PatientDetailDto进行验证
-                var detailDto = _mapper.Map<PatientDetailDto>(dto);
+                // 转换为PatientDto进行验证
+                var detailDto = _mapper.Map<PatientDto>(dto);
                 detailDto.Id = id;  // 确保ID正确传递
                 await _validationService.ValidateForUpdateAsync(id, detailDto);
                 return ServiceResult<bool>.Success(true);
@@ -206,17 +206,17 @@ namespace LYBT.Module.Patients.Helpers
         /// <summary>
         /// 检查重复患者
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
+        public async Task<ServiceResult<List<PatientDto>>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
         {
             try
             {
                 var duplicates = await _validationService.CheckDuplicatePatientsAsync(idNumber, phoneNumber);
-                return ServiceResult<List<PatientDetailDto>>.Success(duplicates);
+                return ServiceResult<List<PatientDto>>.Success(duplicates);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "检查重复患者失败");
-                return ServiceResult<List<PatientDetailDto>>.Failure("检查重复患者失败", ex);
+                return ServiceResult<List<PatientDto>>.Failure("检查重复患者失败", ex);
             }
         }
 
@@ -359,7 +359,7 @@ namespace LYBT.Module.Patients.Helpers
                     return phoneValidation;
 
                 // 验证身份证号
-                var idValidation = ValidateIdNumber(dto.IDNumber);
+                var idValidation = ValidateIdNumber(dto.IdNumber);
                 if (!idValidation.IsSuccess)
                     return idValidation;
 

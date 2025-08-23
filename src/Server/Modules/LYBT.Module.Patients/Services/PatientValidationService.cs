@@ -64,7 +64,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 验证新建患者数据
         /// </summary>
-        public async Task ValidateForCreateAsync(PatientDetailDto dto)
+        public async Task ValidateForCreateAsync(PatientDto dto)
         {
             // 基础验证
             if (string.IsNullOrWhiteSpace(dto.Name))
@@ -73,9 +73,9 @@ namespace LYBT.Module.Patients.Services
             }
 
             // 检查身份证号重复
-            if (!string.IsNullOrEmpty(dto.IDNumber))
+            if (!string.IsNullOrEmpty(dto.IdNumber))
             {
-                if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber))
+                if (await _patientRepository.IsIdNumberExistsAsync(dto.IdNumber))
                 {
                     throw new ArgumentException("身份证号已存在");
                 }
@@ -94,7 +94,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 验证更新患者数据
         /// </summary>
-        public async Task ValidateForUpdateAsync(Guid id, PatientDetailDto dto)
+        public async Task ValidateForUpdateAsync(Guid id, PatientDto dto)
         {
             // 基础验证
             if (string.IsNullOrWhiteSpace(dto.Name))
@@ -103,9 +103,9 @@ namespace LYBT.Module.Patients.Services
             }
 
             // 检查身份证号重复（排除当前患者）
-            if (!string.IsNullOrEmpty(dto.IDNumber))
+            if (!string.IsNullOrEmpty(dto.IdNumber))
             {
-                if (await _patientRepository.IsIdNumberExistsAsync(dto.IDNumber, id))
+                if (await _patientRepository.IsIdNumberExistsAsync(dto.IdNumber, id))
                 {
                     throw new ArgumentException("身份证号已存在");
                 }
@@ -124,7 +124,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 检查患者是否重复
         /// </summary>
-        public async Task<List<PatientDetailDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
+        public async Task<List<PatientDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
         {
             var duplicates = new List<Patient>();
 
@@ -146,7 +146,7 @@ namespace LYBT.Module.Patients.Services
                 }
             }
 
-            return duplicates.Select(_mapper.Map<PatientDetailDto>).ToList();
+            return duplicates.Select(_mapper.Map<PatientDto>).ToList();
         }
 
         /// <summary>

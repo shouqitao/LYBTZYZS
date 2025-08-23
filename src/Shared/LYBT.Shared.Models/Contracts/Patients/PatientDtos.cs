@@ -6,13 +6,15 @@ using System.ComponentModel.DataAnnotations;
 namespace LYBT.Shared.Models.Contracts.Patients
 {
     /// <summary>
-    /// 患者信息DTO - UltraThink v2.0简化版
-    /// 与Patient实体对齐，Age改为计算属性
+    /// 患者信息DTO - UltraThink架构优化：统一PatientDto和PatientDetailDto
+    /// 包含核心字段和详细字段，Age为计算属性，字段名统一使用BirthDate、IdNumber
     /// </summary>
     public class PatientDto : StatusDto
 {
-    /// <summary>姓名</summary>
-    [DisplayName("姓名")]
+    /// <summary>患者姓名</summary>
+    [Required(ErrorMessage = "患者姓名不能为空")]
+    [StringLength(50, ErrorMessage = "患者姓名长度不能超过50个字符")]
+    [DisplayName("患者姓名")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>性别</summary>
@@ -41,64 +43,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
     [DisplayName("证件类型")]
     public string? IdType { get; set; }
 
-    /// <summary>证件号</summary>
-    [DisplayName("证件号")]
-    public string? IdNumber { get; set; }
-
-    /// <summary>手机号</summary>
-    [DisplayName("手机号")]
-    public string? PhoneNumber { get; set; }
-
-    /// <summary>地址</summary>
-    [DisplayName("地址")]
-    public string? Address { get; set; }
-
-    /// <summary>过敏史</summary>
-    [DisplayName("过敏史")]
-    public string? AllergyHistory { get; set; }
-
-    /// <summary>拼音码</summary>
-    [DisplayName("拼音码")]
-    public string? PinYinCode { get; set; }
-
-    /// <summary>是否激活（计算属性）</summary>
-    [DisplayName("是否激活")]
-    public bool IsActive => Status == CommonStatus.Enabled;
-
-}
-
-    /// <summary>
-    /// 患者详情DTO - 继承审计基础DTO + 备注接口
-    /// 用于患者档案详情的展示和传输
-    /// </summary>
-    public class PatientDetailDto : StatusDto
-{
-    /// <summary>患者姓名</summary>
-    [Required(ErrorMessage = "患者姓名不能为空")]
-    [StringLength(50, ErrorMessage = "患者姓名长度不能超过50个字符")]
-    [DisplayName("患者姓名")]
-    public string Name { get; set; } = string.Empty;
-
-    /// <summary>性别</summary>
-    [DisplayName("性别")]
-    public Gender Gender { get; set; } = Gender.Unknown;
-
-    /// <summary>出生日期</summary>
-    [DisplayName("出生日期")]
-    public DateTime? DateOfBirth { get; set; }
-
-    /// <summary>年龄</summary>
-    [DisplayName("年龄")]
-    public int Age { get; set; }
-
     /// <summary>身份证号</summary>
     [StringLength(18, ErrorMessage = "身份证号长度不能超过18个字符")]
     [DisplayName("身份证号")]
-    public string? IDNumber { get; set; }
-
-    /// <summary>身份证号（兼容性别名）</summary>
-    [DisplayName("证件号")]
-    public string? IdNumber { get => IDNumber; set => IDNumber = value; }
+    public string? IdNumber { get; set; }
 
     /// <summary>手机号</summary>
     [StringLength(20, ErrorMessage = "手机号长度不能超过20个字符")]
@@ -149,10 +97,15 @@ namespace LYBT.Shared.Models.Contracts.Patients
     [DisplayName("拼音码")]
     public string? PinYinCode { get; set; }
 
+    /// <summary>是否激活（计算属性）</summary>
+    [DisplayName("是否激活")]
+    public bool IsActive => Status == CommonStatus.Enabled;
+
 }
 
+
     /// <summary>
-    /// 患者创建DTO - 继承创建基类
+    /// 患者创建DTO - UltraThink架构优化：统一字段名BirthDate、IdNumber
     /// 用于创建新患者档案的请求模型
     /// </summary>
     public class PatientCreateDto
@@ -169,7 +122,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
     /// <summary>出生日期</summary>
     [DisplayName("出生日期")]
-    public DateTime? DateOfBirth { get; set; }
+    public DateTime? BirthDate { get; set; }
 
     /// <summary>年龄</summary>
     [Range(0, 200, ErrorMessage = "年龄必须在0-200之间")]
@@ -179,7 +132,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>身份证号</summary>
     [StringLength(18, ErrorMessage = "身份证号长度不能超过18个字符")]
     [DisplayName("身份证号")]
-    public string? IDNumber { get; set; }
+    public string? IdNumber { get; set; }
 
     /// <summary>手机号</summary>
     [StringLength(20, ErrorMessage = "手机号长度不能超过20个字符")]
@@ -233,7 +186,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
 }
 
     /// <summary>
-    /// 患者更新DTO - 继承更新基类
+    /// 患者更新DTO - UltraThink架构优化：统一字段名BirthDate、IdNumber
     /// 用于更新患者档案的请求模型
     /// </summary>
     public class PatientUpdateDto : BaseDto
@@ -250,7 +203,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
     /// <summary>出生日期</summary>
     [DisplayName("出生日期")]
-    public DateTime? DateOfBirth { get; set; }
+    public DateTime? BirthDate { get; set; }
 
     /// <summary>年龄</summary>
     [Range(0, 200, ErrorMessage = "年龄必须在0-200之间")]
@@ -260,7 +213,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>身份证号</summary>
     [StringLength(18, ErrorMessage = "身份证号长度不能超过18个字符")]
     [DisplayName("身份证号")]
-    public string? IDNumber { get; set; }
+    public string? IdNumber { get; set; }
 
     /// <summary>手机号</summary>
     [StringLength(20, ErrorMessage = "手机号长度不能超过20个字符")]

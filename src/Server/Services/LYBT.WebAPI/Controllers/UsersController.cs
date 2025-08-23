@@ -237,7 +237,7 @@ public class UsersController : BaseApiController {
     /// 获取所有用户列表 (RESTful GET /Users) - 支持模糊查询 - 统一API响应格式
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<PagedData<UserDto>>>> GetUsers(
+    public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> GetUsers(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,

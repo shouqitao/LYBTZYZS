@@ -42,20 +42,14 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 返回分页成功响应 - 统一格式：ApiResponse<PagedData<T>>
+        /// 返回分页成功响应 - 统一格式：ApiResponse<PagedResult<T>>
         /// </summary>
-        protected ActionResult<ApiResponse<PagedData<T>>> Success<T>(PaginatedResult<T> pagedResult, string message = "查询成功")
+        protected ActionResult<ApiResponse<PagedResult<T>>> Success<T>(PaginatedResult<T> pagedResult, string message = "查询成功")
         {
-            var pagedData = new PagedData<T>
-            {
-                Items = pagedResult.Items,
-                TotalCount = pagedResult.TotalCount,
-                CurrentPage = pagedResult.CurrentPage,
-                PageSize = pagedResult.PageSize,
-                TotalPages = pagedResult.TotalPages
-            };
+            var items = pagedResult.Items is List<T> list ? list : pagedResult.Items.ToList();
+            var pageResult = new PagedResult<T>(items, pagedResult.TotalCount, pagedResult.CurrentPage, pagedResult.PageSize);
             
-            var response = ApiResponse<PagedData<T>>.CreateSuccess(pagedData, message);
+            var response = ApiResponse<PagedResult<T>>.CreateSuccess(pageResult, message);
             response.RequestId = GetRequestId();
             return Ok(response);
         }
@@ -234,28 +228,19 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 分页ServiceResult自动解包 - 统一格式：ApiResponse<PagedData<T>>
+        /// 分页ServiceResult自动解包 - 统一格式：ApiResponse<PagedResult<T>>
         /// </summary>
-        protected ActionResult<ApiResponse<PagedData<T>>> HandlePagedServiceResult<T>(ServiceResult<PagedResult<T>> serviceResult, string? successMessage = null)
+        protected ActionResult<ApiResponse<PagedResult<T>>> HandlePagedServiceResult<T>(ServiceResult<PagedResult<T>> serviceResult, string? successMessage = null)
         {
             if (serviceResult.IsSuccess && serviceResult.Data != null)
             {
-                var pagedData = new PagedData<T>
-                {
-                    Items = serviceResult.Data.Items,
-                    TotalCount = serviceResult.Data.TotalCount,
-                    CurrentPage = serviceResult.Data.CurrentPage,
-                    PageSize = serviceResult.Data.PageSize,
-                    TotalPages = serviceResult.Data.TotalPages
-                };
-                
-                var response = ApiResponse<PagedData<T>>.CreateSuccess(pagedData, successMessage ?? "查询成功");
+                var response = ApiResponse<PagedResult<T>>.CreateSuccess(serviceResult.Data, successMessage ?? "查询成功");
                 response.RequestId = GetRequestId();
                 return Ok(response);
             }
             else
             {
-                var response = ApiResponse<PagedData<T>>.CreateFail(serviceResult.ErrorMessage ?? "查询失败");
+                var response = ApiResponse<PagedResult<T>>.CreateFail(serviceResult.ErrorMessage ?? "查询失败");
                 response.RequestId = GetRequestId();
                 return BadRequest(response);
             }
@@ -373,57 +358,43 @@ namespace LYBT.Infrastructure.Web
         #region 分页响应专用方法
 
         /// <summary>
-        /// 返回分页验证失败响应 - 统一格式：ApiResponse<PagedData<T>>
+        /// 返回分页验证失败响应 - 统一格式：ApiResponse<PagedResult<T>>
         /// </summary>
-        protected ActionResult<ApiResponse<PagedData<T>>> ValidationFailPaged<T>(string message = "参数验证失败", string? errorCode = "VALIDATION_ERROR")
+        protected ActionResult<ApiResponse<PagedResult<T>>> ValidationFailPaged<T>(string message = "参数验证失败", string? errorCode = "VALIDATION_ERROR")
         {
-            var pagedData = new PagedData<T>
-            {
-                Items = new List<T>(),
-                TotalCount = 0,
-                CurrentPage = 1,
-                PageSize = 10,
-                TotalPages = 0
-            };
+            var pagedResult = new PagedResult<T>(new List<T>(), 0, 1, 10);
             
-            var response = ApiResponse<PagedData<T>>.CreateFail(message);
+            var response = ApiResponse<PagedResult<T>>.CreateFail(message);
             if (!string.IsNullOrEmpty(errorCode))
             {
                 response.Errors = new { code = errorCode };
             }
-            response.Data = pagedData;
+            response.Data = pagedResult;
             response.RequestId = GetRequestId();
             return BadRequest(response);
         }
 
         /// <summary>
-        /// 返回分页业务失败响应 - 统一格式：ApiResponse<PagedData<T>>
+        /// 返回分页业务失败响应 - 统一格式：ApiResponse<PagedResult<T>>
         /// </summary>
-        protected ActionResult<ApiResponse<PagedData<T>>> BusinessFailPaged<T>(string message, string? errorCode = null)
+        protected ActionResult<ApiResponse<PagedResult<T>>> BusinessFailPaged<T>(string message, string? errorCode = null)
         {
-            var pagedData = new PagedData<T>
-            {
-                Items = new List<T>(),
-                TotalCount = 0,
-                CurrentPage = 1,
-                PageSize = 10,
-                TotalPages = 0
-            };
+            var pagedResult = new PagedResult<T>(new List<T>(), 0, 1, 10);
             
-            var response = ApiResponse<PagedData<T>>.CreateFail(message);
+            var response = ApiResponse<PagedResult<T>>.CreateFail(message);
             if (!string.IsNullOrEmpty(errorCode))
             {
                 response.Errors = new { code = errorCode };
             }
-            response.Data = pagedData;
+            response.Data = pagedResult;
             response.RequestId = GetRequestId();
             return Ok(response); // 业务失败仍返回200，通过success字段区分
         }
 
         /// <summary>
-        /// 验证分页模型状态 - 统一格式：ApiResponse<PagedData<T>>
+        /// 验证分页模型状态 - 统一格式：ApiResponse<PagedResult<T>>
         /// </summary>
-        protected ActionResult<ApiResponse<PagedData<T>>>? ValidateModelPaged<T>()
+        protected ActionResult<ApiResponse<PagedResult<T>>>? ValidateModelPaged<T>()
         {
             if (!IsModelValid)
             {
@@ -434,9 +405,9 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 处理分页异常 - 统一格式：ApiResponse<PagedData<T>>
+        /// 处理分页异常 - 统一格式：ApiResponse<PagedResult<T>>
         /// </summary>
-        protected ActionResult<ApiResponse<PagedData<T>>> HandleExceptionPaged<T>(Exception ex, string operation, object? context = null)
+        protected ActionResult<ApiResponse<PagedResult<T>>> HandleExceptionPaged<T>(Exception ex, string operation, object? context = null)
         {
             HandleExceptionCore(ex, operation, context);
             

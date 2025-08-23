@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     {
         #region Fields
 
-        private readonly HerbModule _herbService;
+        private readonly HerbModuleService _herbService;
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
         
@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         #region Constructor
 
         public HerbManagementViewModel(
-            HerbModule herbService,
+            HerbModuleService herbService,
             ICustomDialogService dialogService,
             IMapper mapper,
             ISessionManager sessionManager,

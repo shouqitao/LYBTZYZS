@@ -32,7 +32,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取药材分页列表 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PagedData<HerbDto>>>> GetList(
+        public async Task<ActionResult<ApiResponse<PagedResult<HerbDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null)

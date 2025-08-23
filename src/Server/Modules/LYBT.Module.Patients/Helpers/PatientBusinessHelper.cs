@@ -51,8 +51,8 @@ namespace LYBT.Module.Patients.Helpers
         {
             try
             {
-                // 数据验证 - 转换为PatientDetailDto进行验证
-                var detailDto = _mapper.Map<PatientDetailDto>(dto);
+                // 数据验证 - 转换为PatientDto进行验证
+                var detailDto = _mapper.Map<PatientDto>(dto);
                 await _validationService.ValidateForCreateAsync(detailDto);
 
                 var model = _mapper.Map<Patient>(dto);
@@ -93,8 +93,8 @@ namespace LYBT.Module.Patients.Helpers
                 if (model == null)
                     return ServiceResult<PatientDto>.Failure("患者不存在");
 
-                // 数据验证 - 转换为PatientDetailDto进行验证
-                var detailDto = _mapper.Map<PatientDetailDto>(dto);
+                // 数据验证 - 转换为PatientDto进行验证
+                var detailDto = _mapper.Map<PatientDto>(dto);
                 detailDto.Id = id;  // 确保ID正确传递
                 await _validationService.ValidateForUpdateAsync(id, detailDto);
 

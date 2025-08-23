@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserAddEditDialogViewModel : BindableBase
     {
-        private readonly UserModule _userService;
+        private readonly UserModuleService _userService;
         private readonly IMapper _mapper;
         private readonly UserDto? _originalUser;
 
@@ -108,7 +108,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>关闭对话框回调</summary>
         public Action? CloseDialogCallback { get; set; }
 
-        public UserAddEditDialogViewModel(UserModule userService, IMapper mapper, UserDto? user = null)
+        public UserAddEditDialogViewModel(UserModuleService userService, IMapper mapper, UserDto? user = null)
         {
             _userService = userService;
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

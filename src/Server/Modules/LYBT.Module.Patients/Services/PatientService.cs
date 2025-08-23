@@ -76,7 +76,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 根据患者ID获取患者详情
         /// </summary>
-        public async Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
         {
             return await ExecuteSafelyAsync(
                 async () => await _queryHelper.GetByIdAsync(id),
@@ -86,10 +86,10 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 获取所有患者列表
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetAllAsync()
+        public async Task<List<PatientDto>> GetAllAsync()
         {
             var result = await _queryHelper.GetAllAsync();
-            return result.IsSuccess ? result.Data : new List<PatientDetailDto>();
+            return result.IsSuccess ? result.Data : new List<PatientDto>();
         }
 
         /// <summary>
@@ -127,16 +127,16 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 获取可用患者列表（用于挂号选择）
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetActivePatientsAsync()
+        public async Task<List<PatientDto>> GetActivePatientsAsync()
         {
             var result = await _queryHelper.GetActivePatientsAsync();
-            return result.IsSuccess ? result.Data : new List<PatientDetailDto>();
+            return result.IsSuccess ? result.Data : new List<PatientDto>();
         }
 
         /// <summary>
         /// 根据手机号查找患者
         /// </summary>
-        public async Task<PatientDetailDto?> GetByPhoneNumberAsync(string phoneNumber)
+        public async Task<PatientDto?> GetByPhoneNumberAsync(string phoneNumber)
         {
             var result = await _queryHelper.GetByPhoneNumberAsync(phoneNumber);
             return result.IsSuccess ? result.Data : null;
@@ -145,7 +145,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 根据身份证号查找患者
         /// </summary>
-        public async Task<PatientDetailDto?> GetByIDNumberAsync(string idNumber)
+        public async Task<PatientDto?> GetByIDNumberAsync(string idNumber)
         {
             var result = await _queryHelper.GetByIDNumberAsync(idNumber);
             return result.IsSuccess ? result.Data : null;
@@ -154,13 +154,13 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 高级搜索患者（简化实现，委托给基本查询）
         /// </summary>
-        public async Task<PaginatedResult<PatientDetailDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
+        public async Task<PaginatedResult<PatientDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
         {
             var result = await _queryHelper.AdvancedSearchAsync(query);
-            return result.IsSuccess ? result.Data : new PaginatedResult<PatientDetailDto>
+            return result.IsSuccess ? result.Data : new PaginatedResult<PatientDto>
             {
                 TotalCount = 0,
-                Items = new List<PatientDetailDto>(),
+                Items = new List<PatientDto>(),
                 CurrentPage = query.PageIndex,
                 PageSize = query.PageSize
             };
@@ -442,10 +442,10 @@ namespace LYBT.Module.Patients.Services
             }
         }
 
-        public async Task<List<PatientDetailDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
+        public async Task<List<PatientDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
         {
             var result = await _validationHelper.CheckDuplicatePatientsAsync(idNumber, phoneNumber);
-            return result.IsSuccess ? result.Data : new List<PatientDetailDto>();
+            return result.IsSuccess ? result.Data : new List<PatientDto>();
         }
 
         #endregion

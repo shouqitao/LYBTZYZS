@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Patients.Coordinators
     {
         #region Fields
 
-        private readonly PatientModule _patientService;
+        private readonly PatientModuleService _patientService;
         private readonly ILogger<PatientCoordinator> _logger;
         private readonly Dictionary<Guid, PatientDto> _cache = new();
 
@@ -35,7 +35,7 @@ namespace LYBT.Desktop.Patients.Coordinators
 
         #region Constructor
 
-        public PatientCoordinator(PatientModule patientService, ILogger<PatientCoordinator> logger)
+        public PatientCoordinator(PatientModuleService patientService, ILogger<PatientCoordinator> logger)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -103,27 +103,12 @@ namespace LYBT.Desktop.Patients.Coordinators
 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // 转换 PatientDetailDto 到 PatientDto
-                    var patientDto = new PatientDto
-                    {
-                        Id = result.Data.Id,
-                        Name = result.Data.Name,
-                        Gender = result.Data.Gender,
-                        BirthDate = result.Data.DateOfBirth,
-                        IdNumber = result.Data.IdNumber,
-                        PhoneNumber = result.Data.PhoneNumber,
-                        Address = result.Data.Address,
-                        AllergyHistory = result.Data.AllergyHistory,
-                        Status = result.Data.Status,
-                        CreateTime = result.Data.CreateTime,
-                        UpdateTime = result.Data.UpdateTime
-                    };
-
+                    // UltraThink v2.0: 直接使用统一的PatientDto，无需转换
                     // 更新缓存
-                    _cache[id] = patientDto;
-                    _logger.LogInformation("患者查询成功: {PatientName}", patientDto.Name);
+                    _cache[id] = result.Data;
+                    _logger.LogInformation("患者查询成功: {PatientName}", result.Data.Name);
                     
-                    return ServiceResult<PatientDto>.Success(patientDto);
+                    return ServiceResult<PatientDto>.Success(result.Data);
                 }
                 else
                 {
@@ -434,11 +419,11 @@ namespace LYBT.Desktop.Patients.Coordinators
                 if (string.IsNullOrWhiteSpace(createDto.Name))
                     return ServiceResult.Failure("患者姓名不能为空");
 
-                if (string.IsNullOrWhiteSpace(createDto.IDNumber))
+                if (string.IsNullOrWhiteSpace(createDto.IdNumber))
                     return ServiceResult.Failure("身份证号不能为空");
 
                 // 检查身份证号是否重复
-                var existingPatients = await SearchAsync(createDto.IDNumber);
+                var existingPatients = await SearchAsync(createDto.IdNumber);
                 if (existingPatients.IsSuccess && existingPatients.Data != null && existingPatients.Data.Any())
                 {
                     return ServiceResult.Failure("该身份证号已存在");

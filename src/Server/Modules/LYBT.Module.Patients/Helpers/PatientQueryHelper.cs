@@ -41,7 +41,7 @@ namespace LYBT.Module.Patients.Helpers
         /// <summary>
         /// 根据患者ID获取患者详情
         /// </summary>
-        public async Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
         {
             try
             {
@@ -49,33 +49,33 @@ namespace LYBT.Module.Patients.Helpers
                 var model = await _patientRepository.GetByIdAsync(id, includeDisabled);
                 
                 if (model == null)
-                    return ServiceResult<PatientDetailDto>.Failure("患者不存在");
+                    return ServiceResult<PatientDto>.Failure("患者不存在");
                     
-                var dto = _mapper.Map<PatientDetailDto>(model);
-                return ServiceResult<PatientDetailDto>.Success(dto);
+                var dto = _mapper.Map<PatientDto>(model);
+                return ServiceResult<PatientDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取患者详情失败: {PatientId}", id);
-                return ServiceResult<PatientDetailDto>.Failure("获取患者详情失败", ex);
+                return ServiceResult<PatientDto>.Failure("获取患者详情失败", ex);
             }
         }
 
         /// <summary>
         /// 获取所有患者列表
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> GetAllAsync()
+        public async Task<ServiceResult<List<PatientDto>>> GetAllAsync()
         {
             try
             {
                 var list = await _patientRepository.GetAllAsync();
-                var dtos = list.Select(_mapper.Map<PatientDetailDto>).ToList();
-                return ServiceResult<List<PatientDetailDto>>.Success(dtos);
+                var dtos = list.Select(_mapper.Map<PatientDto>).ToList();
+                return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取所有患者失败");
-                return ServiceResult<List<PatientDetailDto>>.Failure("获取所有患者失败", ex);
+                return ServiceResult<List<PatientDto>>.Failure("获取所有患者失败", ex);
             }
         }
 
@@ -115,18 +115,18 @@ namespace LYBT.Module.Patients.Helpers
         /// <summary>
         /// 获取可用患者列表（用于挂号选择）
         /// </summary>
-        public async Task<ServiceResult<List<PatientDetailDto>>> GetActivePatientsAsync()
+        public async Task<ServiceResult<List<PatientDto>>> GetActivePatientsAsync()
         {
             try
             {
                 var patients = await _patientRepository.GetActivePatientsAsync();
-                var dtos = patients.Select(_mapper.Map<PatientDetailDto>).ToList();
-                return ServiceResult<List<PatientDetailDto>>.Success(dtos);
+                var dtos = patients.Select(_mapper.Map<PatientDto>).ToList();
+                return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取活跃患者失败");
-                return ServiceResult<List<PatientDetailDto>>.Failure("获取活跃患者失败", ex);
+                return ServiceResult<List<PatientDto>>.Failure("获取活跃患者失败", ex);
             }
         }
 
@@ -137,36 +137,36 @@ namespace LYBT.Module.Patients.Helpers
         /// <summary>
         /// 根据手机号查找患者
         /// </summary>
-        public async Task<ServiceResult<PatientDetailDto?>> GetByPhoneNumberAsync(string phoneNumber)
+        public async Task<ServiceResult<PatientDto?>> GetByPhoneNumberAsync(string phoneNumber)
         {
             try
             {
                 var model = await _patientRepository.GetByPhoneNumberAsync(phoneNumber);
-                var dto = model == null ? null : _mapper.Map<PatientDetailDto>(model);
-                return ServiceResult<PatientDetailDto?>.Success(dto);
+                var dto = model == null ? null : _mapper.Map<PatientDto>(model);
+                return ServiceResult<PatientDto?>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "根据手机号查找患者失败: {PhoneNumber}", phoneNumber);
-                return ServiceResult<PatientDetailDto?>.Failure("根据手机号查找患者失败", ex);
+                return ServiceResult<PatientDto?>.Failure("根据手机号查找患者失败", ex);
             }
         }
 
         /// <summary>
         /// 根据身份证号查找患者
         /// </summary>
-        public async Task<ServiceResult<PatientDetailDto?>> GetByIDNumberAsync(string idNumber)
+        public async Task<ServiceResult<PatientDto?>> GetByIDNumberAsync(string idNumber)
         {
             try
             {
                 var model = await _patientRepository.GetByIdNumberAsync(idNumber);
-                var dto = model == null ? null : _mapper.Map<PatientDetailDto>(model);
-                return ServiceResult<PatientDetailDto?>.Success(dto);
+                var dto = model == null ? null : _mapper.Map<PatientDto>(model);
+                return ServiceResult<PatientDto?>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "根据身份证号查找患者失败: {IdNumber}", idNumber);
-                return ServiceResult<PatientDetailDto?>.Failure("根据身份证号查找患者失败", ex);
+                return ServiceResult<PatientDto?>.Failure("根据身份证号查找患者失败", ex);
             }
         }
 
@@ -191,7 +191,7 @@ namespace LYBT.Module.Patients.Helpers
         /// <summary>
         /// 高级搜索患者（简化实现，委托给基本查询）
         /// </summary>
-        public async Task<ServiceResult<PaginatedResult<PatientDetailDto>>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
+        public async Task<ServiceResult<PaginatedResult<PatientDto>>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
         {
             try
             {
@@ -205,29 +205,29 @@ namespace LYBT.Module.Patients.Helpers
                 
                 if (serviceResult.IsSuccess && serviceResult.Data != null)
                 {
-                    var paginatedResult = new PaginatedResult<PatientDetailDto>
+                    var paginatedResult = new PaginatedResult<PatientDto>
                     {
                         TotalCount = serviceResult.Data.TotalCount,
-                        Items = serviceResult.Data.Items.Select(_mapper.Map<PatientDetailDto>).ToList(),
+                        Items = serviceResult.Data.Items.Select(_mapper.Map<PatientDto>).ToList(),
                         CurrentPage = serviceResult.Data.CurrentPage,
                         PageSize = serviceResult.Data.PageSize
                     };
-                    return ServiceResult<PaginatedResult<PatientDetailDto>>.Success(paginatedResult);
+                    return ServiceResult<PaginatedResult<PatientDto>>.Success(paginatedResult);
                 }
                 
-                var emptyResult = new PaginatedResult<PatientDetailDto>
+                var emptyResult = new PaginatedResult<PatientDto>
                 {
                     TotalCount = 0,
-                    Items = new List<PatientDetailDto>(),
+                    Items = new List<PatientDto>(),
                     CurrentPage = query.PageIndex,
                     PageSize = query.PageSize
                 };
-                return ServiceResult<PaginatedResult<PatientDetailDto>>.Success(emptyResult);
+                return ServiceResult<PaginatedResult<PatientDto>>.Success(emptyResult);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "高级搜索患者失败");
-                return ServiceResult<PaginatedResult<PatientDetailDto>>.Failure("高级搜索患者失败", ex);
+                return ServiceResult<PaginatedResult<PatientDto>>.Failure("高级搜索患者失败", ex);
             }
         }
 

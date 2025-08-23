@@ -217,7 +217,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                             Name = patientDetail.Name,
                             PhoneNumber = patientDetail.PhoneNumber,
                             Gender = patientDetail.Gender,
-                            BirthDate = patientDetail.DateOfBirth, // UltraThink v2.0: 将DetailDto的DateOfBirth映射到Dto的BirthDate
+                            BirthDate = patientDetail.BirthDate, // UltraThink v2.0: 统一字段名后直接使用BirthDate
                             Status = patientDetail.Status
                             // UltraThink v2.0: 移除已删除的字段 CreateTime, UpdateTime, Remark
                         };

@@ -31,7 +31,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PagedData<FormulaDto>>>> GetList(
+        public async Task<ActionResult<ApiResponse<PagedResult<FormulaDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
@@ -335,7 +335,7 @@ namespace LYBT.WebAPI.Controllers
         /// 搜索验方
         /// </summary>
         [HttpGet("search")]
-        public async Task<ActionResult<ApiResponse<PagedData<FormulaDto>>>> Search(
+        public async Task<ActionResult<ApiResponse<PagedResult<FormulaDto>>>> Search(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null)

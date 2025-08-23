@@ -17,12 +17,12 @@ namespace LYBT.Desktop.Users.Services
     /// UltraThink v2.0架构：直接使用DTO，移除Info层转换逻辑
     /// 实现IUserService接口以支持依赖注入
     /// </summary>
-    public class UserModule : IUserService
+    public class UserModuleService : IUserService
     {
         private readonly IUserApi _apiService;
         private readonly IMapper _mapper;
         
-        public UserModule(IUserApi apiService, IMapper mapper)
+        public UserModuleService(IUserApi apiService, IMapper mapper)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -83,13 +83,8 @@ namespace LYBT.Desktop.Users.Services
                     return ServiceResult<PagedResult<UserDto>>.Failure("获取用户列表失败");
                 }
                 
-                // 转换Refit响应为标准格式
-                var pagedData = apiResponse.Content;
-                var result = new PagedResult<UserDto>(
-                    pagedData.Items.ToList(),
-                    pagedData.TotalCount,
-                    pagedData.CurrentPage,
-                    pagedData.PageSize);
+                // UltraThink v2.0: API已返回标准PagedResult格式，直接使用
+                var result = apiResponse.Content;
                 
                 return ServiceResult<PagedResult<UserDto>>.Success(result);
             }
@@ -100,9 +95,6 @@ namespace LYBT.Desktop.Users.Services
         }
         
         /// <summary>
-        /// 创建新用户
-        /// </summary>
-        /// <summary>
         /// 创建新用户 - UltraThink优化：使用统一变更DTO
         /// </summary>
         public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
@@ -112,11 +104,8 @@ namespace LYBT.Desktop.Users.Services
                 // 设置为创建操作
                 dto.IsCreateOperation = true;
                 
-                // 转换为CreateDto格式进行验证
-                var createDto = ConvertToCreateDto(dto);
-                
-                // UltraThink v2.0: 直接使用CreateDto进行业务验证
-                var validationResult = await ValidateCreateDtoAsync(createDto);
+                // UltraThink v2.0: 直接使用UserMutationDto进行业务验证
+                var validationResult = await ValidateMutationDtoAsync(dto);
                 if (!validationResult.IsSuccess)
                 {
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
@@ -139,8 +128,8 @@ namespace LYBT.Desktop.Users.Services
                     }
                 }
                 
-                // UltraThink v2.0: 调用Refit API客户端
-                var apiResponse = await _apiService.CreateUserAsync(createDto);
+                // UltraThink v2.0: 直接调用Refit API客户端使用UserMutationDto
+                var apiResponse = await _apiService.CreateUserAsync(dto);
                 if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
                     return ServiceResult<UserDto>.Failure("创建用户失败");
@@ -154,27 +143,6 @@ namespace LYBT.Desktop.Users.Services
             }
         }
         
-        /// <summary>
-        /// 将UserMutationDto转换为UserCreateDto（内部辅助方法）
-        /// </summary>
-        private static UserCreateDto ConvertToCreateDto(UserMutationDto mutationDto)
-        {
-            return new UserCreateDto
-            {
-                Username = mutationDto.Username,
-                Password = mutationDto.Password ?? "ChangeMe123", // 默认密码
-                ConfirmPassword = mutationDto.ConfirmPassword ?? mutationDto.Password ?? "ChangeMe123",
-                RealName = mutationDto.RealName,
-                Role = mutationDto.Role,
-                PhoneNumber = mutationDto.PhoneNumber,
-                Email = mutationDto.Email,
-                Status = mutationDto.Status
-            };
-        }
-        
-        /// <summary>
-        /// 更新用户信息 - 实现IUserService接口签名
-        /// </summary>
         /// <summary>
         /// 更新用户信息 - UltraThink优化：使用统一变更DTO
         /// </summary>
@@ -190,12 +158,8 @@ namespace LYBT.Desktop.Users.Services
                 // 设置为更新操作
                 dto.IsCreateOperation = false;
                 
-                // 转换为UpdateDto格式
-                var updateDto = ConvertToUpdateDto(dto);
-                updateDto.Id = dto.Id;
-                
-                // UltraThink v2.0: 直接使用UpdateDto进行业务验证
-                var validationResult = await ValidateUpdateDtoAsync(updateDto);
+                // UltraThink v2.0: 直接使用UserMutationDto进行业务验证
+                var validationResult = await ValidateMutationDtoAsync(dto);
                 if (!validationResult.IsSuccess)
                 {
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
@@ -218,8 +182,8 @@ namespace LYBT.Desktop.Users.Services
                     }
                 }
                 
-                // UltraThink v2.0: 调用Refit API客户端
-                var apiResponse = await _apiService.UpdateUserAsync(dto.Id, updateDto);
+                // UltraThink v2.0: 直接调用Refit API客户端使用UserMutationDto
+                var apiResponse = await _apiService.UpdateUserAsync(dto.Id, dto);
                 if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
                     return ServiceResult<UserDto>.Failure("更新用户失败");
@@ -231,22 +195,6 @@ namespace LYBT.Desktop.Users.Services
             {
                 return ServiceResult<UserDto>.Failure($"更新用户异常: {ex.Message}");
             }
-        }
-        
-        /// <summary>
-        /// 将UserMutationDto转换为UserUpdateDto（内部辅助方法）
-        /// </summary>
-        private static UserUpdateDto ConvertToUpdateDto(UserMutationDto mutationDto)
-        {
-            return new UserUpdateDto
-            {
-                Username = mutationDto.Username,
-                RealName = mutationDto.RealName,
-                Role = mutationDto.Role,
-                PhoneNumber = mutationDto.PhoneNumber,
-                Email = mutationDto.Email,
-                Status = mutationDto.Status
-            };
         }
         
         /// <summary>
@@ -581,9 +529,6 @@ namespace LYBT.Desktop.Users.Services
         }
         
         /// <summary>
-        /// 修改用户个人信息
-        /// </summary>
-        /// <summary>
         /// 修改用户个人信息 - UltraThink优化：使用DTO模式保持一致性
         /// </summary>
         public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto)
@@ -603,16 +548,7 @@ namespace LYBT.Desktop.Users.Services
                 }
                 
                 var existingUser = existingUserResult.Data;
-                var updateDto = new UserUpdateDto
-                {
-                    Id = dto.UserId,
-                    Username = existingUser.Username,
-                    RealName = dto.RealName,
-                    PhoneNumber = dto.PhoneNumber,
-                    Email = dto.Email,
-                    Role = existingUser.Role,
-                    Status = existingUser.IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
-                };
+                // 直接使用UserMutationDto，无需额外转换
                 
                 var updateResult = await UpdateAsync(new UserMutationDto
                 {
@@ -726,26 +662,25 @@ namespace LYBT.Desktop.Users.Services
         #region 私有方法
         
         // UltraThink v2.0: 简化验证方法 - 移除冗余的通用验证，合并Create/Update验证逻辑
-        private async Task<ServiceResult> ValidateCreateDtoAsync(UserCreateDto createDto)
+        /// <summary>
+        /// 统一的UserMutationDto验证方法 - UltraThink v2.0优化
+        /// </summary>
+        private async Task<ServiceResult> ValidateMutationDtoAsync(UserMutationDto dto)
         {
-            if (createDto == null) return ServiceResult.Failure("创建用户信息不能为空");
-            if (string.IsNullOrWhiteSpace(createDto.Username)) return ServiceResult.Failure("用户名不能为空");
-            if (createDto.Username.Length < 3 || createDto.Username.Length > 50) return ServiceResult.Failure("用户名长度必须在3到50个字符之间");
-            if (string.IsNullOrWhiteSpace(createDto.RealName)) return ServiceResult.Failure("真实姓名不能为空");
-            if (createDto.RealName.Length > 50) return ServiceResult.Failure("真实姓名长度不能超过50个字符");
+            if (dto == null) return ServiceResult.Failure("用户信息不能为空");
+            if (string.IsNullOrWhiteSpace(dto.Username)) return ServiceResult.Failure("用户名不能为空");
+            if (dto.Username.Length < 3 || dto.Username.Length > 50) return ServiceResult.Failure("用户名长度必须在3到50个字符之间");
+            if (string.IsNullOrWhiteSpace(dto.RealName)) return ServiceResult.Failure("真实姓名不能为空");
+            if (dto.RealName.Length > 50) return ServiceResult.Failure("真实姓名长度不能超过50个字符");
+            
+            // 创建操作时密码必填
+            if (dto.IsCreateOperation && string.IsNullOrWhiteSpace(dto.Password))
+                return ServiceResult.Failure("创建用户时密码不能为空");
+                
             return ServiceResult.Success();
         }
         
-        private async Task<ServiceResult> ValidateUpdateDtoAsync(UserUpdateDto updateDto)
-        {
-            if (updateDto == null) return ServiceResult.Failure("更新用户信息不能为空");
-            if (string.IsNullOrWhiteSpace(updateDto.Username)) return ServiceResult.Failure("用户名不能为空");
-            if (updateDto.Username.Length < 3 || updateDto.Username.Length > 50) return ServiceResult.Failure("用户名长度必须在3到50个字符之间");
-            if (string.IsNullOrWhiteSpace(updateDto.RealName)) return ServiceResult.Failure("真实姓名不能为空");
-            return ServiceResult.Success();
-        }
-        
-        private async Task<ServiceResult<bool>> IsUsernameExistsAsync(string username, Guid? excludeId = null)
+private async Task<ServiceResult<bool>> IsUsernameExistsAsync(string username, Guid? excludeId = null)
         {
             try
             {

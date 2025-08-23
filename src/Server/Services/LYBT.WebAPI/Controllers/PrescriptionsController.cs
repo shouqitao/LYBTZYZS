@@ -32,7 +32,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取处方列表 (RESTful GET /Prescriptions) - 支持模糊查询和分页 - 统一API响应格式
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PagedData<PrescriptionDto>>>> GetList(
+        public async Task<ActionResult<ApiResponse<PagedResult<PrescriptionDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,

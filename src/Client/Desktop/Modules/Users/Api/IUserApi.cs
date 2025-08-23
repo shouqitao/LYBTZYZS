@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Modules.Users.Api
         /// 获取用户列表（支持分页和查询）
         /// </summary>
         [Get("/api/v1/users")]
-        Task<Refit.ApiResponse<PagedData<UserDto>>> GetUsersAsync(
+        Task<Refit.ApiResponse<PagedResult<UserDto>>> GetUsersAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null,
@@ -38,13 +38,13 @@ namespace LYBT.Desktop.Modules.Users.Api
         /// 创建用户
         /// </summary>
         [Post("/api/v1/users")]
-        Task<Refit.ApiResponse<UserDto>> CreateUserAsync([Body] UserCreateDto dto);
+        Task<Refit.ApiResponse<UserDto>> CreateUserAsync([Body] UserMutationDto dto);
 
         /// <summary>
         /// 更新用户
         /// </summary>
         [Put("/api/v1/users/{id}")]
-        Task<Refit.ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Body] UserUpdateDto dto);
+        Task<Refit.ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Body] UserMutationDto dto);
 
         /// <summary>
         /// 切换用户状态

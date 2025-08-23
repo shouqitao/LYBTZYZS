@@ -14,12 +14,12 @@ namespace LYBT.Desktop.Patients.Services
     /// Patient模块核心业务服务实现
     /// UltraThink v2.0架构：直接使用DTO，移除Info层转换逻辑
     /// </summary>
-    public class PatientModule : IPatientService
+    public class PatientModuleService : IPatientService
     {
         private readonly IPatientApi _apiService;
         private readonly IMapper _mapper;
         
-        public PatientModule(IPatientApi apiService, IMapper mapper)
+        public PatientModuleService(IPatientApi apiService, IMapper mapper)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -57,46 +57,29 @@ namespace LYBT.Desktop.Patients.Services
             }
         }
         
-        public async Task<ServiceResult<PatientDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult<PatientDetailDto>.Failure("患者ID不能为空");
+                    return ServiceResult<PatientDto>.Failure("患者ID不能为空");
                 }
                 
                 // UltraThink v2.0: API调用直接获取DTO
                 var apiResponse = await _apiService.GetPatientByIdAsync(id);
                 if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
-                    return ServiceResult<PatientDetailDto>.Failure("获取患者详情失败");
+                    return ServiceResult<PatientDto>.Failure("获取患者详情失败");
                 }
                 
-                // UltraThink v2.0: Convert PatientDto to PatientDetailDto
-                var detailDto = new PatientDetailDto
-                {
-                    Id = apiResponse.Content.Id,
-                    Name = apiResponse.Content.Name,
-                    Gender = apiResponse.Content.Gender,
-                    DateOfBirth = apiResponse.Content.BirthDate,
-                    PhoneNumber = apiResponse.Content.PhoneNumber,
-                    Address = apiResponse.Content.Address,
-                    IDNumber = apiResponse.Content.IdNumber,
-                    EmergencyContact = apiResponse.Content.IdType, // Fallback since EmergencyContact doesn't exist in PatientDto
-                    EmergencyPhone = "", // Default since it doesn't exist in PatientDto
-                    MedicalHistory = "", // Default since it doesn't exist in PatientDto
-                    AllergyHistory = apiResponse.Content.AllergyHistory,
-                    Status = apiResponse.Content.Status,
-                    CreateTime = apiResponse.Content.CreateTime,
-                    UpdateTime = apiResponse.Content.UpdateTime
-                };
-                
-                return ServiceResult<PatientDetailDto>.Success(detailDto);
+                // UltraThink v2.0: 直接使用统一的PatientDto，无需转换
+                                
+                return ServiceResult<PatientDto>.Success(apiResponse.Content);
             }
             catch (Exception ex)
             {
-                return ServiceResult<PatientDetailDto>.Failure($"获取患者详情异常: {ex.Message}");
+                return ServiceResult<PatientDto>.Failure($"获取患者详情异常: {ex.Message}");
             }
         }
         
@@ -122,9 +105,9 @@ namespace LYBT.Desktop.Patients.Services
                 }
                 
                 // 检查身份证号是否已存在
-                if (!string.IsNullOrEmpty(createDto.IDNumber))
+                if (!string.IsNullOrEmpty(createDto.IdNumber))
                 {
-                    var idCardExistsResult = await IsIdCardExistsAsync(createDto.IDNumber);
+                    var idCardExistsResult = await IsIdCardExistsAsync(createDto.IdNumber);
                     if (idCardExistsResult.IsSuccess && idCardExistsResult.Data)
                     {
                         return ServiceResult<PatientDto>.Failure("该身份证号已被使用");
@@ -169,9 +152,9 @@ namespace LYBT.Desktop.Patients.Services
                 }
                 
                 // 检查身份证号是否已被其他患者使用
-                if (!string.IsNullOrEmpty(updateDto.IDNumber))
+                if (!string.IsNullOrEmpty(updateDto.IdNumber))
                 {
-                    var idCardExistsResult = await IsIdCardExistsAsync(updateDto.IDNumber, id);
+                    var idCardExistsResult = await IsIdCardExistsAsync(updateDto.IdNumber, id);
                     if (idCardExistsResult.IsSuccess && idCardExistsResult.Data)
                     {
                         return ServiceResult<PatientDto>.Failure("该身份证号已被其他患者使用");
@@ -283,7 +266,7 @@ namespace LYBT.Desktop.Patients.Services
             
             // UltraThink v2.0: Age是计算属性，不验证存储值
             // 验证出生日期的合理性
-            if (createDto.DateOfBirth.HasValue && createDto.DateOfBirth.Value > DateTime.Today)
+            if (createDto.BirthDate.HasValue && createDto.BirthDate.Value > DateTime.Today)
             {
                 return ServiceResult.Failure("出生日期不能晚于今天");
             }
@@ -299,7 +282,7 @@ namespace LYBT.Desktop.Patients.Services
             
             // UltraThink v2.0: Age是计算属性，不验证存储值
             // 验证出生日期的合理性
-            if (updateDto.DateOfBirth.HasValue && updateDto.DateOfBirth.Value > DateTime.Today)
+            if (updateDto.BirthDate.HasValue && updateDto.BirthDate.Value > DateTime.Today)
             {
                 return ServiceResult.Failure("出生日期不能晚于今天");
             }
@@ -656,10 +639,10 @@ namespace LYBT.Desktop.Patients.Services
                     Name = p.Name,
                     GenderText = p.Gender.ToString(),
                     Age = p.Age,
-                    BirthDateText = p.DateOfBirth?.ToString("yyyy-MM-dd"),
+                    BirthDateText = p.BirthDate?.ToString("yyyy-MM-dd"),
                     PhoneNumber = p.PhoneNumber,
                     Address = p.Address,
-                    IdCardNumber = p.IDNumber,
+                    IdCardNumber = p.IdNumber,
                     EmergencyContact = p.EmergencyContact,
                     EmergencyPhone = p.EmergencyPhone,
                     AllergyHistory = p.AllergyHistory

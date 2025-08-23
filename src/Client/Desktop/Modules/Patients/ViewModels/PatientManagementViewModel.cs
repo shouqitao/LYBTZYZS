@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     {
         #region Fields
 
-        private readonly PatientModule _patientService;
+        private readonly PatientModuleService _patientService;
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
         
@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region Constructor
 
         public PatientManagementViewModel(
-            PatientModule patientService,
+            PatientModuleService patientService,
             ICustomDialogService dialogService,
             IMapper mapper,
             ISessionManager sessionManager,

@@ -142,7 +142,7 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 获取活跃患者列表
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetRecentActivePatientsAsync(int days = PatientConstants.ActivePatientsDefaultDays)
+        public async Task<List<PatientDto>> GetRecentActivePatientsAsync(int days = PatientConstants.ActivePatientsDefaultDays)
         {
             var cutoffDate = DateTime.Now.AddDays(-days);
             var patients = await _patientRepository.GetActivePatientsAsync();
@@ -151,13 +151,13 @@ namespace LYBT.Module.Patients.Services
                 .OrderByDescending(p => p.LastVisitTime)
                 .ToList();
 
-            return activePatients.Select(_mapper.Map<PatientDetailDto>).ToList();
+            return activePatients.Select(_mapper.Map<PatientDto>).ToList();
         }
 
         /// <summary>
         /// 获取流失患者列表
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetInactivePatientsAsync(int days = PatientConstants.InactivePatientsDefaultDays)
+        public async Task<List<PatientDto>> GetInactivePatientsAsync(int days = PatientConstants.InactivePatientsDefaultDays)
         {
             var cutoffDate = DateTime.Now.AddDays(-days);
             var patients = await _patientRepository.GetActivePatientsAsync();
@@ -166,13 +166,13 @@ namespace LYBT.Module.Patients.Services
                 .OrderBy(p => p.LastVisitTime ?? DateTime.MinValue)
                 .ToList();
 
-            return inactivePatients.Select(_mapper.Map<PatientDetailDto>).ToList();
+            return inactivePatients.Select(_mapper.Map<PatientDto>).ToList();
         }
 
         /// <summary>
         /// 获取今日新增患者
         /// </summary>
-        public async Task<List<PatientDetailDto>> GetTodayNewPatientsAsync()
+        public async Task<List<PatientDto>> GetTodayNewPatientsAsync()
         {
             var today = DateTime.Today;
             var patients = await _patientRepository.GetActivePatientsAsync();
@@ -182,7 +182,7 @@ namespace LYBT.Module.Patients.Services
                 .OrderByDescending(p => p.LastVisitTime)
                 .ToList();
 
-            return todayPatients.Select(_mapper.Map<PatientDetailDto>).ToList();
+            return todayPatients.Select(_mapper.Map<PatientDto>).ToList();
         }
 
         /// <summary>

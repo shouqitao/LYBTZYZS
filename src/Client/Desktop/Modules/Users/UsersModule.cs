@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Users
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink v2.0简化架构：直接注册服务实现
-            containerRegistry.RegisterSingleton<UserModule>();
+            containerRegistry.RegisterSingleton<UserModuleService>();
             
             // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<UserManagementView, UserManagementViewModel>();

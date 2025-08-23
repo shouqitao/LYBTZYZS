@@ -17,12 +17,12 @@ namespace LYBT.Desktop.Prescriptions.Services
     /// Prescriptions模块核心业务服务实现
     /// UltraThink v2.0架构：直接使用DTO，实现折扣和价格计算功能
     /// </summary>
-    public class PrescriptionsModule : IPrescriptionService
+    public class PrescriptionsModuleService : IPrescriptionService
     {
         private readonly IPrescriptionApi _apiService;
         private readonly IMapper _mapper;
         
-        public PrescriptionsModule(IPrescriptionApi apiService, IMapper mapper)
+        public PrescriptionsModuleService(IPrescriptionApi apiService, IMapper mapper)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
