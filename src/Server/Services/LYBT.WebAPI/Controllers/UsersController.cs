@@ -182,7 +182,8 @@ public class UsersController : BaseApiController {
                 return Unauthorized("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATION_FAILED);
             }
 
-            var result = await _userService.ChangeProfileAsync(operatorId, dto.RealName, dto.PhoneNumber ?? string.Empty);
+            dto.UserId = operatorId; // 设置当前操作用户ID
+            var result = await _userService.ChangeProfileAsync(dto);
             if (!result.IsSuccess || !result.Data) {
                 return BusinessFail("个人信息修改失败", ApiErrorCodes.DATA_UPDATE_FAILED);
             }
@@ -300,7 +301,21 @@ public class UsersController : BaseApiController {
                 return validation;
 
             var (operatorId, operatorName, _) = GetOperator();
-            var result = await _userService.CreateAsync(dto);
+            // 转换为UserMutationDto
+            var mutationDto = new UserMutationDto
+            {
+                Username = dto.Username,
+                Password = dto.Password,
+                ConfirmPassword = dto.ConfirmPassword,
+                RealName = dto.RealName,
+                Role = dto.Role,
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                Status = dto.Status,
+                IsCreateOperation = true
+            };
+            
+            var result = await _userService.CreateAsync(mutationDto);
 
             if (result.IsSuccess && result.Data != null) {
                 LogOperation("创建用户", result.Data, result.Data.Id);
@@ -333,7 +348,20 @@ public class UsersController : BaseApiController {
             }
 
             var (operatorId, operatorName, _) = GetOperator();
-            var result = await _userService.UpdateAsync(id, dto);
+            // 转换为UserMutationDto
+            var mutationDto = new UserMutationDto
+            {
+                Id = id,
+                Username = dto.Username,
+                RealName = dto.RealName,
+                Role = dto.Role,
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                Status = dto.Status,
+                IsCreateOperation = false
+            };
+            
+            var result = await _userService.UpdateAsync(mutationDto);
 
             if (result.IsSuccess && result.Data != null) {
                 LogOperation("更新用户信息", result.Data, id);

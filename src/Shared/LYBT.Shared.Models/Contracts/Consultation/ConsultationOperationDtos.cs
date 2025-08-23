@@ -115,7 +115,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// 看诊分页查询DTO - 继承完整查询基类
     /// 用于看诊记录的分页查询和筛选
     /// </summary>
-    public class ConsultationPagedQueryDto : FullPagedQueryDto
+    public class ConsultationPagedQueryDto : ExtendedQueryDto
     {
         /// <summary>患者姓名关键词</summary>
         [DisplayName("患者姓名")]

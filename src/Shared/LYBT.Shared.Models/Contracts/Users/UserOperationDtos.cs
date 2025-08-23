@@ -10,7 +10,7 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// 用户分页查询DTO - 继承完整查询基类 + 编码接口
     /// 用于用户管理的分页查询和筛选
     /// </summary>
-    public class UserPagedQueryDto : FullPagedQueryDto, ICodeable
+    public class UserPagedQueryDto : ExtendedQueryDto, ICodeable
     {
         /// <summary>用户名关键词</summary>
         [DisplayName("用户名")]

@@ -22,14 +22,14 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query);
         
         /// <summary>
-        /// 创建新用户
+        /// 创建新用户 - UltraThink优化：使用统一变更DTO
         /// </summary>
-        Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto);
+        Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto);
         
         /// <summary>
-        /// 更新用户信息
+        /// 更新用户信息 - UltraThink优化：消除ID参数重复
         /// </summary>
-        Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserUpdateDto dto);
+        Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto);
         
         /// <summary>
         /// 删除用户（软删除）
@@ -72,9 +72,9 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
         
         /// <summary>
-        /// 修改用户个人信息
+        /// 修改用户个人信息 - UltraThink优化：使用DTO模式保持一致性
         /// </summary>
-        Task<ServiceResult<bool>> ChangeProfileAsync(Guid id, string realName, string phoneNumber);
+        Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto);
         
         /// <summary>
         /// 获取所有角色列表

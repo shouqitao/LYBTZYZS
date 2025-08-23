@@ -147,23 +147,66 @@ namespace LYBT.Module.Users.Services
         #region CRUD操作
 
         /// <summary>
-        /// 新增用户
+        /// 新增用户 - UltraThink优化：使用统一变更DTO
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto)
+        public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
         {
+            // 设置为创建操作
+            dto.IsCreateOperation = true;
+            
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.CreateUserAsync(dto),
+                async () => await _businessHelper.CreateUserAsync(ConvertToCreateDto(dto)),
                 "创建用户", dto.Username);
         }
 
         /// <summary>
-        /// 编辑用户
+        /// 将UserMutationDto转换为UserCreateDto（内部辅助方法）
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserUpdateDto dto)
+        private static UserCreateDto ConvertToCreateDto(UserMutationDto mutationDto)
         {
+            return new UserCreateDto
+            {
+                Username = mutationDto.Username,
+                Password = mutationDto.Password ?? "ChangeMe123", // 默认密码
+                ConfirmPassword = mutationDto.ConfirmPassword ?? mutationDto.Password ?? "ChangeMe123",
+                RealName = mutationDto.RealName,
+                Role = mutationDto.Role,
+                PhoneNumber = mutationDto.PhoneNumber,
+                Email = mutationDto.Email,
+                Status = mutationDto.Status
+            };
+        }
+        
+
+        
+
+
+        /// <summary>
+        /// 编辑用户 - UltraThink优化：使用统一变更DTO
+        /// </summary>
+        public async Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto)
+        {
+            // 设置为更新操作
+            dto.IsCreateOperation = false;
+            
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.UpdateUserAsync(id, dto),
-                "更新用户", id);
+                async () => await _businessHelper.UpdateUserAsync(dto.Id, ConvertToUpdateDto(dto)),
+                "更新用户", dto.Id);
+        }
+        
+        /// <summary>
+        /// 将UserMutationDto转换为UserUpdateDto（内部辅助方法）
+        /// </summary>
+        private static UserUpdateDto ConvertToUpdateDto(UserMutationDto mutationDto)
+        {
+            return new UserUpdateDto
+            {
+                RealName = mutationDto.RealName,
+                Role = mutationDto.Role,
+                PhoneNumber = mutationDto.PhoneNumber,
+                Email = mutationDto.Email,
+                Status = mutationDto.Status
+            };
         }
 
         /// <summary>
@@ -245,13 +288,13 @@ namespace LYBT.Module.Users.Services
         }
 
         /// <summary>
-        /// 用户修改个人信息
+        /// 用户修改个人信息 - UltraThink优化：使用DTO模式保持一致性
         /// </summary>
-        public async Task<ServiceResult<bool>> ChangeProfileAsync(Guid id, string realName, string phoneNumber)
+        public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto)
         {
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.ChangeProfileAsync(id, realName, phoneNumber),
-                "修改用户个人信息", id);
+                async () => await _businessHelper.ChangeProfileAsync(dto.UserId, dto.RealName, dto.PhoneNumber ?? string.Empty),
+                "修改用户个人信息", dto.UserId);
         }
 
         #endregion

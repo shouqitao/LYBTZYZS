@@ -280,7 +280,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// 看诊详情DTO - 继承审计基础DTO + 备注接口
     /// 用于看诊详情的展示和传输
     /// </summary>
-    public class ConsultationDetailDto : AuditableDto, IRemarkable
+    public class ConsultationDetailDto : TimestampDto, IRemarkable
     {
         /// <summary>医疗案例ID</summary>
         [Required(ErrorMessage = "医疗案例ID不能为空")]

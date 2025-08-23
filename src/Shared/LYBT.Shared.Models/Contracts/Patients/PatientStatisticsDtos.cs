@@ -348,7 +348,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 患者导出查询DTO
     /// </summary>
-    public class PatientExportQueryDto : DateRangeQueryDto
+    public class PatientExportQueryDto : ExtendedQueryDto
     {
         /// <summary>导出字段列表</summary>
         [DisplayName("导出字段")]
@@ -386,7 +386,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 患者高级搜索DTO
     /// </summary>
-    public class PatientAdvancedSearchDto : FullPagedQueryDto
+    public class PatientAdvancedSearchDto : ExtendedQueryDto
     {
         /// <summary>患者姓名</summary>
         [StringLength(50)]

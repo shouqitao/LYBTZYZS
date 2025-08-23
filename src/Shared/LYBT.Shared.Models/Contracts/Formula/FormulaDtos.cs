@@ -294,7 +294,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方查询DTO - 继承完整分页查询DTO，提供分页、时间范围、关键词搜索功能
     /// </summary>
-    public class FormulaQueryDto : FullPagedQueryDto
+    public class FormulaQueryDto : ExtendedQueryDto
     {
         [DisplayName("验方名称")]
         public string? Name { get; set; }

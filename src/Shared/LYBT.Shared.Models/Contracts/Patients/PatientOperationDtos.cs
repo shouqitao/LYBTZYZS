@@ -10,7 +10,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// 患者分页查询DTO - 继承完整查询基类 + 编码接口
     /// 用于患者档案的分页查询和筛选
     /// </summary>
-    public class PatientPagedQueryDto : FullPagedQueryDto, ICodeable
+    public class PatientPagedQueryDto : ExtendedQueryDto, ICodeable
     {
         /// <summary>姓名关键词</summary>
         [DisplayName("姓名关键词")]

@@ -181,15 +181,16 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 if (IsNewUser)
                 {
-                    // UltraThink v2.0: 直接创建UserCreateDto
-                    var createRequest = new UserCreateDto
+                    // UltraThink v2.0: 直接创建UserMutationDto
+                    var createRequest = new UserMutationDto
                     {
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
                         Role = "User", // 新建用户固定为普通用户角色
                         Password = "ChangeMe123", // 默认密码
-                        ConfirmPassword = "ChangeMe123" // 确认密码
+                        ConfirmPassword = "ChangeMe123", // 确认密码
+                        IsCreateOperation = true // 设置为创建操作
                     };
 
                     var response = await _userService.CreateAsync(createRequest);
@@ -210,17 +211,18 @@ namespace LYBT.Desktop.Users.ViewModels
                         return;
                     }
 
-                    // UltraThink v2.0: 直接创建UserUpdateDto
-                    var updateRequest = new UserUpdateDto
+                    // UltraThink v2.0: 直接创建UserMutationDto
+                    var updateRequest = new UserMutationDto
                     {
                         Id = _originalUser.Id,
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
                         Role = "User", // 编辑时固定为普通用户角色
-                        PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim()
+                        PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
+                        IsCreateOperation = false // 设置为更新操作
                     };
 
-                    var response = await _userService.UpdateAsync(_originalUser.Id, updateRequest);
+                    var response = await _userService.UpdateAsync(updateRequest);
                     success = response.IsSuccess;
 
                     if (!success)

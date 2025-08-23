@@ -61,10 +61,11 @@ namespace LYBT.Shared.Models.Contracts.Common
 
     #endregion
 
-    #region 基础DTO抽象类
+    #region 简化DTO基础类体系 - UltraThink架构优化
 
     /// <summary>
     /// 基础DTO抽象类 - 提供Guid类型的ID字段
+    /// UltraThink简化：最小化基础类，只包含ID
     /// </summary>
     public abstract class BaseDto : IIdentifiable<Guid>
     {
@@ -74,13 +75,14 @@ namespace LYBT.Shared.Models.Contracts.Common
     }
 
     /// <summary>
-    /// 可审计DTO抽象类 - 包含ID和审计时间字段
+    /// 时间戳DTO抽象类 - 包含ID和审计时间字段
+    /// UltraThink简化：统一审计时间管理
     /// </summary>
-    public abstract class AuditableDto : BaseDto, IAuditable
+    public abstract class TimestampDto : BaseDto, IAuditable
     {
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
-        public DateTime CreateTime { get; set; }
+        public DateTime CreateTime { get; set; } = DateTime.Now;
 
         /// <summary>更新时间</summary>
         [DisplayName("更新时间")]
@@ -88,9 +90,10 @@ namespace LYBT.Shared.Models.Contracts.Common
     }
 
     /// <summary>
-    /// 状态管理DTO抽象类 - 包含ID和状态字段
+    /// 状态管理DTO抽象类 - 包含ID、时间戳和状态字段
+    /// UltraThink简化：合并状态和时间戳管理
     /// </summary>
-    public abstract class StatusDto : BaseDto, IStatusManageable
+    public abstract class StatusDto : TimestampDto, IStatusManageable
     {
         /// <summary>状态</summary>
         [DisplayName("状态")]
@@ -99,45 +102,15 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <summary>是否启用 - 根据Status计算得出</summary>
         [DisplayName("是否启用")]
         public bool IsEnabled => Status == CommonStatus.Enabled;
-
-        /// <summary>创建时间(兼容性属性)</summary>
-        [DisplayName("创建时间")]
-        public virtual DateTime CreateTime { get; set; } = DateTime.Now;
-
-        /// <summary>更新时间(兼容性属性)</summary>
-        [DisplayName("更新时间")]
-        public virtual DateTime? UpdateTime { get; set; }
-    }
-
-    /// <summary>
-    /// 完整基础DTO抽象类 - 包含ID、审计、状态、备注字段
-    /// </summary>
-    public abstract class FullBaseDto : BaseDto, IAuditable, IStatusManageable, IRemarkable
-    {
-        /// <summary>创建时间</summary>
-        [DisplayName("创建时间")]
-        public DateTime CreateTime { get; set; }
-
-        /// <summary>更新时间</summary>
-        [DisplayName("更新时间")]
-        public DateTime? UpdateTime { get; set; }
-
-        /// <summary>状态</summary>
-        [DisplayName("状态")]
-        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-
-        /// <summary>备注</summary>
-        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
-        [DisplayName("备注")]
-        public string? Remark { get; set; }
     }
 
     #endregion
 
-    #region CRUD操作DTO基类
+    #region CRUD操作DTO基类 - UltraThink简化
 
     /// <summary>
     /// 创建操作DTO基类 - 不包含ID（由系统生成）
+    /// UltraThink简化：继承状态管理，添加备注支持
     /// </summary>
     public abstract class CreateDtoBase : IStatusManageable, IRemarkable
     {
@@ -153,13 +126,10 @@ namespace LYBT.Shared.Models.Contracts.Common
 
     /// <summary>
     /// 更新操作DTO基类 - 包含ID用于标识要更新的实体
+    /// UltraThink简化：使用StatusDto，添加备注支持
     /// </summary>
-    public abstract class UpdateDtoBase : BaseDto, IStatusManageable, IRemarkable
+    public abstract class UpdateDtoBase : StatusDto, IRemarkable
     {
-        /// <summary>状态</summary>
-        [DisplayName("状态")]
-        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
@@ -168,13 +138,18 @@ namespace LYBT.Shared.Models.Contracts.Common
 
     #endregion
 
-    #region 查询DTO基类
+    #region 查询DTO基类 - UltraThink简化
 
     /// <summary>
-    /// 日期范围查询DTO基类
+    /// 扩展查询DTO基类 - 在分页基础上添加常用查询字段
+    /// UltraThink简化：合并常用查询功能，避免多层继承
     /// </summary>
-    public abstract class DateRangeQueryDto
+    public abstract class ExtendedQueryDto : PagedQueryBaseDto
     {
+        /// <summary>状态筛选</summary>
+        [DisplayName("状态")]
+        public CommonStatus? Status { get; set; }
+
         /// <summary>开始日期</summary>
         [DisplayName("开始日期")]
         public DateTime? StartDate { get; set; }
@@ -182,30 +157,10 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <summary>结束日期</summary>
         [DisplayName("结束日期")]
         public DateTime? EndDate { get; set; }
-    }
-
-    /// <summary>
-    /// 状态筛选查询DTO基类
-    /// </summary>
-    public abstract class StatusQueryDto
-    {
-        /// <summary>状态筛选</summary>
-        [DisplayName("状态")]
-        public CommonStatus? Status { get; set; }
 
         /// <summary>是否包含已禁用项</summary>
         [DisplayName("包含已禁用")]
         public bool IncludeInactive { get; set; } = false;
-    }
-
-    /// <summary>
-    /// 关键词搜索查询DTO基类
-    /// </summary>
-    public abstract class KeywordSearchDto
-    {
-        /// <summary>搜索关键词</summary>
-        [DisplayName("关键词")]
-        public string? Keyword { get; set; }
 
         /// <summary>拼音码搜索</summary>
         [DisplayName("拼音码")]
@@ -216,34 +171,13 @@ namespace LYBT.Shared.Models.Contracts.Common
         public string? WuBiCode { get; set; }
     }
 
-    /// <summary>
-    /// 完整分页查询DTO基类 - 组合多种查询功能
-    /// </summary>
-    public abstract class FullPagedQueryDto : PagedQueryBaseDto
-    {
-        /// <summary>状态筛选</summary>
-        [DisplayName("状态")]
-        public CommonStatus? Status { get; set; }
-
-        /// <summary>开始日期</summary>
-        [DisplayName("开始日期")]
-        public DateTime? StartDate { get; set; }
-
-        /// <summary>结束日期</summary>
-        [DisplayName("结束日期")]
-        public DateTime? EndDate { get; set; }
-
-        /// <summary>是否包含已禁用项</summary>
-        [DisplayName("包含已禁用")]
-        public bool IncludeInactive { get; set; } = false;
-    }
-
     #endregion
 
-    #region 统计和报告DTO基类
+    #region 统计DTO基类 - UltraThink简化
 
     /// <summary>
-    /// 统计DTO基类 - 提供通用统计字段
+    /// 统计DTO基类 - 提供通用统计字段和状态统计
+    /// UltraThink简化：合并基础统计和状态统计功能
     /// </summary>
     public abstract class StatisticsDto
     {
@@ -254,13 +188,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <summary>统计时间</summary>
         [DisplayName("统计时间")]
         public DateTime StatisticsTime { get; set; } = DateTime.Now;
-    }
 
-    /// <summary>
-    /// 状态统计DTO基类 - 提供按状态分组的统计
-    /// </summary>
-    public abstract class StatusStatisticsDto : StatisticsDto
-    {
         /// <summary>启用数量</summary>
         [DisplayName("启用数量")]
         public int EnabledCount { get; set; }

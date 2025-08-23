@@ -55,7 +55,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材详情DTO - 继承完整基础DTO
     /// 用于中药材档案详情的展示和传输
     /// </summary>
-    public class HerbDetailDto : FullBaseDto, ICodeable
+    public class HerbDetailDto : StatusDto, ICodeable, IRemarkable
     {
         /// <summary>药材名称</summary>
         [Required(ErrorMessage = "药材名称不能为空")]
@@ -102,6 +102,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [StringLength(500, ErrorMessage = "用法长度不能超过500个字符")]
         [DisplayName("用法")]
         public string? Usage { get; set; }
+
+        /// <summary>备注</summary>
+        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
+        [DisplayName("备注")]
+        public string? Remark { get; set; }
     }
 
     /// <summary>
@@ -233,7 +238,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材分页查询DTO - 继承完整查询基类
     /// 用于中药材档案的分页查询和筛选
     /// </summary>
-    public class HerbPagedQueryDto : FullPagedQueryDto, ICodeable
+    public class HerbPagedQueryDto : ExtendedQueryDto, ICodeable
     {
         /// <summary>药材名称关键词</summary>
         [DisplayName("药材名称")]
