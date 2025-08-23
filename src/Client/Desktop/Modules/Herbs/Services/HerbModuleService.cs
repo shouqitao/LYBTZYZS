@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Herbs.Services
     /// Herb模块核心业务服务实现
     /// UltraThink v2.0架构：直接使用DTO，专注处方用药管理，删除库存管理功能
     /// </summary>
-    public class HerbModuleService
+    public class HerbModuleService : LYBT.Shared.Interfaces.Services.IHerbService
     {
         private readonly IHerbApi _apiService;
         private readonly IMapper _mapper;
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Herbs.Services
         
         #region 基础CRUD操作
         
-        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(PagedQueryBaseDto query)
+        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
         {
             try
             {
@@ -123,7 +123,7 @@ namespace LYBT.Desktop.Herbs.Services
             }
         }
         
-        public async Task<ServiceResult<HerbDto>> UpdateAsync(HerbUpdateDto updateDto)
+        public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto)
         {
             try
             {
@@ -158,27 +158,27 @@ namespace LYBT.Desktop.Herbs.Services
             }
         }
         
-        public async Task<ServiceResult> DeleteAsync(Guid id)
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
             try
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult.Failure("中药材ID不能为空");
+                    return ServiceResult<bool>.Failure("中药材ID不能为空");
                 }
                 
                 // UltraThink v2.0: 使用状态切换代替硬删除
                 var apiResult = await _apiService.ToggleStatusAsync(id);
                 if (!apiResult.IsSuccessStatusCode)
                 {
-                    return ServiceResult.Failure(apiResult.Error?.Message ?? "删除中药材失败");
+                    return ServiceResult<bool>.Failure(apiResult.Error?.Message ?? "删除中药材失败");
                 }
                 
-                return ServiceResult.Success();
+                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return ServiceResult.Failure($"删除中药材异常: {ex.Message}");
+                return ServiceResult<bool>.Failure($"删除中药材异常: {ex.Message}");
             }
         }
         
@@ -186,7 +186,7 @@ namespace LYBT.Desktop.Herbs.Services
         
         #region 业务特定操作
         
-        public async Task<ServiceResult<PagedResult<HerbDto>>> SearchHerbsAsync(PagedQueryBaseDto request)
+        public async Task<ServiceResult<PagedResult<HerbDto>>> SearchHerbsAsync(HerbPagedQueryDto request)
         {
             try
             {
@@ -208,7 +208,7 @@ namespace LYBT.Desktop.Herbs.Services
                     return ServiceResult<HerbDto>.Failure("中药材名称不能为空");
                 }
                 
-                var query = new PagedQueryBaseDto
+                var query = new HerbPagedQueryDto
                 {
                     PageIndex = 1,
                     PageSize = 1,
@@ -470,6 +470,300 @@ namespace LYBT.Desktop.Herbs.Services
             catch (Exception ex)
             {
                 return ServiceResult<byte[]>.Failure($"获取药材导入模板异常: {ex.Message}");
+            }
+        }
+        
+        #endregion
+        
+        #region IHerbService接口实现 - 缺失方法补充
+        
+        /// <summary>
+        /// 获取所有中药材
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetAllAsync()
+        {
+            try
+            {
+                var query = new HerbPagedQueryDto { PageSize = int.MaxValue, PageIndex = 1 };
+                var result = await GetPagedAsync(query);
+                if (!result.IsSuccess)
+                {
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                }
+                
+                return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure($"获取所有中药材异常: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 根据ID列表获取中药材
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetByIdsAsync(List<Guid> ids)
+        {
+            try
+            {
+                if (ids == null || !ids.Any())
+                {
+                    return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+                }
+                
+                var allHerbs = await GetAllAsync();
+                if (!allHerbs.IsSuccess)
+                {
+                    return ServiceResult<List<HerbDto>>.Failure(allHerbs.ErrorMessage);
+                }
+                
+                var filteredHerbs = allHerbs.Data.Where(h => ids.Contains(h.Id)).ToList();
+                return ServiceResult<List<HerbDto>>.Success(filteredHerbs);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure($"根据ID列表获取中药材异常: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 更新库存 - UltraThink v2.0暂不支持库存管理
+        /// </summary>
+        public async Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
+        {
+            return ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持库存管理功能");
+        }
+        
+        /// <summary>
+        /// 更新价格
+        /// </summary>
+        public async Task<ServiceResult<bool>> UpdatePriceAsync(Guid id, HerbPriceUpdateDto dto)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<bool>.Failure("中药材ID不能为空");
+                }
+                
+                if (dto.Price <= 0)
+                {
+                    return ServiceResult<bool>.Failure("价格必须大于0");
+                }
+                
+                // 获取现有药材信息
+                var herbResult = await GetByIdAsync(id);
+                if (!herbResult.IsSuccess)
+                {
+                    return ServiceResult<bool>.Failure("获取中药材信息失败");
+                }
+                
+                // 创建更新DTO
+                var updateDto = new HerbUpdateDto
+                {
+                    Id = id,
+                    Name = herbResult.Data.Name,
+                    Price = dto.Price ?? 0m,
+                    Unit = herbResult.Data.Unit
+                };
+                
+                var updateResult = await UpdateAsync(id, updateDto);
+                return ServiceResult<bool>.Success(updateResult.IsSuccess);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.Failure($"更新价格异常: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 获取库存统计 - UltraThink v2.0暂不支持库存管理
+        /// </summary>
+        public async Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
+        {
+            return ServiceResult<HerbStockStatisticsDto>.Failure("UltraThink v2.0版本暂不支持库存管理功能");
+        }
+        
+        /// <summary>
+        /// 搜索中药材
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+                }
+                
+                var query = new HerbPagedQueryDto 
+                { 
+                    PageSize = int.MaxValue, 
+                    PageIndex = 1,
+                    Keyword = keyword 
+                };
+                
+                var result = await GetPagedAsync(query);
+                if (!result.IsSuccess)
+                {
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                }
+                
+                return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure($"搜索中药材异常: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 批量更新状态 - UltraThink v2.0简化版不支持
+        /// </summary>
+        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
+        {
+            return ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持批量状态更新功能");
+        }
+        
+        /// <summary>
+        /// 获取中药材列表
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetHerbsAsync()
+        {
+            return await GetAllAsync();
+        }
+        
+        /// <summary>
+        /// 获取列表（可选查询条件）
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetListAsync(HerbPagedQueryDto? query = null)
+        {
+            try
+            {
+                if (query == null)
+                {
+                    return await GetAllAsync();
+                }
+                
+                var result = await GetPagedAsync(query);
+                if (!result.IsSuccess)
+                {
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                }
+                
+                return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure($"获取中药材列表异常: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 获取可用中药材
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetAvailableHerbsAsync()
+        {
+            try
+            {
+                var query = new HerbPagedQueryDto 
+                { 
+                    PageSize = int.MaxValue, 
+                    PageIndex = 1
+                };
+                
+                var result = await GetPagedAsync(query);
+                if (!result.IsSuccess)
+                {
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                }
+                
+                var availableHerbs = result.Data.Items
+                    .Where(h => h.IsEnabled && h.Status == CommonStatus.Enabled)
+                    .ToList();
+                
+                return ServiceResult<List<HerbDto>>.Success(availableHerbs);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure($"获取可用中药材异常: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 获取库存不足药材 - UltraThink v2.0暂不支持库存管理
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
+        {
+            return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+        }
+        
+        /// <summary>
+        /// 获取即将过期药材 - UltraThink v2.0暂不支持过期管理
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
+        {
+            return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+        }
+        
+        /// <summary>
+        /// 获取统计信息
+        /// </summary>
+        public async Task<ServiceResult<Dictionary<int, int>>> GetStatisticsAsync()
+        {
+            try
+            {
+                var allHerbs = await GetAllAsync();
+                if (!allHerbs.IsSuccess)
+                {
+                    return ServiceResult<Dictionary<int, int>>.Failure(allHerbs.ErrorMessage);
+                }
+                
+                var stats = new Dictionary<int, int>
+                {
+                    { 1, allHerbs.Data.Count }, // 总数
+                    { 2, allHerbs.Data.Count(h => h.IsEnabled) }, // 可用数量
+                    { 3, allHerbs.Data.Count(h => !h.IsEnabled) } // 禁用数量
+                };
+                
+                return ServiceResult<Dictionary<int, int>>.Success(stats);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<Dictionary<int, int>>.Failure($"获取统计信息异常: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 根据名称搜索中药材
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> SearchByNameAsync(string name)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+                }
+                
+                var query = new HerbPagedQueryDto 
+                { 
+                    PageSize = int.MaxValue, 
+                    PageIndex = 1,
+                    Name = name
+                };
+                
+                var result = await GetPagedAsync(query);
+                if (!result.IsSuccess)
+                {
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                }
+                
+                return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<HerbDto>>.Failure($"根据名称搜索中药材异常: {ex.Message}");
             }
         }
         

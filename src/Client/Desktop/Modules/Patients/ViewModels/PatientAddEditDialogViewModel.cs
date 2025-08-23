@@ -265,7 +265,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                         IDNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
                     };
-                    var serviceResult = await _patientService.UpdateAsync(updateDto);
+                    var serviceResult = await _patientService.UpdateAsync(_originalPatient.Id, updateDto);
                     result = serviceResult.IsSuccess;
                     
                     if (!result)

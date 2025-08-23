@@ -51,7 +51,17 @@ namespace LYBT.Desktop.Patients.Coordinators
             {
                 _logger.LogInformation("开始分页查询患者，页码: {Page}, 关键字: {Keyword}", query.CurrentPage, query.SearchKeyword);
 
-                var result = await _patientService.GetPagedAsync(query);
+                // 转换为PatientPagedQueryDto
+                var patientQuery = new PatientPagedQueryDto
+                {
+                    Keyword = query.Keyword,
+                    PageIndex = query.PageIndex,
+                    PageSize = query.PageSize,
+                    SortField = query.SortField,
+                    IsDescending = query.IsDescending
+                };
+
+                var result = await _patientService.GetPagedAsync(patientQuery);
 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -93,16 +103,34 @@ namespace LYBT.Desktop.Patients.Coordinators
 
                 if (result.IsSuccess && result.Data != null)
                 {
+                    // 转换 PatientDetailDto 到 PatientDto
+                    var patientDto = new PatientDto
+                    {
+                        Id = result.Data.Id,
+                        Name = result.Data.Name,
+                        Gender = result.Data.Gender,
+                        BirthDate = result.Data.DateOfBirth,
+                        IdNumber = result.Data.IdNumber,
+                        PhoneNumber = result.Data.PhoneNumber,
+                        Address = result.Data.Address,
+                        AllergyHistory = result.Data.AllergyHistory,
+                        Status = result.Data.Status,
+                        CreateTime = result.Data.CreateTime,
+                        UpdateTime = result.Data.UpdateTime
+                    };
+
                     // 更新缓存
-                    _cache[id] = result.Data;
-                    _logger.LogInformation("患者查询成功: {PatientName}", result.Data.Name);
+                    _cache[id] = patientDto;
+                    _logger.LogInformation("患者查询成功: {PatientName}", patientDto.Name);
+                    
+                    return ServiceResult<PatientDto>.Success(patientDto);
                 }
                 else
                 {
                     _logger.LogWarning("患者查询失败: {Error}", result.ErrorMessage);
                 }
 
-                return result;
+                return ServiceResult<PatientDto>.Failure(result.ErrorMessage ?? "获取患者信息失败");
             }
             catch (Exception ex)
             {
@@ -190,7 +218,7 @@ namespace LYBT.Desktop.Patients.Coordinators
                     return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
                 }
 
-                var result = await _patientService.UpdateAsync(updateDto);
+                var result = await _patientService.UpdateAsync(updateDto.Id, updateDto);
 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -239,13 +267,13 @@ namespace LYBT.Desktop.Patients.Coordinators
                     }
 
                     _logger.LogInformation("患者删除成功: {PatientId}", id);
+                    return ServiceResult.Success();
                 }
                 else
                 {
                     _logger.LogWarning("患者删除失败: {Error}", result.ErrorMessage);
+                    return ServiceResult.Failure(result.ErrorMessage ?? "删除患者失败");
                 }
-
-                return result;
             }
             catch (Exception ex)
             {

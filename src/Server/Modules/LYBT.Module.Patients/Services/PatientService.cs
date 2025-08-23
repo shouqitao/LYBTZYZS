@@ -183,21 +183,29 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 启用患者（实现Shared接口）
         /// </summary>
-        public async Task<ServiceResult<bool>> EnableAsync(Guid id)
+        public async Task<ServiceResult> EnableAsync(Guid id)
         {
-            return await ExecuteSafelyAsync(
+            var result = await ExecuteSafelyAsync(
                 async () => await _businessHelper.EnableAsync(id),
                 "启用患者", id);
+            
+            return result.IsSuccess 
+                ? ServiceResult.Success() 
+                : ServiceResult.Failure(result.ErrorMessage ?? "启用患者失败");
         }
 
         /// <summary>
         /// 禁用患者（实现Shared接口）
         /// </summary>
-        public async Task<ServiceResult<bool>> DisableAsync(Guid id)
+        public async Task<ServiceResult> DisableAsync(Guid id)
         {
-            return await ExecuteSafelyAsync(
+            var result = await ExecuteSafelyAsync(
                 async () => await _businessHelper.DisableAsync(id),
                 "禁用患者", id);
+            
+            return result.IsSuccess 
+                ? ServiceResult.Success() 
+                : ServiceResult.Failure(result.ErrorMessage ?? "禁用患者失败");
         }
 
         /// <summary>

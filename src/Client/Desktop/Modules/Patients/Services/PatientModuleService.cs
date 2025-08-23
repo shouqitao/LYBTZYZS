@@ -225,8 +225,18 @@ namespace LYBT.Desktop.Patients.Services
         {
             try
             {
+                // 转换为PatientPagedQueryDto
+                var patientQuery = new PatientPagedQueryDto
+                {
+                    Keyword = request.Keyword,
+                    PageIndex = request.PageIndex,
+                    PageSize = request.PageSize,
+                    SortField = request.SortField,
+                    IsDescending = request.IsDescending
+                };
+                
                 // 使用GetPagedAsync实现搜索功能
-                return await GetPagedAsync(request);
+                return await GetPagedAsync(patientQuery);
             }
             catch (Exception ex)
             {
@@ -243,7 +253,7 @@ namespace LYBT.Desktop.Patients.Services
                     return ServiceResult<IEnumerable<PatientDto>>.Success(new List<PatientDto>());
                 }
                 
-                var query = new PagedQueryBaseDto
+                var query = new PatientPagedQueryDto
                 {
                     PageIndex = 1,
                     PageSize = 50, // 限制搜索结果数量
@@ -359,51 +369,51 @@ namespace LYBT.Desktop.Patients.Services
         
         #region 状态管理
         
-        public async Task<ServiceResult<bool>> EnableAsync(Guid id)
+        public async Task<ServiceResult> EnableAsync(Guid id)
         {
             try
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult<bool>.Failure("患者ID不能为空");
+                    return ServiceResult.Failure("患者ID不能为空");
                 }
                 
                 // 调用API的启用接口
                 var apiResponse = await _apiService.ToggleStatusAsync(id);
                 if (!apiResponse.IsSuccessStatusCode)
                 {
-                    return ServiceResult<bool>.Failure("启用患者失败");
+                    return ServiceResult.Failure("启用患者失败");
                 }
                 
-                return ServiceResult<bool>.Success(true);
+                return ServiceResult.Success();
             }
             catch (Exception ex)
             {
-                return ServiceResult<bool>.Failure($"启用患者异常: {ex.Message}");
+                return ServiceResult.Failure($"启用患者异常: {ex.Message}");
             }
         }
         
-        public async Task<ServiceResult<bool>> DisableAsync(Guid id)
+        public async Task<ServiceResult> DisableAsync(Guid id)
         {
             try
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult<bool>.Failure("患者ID不能为空");
+                    return ServiceResult.Failure("患者ID不能为空");
                 }
                 
                 // 调用API的禁用接口
                 var apiResponse = await _apiService.ToggleStatusAsync(id);
                 if (!apiResponse.IsSuccessStatusCode)
                 {
-                    return ServiceResult<bool>.Failure("禁用患者失败");
+                    return ServiceResult.Failure("禁用患者失败");
                 }
                 
-                return ServiceResult<bool>.Success(true);
+                return ServiceResult.Success();
             }
             catch (Exception ex)
             {
-                return ServiceResult<bool>.Failure($"禁用患者异常: {ex.Message}");
+                return ServiceResult.Failure($"禁用患者异常: {ex.Message}");
             }
         }
         

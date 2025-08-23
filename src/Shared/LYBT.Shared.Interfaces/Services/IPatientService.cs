@@ -39,12 +39,12 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 启用患者
         /// </summary>
-        Task<ServiceResult<bool>> EnableAsync(Guid id);
+        Task<ServiceResult> EnableAsync(Guid id);
         
         /// <summary>
         /// 禁用患者
         /// </summary>
-        Task<ServiceResult<bool>> DisableAsync(Guid id);
+        Task<ServiceResult> DisableAsync(Guid id);
         
         /// <summary>
         /// 根据身份证号查找患者

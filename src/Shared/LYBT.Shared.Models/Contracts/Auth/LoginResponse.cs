@@ -18,5 +18,13 @@ namespace LYBT.Shared.Models.Contracts.Auth
         /// <summary>用户信息</summary>
         [DisplayName("用户信息")]
         public UserDto User { get; set; } = new();
+
+        /// <summary>刷新令牌</summary>
+        [DisplayName("刷新令牌")]
+        public string RefreshToken { get; set; } = string.Empty;
+
+        /// <summary>令牌过期时间</summary>
+        [DisplayName("过期时间")]
+        public DateTime ExpiresAt { get; set; }
     }
 }

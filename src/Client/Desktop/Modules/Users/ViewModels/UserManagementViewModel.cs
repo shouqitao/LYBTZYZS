@@ -210,7 +210,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 try
                 {
-                    var result = await _userService.ResetPasswordAsync(user.Id);
+                    var result = await _userService.ResetPasswordAsync(user.Id, "ChangeMe123");
                     
                     if (result.IsSuccess)
                     {
@@ -249,7 +249,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 try
                 {
-                    ServiceResult result;
+                    ServiceResult<bool> result;
                     if (isEnabled)
                     {
                         result = await _userService.DisableAsync(user.Id);

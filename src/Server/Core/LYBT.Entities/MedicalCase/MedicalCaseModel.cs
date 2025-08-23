@@ -59,10 +59,10 @@ public class MedicalCase
     [DisplayName("备注")]
     public string? Remark { get; set; }
 
-    // 导航属性 - 修复：一对多关系
-    /// <summary>看诊记录集合（导航属性）- 一个医疗案例可以有多次看诊</summary>
+    // 导航属性 - UltraThink Phase 7修复：1:1关系
+    /// <summary>看诊记录（导航属性）- 一个医疗案例对应一次看诊 (1:1关系)</summary>
     [DisplayName("看诊记录")]
-    public virtual ICollection<LYBT.Entities.Consultation.Consultation> Consultations { get; set; } = new List<LYBT.Entities.Consultation.Consultation>();
+    public virtual LYBT.Entities.Consultation.Consultation? Consultation { get; set; }
 
     /// <summary>处方信息（导航属性）</summary>
     [DisplayName("处方信息")]

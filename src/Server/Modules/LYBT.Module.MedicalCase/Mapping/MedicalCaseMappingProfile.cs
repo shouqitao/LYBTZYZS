@@ -20,18 +20,18 @@ namespace LYBT.Module.MedicalCase.Mapping
             // DTO -> Model - CaseStatus映射到Status，忽略计算属性和导航属性
             CreateMap<MedicalCaseCreateDto, LYBT.Entities.MedicalCase.MedicalCase>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Consultations, opt => opt.Ignore()) // 修复：使用Consultations集合
+                .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 修复：使用单个Consultation对象
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore());
 
             CreateMap<MedicalCaseUpdateDto, LYBT.Entities.MedicalCase.MedicalCase>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Consultations, opt => opt.Ignore()) // 修复：使用Consultations集合
+                .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 修复：使用单个Consultation对象
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<MedicalCaseDto, LYBT.Entities.MedicalCase.MedicalCase>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.CaseStatus))
-                .ForMember(dest => dest.Consultations, opt => opt.Ignore()) // 修复：使用Consultations集合
+                .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 修复：使用单个Consultation对象
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore());
         }
     }

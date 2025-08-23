@@ -91,7 +91,9 @@ namespace LYBT.Module.Auth.Services
                 var loginResponse = new LoginResponse
                 {
                     Token = jwtToken, // 使用真正的JWT Token
-                    User = userDto // UltraThink v2.0简化：直接使用UserDto，移除BaseUser转换
+                    User = userDto, // UltraThink v2.0简化：直接使用UserDto，移除BaseUser转换
+                    RefreshToken = Guid.NewGuid().ToString(), // Phase 7: 新增刷新令牌
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(request.RememberMe ? 43200 : 480) // Phase 7: 新增过期时间
                 };
 
                 return ServiceResult<LoginResponse>.Success(loginResponse);

@@ -129,8 +129,16 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         protected override async Task<ServiceResult<PagedResult<PatientDto>>> LoadDataAsync(PagedQueryBaseDto request)
         {
-            // UltraThink v2.0: 直接使用PagedQueryBaseDto进行患者查询
-            return await _patientService.GetPagedAsync(request);
+            // UltraThink v2.0: 转换为PatientPagedQueryDto进行患者查询
+            var patientQuery = new PatientPagedQueryDto
+            {
+                Keyword = request.Keyword,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
+                SortField = request.SortField,
+                IsDescending = request.IsDescending
+            };
+            return await _patientService.GetPagedAsync(patientQuery);
         }
 
         // UltraThink v2.0: 删除复杂的ViewModel转换和选择状态管理

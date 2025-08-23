@@ -220,7 +220,7 @@ namespace LYBT.Desktop.Users.ViewModels
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim()
                     };
 
-                    var response = await _userService.UpdateAsync(updateRequest);
+                    var response = await _userService.UpdateAsync(_originalUser.Id, updateRequest);
                     success = response.IsSuccess;
 
                     if (!success)

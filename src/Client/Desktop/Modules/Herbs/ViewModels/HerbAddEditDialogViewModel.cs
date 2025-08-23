@@ -218,7 +218,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                         Remark = Remark?.Trim()
                     };
 
-                    var response = await _herbApiService.UpdateAsync(updateDto);
+                    var response = await _herbApiService.UpdateAsync(_originalHerb.Id, updateDto);
                     result = response.IsSuccess;
                     
                     if (!result)

@@ -238,10 +238,10 @@ namespace LYBT.Infrastructure.Data
             // 明确配置外键属性和导航属性关系
             entity.Property(c => c.MedicalCaseId).HasColumnName("MedicalCaseId").IsRequired();
             
-            // 配置与MedicalCase的一对多关系 - 明确指定导航属性
+            // UltraThink Phase 7: 配置与MedicalCase的一对一关系
             entity.HasOne(c => c.MedicalCase)
-                  .WithMany(m => m.Consultations)
-                  .HasForeignKey(c => c.MedicalCaseId)
+                  .WithOne(m => m.Consultation)
+                  .HasForeignKey<Consultation>(c => c.MedicalCaseId)
                   .IsRequired()
                   .OnDelete(DeleteBehavior.Restrict); // 防止级联删除
 

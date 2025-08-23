@@ -96,6 +96,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
     [DisplayName("身份证号")]
     public string? IDNumber { get; set; }
 
+    /// <summary>身份证号（兼容性别名）</summary>
+    [DisplayName("证件号")]
+    public string? IdNumber { get => IDNumber; set => IDNumber = value; }
+
     /// <summary>手机号</summary>
     [StringLength(20, ErrorMessage = "手机号长度不能超过20个字符")]
     [DisplayName("手机号")]

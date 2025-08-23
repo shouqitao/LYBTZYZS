@@ -39,9 +39,6 @@ namespace LYBT.Desktop.Shell
             // 使用扩展方法统一注册所有服务
             containerRegistry.RegisterAllServices();
             
-            // 注册工作台路由器
-            containerRegistry.RegisterSingleton<IWorkbenchRouter, WorkbenchRouter>();
-            
             // 显式配置ViewModelLocator映射 - 解决ViewModelLocator.AutoWireViewModel失败的问题
             ConfigureViewModelLocator();
         }

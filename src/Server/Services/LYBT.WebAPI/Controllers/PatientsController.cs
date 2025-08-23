@@ -185,7 +185,7 @@ namespace LYBT.WebAPI.Controllers
                 if (validationResult != null) return validationResult;
 
                 var result = await _service.EnableAsync(id);
-                if (!result.IsSuccess || !result.Data)
+                if (!result.IsSuccess)
                 {
                     return BusinessFail(result.ErrorMessage ?? "启用患者失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
@@ -211,7 +211,7 @@ namespace LYBT.WebAPI.Controllers
                 if (validationResult != null) return validationResult;
 
                 var result = await _service.DisableAsync(id);
-                if (!result.IsSuccess || !result.Data)
+                if (!result.IsSuccess)
                 {
                     return BusinessFail(result.ErrorMessage ?? "禁用患者失败", ApiErrorCodes.DATA_UPDATE_FAILED);
                 }
