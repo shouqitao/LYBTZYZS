@@ -60,11 +60,11 @@ namespace LYBT.Desktop.Services
             {
                 _logger?.LogInformation("开始登录: {Username}", request.Username);
 
-                var response = await _authApi.LoginAsync(request);
+                var apiResponse = await _authApi.LoginAsync(request);
                 
-                if (response.IsSuccessStatusCode && response.Content != null)
+                if (apiResponse.Success && apiResponse.Data != null)
                 {
-                    var loginResponse = response.Content;
+                    var loginResponse = apiResponse.Data;
                     
                     // 更新认证状态
                     _isAuthenticated = true;
@@ -75,7 +75,7 @@ namespace LYBT.Desktop.Services
                     return ServiceResult<LoginResponse>.Success(loginResponse);
                 }
 
-                var error = response.Error?.Content ?? "登录失败";
+                var error = apiResponse.Message ?? "登录失败";
                 return ServiceResult<LoginResponse>.Failure(error);
             }
             catch (Exception ex)
@@ -149,7 +149,7 @@ namespace LYBT.Desktop.Services
             try
             {
                 var response = await _authApi.HealthCheckAsync();
-                return response.IsSuccessStatusCode;
+                return !string.IsNullOrEmpty(response);
             }
             catch
             {

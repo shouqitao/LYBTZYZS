@@ -308,15 +308,15 @@ namespace LYBT.Desktop.Services
         {
             try
             {
-                var response = await _authApiService.LoginAsync(request);
+                var apiResponse = await _authApiService.LoginAsync(request);
                 
-                // 处理Refit包装的响应
-                if (response.IsSuccessStatusCode && response.Content != null)
+                // 处理API响应格式
+                if (apiResponse.Success && apiResponse.Data != null)
                 {
-                    return ServiceResult<dynamic>.Success(response.Content);
+                    return ServiceResult<dynamic>.Success(apiResponse.Data);
                 }
                 
-                var errorMessage = response.Error?.Content ?? "登录失败";
+                var errorMessage = apiResponse.Message ?? "登录失败";
                                   
                 return ServiceResult<dynamic>.Failure(errorMessage);
             }
