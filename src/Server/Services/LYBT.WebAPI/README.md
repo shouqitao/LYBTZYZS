@@ -1,48 +1,126 @@
 # LYBT.WebAPI
 
-LYBT.WebAPI 是一个 ASP.NET Core API，集成系统的业务模块并通过 REST 控制器对外提供接口。
+> **凌隐宝堂中医诊所管理系统 - Web API 服务**  
+> 基于 ASP.NET Core 8.0 的企业级中医诊所管理 REST API
 
-## 项目概述
-该应用注册位于 `LYBT.Module.*` 下的模块控制器，提供统一的 API 接口。API 使用 Entity Framework Core 进行数据访问，通过依赖注入管理服务，并使用 JWT 进行身份验证。
+## 🎯 项目概述
 
-## 入门指南
-1. 还原 NuGet 包：
-   ```bash
-   dotnet restore
-   ```
-2. 将 `appsettings.example.json` 复制为 `appsettings.json` 并更新数据库连接字符串等值。
-3. 运行 API：
-   ```bash
-   dotnet run --project LYBT.WebAPI
-   ```
+LYBT.WebAPI 是系统的核心后端服务，集成8个业务模块并通过统一的 RESTful API 对外提供服务。采用UltraThink三层架构，支持中医诊所完整诊疗流程。
 
-## 默认密码与认证
-若创建用户时未指定密码，将使用 `appsettings.json` 中 `UserDefaults:DefaultUserPassword` 的值。启用 JWT 身份验证；通过 `/api/Auth/login` 获取令牌，并在后续请求的 `Authorization` 头中加入 `Bearer <token>`。
-重置密码操作需要在请求体中提供新密码。
+## 🏗️ 技术架构
 
-## 控制器
-`LYBT.WebAPI/Controllers` 下的控制器覆盖 Users、Patients、Registration、Billing、Prescriptions 等模块。更多各模块功能请参阅仓库 [README](../README.md)。
+- **框架**: ASP.NET Core 8.0 Web API
+- **数据访问**: Entity Framework Core 8.0.17 + SQL Server  
+- **认证授权**: JWT Bearer Token + RBAC权限控制
+- **依赖注入**: Microsoft.Extensions.DependencyInjection
+- **API文档**: Swagger/OpenAPI 自动生成
+- **缓存**: IMemoryCache 智能缓存系统
 
-## 已实现功能
-- **Auth**：登录、登出、修改管理员密码。
-- **Users**：用户查询、添加/修改、启用/禁用、批量操作、重置密码、角色获取等。
-- **Patients**：病人增删改查、批量处理、医生分配、导入导出、历史记录查询。
-- **Billing**：费用结算列表、详情、新增/编辑/删除，标记支付、完成、退款和取消等。
-- **Pharmacy**：待抓药列表、药房单增删改查、标记处方已抓药。
-- **Queueing**：排队列表和详情、新增/编辑/删除、取消排队。
-- **DiagnosisTreatment**：诊疗记录增删改查。
-- **Doctors/Registration/Prescriptions/Herbs/FormulaTemplates/Records/Settings/Sync** 等模块亦提供各自的 CRUD 与状态处理接口。
+## 🧱 集成业务模块
 
-## Running Tests / 运行测试
+| 模块 | 控制器 | 功能描述 |
+|------|--------|----------|
+| **Auth** | AuthController | JWT认证、登录登出、会话管理 |
+| **Users** | UsersController | 用户管理、角色分配、密码管理 |
+| **Patients** | PatientsController | 患者档案、病历管理 |
+| **MedicalCase** | MedicalCaseController | 医疗案例、诊疗流程管理 |
+| **Consultation** | ConsultationController | 中医四诊、辨证论治 |
+| **Prescriptions** | PrescriptionsController | 处方管理、智能配伍 |
+| **Herbs** | HerbsController | 中药材管理 |
+| **Formula** | FormulasController | 验方模板管理 |
 
-Execute this project's unit tests with:
+## 🚀 快速开始
 
+### 环境要求
+- .NET 8.0 SDK
+- SQL Server 2019+
+- Visual Studio 2022 或 VS Code
+
+### 启动步骤
 ```bash
-dotnet test
+# 1. 还原依赖
+dotnet restore
+
+# 2. 更新数据库
+dotnet ef database update --project ../../Core/LYBT.Infrastructure
+
+# 3. 启动服务
+dotnet run --urls "https://localhost:7001"
 ```
 
-使用以下命令运行本项目的单元测试：
+### 访问API
+- **API地址**: https://localhost:7001
+- **Swagger文档**: https://localhost:7001/swagger  
+- **默认登录**: sysadmin / Admin@123456
+
+## 🔐 认证授权
+
+### JWT配置
+- **Token有效期**: 8小时 (Remember Me: 30天)
+- **算法**: HS256
+- **角色**: Admin, Doctor
+
+### 使用方式
+```bash
+# 1. 获取Token
+POST /api/v1/auth/login
+{
+  "username": "sysadmin",
+  "password": "Admin@123456"
+}
+
+# 2. 使用Token
+Authorization: Bearer <your-jwt-token>
+```
+
+## 📊 健康检查
+
+系统提供8个健康检查端点，监控各项系统指标：
+
+- `/health/database` - 数据库连接状态
+- `/health/cache` - 缓存系统状态  
+- `/health/memory` - 内存使用情况
+- `/health/disk` - 磁盘空间状态
+
+## 🧪 测试
 
 ```bash
+# 运行单元测试
 dotnet test
+
+# 运行API集成测试
+cd ../../../tests/api
+python api_test_automation.py
 ```
+
+## ⚙️ 配置说明
+
+### 主要配置文件
+- `appsettings.json` - 基础配置
+- `appsettings.Development.json` - 开发环境配置
+- `appsettings.Production.json` - 生产环境配置
+
+### 关键配置项
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=True;"
+  },
+  "JwtSettings": {
+    "SecretKey": "your-secret-key",
+    "Issuer": "LYBT.WebAPI",
+    "Audience": "LYBT.Client"
+  }
+}
+```
+
+## 📈 性能优化
+
+- **连接池**: Max=20, Min=2 (适合小型诊所)
+- **智能缓存**: 常用数据10分钟内存缓存
+- **批量操作**: EF Core ExecuteUpdate优化
+- **异步优先**: 全部API使用async/await模式
+
+---
+
+> 📌 **更多信息**: 参考项目根目录 [CLAUDE.md](../../../../CLAUDE.md) 了解完整开发规范

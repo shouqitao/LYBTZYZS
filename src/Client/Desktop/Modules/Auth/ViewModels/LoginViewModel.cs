@@ -15,14 +15,14 @@ namespace LYBT.Desktop.Auth.ViewModels
 {
     /// <summary>
     /// 登录窗口视图模型 - UltraThink架构标准版本
-    /// 完全使用AuthModuleService实现模块自包含，符合四层架构规范
+    /// 完全使用AuthModule实现模块自包含，符合四层架构规范
     /// Layer 4: Desktop层，使用DTO模型，通过模块化服务与底层交互
     /// </summary>
     public class LoginViewModel : ServiceViewModel
     {
         #region 私有字段
 
-        private readonly AuthModuleService _authModuleService;
+        private readonly AuthModule _authModule;
         private readonly IMapper _mapper;
         private LoginRequest _loginRequest = new();
         private string _apiStatus = "正在检测API连接...";
@@ -108,11 +108,11 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         public LoginViewModel(
             IEventAggregator eventAggregator,
-            AuthModuleService authModuleService,
+            AuthModule authModule,
             IMapper mapper)
             : base(eventAggregator)
         {
-            _authModuleService = authModuleService ?? throw new ArgumentNullException(nameof(authModuleService));
+            _authModule = authModule ?? throw new ArgumentNullException(nameof(authModule));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化登录信息
@@ -125,8 +125,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             EventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
 
             // 订阅模块服务事件
-            _authModuleService.AuthStatusChanged += OnAuthStatusChanged;
-            _authModuleService.ApiConnectionChanged += OnApiConnectionChanged;
+            _authModule.AuthStatusChanged += OnAuthStatusChanged;
+            _authModule.ApiConnectionChanged += OnApiConnectionChanged;
 
             // 立即加载保存的凭据
             LoadSavedCredentials();
@@ -159,7 +159,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 ClearError();
 
                 // UltraThink四层架构：使用模块化服务执行登录
-                var result = await _authModuleService.LoginAsync(LoginRequest);
+                var result = await _authModule.LoginAsync(LoginRequest);
 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -312,7 +312,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             try
             {
                 // UltraThink四层架构：使用模块化服务加载凭据
-                var result = _authModuleService.LoadSavedCredentials();
+                var result = _authModule.LoadSavedCredentials();
                 if (result.IsSuccess && result.Data != null)
                 {
                     var savedRequest = result.Data;
@@ -350,10 +350,10 @@ namespace LYBT.Desktop.Auth.ViewModels
         public new void Dispose()
         {
             // 取消事件订阅
-            if (_authModuleService != null)
+            if (_authModule != null)
             {
-                _authModuleService.AuthStatusChanged -= OnAuthStatusChanged;
-                _authModuleService.ApiConnectionChanged -= OnApiConnectionChanged;
+                _authModule.AuthStatusChanged -= OnAuthStatusChanged;
+                _authModule.ApiConnectionChanged -= OnApiConnectionChanged;
             }
 
             base.Dispose();

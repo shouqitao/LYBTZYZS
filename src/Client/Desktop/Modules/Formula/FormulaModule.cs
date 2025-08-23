@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Formula
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块化架构：注册模块核心业务服务
-            containerRegistry.RegisterSingleton<FormulaModuleService>();
+            containerRegistry.RegisterSingleton<FormulaModule>();
             
             // UltraThink四层架构：注册标准ViewModel
             containerRegistry.RegisterForNavigation<FormulaManagementView, FormulaManagementViewModel>();

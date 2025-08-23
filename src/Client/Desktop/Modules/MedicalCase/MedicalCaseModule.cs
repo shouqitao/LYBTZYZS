@@ -19,7 +19,7 @@ namespace LYBT.Desktop.MedicalCase
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块化架构：注册模块业务服务
-            containerRegistry.RegisterSingleton<MedicalCaseModuleService>();
+            containerRegistry.RegisterSingleton<MedicalCaseModule>();
             
             // UltraThink四层架构：注册标准ViewModel
             containerRegistry.RegisterForNavigation<MedicalCaseListView, MedicalCaseListViewModel>();

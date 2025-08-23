@@ -34,7 +34,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     {
         #region Fields
 
-        private readonly MedicalCaseModuleService _medicalCaseService;
+        private readonly IMedicalCaseService _medicalCaseService;
         private readonly ICustomDialogService _dialogService;
         private readonly IRegionManager _regionManager;
         private readonly IMapper _mapper;
@@ -92,7 +92,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region Constructor
 
         public MedicalCaseListViewModel(
-            MedicalCaseModuleService medicalCaseService,
+            IMedicalCaseService medicalCaseService,
             ICustomDialogService dialogService,
             IRegionManager regionManager,
             IMapper mapper,

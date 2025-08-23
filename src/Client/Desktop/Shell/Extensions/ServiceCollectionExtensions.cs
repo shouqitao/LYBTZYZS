@@ -46,8 +46,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterBusinessServices(containerRegistry);
             RegisterDialogs(containerRegistry);
             RegisterPerformanceServices(containerRegistry);
-            RegisterViewModels(containerRegistry);
-            RegisterViews(containerRegistry);
+            // ViewModels和Views通过Prism的ViewModelLocator自动解析，无需手动注册
         }
 
         /// <summary>
@@ -105,14 +104,10 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
-            // 注册认证API - 使用Refit生成的客户端
-            RegisterBasicApiService<LYBT.Shared.Interfaces.Api.IAuthApi>(containerRegistry);
-            
-            // 注册用户管理API - 支持UserModuleService
-            RegisterBasicApiService<IUserApi>(containerRegistry);
-            
-            // 注册患者管理API - 支持PatientModuleService
-            RegisterBasicApiService<IPatientApi>(containerRegistry);
+            // 注册Refit API客户端
+            RegisterApiService<LYBT.Shared.Interfaces.Api.IAuthApi>(containerRegistry);
+            RegisterApiService<IUserApi>(containerRegistry);
+            RegisterApiService<IPatientApi>(containerRegistry);
             
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IApiService, LYBT.Desktop.Services.ApiService>();
@@ -135,26 +130,18 @@ namespace LYBT.Desktop.Shell.Extensions
             // 权限服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPermissionService, PermissionService>();
             
-            // 统一会话服务 - UserSessionManager同时实现IUserSessionManager和ITokenManager
+            // 会话管理服务 - UserSessionManager实现多个接口
             containerRegistry.RegisterSingleton<UserSessionManager>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager>(container =>
-                container.Resolve<UserSessionManager>());
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ITokenManager>(container =>
-                container.Resolve<UserSessionManager>());
+            containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager>(container => container.Resolve<UserSessionManager>());
+            containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.ITokenManager>(container => container.Resolve<UserSessionManager>());
             
-            // SessionManager和NotificationService
+            // 其他核心服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ISessionManager, 
                 LYBT.Desktop.Core.Services.SessionManager>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.INotificationService, 
                 LYBT.Desktop.Core.Services.NotificationService>();
-
-            // 认证服务 - 使用简化版本
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService, SimplifiedAuthenticationService>();
-
-            // 错误处理服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService, ErrorHandlingService>();
-
-            // 工作台路由服务 - MainWindowViewModel需要
             containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
         }
 
@@ -166,38 +153,14 @@ namespace LYBT.Desktop.Shell.Extensions
             // API测试服务
             containerRegistry.RegisterSingleton<ApiTestService>();
             
-            // 注册真实的IUserService实现 - UserModuleService
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService, LYBT.Desktop.Users.Services.UserModuleService>();
-            
-            // 注册真实的IPatientService实现 - PatientModuleService
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPatientService, LYBT.Desktop.Patients.Services.PatientModuleService>();
-            
-            // 注册真实的IPrescriptionService实现 - PrescriptionsModuleService
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPrescriptionService, LYBT.Desktop.Prescriptions.Services.PrescriptionsModuleService>();
-            
-            // 注册真实的IHerbService实现 - HerbModuleService
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IHerbService, LYBT.Desktop.Herbs.Services.HerbModuleService>();
-            
-            // 注册真实的IFormulaService实现 - FormulaModuleService
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IFormulaService, LYBT.Desktop.Formula.Services.FormulaModuleService>();
-            
-            // 注册真实的IConsultationService实现 - ConsultationService
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IConsultationService, LYBT.Desktop.Consultation.Services.ConsultationService>();
-            
-            // 注册真实的IMedicalCaseService实现 - MedicalCaseModuleService
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IMedicalCaseService, LYBT.Desktop.MedicalCase.Services.MedicalCaseModuleService>();
-                
-            // 注册模块服务到对应的业务接口（适配器模式）
-            RegisterModuleServiceAdapters(containerRegistry);
-        }
-        
-        /// <summary>
-        /// 注册模块服务适配器 - 将ModuleService适配到业务接口
-        /// </summary>
-        private static void RegisterModuleServiceAdapters(IContainerRegistry containerRegistry)
-        {
-            // 这里可以后续添加具体的ModuleService到接口的适配注册
-            // 目前先让应用正常启动，后续逐步完善
+            // 模块业务服务注册 - 简化版
+            containerRegistry.RegisterSingleton<IUserService, LYBT.Desktop.Users.Services.UserModule>();
+            containerRegistry.RegisterSingleton<IPatientService, LYBT.Desktop.Patients.Services.PatientModule>();
+            containerRegistry.RegisterSingleton<IPrescriptionService, LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
+            containerRegistry.RegisterSingleton<IHerbService, LYBT.Desktop.Herbs.Services.HerbModule>();
+            containerRegistry.RegisterSingleton<IFormulaService, LYBT.Desktop.Formula.Services.FormulaModule>();
+            containerRegistry.RegisterSingleton<IConsultationService, LYBT.Desktop.Consultation.Services.ConsultationService>();
+            containerRegistry.RegisterSingleton<IMedicalCaseService, LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
         }
 
         /// <summary>
@@ -220,40 +183,13 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Core.Services.Performance.UIPerformanceOptimizer>();
         }
 
-        /// <summary>
-        /// 注册ViewModels
-        /// </summary>
-        private static void RegisterViewModels(IContainerRegistry containerRegistry)
-        {
-            // ViewModels通过Prism自动解析
-        }
-
-        /// <summary>
-        /// 注册Views
-        /// </summary>
-        private static void RegisterViews(IContainerRegistry containerRegistry)
-        {
-            // Views通过Prism的ViewModelLocator自动注册
-        }
 
         #region 辅助方法
 
         /// <summary>
-        /// 注册基础API服务（无认证）
+        /// 注册API服务
         /// </summary>
-        private static void RegisterBasicApiService<T>(IContainerRegistry containerRegistry) where T : class
-        {
-            containerRegistry.RegisterSingleton<T>(() =>
-            {
-                var httpClient = HttpClientFactory.CreateBasicClient(ApiConfiguration.BaseUrl);
-                return RestService.For<T>(httpClient);
-            });
-        }
-
-        /// <summary>
-        /// 注册需要认证的API服务
-        /// </summary>
-        private static void RegisterAuthenticatedApiService<T>(IContainerRegistry containerRegistry) where T : class
+        private static void RegisterApiService<T>(IContainerRegistry containerRegistry) where T : class
         {
             containerRegistry.RegisterSingleton<T>(() =>
             {

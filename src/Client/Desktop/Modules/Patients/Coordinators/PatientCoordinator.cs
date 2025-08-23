@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Patients.Coordinators
     {
         #region Fields
 
-        private readonly PatientModuleService _patientService;
+        private readonly PatientModule _patientService;
         private readonly ILogger<PatientCoordinator> _logger;
         private readonly Dictionary<Guid, PatientDto> _cache = new();
 
@@ -35,7 +35,7 @@ namespace LYBT.Desktop.Patients.Coordinators
 
         #region Constructor
 
-        public PatientCoordinator(PatientModuleService patientService, ILogger<PatientCoordinator> logger)
+        public PatientCoordinator(PatientModule patientService, ILogger<PatientCoordinator> logger)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

@@ -407,132 +407,146 @@ namespace LYBT.Desktop.Core.Controls
 
         #region 命令实现
 
-        private async void ExecuteSearch()
+        private void ExecuteSearch()
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // Fire-and-forget pattern with proper async handling
+            _ = ExecuteSearchAsync();
+        }
+        
+        private async Task ExecuteSearchAsync()
+        {
+            try
             {
-                try
-                {
-                    await LoadDataAsync(1);
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "搜索操作失败");
-                    // 可以在这里添加用户通知逻辑
-                }
-            });
+                await LoadDataAsync(1);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "搜索操作失败");
+                // 可以在这里添加用户通知逻辑
+            }
         }
 
-        private async void ExecuteRefresh()
+        private void ExecuteRefresh()
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // Fire-and-forget pattern with proper async handling
+            _ = ExecuteRefreshAsync();
+        }
+        
+        private async Task ExecuteRefreshAsync()
+        {
+            try
             {
-                try
-                {
-                    await LoadDataAsync(CurrentPage);
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "刷新操作失败");
-                    // 可以在这里添加用户通知逻辑
-                }
-            });
+                await LoadDataAsync(CurrentPage);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "刷新操作失败");
+                // 可以在这里添加用户通知逻辑
+            }
         }
 
-        private async void ExecuteFirstPage()
+        private void ExecuteFirstPage()
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // Fire-and-forget pattern with proper async handling
+            _ = ExecuteFirstPageAsync();
+        }
+        
+        private async Task ExecuteFirstPageAsync()
+        {
+            try
             {
-                try
-                {
-                    await LoadDataAsync(1);
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "首页导航失败");
-                    // 可以在这里添加用户通知逻辑
-                }
-            });
+                await LoadDataAsync(1);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "首页导航失败");
+                // 可以在这里添加用户通知逻辑
+            }
         }
 
-        private async void ExecutePreviousPage()
+        private void ExecutePreviousPage()
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // Fire-and-forget pattern with proper async handling
+            _ = ExecutePreviousPageAsync();
+        }
+        
+        private async Task ExecutePreviousPageAsync()
+        {
+            try
             {
-                try
+                if (CanGoToPreviousPage)
                 {
-                    if (CanGoToPreviousPage)
-                    {
-                        await LoadDataAsync(CurrentPage - 1);
-                    }
+                    await LoadDataAsync(CurrentPage - 1);
                 }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "上一页导航失败");
-                    // 可以在这里添加用户通知逻辑
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "上一页导航失败");
+                // 可以在这里添加用户通知逻辑
+            }
         }
 
-        private async void ExecuteNextPage()
+        private void ExecuteNextPage()
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // Fire-and-forget pattern with proper async handling
+            _ = ExecuteNextPageAsync();
+        }
+        
+        private async Task ExecuteNextPageAsync()
+        {
+            try
             {
-                try
+                if (CanGoToNextPage)
                 {
-                    if (CanGoToNextPage)
-                    {
-                        await LoadDataAsync(CurrentPage + 1);
-                    }
+                    await LoadDataAsync(CurrentPage + 1);
                 }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "下一页导航失败");
-                    // 可以在这里添加用户通知逻辑
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "下一页导航失败");
+                // 可以在这里添加用户通知逻辑
+            }
         }
 
-        private async void ExecuteLastPage()
+        private void ExecuteLastPage()
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // Fire-and-forget pattern with proper async handling
+            _ = ExecuteLastPageAsync();
+        }
+        
+        private async Task ExecuteLastPageAsync()
+        {
+            try
             {
-                try
-                {
-                    await LoadDataAsync(TotalPages);
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "末页导航失败");
-                    // 可以在这里添加用户通知逻辑
-                }
-            });
+                await LoadDataAsync(TotalPages);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "末页导航失败");
+                // 可以在这里添加用户通知逻辑
+            }
         }
 
-        private async void ExecuteGoToPage(int pageNumber)
+        private void ExecuteGoToPage(int pageNumber)
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // Fire-and-forget pattern with proper async handling
+            _ = ExecuteGoToPageAsync(pageNumber);
+        }
+        
+        private async Task ExecuteGoToPageAsync(int pageNumber)
+        {
+            try
             {
-                try
+                if (pageNumber >= 1 && pageNumber <= TotalPages)
                 {
-                    if (pageNumber >= 1 && pageNumber <= TotalPages)
-                    {
-                        await LoadDataAsync(pageNumber);
-                    }
+                    await LoadDataAsync(pageNumber);
                 }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "页面导航失败，目标页码: {PageNumber}", pageNumber);
-                    // 可以在这里添加用户通知逻辑
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "页面导航失败，目标页码: {PageNumber}", pageNumber);
+                // 可以在这里添加用户通知逻辑
+            }
         }
 
         #endregion

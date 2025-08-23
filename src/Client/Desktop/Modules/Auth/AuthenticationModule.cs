@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Auth
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块化架构：注册模块业务服务
-            containerRegistry.RegisterSingleton<AuthModuleService>();
+            containerRegistry.RegisterSingleton<AuthModule>();
             
             // 注册视图模型
             containerRegistry.Register<LoginViewModel>();

@@ -703,33 +703,41 @@ namespace LYBT.Infrastructure.Performance.Async
         /// <summary>
         /// 清理定时器回调
         /// </summary>
-        private async void CleanupCallback(object? state)
+        private void CleanupCallback(object? state)
         {
-            try
+            // Fire-and-forget pattern with proper exception handling
+            _ = Task.Run(async () =>
             {
-                await CleanupCompletedTasksAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "定时清理任务异常");
-            }
+                try
+                {
+                    await CleanupCompletedTasksAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "定时清理任务异常");
+                }
+            });
         }
 
         /// <summary>
         /// 统计定时器回调
         /// </summary>
-        private async void StatisticsCallback(object? state)
+        private void StatisticsCallback(object? state)
         {
-            try
+            // Fire-and-forget pattern with proper exception handling
+            _ = Task.Run(async () =>
             {
-                var stats = await GetStatisticsAsync();
-                _logger.LogDebug("处理器统计: 总任务={Total}, 完成={Completed}, 失败={Failed}, 运行中={Running}, 排队={Queued}", 
-                    stats.TotalTasks, stats.CompletedTasks, stats.FailedTasks, stats.RunningTasks, stats.QueuedTasks);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "统计信息收集异常");
-            }
+                try
+                {
+                    var stats = await GetStatisticsAsync();
+                    _logger.LogDebug("处理器统计: 总任务={Total}, 完成={Completed}, 失败={Failed}, 运行中={Running}, 排队={Queued}", 
+                        stats.TotalTasks, stats.CompletedTasks, stats.FailedTasks, stats.RunningTasks, stats.QueuedTasks);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "统计信息收集异常");
+                }
+            });
         }
 
         #endregion

@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.Api
         /// <summary>
         /// 分页查询医疗案例
         /// </summary>
-        [Get("/api/v1/MedicalCase")]
+        [Get("/api/v1/medicalcase")]
         Task<Refit.ApiResponse<PagedData<MedicalCaseDto>>> GetPagedAsync(
             [Query] int pageIndex = 1,
             [Query] int pageSize = 20);
@@ -25,43 +25,43 @@ namespace LYBT.Desktop.Modules.MedicalCase.Api
         /// <summary>
         /// 根据ID获取医疗案例详情
         /// </summary>
-        [Get("/api/v1/MedicalCase/{id}")]
+        [Get("/api/v1/medicalcase/{id}")]
         Task<Refit.ApiResponse<MedicalCaseDetailDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建医疗案例
         /// </summary>
-        [Post("/api/v1/MedicalCase")]
+        [Post("/api/v1/medicalcase")]
         Task<Refit.ApiResponse<MedicalCaseDto>> CreateAsync([Body] MedicalCaseCreateDto createDto);
 
         /// <summary>
         /// 更新医疗案例
         /// </summary>
-        [Put("/api/v1/MedicalCase/{id}")]
+        [Put("/api/v1/medicalcase/{id}")]
         Task<Refit.ApiResponse<bool>> UpdateAsync(Guid id, [Body] MedicalCaseEditDto editDto);
 
         /// <summary>
         /// 获取患者的医疗案例列表
         /// </summary>
-        [Get("/api/v1/MedicalCase/patient/{patientId}")]
+        [Get("/api/v1/medicalcase/patient/{patientId}")]
         Task<Refit.ApiResponse<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId);
 
         /// <summary>
         /// 获取今日医疗案例列表
         /// </summary>
-        [Get("/api/v1/MedicalCase/user/{userId}/today")]
+        [Get("/api/v1/medicalcase/user/{userId}/today")]
         Task<Refit.ApiResponse<List<MedicalCaseDto>>> GetTodayByUserIdAsync(Guid userId);
 
         /// <summary>
         /// 更新医疗案例状态
         /// </summary>
-        [Put("/api/v1/MedicalCase/{id}/status")]
+        [Put("/api/v1/medicalcase/{id}/status")]
         Task<Refit.ApiResponse<bool>> UpdateStatusAsync(Guid id, [Body] MedicalCaseStatus status);
 
         /// <summary>
         /// 删除医疗案例（软删除）
         /// </summary>
-        [Delete("/api/v1/MedicalCase/{id}")]
+        [Delete("/api/v1/medicalcase/{id}")]
         Task<Refit.ApiResponse<bool>> DeleteAsync(Guid id);
     }
 }

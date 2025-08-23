@@ -1,86 +1,124 @@
-# 凌隐宝堂中医诊所WPF客户端
+# LYBT.Desktop
 
-## 项目说明
+> **凌隐宝堂中医诊所 - WPF桌面客户端**  
+> 基于 .NET 8.0 的现代化中医诊所管理桌面应用
 
-- **项目名称**: 凌隐宝堂中医诊所管理系统WPF客户端
-- **项目简称**: LYBT.WPF.Client
-- **目标框架**: .NET 8.0 Windows
-- **UI框架**: WPF + Prism 8.1+
-- **架构模式**: MVVM + 模块化
+## 🎯 项目概述
 
-## 项目结构
+- **项目名称**: LYBT.Desktop (凌隐宝堂中医诊所桌面客户端)
+- **目标框架**: .NET 8.0 Windows  
+- **UI框架**: WPF + Prism.DryIoc 9.0.537
+- **架构模式**: UltraThink三层MVVM + 模块化
+- **通信方式**: Refit类型安全REST客户端
 
-### 核心项目
+## 🏗️ 项目架构
 
-- **LYBT.WPF.Client.Shell**: 主壳程序，负责应用程序启动和模块加载
-- **LYBT.WPF.Client.Core**: 核心基础设施，包含模型、服务接口、常量等
-- **LYBT.WPF.Client.Services**: 服务层，包含业务逻辑和API调用
-- **LYBT.WPF.Client.Infrastructure**: 基础设施，包含通用控件、转换器、样式等
+### 核心基础设施
+- **Shell**: 应用程序启动壳和模块加载容器
+- **Core**: 核心基础设施 (接口、服务、常量)
+- **Services**: 统一API服务层和业务逻辑
+- **Infrastructure**: 通用控件、转换器、样式资源
 
-### 业务模块
+### 8个业务模块
+| 模块 | 功能描述 | 状态 |
+|------|----------|------|
+| **Auth** | 身份认证、登录管理 | ✅ 完成 |
+| **Users** | 用户管理、角色分配 | ✅ 完成 |
+| **Patients** | 患者档案、病历管理 | ✅ 完成 |
+| **MedicalCase** | 医疗案例、诊疗流程 | ✅ 完成 |
+| **Consultation** | 中医四诊、辨证论治 | ✅ 完成 |
+| **Prescriptions** | 处方管理、智能配伍 | ✅ 完成 |
+| **Herbs** | 中药材信息管理 | ✅ 完成 |
+| **Formula** | 验方模板管理 | ✅ 完成 |
 
-- **Authentication**: 认证模块（登录、密码管理等）
-- **SystemManagement**: 系统管理模块（超级管理员/管理员功能）
-- **FrontDesk**: 前台模块（挂号、排队等）
-- **Doctor**: 医生模块（诊疗、开方等）
-- **Cashier**: 收银员模块（收费、结算等）
-- **Pharmacist**: 药剂师模块（配药、发药等）
-- **Common**: 通用模块（公共对话框、控件等）
+## 🛠️ 技术栈
 
-## 技术栈
+### 核心技术
+- **.NET 8.0**: 统一开发平台
+- **WPF**: 原生Windows桌面UI框架
+- **Prism.DryIoc 9.0.537**: MVVM框架 + 依赖注入容器
+- **Refit**: 类型安全的HTTP API客户端
+- **AutoMapper 15.0.1**: 对象映射 (需要ILoggerFactory参数)
 
-- **.NET 8.0**: 基础框架
-- **WPF**: 用户界面框架
-- **Prism 8.1+**: MVVM框架和模块化容器
-- **Unity**: 依赖注入容器
-- **Serilog**: 日志框架
-- **Refit**: HTTP客户端
-- **AutoMapper**: 对象映射
-- **FluentValidation**: 数据验证
-- **NPOI**: Excel操作
-- **iTextSharp**: PDF生成
+### UI技术
+- **Modern UI**: 现代化界面设计
+- **Resource Dictionary**: 统一样式和主题管理
+- **Pack URI**: 资源文件统一引用机制
+- **MVVM DataBinding**: 双向数据绑定模式
 
-## 开发指南
+## 🚀 快速开始
 
 ### 环境要求
+- **Visual Studio 2022** 或更高版本
+- **.NET 8.0 SDK**
+- **Windows 10/11** 操作系统
 
-- Visual Studio 2022 或更高版本
-- .NET 8.0 SDK
-- Windows 10/11
+### 启动步骤
+```bash
+# 1. 克隆项目
+git clone <project-url>
 
-### 项目约定
+# 2. 还原NuGet包
+dotnet restore LYBT.Desktop.sln
 
-1. 所有类名和接口与后端WebAPI保持一致
-2. 使用原生WPF控件，不依赖第三方UI库
-3. 严格遵循MVVM模式
-4. 模块间通过接口通信
-5. 统一的错误处理和日志记录
+# 3. 启动后端API服务 
+# (参考后端README启动WebAPI)
 
-### 构建说明
+# 4. 启动桌面客户端
+dotnet run --project Shell
+```
 
-1. 运行 `create_project_structure.bat` 创建完整目录结构
-2. 使用 Visual Studio 打开 `LYBT.WPF.Client.sln`
-3. 执行 `dotnet restore` 恢复NuGet包
-4. 执行 `dotnet build` 编译项目
+### 默认登录
+- **地址**: sysadmin
+- **密码**: Admin@123456
 
-## 与后端集成
+## 🌐 后端集成
 
-- API基地址: https://localhost:5001 (开发环境)
-- 认证方式: JWT Bearer Token
-- 数据格式: JSON
-- 错误处理: 统一的ApiResponse格式
+### API配置
+- **基地址**: https://localhost:7001 (开发环境)
+- **认证方式**: JWT Bearer Token  
+- **通信协议**: HTTPS + JSON
+- **错误处理**: 统一ApiResponse<T>格式
 
-## 角色和权限
+### 连接配置
+```csharp
+// API客户端配置示例
+services.AddRefitClient<IAuthApi>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7001"));
+```
 
-- **超级管理员**: 完整系统管理权限
-- **管理员**: 系统管理和配置权限
-- **医生**: 诊疗和开方权限
-- **前台**: 挂号和患者管理权限
-- **收银员**: 收费和结算权限
-- **药剂师**: 配药和药房管理权限
+## 👥 用户角色
 
-## 版本信息
+### Admin (系统管理员)
+- ✅ 完整系统配置和管理权限
+- ✅ 用户账户创建和权限分配
+- ✅ 数据导入导出和系统维护
 
-- 版本: 1.0.0
-- 最后更新: 2025-07-29
-- 维护者: 凌隐宝堂技术团队
+### Doctor (医生)  
+- ✅ 患者档案管理和诊疗记录
+- ✅ 中医四诊记录和辨证论治
+- ✅ 处方开具和验方管理
+
+## 🏛️ MVVM架构
+
+### 视图模型规范
+- **命名约定**: `{Function}ViewModel`
+- **依赖注入**: 构造函数注入模式
+- **数据绑定**: 双向绑定和命令模式
+- **异步操作**: async/await模式
+
+### 服务层规范
+- **接口约定**: I{Module}Service
+- **实现命名**: {Module}ModuleService
+- **API封装**: Refit类型安全客户端
+
+## 📊 开发状态
+
+**编译状态**: ✅ 0错误 0警告  
+**架构完成度**: ✅ UltraThink三层架构完全实施  
+**模块完整性**: ✅ 8个核心模块全部完成  
+**UI一致性**: ✅ 统一的现代化界面设计  
+
+---
+
+> 📌 **开发提醒**: 遵循 [CLAUDE.md](../../../CLAUDE.md) 中的开发规范和架构约定

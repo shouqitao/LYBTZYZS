@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Users.ViewModels
     {
         #region Fields
 
-        private readonly UserModuleService _userService;
+        private readonly UserModule _userService;
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
         
@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region Constructor
 
         public UserManagementViewModel(
-            UserModuleService userService,
+            UserModule userService,
             ICustomDialogService dialogService,
             IMapper mapper,
             ISessionManager sessionManager,

@@ -302,40 +302,44 @@ namespace LYBT.Infrastructure.Performance.Monitoring
         /// <summary>
         /// 执行周期性监控任务
         /// </summary>
-        private async void ExecuteMonitoringCycle(object? state)
+        private void ExecuteMonitoringCycle(object? state)
         {
             if (_cancellationTokenSource.Token.IsCancellationRequested)
                 return;
 
-            try
+            // Fire-and-forget pattern with proper exception handling
+            _ = Task.Run(async () =>
             {
-                _logger.LogDebug("开始执行周期性监控任务");
-
-                // 并行执行各种监控任务
-                var tasks = new List<Task>
+                try
                 {
-                    _performanceMonitor.CollectPerformanceMetricsAsync(_cancellationTokenSource.Token),
-                    _logAnalyzer.PeriodicLogAnalysisAsync(_cancellationTokenSource.Token),
-                    _errorTracker.ProcessPendingErrorsAsync(_cancellationTokenSource.Token)
-                };
+                    _logger.LogDebug("开始执行周期性监控任务");
 
-                await Task.WhenAll(tasks);
+                    // 并行执行各种监控任务
+                    var tasks = new List<Task>
+                    {
+                        _performanceMonitor.CollectPerformanceMetricsAsync(_cancellationTokenSource.Token),
+                        _logAnalyzer.PeriodicLogAnalysisAsync(_cancellationTokenSource.Token),
+                        _errorTracker.ProcessPendingErrorsAsync(_cancellationTokenSource.Token)
+                    };
 
-                // 检查系统健康状况
-                var healthStatus = await GetSystemHealthStatusAsync(_cancellationTokenSource.Token);
-                
-                if (healthStatus.OverallStatus != HealthStatus.Healthy)
-                {
-                    _logger.LogWarning("系统健康状况异常：{Status}，问题数：{Issues}", 
-                        healthStatus.OverallStatus, healthStatus.Issues.Count);
+                    await Task.WhenAll(tasks);
+
+                    // 检查系统健康状况
+                    var healthStatus = await GetSystemHealthStatusAsync(_cancellationTokenSource.Token);
+                    
+                    if (healthStatus.OverallStatus != HealthStatus.Healthy)
+                    {
+                        _logger.LogWarning("系统健康状况异常：{Status}，问题数：{Issues}", 
+                            healthStatus.OverallStatus, healthStatus.Issues.Count);
+                    }
+
+                    _logger.LogDebug("周期性监控任务执行完成");
                 }
-
-                _logger.LogDebug("周期性监控任务执行完成");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "周期性监控任务执行失败");
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "周期性监控任务执行失败");
+                }
+            }, _cancellationTokenSource.Token);
         }
 
         #endregion

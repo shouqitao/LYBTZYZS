@@ -17,12 +17,12 @@ namespace LYBT.Desktop.Herbs.Services
     /// Herb模块核心业务服务实现
     /// UltraThink v2.0架构：直接使用DTO，专注处方用药管理，删除库存管理功能
     /// </summary>
-    public class HerbModuleService : LYBT.Shared.Interfaces.Services.IHerbService
+    public class HerbModule : LYBT.Shared.Interfaces.Services.IHerbService
     {
         private readonly IHerbApi _apiService;
         private readonly IMapper _mapper;
         
-        public HerbModuleService(IHerbApi apiService, IMapper mapper)
+        public HerbModule(IHerbApi apiService, IMapper mapper)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

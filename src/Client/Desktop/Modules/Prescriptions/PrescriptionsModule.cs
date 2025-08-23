@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Prescriptions
             
             // 简化服务
             containerRegistry.RegisterSingleton<IPrescriptionComposerService, PrescriptionComposerService>();
-            containerRegistry.RegisterSingleton<PrescriptionsModuleService>();
+            containerRegistry.RegisterSingleton<PrescriptionsModule>();
             
             // UltraThink核心视图：专注处方组成编辑
             

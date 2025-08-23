@@ -396,7 +396,36 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         #endregion
-        
+
+        /// <summary>
+        /// 取消咨询/诊断 (委托给BusinessHelper)
+        /// </summary>
+        public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
+        {
+            try
+            {
+                _logger.LogInformation("取消咨询: {CaseId}, 原因: {Reason}", id, reason);
+                
+                // 直接实现取消逻辑 - 更新案例状态为取消
+                var result = await UpdateStatusAsync(id, (int)Shared.Models.Enums.MedicalCaseStatus.Cancelled);
+                if (result.IsSuccess)
+                {
+                    // 记录取消原因到日志
+                    _logger.LogWarning("医疗案例已取消: {CaseId}, 取消原因: {Reason}", id, reason);
+                    return ServiceResult<bool>.Success(true);
+                }
+                else
+                {
+                    return ServiceResult<bool>.Failure("取消咨询失败: " + result.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取消咨询失败: {CaseId}", id);
+                return ServiceResult<bool>.Failure($"取消咨询失败: {ex.Message}", ex);
+            }
+        }
+
         #endregion
     }
 }

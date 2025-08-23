@@ -28,6 +28,8 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult<List<FormulaDto>>> GetAllFormulasAsync();
         Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName);
         Task<ServiceResult<bool>> ToggleStatusAsync(Guid id);
+        Task<ServiceResult> EnableAsync(Guid id);
+        Task<ServiceResult> DisableAsync(Guid id);
         Task<ServiceResult<List<string>>> GetCategoriesAsync();
         
         // UltraThink P0修复：添加Client层期望的SearchFormulasAsync方法

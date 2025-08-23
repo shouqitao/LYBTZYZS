@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region Fields
 
-        private readonly FormulaModuleService _formulaService;
+        private readonly IFormulaService _formulaService;
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
         
@@ -88,7 +88,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region Constructor
 
         public FormulaManagementViewModel(
-            FormulaModuleService formulaService,
+            IFormulaService formulaService,
             ICustomDialogService dialogService,
             IMapper mapper,
             ISessionManager sessionManager,

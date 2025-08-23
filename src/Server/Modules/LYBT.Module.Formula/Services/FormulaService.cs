@@ -563,6 +563,64 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
+        /// <summary>
+        /// 启用验方
+        /// </summary>
+        public async Task<ServiceResult> EnableAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("启用验方: {FormulaId}", id);
+
+                var formula = await _dbContext.Formulas.FindAsync(id);
+                if (formula == null)
+                {
+                    return ServiceResult.Failure("验方不存在");
+                }
+
+                formula.Status = CommonStatus.Enabled;
+
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("验方启用成功: {FormulaId}", id);
+                return ServiceResult.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "启用验方异常: {FormulaId}", id);
+                return ServiceResult.Failure($"启用验方异常: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 禁用验方
+        /// </summary>
+        public async Task<ServiceResult> DisableAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("禁用验方: {FormulaId}", id);
+
+                var formula = await _dbContext.Formulas.FindAsync(id);
+                if (formula == null)
+                {
+                    return ServiceResult.Failure("验方不存在");
+                }
+
+                formula.Status = CommonStatus.Disabled;
+
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("验方禁用成功: {FormulaId}", id);
+                return ServiceResult.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "禁用验方异常: {FormulaId}", id);
+                return ServiceResult.Failure($"禁用验方异常: {ex.Message}", ex);
+            }
+        }
+
         #endregion
         
         #endregion

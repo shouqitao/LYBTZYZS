@@ -46,19 +46,19 @@ namespace LYBT.Desktop.Modules.Prescriptions.Api
         /// <summary>
         /// 更新处方
         /// </summary>
-        [Put("/api/v1/Prescriptions/{id}")]
+        [Put("/api/v1/prescriptions/{id}")]
         Task<Refit.ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(Guid id, [Body] PrescriptionEditDto dto);
 
         /// <summary>
         /// 删除处方
         /// </summary>
-        [Delete("/api/v1/Prescriptions/{id}")]
+        [Delete("/api/v1/prescriptions/{id}")]
         Task<Refit.ApiResponse<bool>> DeletePrescriptionAsync(Guid id);
 
         /// <summary>
         /// 作废处方
         /// </summary>
-        [Post("/api/v1/Prescriptions/void/{id}")]
+        [Post("/api/v1/prescriptions/void/{id}")]
         Task<Refit.ApiResponse<PrescriptionDto>> CancelPrescriptionAsync(Guid id);
     }
 }
