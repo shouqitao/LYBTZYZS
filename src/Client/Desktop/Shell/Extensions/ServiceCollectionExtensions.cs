@@ -151,6 +151,9 @@ namespace LYBT.Desktop.Shell.Extensions
             // 认证服务 - 使用简化版本
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService, SimplifiedAuthenticationService>();
 
+            // 错误处理服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService, ErrorHandlingService>();
+
             // 工作台路由服务 - MainWindowViewModel需要
             containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
         }

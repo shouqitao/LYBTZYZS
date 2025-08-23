@@ -8,6 +8,7 @@ using System.Windows;
 using Refit;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 using ErrorSeverity = LYBT.Shared.Models.Contracts.Common.ErrorSeverity;
@@ -17,9 +18,9 @@ using TimeoutException = System.TimeoutException;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 统一错误处理服务实现 - 简化版本，接口不存在
+    /// 统一错误处理服务实现
     /// </summary>
-    public class ErrorHandlingService // : IErrorHandlingService // 接口不存在：IErrorHandlingService
+    public class ErrorHandlingService : IErrorHandlingService
     {
         // private readonly ICommonDialogService _dialogService; // 接口不存在：ICommonDialogService
         // private readonly IUserSessionManager _sessionManager; // 接口不存在：IUserSessionManager
