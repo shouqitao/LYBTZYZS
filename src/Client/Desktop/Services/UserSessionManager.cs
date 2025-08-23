@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Services
     /// <summary>
     /// 用户会话管理器实现
     /// </summary>
-    public class UserSessionManager : IUserSessionManager
+    public class UserSessionManager : IUserSessionManager, ITokenManager
     {
         private readonly IPermissionService _permissionService;
         private UserDto? _currentUser;
@@ -216,5 +216,30 @@ namespace LYBT.Desktop.Services
                 _ => "ConsultationWorkbench"
             };
         }
+
+        #region ITokenManager 实现
+
+        /// <summary>
+        /// 获取当前Token
+        /// </summary>
+        public string? GetToken() => _sessionToken;
+
+        /// <summary>
+        /// 设置Token
+        /// </summary>
+        public void SetToken(string token)
+        {
+            _sessionToken = token ?? throw new ArgumentNullException(nameof(token));
+        }
+
+        /// <summary>
+        /// 清除Token
+        /// </summary>
+        public void ClearToken()
+        {
+            _sessionToken = null;
+        }
+
+        #endregion
     }
 }

@@ -83,11 +83,8 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterCacheServices(IContainerRegistry containerRegistry)
         {
-            // 注册内存缓存
+            // 注册内存缓存服务
             containerRegistry.RegisterSingleton<IMemoryCache, MemoryCache>();
-            
-            // 注册简化的缓存服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.MemoryCacheService>();
         }
 
         /// <summary>
@@ -134,9 +131,15 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterCoreServices(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterSingleton<TokenManager>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager, UserSessionManager>();
+            // 权限服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPermissionService, PermissionService>();
+            
+            // 统一会话服务 - UserSessionManager同时实现IUserSessionManager和ITokenManager
+            containerRegistry.RegisterSingleton<UserSessionManager>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager>(container =>
+                container.Resolve<UserSessionManager>());
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ITokenManager>(container =>
+                container.Resolve<UserSessionManager>());
             
             // SessionManager和NotificationService
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ISessionManager, 
@@ -198,10 +201,9 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
-            // 使用简化的对话框服务
+            // 统一对话框服务 - WpfDialogService提供完整功能
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService, 
                 LYBT.Desktop.Core.Services.WpfDialogService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.SimpleDialogService>();
         }
 
         /// <summary>

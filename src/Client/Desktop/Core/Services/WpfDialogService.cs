@@ -293,6 +293,60 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>
+        /// 显示打开文件对话框
+        /// </summary>
+        public async Task<string?> ShowOpenFileDialogAsync(string title = "打开文件", string filter = "所有文件|*.*")
+        {
+            return await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = filter
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    return dialog.FileName;
+                }
+                return null;
+            });
+        }
+
+        /// <summary>
+        /// 显示保存文件对话框
+        /// </summary>
+        public async Task<string?> ShowSaveFileDialogAsync(string title = "保存文件", string filter = "所有文件|*.*", string defaultFileName = "")
+        {
+            return await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = filter,
+                    FileName = defaultFileName
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    return dialog.FileName;
+                }
+                return null;
+            });
+        }
+
+        /// <summary>
+        /// 显示文件夹选择对话框
+        /// </summary>
+        public async Task<string?> ShowFolderBrowserDialogAsync(string title = "选择文件夹")
+        {
+            return await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                // WPF没有内置的文件夹选择对话框，可以使用Windows Forms或WPF-UI的实现
+                // 这里暂时返回null，可以根据需要后续实现
+                return (string?)null;
+            });
+        }
+
+        /// <summary>
         /// 初始化默认对话框注册
         /// </summary>
         private void InitializeDefaultDialogs()

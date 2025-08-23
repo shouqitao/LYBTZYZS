@@ -90,5 +90,29 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <param name="dialogName">对话框名称</param>
         /// <returns>是否已注册</returns>
         bool IsDialogRegistered(string dialogName);
+
+        /// <summary>
+        /// 显示打开文件对话框
+        /// </summary>
+        /// <param name="title">标题</param>
+        /// <param name="filter">文件过滤器</param>
+        /// <returns>选择的文件路径，取消返回null</returns>
+        Task<string?> ShowOpenFileDialogAsync(string title = "打开文件", string filter = "所有文件|*.*");
+
+        /// <summary>
+        /// 显示保存文件对话框
+        /// </summary>
+        /// <param name="title">标题</param>
+        /// <param name="filter">文件过滤器</param>
+        /// <param name="defaultFileName">默认文件名</param>
+        /// <returns>选择的文件路径，取消返回null</returns>
+        Task<string?> ShowSaveFileDialogAsync(string title = "保存文件", string filter = "所有文件|*.*", string defaultFileName = "");
+
+        /// <summary>
+        /// 显示文件夹选择对话框
+        /// </summary>
+        /// <param name="title">标题</param>
+        /// <returns>选择的文件夹路径，取消返回null</returns>
+        Task<string?> ShowFolderBrowserDialogAsync(string title = "选择文件夹");
     }
 }
