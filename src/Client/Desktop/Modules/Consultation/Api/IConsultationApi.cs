@@ -57,6 +57,20 @@ namespace LYBT.Desktop.Modules.Consultation.Api
         Task<Refit.ApiResponse<object>> CompleteConsultationAsync(Guid id, [Body] ConsultationCompleteDto dto);
 
         /// <summary>
+        /// 取消看诊
+        /// </summary>
+        [Post("/api/v1/consultation/{id}/cancel")]
+        Task<Refit.ApiResponse<object>> CancelConsultationAsync(Guid id, [Body] string reason);
+
+        /// <summary>
+        /// 获取统计信息
+        /// </summary>
+        [Get("/api/v1/consultation/statistics")]
+        Task<Refit.ApiResponse<object>> GetStatisticsAsync(
+            [Query] DateTime? startDate = null,
+            [Query] DateTime? endDate = null);
+
+        /// <summary>
         /// 获取医生今日看诊列表
         /// </summary>
         [Get("/api/v1/consultation/doctor/{doctorId}/today")]

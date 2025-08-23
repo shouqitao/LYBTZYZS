@@ -168,7 +168,9 @@ namespace LYBT.Desktop.Consultation.Services
                     return ServiceResult<ConsultationDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
                 }
 
-                var apiResult = await _consultationApi.UpdateConsultationAsync(id, updateDto);
+                // 转换DetailDto为UpdateDto
+                var updateRequestDto = ConvertToUpdateDto(updateDto);
+                var apiResult = await _consultationApi.UpdateConsultationAsync(id, updateRequestDto);
 
                 if (!apiResult.IsSuccessStatusCode || apiResult.Content == null)
                 {
@@ -317,8 +319,15 @@ namespace LYBT.Desktop.Consultation.Services
             {
                 _logger.LogInformation("更新诊断信息，ID: {ConsultationId}", consultationId);
 
-                // 直接使用传入的DTO进行更新
-                var result = await UpdateAsync(diagnosisData);
+                // 直接调用API进行更新
+                var apiResult = await _consultationApi.UpdateConsultationAsync(consultationId, diagnosisData);
+                
+                if (!apiResult.IsSuccessStatusCode || apiResult.Content == null)
+                {
+                    return ServiceResult.Failure(apiResult.Error?.Message ?? "更新诊断信息失败");
+                }
+                
+                var result = ServiceResult<ConsultationDto>.Success(apiResult.Content.ToConsultationDto());
                 if (result.IsSuccess)
                 {
                     // 触发TCM数据更新事件
@@ -725,6 +734,64 @@ namespace LYBT.Desktop.Consultation.Services
                 _logger.LogError(ex, "保存四诊数据时发生异常，看诊ID: {ConsultationId}", consultationId);
                 return ServiceResult<bool>.Failure($"保存四诊数据失败: {ex.Message}");
             }
+        }
+
+        #endregion
+
+        #region 辅助方法
+
+        /// <summary>
+        /// 将ConsultationDetailDto转换为ConsultationUpdateDto
+        /// </summary>
+        private ConsultationUpdateDto ConvertToUpdateDto(ConsultationDetailDto detailDto)
+        {
+            return new ConsultationUpdateDto
+            {
+                Id = detailDto.Id,
+                ChiefComplaint = detailDto.ChiefComplaint,
+                PresentIllness = detailDto.PresentIllness,
+                Inspection = detailDto.Inspection,
+                AuscultationOlfaction = detailDto.AuscultationOlfaction,
+                Inquiry = detailDto.Inquiry,
+                Palpation = detailDto.Palpation,
+                TongueInspection = detailDto.TongueInspection,
+                PulseCondition = detailDto.PulseCondition,
+                PatternDifferentiation = detailDto.PatternDifferentiation,
+                TCMDiagnosis = detailDto.TCMDiagnosis,
+                Diagnosis = detailDto.Diagnosis,
+                TreatmentPrinciple = detailDto.TreatmentPrinciple,
+                MedicalAdvice = detailDto.MedicalAdvice,
+                Remark = detailDto.Remark,
+                DoctorId = detailDto.DoctorId,
+                IsCompleted = detailDto.IsCompleted,
+                PatientId = detailDto.PatientId,
+                // 详细四诊属性
+                Complexion = detailDto.Complexion,
+                Spirit = detailDto.Spirit,
+                BodyShape = detailDto.BodyShape,
+                TongueBody = detailDto.TongueBody,
+                TongueCoating = detailDto.TongueCoating,
+                Voice = detailDto.Voice,
+                Breath = detailDto.Breath,
+                Cough = detailDto.Cough,
+                ColdHeat = detailDto.ColdHeat,
+                Sweat = detailDto.Sweat,
+                Appetite = detailDto.Appetite,
+                Sleep = detailDto.Sleep,
+                StoolUrine = detailDto.StoolUrine,
+                Pulse = detailDto.PulseCondition, // 映射到Pulse属性
+                PulseRate = detailDto.PulseRate,
+                PulseStrength = detailDto.PulseStrength,
+                Odor = detailDto.Odor,
+                HeadBody = detailDto.HeadBody,
+                ChestAbdomen = detailDto.ChestAbdomen,
+                Menstruation = detailDto.Menstruation,
+                PulseRhythm = detailDto.PulseRhythm,
+                PulseShape = detailDto.PulseShape,
+                LeftPulse = detailDto.LeftPulse,
+                RightPulse = detailDto.RightPulse,
+                TCMSyndrome = detailDto.TCMSyndrome
+            };
         }
 
         #endregion

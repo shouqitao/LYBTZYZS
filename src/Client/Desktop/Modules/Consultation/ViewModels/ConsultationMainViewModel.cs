@@ -368,17 +368,14 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 SessionManager.StartConsultation(SelectedPatient, MedicalCaseId);
 
                 // UltraThink v2.0: 直接创建看诊记录
-                var createDto = new ConsultationCreateDto
-                {
-                    PatientId = SelectedPatient.Id,
-                    PatientName = SelectedPatient.Name,
-                    DoctorId = CurrentUser?.Id ?? Guid.Empty,
-                    DoctorName = CurrentUser?.UserName ?? "当前医生",
-                    ChiefComplaint = "",
-                    CreateTime = DateTime.Now
-                };
-
-                var result = await _consultationService.CreateAsync(createDto);
+                var startDto = new ConsultationStartDto
+            {
+                PatientId = SelectedPatient.Id,
+                DoctorId = CurrentUser?.Id ?? Guid.Empty,
+                MedicalCaseId = MedicalCaseId ?? Guid.NewGuid() // 如果没有MedicalCase，创建新的
+            };
+            
+            var result = await _consultationService.StartAsync(startDto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     CurrentConsultation = result.Data;
@@ -419,12 +416,16 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 ShowLoading("正在保存看诊记录...");
                 
-                // UltraThink v2.0: 保存看诊记录
-                var updateDto = new ConsultationUpdateDto
+                // UltraThink v2.0: 保存看诊记录 - 创建DetailDto
+                var updateDto = new ConsultationDetailDto
                 {
                     Id = CurrentConsultation.Id,
+                    MedicalCaseId = CurrentConsultation.MedicalCaseId,
                     PatientId = CurrentConsultation.PatientId,
+                    PatientName = SelectedPatient?.Name ?? "患者", // 从选择的患者获取姓名
                     DoctorId = CurrentConsultation.DoctorId,
+                    DoctorName = CurrentConsultation.DoctorName,
+                    ConsultationTime = CurrentConsultation.ConsultationTime,
                     Diagnosis = CurrentConsultation.Diagnosis ?? "",
                     TCMDiagnosis = CurrentConsultation.TCMDiagnosis ?? "",
                     TreatmentPrinciple = CurrentConsultation.TreatmentPrinciple ?? "",
@@ -434,10 +435,17 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Palpation = CurrentConsultation.Palpation ?? "",
                     TongueInspection = CurrentConsultation.TongueInspection ?? "",
                     PulseCondition = CurrentConsultation.PulseCondition ?? "",
-                    IsCompleted = true
+                    PatternDifferentiation = CurrentConsultation.DifferentiationAnalysis ?? "", // 修正属性名
+                    MedicalAdvice = CurrentConsultation.MedicalAdvice ?? "",
+                    StartTime = DateTime.Now, // 使用当前时间，因为ConsultationDto没有StartTime
+                    EndTime = DateTime.Now,
+                    Status = LYBT.Shared.Models.Enums.ConsultationStatus.Completed,
+                    IsCompleted = true,
+                    CreateTime = CurrentConsultation.CreateTime,
+                    UpdateTime = DateTime.Now
                 };
 
-                var result = await _consultationService.UpdateAsync(updateDto);
+                var result = await _consultationService.UpdateAsync(CurrentConsultation.Id, updateDto);
                 if (result.IsSuccess)
                 {
                     // 如果从MedicalCase导航过来，更新MedicalCase状态
@@ -722,17 +730,14 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 ShowLoading("正在准备看诊...");
                 
                 // UltraThink v2.0: 为医疗案例创建看诊记录
-                var createDto = new ConsultationCreateDto
+                var startDto = new ConsultationStartDto
                 {
                     PatientId = CurrentMedicalCase.PatientId,
-                    PatientName = CurrentMedicalCase.PatientName,
                     DoctorId = CurrentUser?.Id ?? Guid.Empty,
-                    DoctorName = CurrentUser?.UserName ?? "当前医生",
-                    ChiefComplaint = "从医疗案例开始看诊",
-                    CreateTime = DateTime.Now
+                    MedicalCaseId = MedicalCaseId.Value
                 };
                 
-                var result = await _consultationService.CreateAsync(createDto);
+                var result = await _consultationService.StartAsync(startDto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     CurrentConsultation = result.Data;

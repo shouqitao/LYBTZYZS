@@ -24,6 +24,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Desktop.Users.Services;
 using LYBT.Desktop.Workbench.Core;
 using LYBT.Desktop.Modules.Users.Api;
+using LYBT.Desktop.Modules.Patients.Api;
 
 namespace LYBT.Desktop.Shell.Extensions
 {

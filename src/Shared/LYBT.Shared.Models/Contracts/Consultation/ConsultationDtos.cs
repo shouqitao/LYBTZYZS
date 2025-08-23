@@ -395,6 +395,10 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
+        /// <summary>是否完成</summary>
+        [DisplayName("是否完成")]
+        public bool IsCompleted { get; set; } = false;
+
         #region 详细四诊属性（用于客户端四诊界面）
 
         /// <summary>面色</summary>
