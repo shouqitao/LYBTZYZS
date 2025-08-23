@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **凌隐宝堂中医诊所诊疗系统 (LYBTZYZS)** - 基于 .NET 8 的企业级纯中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构。
 
-**项目状态**: ✅ UltraThink v2.0 全项目重构完成 | ✅ 0错误 0警告 | ✅ 生产就绪
+**项目状态**: ✅ UltraThink项目文档标准化完成 | ✅ 0错误 0警告 | ✅ 生产就绪 | ✅ 7个项目README现代化
 
 ### 🎯 核心业务模块 (8个)
 
@@ -32,7 +32,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 开始新对话时必须
 
 - **始终先阅读本文档** 了解项目架构、目标、风格和约束
-- **检查 `docs/TODO-Latest-*.md`** 了解当前任务状态
+- **检查 `docs/TODO-Latest-UltraThink-Documentation-Standardization-Complete.md`** 了解最新项目文档标准化完成状态
 - **查看 `CLAUDE.local.md`** 了解用户特定的开发环境配置
 - **使用一致的命名约定、文件结构和架构模式**
 
