@@ -53,7 +53,7 @@ public class MedicalCaseController : BaseApiController
     /// 分页查询医疗案例 - 统一API响应格式
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<PagedApiResponse<MedicalCaseDto>>> GetPaged(
+    public async Task<ActionResult<ApiResponse<PagedData<MedicalCaseDto>>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null)

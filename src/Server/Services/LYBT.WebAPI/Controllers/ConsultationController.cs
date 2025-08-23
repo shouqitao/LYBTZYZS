@@ -53,7 +53,7 @@ public class ConsultationController : BaseApiController
     /// 分页查询看诊记录 - 统一API响应格式
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<PagedApiResponse<ConsultationDto>>> GetPaged(
+    public async Task<ActionResult<ApiResponse<PagedData<ConsultationDto>>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null)

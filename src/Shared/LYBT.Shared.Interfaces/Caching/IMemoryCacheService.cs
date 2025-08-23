@@ -5,7 +5,10 @@ namespace LYBT.Shared.Interfaces.Caching
 {
     /// <summary>
     /// 内存缓存服务接口 - 统一定义
+    /// ⚠️ [UltraThink Phase 4] 此接口已被简化，建议迁移到 ISimplifiedCacheService
+    /// 新接口将14个方法简化为8个核心方法，提升开发效率
     /// </summary>
+    [Obsolete("此接口过于复杂，请迁移到 ISimplifiedCacheService。新接口提供8个核心方法，涵盖所有常用场景。", false)]
     public interface IMemoryCacheService
     {
         T Get<T>(string key);

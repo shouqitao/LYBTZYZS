@@ -2,6 +2,7 @@ using AutoMapper;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
 
 namespace LYBT.Module.Auth.Mapping
@@ -13,8 +14,8 @@ namespace LYBT.Module.Auth.Mapping
     {
         public AuthMappingProfile()
         {
-            // 用户到BaseUser的映射 - UltraThink v2.0简化版
-            CreateMap<User, BaseUser>()
+            // 用户到UserDto的映射 - UltraThink v2.0简化版（替换BaseUser）
+            CreateMap<User, UserDto>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))

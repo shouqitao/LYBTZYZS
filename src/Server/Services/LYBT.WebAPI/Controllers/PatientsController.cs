@@ -31,7 +31,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<PagedApiResponse<PatientDto>>> GetList(
+        public async Task<ActionResult<ApiResponse<PagedData<PatientDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,

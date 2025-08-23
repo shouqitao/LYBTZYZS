@@ -393,22 +393,10 @@ namespace LYBT.Desktop.Services
             _tokenManager.ClearToken();
         }
         
-        private UserDto? ConvertToFrontendUserInfo(BaseUser? authUser)
+        private UserDto? ConvertToFrontendUserInfo(UserDto? authUser)
         {
-            if (authUser == null)
-                return null;
-            
-            return new UserDto
-            {
-                Id = authUser.Id,
-                Username = authUser.Username,
-                RealName = authUser.RealName,
-                PhoneNumber = authUser.PhoneNumber,
-                Role = authUser.Role.ToString(),
-                Status = authUser.Status,
-                Email = authUser.Email,
-                PinYinCode = string.Empty
-            };
+            // 直接返回UserDto，不需要转换
+            return authUser;
         }
 
         /// <summary>
@@ -420,27 +408,15 @@ namespace LYBT.Desktop.Services
         }
 
         /// <summary>
-        /// 转换UserDto到BaseUser - 新接口适配方法
+        /// 转换UserDto到UserDto - 简化的直通方法（BaseUser已删除）
         /// </summary>
-        private BaseUser ConvertToBaseUser(UserDto? userInfo)
+        private UserDto ConvertToBaseUser(UserDto? userInfo)
         {
             if (userInfo == null)
-                return new BaseUser();
+                return new UserDto();
             
-            // 需要转换Role字符串回UserRole枚举
-            var userRole = Enum.TryParse<UserRole>(userInfo.Role, out var role) ? role : UserRole.User;
-            
-            return new BaseUser
-            {
-                Id = userInfo.Id,
-                Username = userInfo.Username,
-                RealName = userInfo.RealName,
-                PhoneNumber = userInfo.PhoneNumber,
-                Role = userRole,
-                Status = userInfo.Status,
-                Email = userInfo.Email,
-                PinYinCode = userInfo.PinYinCode
-            };
+            // 直接返回UserDto，不需要转换
+            return userInfo;
         }
         
         private HttpClient CreateHttpClient()
