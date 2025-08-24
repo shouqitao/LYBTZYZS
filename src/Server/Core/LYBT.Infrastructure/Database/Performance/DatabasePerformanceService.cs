@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Interfaces.Caching;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.Infrastructure.Database.Performance
 {
@@ -23,14 +23,14 @@ namespace LYBT.Infrastructure.Database.Performance
     public class DatabasePerformanceService : IDatabasePerformanceService
     {
         private readonly AppDbContext _context;
-        private readonly IMemoryCacheService _cacheService;
+        private readonly IMemoryCache _cacheService;
         private readonly ILogger<DatabasePerformanceService> _logger;
         private readonly QueryPerformanceAnalyzer _analyzer;
         private readonly DatabasePerformanceOptions _options;
 
         public DatabasePerformanceService(
             AppDbContext context,
-            IMemoryCacheService cacheService,
+            IMemoryCache cacheService,
             ILogger<DatabasePerformanceService> logger,
             ILoggerFactory loggerFactory,
             IOptions<DatabasePerformanceOptions> options)
@@ -56,7 +56,7 @@ namespace LYBT.Infrastructure.Database.Performance
                 // 检查缓存中是否有最近的测试结果
                 if (_options.EnableCaching)
                 {
-                    var cachedResult = await _cacheService.GetAsync<PerformanceBenchmarkResult>(cacheKey);
+                    _cacheService.TryGetValue<PerformanceBenchmarkResult>(cacheKey, out var cachedResult);
                     if (cachedResult != null && 
                         (DateTime.UtcNow - cachedResult.TestEndTime).TotalMinutes < _options.CacheExpirationMinutes)
                     {
@@ -71,7 +71,7 @@ namespace LYBT.Infrastructure.Database.Performance
                 // 缓存结果
                 if (_options.EnableCaching)
                 {
-                    await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(_options.CacheExpirationMinutes));
+                    _cacheService.Set(cacheKey, result, TimeSpan.FromMinutes(_options.CacheExpirationMinutes));
                 }
 
                 // 记录测试结果摘要
@@ -99,7 +99,7 @@ namespace LYBT.Infrastructure.Database.Performance
                 
                 if (_options.EnableCaching)
                 {
-                    var cachedUsage = await _cacheService.GetAsync<List<IndexUsageInfo>>(cacheKey);
+                    _cacheService.TryGetValue<List<IndexUsageInfo>>(cacheKey, out var cachedUsage);
                     if (cachedUsage != null)
                     {
                         _logger.LogInformation("返回缓存的索引使用情况");
@@ -111,7 +111,7 @@ namespace LYBT.Infrastructure.Database.Performance
                 
                 if (_options.EnableCaching)
                 {
-                    await _cacheService.SetAsync(cacheKey, indexUsage, TimeSpan.FromMinutes(_options.CacheExpirationMinutes / 2));
+                    _cacheService.Set(cacheKey, indexUsage, TimeSpan.FromMinutes(_options.CacheExpirationMinutes / 2));
                 }
 
                 _logger.LogInformation("索引分析完成，发现 {IndexCount} 个索引", indexUsage.Count);

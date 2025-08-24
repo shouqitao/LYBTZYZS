@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Caching;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Http
@@ -32,14 +33,14 @@ namespace LYBT.Desktop.Core.Http
     public class ApiService : IApiService
     {
         private readonly HttpClient _httpClient;
-        private readonly IMemoryCacheService? _cache;
+        private readonly IMemoryCache? _cache;
         private readonly ILogger<ApiService>? _logger;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly RequestDeduplicator _deduplicator;
 
         public ApiService(
             HttpClient httpClient,
-            IMemoryCacheService? cache = null,
+            IMemoryCache? cache = null,
             ILogger<ApiService>? logger = null)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -69,7 +70,7 @@ namespace LYBT.Desktop.Core.Http
             // 尝试从缓存获取
             if (_cache != null)
             {
-                var cacheKey = CacheKeyGenerator.Generate("GET", url);
+                var cacheKey = $"GET:{url}";
                 var cached = _cache.Get<TResponse>(cacheKey);
                 if (cached != null)
                 {
@@ -87,8 +88,8 @@ namespace LYBT.Desktop.Core.Http
                 // 缓存成功的响应
                 if (_cache != null && response.IsSuccessStatusCode && result != null)
                 {
-                    var cacheKey = CacheKeyGenerator.Generate("GET", url);
-                    _cache.Set(cacheKey, result, CacheOptions.ShortTerm);
+                    var cacheKey = $"GET:{url}";
+                    _cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
                 }
                 
                 return result;
@@ -219,7 +220,7 @@ namespace LYBT.Desktop.Core.Http
             catch (JsonException ex)
             {
                 _logger?.LogError(ex, $"JSON反序列化失败: {content}");
-                throw new ApiException(response.StatusCode, "响应格式错误", ex);
+                throw new ApiException(response.StatusCode, "响应格式错误", "GET", content, ex);
             }
         }
 
@@ -269,21 +270,7 @@ namespace LYBT.Desktop.Core.Http
         }
     }
 
-    /// <summary>
-    /// API异常
-    /// </summary>
-    public class ApiException : Exception
-    {
-        public System.Net.HttpStatusCode StatusCode { get; }
-        public string? ResponseContent { get; }
-
-        public ApiException(System.Net.HttpStatusCode statusCode, string? responseContent = null, Exception? innerException = null)
-            : base($"API调用失败: {statusCode}", innerException)
-        {
-            StatusCode = statusCode;
-            ResponseContent = responseContent;
-        }
-    }
+    // ApiException 现在使用 LYBT.Shared.Models.Exceptions.ApiException
 
     /// <summary>
     /// 请求去重器

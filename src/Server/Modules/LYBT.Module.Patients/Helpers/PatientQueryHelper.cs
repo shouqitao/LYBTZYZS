@@ -191,7 +191,7 @@ namespace LYBT.Module.Patients.Helpers
         /// <summary>
         /// 高级搜索患者（简化实现，委托给基本查询）
         /// </summary>
-        public async Task<ServiceResult<PaginatedResult<PatientDto>>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
+        public async Task<ServiceResult<PagedResult<PatientDto>>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
         {
             try
             {
@@ -205,29 +205,29 @@ namespace LYBT.Module.Patients.Helpers
                 
                 if (serviceResult.IsSuccess && serviceResult.Data != null)
                 {
-                    var paginatedResult = new PaginatedResult<PatientDto>
+                    var paginatedResult = new PagedResult<PatientDto>
                     {
                         TotalCount = serviceResult.Data.TotalCount,
                         Items = serviceResult.Data.Items.Select(_mapper.Map<PatientDto>).ToList(),
                         CurrentPage = serviceResult.Data.CurrentPage,
                         PageSize = serviceResult.Data.PageSize
                     };
-                    return ServiceResult<PaginatedResult<PatientDto>>.Success(paginatedResult);
+                    return ServiceResult<PagedResult<PatientDto>>.Success(paginatedResult);
                 }
                 
-                var emptyResult = new PaginatedResult<PatientDto>
+                var emptyResult = new PagedResult<PatientDto>
                 {
                     TotalCount = 0,
                     Items = new List<PatientDto>(),
                     CurrentPage = query.PageIndex,
                     PageSize = query.PageSize
                 };
-                return ServiceResult<PaginatedResult<PatientDto>>.Success(emptyResult);
+                return ServiceResult<PagedResult<PatientDto>>.Success(emptyResult);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "高级搜索患者失败");
-                return ServiceResult<PaginatedResult<PatientDto>>.Failure("高级搜索患者失败", ex);
+                return ServiceResult<PagedResult<PatientDto>>.Failure("高级搜索患者失败", ex);
             }
         }
 

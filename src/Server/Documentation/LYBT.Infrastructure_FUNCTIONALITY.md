@@ -289,7 +289,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 ### 缓存使用
 ```csharp
 // 注入缓存服务
-private readonly ICacheService _cache;
+private readonly IMemoryCache _cache;
 
 // 缓存用户信息
 await _cache.SetAsync($"user:{userId}", userDto, TimeSpan.FromHours(1));

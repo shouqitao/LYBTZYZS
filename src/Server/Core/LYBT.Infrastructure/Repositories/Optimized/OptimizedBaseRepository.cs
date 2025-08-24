@@ -10,7 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Infrastructure.Repositories.Optimized
 {
@@ -125,7 +125,7 @@ namespace LYBT.Infrastructure.Repositories.Optimized
         /// <summary>
         /// 分页查询（接口实现）
         /// </summary>
-        public virtual async Task<PaginatedResult<TEntity>> GetPagedAsync(
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
             Expression<Func<TEntity, bool>>? predicate,
             int pageNumber,
             int pageSize,
@@ -138,7 +138,7 @@ namespace LYBT.Infrastructure.Repositories.Optimized
         /// <summary>
         /// 分页查询（优化版）
         /// </summary>
-        public virtual async Task<PaginatedResult<TEntity>> GetPagedAsync(
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
             Expression<Func<TEntity, bool>>? predicate,
             int pageNumber,
             int pageSize,
@@ -148,7 +148,7 @@ namespace LYBT.Infrastructure.Repositories.Optimized
         {
             var cacheKey = GenerateCacheKey("paged", predicate, pageNumber, pageSize, orderBy, ascending);
             
-            if (_queryOptions.EnableCache && _cache.TryGetValue<PaginatedResult<TEntity>>(cacheKey, out var cached))
+            if (_queryOptions.EnableCache && _cache.TryGetValue<PagedResult<TEntity>>(cacheKey, out var cached))
             {
                 return cached!;
             }
@@ -172,7 +172,7 @@ namespace LYBT.Infrastructure.Repositories.Optimized
             
             await Task.WhenAll(countTask, itemsTask);
             
-            var result = new PaginatedResult<TEntity>(
+            var result = new PagedResult<TEntity>(
                 itemsTask.Result,
                 countTask.Result,
                 pageNumber,
@@ -293,7 +293,7 @@ namespace LYBT.Infrastructure.Repositories.Optimized
         /// <summary>
         /// 简单分页查询
         /// </summary>
-        public virtual async Task<PaginatedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize)
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize)
         {
             return await GetPagedAsync(null, pageNumber, pageSize, null, true, CancellationToken.None);
         }

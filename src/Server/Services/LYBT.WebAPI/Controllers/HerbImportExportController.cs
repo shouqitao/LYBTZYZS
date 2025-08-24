@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.WebAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -20,19 +21,19 @@ namespace LYBT.WebAPI.Controllers
     public class HerbImportExportController : BaseApiController
     {
         private readonly IHerbService _herbService;
-        private readonly ICacheService _cacheService;
+        private readonly IMemoryCache _memoryCache;
 
         /// <summary>
         /// 构造方法，注入药材服务和缓存服务
         /// </summary>
         public HerbImportExportController(
             IHerbService herbService, 
-            ICacheService cacheService,
+            IMemoryCache memoryCache,
             ILogger<HerbImportExportController> logger)
             : base(logger)
         {
             _herbService = herbService;
-            _cacheService = cacheService;
+            _memoryCache = memoryCache;
         }
 
         /// <summary>
@@ -68,8 +69,7 @@ namespace LYBT.WebAPI.Controllers
 
                 var count = await _herbService.ImportHerbsAsync(dtos);
 
-                // 清除相关缓存
-                await _cacheService.RemoveByPatternAsync("herbs");
+                // 注：IMemoryCache不支持按模式清除，缓存会自动过期
 
                 LogOperation("批量导入药材成功", new { Count = count, TotalSubmitted = dtos.Count }, null);
                 return Ok(new { 

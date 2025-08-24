@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Services.Interfaces
         /// 获取备份历史列表
         /// </summary>
         [Get("/api/Backup/history")]
-        Task<Refit.ApiResponse<PagedData<BackupInfo>>> GetBackupHistoryAsync(
+        Task<Refit.ApiResponse<PagedResult<BackupInfo>>> GetBackupHistoryAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null,

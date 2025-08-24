@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Services.Interfaces
         /// <param name="pageSize">页大小</param>
         /// <returns>分页设置结果</returns>
         [Get("/api/UnifiedConfig/settings")]
-        Task<Refit.ApiResponse<PagedData<SettingsDto>>> GetSettingsAsync(
+        Task<Refit.ApiResponse<PagedResult<SettingsDto>>> GetSettingsAsync(
             [Query] string? group = null,
             [Query] string? keyword = null,
             [Query] int pageIndex = 1,

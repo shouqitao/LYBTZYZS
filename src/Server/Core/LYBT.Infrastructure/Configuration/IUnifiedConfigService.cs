@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Contracts.Configuration;
 using LYBT.Infrastructure.Configuration.Dtos;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Infrastructure.Configuration
 {
@@ -62,7 +62,7 @@ namespace LYBT.Infrastructure.Configuration
         /// <summary>
         /// 分页查询设置
         /// </summary>
-        Task<PaginatedResult<SettingsDto>> GetSettingsAsync(string? group = null, string? keyword = null, int pageIndex = 1, int pageSize = 10);
+        Task<PagedResult<SettingsDto>> GetSettingsAsync(string? group = null, string? keyword = null, int pageIndex = 1, int pageSize = 10);
 
         /// <summary>
         /// 根据分组获取所有设置
@@ -99,7 +99,7 @@ namespace LYBT.Infrastructure.Configuration
         /// <summary>
         /// 分页查询诊断目录
         /// </summary>
-        Task<PaginatedResult<DiagnosisCatalogDto>> GetDiagnosisCatalogsAsync(string? keyword = null, bool? isEnabled = null, int pageIndex = 1, int pageSize = 10);
+        Task<PagedResult<DiagnosisCatalogDto>> GetDiagnosisCatalogsAsync(string? keyword = null, bool? isEnabled = null, int pageIndex = 1, int pageSize = 10);
 
         /// <summary>
         /// 创建诊断目录
@@ -151,7 +151,7 @@ namespace LYBT.Infrastructure.Configuration
         /// <summary>
         /// 分页查询治疗目录
         /// </summary>
-        Task<PaginatedResult<TreatmentCatalogDto>> GetTreatmentCatalogsAsync(string? keyword = null, bool? isEnabled = null, int pageIndex = 1, int pageSize = 10);
+        Task<PagedResult<TreatmentCatalogDto>> GetTreatmentCatalogsAsync(string? keyword = null, bool? isEnabled = null, int pageIndex = 1, int pageSize = 10);
 
         /// <summary>
         /// 创建治疗目录

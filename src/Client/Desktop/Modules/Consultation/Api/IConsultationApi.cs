@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Modules.Consultation.Api
         /// 分页查询看诊记录
         /// </summary>
         [Get("/api/v1/consultation")]
-        Task<Refit.ApiResponse<PagedData<ConsultationDto>>> GetConsultationsAsync(
+        Task<Refit.ApiResponse<PagedResult<ConsultationDto>>> GetConsultationsAsync(
             [Query] int page = 1,
             [Query] int pageSize = 10,
             [Query] string? keyword = null,

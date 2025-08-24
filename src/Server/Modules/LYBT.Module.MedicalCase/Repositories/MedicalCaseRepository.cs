@@ -1,7 +1,7 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.MedicalCase.Interfaces;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -34,7 +34,7 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
     }
 
     // 覆盖基类方法以支持Include和默认排序
-    public override async Task<PaginatedResult<LYBT.Entities.MedicalCase.MedicalCase>> GetPagedAsync(
+    public override async Task<PagedResult<LYBT.Entities.MedicalCase.MedicalCase>> GetPagedAsync(
         Expression<Func<LYBT.Entities.MedicalCase.MedicalCase, bool>>? predicate,
         int pageNumber,
         int pageSize,
@@ -66,7 +66,7 @@ public class MedicalCaseRepository : BaseRepository<LYBT.Entities.MedicalCase.Me
             .Take(pageSize)
             .ToListAsync();
 
-        return new PaginatedResult<LYBT.Entities.MedicalCase.MedicalCase>
+        return new PagedResult<LYBT.Entities.MedicalCase.MedicalCase>
         {
             Items = items,
             TotalCount = totalCount,

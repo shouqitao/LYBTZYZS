@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Infrastructure.Interfaces
 {
@@ -21,7 +21,7 @@ namespace LYBT.Infrastructure.Interfaces
         /// <summary>
         /// 获取分页数据
         /// </summary>
-        Task<PaginatedResult<TDto>> GetPagedAsync(TQueryDto query);
+        Task<PagedResult<TDto>> GetPagedAsync(TQueryDto query);
 
         /// <summary>
         /// 根据ID获取详情
@@ -69,7 +69,7 @@ namespace LYBT.Infrastructure.Interfaces
         /// <summary>
         /// 获取分页数据
         /// </summary>
-        Task<PaginatedResult<TDto>> GetPagedAsync(TQueryDto query);
+        Task<PagedResult<TDto>> GetPagedAsync(TQueryDto query);
 
         /// <summary>
         /// 根据ID获取详情

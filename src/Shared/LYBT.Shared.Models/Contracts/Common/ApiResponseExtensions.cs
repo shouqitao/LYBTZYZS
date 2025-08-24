@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using LYBT.Shared.Models.Common;
 
 namespace LYBT.Shared.Models.Contracts.Common
@@ -20,7 +21,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <param name="pageSize">每页大小</param>
         /// <param name="message">响应消息</param>
         /// <returns>统一的分页API响应</returns>
-        public static ApiResponse<PagedData<T>> CreatePagedSuccess<T>(
+        public static ApiResponse<PagedResult<T>> CreatePagedSuccess<T>(
             IList<T> items, 
             int totalCount, 
             int currentPage, 
@@ -29,27 +30,27 @@ namespace LYBT.Shared.Models.Contracts.Common
         {
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             
-            var pagedData = new PagedData<T>
+            var pagedData = new PagedResult<T>
             {
-                Items = items,
+                Items = items.ToList(),
                 TotalCount = totalCount,
                 CurrentPage = currentPage,
-                PageSize = pageSize,
-                TotalPages = totalPages
+                PageSize = pageSize
+                // TotalPages 是计算属性，无需手动设置
             };
 
-            return ApiResponse<PagedData<T>>.CreateSuccess(pagedData, message);
+            return ApiResponse<PagedResult<T>>.CreateSuccess(pagedData, message);
         }
 
         /// <summary>
-        /// 从 PaginatedResult 创建分页响应
+        /// 从 PagedResult 创建分页响应
         /// </summary>
         /// <typeparam name="T">数据项类型</typeparam>
         /// <param name="pagedResult">分页结果</param>
         /// <param name="message">响应消息</param>
         /// <returns>统一的分页API响应</returns>
-        public static ApiResponse<PagedData<T>> CreatePagedSuccess<T>(
-            PaginatedResult<T> pagedResult,
+        public static ApiResponse<PagedResult<T>> CreatePagedSuccess<T>(
+            PagedResult<T> pagedResult,
             string message = "查询成功")
         {
             return CreatePagedSuccess(
@@ -69,7 +70,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <param name="pageSize">每页大小</param>
         /// <param name="message">响应消息</param>
         /// <returns>空数据的分页响应</returns>
-        public static ApiResponse<PagedData<T>> CreateEmptyPagedSuccess<T>(
+        public static ApiResponse<PagedResult<T>> CreateEmptyPagedSuccess<T>(
             int currentPage = 1,
             int pageSize = 10,
             string message = "查询成功，暂无数据")

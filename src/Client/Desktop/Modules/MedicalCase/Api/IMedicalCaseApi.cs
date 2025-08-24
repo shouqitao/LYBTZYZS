@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.Api
         /// 分页查询医疗案例
         /// </summary>
         [Get("/api/v1/medicalcase")]
-        Task<Refit.ApiResponse<PagedData<MedicalCaseDto>>> GetPagedAsync(
+        Task<Refit.ApiResponse<PagedResult<MedicalCaseDto>>> GetPagedAsync(
             [Query] int pageIndex = 1,
             [Query] int pageSize = 20);
 

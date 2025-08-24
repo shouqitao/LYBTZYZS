@@ -67,7 +67,7 @@ namespace LYBT.WebAPI.Controllers
                     var list = result.Data;
                     var totalCount = list.Count;
                     var pagedList = list.Take(pageSize).ToList();
-                    var paginatedResult = new PaginatedResult<PrescriptionDto>
+                    var paginatedResult = new PagedResult<PrescriptionDto>
                     {
                         TotalCount = totalCount,
                         Items = pagedList

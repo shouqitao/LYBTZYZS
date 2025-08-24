@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Modules.Herbs.Api
         /// 获取药材列表（支持分页和查询）
         /// </summary>
         [Get("/api/v1/herbs")]
-        Task<Refit.ApiResponse<PagedData<HerbDto>>> GetHerbsAsync(
+        Task<Refit.ApiResponse<PagedResult<HerbDto>>> GetHerbsAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null,
@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Modules.Herbs.Api
         /// 获取分页药材列表（兼容性别名）
         /// </summary>
         [Get("/api/v1/herbs")]
-        Task<Refit.ApiResponse<PagedData<HerbDto>>> GetPagedAsync(
+        Task<Refit.ApiResponse<PagedResult<HerbDto>>> GetPagedAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null);

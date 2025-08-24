@@ -16,7 +16,7 @@ LYBT.Shared 是系统的共享组件库，提供前后端统一的数据传输�
 LYBT.Shared.Models/
 ├── Common/                    # 通用模型
 │   ├── ApiResponse.cs         # 统一API响应格式
-│   ├── PagedData.cs          # 分页数据模型
+│   ├── PagedResult.cs          # 分页数据模型
 │   ├── BaseDto.cs            # DTO基类
 │   └── ServiceResult.cs      # 服务结果模型
 ├── Contracts/                # 业务契约模型
@@ -85,7 +85,7 @@ public class ApiResponse<T>
 
 ### 分页数据模型
 ```csharp
-public class PagedData<T>
+public class PagedResult<T>
 {
     public IEnumerable<T> Items { get; set; }
     public int TotalCount { get; set; }

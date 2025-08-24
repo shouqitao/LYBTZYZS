@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.Api
         /// 获取处方列表（支持分页和查询）
         /// </summary>
         [Get("/api/v1/prescriptions")]
-        Task<Refit.ApiResponse<PagedData<PrescriptionDto>>> GetListAsync(
+        Task<Refit.ApiResponse<PagedResult<PrescriptionDto>>> GetListAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null,

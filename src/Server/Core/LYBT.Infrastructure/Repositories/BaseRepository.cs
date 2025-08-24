@@ -1,6 +1,6 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -37,12 +37,12 @@ namespace LYBT.Infrastructure.Repositories
             return await _dbSet.Where(predicate).ToListAsync();
         }
 
-        public virtual async Task<PaginatedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize)
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize)
         {
             return await GetPagedAsync(null, pageNumber, pageSize);
         }
 
-        public virtual async Task<PaginatedResult<TEntity>> GetPagedAsync(
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
             Expression<Func<TEntity, bool>>? predicate, 
             int pageNumber, 
             int pageSize,
@@ -67,7 +67,7 @@ namespace LYBT.Infrastructure.Repositories
                 .Take(pageSize)
                 .ToListAsync();
 
-            return new PaginatedResult<TEntity>
+            return new PagedResult<TEntity>
             {
                 Items = items,
                 TotalCount = totalCount,
@@ -206,12 +206,12 @@ namespace LYBT.Infrastructure.Repositories
             return await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
         }
 
-        public virtual async Task<PaginatedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize)
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize)
         {
             return await GetPagedAsync(null, pageNumber, pageSize);
         }
 
-        public virtual async Task<PaginatedResult<TEntity>> GetPagedAsync(
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
             Expression<Func<TEntity, bool>>? predicate, 
             int pageNumber, 
             int pageSize,
@@ -236,7 +236,7 @@ namespace LYBT.Infrastructure.Repositories
                 .Take(pageSize)
                 .ToListAsync();
 
-            return new PaginatedResult<TEntity>
+            return new PagedResult<TEntity>
             {
                 Items = items,
                 TotalCount = totalCount,

@@ -1,5 +1,5 @@
 using LYBT.Infrastructure.Web;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +44,7 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 返回分页成功响应 - 统一格式：ApiResponse<PagedResult<T>>
         /// </summary>
-        protected ActionResult<ApiResponse<PagedResult<T>>> Success<T>(PaginatedResult<T> pagedResult, string message = "查询成功")
+        protected ActionResult<ApiResponse<PagedResult<T>>> Success<T>(PagedResult<T> pagedResult, string message = "查询成功")
         {
             var items = pagedResult.Items is List<T> list ? list : pagedResult.Items.ToList();
             var pageResult = new PagedResult<T>(items, pagedResult.TotalCount, pagedResult.CurrentPage, pagedResult.PageSize);

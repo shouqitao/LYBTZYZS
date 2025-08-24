@@ -154,10 +154,10 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 高级搜索患者（简化实现，委托给基本查询）
         /// </summary>
-        public async Task<PaginatedResult<PatientDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
+        public async Task<PagedResult<PatientDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
         {
             var result = await _queryHelper.AdvancedSearchAsync(query);
-            return result.IsSuccess ? result.Data : new PaginatedResult<PatientDto>
+            return result.IsSuccess ? result.Data : new PagedResult<PatientDto>
             {
                 TotalCount = 0,
                 Items = new List<PatientDto>(),

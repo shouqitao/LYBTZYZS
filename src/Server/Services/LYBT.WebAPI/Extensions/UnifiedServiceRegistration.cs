@@ -100,7 +100,7 @@ public static class UnifiedServiceRegistration
                 options.ExpirationScanFrequency = TimeSpan.FromSeconds(cacheOptions.MemoryCache.ExpirationScanFrequency);
             }
         });
-        services.AddSingleton<ICacheService, CacheService>();
+        // ICacheService已移除，直接使用IMemoryCache
 
         // =========== 配置选项绑定（支持环境变量覆盖）===========
         // 注册SysAdminOptions，优先使用环境变量

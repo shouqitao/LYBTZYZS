@@ -17,13 +17,13 @@ namespace LYBT.Desktop.Modules.Formula.Api
         /// 分页查询验方模板
         /// </summary>
         [Post("/api/v1/formulas/paged")]
-        Task<Refit.ApiResponse<PagedData<FormulaDto>>> GetPagedFormulasAsync([Body] PagedQueryBaseDto query);
+        Task<Refit.ApiResponse<PagedResult<FormulaDto>>> GetPagedFormulasAsync([Body] PagedQueryBaseDto query);
 
         /// <summary>
         /// 获取验方模板列表
         /// </summary>
         [Get("/api/v1/formulas")]
-        Task<Refit.ApiResponse<PagedData<FormulaDto>>> GetFormulasAsync(
+        Task<Refit.ApiResponse<PagedResult<FormulaDto>>> GetFormulasAsync(
             [Query] string? keyword = null,
             [Query] string? category = null);
 
@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Modules.Formula.Api
         /// 获取分页验方列表（兼容性别名）
         /// </summary>
         [Get("/api/v1/formulas")]
-        Task<Refit.ApiResponse<PagedData<FormulaDto>>> GetPagedAsync(
+        Task<Refit.ApiResponse<PagedResult<FormulaDto>>> GetPagedAsync(
             [Query] int page = 1,
             [Query] int pageSize = 20,
             [Query] string? keyword = null);
@@ -137,7 +137,7 @@ namespace LYBT.Desktop.Modules.Formula.Api
         /// 获取导入历史记录
         /// </summary>
         [Get("/api/v1/formulas/import/history")]
-        Task<Refit.ApiResponse<PagedData<FormulaImportResultDto>>> GetImportHistoryAsync(
+        Task<Refit.ApiResponse<PagedResult<FormulaImportResultDto>>> GetImportHistoryAsync(
             [Query] int pageIndex = 1,
             [Query] int pageSize = 20,
             [Query] string? importBatch = null);

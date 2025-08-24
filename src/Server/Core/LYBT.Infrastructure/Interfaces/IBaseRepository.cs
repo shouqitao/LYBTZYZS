@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using System.Linq.Expressions;
 
 namespace LYBT.Infrastructure.Interfaces
@@ -28,12 +28,12 @@ namespace LYBT.Infrastructure.Interfaces
         /// <summary>
         /// 获取分页数据
         /// </summary>
-        Task<PaginatedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize);
+        Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize);
 
         /// <summary>
         /// 根据条件获取分页数据
         /// </summary>
-        Task<PaginatedResult<TEntity>> GetPagedAsync(
+        Task<PagedResult<TEntity>> GetPagedAsync(
             Expression<Func<TEntity, bool>>? predicate, 
             int pageNumber, 
             int pageSize,
@@ -130,12 +130,12 @@ namespace LYBT.Infrastructure.Interfaces
         /// <summary>
         /// 获取分页数据
         /// </summary>
-        Task<PaginatedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize);
+        Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize);
 
         /// <summary>
         /// 根据条件获取分页数据
         /// </summary>
-        Task<PaginatedResult<TEntity>> GetPagedAsync(
+        Task<PagedResult<TEntity>> GetPagedAsync(
             Expression<Func<TEntity, bool>>? predicate, 
             int pageNumber, 
             int pageSize,

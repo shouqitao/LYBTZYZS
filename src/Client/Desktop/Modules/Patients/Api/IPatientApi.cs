@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Modules.Patients.Api
         /// 获取患者列表（支持分页和查询）
         /// </summary>
         [Get("/api/v1/patients")]
-        Task<Refit.ApiResponse<PagedData<PatientDto>>> GetPatientsAsync(
+        Task<Refit.ApiResponse<PagedResult<PatientDto>>> GetPatientsAsync(
             [Query] int pageIndex = 1,
             [Query] int pageSize = 20,
             [Query] string? searchTerm = null);

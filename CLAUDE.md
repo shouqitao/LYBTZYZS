@@ -813,11 +813,11 @@ public async Task<Result> MethodName(Type param)
 
 ### 必须遵循的规则
 
-1. **🎯 UltraThink四层架构** (最高优先级): 
-   - Desktop层(Layer 4)严禁直接使用Contracts(Layer 3)的DTOs
-   - 必须创建Info模型进行UI数据绑定
-   - 必须使用AutoMapper实现DTO↔Info转换
-   - ViewModels必须注入IMapper依赖
+1. **🎯 UltraThink三层模块化架构** (最高优先级): 
+   - Desktop层直接使用Shared.Models.Contracts的DTOs (设计决策)
+   - ViewModels直接绑定DTO对象，无需额外转换层
+   - 保持前后端接口一致性，避免数据转换开销
+   - 专注业务逻辑实现，避免过度抽象
 2. **数据库迁移**: 只能在 `LYBT.Infrastructure` 项目中添加
 3. **数据访问**: 使用统一的 `AppDbContext`
 4. **API 响应格式**: 遵循 [API响应标准](docs/API响应标准.md)

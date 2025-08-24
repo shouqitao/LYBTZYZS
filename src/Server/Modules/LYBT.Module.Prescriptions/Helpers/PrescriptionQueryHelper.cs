@@ -89,7 +89,7 @@ namespace LYBT.Module.Prescriptions.Helpers
         /// <summary>
         /// 分页获取处方列表
         /// </summary>
-        public async Task<ServiceResult<PaginatedResult<PrescriptionDto>>> GetPagedAsync(PagedQueryBaseDto query)
+        public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(PagedQueryBaseDto query)
         {
             try
             {
@@ -125,13 +125,13 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 映射到DTO
                 var pagedList = _mapper.Map<List<PrescriptionDto>>(pagedModels);
 
-                var result = new PaginatedResult<PrescriptionDto>(pagedList, total, query.PageIndex, query.PageSize);
-                return ServiceResult<PaginatedResult<PrescriptionDto>>.Success(result);
+                var result = new PagedResult<PrescriptionDto>(pagedList, total, query.PageIndex, query.PageSize);
+                return ServiceResult<PagedResult<PrescriptionDto>>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "分页查询处方失败");
-                return ServiceResult<PaginatedResult<PrescriptionDto>>.Failure("分页查询处方失败", ex);
+                return ServiceResult<PagedResult<PrescriptionDto>>.Failure("分页查询处方失败", ex);
             }
         }
 
