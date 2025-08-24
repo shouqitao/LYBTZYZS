@@ -1,30 +1,27 @@
-using System.Windows;
+using System;
+using System.Threading.Tasks;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Herbs.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using Prism.Commands;
-using Prism.Mvvm;
+using Prism.Events;
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
     /// 中药材新增/编辑对话框视图模型
     /// </summary>
-    public class HerbAddEditDialogViewModel : BindableBase
+    public class HerbAddEditDialogViewModel : DialogViewModel
     {
         private readonly HerbModuleService _herbApiService;
         private readonly HerbDto? _originalHerb;
         private bool _isEditMode;
 
         #region Properties
-
-        private string _dialogTitle = "新增中药材";
-        public string DialogTitle
-        {
-            get => _dialogTitle;
-            set => SetProperty(ref _dialogTitle, value);
-        }
 
         private string _herbName = string.Empty;
         public string HerbName
@@ -34,11 +31,12 @@ namespace LYBT.Desktop.Herbs.ViewModels
             {
                 if (SetProperty(ref _herbName, value))
                 {
-                    // 自动生成拼音码和五笔码（仅新增时）
+                    // 自动生成拼音码（仅新增时）
                     if (!_isEditMode)
                     {
                         GenerateCodes();
                     }
+                    SaveCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -49,7 +47,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
             get => _pinYinCode;
             set => SetProperty(ref _pinYinCode, value);
         }
-
 
         private string _origin = string.Empty;
         public string Origin
@@ -65,18 +62,30 @@ namespace LYBT.Desktop.Herbs.ViewModels
             set => SetProperty(ref _spec, value);
         }
 
-        private string _unit = "克";
+        private string _unit = SystemConstants.DefaultHerbUnit;
         public string Unit
         {
             get => _unit;
-            set => SetProperty(ref _unit, value);
+            set
+            {
+                if (SetProperty(ref _unit, value))
+                {
+                    SaveCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private decimal _price = 0;
         public decimal Price
         {
             get => _price;
-            set => SetProperty(ref _price, value);
+            set
+            {
+                if (SetProperty(ref _price, value))
+                {
+                    SaveCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private string _effect = string.Empty;
@@ -102,105 +111,73 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #endregion
 
-        #region Commands
-
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-
-        #endregion
-
-        #region Callbacks
-
-        /// <summary>
-        /// 保存完成回调
-        /// </summary>
-        public Action<bool>? SaveCompleteCallback { get; set; }
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="herbApiService">中药材API服务</param>
+        /// <param name="eventAggregator">事件聚合器</param>
+        /// <param name="errorHandlingService">错误处理服务</param>
         /// <param name="herb">要编辑的药材信息（null表示新增模式）</param>
-        public HerbAddEditDialogViewModel(HerbModuleService herbApiService, HerbDto? herb = null)
+        public HerbAddEditDialogViewModel(
+            HerbModuleService herbApiService, 
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService,
+            HerbDto? herb = null)
+            : base(eventAggregator, errorHandlingService)
         {
             _herbApiService = herbApiService ?? throw new ArgumentNullException(nameof(herbApiService));
             _originalHerb = herb;
             _isEditMode = herb != null;
-
-            // 初始化命令
-            SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave)
-                .ObservesProperty(() => HerbName)
-                .ObservesProperty(() => Unit)
-                .ObservesProperty(() => Price);
-            
-            CancelCommand = new DelegateCommand(ExecuteCancel);
 
             // 如果是编辑模式，初始化数据
             if (_isEditMode && herb != null)
             {
                 InitializeEditData(herb);
             }
+            else
+            {
+                DialogTitle = SystemConstants.AddHerbDialogTitle;
+            }
+
+            InitializeDialog();
+        }
+
+        /// <summary>
+        /// 兼容性构造函数
+        /// </summary>
+        public HerbAddEditDialogViewModel(
+            HerbModuleService herbApiService,
+            IEventAggregator eventAggregator,
+            HerbDto? herb = null)
+            : base(eventAggregator)
+        {
+            _herbApiService = herbApiService ?? throw new ArgumentNullException(nameof(herbApiService));
+            _originalHerb = herb;
+            _isEditMode = herb != null;
+
+            // 如果是编辑模式，初始化数据
+            if (_isEditMode && herb != null)
+            {
+                InitializeEditData(herb);
+            }
+            else
+            {
+                DialogTitle = SystemConstants.AddHerbDialogTitle;
+            }
+
+            InitializeDialog();
         }
 
         #endregion
 
-        #region Private Methods
+        #region DialogViewModel Implementation
 
-        /// <summary>
-        /// 初始化编辑数据
-        /// </summary>
-        private void InitializeEditData(HerbDto herb)
-        {
-            DialogTitle = "编辑中药材";
-            HerbName = herb.Name;
-            PinYinCode = herb.PinYinCode ?? string.Empty;
-            Origin = herb.Origin ?? string.Empty;
-            Spec = herb.Spec ?? string.Empty;
-            Unit = herb.Unit ?? "克";
-            Price = herb.Price;
-            Effect = herb.Effect ?? string.Empty;
-            Usage = herb.Usage ?? string.Empty;
-            Remark = herb.Remark ?? string.Empty;
-        }
-
-        /// <summary>
-        /// 自动生成拼音码和五笔码
-        /// </summary>
-        private void GenerateCodes()
-        {
-            if (!string.IsNullOrWhiteSpace(HerbName))
-            {
-                PinYinCode = CommonHelper.GetPinyinCode(HerbName);
-            }
-            else
-            {
-                PinYinCode = string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// 判断是否可以保存
-        /// </summary>
-        private bool CanExecuteSave()
-        {
-            return !string.IsNullOrWhiteSpace(HerbName) &&
-                   !string.IsNullOrWhiteSpace(Unit) &&
-                   Price > 0;
-        }
-
-        /// <summary>
-        /// 执行保存
-        /// </summary>
-        private async Task ExecuteSaveAsync()
+        protected override async Task<bool> SaveAsync()
         {
             try
             {
-                bool result;
-
                 if (_isEditMode && _originalHerb != null)
                 {
                     // 编辑模式
@@ -219,11 +196,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     };
 
                     var response = await _herbApiService.UpdateAsync(_originalHerb.Id, updateDto);
-                    result = response.IsSuccess;
                     
-                    if (!result)
+                    if (!response.IsSuccess)
                     {
-                        MessageBox.Show($"编辑中药材失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ErrorMessage = response.ErrorMessage ?? "编辑中药材失败";
+                        return false;
                     }
                 }
                 else
@@ -244,30 +221,74 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     };
 
                     var response = await _herbApiService.CreateAsync(createDto);
-                    result = response.IsSuccess;
                     
-                    if (!result)
+                    if (!response.IsSuccess)
                     {
-                        MessageBox.Show($"新增中药材失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ErrorMessage = response.ErrorMessage ?? "新增中药材失败";
+                        return false;
                     }
                 }
 
-                // 调用回调
-                SaveCompleteCallback?.Invoke(result);
+                return true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存中药材时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                SaveCompleteCallback?.Invoke(false);
+                await HandleErrorAsync("保存中药材", ex);
+                return false;
             }
         }
 
-        /// <summary>
-        /// 执行取消
-        /// </summary>
-        private void ExecuteCancel()
+        protected override bool CanSave()
         {
-            SaveCompleteCallback?.Invoke(false);
+            return !string.IsNullOrWhiteSpace(HerbName) &&
+                   !string.IsNullOrWhiteSpace(Unit) &&
+                   Price > 0;
+        }
+
+        protected override void InitializeDialog()
+        {
+            base.InitializeDialog();
+            
+            // 监听属性变化以更新Command状态  
+            SaveCommand.ObservesProperty(() => HerbName);
+            SaveCommand.ObservesProperty(() => Unit);
+            SaveCommand.ObservesProperty(() => Price);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// 初始化编辑数据
+        /// </summary>
+        private void InitializeEditData(HerbDto herb)
+        {
+            DialogTitle = SystemConstants.EditHerbDialogTitle;
+            HerbName = herb.Name;
+            PinYinCode = herb.PinYinCode ?? string.Empty;
+            Origin = herb.Origin ?? string.Empty;
+            Spec = herb.Spec ?? string.Empty;
+            Unit = herb.Unit ?? SystemConstants.DefaultHerbUnit;
+            Price = herb.Price;
+            Effect = herb.Effect ?? string.Empty;
+            Usage = herb.Usage ?? string.Empty;
+            Remark = herb.Remark ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 自动生成拼音码
+        /// </summary>
+        private void GenerateCodes()
+        {
+            if (!string.IsNullOrWhiteSpace(HerbName))
+            {
+                PinYinCode = CommonHelper.GetPinyinCode(HerbName);
+            }
+            else
+            {
+                PinYinCode = string.Empty;
+            }
         }
 
         #endregion

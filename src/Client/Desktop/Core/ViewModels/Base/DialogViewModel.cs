@@ -1,44 +1,47 @@
-using LYBT.Shared.Models.Contracts.Common;
 using System;
-using System.Windows;
+using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
     /// <summary>
     /// 对话框ViewModel基类
-    /// 提供对话框通用功能：确认/取消、消息框显示等
+    /// 提供标准化的保存、取消操作和对话框结果处理
     /// </summary>
     public abstract class DialogViewModel : ServiceViewModel
     {
-        private string _title = string.Empty;
-        private bool _isModal = true;
+        private string _dialogTitle = string.Empty;
+        private bool _isSaving;
 
         /// <summary>
         /// 对话框标题
         /// </summary>
-        public string Title
+        public string DialogTitle
         {
-            get => _title;
-            set => SetProperty(ref _title, value);
+            get => _dialogTitle;
+            set => SetProperty(ref _dialogTitle, value);
         }
 
         /// <summary>
-        /// 是否为模态对话框
+        /// 是否正在保存
         /// </summary>
-        public bool IsModal
+        public bool IsSaving
         {
-            get => _isModal;
-            set => SetProperty(ref _isModal, value);
+            get => _isSaving;
+            protected set
+            {
+                SetProperty(ref _isSaving, value);
+                SaveCommand.RaiseCanExecuteChanged();
+                CancelCommand.RaiseCanExecuteChanged();
+            }
         }
 
         /// <summary>
-        /// 确认命令
+        /// 保存命令
         /// </summary>
-        public DelegateCommand ConfirmCommand { get; protected set; }
+        public DelegateCommand SaveCommand { get; protected set; }
 
         /// <summary>
         /// 取消命令
@@ -46,9 +49,9 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         public DelegateCommand CancelCommand { get; protected set; }
 
         /// <summary>
-        /// 对话框结果
+        /// 对话框结果回调
         /// </summary>
-        public bool? DialogResult { get; protected set; }
+        public Action<bool>? DialogResultCallback { get; set; }
 
         public DialogViewModel(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
             : base(eventAggregator, errorHandlingService)
@@ -63,43 +66,36 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
         private void InitializeCommands()
         {
-            ConfirmCommand = new DelegateCommand(async () => await ExecuteConfirmAsync(), CanExecuteConfirm);
+            SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel, CanExecuteCancel);
         }
 
         /// <summary>
-        /// 执行确认操作
+        /// 执行保存命令
         /// </summary>
-        protected virtual async System.Threading.Tasks.Task ExecuteConfirmAsync()
+        private async Task ExecuteSaveAsync()
         {
             try
             {
-                IsLoading = true;
+                IsSaving = true;
                 ClearError();
+
+                var success = await SaveAsync();
                 
-                if (await OnConfirmAsync())
+                if (success)
                 {
-                    DialogResult = true;
-                    OnDialogCompleted();
+                    OnDialogClosing();
+                    DialogResultCallback?.Invoke(true);
                 }
             }
             catch (Exception ex)
             {
-                HandleError("确认操作", ex);
+                await HandleErrorAsync("保存", ex);
             }
             finally
             {
-                IsLoading = false;
+                IsSaving = false;
             }
-        }
-
-        /// <summary>
-        /// 子类重写此方法实现具体的确认逻辑
-        /// </summary>
-        /// <returns>返回true表示操作成功，对话框将关闭</returns>
-        protected virtual System.Threading.Tasks.Task<bool> OnConfirmAsync()
-        {
-            return System.Threading.Tasks.Task.FromResult(true);
         }
 
         /// <summary>
@@ -107,75 +103,51 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual void ExecuteCancel()
         {
-            if (OnCancel())
-            {
-                DialogResult = false;
-                OnDialogCompleted();
-            }
+            OnDialogClosing();
+            DialogResultCallback?.Invoke(false);
         }
 
         /// <summary>
-        /// 子类重写此方法实现具体的取消逻辑
+        /// 执行保存操作 - 子类必须实现
         /// </summary>
-        /// <returns>返回true表示允许取消</returns>
-        protected virtual bool OnCancel()
-        {
-            return true;
-        }
+        /// <returns>保存是否成功</returns>
+        protected abstract Task<bool> SaveAsync();
 
         /// <summary>
-        /// 对话框完成时调用
+        /// 验证是否可以保存 - 子类可重写
         /// </summary>
-        protected virtual void OnDialogCompleted()
-        {
-            // 子类可以重写此方法进行清理或通知
-        }
+        protected virtual bool CanSave() => true;
 
         /// <summary>
-        /// 是否可以执行确认操作
+        /// 初始化对话框数据 - 子类可重写
         /// </summary>
-        protected virtual bool CanExecuteConfirm()
+        protected virtual void InitializeDialog() { }
+
+        /// <summary>
+        /// 对话框关闭前的清理操作 - 子类可重写
+        /// </summary>
+        protected virtual void OnDialogClosing() { }
+
+        /// <summary>
+        /// 判断是否可以执行保存
+        /// </summary>
+        protected virtual bool CanExecuteSave()
         {
-            return !IsLoading && !HasError;
+            return !IsSaving && !IsLoading && CanSave();
         }
 
         /// <summary>
-        /// 是否可以执行取消操作
+        /// 判断是否可以执行取消
         /// </summary>
         protected virtual bool CanExecuteCancel()
         {
-            return !IsLoading;
-        }
-
-        /// <summary>
-        /// 显示确认对话框
-        /// </summary>
-        protected bool ShowConfirmDialog(string message, string title = "确认")
-        {
-            var result = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
-            return result == MessageBoxResult.Yes;
-        }
-
-        /// <summary>
-        /// 显示信息对话框
-        /// </summary>
-        protected void ShowInfoDialog(string message, string title = "信息")
-        {
-            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        /// <summary>
-        /// 显示错误对话框
-        /// </summary>
-        protected void ShowErrorDialog(string message, string title = "错误")
-        {
-            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            return !IsSaving;
         }
 
         protected override void OnLoadingStateChanged(bool isLoading)
         {
             base.OnLoadingStateChanged(isLoading);
-            ConfirmCommand.RaiseCanExecuteChanged();
+            SaveCommand.RaiseCanExecuteChanged();
             CancelCommand.RaiseCanExecuteChanged();
         }
     }

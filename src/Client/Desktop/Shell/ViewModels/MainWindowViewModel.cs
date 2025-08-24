@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Mvvm;
 using Prism.Regions;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Auth.Views;
 using LYBT.Desktop.Core.Configuration;
@@ -22,60 +24,21 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// <summary>
     /// 主窗口视图模型
     /// </summary>
-    public class MainWindowViewModel : BindableBase
+    public class MainWindowViewModel : ServiceViewModel
     {
         private readonly LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService _commonDialogService;
 
         private readonly LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService _authService;
         private readonly IRegionManager _regionManager;
-        private readonly IEventAggregator _eventAggregator;
         private readonly LYBT.Desktop.Core.Interfaces.Services.IPermissionService _permissionService;
         private readonly IUserService _userService;
         private readonly IWorkbenchRouter _workbenchRouter;
         private readonly ApiTestService _apiTestService;
         private readonly LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer _uiOptimizer;
 
-        private string _title = "凌隐宝堂中医诊所诊疗系统";
+        private string _title = SystemConstants.SystemTitle;
         private UserDto? _currentUser;
         private bool _isLoggedIn = false;
-
-        public DelegateCommand LogoutCommand { get; }
-        public DelegateCommand TestApiCommand { get; }
-        public DelegateCommand ShowControlExamplesCommand { get; }
-
-        public MainWindowViewModel(IRegionManager regionManager,
-            IEventAggregator eventAggregator,
-            LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService authService,
-            LYBT.Desktop.Core.Interfaces.Services.IPermissionService permissionService,
-            IUserService userService,
-            LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService commonDialogService,
-            IWorkbenchRouter workbenchRouter,
-            ApiTestService apiTestService,
-            LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer uiOptimizer)
-        {
-            _commonDialogService = commonDialogService;
-            _regionManager = regionManager;
-            _eventAggregator = eventAggregator;
-            _authService = authService;
-            _permissionService = permissionService;
-            _userService = userService;
-            _workbenchRouter = workbenchRouter;
-            _apiTestService = apiTestService;
-            _uiOptimizer = uiOptimizer;
-
-            LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync());
-            TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync(), () => _isLoggedIn);
-            ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples, () => _isLoggedIn);
-
-            // 订阅登录成功事件
-            _eventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
-
-            // 延迟检查登录状态，等待主窗口完全加载
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                _ = CheckLoginStatusAsync();
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
-        }
 
         /// <summary>窗口标题</summary>
         public string Title
@@ -95,11 +58,46 @@ namespace LYBT.Desktop.Shell.ViewModels
         public bool IsLoggedIn
         {
             get => _isLoggedIn;
-            set
+            set => SetProperty(ref _isLoggedIn, value);
+        }
+
+        public DelegateCommand LogoutCommand { get; }
+        public DelegateCommand TestApiCommand { get; }
+        public DelegateCommand ShowControlExamplesCommand { get; }
+
+        public MainWindowViewModel(IRegionManager regionManager,
+            IEventAggregator eventAggregator,
+            LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService authService,
+            LYBT.Desktop.Core.Interfaces.Services.IPermissionService permissionService,
+            IUserService userService,
+            LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService commonDialogService,
+            IWorkbenchRouter workbenchRouter,
+            ApiTestService apiTestService,
+            LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer uiOptimizer,
+            IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
+        {
+            _commonDialogService = commonDialogService;
+            _regionManager = regionManager;
+            _authService = authService;
+            _permissionService = permissionService;
+            _userService = userService;
+            _workbenchRouter = workbenchRouter;
+            _apiTestService = apiTestService;
+            _uiOptimizer = uiOptimizer;
+
+            LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync());
+            TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync(), () => _isLoggedIn);
+            ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples, () => _isLoggedIn);
+
+            // 订阅登录成功事件
+            EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
+
+            // 延迟检查登录状态，等待主窗口完全加载
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                SetProperty(ref _isLoggedIn, value);
-                RaisePropertyChanged(nameof(IsNotLoggedIn));
-            }
+                _ = CheckLoginStatusAsync();
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         /// <summary>是否未登录（用于界面显示）</summary>
@@ -118,7 +116,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     await _authService.LogoutAsync();
 
                     // 发布登出事件以清除登录状态消息
-                    _eventAggregator.GetEvent<LogoutEvent>().Publish();
+                    EventAggregator.GetEvent<LogoutEvent>().Publish();
 
                     // 清除用户信息
                     CurrentUser = null;
@@ -204,24 +202,24 @@ namespace LYBT.Desktop.Shell.ViewModels
 
             // 判断用户角色
             string userRole;
-            if (CurrentUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
+            if (CurrentUser.Username?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true)
             {
-                userRole = "管理员";
+                userRole = SystemConstants.RoleDisplayNames.SuperAdmin;
             }
-            else if (CurrentUser.Role?.Equals("Doctor", StringComparison.OrdinalIgnoreCase) == true ||
-                     CurrentUser.Role?.Equals("医生", StringComparison.OrdinalIgnoreCase) == true)
+            else if (CurrentUser.Role?.Equals(SystemConstants.DoctorRole, StringComparison.OrdinalIgnoreCase) == true ||
+                     CurrentUser.Role?.Equals(SystemConstants.RoleDisplayNames.Doctor, StringComparison.OrdinalIgnoreCase) == true)
             {
-                userRole = "医生";
+                userRole = SystemConstants.RoleDisplayNames.Doctor;
             }
-            else if (CurrentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true ||
-                     CurrentUser.Role?.Equals("管理员", StringComparison.OrdinalIgnoreCase) == true)
+            else if (CurrentUser.Role?.Equals(SystemConstants.AdminRole, StringComparison.OrdinalIgnoreCase) == true ||
+                     CurrentUser.Role?.Equals(SystemConstants.RoleDisplayNames.Admin, StringComparison.OrdinalIgnoreCase) == true)
             {
-                userRole = "管理员";
+                userRole = SystemConstants.RoleDisplayNames.Admin;
             }
             else
             {
                 // 默认角色
-                userRole = "医生";
+                userRole = SystemConstants.RoleDisplayNames.Doctor;
             }
 
             // 使用WorkbenchRouter获取工作台信息
