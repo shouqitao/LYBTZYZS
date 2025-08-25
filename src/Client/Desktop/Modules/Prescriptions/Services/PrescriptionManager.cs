@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

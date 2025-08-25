@@ -119,8 +119,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         public DelegateCommand NavigateToUserManagementCommand { get; }
         public DelegateCommand NavigateToHerbManagementCommand { get; }
         public DelegateCommand NavigateToFormulaManagementCommand { get; }
-        public DelegateCommand NavigateToSystemSettingsCommand { get; }
-        public DelegateCommand NavigateToDataBackupCommand { get; }
+        // 非核心功能命令已清理
 
         #endregion
 
@@ -160,8 +159,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             NavigateToUserManagementCommand = new DelegateCommand(EnterSystemManagementWithUserModule);
             NavigateToHerbManagementCommand = new DelegateCommand(EnterSystemManagementWithHerbModule);
             NavigateToFormulaManagementCommand = new DelegateCommand(EnterSystemManagementWithFormulaModule);
-            NavigateToSystemSettingsCommand = new DelegateCommand(() => NavigateTo("SystemSettingsView"));
-            NavigateToDataBackupCommand = new DelegateCommand(() => NavigateTo("DataBackupView"));
+            // 非核心功能命令初始化已清理
 
             // 初始化定时器
             _timer = new DispatcherTimer

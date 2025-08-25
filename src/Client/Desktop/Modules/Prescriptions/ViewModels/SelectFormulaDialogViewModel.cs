@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;

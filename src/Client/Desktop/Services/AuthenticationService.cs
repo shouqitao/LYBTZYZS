@@ -8,7 +8,7 @@ using Polly.Extensions.Http;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Services;
-using LYBT.Desktop.Services.Interfaces;
+
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;

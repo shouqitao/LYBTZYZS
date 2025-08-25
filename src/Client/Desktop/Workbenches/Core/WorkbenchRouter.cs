@@ -26,31 +26,23 @@ namespace LYBT.Desktop.Workbench.Core
         /// </summary>
         private void InitializeDefaultWorkbenches()
         {
-            // 管理员工作台 - 完整的管理功能访问权限
+            // 管理员工作台 - 8个核心业务模块访问权限
             RegisterWorkbench("管理员", "SystemWorkbenchMainView", new List<string>
             {
-                "Dashboard", "Users", "Patients", "MedicalCase", "Consultation", 
-                "Herbs", "Formula", "Prescriptions", "Reports", "SystemSettings"
+                "Users", "Patients", "MedicalCase", "Consultation", 
+                "Herbs", "Formula", "Prescriptions"
             });
 
-            // 医生工作台
+            // 医生工作台 - 医生角色别名
             RegisterWorkbench("用户", "ConsultationWorkbenchMainView", new List<string>
             {
-                "Patients", "Consultation", "Prescriptions", "Formula", 
-                "MedicalCase", "PatientHistory"
+                "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
             });
 
             // 医生角色别名
             RegisterWorkbench("医生", "ConsultationWorkbenchMainView", new List<string>
             {
-                "Patients", "Consultation", "Prescriptions", "Formula", 
-                "MedicalCase", "PatientHistory"
-            });
-
-            // 预留：前台工作台
-            RegisterWorkbench("前台", "ReceptionWorkbenchMainView", new List<string>
-            {
-                "Patients", "Registration", "Appointment", "Queue", "Billing"
+                "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
             });
         }
 
@@ -127,17 +119,7 @@ namespace LYBT.Desktop.Workbench.Core
         {
             return new List<NavigationItem>
             {
-                new NavigationItem
-                {
-                    Id = "dashboard",
-                    DisplayName = "仪表板",
-                    Icon = "Dashboard",
-                    ViewName = "DashboardView",
-                    Module = "Dashboard",
-                    Order = 1
-                },
-                NavigationItem.CreateSeparator(),
-                // 用户和权限管理
+                // 用户和患者管理
                 new NavigationItem
                 {
                     Id = "users",
@@ -145,16 +127,7 @@ namespace LYBT.Desktop.Workbench.Core
                     Icon = "\uE77B", // 用户图标
                     ViewName = "UserManagementView",
                     Module = "Users",
-                    Order = 2
-                },
-                new NavigationItem
-                {
-                    Id = "roles",
-                    DisplayName = "角色管理",
-                    Icon = "\uE8D8", // 权限图标
-                    ViewName = "RoleManagementView",
-                    Module = "Roles",
-                    Order = 3
+                    Order = 1
                 },
                 new NavigationItem
                 {
@@ -163,18 +136,10 @@ namespace LYBT.Desktop.Workbench.Core
                     Icon = "\uE716", // 联系人图标
                     ViewName = "PatientManagementView",
                     Module = "Patients",
-                    Order = 4
-                },
-                new NavigationItem
-                {
-                    Id = "patient-reception",
-                    DisplayName = "患者接待",
-                    Icon = "\uE8D7", // 医院图标
-                    ViewName = "PatientReceptionView",
-                    Module = "Patients",
-                    Order = 5
+                    Order = 2
                 },
                 NavigationItem.CreateSeparator(),
+                
                 // 诊疗管理
                 new NavigationItem
                 {
@@ -183,7 +148,7 @@ namespace LYBT.Desktop.Workbench.Core
                     Icon = "\uE8C8", // 文档图标
                     ViewName = "MedicalCaseManagementView",
                     Module = "MedicalCase",
-                    Order = 6
+                    Order = 3
                 },
                 new NavigationItem
                 {
@@ -192,9 +157,10 @@ namespace LYBT.Desktop.Workbench.Core
                     Icon = "\uE8D4", // 检查图标
                     ViewName = "ConsultationManagementView",
                     Module = "Consultation",
-                    Order = 7
+                    Order = 4
                 },
                 NavigationItem.CreateSeparator(),
+                
                 // 药材和处方管理
                 new NavigationItem
                 {
@@ -203,7 +169,7 @@ namespace LYBT.Desktop.Workbench.Core
                     Icon = "\uEB42", // 药品图标
                     ViewName = "HerbManagementView",
                     Module = "Herbs",
-                    Order = 8
+                    Order = 5
                 },
                 new NavigationItem
                 {
@@ -212,7 +178,7 @@ namespace LYBT.Desktop.Workbench.Core
                     Icon = "\uE8C7", // 方案图标
                     ViewName = "FormulaManagementView",
                     Module = "Formula",
-                    Order = 9
+                    Order = 6
                 },
                 new NavigationItem
                 {
@@ -221,63 +187,7 @@ namespace LYBT.Desktop.Workbench.Core
                     Icon = "\uE8D5", // 处方图标
                     ViewName = "PrescriptionManagementView",
                     Module = "Prescriptions",
-                    Order = 10
-                },
-                NavigationItem.CreateSeparator(),
-                // 系统管理
-                new NavigationItem
-                {
-                    Id = "reports",
-                    DisplayName = "报表统计",
-                    Icon = "\uE9A9", // 图表图标
-                    ViewName = "ReportsView",
-                    Module = "Reports",
-                    Order = 11
-                },
-                new NavigationItem
-                {
-                    Id = "settings",
-                    DisplayName = "系统设置",
-                    Icon = "\uE713", // 设置图标
-                    ViewName = "SystemSettingsView",
-                    Module = "SystemSettings",
-                    Order = 12
-                },
-                new NavigationItem
-                {
-                    Id = "backup",
-                    DisplayName = "数据备份",
-                    Icon = "\uE896", // 备份图标
-                    ViewName = "BackupManagementView",
-                    Module = "Backup",
-                    Order = 13
-                },
-                new NavigationItem
-                {
-                    Id = "logs",
-                    DisplayName = "系统日志",
-                    Icon = "\uE8F4", // 历史图标
-                    ViewName = "SystemLogsView",
-                    Module = "Logs",
-                    Order = 14
-                },
-                new NavigationItem
-                {
-                    Id = "system-info",
-                    DisplayName = "系统信息",
-                    Icon = "\uE946", // 信息图标
-                    ViewName = "SystemInfoView",
-                    Module = "SystemInfo",
-                    Order = 15
-                },
-                new NavigationItem
-                {
-                    Id = "license",
-                    DisplayName = "许可证管理",
-                    Icon = "\uE8AC", // 许可证图标
-                    ViewName = "LicenseManagementView",
-                    Module = "License",
-                    Order = 16
+                    Order = 7
                 }
             };
         }
@@ -286,6 +196,7 @@ namespace LYBT.Desktop.Workbench.Core
         {
             return new List<NavigationItem>
             {
+                // 核心诊疗功能
                 new NavigationItem
                 {
                     Id = "consultation",
@@ -297,52 +208,50 @@ namespace LYBT.Desktop.Workbench.Core
                     BadgeText = "3",
                     BadgeType = "info"
                 },
+                NavigationItem.CreateSeparator(),
+                
+                // 患者管理
                 new NavigationItem
                 {
-                    Id = "patient-quick",
-                    DisplayName = "快速建档",
-                    Icon = "QuickAdd",
-                    ViewName = "QuickPatientCreateView",
+                    Id = "patients",
+                    DisplayName = "患者档案",
+                    Icon = "Patients",
+                    ViewName = "PatientManagementView",
                     Module = "Patients",
                     Order = 2
                 },
                 NavigationItem.CreateSeparator(),
+                
+                // 处方和验方
                 new NavigationItem
                 {
                     Id = "prescriptions",
                     DisplayName = "我的处方",
                     Icon = "MyPrescriptions",
-                    ViewName = "MyPrescriptionsView",
+                    ViewName = "PrescriptionManagementView",
                     Module = "Prescriptions",
-                    Order = 4
+                    Order = 3
                 },
                 new NavigationItem
                 {
                     Id = "formulas",
                     DisplayName = "常用验方",
                     Icon = "Formulas",
-                    ViewName = "FrequentFormulasView",
+                    ViewName = "FormulaManagementView",
                     Module = "Formula",
-                    Order = 5
+                    Order = 4
                 },
                 NavigationItem.CreateSeparator(),
+                
+                // 病历查询
                 new NavigationItem
                 {
                     Id = "medical-cases",
                     DisplayName = "病历查询",
                     Icon = "MedicalCase",
-                    ViewName = "MedicalCaseSearchView",
+                    ViewName = "MedicalCaseListView",
                     Module = "MedicalCase",
-                    Order = 7
-                },
-                new NavigationItem
-                {
-                    Id = "patient-history",
-                    DisplayName = "患者历史",
-                    Icon = "History",
-                    ViewName = "PatientHistoryView",
-                    Module = "PatientHistory",
-                    Order = 8
+                    Order = 5
                 }
             };
         }
@@ -351,51 +260,27 @@ namespace LYBT.Desktop.Workbench.Core
         {
             return new List<NavigationItem>
             {
+                // 患者接待核心功能
                 new NavigationItem
                 {
-                    Id = "registration",
-                    DisplayName = "挂号登记",
-                    Icon = "Registration",
-                    ViewName = "RegistrationView",
-                    Module = "Registration",
-                    Order = 1
-                },
-                new NavigationItem
-                {
-                    Id = "patient-create",
+                    Id = "patients",
                     DisplayName = "患者建档",
                     Icon = "NewPatient",
-                    ViewName = "PatientCreateView",
+                    ViewName = "PatientManagementView",
                     Module = "Patients",
-                    Order = 2
-                },
-                new NavigationItem
-                {
-                    Id = "queue",
-                    DisplayName = "排队管理",
-                    Icon = "Queue",
-                    ViewName = "QueueManagementView",
-                    Module = "Queue",
-                    Order = 3
+                    Order = 1
                 },
                 NavigationItem.CreateSeparator(),
+                
+                // 医疗案例查看
                 new NavigationItem
                 {
-                    Id = "appointment",
-                    DisplayName = "预约管理",
-                    Icon = "Appointment",
-                    ViewName = "AppointmentView",
-                    Module = "Appointment",
-                    Order = 5
-                },
-                new NavigationItem
-                {
-                    Id = "billing",
-                    DisplayName = "收费管理",
-                    Icon = "Billing",
-                    ViewName = "BillingView",
-                    Module = "Billing",
-                    Order = 6
+                    Id = "medical-cases",
+                    DisplayName = "就诊记录",
+                    Icon = "MedicalCase",
+                    ViewName = "MedicalCaseListView",
+                    Module = "MedicalCase",
+                    Order = 2
                 }
             };
         }
@@ -421,13 +306,13 @@ namespace LYBT.Desktop.Workbench.Core
             switch (workbench)
             {
                 case "SystemWorkbenchMainView":
-                    return "DashboardView";
+                    return "UserManagementView"; // 管理员默认进入用户管理
                 case "ConsultationWorkbenchMainView":
-                    return "ConsultationMainView";
+                    return "ConsultationMainView"; // 医生默认进入看诊界面
                 case "ReceptionWorkbenchMainView":
-                    return "RegistrationView";
+                    return "PatientManagementView"; // 前台默认进入患者管理
                 default:
-                    return "HomeView";
+                    return "ConsultationMainView"; // 默认看诊界面
             }
         }
 
@@ -511,7 +396,7 @@ namespace LYBT.Desktop.Workbench.Core
     /// </summary>
     private static readonly Dictionary<UserRole, WorkbenchPermission> UserRoleWorkbenchMap = new()
     {
-        // 管理员 - 系统管理工作台，拥有所有权限
+        // 管理员 - 系统管理工作台，拥有8个核心业务模块的完整权限
         {
             UserRole.Admin, 
             new WorkbenchPermission 
@@ -519,8 +404,8 @@ namespace LYBT.Desktop.Workbench.Core
                 WorkbenchView = "SystemWorkbenchMainView",
                 AccessibleModules = new List<string> 
                 { 
-                    "Dashboard", "Users", "Patients", "MedicalCase", "Consultation", 
-                    "Herbs", "Formula", "Prescriptions", "Reports", "SystemSettings" 
+                    "Users", "Patients", "MedicalCase", "Consultation", 
+                    "Herbs", "Formula", "Prescriptions"
                 },
                 DisplayName = "系统管理员",
                 WelcomeTemplate = "欢迎您，{0}！\n\n系统管理工作台正在加载..."
@@ -535,15 +420,14 @@ namespace LYBT.Desktop.Workbench.Core
                 WorkbenchView = "ConsultationWorkbenchMainView",
                 AccessibleModules = new List<string> 
                 { 
-                    "Patients", "Consultation", "Prescriptions", "Formula", 
-                    "MedicalCase", "PatientHistory" 
+                    "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
                 },
                 DisplayName = "医生",
                 WelcomeTemplate = "欢迎您，{0}医生！\n\n诊疗工作台正在准备..."
             }
         },
         
-        // 前台接待 - 接待工作台
+        // 前台接待 - 患者管理为主
         {
             UserRole.Receptionist, 
             new WorkbenchPermission 
@@ -551,25 +435,10 @@ namespace LYBT.Desktop.Workbench.Core
                 WorkbenchView = "ReceptionWorkbenchMainView",
                 AccessibleModules = new List<string> 
                 { 
-                    "Patients", "Registration", "Appointment", "Queue", "Billing" 
+                    "Patients", "MedicalCase"
                 },
                 DisplayName = "前台接待",
                 WelcomeTemplate = "欢迎您，{0}！\n\n接待工作台正在启动..."
-            }
-        },
-        
-        // 收银员 - 收银工作台
-        {
-            UserRole.Cashier, 
-            new WorkbenchPermission 
-            {
-                WorkbenchView = "CashierWorkbenchMainView",
-                AccessibleModules = new List<string> 
-                { 
-                    "Billing", "Patients", "Queue", "Reports" 
-                },
-                DisplayName = "收银员",
-                WelcomeTemplate = "欢迎您，{0}！\n\n收银工作台正在启动..."
             }
         },
         
@@ -581,25 +450,10 @@ namespace LYBT.Desktop.Workbench.Core
                 WorkbenchView = "PharmacistWorkbenchMainView",
                 AccessibleModules = new List<string> 
                 { 
-                    "Herbs", "Prescriptions", "Formula", "Patients" 
+                    "Herbs", "Prescriptions", "Formula", "Patients"
                 },
                 DisplayName = "药剂师",
                 WelcomeTemplate = "欢迎您，{0}！\n\n药房工作台正在启动..."
-            }
-        },
-        
-        // 理疗师 - 理疗工作台
-        {
-            UserRole.Therapist, 
-            new WorkbenchPermission 
-            {
-                WorkbenchView = "TherapistWorkbenchMainView",
-                AccessibleModules = new List<string> 
-                { 
-                    "TreatmentRoom", "Patients", "MedicalCase", "TreatmentPlans" 
-                },
-                DisplayName = "理疗师",
-                WelcomeTemplate = "欢迎您，{0}！\n\n理疗工作台正在启动..."
             }
         }
     };

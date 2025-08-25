@@ -223,10 +223,8 @@ namespace LYBT.Desktop.Services
         {
             return new List<string>
             {
-                "SystemManagement", "UserManagement", "DepartmentManagement",
-                "PatientManagement", "DoctorWorkspace", "FrontDeskModule",
-                "CashierModule", "PharmacyModule", "NursingModule",
-                "ReportsModule", "AuditModule", "BackupModule"
+                "Users", "Patients", "MedicalCase", "Consultation", 
+                "Herbs", "Formula", "Prescriptions"
             };
         }
 
@@ -234,8 +232,8 @@ namespace LYBT.Desktop.Services
         {
             return new List<string>
             {
-                "SystemManagement", "UserManagement", "DepartmentManagement",
-                "PatientManagement", "ReportsModule", "AuditModule"
+                "Users", "Patients", "MedicalCase", "Consultation", 
+                "Herbs", "Formula", "Prescriptions"
             };
         }
 
@@ -243,8 +241,7 @@ namespace LYBT.Desktop.Services
         {
             return new List<string>
             {
-                "DoctorWorkspace", "PatientManagement", "ConsultationModule",
-                "PrescriptionModule", "TreatmentModule", "MedicalRecords"
+                "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
             };
         }
 
@@ -252,8 +249,7 @@ namespace LYBT.Desktop.Services
         {
             return new List<string>
             {
-                "ReceptionistModule", "AppointmentModule",
-                "QueueManagement", "BasicReports"
+                "Patients", "MedicalCase"
             };
         }
 
@@ -261,8 +257,7 @@ namespace LYBT.Desktop.Services
         {
             return new List<string>
             {
-                "CashierModule", "PaymentModule", "InvoiceModule",
-                "RefundModule", "PaymentReports"
+                "Patients", "MedicalCase"
             };
         }
 
@@ -270,8 +265,7 @@ namespace LYBT.Desktop.Services
         {
             return new List<string>
             {
-                "PharmacyModule", "PrescriptionDispense", "InventoryModule",
-                "DrugCatalog", "PharmacyReports"
+                "Herbs", "Prescriptions", "Formula", "Patients"
             };
         }
 

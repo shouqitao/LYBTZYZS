@@ -17,7 +17,6 @@ using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Infrastructure;
 using LYBT.Desktop.Services;
 using LYBT.Desktop.Services.Handlers;
-using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;

@@ -218,38 +218,29 @@ namespace LYBT.Desktop.Shell.ViewModels
                 throw new InvalidOperationException("当前用户信息为空，无法加载主界面");
             }
 
-            // 判断用户角色
+            // 简化角色判断逻辑：只区分管理员和医生
             string userRole;
-            if (CurrentUser.Username?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true)
+            string workbenchView;
+            string roleDisplay;
+            
+            // 管理员判断（包括sysadmin和Admin角色）
+            if (CurrentUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true ||
+                CurrentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
             {
-                userRole = SystemConstants.RoleDisplayNames.SuperAdmin;
-            }
-            else if (CurrentUser.Role?.Equals(SystemConstants.DoctorRole, StringComparison.OrdinalIgnoreCase) == true ||
-                     CurrentUser.Role?.Equals(SystemConstants.RoleDisplayNames.Doctor, StringComparison.OrdinalIgnoreCase) == true)
-            {
-                userRole = SystemConstants.RoleDisplayNames.Doctor;
-            }
-            else if (CurrentUser.Role?.Equals(SystemConstants.AdminRole, StringComparison.OrdinalIgnoreCase) == true ||
-                     CurrentUser.Role?.Equals(SystemConstants.RoleDisplayNames.Admin, StringComparison.OrdinalIgnoreCase) == true)
-            {
-                userRole = SystemConstants.RoleDisplayNames.Admin;
+                userRole = "管理员";
+                workbenchView = "SystemWorkbenchMainView";
+                roleDisplay = "管理员";
             }
             else
             {
-                // 默认角色
-                userRole = SystemConstants.RoleDisplayNames.Doctor;
+                // 默认为医生角色
+                userRole = "医生";
+                workbenchView = "ConsultationWorkbenchMainView";
+                roleDisplay = "医生";
             }
 
-            // UltraThink Phase 9: 启动智能模块预加载
-            _ = StartIntelligentModulePreloadingAsync(userRole);
-
-            // 使用WorkbenchRouter获取工作台信息
-            var workbenchView = _workbenchRouter.GetWorkbenchForRole(userRole);
-            var roleDisplay = _workbenchRouter.GetRoleDisplayName(userRole);
-            var welcomeMessage = _workbenchRouter.GetWelcomeMessage(userRole, CurrentUser.RealName);
-            
-            // 预加载工作台需要的数据
-            _uiOptimizer.PreloadData(async () => await _userService.GetPagedAsync(new UserPagedQueryDto { PageSize = 10 }), $"user_cache_{userRole}", priority: 1);
+            // 调试输出
+            System.Diagnostics.Debug.WriteLine($"用户: {CurrentUser.Username}, 角色: {CurrentUser.Role} -> 分配工作台: {workbenchView}");
 
             if (_regionManager == null)
             {
@@ -340,10 +331,10 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// </summary>
         private void StartDataPreloading(string userRole)
         {
-            // 根据角色预加载不同的数据
+            // 根据用户角色预加载不同的数据
             switch (userRole)
             {
-                case var role when role == SystemConstants.RoleDisplayNames.Doctor:
+                case "医生":
                     // 医生角色预加载患者和验方数据
                     _uiOptimizer.PreloadData(async () => 
                     {
@@ -351,7 +342,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     }, "recent_patients", priority: 2);
                     break;
                     
-                case var role when role == SystemConstants.RoleDisplayNames.Admin:
+                case "管理员":
                     // 管理员角色预加载用户和系统数据
                     _uiOptimizer.PreloadData(async () => 
                     {
