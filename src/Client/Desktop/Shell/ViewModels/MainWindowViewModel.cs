@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Ioc;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Constants;
@@ -32,9 +34,11 @@ namespace LYBT.Desktop.Shell.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly LYBT.Desktop.Core.Interfaces.Services.IPermissionService _permissionService;
         private readonly IUserService _userService;
+        private readonly IPatientService _patientService;
         private readonly IWorkbenchRouter _workbenchRouter;
         private readonly ApiTestService _apiTestService;
         private readonly LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer _uiOptimizer;
+        private readonly LYBT.Desktop.Core.Services.Performance.IModuleLoadingCoordinator _moduleLoadingCoordinator;
 
         private string _title = SystemConstants.SystemTitle;
         private UserDto? _currentUser;
@@ -70,10 +74,12 @@ namespace LYBT.Desktop.Shell.ViewModels
             LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService authService,
             LYBT.Desktop.Core.Interfaces.Services.IPermissionService permissionService,
             IUserService userService,
+            IPatientService patientService,
             LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService commonDialogService,
             IWorkbenchRouter workbenchRouter,
             ApiTestService apiTestService,
             LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer uiOptimizer,
+            LYBT.Desktop.Core.Services.Performance.IModuleLoadingCoordinator moduleLoadingCoordinator,
             IErrorHandlingService errorHandlingService)
             : base(eventAggregator, errorHandlingService)
         {
@@ -82,9 +88,11 @@ namespace LYBT.Desktop.Shell.ViewModels
             _authService = authService;
             _permissionService = permissionService;
             _userService = userService;
+            _patientService = patientService;
             _workbenchRouter = workbenchRouter;
             _apiTestService = apiTestService;
             _uiOptimizer = uiOptimizer;
+            _moduleLoadingCoordinator = moduleLoadingCoordinator;
 
             LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync());
             TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync(), () => _isLoggedIn);
@@ -140,10 +148,12 @@ namespace LYBT.Desktop.Shell.ViewModels
         }
 
         /// <summary>
-        /// 检查登录状态
+        /// 检查登录状态 - UltraThink性能优化版
         /// </summary>
         private async Task CheckLoginStatusAsync()
         {
+            using var performanceSession = _uiOptimizer.StartUIPerformanceSession("启动登录检查");
+            
             try
             {
                 if (_authService.IsLoggedIn)
@@ -153,8 +163,14 @@ namespace LYBT.Desktop.Shell.ViewModels
                     {
                         CurrentUser = ConvertToUserDto(user);
                         IsLoggedIn = true;
-                        TestApiCommand.RaiseCanExecuteChanged();
-                        ShowControlExamplesCommand.RaiseCanExecuteChanged();
+                        
+                        // 批量UI更新以提升性能
+                        _uiOptimizer.BatchUIUpdates(() =>
+                        {
+                            TestApiCommand.RaiseCanExecuteChanged();
+                            ShowControlExamplesCommand.RaiseCanExecuteChanged();
+                        });
+                        
                         LoadMainContent();
                         return;
                     }
@@ -191,10 +207,12 @@ namespace LYBT.Desktop.Shell.ViewModels
         }
 
         /// <summary>
-        /// 加载主界面内容
+        /// 加载主界面内容 - UltraThink Phase 9 性能优化版
         /// </summary>
         private void LoadMainContent()
         {
+            using var performanceSession = _uiOptimizer.StartUIPerformanceSession("主界面加载");
+            
             if (CurrentUser == null)
             {
                 throw new InvalidOperationException("当前用户信息为空，无法加载主界面");
@@ -222,12 +240,16 @@ namespace LYBT.Desktop.Shell.ViewModels
                 userRole = SystemConstants.RoleDisplayNames.Doctor;
             }
 
+            // UltraThink Phase 9: 启动智能模块预加载
+            _ = StartIntelligentModulePreloadingAsync(userRole);
+
             // 使用WorkbenchRouter获取工作台信息
             var workbenchView = _workbenchRouter.GetWorkbenchForRole(userRole);
             var roleDisplay = _workbenchRouter.GetRoleDisplayName(userRole);
             var welcomeMessage = _workbenchRouter.GetWelcomeMessage(userRole, CurrentUser.RealName);
             
-            Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
+            // 预加载工作台需要的数据
+            _uiOptimizer.PreloadData(async () => await _userService.GetPagedAsync(new UserPagedQueryDto { PageSize = 10 }), $"user_cache_{userRole}", priority: 1);
 
             if (_regionManager == null)
             {
@@ -236,17 +258,23 @@ namespace LYBT.Desktop.Shell.ViewModels
 
             try
             {
-                // 清除内容区域的旧内容
-                if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
+                // 批量UI更新 - 更新标题和清理区域
+                _uiOptimizer.BatchUIUpdates(() =>
                 {
-                    _regionManager.Regions["ContentRegion"].RemoveAll();
-                }
+                    Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
+                    
+                    // 清除内容区域的旧内容
+                    if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
+                    {
+                        _regionManager.Regions["ContentRegion"].RemoveAll();
+                    }
 
-                // 清除登录区域
-                if (_regionManager.Regions.ContainsRegionWithName("LoginRegion"))
-                {
-                    _regionManager.Regions["LoginRegion"].RemoveAll();
-                }
+                    // 清除登录区域
+                    if (_regionManager.Regions.ContainsRegionWithName("LoginRegion"))
+                    {
+                        _regionManager.Regions["LoginRegion"].RemoveAll();
+                    }
+                });
 
                 // 根据角色导航到对应的工作台主视图
                 _regionManager.RequestNavigate("ContentRegion", workbenchView, navigationResult =>
@@ -259,8 +287,9 @@ namespace LYBT.Desktop.Shell.ViewModels
                     }
                     else
                     {
-                        // 导航成功
+                        // 导航成功 - 开始预加载其他可能需要的数据
                         System.Diagnostics.Debug.WriteLine($"成功导航到工作台：{workbenchView}");
+                        StartDataPreloading(userRole);
                     }
                 });
             }
@@ -268,6 +297,67 @@ namespace LYBT.Desktop.Shell.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine($"加载主界面内容时发生错误: {ex.Message}");
                 throw new InvalidOperationException($"工作台模块加载失败：{ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// UltraThink Phase 9: 启动智能模块预加载
+        /// </summary>
+        private async Task StartIntelligentModulePreloadingAsync(string userRole)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"UltraThink Phase 9: 开始为角色 {userRole} 预加载模块");
+                
+                // 使用模块加载协调器进行智能预加载
+                await _moduleLoadingCoordinator.PreloadModulesAsync(userRole);
+                
+                // 输出模块加载性能指标
+                var metrics = _moduleLoadingCoordinator.GetLoadingMetrics();
+                var loadedModules = metrics.Where(kvp => kvp.Value.LoadCount > 0).ToList();
+                
+                if (loadedModules.Any())
+                {
+                    System.Diagnostics.Debug.WriteLine($"UltraThink性能报告: 已加载 {loadedModules.Count} 个模块");
+                    foreach (var (moduleName, metric) in loadedModules)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  - {moduleName}: {metric.InitializationTime.TotalMilliseconds:F0}ms");
+                    }
+                }
+
+                // 执行模块加载顺序优化
+                _moduleLoadingCoordinator.OptimizeModuleLoadingOrder();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"智能模块预加载失败: {ex.Message}");
+                // 不抛出异常，避免影响主界面加载
+            }
+        }
+
+        /// <summary>
+        /// 根据用户角色预加载相关数据
+        /// </summary>
+        private void StartDataPreloading(string userRole)
+        {
+            // 根据角色预加载不同的数据
+            switch (userRole)
+            {
+                case var role when role == SystemConstants.RoleDisplayNames.Doctor:
+                    // 医生角色预加载患者和验方数据
+                    _uiOptimizer.PreloadData(async () => 
+                    {
+                        return await _patientService.GetPagedAsync(new LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto { PageSize = 20 });
+                    }, "recent_patients", priority: 2);
+                    break;
+                    
+                case var role when role == SystemConstants.RoleDisplayNames.Admin:
+                    // 管理员角色预加载用户和系统数据
+                    _uiOptimizer.PreloadData(async () => 
+                    {
+                        return await _userService.GetPagedAsync(new UserPagedQueryDto { PageSize = 50 });
+                    }, "all_users", priority: 2);
+                    break;
             }
         }
 
