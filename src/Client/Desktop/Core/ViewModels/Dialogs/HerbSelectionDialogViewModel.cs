@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
 // UltraThink v2.0: 直接使用HerbDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Herbs;

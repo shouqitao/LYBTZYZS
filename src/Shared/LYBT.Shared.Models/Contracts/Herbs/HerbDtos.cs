@@ -247,12 +247,12 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>拼音码关键词</summary>
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
-        public string? PinYinCode { get; set; }
+        public new string? PinYinCode { get; set; }
 
         /// <summary>五笔码关键词</summary>
         [StringLength(50, ErrorMessage = "五笔码长度不能超过50个字符")]
         [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
+        public new string? WuBiCode { get; set; }
 
         /// <summary>产地关键词</summary>
         [DisplayName("产地")]

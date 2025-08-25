@@ -103,7 +103,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     public class PrescriptionDetailDto : PrescriptionDto, IRemarkable
     {
         [DisplayName("方剂来源")]
-        public string? FormulaSource { get; set; }
+        public new string? FormulaSource { get; set; }
         
         [DisplayName("重复用药警告")]
         public string? DuplicateWarning { get; set; }
@@ -112,20 +112,20 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? MissingDrugWarning { get; set; }
         
         [DisplayName("处方编号")]
-        public string? PrescriptionNo { get; set; }
+        public new string? PrescriptionNo { get; set; }
         
         [DisplayName("用法")]
-        public string? Usage { get; set; }
+        public new string? Usage { get; set; }
         
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
         
         [DisplayName("折扣")]
-        public decimal Discount { get; set; } = 1.0m;
+        public new decimal Discount { get; set; } = 1.0m;
         
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
-        public string? Remark { get; set; }
+        public new string? Remark { get; set; }
     }
 
     /// <summary>

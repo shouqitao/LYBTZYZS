@@ -46,11 +46,11 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
         /// <summary>按拼音码搜索</summary>
         [DisplayName("拼音码")]
-        public string? PinYinCode { get; set; }
+        public new string? PinYinCode { get; set; }
 
         /// <summary>按五笔码搜索</summary>
         [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
+        public new string? WuBiCode { get; set; }
     }
 
     /// <summary>

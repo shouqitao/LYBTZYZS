@@ -372,7 +372,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
         /// <summary>是否包含已禁用</summary>
         [DisplayName("包含已禁用")]
-        public bool IncludeInactive { get; set; } = false;
+        public new bool IncludeInactive { get; set; } = false;
 
         /// <summary>导出格式</summary>
         [DisplayName("导出格式")]

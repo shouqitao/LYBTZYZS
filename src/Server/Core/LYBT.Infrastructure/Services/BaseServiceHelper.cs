@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 

@@ -16,16 +16,16 @@ namespace LYBT.Desktop.Core.Models.Common
         /// <summary>
         /// 搜索关键词
         /// </summary>
-        public string? Keyword { get; set; }
+        public new string? Keyword { get; set; }
 
         /// <summary>
         /// 排序字段
         /// </summary>
-        public string? SortField { get; set; }
+        public new string? SortField { get; set; }
 
         /// <summary>
         /// 是否降序排序
         /// </summary>
-        public bool IsDescending { get; set; }
+        public new bool IsDescending { get; set; }
     }
 }
