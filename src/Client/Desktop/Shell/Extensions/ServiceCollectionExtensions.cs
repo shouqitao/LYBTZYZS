@@ -171,6 +171,41 @@ namespace LYBT.Desktop.Shell.Extensions
             // 统一对话框服务 - WpfDialogService提供完整功能
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService, 
                 LYBT.Desktop.Core.Services.WpfDialogService>();
+                
+            // 注册业务对话框（在服务启动后动态注册）
+            containerRegistry.RegisterInstance<Action<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService>>(RegisterBusinessDialogs);
+        }
+        
+        /// <summary>
+        /// 注册业务对话框Views
+        /// </summary>
+        private static void RegisterBusinessDialogs(LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService dialogService)
+        {
+            // 使用WpfDialogService的RegisterDialog方法注册业务对话框
+            if (dialogService is LYBT.Desktop.Core.Services.WpfDialogService wpfDialogService)
+            {
+                // 患者管理对话框
+                wpfDialogService.RegisterDialog("PatientAddEditDialog", typeof(LYBT.Desktop.Patients.Views.PatientAddEditDialog));
+                
+                // 用户管理对话框
+                wpfDialogService.RegisterDialog("UserAddEditDialog", typeof(LYBT.Desktop.Users.Views.UserAddEditDialog));
+                
+                // 药材管理对话框
+                wpfDialogService.RegisterDialog("HerbAddEditDialog", typeof(LYBT.Desktop.Herbs.Views.HerbAddEditDialog));
+                
+                // 医案管理对话框
+                wpfDialogService.RegisterDialog("CreateMedicalCaseDialog", typeof(LYBT.Desktop.MedicalCase.Views.CreateMedicalCaseDialog));
+                
+                // 验方管理对话框
+                wpfDialogService.RegisterDialog("AddFormulaDialog", typeof(LYBT.Desktop.Formula.Views.AddFormulaDialog));
+                wpfDialogService.RegisterDialog("EditFormulaDialog", typeof(LYBT.Desktop.Formula.Views.EditFormulaDialog));
+                wpfDialogService.RegisterDialog("ViewFormulaDialog", typeof(LYBT.Desktop.Formula.Views.ViewFormulaDialog));
+                
+                // 处方管理对话框
+                wpfDialogService.RegisterDialog("PrescriptionEditorDialog", typeof(LYBT.Desktop.Prescriptions.Views.PrescriptionEditorDialog));
+                wpfDialogService.RegisterDialog("HerbSelectionDialog", typeof(LYBT.Desktop.Prescriptions.Views.HerbSelectionDialog));
+                wpfDialogService.RegisterDialog("FormulaTemplateDialog", typeof(LYBT.Desktop.Prescriptions.Views.FormulaTemplateDialog));
+            }
         }
 
         /// <summary>

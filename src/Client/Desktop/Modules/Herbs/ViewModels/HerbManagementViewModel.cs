@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -151,8 +152,18 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
-                // TODO: 实现药材创建对话框
-                await _dialogService.ShowInformationAsync("新增药材功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = false
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("HerbAddEditDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync("药材信息添加成功", "成功");
+                }
             }
             catch (Exception ex)
             {
@@ -168,8 +179,19 @@ namespace LYBT.Desktop.Herbs.ViewModels
             
             try
             {
-                // TODO: 实现药材编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑药材 {herb.Name} 功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = true,
+                    ["Herb"] = herb
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("HerbAddEditDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync($"药材 {herb.Name} 信息更新成功", "成功");
+                }
             }
             catch (Exception ex)
             {

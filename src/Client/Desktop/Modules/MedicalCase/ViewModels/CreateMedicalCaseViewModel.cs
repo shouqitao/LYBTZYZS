@@ -8,17 +8,20 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Models.Common;
 using Prism.Commands;
 using Prism.Events;
 using AutoMapper;
-using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
     /// 创建医疗案例对话框视图模型
     /// </summary>
-    public class CreateMedicalCaseViewModel : ServiceViewModel // Temporarily remove IDialogAware due to Prism 9 compatibility issues
+    public class CreateMedicalCaseViewModel : DialogViewModel, ICustomDialogAware
     {
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPatientService _patientService;
@@ -28,12 +31,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Properties
 
-        private string _title = "新建医疗案例";
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
 
         private ObservableCollection<PatientDto> _patients = new();
         public ObservableCollection<PatientDto> Patients
@@ -113,6 +110,42 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #endregion
 
+        #region Constructor
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public CreateMedicalCaseViewModel(
+            IMedicalCaseService medicalCaseService,
+            IPatientService patientService,
+            IUserSessionManager userSessionManager,
+            ICustomDialogService dialogService,
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService,
+            IMapper mapper)
+            : base(eventAggregator, errorHandlingService)
+        {
+            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+            _userSessionManager = userSessionManager ?? throw new ArgumentNullException(nameof(userSessionManager));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+
+            DialogTitle = SystemConstants.CreateMedicalCaseDialogTitle;
+
+            // Initialize commands
+            SearchPatientCommand = new DelegateCommand(async () => await SearchPatientAsync());
+            CreateNewPatientCommand = new DelegateCommand(async () => await CreateNewPatientAsync());
+
+            InitializeDialog();
+            
+            // Load initial patients
+            Task.Run(async () => await LoadPatientsAsync());
+        }
+
+        /// <summary>
+        /// 兼容性构造函数
+        /// </summary>
         public CreateMedicalCaseViewModel(
             IMedicalCaseService medicalCaseService,
             IPatientService patientService,
@@ -122,40 +155,77 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IMapper mapper)
             : base(eventAggregator)
         {
-            _medicalCaseService = medicalCaseService;
-            _patientService = patientService;
-            _userSessionManager = userSessionManager;
-            _dialogService = dialogService;
+            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+            _userSessionManager = userSessionManager ?? throw new ArgumentNullException(nameof(userSessionManager));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
-            // Initialize commands
-            SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
-            CancelCommand = new DelegateCommand(Cancel);
+            DialogTitle = SystemConstants.CreateMedicalCaseDialogTitle;
+
             SearchPatientCommand = new DelegateCommand(async () => await SearchPatientAsync());
             CreateNewPatientCommand = new DelegateCommand(async () => await CreateNewPatientAsync());
 
+            InitializeDialog();
+            
             // Load initial patients
             Task.Run(async () => await LoadPatientsAsync());
         }
 
-        #region Dialog Implementation (Temporary - Waiting for Prism 9 IDialogAware fix)
+        #endregion
 
-        public event Action<Prism.Services.Dialogs.IDialogResult> RequestClose = delegate { };
+        #region DialogViewModel Implementation
 
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed()
+        protected override async Task<bool> SaveAsync()
         {
-            // Cleanup resources
+            if (SelectedPatient == null)
+            {
+                ErrorMessage = "请选择患者";
+                return false;
+            }
+
+            try
+            {
+                // UltraThink v2.0: 直接创建DTO，移除Info层
+                var createDto = new MedicalCaseCreateDto
+                {
+                    PatientId = SelectedPatient.Id,
+                    DoctorId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
+                    DiagnosisSummary = string.IsNullOrWhiteSpace(Remark) ? "初次就诊" : Remark.Trim(),
+                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim()
+                };
+
+                var result = await _medicalCaseService.CreateAsync(createDto);
+                if (result.IsSuccess)
+                {
+                    // 保存成功，关闭对话框
+                    RaiseRequestClose(true);
+                    return true;
+                }
+                else
+                {
+                    ErrorMessage = result.ErrorMessage ?? "创建医疗案例失败";
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await HandleErrorAsync("创建医疗案例", ex);
+                return false;
+            }
         }
 
-        public void OnDialogOpened(Prism.Services.Dialogs.DialogParameters parameters)
+        protected override bool CanSave()
         {
-            if (parameters.ContainsKey("PatientId"))
-            {
-                var patientId = parameters.GetValue<Guid>("PatientId");
-                Task.Run(async () => await LoadPatientByIdAsync(patientId));
-            }
+            return SelectedPatient != null && !IsLoading;
+        }
+
+        protected override void InitializeDialog()
+        {
+            base.InitializeDialog();
+            
+            // 监听属性变化以更新Command状态
+            SaveCommand.ObservesProperty(() => SelectedPatient);
         }
 
         #endregion
@@ -276,65 +346,71 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             await _dialogService.ShowInformationAsync("新增患者功能将在患者模块中实现", "提示");
         }
 
-        private bool CanSave()
-        {
-            return SelectedPatient != null && !IsLoading;
-        }
-
-        private async Task SaveAsync()
-        {
-            if (SelectedPatient == null)
-            {
-                await _dialogService.ShowErrorAsync("请选择患者", "验证失败");
-                return;
-            }
-
-            try
-            {
-                IsLoading = true;
-                StatusMessage = "创建医疗案例...";
-
-                // UltraThink v2.0: 直接创建DTO，移除Info层
-                var createDto = new MedicalCaseCreateDto
-                {
-                    PatientId = SelectedPatient.Id,
-                    DoctorId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
-                    DiagnosisSummary = string.IsNullOrWhiteSpace(Remark) ? "初次就诊" : Remark.Trim(),
-                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim()
-                };
-
-                var result = await _medicalCaseService.CreateAsync(createDto);
-                if (result.IsSuccess)
-                {
-                    await _dialogService.ShowSuccessAsync("医疗案例创建成功", "操作完成");
-                    // RequestClose?.Invoke(new DialogResult(ButtonResult.OK, new DialogParameters
-                    // {
-                    //     { "CreatedMedicalCase", result.Data }
-                    // })); // Temporarily disabled - DialogResult constructor issue
-                    RequestClose?.Invoke(new Prism.Services.Dialogs.DialogResult(Prism.Services.Dialogs.ButtonResult.OK));
-                }
-                else
-                {
-                    await _dialogService.ShowErrorAsync($"创建失败: {result.ErrorMessage}", "错误");
-                }
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"创建医疗案例时发生错误: {ex.Message}", "错误");
-            }
-            finally
-            {
-                IsLoading = false;
-                StatusMessage = "";
-            }
-        }
-
-        private void Cancel()
-        {
-            RequestClose?.Invoke(new Prism.Services.Dialogs.DialogResult(Prism.Services.Dialogs.ButtonResult.Cancel));
-        }
 
         // UltraThink v2.0: CalculateAge方法已移除，直接使用PatientDto.Age计算属性
+
+        #endregion
+
+        #region ICustomDialogAware Implementation
+
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title => DialogTitle ?? "创建医疗案例";
+
+        /// <summary>
+        /// 请求关闭对话框事件
+        /// </summary>
+        public event Action<CustomDialogResult> RequestClose = delegate { };
+
+        /// <summary>
+        /// 检查是否可以关闭对话框
+        /// </summary>
+        public bool CanCloseDialog()
+        {
+            return !IsSaving && !IsLoading;
+        }
+
+        /// <summary>
+        /// 对话框打开时调用
+        /// </summary>
+        /// <param name="parameters">传入的参数</param>
+        public void OnDialogOpened(Dictionary<string, object> parameters)
+        {
+            if (parameters?.ContainsKey("PatientId") == true && parameters["PatientId"] is Guid patientId)
+            {
+                Task.Run(async () => await LoadPatientByIdAsync(patientId));
+            }
+        }
+
+        /// <summary>
+        /// 对话框关闭时调用
+        /// </summary>
+        public void OnDialogClosed()
+        {
+            // 清理资源或执行其他关闭操作
+        }
+
+        /// <summary>
+        /// 重写取消操作以使用ICustomDialogAware接口
+        /// </summary>
+        protected override void ExecuteCancel()
+        {
+            OnDialogClosing();
+            RaiseRequestClose(false);
+        }
+
+        /// <summary>
+        /// 触发关闭对话框请求
+        /// </summary>
+        protected void RaiseRequestClose(bool? dialogResult)
+        {
+            var result = dialogResult == true 
+                ? CustomDialogResult.Success(new Dictionary<string, object>())
+                : CustomDialogResult.Cancel();
+                
+            RequestClose?.Invoke(result);
+        }
 
         #endregion
     }

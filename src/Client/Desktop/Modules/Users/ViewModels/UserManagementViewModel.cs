@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -153,8 +154,18 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             try
             {
-                // TODO: 实现用户创建对话框
-                await _dialogService.ShowInformationAsync("新增用户功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = false
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("UserAddEditDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync("用户添加成功", "成功");
+                }
             }
             catch (Exception ex)
             {
@@ -196,8 +207,19 @@ namespace LYBT.Desktop.Users.ViewModels
             
             try
             {
-                // TODO: 实现用户编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑用户 {user.RealName ?? user.UserName} 功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = true,
+                    ["User"] = user
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("UserAddEditDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync($"用户 {user.RealName ?? user.UserName} 信息更新成功", "成功");
+                }
             }
             catch (Exception ex)
             {

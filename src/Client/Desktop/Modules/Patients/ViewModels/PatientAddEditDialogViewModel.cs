@@ -1,16 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using Prism.Commands;
 using Prism.Events;
-using AutoMapper;
 // UltraThink v2.0: Desktop层直接使用DTO，移除Info层转换
 
 namespace LYBT.Desktop.Patients.ViewModels
@@ -18,7 +20,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// <summary>
     /// 患者新增/编辑对话框视图模型
     /// </summary>
-    public class PatientAddEditDialogViewModel : DialogViewModel
+    public class PatientAddEditDialogViewModel : DialogViewModel, ICustomDialogAware
     {
         private readonly PatientModuleService _patientService;
         private readonly IMapper _mapper;
@@ -261,6 +263,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                     }
                 }
 
+                // 保存成功，关闭对话框
+                RaiseRequestClose(true);
                 return true;
             }
             catch (Exception ex)
@@ -338,6 +342,76 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (BirthDate.Value.Date > today.AddYears(-age)) age--;
                 Age = age < 0 ? 0 : age;
             }
+        }
+
+        #endregion
+
+        #region ICustomDialogAware Implementation
+
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title => DialogTitle ?? (_isEditMode ? "编辑患者" : "新增患者");
+
+        /// <summary>
+        /// 请求关闭对话框事件
+        /// </summary>
+        public event Action<CustomDialogResult> RequestClose = delegate { };
+
+        /// <summary>
+        /// 检查是否可以关闭对话框
+        /// </summary>
+        public bool CanCloseDialog()
+        {
+            return !IsSaving && !IsLoading;
+        }
+
+        /// <summary>
+        /// 对话框打开时调用
+        /// </summary>
+        /// <param name="parameters">传入的参数</param>
+        public void OnDialogOpened(Dictionary<string, object> parameters)
+        {
+            if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode)
+            {
+                _isEditMode = isEditMode;
+            }
+
+            if (parameters?.ContainsKey("Patient") == true && parameters["Patient"] is PatientDto patient)
+            {
+                InitializeEditData(patient);
+            }
+
+            DialogTitle = _isEditMode ? "编辑患者" : "新增患者";
+        }
+
+        /// <summary>
+        /// 对话框关闭时调用
+        /// </summary>
+        public void OnDialogClosed()
+        {
+            // 清理资源或执行其他关闭操作
+        }
+
+        /// <summary>
+        /// 重写取消操作以使用ICustomDialogAware接口
+        /// </summary>
+        protected override void ExecuteCancel()
+        {
+            OnDialogClosing();
+            RaiseRequestClose(false);
+        }
+
+        /// <summary>
+        /// 触发关闭对话框请求
+        /// </summary>
+        protected void RaiseRequestClose(bool? dialogResult)
+        {
+            var result = dialogResult == true 
+                ? CustomDialogResult.Success(new Dictionary<string, object>())
+                : CustomDialogResult.Cancel();
+                
+            RequestClose?.Invoke(result);
         }
 
         #endregion

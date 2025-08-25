@@ -168,8 +168,15 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                // TODO: 实现验方创建对话框
-                await _dialogService.ShowInformationAsync("新增验方功能开发中", "提示");
+                var parameters = new Dictionary<string, object>();
+                
+                var result = await _dialogService.ShowDialogAsync("AddFormulaDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync("验方添加成功", "成功");
+                }
             }
             catch (Exception ex)
             {
@@ -185,8 +192,18 @@ namespace LYBT.Desktop.Formula.ViewModels
             
             try
             {
-                // TODO: 实现验方编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑验方 {formula.Name} 功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["Formula"] = formula
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("EditFormulaDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync($"验方 {formula.Name} 更新成功", "成功");
+                }
             }
             catch (Exception ex)
             {
@@ -301,8 +318,13 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                // TODO: 实现验方导入功能
-                await _dialogService.ShowInformationAsync("验方导入功能开发中", "提示");
+                var filePath = await _dialogService.ShowOpenFileDialogAsync("选择验方文件", "JSON文件|*.json|所有文件|*.*");
+                
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    // 这里应该实现实际的导入逻辑
+                    await _dialogService.ShowInformationAsync($"选择了文件：{filePath}\n导入功能正在开发中", "导入验方");
+                }
             }
             catch (Exception ex)
             {
@@ -316,8 +338,13 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                // TODO: 实现验方导出功能
-                await _dialogService.ShowInformationAsync("验方导出功能开发中", "提示");
+                var filePath = await _dialogService.ShowSaveFileDialogAsync("导出验方", "JSON文件|*.json|所有文件|*.*", "验方导出.json");
+                
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    // 这里应该实现实际的导出逻辑
+                    await _dialogService.ShowInformationAsync($"将导出到：{filePath}\n导出功能正在开发中", "导出验方");
+                }
             }
             catch (Exception ex)
             {

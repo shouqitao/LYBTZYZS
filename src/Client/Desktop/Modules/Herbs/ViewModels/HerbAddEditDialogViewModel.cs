@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Herbs.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -15,7 +18,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// <summary>
     /// 中药材新增/编辑对话框视图模型
     /// </summary>
-    public class HerbAddEditDialogViewModel : DialogViewModel
+    public class HerbAddEditDialogViewModel : DialogViewModel, ICustomDialogAware
     {
         private readonly HerbModuleService _herbApiService;
         private readonly HerbDto? _originalHerb;
@@ -229,6 +232,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     }
                 }
 
+                // 保存成功，关闭对话框
+                RaiseRequestClose(true);
                 return true;
             }
             catch (Exception ex)
@@ -289,6 +294,76 @@ namespace LYBT.Desktop.Herbs.ViewModels
             {
                 PinYinCode = string.Empty;
             }
+        }
+
+        #endregion
+
+        #region ICustomDialogAware Implementation
+
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title => DialogTitle ?? (_isEditMode ? "编辑中药材" : "新增中药材");
+
+        /// <summary>
+        /// 请求关闭对话框事件
+        /// </summary>
+        public event Action<CustomDialogResult> RequestClose = delegate { };
+
+        /// <summary>
+        /// 检查是否可以关闭对话框
+        /// </summary>
+        public bool CanCloseDialog()
+        {
+            return !IsSaving && !IsLoading;
+        }
+
+        /// <summary>
+        /// 对话框打开时调用
+        /// </summary>
+        /// <param name="parameters">传入的参数</param>
+        public void OnDialogOpened(Dictionary<string, object> parameters)
+        {
+            if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode)
+            {
+                _isEditMode = isEditMode;
+            }
+
+            if (parameters?.ContainsKey("Herb") == true && parameters["Herb"] is HerbDto herb)
+            {
+                InitializeEditData(herb);
+            }
+
+            DialogTitle = _isEditMode ? "编辑中药材" : "新增中药材";
+        }
+
+        /// <summary>
+        /// 对话框关闭时调用
+        /// </summary>
+        public void OnDialogClosed()
+        {
+            // 清理资源或执行其他关闭操作
+        }
+
+        /// <summary>
+        /// 重写取消操作以使用ICustomDialogAware接口
+        /// </summary>
+        protected override void ExecuteCancel()
+        {
+            OnDialogClosing();
+            RaiseRequestClose(false);
+        }
+
+        /// <summary>
+        /// 触发关闭对话框请求
+        /// </summary>
+        protected void RaiseRequestClose(bool? dialogResult)
+        {
+            var result = dialogResult == true 
+                ? CustomDialogResult.Success(new Dictionary<string, object>())
+                : CustomDialogResult.Cancel();
+                
+            RequestClose?.Invoke(result);
         }
 
         #endregion

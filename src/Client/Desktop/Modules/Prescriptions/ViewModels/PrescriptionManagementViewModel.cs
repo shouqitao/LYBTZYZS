@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -162,8 +163,18 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             try
             {
-                // TODO: 实现处方创建对话框
-                await _dialogService.ShowInformationAsync("新增处方功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = false
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("PrescriptionEditorDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync("处方创建成功", "成功");
+                }
             }
             catch (Exception ex)
             {
@@ -179,8 +190,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             
             try
             {
-                // TODO: 实现处方编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑处方 {prescription.Id} 功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = true,
+                    ["Prescription"] = prescription
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("PrescriptionEditorDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync($"处方 {prescription.Id} 更新成功", "成功");
+                }
             }
             catch (Exception ex)
             {

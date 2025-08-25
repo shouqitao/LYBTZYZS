@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -171,8 +172,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             try
             {
-                // TODO: 实现医疗案例创建对话框
-                await _dialogService.ShowInformationAsync("新增医疗案例功能开发中", "提示");
+                var parameters = new Dictionary<string, object>();
+                
+                var result = await _dialogService.ShowDialogAsync("CreateMedicalCaseDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync("医疗案例创建成功", "成功");
+                }
             }
             catch (Exception ex)
             {
@@ -187,8 +195,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             
             try
             {
-                // TODO: 实现医疗案例编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑医疗案例 {medicalCase.PatientName} 功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = true,
+                    ["MedicalCase"] = medicalCase
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("CreateMedicalCaseDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync($"医疗案例 {medicalCase.PatientName} 更新成功", "成功");
+                }
             }
             catch (Exception ex)
             {
@@ -322,8 +341,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             if (medicalCase == null) return;
 
-            // TODO: 实现取消原因输入对话框
-            var reason = "用户取消"; // 临时使用固定原因
+            // 获取取消原因
+            var reason = await _dialogService.ShowInputAsync(
+                "请输入取消医疗案例的原因：", 
+                "取消原因", 
+                "患者临时有事");
+
+            if (string.IsNullOrEmpty(reason))
+                return; // 用户取消了输入
 
             var confirm = await _dialogService.ShowConfirmationAsync(
                 $"确定要取消医疗案例吗？\n患者：{medicalCase.PatientName}\n原因：{reason}",

@@ -204,6 +204,21 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string EditPatientDialogTitle = "编辑患者";
 
+        /// <summary>
+        /// 新增用户对话框标题
+        /// </summary>
+        public const string AddUserDialogTitle = "新增用户";
+
+        /// <summary>
+        /// 编辑用户对话框标题
+        /// </summary>
+        public const string EditUserDialogTitle = "编辑用户";
+
+        /// <summary>
+        /// 创建医疗案例对话框标题
+        /// </summary>
+        public const string CreateMedicalCaseDialogTitle = "创建医疗案例";
+
         #endregion
 
         #region 开发状态常量

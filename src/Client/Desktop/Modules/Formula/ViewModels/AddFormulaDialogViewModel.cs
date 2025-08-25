@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,8 +7,13 @@ using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Models.Common;
 using Prism.Commands;
-using Prism.Mvvm;
+using Prism.Events;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Formula.ViewModels
@@ -15,7 +21,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// <summary>
     /// 新增验方对话框视图模型
     /// </summary>
-    public class AddFormulaDialogViewModel : BindableBase
+    public class AddFormulaDialogViewModel : DialogViewModel, ICustomDialogAware
     {
         private readonly IFormulaService _formulaService;
         private readonly IHerbService _herbService;
@@ -79,19 +85,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             set => SetProperty(ref _selectedHerbItem, value);
         }
 
-        private bool _isLoading;
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        private string _statusMessage = string.Empty;
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
 
         public ObservableCollection<string> Categories { get; } = new()
         {
@@ -106,8 +99,6 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Commands
 
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand CancelCommand { get; }
         public DelegateCommand AddHerbCommand { get; }
         public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; }
         public DelegateCommand LoadHerbsCommand { get; }
@@ -119,17 +110,14 @@ namespace LYBT.Desktop.Formula.ViewModels
         public AddFormulaDialogViewModel(
             IFormulaService formulaService,
             IHerbService herbService,
-            ILogger<AddFormulaDialogViewModel> logger)
+            ILogger<AddFormulaDialogViewModel> logger,
+            IEventAggregator eventAggregator) : base(eventAggregator)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            // 初始化命令
-            SaveCommand = new DelegateCommand(async () => await SaveFormulaAsync(), CanSave)
-                .ObservesProperty(() => FormulaName)
-                .ObservesProperty(() => HerbItems);
-            CancelCommand = new DelegateCommand(Cancel);
+            // 初始化自定义命令
             AddHerbCommand = new DelegateCommand(AddHerb);
             RemoveHerbCommand = new DelegateCommand<FormulaHerbItemDto>(RemoveHerb);
             LoadHerbsCommand = new DelegateCommand(async () => await LoadAvailableHerbsAsync());
@@ -167,7 +155,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        private bool CanSave()
+        protected override bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(FormulaName) && HerbItems.Count > 0;
         }
@@ -199,7 +187,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 if (result.IsSuccess)
                 {
                     StatusMessage = "验方保存成功";
-                    // TODO: Close dialog with success
+                    RaiseRequestClose(true);
                 }
                 else
                 {
@@ -217,10 +205,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        private void Cancel()
-        {
-            // TODO: Close dialog without saving
-        }
 
         private void AddHerb()
         {
@@ -242,6 +226,77 @@ namespace LYBT.Desktop.Formula.ViewModels
             if (item != null)
             {
                 HerbItems.Remove(item);
+            }
+        }
+
+        #endregion
+
+        #region ICustomDialogAware Implementation
+
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title => "新增验方";
+
+        /// <summary>
+        /// 请求关闭对话框事件
+        /// </summary>
+        public event Action<CustomDialogResult> RequestClose = delegate { };
+
+        /// <summary>
+        /// 检查是否可以关闭对话框
+        /// </summary>
+        public bool CanCloseDialog()
+        {
+            return !IsLoading;
+        }
+
+        /// <summary>
+        /// 对话框打开时调用
+        /// </summary>
+        public void OnDialogOpened(Dictionary<string, object> parameters)
+        {
+            // 如果需要从参数初始化数据
+            // 目前新增验方不需要参数
+        }
+
+        /// <summary>
+        /// 对话框关闭时调用
+        /// </summary>
+        public void OnDialogClosed()
+        {
+            // 清理资源
+        }
+
+        /// <summary>
+        /// 实现抽象方法 - 保存数据
+        /// </summary>
+        protected override async Task<bool> SaveAsync()
+        {
+            try
+            {
+                await SaveFormulaAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 请求关闭对话框
+        /// </summary>
+        /// <param name="dialogResult">对话框结果</param>
+        protected void RaiseRequestClose(bool? dialogResult)
+        {
+            if (CanCloseDialog())
+            {
+                var result = dialogResult == true
+                    ? CustomDialogResult.Success(null)
+                    : CustomDialogResult.Cancel();
+                
+                RequestClose?.Invoke(result);
             }
         }
 

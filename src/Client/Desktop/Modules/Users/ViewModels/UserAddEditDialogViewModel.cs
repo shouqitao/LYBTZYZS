@@ -1,11 +1,18 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Windows;
+using System.Threading.Tasks;
 using LYBT.Desktop.Users.Services;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
-using Prism.Mvvm;
+using Prism.Events;
 using LYBT.Shared.Models.Contracts.Users;
 using AutoMapper;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Models.Common;
 // UltraThink v2.0: Desktop层直接使用DTO，移除Info层转换
 
 namespace LYBT.Desktop.Users.ViewModels
@@ -13,11 +20,12 @@ namespace LYBT.Desktop.Users.ViewModels
     /// <summary>
     /// 用户新增/编辑对话框视图模型
     /// </summary>
-    public class UserAddEditDialogViewModel : BindableBase
+    public class UserAddEditDialogViewModel : DialogViewModel, ICustomDialogAware
     {
         private readonly UserModuleService _userService;
         private readonly IMapper _mapper;
         private readonly UserDto? _originalUser;
+        private bool _isEditMode;
 
         private string _userName = string.Empty;
         private string _realName = string.Empty;
@@ -25,8 +33,6 @@ namespace LYBT.Desktop.Users.ViewModels
         private string _phoneNumber = string.Empty;
         private bool _isActive = true;
         private RoleItem? _selectedRole;
-        private string _validationMessage = string.Empty;
-        private bool _isNewUser;
         private bool _isRoleSelectionEnabled;
 
         public List<RoleItem> Roles { get; }
@@ -37,8 +43,6 @@ namespace LYBT.Desktop.Users.ViewModels
             get => _isRoleSelectionEnabled;
             set => SetProperty(ref _isRoleSelectionEnabled, value);
         }
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand CancelCommand { get; }
 
         /// <summary>用户名</summary>
         public string UserName
@@ -79,41 +83,37 @@ namespace LYBT.Desktop.Users.ViewModels
         public RoleItem? SelectedRole
         {
             get => _selectedRole;
-            set => SetProperty(ref _selectedRole, value);
+            set
+            {
+                if (SetProperty(ref _selectedRole, value))
+                {
+                    SaveCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
-        /// <summary>验证消息</summary>
-        public string ValidationMessage
+        #region Constructor
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="userService">用户服务</param>
+        /// <param name="mapper">AutoMapper实例</param>
+        /// <param name="eventAggregator">事件聚合器</param>
+        /// <param name="errorHandlingService">错误处理服务</param>
+        /// <param name="user">要编辑的用户信息（null表示新增模式）</param>
+        public UserAddEditDialogViewModel(
+            UserModuleService userService,
+            IMapper mapper,
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService,
+            UserDto? user = null)
+            : base(eventAggregator, errorHandlingService)
         {
-            get => _validationMessage;
-            set => SetProperty(ref _validationMessage, value);
-        }
-
-        /// <summary>是否为新用户</summary>
-        public bool IsNewUser
-        {
-            get => _isNewUser;
-            set => SetProperty(ref _isNewUser, value);
-        }
-
-        /// <summary>窗口标题</summary>
-        public string WindowTitle => IsNewUser ? "新增用户" : "编辑用户";
-
-        /// <summary>对话框结果</summary>
-        public bool? DialogResult { get; private set; }
-
-        /// <summary>保存完成回调</summary>
-        public Action<bool>? SaveCompleteCallback { get; set; }
-
-        /// <summary>关闭对话框回调</summary>
-        public Action? CloseDialogCallback { get; set; }
-
-        public UserAddEditDialogViewModel(UserModuleService userService, IMapper mapper, UserDto? user = null)
-        {
-            _userService = userService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _originalUser = user;
-            _isNewUser = user == null;
+            _isEditMode = user != null;
 
             // 角色列表 - 只允许创建普通用户
             // 管理员只限sysadmin，不能通过用户管理创建
@@ -127,61 +127,93 @@ namespace LYBT.Desktop.Users.ViewModels
             IsRoleSelectionEnabled = false;
 
             // 如果是编辑模式，加载用户数据
-            if (user != null)
+            if (_isEditMode && user != null)
             {
-                LoadUserData(user);
+                InitializeEditData(user);
             }
             else
             {
+                DialogTitle = SystemConstants.AddUserDialogTitle;
                 // 新增模式固定为普通用户角色
                 SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
             }
 
-            SaveCommand = new DelegateCommand(async () => await ExecuteSave(), CanExecuteSave);
-            CancelCommand = new DelegateCommand(ExecuteCancel);
+            InitializeDialog();
+        }
 
-            // 监听属性变化以更新命令状态
-            PropertyChanged += (s, e) =>
+        /// <summary>
+        /// 兼容性构造函数
+        /// </summary>
+        public UserAddEditDialogViewModel(
+            UserModuleService userService,
+            IMapper mapper,
+            IEventAggregator eventAggregator,
+            UserDto? user = null)
+            : base(eventAggregator)
+        {
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _originalUser = user;
+            _isEditMode = user != null;
+
+            // 角色列表初始化
+            Roles = new List<RoleItem>
             {
-                if (e.PropertyName == nameof(UserName) || e.PropertyName == nameof(RealName))
-                {
-                    SaveCommand.RaiseCanExecuteChanged();
-                }
+                new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" }
             };
+
+            IsRoleSelectionEnabled = false;
+
+            if (_isEditMode && user != null)
+            {
+                InitializeEditData(user);
+            }
+            else
+            {
+                DialogTitle = SystemConstants.AddUserDialogTitle;
+                SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
+            }
+
+            InitializeDialog();
         }
 
-        private void LoadUserData(UserDto user)
+        #endregion
+
+        #region DialogViewModel Implementation
+
+        protected override async Task<bool> SaveAsync()
         {
-            UserName = user.Username;
-            RealName = user.RealName;
-            Email = string.Empty; // Email字段已按优化标准移除
-            PhoneNumber = user.PhoneNumber ?? string.Empty;
-            IsActive = user.Status == CommonStatus.Enabled; // 使用Status属性
-
-            // 角色固定：sysadmin是管理员（但不能修改），其他都是普通用户
-            // 编辑时角色不可更改，固定显示为普通用户
-            SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
-        }
-
-        private bool CanExecuteSave()
-        {
-            return !string.IsNullOrWhiteSpace(UserName) &&
-                   !string.IsNullOrWhiteSpace(RealName) &&
-                   SelectedRole != null;
-        }
-
-        private async Task ExecuteSave()
-        {
-            if (!ValidateInput())
-                return;
-
             try
             {
-                bool success;
-
-                if (IsNewUser)
+                if (!ValidateInput())
                 {
-                    // UltraThink v2.0: 直接创建UserMutationDto
+                    return false;
+                }
+
+                if (_isEditMode && _originalUser != null)
+                {
+                    // 编辑模式
+                    var updateRequest = new UserMutationDto
+                    {
+                        Id = _originalUser.Id,
+                        Username = UserName.Trim(),
+                        RealName = RealName.Trim(),
+                        Role = "User", // 编辑时固定为普通用户角色
+                        PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
+                        IsCreateOperation = false // 设置为更新操作
+                    };
+
+                    var response = await _userService.UpdateAsync(updateRequest);
+                    
+                    if (!response.IsSuccess)
+                    {
+                        ErrorMessage = response.ErrorMessage ?? "更新用户失败";
+                        return false;
+                    }
+                }
+                else
+                {
+                    // 新增模式
                     var createRequest = new UserMutationDto
                     {
                         Username = UserName.Trim(),
@@ -194,100 +226,88 @@ namespace LYBT.Desktop.Users.ViewModels
                     };
 
                     var response = await _userService.CreateAsync(createRequest);
-                    success = response.IsSuccess;
-
-                    if (!success)
+                    
+                    if (!response.IsSuccess)
                     {
-                        ValidationMessage = response.ErrorMessage ?? "创建用户失败";
-                        return;
-                    }
-                }
-                else
-                {
-                    // 更新用户
-                    if (_originalUser == null)
-                    {
-                        ValidationMessage = "原始用户信息不能为空";
-                        return;
-                    }
-
-                    // UltraThink v2.0: 直接创建UserMutationDto
-                    var updateRequest = new UserMutationDto
-                    {
-                        Id = _originalUser.Id,
-                        Username = UserName.Trim(),
-                        RealName = RealName.Trim(),
-                        Role = "User", // 编辑时固定为普通用户角色
-                        PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        IsCreateOperation = false // 设置为更新操作
-                    };
-
-                    var response = await _userService.UpdateAsync(updateRequest);
-                    success = response.IsSuccess;
-
-                    if (!success)
-                    {
-                        ValidationMessage = response.ErrorMessage ?? "更新用户失败";
-                        return;
+                        ErrorMessage = response.ErrorMessage ?? "创建用户失败";
+                        return false;
                     }
                 }
 
-                // 成功后调用回调并关闭对话框
-                DialogResult = true;
-                SaveCompleteCallback?.Invoke(true);
-                // 注意：不要在这里调用 CloseDialog()，让回调处理关闭
+                // 保存成功，关闭对话框
+                RaiseRequestClose(true);
+                return true;
             }
             catch (Exception ex)
             {
-                ValidationMessage = $"操作失败: {ex.Message}";
+                await HandleErrorAsync("保存用户", ex);
+                return false;
             }
         }
 
-        private void ExecuteCancel()
+        protected override bool CanSave()
         {
-            DialogResult = false;
-            CloseDialog();
+            return !string.IsNullOrWhiteSpace(UserName) &&
+                   !string.IsNullOrWhiteSpace(RealName) &&
+                   SelectedRole != null;
         }
 
-        private void CloseDialog()
+        protected override void InitializeDialog()
         {
-            // 寻找并关闭当前对话框
-            foreach (Window window in Application.Current.Windows)
-            {
-                if (window.DataContext == this)
-                {
-                    window.DialogResult = DialogResult;
-                    window.Close();
-                    break;
-                }
-            }
+            base.InitializeDialog();
+            
+            // 监听属性变化以更新Command状态
+            SaveCommand.ObservesProperty(() => UserName);
+            SaveCommand.ObservesProperty(() => RealName);
+            SaveCommand.ObservesProperty(() => SelectedRole);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// 初始化编辑数据
+        /// </summary>
+        private void InitializeEditData(UserDto user)
+        {
+            DialogTitle = SystemConstants.EditUserDialogTitle;
+            UserName = user.Username;
+            RealName = user.RealName;
+            Email = string.Empty; // Email字段已按优化标准移除
+            PhoneNumber = user.PhoneNumber ?? string.Empty;
+            IsActive = user.Status == CommonStatus.Enabled; // 使用Status属性
+
+            // 角色固定：sysadmin是管理员（但不能修改），其他都是普通用户
+            // 编辑时角色不可更改，固定显示为普通用户
+            SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
         }
 
         private bool ValidateInput()
         {
-            ValidationMessage = string.Empty;
+            ClearError();
 
             if (string.IsNullOrWhiteSpace(UserName))
             {
-                ValidationMessage = "用户名不能为空";
+                ErrorMessage = "用户名不能为空";
                 return false;
             }
 
             if (UserName.Length > 32)
             {
-                ValidationMessage = "用户名长度不能超过32个字符";
+                ErrorMessage = "用户名长度不能超过32个字符";
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(RealName))
             {
-                ValidationMessage = "真实姓名不能为空";
+                ErrorMessage = "真实姓名不能为空";
                 return false;
             }
 
             if (RealName.Length > 50)
             {
-                ValidationMessage = "真实姓名长度不能超过50个字符";
+                ErrorMessage = "真实姓名长度不能超过50个字符";
                 return false;
             }
 
@@ -296,25 +316,97 @@ namespace LYBT.Desktop.Users.ViewModels
                 var emailAttribute = new EmailAddressAttribute();
                 if (!emailAttribute.IsValid(Email))
                 {
-                    ValidationMessage = "邮箱格式不正确";
+                    ErrorMessage = "邮箱格式不正确";
                     return false;
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(PhoneNumber) && PhoneNumber.Length > 20)
             {
-                ValidationMessage = "电话号码长度不能超过20个字符";
+                ErrorMessage = "电话号码长度不能超过20个字符";
                 return false;
             }
 
             if (SelectedRole == null)
             {
-                ValidationMessage = "请选择用户角色";
+                ErrorMessage = "请选择用户角色";
                 return false;
             }
 
             return true;
         }
+
+        #endregion
+
+        #region ICustomDialogAware Implementation
+
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title => DialogTitle ?? (_isEditMode ? "编辑用户" : "新增用户");
+
+        /// <summary>
+        /// 请求关闭对话框事件
+        /// </summary>
+        public event Action<CustomDialogResult> RequestClose = delegate { };
+
+        /// <summary>
+        /// 检查是否可以关闭对话框
+        /// </summary>
+        public bool CanCloseDialog()
+        {
+            return !IsSaving && !IsLoading;
+        }
+
+        /// <summary>
+        /// 对话框打开时调用
+        /// </summary>
+        /// <param name="parameters">传入的参数</param>
+        public void OnDialogOpened(Dictionary<string, object> parameters)
+        {
+            if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode)
+            {
+                _isEditMode = isEditMode;
+            }
+
+            if (parameters?.ContainsKey("User") == true && parameters["User"] is UserDto user)
+            {
+                InitializeEditData(user);
+            }
+
+            DialogTitle = _isEditMode ? "编辑用户" : "新增用户";
+        }
+
+        /// <summary>
+        /// 对话框关闭时调用
+        /// </summary>
+        public void OnDialogClosed()
+        {
+            // 清理资源或执行其他关闭操作
+        }
+
+        /// <summary>
+        /// 重写取消操作以使用ICustomDialogAware接口
+        /// </summary>
+        protected override void ExecuteCancel()
+        {
+            OnDialogClosing();
+            RaiseRequestClose(false);
+        }
+
+        /// <summary>
+        /// 触发关闭对话框请求
+        /// </summary>
+        protected void RaiseRequestClose(bool? dialogResult)
+        {
+            var result = dialogResult == true 
+                ? CustomDialogResult.Success(new Dictionary<string, object>())
+                : CustomDialogResult.Cancel();
+                
+            RequestClose?.Invoke(result);
+        }
+
+        #endregion
     }
 
     /// <summary>

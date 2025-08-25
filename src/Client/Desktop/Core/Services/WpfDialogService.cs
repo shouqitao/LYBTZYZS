@@ -363,6 +363,9 @@ namespace LYBT.Desktop.Core.Services
                 RegisterDialog("HerbSelectionDialog", typeof(Views.Dialogs.HerbSelectionDialog));
                 RegisterDialog("FormulaSelectionDialog", typeof(Views.Dialogs.FormulaSelectionDialog));
                 
+                // 业务对话框将由各模块在初始化时动态注册
+                // 避免Core层直接依赖业务模块类型
+                
                 _logger.LogDebug("默认对话框注册完成，共注册 {Count} 个对话框", _dialogRegistry.Count);
             }
             catch (Exception ex)

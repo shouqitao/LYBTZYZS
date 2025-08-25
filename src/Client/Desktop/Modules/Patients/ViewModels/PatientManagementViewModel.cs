@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -155,8 +156,18 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             try
             {
-                // TODO: 实现患者创建对话框
-                await _dialogService.ShowInformationAsync("新增患者功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = false
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync("患者信息添加成功", "成功");
+                }
             }
             catch (Exception ex)
             {
@@ -172,8 +183,19 @@ namespace LYBT.Desktop.Patients.ViewModels
             
             try
             {
-                // TODO: 实现患者编辑对话框
-                await _dialogService.ShowInformationAsync($"编辑患者 {patient.Name} 功能开发中", "提示");
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = true,
+                    ["Patient"] = patient
+                };
+                
+                var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    await RefreshDataAsync();
+                    await _dialogService.ShowSuccessAsync($"患者 {patient.Name} 信息更新成功", "成功");
+                }
             }
             catch (Exception ex)
             {
