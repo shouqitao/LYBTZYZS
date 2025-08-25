@@ -65,6 +65,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region Commands
 
         public DelegateCommand AddCommand { get; private set; }
+        public DelegateCommand<UserDto> ViewDetailsCommand { get; private set; }
         public DelegateCommand<UserDto> EditCommand { get; private set; }
         public DelegateCommand<UserDto> DeleteCommand { get; private set; }
         public DelegateCommand<UserDto> ResetPasswordCommand { get; private set; }
@@ -107,6 +108,7 @@ namespace LYBT.Desktop.Users.ViewModels
         protected override void InitializeCommands()
         {
             AddCommand = new DelegateCommand(async () => await AddUserAsync());
+            ViewDetailsCommand = new DelegateCommand<UserDto>(async user => await ViewDetailsAsync(user), CanExecuteUserCommand);
             EditCommand = new DelegateCommand<UserDto>(async user => await EditUserAsync(user), CanExecuteUserCommand);
             DeleteCommand = new DelegateCommand<UserDto>(async user => await DeleteUserAsync(user), CanExecuteUserCommand);
             ResetPasswordCommand = new DelegateCommand<UserDto>(async user => await ResetPasswordAsync(user), CanExecuteUserCommand);
@@ -159,6 +161,32 @@ namespace LYBT.Desktop.Users.ViewModels
                 LogError(ex, "添加用户失败");
                 ShowError($"添加用户失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"添加用户失败: {ex.Message}", "错误");
+            }
+        }
+
+        private async Task ViewDetailsAsync(UserDto user)
+        {
+            if (user == null) return;
+
+            try
+            {
+                // UltraThink Command绑定优化：实现查看用户详情
+                var userInfo = $@"用户详细信息：
+用户ID: {user.Id}
+用户名: {user.UserName}
+真实姓名: {user.RealName ?? "未设置"}
+角色: {user.Role}
+状态: {(user.Status == CommonStatus.Enabled ? "启用" : "禁用")}
+创建时间: {user.CreateTime:yyyy-MM-dd HH:mm:ss}
+更新时间: {user.UpdateTime:yyyy-MM-dd HH:mm:ss}";
+
+                await _dialogService.ShowInformationAsync(userInfo, "用户详情");
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "查看用户详情失败: {UserId}", user.Id);
+                ShowError($"查看用户详情失败: {ex.Message}");
+                await _dialogService.ShowErrorAsync($"查看用户详情失败: {ex.Message}", "错误");
             }
         }
 

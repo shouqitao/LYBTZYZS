@@ -201,7 +201,7 @@
                                     </StackPanel>
                                 </Button>
                                 
-                                <Button Command="{Binding NavigateToHerbViewCommand}"
+                                <Button Command="{Binding NavigateToHerbsCommand}"
                                        Style="{StaticResource QuickAccessButtonStyle}">
                                     <StackPanel>
                                         <TextBlock Text="🌿" FontSize="24"/>
@@ -209,7 +209,7 @@
                                     </StackPanel>
                                 </Button>
                                 
-                                <Button Command="{Binding NavigateToFormulaViewCommand}"
+                                <Button Command="{Binding NavigateToFormulasCommand}"
                                        Style="{StaticResource QuickAccessButtonStyle}">
                                     <StackPanel>
                                         <TextBlock Text="📜" FontSize="24"/>

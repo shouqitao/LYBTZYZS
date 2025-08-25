@@ -120,6 +120,11 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         public ICommand CancelCommand { get; }
 
         /// <summary>
+        /// 排序命令 - UltraThink Command绑定优化
+        /// </summary>
+        public ICommand SortCommand { get; }
+
+        /// <summary>
         /// 请求关闭事件
         /// </summary>
         public event Action<CustomDialogResult> RequestClose = delegate { };
@@ -134,6 +139,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             SearchCommand = new RelayCommand(async () => await ExecuteSearchAsync());
             ConfirmCommand = new RelayCommand(ExecuteConfirm, CanConfirm);
             CancelCommand = new RelayCommand(ExecuteCancel);
+            SortCommand = new RelayCommand<string>(ExecuteSort);
         }
 
         /// <summary>
@@ -260,6 +266,42 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             result.Parameters["Unit"] = Unit;
 
             RequestClose?.Invoke(result);
+        }
+
+        /// <summary>
+        /// 执行排序 - UltraThink Command绑定优化
+        /// </summary>
+        /// <param name="columnName">列名</param>
+        private void ExecuteSort(string? columnName)
+        {
+            if (string.IsNullOrEmpty(columnName))
+                return;
+
+            try
+            {
+                var sortedHerbs = columnName.ToLower() switch
+                {
+                    "名称" => Herbs.OrderBy(h => h.Name),
+                    "规格" => Herbs.OrderBy(h => h.Spec),
+                    "单位" => Herbs.OrderBy(h => h.Unit),
+                    "单价" => Herbs.OrderBy(h => h.Price),
+                    _ => Herbs.OrderBy(h => h.Name)
+                };
+
+                // 更新集合
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Herbs.Clear();
+                    foreach (var herb in sortedHerbs)
+                    {
+                        Herbs.Add(herb);
+                    }
+                });
+            }
+            catch (Exception)
+            {
+                // 排序失败时忽略错误
+            }
         }
 
         /// <summary>

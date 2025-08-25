@@ -83,12 +83,13 @@
                        Visibility="{Binding ShowProgress, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}"
                        Margin="0,0,0,8"/>
 
-            <!-- 取消按钮（可选） -->
+            <!-- 取消按钮（可选） - UltraThink Command绑定优化 -->
             <Button Grid.Row="3"
                     Content="取消"
                     HorizontalAlignment="Right"
                     Padding="12,4"
                     FontSize="11"
+                    Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     Click="CancelButton_Click"
                     Visibility="{Binding ShowCancelButton, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}"
                     Background="#F5F5F5"

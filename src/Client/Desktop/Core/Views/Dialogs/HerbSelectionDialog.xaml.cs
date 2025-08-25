@@ -35,14 +35,20 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         }
 
         /// <summary>
-        /// 列表头点击排序
+        /// 列表头点击排序 - UltraThink Command绑定优化
+        /// 通过ViewModel的SortCommand执行排序
         /// </summary>
         private void ListView_HeaderClick(object sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource is GridViewColumnHeader header && header.Content != null)
+            if (e.OriginalSource is GridViewColumnHeader header && 
+                header.Content != null &&
+                DataContext is HerbSelectionDialogViewModel viewModel)
             {
-                // TODO: 实现排序功能
-                // 可以根据列名进行排序
+                var columnName = header.Content.ToString();
+                if (viewModel.SortCommand.CanExecute(columnName))
+                {
+                    viewModel.SortCommand.Execute(columnName);
+                }
             }
         }
     }

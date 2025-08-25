@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using LYBT.Desktop.Core.Services;
 
 namespace LYBT.Desktop.Core.Controls
@@ -48,6 +49,13 @@ namespace LYBT.Desktop.Core.Controls
         public static readonly DependencyProperty CustomMessageProperty =
             DependencyProperty.Register(nameof(CustomMessage), typeof(string), 
                 typeof(SmartLoadingIndicator), new PropertyMetadata(null, OnCustomMessageChanged));
+
+        /// <summary>
+        /// 取消命令 - UltraThink Command绑定优化
+        /// </summary>
+        public static readonly DependencyProperty CancelCommandProperty =
+            DependencyProperty.Register(nameof(CancelCommand), typeof(ICommand), 
+                typeof(SmartLoadingIndicator), new PropertyMetadata(null));
 
         #endregion
 
@@ -96,6 +104,15 @@ namespace LYBT.Desktop.Core.Controls
         {
             get => (string?)GetValue(CustomMessageProperty);
             set => SetValue(CustomMessageProperty, value);
+        }
+
+        /// <summary>
+        /// 取消命令 - UltraThink Command绑定优化
+        /// </summary>
+        public ICommand? CancelCommand
+        {
+            get => (ICommand?)GetValue(CancelCommandProperty);
+            set => SetValue(CancelCommandProperty, value);
         }
 
         // 绑定属性
@@ -251,9 +268,22 @@ namespace LYBT.Desktop.Core.Controls
 
         #region 事件处理
 
+        /// <summary>
+        /// 取消按钮点击事件 - UltraThink Command绑定优化
+        /// 优先使用Command绑定，如果没有则执行默认逻辑
+        /// </summary>
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            LoadingManager?.CancelAllOperations();
+            // 优先使用Command绑定
+            if (CancelCommand?.CanExecute(null) == true)
+            {
+                CancelCommand.Execute(null);
+            }
+            else
+            {
+                // 如果没有Command绑定，执行默认逻辑（保持向后兼容）
+                LoadingManager?.CancelAllOperations();
+            }
         }
 
         #endregion

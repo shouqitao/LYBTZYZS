@@ -111,8 +111,8 @@ namespace LYBT.Desktop.Shell.ViewModels
         public DelegateCommand NavigateToMedicalCaseCommand { get; }
         public DelegateCommand NavigateToPrescriptionQueryCommand { get; }
         public DelegateCommand NavigateToPatientManagementCommand { get; }
-        public DelegateCommand NavigateToHerbViewCommand { get; }
-        public DelegateCommand NavigateToFormulaViewCommand { get; }
+        public DelegateCommand NavigateToHerbsCommand { get; }
+        public DelegateCommand NavigateToFormulasCommand { get; }
 
         // 管理员命令
         public DelegateCommand EnterSystemManagementCommand { get; }
@@ -152,8 +152,8 @@ namespace LYBT.Desktop.Shell.ViewModels
             NavigateToMedicalCaseCommand = new DelegateCommand(() => NavigateTo("MedicalCaseListView"));
             NavigateToPrescriptionQueryCommand = new DelegateCommand(() => NavigateTo("PrescriptionManagementView"));
             NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
-            NavigateToHerbViewCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
-            NavigateToFormulaViewCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
+            NavigateToHerbsCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
+            NavigateToFormulasCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
 
             // 管理员命令
             EnterSystemManagementCommand = new DelegateCommand(() => NavigateTo("AdminMainView"));

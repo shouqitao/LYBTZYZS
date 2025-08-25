@@ -68,11 +68,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Commands
 
-        public DelegateCommand AddCommand { get; set; } = null!;
-        public DelegateCommand<PrescriptionDto> EditCommand { get; set; } = null!;
-        public DelegateCommand<PrescriptionDto> DeleteCommand { get; set; } = null!;
-        public DelegateCommand<PrescriptionDto> ViewDetailsCommand { get; set; } = null!;
-        public DelegateCommand<PrescriptionDto> PrintCommand { get; set; } = null!;
+        public DelegateCommand AddCommand { get; private set; }
+        public DelegateCommand<PrescriptionDto> EditCommand { get; private set; }
+        public DelegateCommand<PrescriptionDto> DeleteCommand { get; private set; }
+        public DelegateCommand<PrescriptionDto> ViewDetailsCommand { get; private set; }
+        public DelegateCommand<PrescriptionDto> PrintCommand { get; private set; }
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - CopyCommand: 复制处方功能过度设计，医生直接新建即可
