@@ -43,7 +43,7 @@ jobs:
       continue-on-error: true
 
     - name: 📤 上传SARIF结果
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: security-report.sarif
       if: always()
@@ -117,7 +117,7 @@ jobs:
         exit-code: '0'
 
     - name: 📤 上传Trivy结果
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
       if: always()
@@ -197,7 +197,7 @@ jobs:
       continue-on-error: true
 
     - name: 🔒 CodeQL分析
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
         languages: csharp
         queries: security-and-quality

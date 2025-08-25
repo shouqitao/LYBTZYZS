@@ -235,7 +235,7 @@ jobs:
       if: github.ref == 'refs/heads/main'
 
     - name: 📤 上传安全扫描结果
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
       if: github.ref == 'refs/heads/main'
