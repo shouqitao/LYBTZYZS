@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Patients
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块化架构：注册模块核心业务服务
-            containerRegistry.RegisterSingleton<PatientModuleService>();
+            containerRegistry.RegisterSingleton<PatientModule>();
             
             // UltraThink P1重构：注册模块业务协调器
             containerRegistry.RegisterSingleton<PatientCoordinator>();
@@ -30,6 +30,7 @@ namespace LYBT.Desktop.Patients
             // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();
             containerRegistry.RegisterForNavigation<PatientAddEditDialog, PatientAddEditDialogViewModel>();
+            containerRegistry.RegisterForNavigation<PatientDetailView, PatientDetailViewModel>();
         }
     }
 }

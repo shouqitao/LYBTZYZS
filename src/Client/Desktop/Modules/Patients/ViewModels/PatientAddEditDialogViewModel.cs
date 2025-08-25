@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// </summary>
     public class PatientAddEditDialogViewModel : DialogViewModel, ICustomDialogAware
     {
-        private readonly PatientModuleService _patientService;
+        private readonly PatientModule _patientService;
         private readonly IMapper _mapper;
         private readonly PatientDto? _originalPatient;
         private bool _isEditMode;
@@ -156,7 +156,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <param name="errorHandlingService">错误处理服务</param>
         /// <param name="patient">要编辑的患者信息（null表示新增模式）</param>
         public PatientAddEditDialogViewModel(
-            PatientModuleService patientService, 
+            PatientModule patientService, 
             IMapper mapper,
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService,
@@ -185,7 +185,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// 兼容性构造函数
         /// </summary>
         public PatientAddEditDialogViewModel(
-            PatientModuleService patientService,
+            PatientModule patientService,
             IMapper mapper,
             IEventAggregator eventAggregator,
             PatientDto? patient = null)

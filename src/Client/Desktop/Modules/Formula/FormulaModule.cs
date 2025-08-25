@@ -29,6 +29,9 @@ namespace LYBT.Desktop.Formula
             containerRegistry.RegisterForNavigation<AddFormulaDialog, AddFormulaDialogViewModel>();
             containerRegistry.RegisterForNavigation<EditFormulaDialog, EditFormulaDialogViewModel>();
             containerRegistry.RegisterForNavigation<ViewFormulaDialog, ViewFormulaDialogViewModel>();
+            
+            // 注册详情视图
+            containerRegistry.RegisterForNavigation<FormulaDetailView, FormulaDetailViewModel>();
         }
     }
 }

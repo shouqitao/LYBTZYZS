@@ -323,7 +323,9 @@ namespace LYBT.Desktop.Formula.ViewModels
                 if (!string.IsNullOrEmpty(filePath))
                 {
                     // 这里应该实现实际的导入逻辑
-                    await _dialogService.ShowInformationAsync($"选择了文件：{filePath}\n导入功能正在开发中", "导入验方");
+                    await _dialogService.ShowInformationAsync(
+                        $"已选择导入文件：\n{filePath}\n\n验方批量导入功能将在后续版本中提供\n\n当前支持：\n• 手动创建验方\n• 编辑现有验方\n• 验方分类管理", 
+                        "导入功能说明");
                 }
             }
             catch (Exception ex)
@@ -343,7 +345,9 @@ namespace LYBT.Desktop.Formula.ViewModels
                 if (!string.IsNullOrEmpty(filePath))
                 {
                     // 这里应该实现实际的导出逻辑
-                    await _dialogService.ShowInformationAsync($"将导出到：{filePath}\n导出功能正在开发中", "导出验方");
+                    await _dialogService.ShowInformationAsync(
+                        $"导出路径：\n{filePath}\n\n验方批量导出功能将在后续版本中提供\n\n当前可通过以下方式获取验方数据：\n• 逐个查看验方详情\n• 复制验方信息\n• 生成验方使用报告", 
+                        "导出功能说明");
                 }
             }
             catch (Exception ex)

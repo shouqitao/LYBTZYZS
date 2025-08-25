@@ -24,13 +24,13 @@ namespace LYBT.Desktop.Consultation.Services
     /// 整合了 ConsultationModuleService + ConsultationDataService + ConsultationDataManager 的功能
     /// 去除冗余，专注核心业务逻辑
     /// </summary>
-    public class ConsultationService : LYBT.Shared.Interfaces.Services.IConsultationService
+    public class ConsultationModule : LYBT.Shared.Interfaces.Services.IConsultationService
     {
         #region 依赖服务
 
         private readonly IConsultationApi _consultationApi;
         private readonly IMapper _mapper;
-        private readonly ILogger<ConsultationService> _logger;
+        private readonly ILogger<ConsultationModule> _logger;
 
         #endregion
 
@@ -43,10 +43,10 @@ namespace LYBT.Desktop.Consultation.Services
 
         #region 构造函数
 
-        public ConsultationService(
+        public ConsultationModule(
             IConsultationApi consultationApi,
             IMapper mapper,
-            ILogger<ConsultationService> logger)
+            ILogger<ConsultationModule> logger)
         {
             _consultationApi = consultationApi ?? throw new ArgumentNullException(nameof(consultationApi));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

@@ -16,12 +16,12 @@ namespace LYBT.Desktop.Formula.Services
     /// Formula模块核心业务服务实现
     /// UltraThink v2.0架构：直接使用DTO，实现价格计算功能
     /// </summary>
-    public class FormulaModuleService : LYBT.Shared.Interfaces.Services.IFormulaService
+    public class FormulaModule : LYBT.Shared.Interfaces.Services.IFormulaService
     {
         private readonly IFormulaApi _apiService;
         private readonly IMapper _mapper;
         
-        public FormulaModuleService(IFormulaApi apiService, IMapper mapper)
+        public FormulaModule(IFormulaApi apiService, IMapper mapper)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

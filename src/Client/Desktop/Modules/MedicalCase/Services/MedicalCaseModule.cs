@@ -16,22 +16,22 @@ namespace LYBT.Desktop.MedicalCase.Services
     /// MedicalCase模块核心业务服务实现
     /// UltraThink v2.0架构：直接使用DTO，移除Info层转换逻辑
     /// </summary>
-    public class MedicalCaseModuleService : LYBT.Shared.Interfaces.Services.IMedicalCaseService
+    public class MedicalCaseModule : LYBT.Shared.Interfaces.Services.IMedicalCaseService
     {
         #region 依赖服务
 
         private readonly IMedicalCaseApi _medicalCaseApi;
         private readonly IMapper _mapper;
-        private readonly ILogger<MedicalCaseModuleService> _logger;
+        private readonly ILogger<MedicalCaseModule> _logger;
 
         #endregion
         
         #region 构造函数
 
-        public MedicalCaseModuleService(
+        public MedicalCaseModule(
             IMedicalCaseApi medicalCaseApi,
             IMapper mapper,
-            ILogger<MedicalCaseModuleService> logger)
+            ILogger<MedicalCaseModule> logger)
         {
             _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// </summary>
     public class HerbAddEditDialogViewModel : DialogViewModel, ICustomDialogAware
     {
-        private readonly HerbModuleService _herbApiService;
+        private readonly HerbModule _herbApiService;
         private readonly HerbDto? _originalHerb;
         private bool _isEditMode;
 
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <param name="errorHandlingService">错误处理服务</param>
         /// <param name="herb">要编辑的药材信息（null表示新增模式）</param>
         public HerbAddEditDialogViewModel(
-            HerbModuleService herbApiService, 
+            HerbModule herbApiService, 
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService,
             HerbDto? herb = null)
@@ -151,7 +151,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// 兼容性构造函数
         /// </summary>
         public HerbAddEditDialogViewModel(
-            HerbModuleService herbApiService,
+            HerbModule herbApiService,
             IEventAggregator eventAggregator,
             HerbDto? herb = null)
             : base(eventAggregator)

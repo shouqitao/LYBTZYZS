@@ -22,11 +22,12 @@ namespace LYBT.Desktop.Herbs
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink v2.0简化架构：直接注册服务实现
-            containerRegistry.RegisterSingleton<HerbModuleService>();
+            containerRegistry.RegisterSingleton<HerbModule>();
             
             // UltraThink四层架构：注册标准ViewModel
             containerRegistry.RegisterForNavigation<HerbManagementView, HerbManagementViewModel>();
             containerRegistry.RegisterForNavigation<HerbAddEditDialog, HerbAddEditDialogViewModel>();
+            containerRegistry.RegisterForNavigation<HerbDetailView, HerbDetailViewModel>();
         }
     }
 }

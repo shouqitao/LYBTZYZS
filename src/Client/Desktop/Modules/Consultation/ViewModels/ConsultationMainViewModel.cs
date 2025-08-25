@@ -39,7 +39,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     {
         #region 依赖服务
 
-        private readonly ConsultationService _consultationService;
+        private readonly IConsultationService _consultationService;
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPatientApi _patientApiService;
         private readonly IHerbApi _herbApiService;
@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 构造函数
 
         public ConsultationMainViewModel(
-            ConsultationService consultationService,
+            IConsultationService consultationService,
             IMedicalCaseService medicalCaseService,
             IPatientApi patientApiService,
             IHerbApi herbApiService,

@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserAddEditDialogViewModel : DialogViewModel, ICustomDialogAware
     {
-        private readonly UserModuleService _userService;
+        private readonly UserModule _userService;
         private readonly IMapper _mapper;
         private readonly UserDto? _originalUser;
         private bool _isEditMode;
@@ -103,7 +103,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <param name="errorHandlingService">错误处理服务</param>
         /// <param name="user">要编辑的用户信息（null表示新增模式）</param>
         public UserAddEditDialogViewModel(
-            UserModuleService userService,
+            UserModule userService,
             IMapper mapper,
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService,
@@ -145,7 +145,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// 兼容性构造函数
         /// </summary>
         public UserAddEditDialogViewModel(
-            UserModuleService userService,
+            UserModule userService,
             IMapper mapper,
             IEventAggregator eventAggregator,
             UserDto? user = null)

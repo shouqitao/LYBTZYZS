@@ -25,6 +25,11 @@ using LYBT.Desktop.Users.Services;
 using LYBT.Desktop.Workbench.Core;
 using LYBT.Desktop.Modules.Users.Api;
 using LYBT.Desktop.Modules.Patients.Api;
+using LYBT.Desktop.Modules.Herbs.Api;
+using LYBT.Desktop.Modules.Formula.Api;
+using LYBT.Desktop.Modules.Consultation.Api;
+using LYBT.Desktop.Modules.Prescriptions.Api;
+using LYBT.Desktop.Modules.MedicalCase.Api;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -104,10 +109,15 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
-            // 注册Refit API客户端
+            // 注册Refit API客户端 - 完整的8个API接口
             RegisterApiService<LYBT.Shared.Interfaces.Api.IAuthApi>(containerRegistry);
             RegisterApiService<IUserApi>(containerRegistry);
             RegisterApiService<IPatientApi>(containerRegistry);
+            RegisterApiService<LYBT.Desktop.Modules.Herbs.Api.IHerbApi>(containerRegistry);
+            RegisterApiService<LYBT.Desktop.Modules.Formula.Api.IFormulaApi>(containerRegistry);
+            RegisterApiService<LYBT.Desktop.Modules.Consultation.Api.IConsultationApi>(containerRegistry);
+            RegisterApiService<LYBT.Desktop.Modules.Prescriptions.Api.IPrescriptionApi>(containerRegistry);
+            RegisterApiService<LYBT.Desktop.Modules.MedicalCase.Api.IMedicalCaseApi>(containerRegistry);
             
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IApiService, LYBT.Desktop.Services.ApiService>();
@@ -154,13 +164,13 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ApiTestService>();
             
             // 模块业务服务注册 - 简化版
-            containerRegistry.RegisterSingleton<IUserService, LYBT.Desktop.Users.Services.UserModuleService>();
-            containerRegistry.RegisterSingleton<IPatientService, LYBT.Desktop.Patients.Services.PatientModuleService>();
-            containerRegistry.RegisterSingleton<IPrescriptionService, LYBT.Desktop.Prescriptions.Services.PrescriptionsModuleService>();
-            containerRegistry.RegisterSingleton<IHerbService, LYBT.Desktop.Herbs.Services.HerbModuleService>();
-            containerRegistry.RegisterSingleton<IFormulaService, LYBT.Desktop.Formula.Services.FormulaModuleService>();
-            containerRegistry.RegisterSingleton<IConsultationService, LYBT.Desktop.Consultation.Services.ConsultationService>();
-            containerRegistry.RegisterSingleton<IMedicalCaseService, LYBT.Desktop.MedicalCase.Services.MedicalCaseModuleService>();
+            containerRegistry.RegisterSingleton<IUserService, LYBT.Desktop.Users.Services.UserModule>();
+            containerRegistry.RegisterSingleton<IPatientService, LYBT.Desktop.Patients.Services.PatientModule>();
+            containerRegistry.RegisterSingleton<IPrescriptionService, LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
+            containerRegistry.RegisterSingleton<IHerbService, LYBT.Desktop.Herbs.Services.HerbModule>();
+            containerRegistry.RegisterSingleton<IFormulaService, LYBT.Desktop.Formula.Services.FormulaModule>();
+            containerRegistry.RegisterSingleton<IConsultationService, LYBT.Desktop.Consultation.Services.ConsultationModule>();
+            containerRegistry.RegisterSingleton<IMedicalCaseService, LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
         }
 
         /// <summary>

@@ -97,33 +97,30 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// </summary>
         private async void OnSaveStepData(WorkflowStep step)
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // 使用适当的async void事件处理器模式
+            try
             {
-                try
+                if (step != WorkflowStep.Prescription || _dataManager == null)
                 {
-                    if (step != WorkflowStep.Prescription || _dataManager == null)
-                    {
-                        return;
-                    }
-
-                    _logger.LogDebug("处理处方步骤保存事件");
-
-                    // 自动保存当前处方数据
-                    if (_dataManager.HasChanges && _dataManager.PrescriptionItems.Count > 0)
-                    {
-                        await _dataManager.SaveAsync();
-                        _logger.LogInformation("工作流触发：处方数据已自动保存");
-                    }
-
-                    // 发布处方保存完成事件
-                    PublishPrescriptionSaved();
+                    return;
                 }
-                catch (Exception ex)
+
+                _logger.LogDebug("处理处方步骤保存事件");
+
+                // 自动保存当前处方数据
+                if (_dataManager.HasChanges && _dataManager.PrescriptionItems.Count > 0)
                 {
-                    _logger.LogError(ex, "处理工作流步骤保存事件失败");
+                    await _dataManager.SaveAsync();
+                    _logger.LogInformation("工作流触发：处方数据已自动保存");
                 }
-            });
+
+                // 发布处方保存完成事件
+                PublishPrescriptionSaved();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理工作流步骤保存事件失败");
+            }
         }
 
         /// <summary>
@@ -168,36 +165,33 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// </summary>
         private async void OnNavigation(NavigationInfo navInfo)
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // 使用适当的async void事件处理器模式
+            try
             {
-                try
+                // 如果从处方步骤导航出去，检查是否需要保存
+                if (navInfo.FromStep == "Prescription" && _dataManager != null)
                 {
-                    // 如果从处方步骤导航出去，检查是否需要保存
-                    if (navInfo.FromStep == "Prescription" && _dataManager != null)
+                    if (_dataManager.HasChanges)
                     {
-                        if (_dataManager.HasChanges)
+                        var autoSave = ShouldAutoSave(navInfo);
+                        if (autoSave)
                         {
-                            var autoSave = ShouldAutoSave(navInfo);
-                            if (autoSave)
-                            {
-                                await _dataManager.SaveAsync();
-                                _logger.LogInformation("导航触发：处方数据已自动保存");
-                            }
+                            await _dataManager.SaveAsync();
+                            _logger.LogInformation("导航触发：处方数据已自动保存");
                         }
                     }
+                }
 
-                    // 如果导航到处方步骤，触发初始化
-                    if (navInfo.ToStep == "Prescription" && _dataManager != null)
-                    {
-                        await RefreshPrescriptionData(navInfo.MedicalCaseId);
-                    }
-                }
-                catch (Exception ex)
+                // 如果导航到处方步骤，触发初始化
+                if (navInfo.ToStep == "Prescription" && _dataManager != null)
                 {
-                    _logger.LogError(ex, "处理导航事件失败");
+                    await RefreshPrescriptionData(navInfo.MedicalCaseId);
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理导航事件失败");
+            }
         }
 
         /// <summary>

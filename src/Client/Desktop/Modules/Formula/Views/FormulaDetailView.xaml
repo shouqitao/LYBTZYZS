@@ -1,0 +1,401 @@
+<UserControl x:Class="LYBT.Desktop.Formula.Views.FormulaDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1200">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button Grid.Column="0" 
+                        Command="{Binding BackCommand}"
+                        Background="Transparent" BorderThickness="0" Padding="8"
+                        Foreground="White"
+                        Margin="0,0,16,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="←" VerticalAlignment="Center" FontSize="16"/>
+                        <TextBlock Text="返回" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                
+                <TextBlock Grid.Column="1" 
+                           Text="验方详情" 
+                           FontSize="20" 
+                           FontWeight="Bold" 
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+                
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Command="{Binding EditCommand}"
+                            Background="Transparent" BorderThickness="0" Padding="8"
+                            Foreground="White"
+                            Margin="4"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✏" VerticalAlignment="Center" FontSize="16"/>
+                            <TextBlock Text="编辑" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Command="{Binding SaveCommand}"
+                            Background="Transparent" BorderThickness="0" Padding="8"
+                            Foreground="White"
+                            Margin="4"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💾" VerticalAlignment="Center" FontSize="16"/>
+                            <TextBlock Text="保存" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Command="{Binding CancelEditCommand}"
+                            Background="Transparent" BorderThickness="0" Padding="8"
+                            Foreground="White"
+                            Margin="4"
+                            Visibility="{Binding IsReadOnly, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <TextBlock Text="✖" FontSize="16" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <Button Command="{Binding CopyFormulaCommand}"
+                            Background="Transparent" BorderThickness="0" Padding="8"
+                            Foreground="White"
+                            Margin="4">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" VerticalAlignment="Center" FontSize="16"/>
+                            <TextBlock Text="复制" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Command="{Binding ViewUsageHistoryCommand}"
+                            Background="Transparent" BorderThickness="0" Padding="8"
+                            Foreground="White"
+                            Margin="4">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📈" VerticalAlignment="Center" FontSize="16"/>
+                            <TextBlock Text="使用记录" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Command="{Binding PrintCommand}"
+                            Background="Transparent" BorderThickness="0" Padding="8"
+                            Foreground="White"
+                            Margin="4">
+                        <TextBlock Text="🖨" FontSize="16" VerticalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 内容区域 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- 验方基本信息卡片 -->
+                <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                    <Grid Margin="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Border Grid.Column="0" 
+                                Width="80" Height="80"
+                                CornerRadius="8"
+                                Background="{DynamicResource AccentBrush}"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,20,0">
+                            <TextBlock Text="📜" 
+                                       FontSize="36"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="White"/>
+                        </Border>
+                        
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding FormulaName}" 
+                                       FontSize="24" 
+                                       FontWeight="Bold"/>
+                            
+                            <TextBlock FontSize="16" Foreground="Gray" Margin="0,4,0,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} · {1}味药材">
+                                        <Binding Path="Category"/>
+                                        <Binding Path="HerbCount"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                            
+                            <TextBlock FontSize="14" Foreground="Gray" Margin="0,4,0,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="总价: ¥{0:F2} · 难度: {1}">
+                                        <Binding Path="TotalPrice"/>
+                                        <Binding Path="Difficulty"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <Border Background="{DynamicResource SuccessBrush}" 
+                                    CornerRadius="12" 
+                                    Padding="12,4"
+                                    Margin="0,0,0,8">
+                                <TextBlock Text="{Binding StatusText}" 
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           FontSize="12"/>
+                            </Border>
+                            
+                            <Border Background="{DynamicResource WarningBrush}" 
+                                    CornerRadius="8" 
+                                    Padding="8,3"
+                                    Visibility="{Binding IsShared, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="共享" 
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           FontSize="10"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 基本信息 -->
+                <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                    <Expander Header="基本信息" IsExpanded="True">
+                        <Grid Margin="16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- 第一行 -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" 
+                                       Text="验方名称:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="0,8"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" 
+                                     Text="{Binding Formula.Name, Mode=TwoWay}"
+                                     IsReadOnly="{Binding IsReadOnly}"
+                                     Margin="0,8,16,8"/>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="2" 
+                                       Text="配制难度:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="0,8"/>
+                            <TextBox Grid.Row="0" Grid.Column="3" 
+                                     Text="{Binding Formula.Difficulty, Mode=TwoWay}"
+                                     IsReadOnly="{Binding IsReadOnly}"
+                                     Margin="0,8"/>
+                            
+                            <!-- 第二行 -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" 
+                                       Text="性味归经:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Top"
+                                       Margin="0,8"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+                                     Text="{Binding Formula.Property, Mode=TwoWay}"
+                                     IsReadOnly="{Binding IsReadOnly}"
+                                     TextWrapping="Wrap"
+                                     MinHeight="40"
+                                     Margin="0,8"/>
+                            
+                            <!-- 第三行 -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" 
+                                       Text="功效:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Top"
+                                       Margin="0,8"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
+                                     Text="{Binding Formula.Effect, Mode=TwoWay}"
+                                     IsReadOnly="{Binding IsReadOnly}"
+                                     TextWrapping="Wrap"
+                                     MinHeight="60"
+                                     Margin="0,8"/>
+                            
+                            <!-- 第四行 -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" 
+                                       Text="用法:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Top"
+                                       Margin="0,8"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
+                                     Text="{Binding Formula.Usage, Mode=TwoWay}"
+                                     IsReadOnly="{Binding IsReadOnly}"
+                                     TextWrapping="Wrap"
+                                     MinHeight="60"
+                                     Margin="0,8"/>
+                            
+                            <!-- 第五行 -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" 
+                                       Text="创建时间:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="0,8"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" 
+                                       Text="{Binding CreateTime, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,8,16,8"/>
+                            
+                            <TextBlock Grid.Row="4" Grid.Column="2" 
+                                       Text="更新时间:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="0,8"/>
+                            <TextBlock Grid.Row="4" Grid.Column="3" 
+                                       Text="{Binding UpdateTime, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,8"/>
+                        </Grid>
+                    </Expander>
+                </Border>
+
+                <!-- 药材组成 -->
+                <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                    <Expander Header="药材组成" IsExpanded="True">
+                        <Grid Margin="16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- 药材统计信息 -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBlock Text="{Binding HerbCount, StringFormat='共{0}味药材'}" 
+                                           FontWeight="Bold"
+                                           Margin="0,0,20,0"/>
+                                <TextBlock Text="{Binding TotalPrice, StringFormat='总价: ¥{0:F2}'}" 
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource AccentBrush}"/>
+                            </StackPanel>
+                            
+                            <!-- 药材列表 -->
+                            <DataGrid Grid.Row="1"
+                                      ItemsSource="{Binding HerbItems}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      IsReadOnly="{Binding IsReadOnly}"
+                                      GridLinesVisibility="Horizontal"
+                                      HeadersVisibility="Column"
+                                      SelectionMode="Single"
+                                      AlternationCount="2"
+                                      MaxHeight="300">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="序号" 
+                                                        Binding="{Binding SortOrder}"
+                                                        Width="60"/>
+                                    <DataGridTextColumn Header="药材名称" 
+                                                        Binding="{Binding HerbName}"
+                                                        Width="120"/>
+                                    <DataGridTextColumn Header="用量" 
+                                                        Binding="{Binding Quantity, StringFormat=F1}"
+                                                        Width="80"/>
+                                    <DataGridTextColumn Header="单位" 
+                                                        Binding="{Binding Unit}"
+                                                        Width="60"/>
+                                    <DataGridTextColumn Header="单价" 
+                                                        Binding="{Binding Price, StringFormat=F2}"
+                                                        Width="80"/>
+                                    <DataGridTextColumn Header="炮制方法" 
+                                                        Binding="{Binding Preparation}"
+                                                        Width="100"/>
+                                    <DataGridTextColumn Header="用法" 
+                                                        Binding="{Binding Usage}"
+                                                        Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Expander>
+                </Border>
+
+                <!-- 详细描述和备注 -->
+                <Border Grid.Row="3" Style="{StaticResource CardStyle}">
+                    <Expander Header="详细描述" IsExpanded="False">
+                        <Grid Margin="16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- 描述 -->
+                            <TextBlock Grid.Row="0" 
+                                       Text="验方描述:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Top"
+                                       Margin="0,8"/>
+                            <TextBox Grid.Row="0" 
+                                     Text="{Binding Formula.Description, Mode=TwoWay}"
+                                     IsReadOnly="{Binding IsReadOnly}"
+                                     TextWrapping="Wrap"
+                                     MinHeight="60"
+                                     Margin="0,32,0,8"/>
+                            
+                            <!-- 备注 -->
+                            <TextBlock Grid.Row="1" 
+                                       Text="备注:" 
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Top"
+                                       Margin="0,8"/>
+                            <TextBox Grid.Row="1" 
+                                     Text="{Binding Formula.Remark, Mode=TwoWay}"
+                                     IsReadOnly="{Binding IsReadOnly}"
+                                     TextWrapping="Wrap"
+                                     MinHeight="40"
+                                     Margin="0,32,0,8"/>
+                        </Grid>
+                    </Expander>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- 加载遮罩 -->
+        <Grid Grid.Row="0" Grid.RowSpan="2" 
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+              Background="#80000000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar Width="50" Height="50"
+                             IsIndeterminate="True"
+                             Margin="0,0,0,16"/>
+                <TextBlock Text="正在加载验方信息..."
+                           Foreground="White"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

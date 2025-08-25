@@ -239,18 +239,15 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual async void OnPageChanged(object? sender, PageChangedEventArgs e)
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // 使用适当的async void事件处理器模式
+            try
             {
-                try
-                {
-                    await LoadItemsAsync();
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "分页变化处理失败");
-                }
-            });
+                await LoadItemsAsync();
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "分页变化处理失败");
+            }
         }
 
         /// <summary>
@@ -258,20 +255,17 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual async void OnSearchExecuted(object? sender, SearchExecutedEventArgs e)
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // 使用适当的async void事件处理器模式
+            try
             {
-                try
-                {
-                    // 搜索时重置到第一页
-                    PaginationCoordinator.CurrentPage = 1;
-                    await LoadItemsAsync();
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "搜索执行失败");
-                }
-            });
+                // 搜索时重置到第一页
+                PaginationCoordinator.CurrentPage = 1;
+                await LoadItemsAsync();
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "搜索执行失败");
+            }
         }
 
         /// <summary>
@@ -279,19 +273,16 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual async void OnSearchCleared(object? sender, EventArgs e)
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // 使用适当的async void事件处理器模式
+            try
             {
-                try
-                {
-                    PaginationCoordinator.CurrentPage = 1;
-                    await LoadItemsAsync();
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex, "搜索清除失败");
-                }
-            });
+                PaginationCoordinator.CurrentPage = 1;
+                await LoadItemsAsync();
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "搜索清除失败");
+            }
         }
 
         /// <summary>

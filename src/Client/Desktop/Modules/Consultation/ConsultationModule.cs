@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Consultation
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink Phase 1: 注册简化后的核心服务
-            containerRegistry.RegisterSingleton<ConsultationService>();
+            containerRegistry.RegisterSingleton<ConsultationModule>();
             containerRegistry.RegisterSingleton<TCMDiagnosisService>();
 
             // 注册视图模型

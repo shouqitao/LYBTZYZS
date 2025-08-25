@@ -14,12 +14,12 @@ namespace LYBT.Desktop.Patients.Services
     /// Patient模块核心业务服务实现
     /// UltraThink v2.0架构：直接使用DTO，移除Info层转换逻辑
     /// </summary>
-    public class PatientModuleService : IPatientService
+    public class PatientModule : IPatientService
     {
         private readonly IPatientApi _apiService;
         private readonly IMapper _mapper;
         
-        public PatientModuleService(IPatientApi apiService, IMapper mapper)
+        public PatientModule(IPatientApi apiService, IMapper mapper)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

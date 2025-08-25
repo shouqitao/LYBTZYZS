@@ -17,12 +17,12 @@ namespace LYBT.Desktop.Users.Services
     /// UltraThink v2.0架构：直接使用DTO，移除Info层转换逻辑
     /// 实现IUserService接口以支持依赖注入
     /// </summary>
-    public class UserModuleService : IUserService
+    public class UserModule : IUserService
     {
         private readonly IUserApi _apiService;
         private readonly IMapper _mapper;
         
-        public UserModuleService(IUserApi apiService, IMapper mapper)
+        public UserModule(IUserApi apiService, IMapper mapper)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
