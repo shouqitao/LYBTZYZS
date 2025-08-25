@@ -13,7 +13,7 @@
     <!-- Serilog包已删除 - UltraThink重构：使用标准Microsoft.Extensions.Logging -->
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.8" />
   </ItemGroup>
 
   <!-- 临时排除有问题的文件，符合UltraThink v2.0简化原则 -->
