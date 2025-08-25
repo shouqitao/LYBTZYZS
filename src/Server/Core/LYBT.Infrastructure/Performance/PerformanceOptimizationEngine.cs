@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -80,6 +81,7 @@ namespace LYBT.Infrastructure.Performance
         /// <summary>
         /// 生成性能优化报告
         /// </summary>
+        [SupportedOSPlatform("windows")]
         public async Task<PerformanceOptimizationReport> GenerateOptimizationReportAsync()
         {
             _logger.LogInformation("Starting performance optimization analysis");
@@ -128,7 +130,7 @@ namespace LYBT.Infrastructure.Performance
         /// <summary>
         /// 分析CQRS操作性能
         /// </summary>
-        private async Task AnalyzeCQRSPerformance(List<PerformanceOptimizationSuggestion> suggestions)
+        private Task AnalyzeCQRSPerformance(List<PerformanceOptimizationSuggestion> suggestions)
         {
             var operationStats = _cqrsMonitor.GetOperationStats();
 
@@ -198,12 +200,15 @@ namespace LYBT.Infrastructure.Performance
                     });
                 }
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 分析系统资源使用
         /// </summary>
-        private async Task AnalyzeSystemResources(
+        [SupportedOSPlatform("windows")]
+        private Task AnalyzeSystemResources(
             List<PerformanceOptimizationSuggestion> suggestions, 
             PerformanceOptimizationReport report)
         {
@@ -278,6 +283,8 @@ namespace LYBT.Infrastructure.Performance
                     }
                 });
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -293,7 +300,7 @@ namespace LYBT.Infrastructure.Performance
         /// <summary>
         /// 分析数据库性能
         /// </summary>
-        private async Task AnalyzeDatabasePerformance(List<PerformanceOptimizationSuggestion> suggestions)
+        private Task AnalyzeDatabasePerformance(List<PerformanceOptimizationSuggestion> suggestions)
         {
             var operationStats = _cqrsMonitor.GetOperationStats();
             var dbRelatedOperations = operationStats.Values
@@ -320,6 +327,8 @@ namespace LYBT.Infrastructure.Performance
                     }
                 });
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>

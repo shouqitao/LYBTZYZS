@@ -236,81 +236,81 @@ namespace LYBT.Desktop.Herbs.Services
         }
         
         // UltraThink v2.0: 为CreateDto和UpdateDto创建单独的验证方法
-        public async Task<ServiceResult> ValidateCreateDtoAsync(HerbCreateDto createDto)
+        public Task<ServiceResult> ValidateCreateDtoAsync(HerbCreateDto createDto)
         {
             try
             {
                 if (createDto == null)
                 {
-                    return ServiceResult.Failure("创建中药材信息不能为空");
+                    return Task.FromResult(ServiceResult.Failure("创建中药材信息不能为空"));
                 }
                 
                 if (string.IsNullOrWhiteSpace(createDto.Name))
                 {
-                    return ServiceResult.Failure("中药材名称不能为空");
+                    return Task.FromResult(ServiceResult.Failure("中药材名称不能为空"));
                 }
                 
                 if (createDto.Name.Length > 100)
                 {
-                    return ServiceResult.Failure("中药材名称长度不能超过100个字符");
+                    return Task.FromResult(ServiceResult.Failure("中药材名称长度不能超过100个字符"));
                 }
                 
                 if (string.IsNullOrWhiteSpace(createDto.Unit))
                 {
-                    return ServiceResult.Failure("单位不能为空");
+                    return Task.FromResult(ServiceResult.Failure("单位不能为空"));
                 }
                 
                 if (createDto.Unit.Length > 10)
                 {
-                    return ServiceResult.Failure("单位长度不能超过10个字符");
+                    return Task.FromResult(ServiceResult.Failure("单位长度不能超过10个字符"));
                 }
                 
                 if (createDto.Price <= 0)
                 {
-                    return ServiceResult.Failure("单价必须大于0");
+                    return Task.FromResult(ServiceResult.Failure("单价必须大于0"));
                 }
                 
                 if (createDto.Price > 9999.99m)
                 {
-                    return ServiceResult.Failure("单价不能超过9999.99");
+                    return Task.FromResult(ServiceResult.Failure("单价不能超过9999.99"));
                 }
                 
                 // TODO: 根据实际HerbCreateDto结构验证其他属性
                 
-                return ServiceResult.Success();
+                return Task.FromResult(ServiceResult.Success());
             }
             catch (Exception ex)
             {
-                return ServiceResult.Failure($"验证创建中药材异常: {ex.Message}");
+                return Task.FromResult(ServiceResult.Failure($"验证创建中药材异常: {ex.Message}"));
             }
         }
         
-        public async Task<ServiceResult> ValidateUpdateDtoAsync(HerbUpdateDto updateDto)
+        public Task<ServiceResult> ValidateUpdateDtoAsync(HerbUpdateDto updateDto)
         {
             try
             {
                 if (updateDto == null)
                 {
-                    return ServiceResult.Failure("更新中药材信息不能为空");
+                    return Task.FromResult(ServiceResult.Failure("更新中药材信息不能为空"));
                 }
                 
                 if (string.IsNullOrWhiteSpace(updateDto.Name))
                 {
-                    return ServiceResult.Failure("中药材名称不能为空");
+                    return Task.FromResult(ServiceResult.Failure("中药材名称不能为空"));
                 }
                 
                 if (updateDto.Name.Length > 100)
                 {
-                    return ServiceResult.Failure("中药材名称长度不能超过100个字符");
+                    return Task.FromResult(ServiceResult.Failure("中药材名称长度不能超过100个字符"));
                 }
                 
                 // TODO: 根据实际HerbUpdateDto结构验证其他属性
                 
-                return ServiceResult.Success();
+                return Task.FromResult(ServiceResult.Success());
             }
             catch (Exception ex)
             {
-                return ServiceResult.Failure($"验证更新中药材异常: {ex.Message}");
+                return Task.FromResult(ServiceResult.Failure($"验证更新中药材异常: {ex.Message}"));
             }
         }
         
@@ -529,9 +529,9 @@ namespace LYBT.Desktop.Herbs.Services
         /// <summary>
         /// 更新库存 - UltraThink v2.0暂不支持库存管理
         /// </summary>
-        public async Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
+        public Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
         {
-            return ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持库存管理功能");
+            return Task.FromResult(ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持库存管理功能"));
         }
         
         /// <summary>
@@ -579,9 +579,9 @@ namespace LYBT.Desktop.Herbs.Services
         /// <summary>
         /// 获取库存统计 - UltraThink v2.0暂不支持库存管理
         /// </summary>
-        public async Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
+        public Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
         {
-            return ServiceResult<HerbStockStatisticsDto>.Failure("UltraThink v2.0版本暂不支持库存管理功能");
+            return Task.FromResult(ServiceResult<HerbStockStatisticsDto>.Failure("UltraThink v2.0版本暂不支持库存管理功能"));
         }
         
         /// <summary>
@@ -620,9 +620,9 @@ namespace LYBT.Desktop.Herbs.Services
         /// <summary>
         /// 批量更新状态 - UltraThink v2.0简化版不支持
         /// </summary>
-        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
+        public Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
         {
-            return ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持批量状态更新功能");
+            return Task.FromResult(ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持批量状态更新功能"));
         }
         
         /// <summary>
@@ -693,17 +693,17 @@ namespace LYBT.Desktop.Herbs.Services
         /// <summary>
         /// 获取库存不足药材 - UltraThink v2.0暂不支持库存管理
         /// </summary>
-        public async Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
+        public Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
         {
-            return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+            return Task.FromResult(ServiceResult<List<HerbDto>>.Success(new List<HerbDto>()));
         }
         
         /// <summary>
         /// 获取即将过期药材 - UltraThink v2.0暂不支持过期管理
         /// </summary>
-        public async Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
+        public Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
         {
-            return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+            return Task.FromResult(ServiceResult<List<HerbDto>>.Success(new List<HerbDto>()));
         }
         
         /// <summary>

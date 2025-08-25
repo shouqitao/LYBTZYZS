@@ -43,7 +43,7 @@ namespace LYBT.Infrastructure.Security
             {
                 // 设置请求ID
                 context.Items["RequestId"] = requestId;
-                context.Response.Headers.Add("X-Request-ID", requestId);
+                context.Response.Headers["X-Request-ID"] = requestId;
 
                 // HTTPS重定向
                 if (_options.RequireHttps && !context.Request.IsHttps)
@@ -116,34 +116,34 @@ namespace LYBT.Infrastructure.Security
             
             // 基础安全头部
             if (!response.ContainsKey("X-Content-Type-Options"))
-                response.Add("X-Content-Type-Options", "nosniff");
+                response["X-Content-Type-Options"] = "nosniff";
             
             if (!response.ContainsKey("X-Frame-Options"))
-                response.Add("X-Frame-Options", _options.XFrameOptions);
+                response["X-Frame-Options"] = _options.XFrameOptions;
             
             if (!response.ContainsKey("X-XSS-Protection"))
-                response.Add("X-XSS-Protection", "1; mode=block");
+                response["X-XSS-Protection"] = "1; mode=block";
             
             if (!response.ContainsKey("Referrer-Policy"))
-                response.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+                response["Referrer-Policy"] = "strict-origin-when-cross-origin";
             
             // 内容安全策略
             if (!string.IsNullOrEmpty(_options.ContentSecurityPolicy))
             {
-                response.Add("Content-Security-Policy", _options.ContentSecurityPolicy);
+                response["Content-Security-Policy"] = _options.ContentSecurityPolicy;
             }
 
             // HSTS (HTTP Strict Transport Security)
             if (_options.RequireHttps && context.Request.IsHttps)
             {
-                response.Add("Strict-Transport-Security", 
-                    $"max-age={_options.HstsMaxAge}; includeSubDomains{(_options.HstsPreload ? "; preload" : "")}");
+                response["Strict-Transport-Security"] = 
+                    $"max-age={_options.HstsMaxAge}; includeSubDomains{(_options.HstsPreload ? "; preload" : "")}";
             }
 
             // 权限策略
             if (!string.IsNullOrEmpty(_options.PermissionsPolicy))
             {
-                response.Add("Permissions-Policy", _options.PermissionsPolicy);
+                response["Permissions-Policy"] = _options.PermissionsPolicy;
             }
 
             // 隐藏服务器信息
@@ -180,11 +180,11 @@ namespace LYBT.Infrastructure.Security
                 }
 
                 // 检查请求头
-                await ValidateHeaders(context, result);
+                ValidateHeaders(context, result);
                 if (!result.IsValid) return result;
 
                 // 验证查询参数
-                await ValidateQueryParameters(context, result);
+                ValidateQueryParameters(context, result);
                 if (!result.IsValid) return result;
 
                 // 验证表单数据（如果是POST请求）
@@ -208,7 +208,7 @@ namespace LYBT.Infrastructure.Security
         /// <summary>
         /// 验证请求头
         /// </summary>
-        private async Task ValidateHeaders(HttpContext context, RequestValidationResult result)
+        private void ValidateHeaders(HttpContext context, RequestValidationResult result)
         {
             foreach (var header in context.Request.Headers)
             {
@@ -244,7 +244,7 @@ namespace LYBT.Infrastructure.Security
         /// <summary>
         /// 验证查询参数
         /// </summary>
-        private async Task ValidateQueryParameters(HttpContext context, RequestValidationResult result)
+        private void ValidateQueryParameters(HttpContext context, RequestValidationResult result)
         {
             foreach (var param in context.Request.Query)
             {

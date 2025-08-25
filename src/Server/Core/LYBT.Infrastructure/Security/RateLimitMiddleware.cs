@@ -169,11 +169,11 @@ namespace LYBT.Infrastructure.Security
         {
             var bucket = _tokenBuckets.GetOrAdd(clientId, _ => new TokenBucket(config));
             
-            context.Response.Headers.Add("X-RateLimit-Limit", config.RequestsPerWindow.ToString());
-            context.Response.Headers.Add("X-RateLimit-Remaining", bucket.AvailableTokens.ToString());
-            context.Response.Headers.Add("X-RateLimit-Window", config.WindowSeconds.ToString());
-            context.Response.Headers.Add("X-RateLimit-Reset", 
-                DateTimeOffset.UtcNow.AddSeconds(config.WindowSeconds).ToUnixTimeSeconds().ToString());
+            context.Response.Headers["X-RateLimit-Limit"] = config.RequestsPerWindow.ToString();
+            context.Response.Headers["X-RateLimit-Remaining"] = bucket.AvailableTokens.ToString();
+            context.Response.Headers["X-RateLimit-Window"] = config.WindowSeconds.ToString();
+            context.Response.Headers["X-RateLimit-Reset"] = 
+                DateTimeOffset.UtcNow.AddSeconds(config.WindowSeconds).ToUnixTimeSeconds().ToString();
         }
     }
 

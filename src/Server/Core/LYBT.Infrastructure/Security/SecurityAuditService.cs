@@ -189,7 +189,7 @@ namespace LYBT.Infrastructure.Security
                 // 高威胁级别事件立即告警
                 if (exceptionEvent.ThreatLevel == ThreatLevel.High || exceptionEvent.ThreatLevel == ThreatLevel.Critical)
                 {
-                    await SendSecurityAlertAsync(exceptionEvent);
+                    SendSecurityAlert(exceptionEvent);
                 }
             }
             catch (Exception ex)
@@ -312,7 +312,7 @@ namespace LYBT.Infrastructure.Security
         /// <summary>
         /// 发送安全告警
         /// </summary>
-        private async Task SendSecurityAlertAsync(SecurityExceptionAuditEvent exceptionEvent)
+        private void SendSecurityAlert(SecurityExceptionAuditEvent exceptionEvent)
         {
             // TODO: 实现告警通知（邮件、短信、钉钉等）
             _logger.LogCritical("🚨 安全告警: {ExceptionType} - {ExceptionMessage} (IP: {ClientIP})",

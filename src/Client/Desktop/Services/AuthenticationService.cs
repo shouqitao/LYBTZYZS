@@ -168,16 +168,16 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取当前用户信息 - 新Shared接口实现
         /// </summary>
-        public async Task<ServiceResult<UserDto>> GetCurrentUserAsync()
+        public Task<ServiceResult<UserDto>> GetCurrentUserAsync()
         {
             var currentUser = _authState.CurrentUser;
             if (currentUser == null)
             {
-                return ServiceResult<UserDto>.Failure("用户未登录");
+                return Task.FromResult(ServiceResult<UserDto>.Failure("用户未登录"));
             }
             
             var userDto = ConvertToUserDto(currentUser);
-            return ServiceResult<UserDto>.Success(userDto);
+            return Task.FromResult(ServiceResult<UserDto>.Success(userDto));
         }
 
         /// <summary>
@@ -207,35 +207,35 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 验证令牌有效性 - 新Shared接口实现
         /// </summary>
-        public async Task<ServiceResult<bool>> ValidateTokenAsync(string token)
+        public Task<ServiceResult<bool>> ValidateTokenAsync(string token)
         {
             try
             {
                 if (string.IsNullOrEmpty(token))
                 {
-                    return ServiceResult<bool>.Success(false);
+                    return Task.FromResult(ServiceResult<bool>.Success(false));
                 }
 
                 // 简单验证：检查是否是当前存储的token
                 var currentToken = _tokenManager.GetToken();
                 if (token == currentToken && _authState.IsAuthenticated)
                 {
-                    return ServiceResult<bool>.Success(true);
+                    return Task.FromResult(ServiceResult<bool>.Success(true));
                 }
 
-                return ServiceResult<bool>.Success(false);
+                return Task.FromResult(ServiceResult<bool>.Success(false));
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "验证令牌失败");
-                return ServiceResult<bool>.Failure("令牌验证失败: " + ex.Message);
+                return Task.FromResult(ServiceResult<bool>.Failure("令牌验证失败: " + ex.Message));
             }
         }
 
         /// <summary>
         /// 刷新访问令牌 - 新Shared接口实现
         /// </summary>
-        public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
+        public Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
         {
             try
             {
@@ -244,7 +244,7 @@ namespace LYBT.Desktop.Services
                 // TODO: 实现刷新令牌逻辑，当前返回当前用户信息
                 if (!_authState.IsAuthenticated)
                 {
-                    return ServiceResult<LoginResponse>.Failure("用户未登录，无法刷新令牌");
+                    return Task.FromResult(ServiceResult<LoginResponse>.Failure("用户未登录，无法刷新令牌"));
                 }
 
                 var response = new LoginResponse
@@ -253,12 +253,12 @@ namespace LYBT.Desktop.Services
                     User = _authState.CurrentUser ?? new UserDto()
                 };
 
-                return ServiceResult<LoginResponse>.Success(response);
+                return Task.FromResult(ServiceResult<LoginResponse>.Success(response));
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "刷新令牌失败");
-                return ServiceResult<LoginResponse>.Failure("刷新令牌失败: " + ex.Message);
+                return Task.FromResult(ServiceResult<LoginResponse>.Failure("刷新令牌失败: " + ex.Message));
             }
         }
         

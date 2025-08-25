@@ -187,7 +187,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         
         // UltraThink v2.0: 简化状态管理 - 移除独立的状态更新方法，通过API直接操作
         
-        private async Task<ServiceResult> UpdateStatusAsync(Guid id, PrescriptionStatus status, string reason)
+        private Task<ServiceResult> UpdateStatusAsync(Guid id, PrescriptionStatus status, string reason)
         {
             try
             {
@@ -196,19 +196,19 @@ namespace LYBT.Desktop.Prescriptions.Services
                 {
                     case PrescriptionStatus.Completed:
                         // 对于完成状态，目前没有直接的API，返回成功占位
-                        return ServiceResult.Success();
+                        return Task.FromResult(ServiceResult.Success());
                     
                     case PrescriptionStatus.Draft:
                         // 回到草稿状态
-                        return ServiceResult.Success();
+                        return Task.FromResult(ServiceResult.Success());
                     
                     default:
-                        return ServiceResult.Failure($"不支持的处方状态更新: {status}");
+                        return Task.FromResult(ServiceResult.Failure($"不支持的处方状态更新: {status}"));
                 }
             }
             catch (Exception ex)
             {
-                return ServiceResult.Failure($"更新处方状态异常: {ex.Message}");
+                return Task.FromResult(ServiceResult.Failure($"更新处方状态异常: {ex.Message}"));
             }
         }
         
@@ -316,22 +316,22 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 验证操作 - UltraThink v2.0: 简化验证逻辑，保留核心验证
         
         // UltraThink v2.0: 精简验证方法 - 20人以下小诊所不需要复杂的验证框架
-        private async Task<ServiceResult> ValidateCreateDtoAsync(PrescriptionCreateDto createDto)
+        private Task<ServiceResult> ValidateCreateDtoAsync(PrescriptionCreateDto createDto)
         {
-            if (createDto == null) return ServiceResult.Failure("创建处方信息不能为空");
-            if (createDto.PatientId == Guid.Empty) return ServiceResult.Failure("患者ID不能为空");
-            if (createDto.DoctorId == Guid.Empty) return ServiceResult.Failure("医生ID不能为空");
-            if (createDto.DosageCount <= 0) return ServiceResult.Failure("服药剂数必须大于0");
-            return ServiceResult.Success();
+            if (createDto == null) return Task.FromResult(ServiceResult.Failure("创建处方信息不能为空"));
+            if (createDto.PatientId == Guid.Empty) return Task.FromResult(ServiceResult.Failure("患者ID不能为空"));
+            if (createDto.DoctorId == Guid.Empty) return Task.FromResult(ServiceResult.Failure("医生ID不能为空"));
+            if (createDto.DosageCount <= 0) return Task.FromResult(ServiceResult.Failure("服药剂数必须大于0"));
+            return Task.FromResult(ServiceResult.Success());
         }
         
-        private async Task<ServiceResult> ValidateEditDtoAsync(PrescriptionEditDto editDto)
+        private Task<ServiceResult> ValidateEditDtoAsync(PrescriptionEditDto editDto)
         {
-            if (editDto == null) return ServiceResult.Failure("编辑处方信息不能为空");
-            if (editDto.Id == Guid.Empty) return ServiceResult.Failure("处方ID不能为空");
-            if (string.IsNullOrWhiteSpace(editDto.Diagnosis)) return ServiceResult.Failure("诊断不能为空");
-            if (editDto.DosageCount <= 0) return ServiceResult.Failure("服药剂数必须大于0");
-            return ServiceResult.Success();
+            if (editDto == null) return Task.FromResult(ServiceResult.Failure("编辑处方信息不能为空"));
+            if (editDto.Id == Guid.Empty) return Task.FromResult(ServiceResult.Failure("处方ID不能为空"));
+            if (string.IsNullOrWhiteSpace(editDto.Diagnosis)) return Task.FromResult(ServiceResult.Failure("诊断不能为空"));
+            if (editDto.DosageCount <= 0) return Task.FromResult(ServiceResult.Failure("服药剂数必须大于0"));
+            return Task.FromResult(ServiceResult.Success());
         }
         
         private async Task<ServiceResult<bool>> CanModifyAsync(Guid id)
@@ -450,23 +450,23 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 根据看诊ID获取处方列表 [已废弃]
         /// </summary>
         [Obsolete("请使用GetByMedicalCaseIdAsync方法。处方应该通过MedicalCaseId关联，不直接关联ConsultationId。")]
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
+        public Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
         {
             try
             {
                 // 返回空列表，因为此方法已废弃
-                return ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>());
+                return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>()));
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<PrescriptionDto>>.Failure($"根据看诊ID获取处方列表异常: {ex.Message}");
+                return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure($"根据看诊ID获取处方列表异常: {ex.Message}"));
             }
         }
         
         /// <summary>
         /// 验证处方数据
         /// </summary>
-        public async Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
+        public Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
         {
             try
             {
@@ -477,7 +477,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 {
                     result.IsValid = false;
                     result.Errors.Add("处方信息不能为空");
-                    return ServiceResult<PrescriptionValidationResult>.Success(result);
+                    return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
                 }
                 
                 if (dto.PatientId == Guid.Empty)
@@ -522,11 +522,11 @@ namespace LYBT.Desktop.Prescriptions.Services
                 }
                 
                 result.IsValid = !result.Errors.Any();
-                return ServiceResult<PrescriptionValidationResult>.Success(result);
+                return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
             }
             catch (Exception ex)
             {
-                return ServiceResult<PrescriptionValidationResult>.Failure($"验证处方数据异常: {ex.Message}");
+                return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Failure($"验证处方数据异常: {ex.Message}"));
             }
         }
         

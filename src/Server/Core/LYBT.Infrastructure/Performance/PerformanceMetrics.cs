@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace LYBT.Infrastructure.Performance
@@ -218,6 +219,7 @@ namespace LYBT.Infrastructure.Performance
     /// <summary>
     /// 系统性能监控器
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class SystemPerformanceMonitor : IDisposable
     {
         private readonly PerformanceCounter _cpuCounter;
