@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
@@ -21,14 +20,14 @@
             <ToolBar>
                 <Button Command="{Binding AddPrescriptionCommand}" ToolTip="新建处方">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Plus" Margin="0,0,5,0"/>
+                        <TextBlock Text="+" FontWeight="Bold" Margin="0,0,5,0"/>
                         <TextBlock Text="新建处方"/>
                     </StackPanel>
                 </Button>
                 <Separator/>
                 <Button Command="{Binding RefreshCommand}" ToolTip="刷新">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Refresh" Margin="0,0,5,0"/>
+                        <TextBlock Text="⟳" FontWeight="Bold" Margin="0,0,5,0"/>
                         <TextBlock Text="刷新"/>
                     </StackPanel>
                 </Button>
@@ -47,24 +46,24 @@
             </Grid.ColumnDefinitions>
 
             <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     materialDesign:HintAssist.Hint="搜索患者姓名、处方号、诊断..."
-                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     ToolTip="搜索患者姓名、处方号、诊断..."
+                     Height="32" Padding="8" FontSize="14"
                      Margin="0,0,10,0"/>
 
             <DatePicker Grid.Column="1" SelectedDate="{Binding StartDate}"
-                        materialDesign:HintAssist.Hint="开始日期"
-                        Style="{StaticResource MaterialDesignFloatingHintDatePicker}"
+                        ToolTip="开始日期"
+                        Height="32" FontSize="14"
                         Margin="0,0,10,0" Width="120"/>
 
             <TextBlock Grid.Column="2" Text="至" VerticalAlignment="Center" Margin="5"/>
 
             <DatePicker Grid.Column="3" SelectedDate="{Binding EndDate}"
-                        materialDesign:HintAssist.Hint="结束日期"
-                        Style="{StaticResource MaterialDesignFloatingHintDatePicker}"
+                        ToolTip="结束日期"
+                        Height="32" FontSize="14"
                         Margin="0,0,10,0" Width="120"/>
 
             <Button Grid.Column="4" Command="{Binding ClearFiltersCommand}" 
-                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Height="32" FontSize="14" Padding="12,6"
                     Content="清除筛选" Margin="0,0,10,0"/>
         </Grid>
 
