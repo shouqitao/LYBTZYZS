@@ -18,159 +18,91 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     /// <summary>
     /// 验方模板选择对话框视图模型
     /// </summary>
-    public class FormulaTemplateDialogViewModel : BindableBase // Temporarily remove IDialogAware due to Prism 9 compatibility issues
+    /// <summary>
+    /// 验方模板选择对话框ViewModel - UltraThink架构统一
+    /// </summary>
+    public class FormulaTemplateDialogViewModel : DialogViewModelBase
     {
         private readonly IFormulaService _formulaService;
-        private readonly ILogger<FormulaTemplateDialogViewModel> _logger;
-        private readonly IMapper _mapper;
+        private ObservableCollection<FormulaDto> _availableTemplates = new();
+        private FormulaDto? _selectedTemplate;
+        private string _searchText = "";
 
-        #region Dialog Properties
-
-        public string Title => "选择验方模板";
-        // public event Action<IDialogResult>? RequestClose; // Removed for Prism 9 compatibility
-
-        #endregion
-
-        #region Properties
-
-        private ObservableCollection<FormulaDto> _formulas = new();
-        public ObservableCollection<FormulaDto> Formulas
+        /// <summary>
+        /// 可选择的验方模板列表
+        /// </summary>
+        public ObservableCollection<FormulaDto> AvailableTemplates
         {
-            get => _formulas;
-            set => SetProperty(ref _formulas, value);
+            get => _availableTemplates;
+            set => SetProperty(ref _availableTemplates, value);
         }
 
-        private ObservableCollection<FormulaDto> _filteredFormulas = new();
-        public ObservableCollection<FormulaDto> FilteredFormulas
+        /// <summary>
+        /// 选中的验方模板
+        /// </summary>
+        public FormulaDto? SelectedTemplate
         {
-            get => _filteredFormulas;
-            set => SetProperty(ref _filteredFormulas, value);
+            get => _selectedTemplate;
+            set 
+            { 
+                SetProperty(ref _selectedTemplate, value);
+                ConfirmCommand.RaiseCanExecuteChanged();
+            }
         }
 
-        private FormulaDto? _selectedFormula;
-        public FormulaDto? SelectedFormula
-        {
-            get => _selectedFormula;
-            set => SetProperty(ref _selectedFormula, value);
-        }
-
-        private string _searchText = string.Empty;
+        /// <summary>
+        /// 搜索文本
+        /// </summary>
         public string SearchText
         {
             get => _searchText;
-            set
-            {
-                if (SetProperty(ref _searchText, value))
-                {
-                    FilterFormulas();
-                }
-            }
+            set => SetProperty(ref _searchText, value);
         }
 
-        private string _selectedCategory = "全部";
-        public string SelectedCategory
-        {
-            get => _selectedCategory;
-            set
-            {
-                if (SetProperty(ref _selectedCategory, value))
-                {
-                    FilterFormulas();
-                }
-            }
-        }
+        /// <summary>
+        /// 搜索命令
+        /// </summary>
+        public DelegateCommand SearchCommand { get; }
 
-        private bool _isLoading;
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        public ObservableCollection<string> Categories { get; } = new()
-        {
-            "全部", "经典验方", "内科", "外科", "妇科", 
-            "儿科", "皮肤科", "五官科", "骨伤科", "其他"
-        };
-
-        #endregion
-
-        #region Commands
-
-        public DelegateCommand SelectCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand RefreshCommand { get; }
+        /// <summary>
+        /// 查看详情命令
+        /// </summary>
         public DelegateCommand<FormulaDto> ViewDetailsCommand { get; }
 
-        #endregion
+        /// <summary>
+        /// 选中的验方模板（用于返回结果）
+        /// </summary>
+        public FormulaDto? Result { get; private set; }
 
-        #region Constructor
-
-        public FormulaTemplateDialogViewModel(
-            IFormulaService formulaService,
-            ILogger<FormulaTemplateDialogViewModel> logger,
-            IMapper mapper)
+        public FormulaTemplateDialogViewModel(IFormulaService formulaService) : base()
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-
-            // 初始化命令
-            SelectCommand = new DelegateCommand(Select, CanSelect)
-                .ObservesProperty(() => SelectedFormula);
-            CancelCommand = new DelegateCommand(Cancel);
-            RefreshCommand = new DelegateCommand(async () => await LoadFormulasAsync());
-            ViewDetailsCommand = new DelegateCommand<FormulaDto>(ViewDetails);
-
-            // 初始加载数据
-            Task.Run(async () => await LoadFormulasAsync());
+            Title = "选择验方模板";
+            
+            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
+            ViewDetailsCommand = new DelegateCommand<FormulaDto>(ExecuteViewDetails);
+            
+            // 初始化加载验方模板列表
+            _ = LoadTemplatesAsync();
         }
 
-        #endregion
-
-        #region Dialog Methods (Temporarily disabled due to Prism 9 compatibility)
-
-        // public bool CanCloseDialog() => !IsLoading;
-
-        // public void OnDialogClosed()
-        // {
-        //     // 清理资源
-        // }
-
-        // public void OnDialogOpened(IDialogParameters parameters)
-        // {
-        //     // 可以根据参数设置初始过滤条件
-        //     if (parameters.ContainsKey("Category"))
-        //     {
-        //         SelectedCategory = parameters.GetValue<string>("Category");
-        //     }
-        // }
-
-        #endregion
-
-        #region Methods
-
-        private async Task LoadFormulasAsync()
+        /// <summary>
+        /// 加载验方模板列表
+        /// </summary>
+        private async Task LoadTemplatesAsync()
         {
             try
             {
                 IsLoading = true;
-                var result = await _formulaService.GetFormulasAsync();
+                var result = await _formulaService.GetPagedAsync(new FormulaPagedQueryDto { PageSize = 100 });
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
-                    // UltraThink v2.0: 直接使用FormulaDto，无需映射
-                    Formulas = new ObservableCollection<FormulaDto>(result.Data);
-                    FilterFormulas();
-                }
-                else
-                {
-                    _logger.LogWarning("加载验方模板失败: {Error}", result.ErrorMessage);
+                    AvailableTemplates = new ObservableCollection<FormulaDto>(result.Data.Items);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载验方模板时出错");
+                await HandleErrorAsync("加载验方模板列表", ex);
             }
             finally
             {
@@ -178,62 +110,69 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             }
         }
 
-        private void FilterFormulas()
+        /// <summary>
+        /// 执行搜索
+        /// </summary>
+        private async Task ExecuteSearchAsync()
         {
-            var filtered = Formulas.AsEnumerable();
-
-            // 按分类过滤
-            if (SelectedCategory != "全部")
+            if (string.IsNullOrWhiteSpace(SearchText))
             {
-                filtered = filtered.Where(f => f.Category == SelectedCategory);
+                await LoadTemplatesAsync();
+                return;
             }
 
-            // 按关键字过滤
-            if (!string.IsNullOrWhiteSpace(SearchText))
+            try
             {
-                var searchLower = SearchText.ToLowerInvariant();
-                filtered = filtered.Where(f =>
-                    (f.Name?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (f.Indications?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (f.DosageInstruction?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
+                IsLoading = true;
+                var result = await _formulaService.GetPagedAsync(new FormulaPagedQueryDto 
+                { 
+                    Name = SearchText,
+                    PageSize = 100 
+                });
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    AvailableTemplates = new ObservableCollection<FormulaDto>(result.Data.Items);
+                }
             }
-
-            FilteredFormulas = new ObservableCollection<FormulaDto>(filtered);
-        }
-
-        private bool CanSelect()
-        {
-            return SelectedFormula != null;
-        }
-
-        private void Select()
-        {
-            if (SelectedFormula != null)
+            catch (Exception ex)
             {
-                // TODO: Implement dialog close logic when Prism dialog support is added
-                // var parameters = new DialogParameters
-                // {
-                //     { "SelectedFormula", SelectedFormula }
-                // };
-                // RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                await HandleErrorAsync("搜索验方模板", ex);
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
-        private void Cancel()
-        {
-            // TODO: Implement dialog cancel logic when Prism dialog support is added
-            // RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
-        }
-
-        private void ViewDetails(FormulaDto? formula)
+        /// <summary>
+        /// 查看验方详情
+        /// </summary>
+        private void ExecuteViewDetails(FormulaDto? formula)
         {
             if (formula == null) return;
-
-            // TODO: 显示验方详情对话框
-            // 可以显示验方的组成、功效、用法等详细信息
-            _logger.LogInformation("查看验方详情: {FormulaName}", formula.Name);
+            
+            StatusMessage = $"查看验方 '{formula.Name}' 详情功能待实现";
         }
 
-        #endregion
+        /// <summary>
+        /// 执行确认逻辑
+        /// </summary>
+        protected override Task<bool> ExecuteConfirmAsync()
+        {
+            if (SelectedTemplate == null)
+                return Task.FromResult(false);
+
+            Result = SelectedTemplate;
+            return Task.FromResult(true);
+        }
+
+        /// <summary>
+        /// 检查是否可以确认
+        /// </summary>
+        protected override bool CanConfirm()
+        {
+            return !IsLoading && SelectedTemplate != null;
+        }
     }
 }

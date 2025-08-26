@@ -231,6 +231,28 @@ namespace LYBT.Desktop.Core.Services
                             viewModel.OnDialogOpened(parameters);
                         }
                     }
+                    else if (dialogName == "PatientAddEditDialog")
+                    {
+                        // 使用反射来设置ViewModel，避免直接引用模块类型
+                        var viewModelTypeName = "LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
+                        {
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
+                            {
+                                dialogAware.OnDialogOpened(parameters);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到PatientAddEditDialogViewModel类型");
+                        }
+                    }
                     // 通用处理：如果DataContext已经是ICustomDialogAware
                     else if (dialog.DataContext is ICustomDialogAware dialogAware && parameters != null)
                     {

@@ -23,6 +23,7 @@ namespace LYBT.Desktop.MedicalCase
             
             // UltraThink四层架构：注册标准ViewModel
             containerRegistry.RegisterForNavigation<MedicalCaseListView, MedicalCaseListViewModel>();
+            containerRegistry.RegisterForNavigation<MedicalCaseManagementView, MedicalCaseManagementViewModel>();
             containerRegistry.RegisterForNavigation<MedicalCaseDetailView, MedicalCaseDetailViewModel>();
 
             // 注册对话框

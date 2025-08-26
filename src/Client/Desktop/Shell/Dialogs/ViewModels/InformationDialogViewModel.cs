@@ -9,44 +9,47 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
     /// <summary>
     /// 信息对话框视图模型
     /// </summary>
-    public class InformationDialogViewModel : BindableBase // Temporarily remove IDialogAware due to Prism 9 compatibility issues
+    /// <summary>
+    /// 信息对话框ViewModel - UltraThink架构统一
+    /// </summary>
+    public class InformationDialogViewModel : DialogViewModelBase
     {
-        private string _title = "信息";
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
-
         private string _message = "";
+
+        /// <summary>
+        /// 对话框消息
+        /// </summary>
         public string Message
         {
             get => _message;
             set => SetProperty(ref _message, value);
         }
 
-        private DialogType _dialogType = DialogType.Information;
-        public DialogType DialogType
+        /// <summary>
+        /// 确定命令（兼容性）
+        /// </summary>
+        public DelegateCommand OkCommand => ConfirmCommand;
+
+        public InformationDialogViewModel() : base()
         {
-            get => _dialogType;
-            set => SetProperty(ref _dialogType, value);
+            Title = "提示";
         }
 
-        public DelegateCommand OkCommand { get; }
-
-        // Simplified dialog implementation without Prism.Dialogs dependency
-        public event Action? RequestClose;
-        public bool DialogResult { get; private set; } = true;
-
-        public InformationDialogViewModel()
+        /// <summary>
+        /// 设置对话框内容
+        /// </summary>
+        public void SetContent(string message, string title = "提示")
         {
-            OkCommand = new DelegateCommand(OnOk);
+            Message = message;
+            Title = title;
         }
 
-        private void OnOk()
+        /// <summary>
+        /// 执行确认逻辑（信息对话框直接关闭）
+        /// </summary>
+        protected override Task<bool> ExecuteConfirmAsync()
         {
-            DialogResult = true;
-            RequestClose?.Invoke();
+            return Task.FromResult(true);
         }
     }
 }

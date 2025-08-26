@@ -7,6 +7,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Events;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -229,7 +230,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private void NavigateBack()
         {
-            _regionManager.RequestNavigate("MainContentRegion", "HerbManagementView");
+            _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "HerbManagementView");
         }
 
         private void EnableEdit()

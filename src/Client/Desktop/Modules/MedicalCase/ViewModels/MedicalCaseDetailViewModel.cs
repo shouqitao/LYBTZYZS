@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Regions;
 using Prism.Events;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
@@ -187,8 +188,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ICustomDialogService dialogService,
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
-            IMapper mapper)
-            : base(eventAggregator)
+            IMapper mapper,
+            IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
         {
             _medicalCaseService = medicalCaseService;
             _dialogService = dialogService;
@@ -303,7 +305,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private void NavigateBack()
         {
-            _regionManager.RequestNavigate("MainContentRegion", "MedicalCaseListView");
+            _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "MedicalCaseListView");
         }
 
         private async Task StartConsultationAsync()
@@ -318,7 +320,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (result.IsSuccess)
                 {
                     // 导航到看诊界面 - 使用字符串参数方式
-                    _regionManager.RequestNavigate("MainContentRegion", $"ConsultationMainView?MedicalCaseId={MedicalCase.Id}&PatientId={MedicalCase.PatientId}&ConsultationMode=Start");
+                    _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, $"ConsultationMainView?MedicalCaseId={MedicalCase.Id}&PatientId={MedicalCase.PatientId}&ConsultationMode=Start");
                 }
                 else
                 {

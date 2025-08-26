@@ -7,22 +7,23 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../../Resources/ManagementModuleStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 标题栏 -->
-        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Background="{StaticResource PrimaryBrush}" Padding="16">
-            <TextBlock Text="医疗案例管理" Style="{StaticResource PageTitleStyle}" Foreground="White"/>
-        </Border>
-
         <!-- 工具栏 -->
-        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Background="{StaticResource BackgroundBrush}" Margin="8">
+        <Border Grid.Row="0" Style="{StaticResource ToolBarBorder}">
             <Grid Margin="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

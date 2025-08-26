@@ -7,6 +7,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Events;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -233,7 +234,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private void NavigateBack()
         {
-            _regionManager.RequestNavigate("MainContentRegion", "PatientManagementView");
+            _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "PatientManagementView");
         }
 
         private void EnableEdit()
@@ -270,7 +271,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 // 导航到医疗历史视图
-                _regionManager.RequestNavigate("MainContentRegion", 
+                _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, 
                     $"MedicalCaseListView?PatientId={Patient.Id}");
             }
             catch (Exception ex)

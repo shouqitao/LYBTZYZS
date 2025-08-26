@@ -2,6 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using LYBT.Desktop.Core.Constants;
 using System;
 
 namespace LYBT.Desktop.Workbench.Cashier.ViewModels
@@ -9,7 +10,7 @@ namespace LYBT.Desktop.Workbench.Cashier.ViewModels
     /// <summary>
     /// 收银员工作台主视图模型
     /// </summary>
-    public class CashierMainViewModel : BindableBase
+    public class CashierMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
 
@@ -18,7 +19,11 @@ namespace LYBT.Desktop.Workbench.Cashier.ViewModels
         public DelegateCommand NavigateToFinancialReportsCommand { get; }
         public DelegateCommand NavigateToRefundManagementCommand { get; }
 
-        public CashierMainViewModel(IRegionManager regionManager)
+        public CashierMainViewModel(
+            IRegionManager regionManager,
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
         {
             _regionManager = regionManager;
 
@@ -36,7 +41,7 @@ namespace LYBT.Desktop.Workbench.Cashier.ViewModels
         {
             try
             {
-                _regionManager.RequestNavigate("CashierContentRegion", viewName);
+                _regionManager.RequestNavigate(RegionNames.CashierContentRegion, viewName);
             }
             catch (Exception)
             {

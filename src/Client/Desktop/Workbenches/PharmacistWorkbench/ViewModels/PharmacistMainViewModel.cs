@@ -2,6 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using LYBT.Desktop.Core.Constants;
 using System;
 
 namespace LYBT.Desktop.Workbench.Pharmacist.ViewModels
@@ -9,7 +10,7 @@ namespace LYBT.Desktop.Workbench.Pharmacist.ViewModels
     /// <summary>
     /// 药剂师工作台主视图模型
     /// </summary>
-    public class PharmacistMainViewModel : BindableBase
+    public class PharmacistMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
 
@@ -20,7 +21,11 @@ namespace LYBT.Desktop.Workbench.Pharmacist.ViewModels
         // UltraThink Phase 3.3: 集成增强版中药材管理
         public DelegateCommand NavigateToHerbManagementCommand { get; }
 
-        public PharmacistMainViewModel(IRegionManager regionManager)
+        public PharmacistMainViewModel(
+            IRegionManager regionManager,
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
         {
             _regionManager = regionManager;
 
@@ -40,7 +45,7 @@ namespace LYBT.Desktop.Workbench.Pharmacist.ViewModels
         {
             try
             {
-                _regionManager.RequestNavigate("PharmacistContentRegion", viewName);
+                _regionManager.RequestNavigate(RegionNames.PharmacistContentRegion, viewName);
             }
             catch (Exception)
             {

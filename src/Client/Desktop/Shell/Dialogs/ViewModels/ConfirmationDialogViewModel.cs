@@ -8,45 +8,52 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
     /// <summary>
     /// 确认对话框视图模型
     /// </summary>
-    public class ConfirmationDialogViewModel : BindableBase // Temporarily remove IDialogAware due to Prism 9 compatibility issues
+    /// <summary>
+    /// 确认对话框ViewModel - UltraThink架构统一
+    /// </summary>
+    public class ConfirmationDialogViewModel : DialogViewModelBase
     {
-        private string _title = "确认";
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
-
         private string _message = "";
+
+        /// <summary>
+        /// 对话框消息
+        /// </summary>
         public string Message
         {
             get => _message;
             set => SetProperty(ref _message, value);
         }
 
-        public DelegateCommand YesCommand { get; }
-        public DelegateCommand NoCommand { get; }
+        /// <summary>
+        /// 是命令（兼容性）
+        /// </summary>
+        public DelegateCommand YesCommand => ConfirmCommand;
 
-        // Simplified dialog implementation without Prism.Dialogs dependency
-        public event Action? RequestClose;
-        public bool? DialogResult { get; private set; }
+        /// <summary>
+        /// 否命令（兼容性）
+        /// </summary>
+        public DelegateCommand NoCommand => CancelCommand;
 
-        public ConfirmationDialogViewModel()
+        public ConfirmationDialogViewModel() : base()
         {
-            YesCommand = new DelegateCommand(OnYes);
-            NoCommand = new DelegateCommand(OnNo);
+            Title = "确认";
         }
 
-        private void OnYes()
+        /// <summary>
+        /// 设置对话框内容
+        /// </summary>
+        public void SetContent(string message, string title = "确认")
         {
-            DialogResult = true;
-            RequestClose?.Invoke();
+            Message = message;
+            Title = title;
         }
 
-        private void OnNo()
+        /// <summary>
+        /// 执行确认逻辑
+        /// </summary>
+        protected override Task<bool> ExecuteConfirmAsync()
         {
-            DialogResult = false;
-            RequestClose?.Invoke();
+            return Task.FromResult(true);
         }
     }
 }

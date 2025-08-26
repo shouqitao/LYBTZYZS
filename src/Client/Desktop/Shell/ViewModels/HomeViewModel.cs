@@ -9,6 +9,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -310,7 +311,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             try
             {
-                _regionManager.RequestNavigate("ContentRegion", viewName);
+                _regionManager.RequestNavigate(RegionNames.ContentRegion, viewName);
                 StatusMessage = $"已导航到 {GetViewDisplayName(viewName)}";
                 ShowInfo($"已导航到 {GetViewDisplayName(viewName)}");
             }
@@ -329,17 +330,17 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         private void EnterSystemManagementWithUserModule()
         {
-            _regionManager.RequestNavigate("ContentRegion", "AdminMainView?DefaultModule=UserManagement");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "AdminMainView?DefaultModule=UserManagement");
         }
 
         private void EnterSystemManagementWithHerbModule()
         {
-            _regionManager.RequestNavigate("ContentRegion", "AdminMainView?DefaultModule=HerbManagement");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "AdminMainView?DefaultModule=HerbManagement");
         }
 
         private void EnterSystemManagementWithFormulaModule()
         {
-            _regionManager.RequestNavigate("ContentRegion", "AdminMainView?DefaultModule=FormulaManagement");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "AdminMainView?DefaultModule=FormulaManagement");
         }
 
         private async Task LogoutAsync()

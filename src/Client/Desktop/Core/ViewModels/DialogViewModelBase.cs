@@ -1,8 +1,12 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System;
+using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Events;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces.Services;
 // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
 
 namespace LYBT.Desktop.Core.ViewModels
@@ -11,9 +15,13 @@ namespace LYBT.Desktop.Core.ViewModels
     /// 对话框视图模型基类
     /// 提供通用的对话框功能
     /// </summary>
-    public abstract class DialogViewModelBase : BindableBase
+    /// <summary>
+    /// 对话框ViewModel基类 - UltraThink架构统一
+    /// </summary>
+    public abstract class DialogViewModelBase : ServiceViewModel
     {
         private string _title = "对话框";
+        private bool? _dialogResult;
 
         /// <summary>
         /// 对话框标题
@@ -25,38 +33,112 @@ namespace LYBT.Desktop.Core.ViewModels
         }
 
         /// <summary>
-        /// 关闭命令
+        /// 对话框结果
         /// </summary>
-        public DelegateCommand<string?> CloseDialogCommand { get; }
+        public bool? DialogResult
+        {
+            get => _dialogResult;
+            protected set => SetProperty(ref _dialogResult, value);
+        }
+
+        /// <summary>
+        /// 确认命令
+        /// </summary>
+        public DelegateCommand ConfirmCommand { get; protected set; }
+
+        /// <summary>
+        /// 取消命令
+        /// </summary>
+        public DelegateCommand CancelCommand { get; protected set; }
+
+        /// <summary>
+        /// 关闭对话框事件
+        /// </summary>
+        public event Action<bool?>? RequestClose;
 
         /// <summary>
         /// 构造函数
         /// </summary>
-        protected DialogViewModelBase()
+        protected DialogViewModelBase(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
         {
-            CloseDialogCommand = new DelegateCommand<string?>(CloseDialog);
+            ConfirmCommand = new DelegateCommand(async () => await OnConfirmAsync(), CanConfirm);
+            CancelCommand = new DelegateCommand(OnCancel);
         }
 
         /// <summary>
-        /// 关闭对话框
+        /// 简化构造函数（使用ContainerLocator）
         /// </summary>
-        /// <param name="parameter">对话框返回参数</param>
-        protected virtual void CloseDialog(string? parameter)
+        protected DialogViewModelBase() : base(GetEventAggregator())
         {
-            ButtonResult result = ButtonResult.None;
-
-            if (parameter?.ToLower() == "true" || parameter?.ToLower() == "ok" || parameter?.ToLower() == "yes")
-                result = ButtonResult.OK;
-            else if (parameter?.ToLower() == "false" || parameter?.ToLower() == "cancel" || parameter?.ToLower() == "no")
-                result = ButtonResult.Cancel;
-
-            RaiseRequestClose(new DialogResult(result));
+            ConfirmCommand = new DelegateCommand(async () => await OnConfirmAsync(), CanConfirm);
+            CancelCommand = new DelegateCommand(OnCancel);
         }
 
         /// <summary>
-        /// 触发请求关闭事件（子类需要实现）
+        /// 确认操作
         /// </summary>
-        /// <param name="dialogResult">对话框结果</param>
-        protected abstract void RaiseRequestClose(IDialogResult dialogResult);
+        protected virtual async Task<bool> OnConfirmAsync()
+        {
+            try
+            {
+                var result = await ExecuteConfirmAsync();
+                if (result)
+                {
+                    DialogResult = true;
+                    RequestClose?.Invoke(true);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                await HandleErrorAsync("确认操作", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 子类重写此方法实现具体的确认逻辑
+        /// </summary>
+        protected virtual Task<bool> ExecuteConfirmAsync() => Task.FromResult(true);
+
+        /// <summary>
+        /// 取消操作
+        /// </summary>
+        protected virtual void OnCancel()
+        {
+            DialogResult = false;
+            RequestClose?.Invoke(false);
+        }
+
+        /// <summary>
+        /// 检查是否可以执行确认操作
+        /// </summary>
+        protected virtual bool CanConfirm() => !IsLoading;
+
+        /// <summary>
+        /// 获取EventAggregator实例
+        /// </summary>
+        private static IEventAggregator GetEventAggregator()
+        {
+            try
+            {
+                return Prism.Ioc.ContainerLocator.Container?.Resolve<IEventAggregator>() 
+                    ?? new EventAggregator();
+            }
+            catch
+            {
+                return new EventAggregator();
+            }
+        }
+
+        /// <summary>
+        /// 加载状态变化时更新命令状态
+        /// </summary>
+        protected override void OnLoadingStateChanged(bool isLoading)
+        {
+            base.OnLoadingStateChanged(isLoading);
+            ConfirmCommand?.RaiseCanExecuteChanged();
+        }
     }
 }

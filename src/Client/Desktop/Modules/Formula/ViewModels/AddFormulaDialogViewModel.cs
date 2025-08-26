@@ -107,6 +107,37 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Constructor
 
+        /// <summary>
+        /// 主构造函数
+        /// </summary>
+        /// <param name="formulaService">验方服务</param>
+        /// <param name="herbService">药材服务</param>
+        /// <param name="logger">日志记录器</param>
+        /// <param name="eventAggregator">事件聚合器</param>
+        /// <param name="errorHandlingService">错误处理服务</param>
+        public AddFormulaDialogViewModel(
+            IFormulaService formulaService,
+            IHerbService herbService,
+            ILogger<AddFormulaDialogViewModel> logger,
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService) : base(eventAggregator, errorHandlingService)
+        {
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            // 初始化自定义命令
+            AddHerbCommand = new DelegateCommand(AddHerb);
+            RemoveHerbCommand = new DelegateCommand<FormulaHerbItemDto>(RemoveHerb);
+            LoadHerbsCommand = new DelegateCommand(async () => await LoadAvailableHerbsAsync());
+
+            // 加载可用药材
+            Task.Run(async () => await LoadAvailableHerbsAsync());
+        }
+
+        /// <summary>
+        /// 兼容性构造函数
+        /// </summary>
         public AddFormulaDialogViewModel(
             IFormulaService formulaService,
             IHerbService herbService,

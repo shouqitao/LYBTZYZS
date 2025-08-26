@@ -84,30 +84,24 @@ namespace LYBT.Desktop.Shell.ViewModels
         public DelegateCommand TestApiCommand { get; }
         public DelegateCommand ShowControlExamplesCommand { get; }
 
-        public MainWindowViewModel(IRegionManager regionManager,
+        public MainWindowViewModel(
+            IRegionManager regionManager,
             IEventAggregator eventAggregator,
-            LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService authService,
-            LYBT.Desktop.Core.Interfaces.Services.IPermissionService permissionService,
-            IUserService userService,
-            IPatientService patientService,
-            LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService commonDialogService,
-            IWorkbenchRouter workbenchRouter,
-            ApiTestService apiTestService,
-            LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer uiOptimizer,
-            LYBT.Desktop.Core.Services.Performance.IModuleLoadingCoordinator moduleLoadingCoordinator,
+            IMainWindowServicesFacade servicesFacade,
             IErrorHandlingService errorHandlingService)
             : base(eventAggregator, errorHandlingService)
         {
-            _commonDialogService = commonDialogService;
+            // 使用服务门面获取所有依赖服务
+            _commonDialogService = servicesFacade.CustomDialogService;
             _regionManager = regionManager;
-            _authService = authService;
-            _permissionService = permissionService;
-            _userService = userService;
-            _patientService = patientService;
-            _workbenchRouter = workbenchRouter;
-            _apiTestService = apiTestService;
-            _uiOptimizer = uiOptimizer;
-            _moduleLoadingCoordinator = moduleLoadingCoordinator;
+            _authService = servicesFacade.AuthenticationService;
+            _permissionService = servicesFacade.PermissionService;
+            _userService = servicesFacade.UserService;
+            _patientService = servicesFacade.PatientService;
+            _workbenchRouter = servicesFacade.WorkbenchRouter;
+            _apiTestService = servicesFacade.ApiTestService ?? new ApiTestService(null!, null!); // 提供默认实例
+            _uiOptimizer = servicesFacade.UIPerformanceOptimizer;
+            _moduleLoadingCoordinator = servicesFacade.ModuleLoadingCoordinator;
 
             // 初始化时钟计时器
             _clockTimer = new System.Windows.Threading.DispatcherTimer
@@ -159,9 +153,9 @@ namespace LYBT.Desktop.Shell.ViewModels
                     _uiOptimizer.BatchUIUpdates(() =>
                     {
                         // 清除内容区域
-                        if (_regionManager.Regions.ContainsRegionWithName("ContentRegion"))
+                        if (_regionManager.Regions.ContainsRegionWithName(RegionNames.ContentRegion))
                         {
-                            _regionManager.Regions["ContentRegion"].RemoveAll();
+                            _regionManager.Regions[RegionNames.ContentRegion].RemoveAll();
                         }
                         
                         // 立即显示登录界面
@@ -248,7 +242,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             // 在单窗口模式下，导航到登录视图
             if (_regionManager != null)
             {
-                _regionManager.RequestNavigate("LoginRegion", "LoginView");
+                _regionManager.RequestNavigate(RegionNames.LoginRegion, "LoginView");
             }
         }
 
@@ -301,7 +295,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 用户: {CurrentUser.Username}
                 角色: {CurrentUser.Role}
                 分配工作台: {workbenchView}
-                ContentRegion 是否存在: {_regionManager?.Regions?.ContainsRegionWithName("ContentRegion")}
+                ContentRegion 是否存在: {_regionManager?.Regions?.ContainsRegionWithName(RegionNames.ContentRegion)}
                 所有区域: {string.Join(", ", _regionManager?.Regions?.Select(r => r.Name) ?? new string[0])}
                 """;
             
@@ -329,16 +323,16 @@ namespace LYBT.Desktop.Shell.ViewModels
                     
                     // 修复: 不要清除ContentRegion，导航会自动替换内容
                     // 只清除登录区域，因为登录已完成
-                    if (_regionManager.Regions.ContainsRegionWithName("LoginRegion"))
+                    if (_regionManager.Regions.ContainsRegionWithName(RegionNames.LoginRegion))
                     {
-                        _regionManager.Regions["LoginRegion"].RemoveAll();
+                        _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
                         System.Diagnostics.Debug.WriteLine("✅ LoginRegion 已清理");
                     }
                 });
 
                 // 根据角色导航到对应的工作台主视图
                 System.Diagnostics.Debug.WriteLine($"🚀 开始导航到: {workbenchView}");
-                _regionManager.RequestNavigate("ContentRegion", workbenchView, navigationResult =>
+                _regionManager.RequestNavigate(RegionNames.ContentRegion, workbenchView, navigationResult =>
                 {
                     string resultInfo;
                     if (navigationResult.Result != true)
@@ -352,7 +346,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                             错误消息: {errorMessage}
                             内部异常: {innerException}
                             目标视图: {workbenchView}
-                            目标区域: ContentRegion
+                            目标区域: {RegionNames.ContentRegion}
                             完整错误: {navigationResult.Error}
                             === 导航诊断结束 ===
                             """;
@@ -469,7 +463,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             try
             {
                 // 导航到控件示例页面
-                _regionManager.RequestNavigate("ContentRegion", "ControlExamplesView");
+                _regionManager.RequestNavigate(RegionNames.ContentRegion, "ControlExamplesView");
             }
             catch (Exception ex)
             {

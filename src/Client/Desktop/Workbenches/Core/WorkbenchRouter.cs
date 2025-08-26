@@ -146,7 +146,7 @@ namespace LYBT.Desktop.Workbench.Core
                     Id = "medical-cases",
                     DisplayName = "医疗案例",
                     Icon = "\uE8C8", // 文档图标
-                    ViewName = "MedicalCaseListView", // 修复：使用实际存在的View
+                    ViewName = "MedicalCaseManagementView", // 修复：使用统一管理模块视图
                     Module = "MedicalCase",
                     Order = 3
                 },
@@ -155,7 +155,7 @@ namespace LYBT.Desktop.Workbench.Core
                     Id = "consultation",
                     DisplayName = "看诊记录",
                     Icon = "\uE8D4", // 检查图标
-                    ViewName = "ConsultationMainView", // 修复：使用实际存在的View
+                    ViewName = "ConsultationManagementView", // 修复：使用管理模块视图
                     Module = "Consultation",
                     Order = 4
                 },

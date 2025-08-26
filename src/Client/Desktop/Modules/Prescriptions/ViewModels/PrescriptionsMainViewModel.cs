@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Prescriptions.Views;
 using LYBT.Desktop.Prescriptions.ViewModels;
 
@@ -288,7 +289,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     navigationParameters.Add("MedicalCaseId", CurrentMedicalCaseId);
                 }
 
-                _regionManager.RequestNavigate("MainContentRegion", "ConsultationMainView", navigationParameters);
+                _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
             }
             catch (Exception ex)
             {

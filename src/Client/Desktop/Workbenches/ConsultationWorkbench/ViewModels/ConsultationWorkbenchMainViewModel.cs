@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
     /// 看诊工作台主视图模型
     /// 为医生提供专业的看诊相关功能导航
     /// </summary>
-    public class ConsultationWorkbenchMainViewModel : BindableBase
+    public class ConsultationWorkbenchMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
         private readonly IWorkbenchRouter _workbenchRouter;
@@ -62,9 +62,12 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
 
         public ConsultationWorkbenchMainViewModel(
             IRegionManager regionManager,
+            IEventAggregator eventAggregator,
             IWorkbenchRouter workbenchRouter,
             IConsultationWorkbenchNavigator navigator,
+            IErrorHandlingService errorHandlingService,
             IPatientService patientService = null)
+            : base(eventAggregator, errorHandlingService)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _workbenchRouter = workbenchRouter ?? throw new ArgumentNullException(nameof(workbenchRouter));

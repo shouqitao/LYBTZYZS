@@ -2,6 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using LYBT.Desktop.Core.Constants;
 using System;
 
 namespace LYBT.Desktop.Workbench.Therapist.ViewModels
@@ -9,7 +10,7 @@ namespace LYBT.Desktop.Workbench.Therapist.ViewModels
     /// <summary>
     /// 理疗师工作台主视图模型
     /// </summary>
-    public class TherapistMainViewModel : BindableBase
+    public class TherapistMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
 
@@ -18,7 +19,11 @@ namespace LYBT.Desktop.Workbench.Therapist.ViewModels
         public DelegateCommand NavigateToRehabilitationManagementCommand { get; }
         public DelegateCommand NavigateToEquipmentManagementCommand { get; }
 
-        public TherapistMainViewModel(IRegionManager regionManager)
+        public TherapistMainViewModel(
+            IRegionManager regionManager,
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
         {
             _regionManager = regionManager;
 
@@ -36,7 +41,7 @@ namespace LYBT.Desktop.Workbench.Therapist.ViewModels
         {
             try
             {
-                _regionManager.RequestNavigate("TherapistContentRegion", viewName);
+                _regionManager.RequestNavigate(RegionNames.TherapistContentRegion, viewName);
             }
             catch (Exception)
             {

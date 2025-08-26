@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Coordinators;
 using LYBT.Desktop.Core.Managers;
 // UltraThink v2.0: 移除Info模型引用，直接使用DTO
@@ -261,7 +262,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 // 导航到详情界面
-                _regionManager.RequestNavigate("MainContentRegion", $"MedicalCaseDetailView?MedicalCaseId={medicalCase.Id}&ViewMode=Detail");
+                _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, $"MedicalCaseDetailView?MedicalCaseId={medicalCase.Id}&ViewMode=Detail");
             }
             catch (Exception ex)
             {
@@ -282,7 +283,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (result.IsSuccess)
                 {
                     // 导航到看诊界面
-                    _regionManager.RequestNavigate("MainContentRegion", 
+                    _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, 
                         $"ConsultationMainView?MedicalCaseId={medicalCase.Id}&PatientId={medicalCase.PatientId}&ConsultationMode=Start");
                     
                     await RefreshDataAsync();

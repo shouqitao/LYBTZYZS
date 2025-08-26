@@ -2,6 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using LYBT.Desktop.Core.Constants;
 using System;
 
 namespace LYBT.Desktop.Workbench.Receptionist.ViewModels
@@ -9,7 +10,7 @@ namespace LYBT.Desktop.Workbench.Receptionist.ViewModels
     /// <summary>
     /// 前台工作台主视图模型
     /// </summary>
-    public class ReceptionistMainViewModel : BindableBase
+    public class ReceptionistMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
 
@@ -18,7 +19,11 @@ namespace LYBT.Desktop.Workbench.Receptionist.ViewModels
         public DelegateCommand NavigateToBasicRegistrationCommand { get; }
         public DelegateCommand NavigateToInquiryCommand { get; }
 
-        public ReceptionistMainViewModel(IRegionManager regionManager)
+        public ReceptionistMainViewModel(
+            IRegionManager regionManager,
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
         {
             _regionManager = regionManager;
 
@@ -36,7 +41,7 @@ namespace LYBT.Desktop.Workbench.Receptionist.ViewModels
         {
             try
             {
-                _regionManager.RequestNavigate("ReceptionistContentRegion", viewName);
+                _regionManager.RequestNavigate(RegionNames.ReceptionistContentRegion, viewName);
             }
             catch (Exception)
             {

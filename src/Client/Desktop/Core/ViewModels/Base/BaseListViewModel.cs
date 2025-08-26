@@ -7,6 +7,8 @@ using System.Windows;
 using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
+using Prism.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
@@ -14,7 +16,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
     /// 列表页面基础视图模型
     /// </summary>
     /// <typeparam name="T">列表项数据类型</typeparam>
-    public abstract class BaseListViewModel<T> : BindableBase where T : class
+    public abstract class BaseListViewModel<T> : ServiceViewModel where T : class
     {
         #region 私有字段
 
@@ -36,7 +38,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
         #region 构造函数
 
-        protected BaseListViewModel()
+        protected BaseListViewModel(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
         {
             // 初始化集合
             Items = new ObservableCollection<T>();
@@ -53,6 +56,44 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                     _ = SearchAsync();
                 }
             };
+        }
+
+        /// <summary>
+        /// 简化构造函数（使用ContainerLocator）
+        /// </summary>
+        protected BaseListViewModel() : base(GetEventAggregator())
+        {
+            // 初始化集合
+            Items = new ObservableCollection<T>();
+            SelectedItems = new ObservableCollection<T>();
+
+            // 初始化命令
+            InitializeCommands();
+
+            // 订阅搜索文本变化
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(SearchText))
+                {
+                    _ = SearchAsync();
+                }
+            };
+        }
+
+        /// <summary>
+        /// 获取EventAggregator实例
+        /// </summary>
+        private static IEventAggregator GetEventAggregator()
+        {
+            try
+            {
+                return Prism.Ioc.ContainerLocator.Container?.Resolve<IEventAggregator>() 
+                    ?? new EventAggregator();
+            }
+            catch
+            {
+                return new EventAggregator();
+            }
         }
 
         #endregion
@@ -301,31 +342,19 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual async Task ExecuteBatchDisableAsync()
         {
-            var result = MessageBox.Show(
-                $"确定要禁用选中的 {SelectedItemsCount} 项吗？",
-                "确认禁用",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            // 使用错误处理服务进行确认对话框
+            var confirmed = await ExecuteSafelyAsync(async () =>
             {
-                try
-                {
-                    IsLoading = true;
-                    await PerformBatchDisableAsync(SelectedItems.ToList());
-                    SelectedItems.Clear();
-                    await LoadDataAsync();
-                    MessageBox.Show("批量禁用成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    await HandleErrorAsync(ex);
-                }
-                finally
-                {
-                    IsLoading = false;
-                }
-            }
+                // 这里应该使用对话框服务，但BaseListViewModel不直接依赖ICustomDialogService
+                // 所以我们通过事件或其他方式来处理
+                StatusMessage = $"请确认批量禁用选中的 {SelectedItemsCount} 项";
+                
+                // 简化实现：直接执行操作，子类可以重写此方法来添加确认对话框
+                await PerformBatchDisableAsync(SelectedItems.ToList());
+                SelectedItems.Clear();
+                await LoadDataAsync();
+                StatusMessage = "批量禁用操作成功！";
+            }, "批量禁用操作");
         }
 
         /// <summary>

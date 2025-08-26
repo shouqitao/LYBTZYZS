@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Workbench.Core;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Regions;
 using Prism.Events;
@@ -15,7 +16,7 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
     /// <summary>
     /// 系统管理工作台主视图模型
     /// </summary>
-    public class SystemWorkbenchMainViewModel : BindableBase
+    public class SystemWorkbenchMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
         private readonly IEventAggregator _eventAggregator;
@@ -31,15 +32,16 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             IWorkbenchRouter workbenchRouter,
+            IErrorHandlingService errorHandlingService,
             IPatientService? patientService = null,
             IUserService? userService = null)
+            : base(eventAggregator, errorHandlingService)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine("🎯 SystemWorkbenchMainViewModel构造函数开始");
                 
                 _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-                _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
                 _workbenchRouter = workbenchRouter ?? throw new ArgumentNullException(nameof(workbenchRouter));
                 _patientService = patientService;
                 _userService = userService;
@@ -199,7 +201,7 @@ ViewModel实例化成功: True
                 File.AppendAllText(diagnosticPath, navigationMessage + Environment.NewLine);
                 
                 // 检查区域是否存在，如果不存在则等待后重试
-                if (!_regionManager.Regions.ContainsRegionWithName("SystemWorkbenchContentRegion"))
+                if (!_regionManager.Regions.ContainsRegionWithName(RegionNames.SystemWorkbenchContentRegion))
                 {
                     var waitMessage = $"⏳ SystemWorkbenchContentRegion区域不存在，等待100ms后重试 [{DateTime.Now:HH:mm:ss.fff}]";
                     System.Diagnostics.Debug.WriteLine(waitMessage);
@@ -228,7 +230,7 @@ ViewModel实例化成功: True
         {
             try
             {
-                if (_regionManager.Regions.ContainsRegionWithName("SystemWorkbenchContentRegion"))
+                if (_regionManager.Regions.ContainsRegionWithName(RegionNames.SystemWorkbenchContentRegion))
                 {
                     var retryMessage = $"✅ 重试成功：SystemWorkbenchContentRegion区域现已存在 [{DateTime.Now:HH:mm:ss.fff}]";
                     System.Diagnostics.Debug.WriteLine(retryMessage);
@@ -258,12 +260,40 @@ ViewModel实例化成功: True
         
         private void PerformNavigation(NavigationItem item, NavigationParameters parameters, string diagnosticPath)
         {
-            var region = _regionManager.Regions["SystemWorkbenchContentRegion"];
+            var region = _regionManager.Regions[RegionNames.SystemWorkbenchContentRegion];
+            
+            // UltraThink Fix: 智能清理现有视图 - 只有在导航到不同视图时才清理
+            if (region.Views.Any())
+            {
+                // 检查当前活动视图是否与要导航的视图不同
+                var activeView = region.ActiveViews.FirstOrDefault();
+                var shouldClearViews = activeView == null || 
+                                     !activeView.GetType().Name.Equals($"{item.ViewName}", StringComparison.OrdinalIgnoreCase);
+                
+                if (shouldClearViews)
+                {
+                    var existingViews = region.Views.ToList();
+                    foreach (var view in existingViews)
+                    {
+                        region.Remove(view);
+                    }
+                    var clearMessage = $"🧹 已清除 {existingViews.Count} 个现有视图，准备加载 {item.ViewName} [{DateTime.Now:HH:mm:ss.fff}]";
+                    System.Diagnostics.Debug.WriteLine(clearMessage);
+                    File.AppendAllText(diagnosticPath, clearMessage + Environment.NewLine);
+                }
+                else
+                {
+                    var skipMessage = $"⚡ 跳过视图清理 - 当前视图已经是 {item.ViewName} [{DateTime.Now:HH:mm:ss.fff}]";
+                    System.Diagnostics.Debug.WriteLine(skipMessage);
+                    File.AppendAllText(diagnosticPath, skipMessage + Environment.NewLine);
+                }
+            }
+            
             var regionInfo = $"✅ SystemWorkbenchContentRegion区域存在，当前视图数量: {region.Views.Count()} [{DateTime.Now:HH:mm:ss.fff}]";
             System.Diagnostics.Debug.WriteLine(regionInfo);
             File.AppendAllText(diagnosticPath, regionInfo + Environment.NewLine);
             
-            _regionManager.RequestNavigate("SystemWorkbenchContentRegion", item.ViewName, navigationResult =>
+            _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, item.ViewName, navigationResult =>
             {
                 var resultMessage = "";
                 if (navigationResult.Result == true)

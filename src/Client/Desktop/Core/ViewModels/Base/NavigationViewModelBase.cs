@@ -97,7 +97,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         }
 
         /// <summary>
-        /// 确认导航请求
+        /// 确认导航请求（同步版本，用于Prism导航兼容性）
         /// </summary>
         public virtual bool ConfirmNavigationRequest()
         {
@@ -110,7 +110,37 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                 }
                 else
                 {
-                    return ShowConfirmNavigationDialog();
+                    // 同步版本使用MessageBox作为后备方案
+                    var result = System.Windows.MessageBox.Show(
+                        "当前页面有未保存的更改或正在进行的操作，确定要离开吗？",
+                        "确认导航",
+                        System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Question);
+                    return result == System.Windows.MessageBoxResult.Yes;
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleError("确认导航", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 确认导航请求（异步版本，推荐使用）
+        /// </summary>
+        public virtual async Task<bool> ConfirmNavigationRequestAsync()
+        {
+            try
+            {
+                var canNavigate = CanNavigateAway();
+                if (canNavigate)
+                {
+                    return true;
+                }
+                else
+                {
+                    return await ShowConfirmNavigationDialogAsync();
                 }
             }
             catch (Exception ex)
@@ -148,9 +178,9 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 显示导航确认对话框
         /// </summary>
-        protected virtual bool ShowConfirmNavigationDialog()
+        protected virtual async Task<bool> ShowConfirmNavigationDialogAsync()
         {
-            return ShowConfirmDialog(
+            return await ShowConfirmDialogAsync(
                 "当前页面有未保存的更改或正在进行的操作，确定要离开吗？", 
                 "确认导航");
         }
@@ -177,13 +207,33 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 显示确认对话框
         /// </summary>
-        protected bool ShowConfirmDialog(string message, string title = "确认")
+        protected async Task<bool> ShowConfirmDialogAsync(string message, string title = "确认")
         {
-            var result = System.Windows.MessageBox.Show(
-                message, title, 
-                System.Windows.MessageBoxButton.YesNo, 
-                System.Windows.MessageBoxImage.Question);
-            return result == System.Windows.MessageBoxResult.Yes;
+            try
+            {
+                if (ErrorHandlingService?.CustomDialogService != null)
+                {
+                    return await ErrorHandlingService.CustomDialogService.ShowConfirmationAsync(title, message);
+                }
+                else
+                {
+                    // 作为后备方案使用MessageBox
+                    var result = System.Windows.MessageBox.Show(
+                        message, title, 
+                        System.Windows.MessageBoxButton.YesNo, 
+                        System.Windows.MessageBoxImage.Question);
+                    return result == System.Windows.MessageBoxResult.Yes;
+                }
+            }
+            catch
+            {
+                // 异常时使用MessageBox作为后备方案
+                var result = System.Windows.MessageBox.Show(
+                    message, title, 
+                    System.Windows.MessageBoxButton.YesNo, 
+                    System.Windows.MessageBoxImage.Question);
+                return result == System.Windows.MessageBoxResult.Yes;
+            }
         }
     }
 }

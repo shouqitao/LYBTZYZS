@@ -8,6 +8,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Events;
 using AutoMapper;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Enums;
@@ -519,7 +520,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             if (MedicalCaseId.HasValue)
             {
-                _regionManager.RequestNavigate("MainContentRegion", $"MedicalCaseDetailView?MedicalCaseId={MedicalCaseId.Value}&EditMode=false");
+                _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, $"MedicalCaseDetailView?MedicalCaseId={MedicalCaseId.Value}&EditMode=false");
             }
         }
 

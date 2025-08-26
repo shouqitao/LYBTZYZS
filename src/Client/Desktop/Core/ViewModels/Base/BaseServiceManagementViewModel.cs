@@ -164,11 +164,27 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
         #region Constructor
 
+        protected BaseServiceManagementViewModel(TService service, IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
+        {
+            Service = service ?? throw new ArgumentNullException(nameof(service));
+
+            InitializeCommands();
+        }
+
+        /// <summary>
+        /// 兼容性构造函数（不推荐使用）
+        /// </summary>
         protected BaseServiceManagementViewModel(TService service, IEventAggregator eventAggregator)
             : base(eventAggregator)
         {
             Service = service ?? throw new ArgumentNullException(nameof(service));
 
+            InitializeCommands();
+        }
+
+        private void InitializeCommands()
+        {
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
@@ -306,9 +322,53 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 显示成功消息
         /// </summary>
+        protected virtual async Task ShowSuccessAsync(string message)
+        {
+            try
+            {
+                if (ErrorHandlingService?.CustomDialogService != null)
+                {
+                    await ErrorHandlingService.CustomDialogService.ShowInformationAsync(ModuleName, message);
+                }
+                else
+                {
+                    MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch
+            {
+                MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
+        /// 显示成功消息（同步版本，兼容性）
+        /// </summary>
         protected virtual void ShowSuccess(string message)
         {
-            MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Information);
+            _ = ShowSuccessAsync(message);
+        }
+
+        /// <summary>
+        /// 显示错误消息
+        /// </summary>
+        protected virtual async Task ShowErrorAsync(string message)
+        {
+            try
+            {
+                if (ErrorHandlingService?.CustomDialogService != null)
+                {
+                    await ErrorHandlingService.CustomDialogService.ShowErrorAsync(ModuleName, message);
+                }
+                else
+                {
+                    MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch
+            {
+                MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         /// <summary>
@@ -316,16 +376,47 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual void ShowError(string message)
         {
-            MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Error);
+            _ = ShowErrorAsync(message);
         }
 
         /// <summary>
         /// 显示确认对话框
         /// </summary>
+        protected virtual async Task<bool> ShowConfirmAsync(string message)
+        {
+            try
+            {
+                if (ErrorHandlingService?.CustomDialogService != null)
+                {
+                    return await ErrorHandlingService.CustomDialogService.ShowConfirmationAsync(ModuleName, message);
+                }
+                else
+                {
+                    var result = MessageBox.Show(message, ModuleName, MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    return result == MessageBoxResult.Yes;
+                }
+            }
+            catch
+            {
+                var result = MessageBox.Show(message, ModuleName, MessageBoxButton.YesNo, MessageBoxImage.Question);
+                return result == MessageBoxResult.Yes;
+            }
+        }
+
+        /// <summary>
+        /// 显示确认对话框（同步版本，兼容性）
+        /// </summary>
         protected virtual bool ShowConfirm(string message)
         {
-            var result = MessageBox.Show(message, ModuleName, MessageBoxButton.YesNo, MessageBoxImage.Question);
-            return result == MessageBoxResult.Yes;
+            try
+            {
+                return ShowConfirmAsync(message).GetAwaiter().GetResult();
+            }
+            catch
+            {
+                var result = MessageBox.Show(message, ModuleName, MessageBoxButton.YesNo, MessageBoxImage.Question);
+                return result == MessageBoxResult.Yes;
+            }
         }
 
         #endregion

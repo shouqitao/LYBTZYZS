@@ -28,11 +28,13 @@ namespace LYBT.Desktop.Consultation
 
             // 注册视图模型
             containerRegistry.Register<ConsultationMainViewModel>();
+            containerRegistry.Register<ConsultationManagementViewModel>();
             containerRegistry.Register<TCMDiagnosisViewModel>();
             containerRegistry.Register<DifferentiationViewModel>();
 
             // 注册视图导航
             containerRegistry.RegisterForNavigation<ConsultationMainView>();
+            containerRegistry.RegisterForNavigation<ConsultationManagementView, ConsultationManagementViewModel>();
         }
     }
 }

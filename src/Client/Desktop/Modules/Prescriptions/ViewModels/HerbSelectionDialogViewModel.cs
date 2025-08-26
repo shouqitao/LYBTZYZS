@@ -16,184 +16,105 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     /// <summary>
     /// 中药材选择对话框视图模型
     /// </summary>
-    public class HerbSelectionDialogViewModel : BindableBase // Temporarily remove IDialogAware due to Prism 9 compatibility issues
+    /// <summary>
+    /// 中药材选择对话框ViewModel - UltraThink架构统一
+    /// </summary>
+    public class HerbSelectionDialogViewModel : DialogViewModelBase
     {
         private readonly IHerbService _herbService;
-        private readonly ILogger<HerbSelectionDialogViewModel> _logger;
-        private readonly IMapper _mapper;
-
-        #region Dialog Properties
-
-        public string Title => IsEditMode ? "编辑药材用量" : "选择中药材";
-        // public event Action<IDialogResult>? RequestClose; // Removed for Prism 9 compatibility
-
-        #endregion
-
-        #region Properties
-
-        private ObservableCollection<HerbDto> _herbs = new();
-        public ObservableCollection<HerbDto> Herbs
-        {
-            get => _herbs;
-            set => SetProperty(ref _herbs, value);
-        }
-
-        private ObservableCollection<HerbDto> _filteredHerbs = new();
-        public ObservableCollection<HerbDto> FilteredHerbs
-        {
-            get => _filteredHerbs;
-            set => SetProperty(ref _filteredHerbs, value);
-        }
-
+        private ObservableCollection<HerbDto> _availableHerbs = new();
         private HerbDto? _selectedHerb;
+        private string _searchText = "";
+        private decimal _quantity = 1;
+        private string _unit = "g";
+
+        /// <summary>
+        /// 可选择的中药材列表
+        /// </summary>
+        public ObservableCollection<HerbDto> AvailableHerbs
+        {
+            get => _availableHerbs;
+            set => SetProperty(ref _availableHerbs, value);
+        }
+
+        /// <summary>
+        /// 选中的中药材
+        /// </summary>
         public HerbDto? SelectedHerb
         {
             get => _selectedHerb;
-            set => SetProperty(ref _selectedHerb, value);
+            set 
+            { 
+                SetProperty(ref _selectedHerb, value);
+                ConfirmCommand.RaiseCanExecuteChanged();
+            }
         }
 
-        private decimal _quantity = 10;
+        /// <summary>
+        /// 搜索文本
+        /// </summary>
+        public string SearchText
+        {
+            get => _searchText;
+            set => SetProperty(ref _searchText, value);
+        }
+
+        /// <summary>
+        /// 用量
+        /// </summary>
         public decimal Quantity
         {
             get => _quantity;
             set => SetProperty(ref _quantity, value);
         }
 
-        private string _searchText = string.Empty;
-        public string SearchText
+        /// <summary>
+        /// 单位
+        /// </summary>
+        public string Unit
         {
-            get => _searchText;
-            set
-            {
-                if (SetProperty(ref _searchText, value))
-                {
-                    FilterHerbs();
-                }
-            }
+            get => _unit;
+            set => SetProperty(ref _unit, value);
         }
 
-        private string _selectedCategory = "全部";
-        public string SelectedCategory
-        {
-            get => _selectedCategory;
-            set
-            {
-                if (SetProperty(ref _selectedCategory, value))
-                {
-                    FilterHerbs();
-                }
-            }
-        }
+        /// <summary>
+        /// 搜索命令
+        /// </summary>
+        public DelegateCommand SearchCommand { get; }
 
-        private bool _isEditMode;
-        public bool IsEditMode
-        {
-            get => _isEditMode;
-            set => SetProperty(ref _isEditMode, value);
-        }
+        /// <summary>
+        /// 选中的中药材信息（用于返回结果）
+        /// </summary>
+        public PrescriptionHerbItemDto? Result { get; private set; }
 
-        private PrescriptionItemDto? _editingItem;
-
-        private bool _isLoading;
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        public ObservableCollection<string> Categories { get; } = new()
-        {
-            "全部", "解表药", "清热药", "泻下药", "灥湿药", 
-            "温里药", "理气药", "消食药", "止血药", "活血化瘀药",
-            "化痰止咳平喘药", "安神药", "平肝息风药", "开窍药",
-            "补虚药", "收涩药", "涌吐药", "外用药", "其他"
-        };
-
-        #endregion
-
-        #region Commands
-
-        public DelegateCommand ConfirmCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand RefreshCommand { get; }
-
-        #endregion
-
-        #region Constructor
-
-        public HerbSelectionDialogViewModel(
-            IHerbService herbService,
-            ILogger<HerbSelectionDialogViewModel> logger,
-            IMapper mapper)
+        public HerbSelectionDialogViewModel(IHerbService herbService) : base()
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-
-            // 初始化命令
-            ConfirmCommand = new DelegateCommand(Confirm, CanConfirm)
-                .ObservesProperty(() => SelectedHerb)
-                .ObservesProperty(() => Quantity);
-            CancelCommand = new DelegateCommand(Cancel);
-            RefreshCommand = new DelegateCommand(async () => await LoadHerbsAsync());
-
-            // 初始加载数据
-            Task.Run(async () => await LoadHerbsAsync());
+            Title = "选择中药材";
+            
+            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
+            
+            // 初始化加载中药材列表
+            _ = LoadHerbsAsync();
         }
 
-        #endregion
-
-        #region Dialog Methods (Temporarily disabled due to Prism 9 compatibility)
-
-        // public bool CanCloseDialog() => !IsLoading;
-
-        // public void OnDialogClosed()
-        // {
-        //     // 清理资源
-        // }
-
-        // public void OnDialogOpened(IDialogParameters parameters)
-        // {
-        //     if (parameters.ContainsKey("HerbItem"))
-        //     {
-        //         _editingItem = parameters.GetValue<PrescriptionItemInfo>("HerbItem");
-        //         IsEditMode = true;
-        //         Quantity = _editingItem.Quantity;
-        //         // 在加载完成后选中对应的药材
-        //     }
-        // }
-
-        #endregion
-
-        #region Methods
-
+        /// <summary>
+        /// 加载中药材列表
+        /// </summary>
         private async Task LoadHerbsAsync()
         {
             try
             {
                 IsLoading = true;
-                var herbsResult = await _herbService.GetHerbsAsync();
-                if (herbsResult.IsSuccess && herbsResult.Data != null)
+                var result = await _herbService.GetPagedAsync(new HerbPagedQueryDto { PageSize = 100 });
+                if (result.IsSuccess && result.Data != null)
                 {
-                    // UltraThink四层架构：使用AutoMapper转换DTO → Info
-                    // UltraThink v2.0: 直接使用HerbDto，无需映射
-                    Herbs = new ObservableCollection<HerbDto>(herbsResult.Data);
-                    FilterHerbs();
-
-                    // 如果是编辑模式，选中对应的药材
-                    if (IsEditMode && _editingItem != null)
-                    {
-                        SelectedHerb = Herbs.FirstOrDefault(h => h.Id == _editingItem.HerbId);
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("加载中药材失败: 未获取到数据");
+                    AvailableHerbs = new ObservableCollection<HerbDto>(result.Data.Items);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载中药材时出错");
+                await HandleErrorAsync("加载中药材列表", ex);
             }
             finally
             {
@@ -201,59 +122,68 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             }
         }
 
-        private void FilterHerbs()
+        /// <summary>
+        /// 执行搜索
+        /// </summary>
+        private async Task ExecuteSearchAsync()
         {
-            var filtered = Herbs.AsEnumerable();
-
-            // 按分类过滤 - 暂时注释，HerbInfo不包含Category属性
-            // if (SelectedCategory != "全部")
-            // {
-            //     filtered = filtered.Where(h => h.Category == SelectedCategory);
-            // }
-
-            // 按关键字过滤
-            if (!string.IsNullOrWhiteSpace(SearchText))
+            if (string.IsNullOrWhiteSpace(SearchText))
             {
-                var searchLower = SearchText.ToLowerInvariant();
-                filtered = filtered.Where(h =>
-                    (h.Name?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false));
+                await LoadHerbsAsync();
+                return;
             }
 
-            FilteredHerbs = new ObservableCollection<HerbDto>(filtered);
-        }
-
-        private bool CanConfirm()
-        {
-            return (IsEditMode || SelectedHerb != null) && Quantity > 0;
-        }
-
-        private void Confirm()
-        {
-            // TODO: Implement dialog confirm logic when Prism dialog support is added
-            // var parameters = new DialogParameters();
-
-            if (IsEditMode && _editingItem != null)
+            try
             {
-                // 编辑模式，更新数量
-                _editingItem.Quantity = Quantity;
-                // Amount 会自动计算，不需要手动设置
+                IsLoading = true;
+                var result = await _herbService.GetPagedAsync(new HerbPagedQueryDto 
+                { 
+                    Name = SearchText,
+                    PageSize = 100 
+                });
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    AvailableHerbs = new ObservableCollection<HerbDto>(result.Data.Items);
+                }
             }
-            // else if (SelectedHerb != null)
-            // {
-            //     // 选择模式，返回选中的药材
-            //     parameters.Add("SelectedHerb", SelectedHerb);
-            //     parameters.Add("Quantity", Quantity);
-            // }
-
-            // RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+            catch (Exception ex)
+            {
+                await HandleErrorAsync("搜索中药材", ex);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
-        private void Cancel()
+        /// <summary>
+        /// 执行确认逻辑
+        /// </summary>
+        protected override Task<bool> ExecuteConfirmAsync()
         {
-            // TODO: Implement dialog cancel logic when Prism dialog support is added
-            // RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+            if (SelectedHerb == null)
+                return Task.FromResult(false);
+
+            Result = new PrescriptionHerbItemDto
+            {
+                HerbId = SelectedHerb.Id,
+                HerbName = SelectedHerb.Name,
+                Quantity = Quantity,
+                Unit = Unit,
+                Price = SelectedHerb.Price,
+                Subtotal = SelectedHerb.Price * Quantity
+            };
+
+            return Task.FromResult(true);
         }
 
-        #endregion
+        /// <summary>
+        /// 检查是否可以确认
+        /// </summary>
+        protected override bool CanConfirm()
+        {
+            return !IsLoading && SelectedHerb != null && Quantity > 0;
+        }
     }
 }
