@@ -11,41 +11,42 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- 引入通用样式 -->
                 <ResourceDictionary Source="Styles/CommonStyles.xaml"/>
+                
+                <!-- UltraThink 统一资源字典 - 内联定义避免路径问题 -->
+                <ResourceDictionary>
+                    <!-- 基础转换器 -->
+                    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                    <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+                    
+                    <!-- Core转换器 -->
+                    <converters:FirstCharacterConverter x:Key="FirstCharacterConverter"/>
+                    <converters:GenderToTextConverter x:Key="GenderToTextConverter"/>
+                    <converters:BooleanToBackgroundConverter x:Key="BooleanToBackgroundConverter"/>
+                    <converters:IDNumberMaskConverter x:Key="IDNumberMaskConverter"/>
+                    <converters:ItemIndexConverter x:Key="ItemIndexConverter"/>
+                    <converters:StockStatusConverter x:Key="StockStatusConverter"/>
+                    <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+                    <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+                    <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+                    <converters:IndexToNumberConverter x:Key="IndexToNumberConverter"/>
+                    <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
+                    <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter"/>
+                </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
             
-            <!-- 全局转换器 -->
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        
-        <!-- Core Converters -->
-        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-        <converters:FirstCharacterConverter x:Key="FirstCharacterConverter"/>
-        <converters:GenderToTextConverter x:Key="GenderToTextConverter"/>
-        <converters:BooleanToBackgroundConverter x:Key="BooleanToBackgroundConverter"/>
-        <converters:IDNumberMaskConverter x:Key="IDNumberMaskConverter"/>
-        <converters:ItemIndexConverter x:Key="ItemIndexConverter"/>
-        <converters:StockStatusConverter x:Key="StockStatusConverter"/>
-        
-        <!-- 反向布尔转换器 -->
-        <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
-        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
-        <converters:IndexToNumberConverter x:Key="IndexToNumberConverter"/>
-        <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
-        <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter"/>
-        
-        <!-- 全局样式 -->
-        <Style TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Microsoft YaHei"/>
-        </Style>
-        
-        <Style TargetType="TextBox">
-            <Setter Property="FontFamily" Value="Microsoft YaHei"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-        
-        <Style TargetType="Button">
-            <Setter Property="FontFamily" Value="Microsoft YaHei"/>
-        </Style>
+            <!-- 应用级全局样式覆盖 -->
+            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+            </Style>
+            
+            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+            
+            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>

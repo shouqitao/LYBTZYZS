@@ -58,8 +58,23 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
 
-        // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
-        // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
+        // 暴露基类的搜索和分页属性供XAML绑定
+        public string SearchKeyword
+        {
+            get => SearchManager.SearchKeyword;
+            set => SearchManager.SearchKeyword = value;
+        }
+
+        public DelegateCommand SearchCommand { get; private set; }
+
+        public int CurrentPage => PaginationCoordinator.CurrentPage;
+        public int TotalPages => PaginationCoordinator.TotalPages;
+        public DelegateCommand FirstPageCommand { get; private set; }
+        public DelegateCommand PreviousPageCommand { get; private set; }
+        public DelegateCommand NextPageCommand { get; private set; }
+        public DelegateCommand LastPageCommand { get; private set; }
+
+        public string StatusText => $"共 {PaginationCoordinator.TotalCount} 条记录";
 
         #endregion
 
@@ -99,7 +114,11 @@ namespace LYBT.Desktop.Users.ViewModels
             
             // UltraThink v2.0: 删除复杂初始化逻辑
             // - 删除选择状态变化监听: 多选功能已移除
-            // - 删除RefreshDataAsync(): 直接使用基类的数据加载机制
+            
+            // 修复: 移除Task.Run，使用Dispatcher异步加载避免跨线程UI更新问题
+            System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Loaded,
+                new Action(async () => await RefreshDataAsync()));
         }
 
         #endregion
@@ -114,6 +133,13 @@ namespace LYBT.Desktop.Users.ViewModels
             DeleteCommand = new DelegateCommand<UserDto>(async user => await DeleteUserAsync(user), CanExecuteUserCommand);
             ResetPasswordCommand = new DelegateCommand<UserDto>(async user => await ResetPasswordAsync(user), CanExecuteUserCommand);
             ToggleStatusCommand = new DelegateCommand<UserDto>(async user => await ToggleStatusAsync(user), CanExecuteUserCommand);
+            
+            // 搜索和分页命令初始化
+            SearchCommand = new DelegateCommand(async () => await SearchManager.ExecuteSearchAsync());
+            FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
+            PreviousPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToPreviousPageAsync());
+            NextPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToNextPageAsync());
+            LastPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToLastPageAsync());
             
             // UltraThink v2.0: 删除批量操作命令初始化 - 20人以下小诊所不需要复杂的批量操作
         }

@@ -45,6 +45,7 @@
     <ProjectReference Include="..\Modules\Formula\LYBT.Desktop.Formula.csproj" />
     <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj" />
+    <ProjectReference Include="..\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj" />
     <ProjectReference Include="..\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj" />
   </ItemGroup>
 
@@ -58,6 +59,7 @@
     <Resource Include="..\Assets\Icons\App\app.ico" />
     <Resource Include="..\Themes\Design\*.xaml" />
     <Resource Include="..\Themes\Controls\*.xaml" />
+    <Resource Include="..\Resources\*.xaml" />
   </ItemGroup>
 
 </Project>

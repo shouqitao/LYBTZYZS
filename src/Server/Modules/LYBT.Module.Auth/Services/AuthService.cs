@@ -195,6 +195,7 @@ namespace LYBT.Module.Auth.Services
                 Id = user.Id,
                 Username = user.Username,
                 RealName = user.RealName,
+                Role = user.Role.ToString(), // 确保Role正确映射
                 Status = user.Status,
                 // CreateTime、LastLoginTime字段已删除（UltraThink v2.0简化）
                 PhoneNumber = user.PhoneNumber

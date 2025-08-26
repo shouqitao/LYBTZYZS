@@ -108,6 +108,9 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
+            // 注册认证处理器
+            containerRegistry.Register<AuthHeaderHandler>();
+            
             // 注册Refit API客户端 - 完整的8个API接口
             RegisterApiService<LYBT.Shared.Interfaces.Api.IAuthApi>(containerRegistry);
             RegisterApiService<IUserApi>(containerRegistry);
@@ -242,9 +245,10 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterApiService<T>(IContainerRegistry containerRegistry) where T : class
         {
-            containerRegistry.RegisterSingleton<T>(() =>
+            containerRegistry.RegisterSingleton<T>((container) =>
             {
-                var httpClient = HttpClientFactory.CreateBasicClient(ApiConfiguration.BaseUrl);
+                var authHandler = container.Resolve<AuthHeaderHandler>();
+                var httpClient = HttpClientFactory.CreateAuthenticatedClient(authHandler, ApiConfiguration.BaseUrl);
                 return RestService.For<T>(httpClient);
             });
         }

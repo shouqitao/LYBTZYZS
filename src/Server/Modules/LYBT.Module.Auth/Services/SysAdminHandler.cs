@@ -83,9 +83,16 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 确保用户具有管理员角色（已移除Role字段）
         /// </summary>
+        /// <summary>
+        /// 确保用户具有管理员角色
+        /// </summary>
         private void EnsureAdminRole(User user)
         {
-            // Role字段已移除，管理员权限通过其他机制实现
+            // 确保sysadmin始终具有Admin角色
+            if (user.Username.Equals(SYSADMIN_USERNAME, StringComparison.OrdinalIgnoreCase))
+            {
+                user.Role = UserRole.Admin;
+            }
         }
     }
 }

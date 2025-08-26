@@ -22,6 +22,7 @@ using LYBT.Desktop.Prescriptions;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Workbench.Consultation;
 using LYBT.Desktop.Workbench.Core;
+using LYBT.Desktop.Workbench.Admin;
 using Prism.Modularity;
 using Prism.Mvvm;
 
@@ -152,7 +153,7 @@ namespace LYBT.Desktop.Shell
         protected override void ConfigureModuleCatalog(Prism.Modularity.IModuleCatalog moduleCatalog)
         {
             // UltraThink Phase 9 性能优化：实现智能模块加载策略
-            // 只有认证模块在启动时加载，其他模块按需加载+性能监控
+            // 修复Prism依赖初始化错误：依赖模块必须与工作台模块使用相同的初始化模式
             
             // 1. 启动必需模块（立即加载）
             moduleCatalog.AddModule(new ModuleInfo
@@ -162,23 +163,61 @@ namespace LYBT.Desktop.Shell
                 InitializationMode = InitializationMode.WhenAvailable
             });
 
-            // 2. 核心业务模块（智能按需加载）
-            AddPerformanceOptimizedModule(moduleCatalog, nameof(UsersModule), typeof(UsersModule));
-            AddPerformanceOptimizedModule(moduleCatalog, nameof(PatientsModule), typeof(PatientsModule));
+            // 2. 核心业务模块（立即加载，确保工作台依赖可用）
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(UsersModule),
+                ModuleType = typeof(UsersModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+            
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(PatientsModule),
+                ModuleType = typeof(PatientsModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
+            
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(HerbsModule),
+                ModuleType = typeof(HerbsModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable
+            });
 
-            // 3. 功能模块（延迟加载）
-            AddPerformanceOptimizedModule(moduleCatalog, nameof(ConsultationModule), typeof(ConsultationModule));
-            AddPerformanceOptimizedModule(moduleCatalog, nameof(MedicalCaseModule), typeof(MedicalCaseModule));
-            AddPerformanceOptimizedModule(moduleCatalog, nameof(HerbsModule), typeof(HerbsModule));
+            // 3. 诊疗相关模块（立即加载，因为ConsultationWorkbench依赖它们）
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(ConsultationModule),
+                ModuleType = typeof(ConsultationModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable // 改为立即加载
+            });
+            
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(MedicalCaseModule),
+                ModuleType = typeof(MedicalCaseModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable // 改为立即加载
+            });
+
+            // 4. 其他功能模块（延迟加载）
             AddPerformanceOptimizedModule(moduleCatalog, nameof(PrescriptionsModule), typeof(PrescriptionsModule));
             AddPerformanceOptimizedModule(moduleCatalog, nameof(FormulaModule), typeof(FormulaModule));
 
-            // 4. 工作台模块（延迟加载 + 依赖管理）
+            // 5. 工作台模块（立即加载，确保登录后立即可用）
+            moduleCatalog.AddModule(new ModuleInfo
+            {
+                ModuleName = nameof(SystemWorkbenchModule),
+                ModuleType = typeof(SystemWorkbenchModule).AssemblyQualifiedName,
+                InitializationMode = InitializationMode.WhenAvailable,
+                DependsOn = new System.Collections.ObjectModel.Collection<string> { nameof(UsersModule), nameof(PatientsModule), nameof(HerbsModule) }
+            });
+
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(ConsultationWorkbenchModule),
                 ModuleType = typeof(ConsultationWorkbenchModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.OnDemand,
+                InitializationMode = InitializationMode.WhenAvailable,
                 DependsOn = new System.Collections.ObjectModel.Collection<string> { nameof(PatientsModule), nameof(ConsultationModule), nameof(MedicalCaseModule) }
             });
 

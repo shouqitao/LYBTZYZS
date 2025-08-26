@@ -140,13 +140,13 @@ namespace LYBT.Desktop.Workbench.Core
                 },
                 NavigationItem.CreateSeparator(),
                 
-                // 诊疗管理
+                // 诊疗管理 - 修复View名称
                 new NavigationItem
                 {
                     Id = "medical-cases",
                     DisplayName = "医疗案例",
                     Icon = "\uE8C8", // 文档图标
-                    ViewName = "MedicalCaseManagementView",
+                    ViewName = "MedicalCaseListView", // 修复：使用实际存在的View
                     Module = "MedicalCase",
                     Order = 3
                 },
@@ -155,7 +155,7 @@ namespace LYBT.Desktop.Workbench.Core
                     Id = "consultation",
                     DisplayName = "看诊记录",
                     Icon = "\uE8D4", // 检查图标
-                    ViewName = "ConsultationManagementView",
+                    ViewName = "ConsultationMainView", // 修复：使用实际存在的View
                     Module = "Consultation",
                     Order = 4
                 },

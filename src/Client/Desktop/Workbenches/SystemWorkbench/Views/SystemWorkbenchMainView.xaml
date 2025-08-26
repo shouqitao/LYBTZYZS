@@ -51,8 +51,7 @@
                                     
                                     <!-- 普通菜单项 -->
                                     <Button Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}"
-                                            Visibility="{Binding IsSeparator, Converter={StaticResource InverseBoolToVisibilityConverter}, FallbackValue=Visible}">
+                                            CommandParameter="{Binding}">
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="Background" Value="Transparent"/>
@@ -93,8 +92,7 @@
                                                                             Background="#E74C3C"
                                                                             CornerRadius="10"
                                                                             Padding="6,2"
-                                                                            Margin="5,0,0,0"
-                                                                            Visibility="{Binding BadgeText, Converter={StaticResource StringToVisibilityConverter}}">
+                                                                            Margin="5,0,0,0">
                                                                         <TextBlock Text="{Binding BadgeText}"
                                                                                    Foreground="White"
                                                                                    FontSize="11"
