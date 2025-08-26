@@ -127,6 +127,9 @@ namespace LYBT.Desktop.Users.ViewModels
 
         protected override void InitializeCommands()
         {
+            // 修复: 首先调用基类的命令初始化 (RefreshCommand, ClearErrorCommand, SelectItemCommand)
+            base.InitializeCommands();
+            
             AddCommand = new DelegateCommand(async () => await AddUserAsync());
             ViewDetailsCommand = new DelegateCommand<UserDto>(async user => await ViewDetailsAsync(user), CanExecuteUserCommand);
             EditCommand = new DelegateCommand<UserDto>(async user => await EditUserAsync(user), CanExecuteUserCommand);
@@ -146,7 +149,9 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private bool CanExecuteUserCommand(UserDto user)
         {
-            return user != null && !IsLoading;
+            var canExecute = user != null && !IsLoading;
+            System.Diagnostics.Debug.WriteLine($"🔍 CanExecuteUserCommand: user={user?.Username}, IsLoading={IsLoading}, canExecute={canExecute}");
+            return canExecute;
         }
 
         #endregion
@@ -178,6 +183,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private async Task AddUserAsync()
         {
+            System.Diagnostics.Debug.WriteLine("🔘 AddUserAsync 被调用");
             try
             {
                 var parameters = new Dictionary<string, object>
@@ -203,7 +209,12 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private async Task ViewDetailsAsync(UserDto user)
         {
-            if (user == null) return;
+            System.Diagnostics.Debug.WriteLine($"👁️ ViewDetailsAsync 被调用: {user?.Username}");
+            if (user == null) 
+            {
+                System.Diagnostics.Debug.WriteLine("❌ ViewDetailsAsync: user为null");
+                return;
+            }
 
             try
             {

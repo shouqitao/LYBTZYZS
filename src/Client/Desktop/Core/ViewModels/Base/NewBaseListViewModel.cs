@@ -174,6 +174,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         public virtual async Task RefreshDataAsync()
         {
+            System.Diagnostics.Debug.WriteLine("🔄 RefreshDataAsync 被调用");
             await LoadItemsAsync();
         }
 

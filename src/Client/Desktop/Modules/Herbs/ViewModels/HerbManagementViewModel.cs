@@ -90,9 +90,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
             ISearchManager? searchManager = null)
             : base(sessionManager, notificationService, logger, paginationCoordinator, searchManager)
         {
+            System.Diagnostics.Debug.WriteLine("🌿 HerbManagementViewModel 构造函数开始");
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            System.Diagnostics.Debug.WriteLine("✅ HerbManagementViewModel 构造函数完成");
 
             InitializeCommands();
             

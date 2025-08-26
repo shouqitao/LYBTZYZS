@@ -93,9 +93,11 @@ namespace LYBT.Desktop.Patients.ViewModels
             ISearchManager? searchManager = null)
             : base(sessionManager, notificationService, logger, paginationCoordinator, searchManager)
         {
+            System.Diagnostics.Debug.WriteLine("🏥 PatientManagementViewModel 构造函数开始");
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            System.Diagnostics.Debug.WriteLine("✅ PatientManagementViewModel 构造函数完成");
 
             InitializeCommands();
             
