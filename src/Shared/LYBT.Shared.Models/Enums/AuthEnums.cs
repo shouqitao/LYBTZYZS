@@ -181,28 +181,20 @@ namespace LYBT.Shared.Models.Enums
         [Description("医生")]
         Doctor = 1,
 
-        /// <summary>护士</summary>
-        [Description("护士")]
-        Nurse = 2,
-
         /// <summary>药师</summary>
         [Description("药师")]
-        Pharmacist = 3,
+        Pharmacist = 2,
 
         /// <summary>前台</summary>
         [Description("前台")]
-        Receptionist = 4,
+        Receptionist = 3,
 
         /// <summary>收银员</summary>
         [Description("收银员")]
-        Cashier = 5,
+        Cashier = 4,
 
         /// <summary>理疗师</summary>
         [Description("理疗师")]
-        Therapist = 6,
-
-        /// <summary>普通用户</summary>
-        [Description("普通用户")]
-        User = 7
+        Therapist = 5
     }
 }

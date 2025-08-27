@@ -60,36 +60,43 @@ namespace LYBT.Module.Users.Helpers
                 if (!validation.IsSuccess)
                     return ServiceResult<UserDto>.Failure(validation.ErrorMessage!);
 
-                // 开始事务
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
+                // 使用ExecutionStrategy处理事务以兼容重试策略
+                var strategy = _context.Database.CreateExecutionStrategy();
+                return await strategy.ExecuteAsync(async () =>
                 {
-                    var user = CreateUserFromDto(dto);
-                    var result = await _userRepository.AddAsync(user);
-
-                    if (result != null)
+                    using var transaction = await _context.Database.BeginTransactionAsync();
+                    try
                     {
-                        // 内部记录操作日志，使用系统用户ID
-                        await LogUserOperation(
-                            user.Id, ActionType.Create, Guid.Empty, "System",
-                            $"新增用户：{user.Username}",
-                            newValue: user
-                        );
+                        var user = CreateUserFromDto(dto);
+                        // 添加到DbSet但不保存，让事务统一处理保存
+                        await _context.Users.AddAsync(user);
+                        await _context.SaveChangesAsync();
+                        var result = user;
 
-                        await transaction.CommitAsync();
-                        var userDto = _mapper.Map<UserDto>(user);
-                        _logger.LogInformation("创建用户成功: {Username} (ID: {UserId})", user.Username, user.Id);
-                        return ServiceResult<UserDto>.Success(userDto);
+                        if (result != null)
+                        {
+                            // 内部记录操作日志，使用系统用户ID
+                            await LogUserOperation(
+                                user.Id, ActionType.Create, Guid.Empty, "System",
+                                $"新增用户：{user.Username}",
+                                newValue: user
+                            );
+
+                            await transaction.CommitAsync();
+                            var userDto = _mapper.Map<UserDto>(user);
+                            _logger.LogInformation("创建用户成功: {Username} (ID: {UserId})", user.Username, user.Id);
+                            return ServiceResult<UserDto>.Success(userDto);
+                        }
+
+                        await transaction.RollbackAsync();
+                        return ServiceResult<UserDto>.Failure("用户创建失败");
                     }
-
-                    await transaction.RollbackAsync();
-                    return ServiceResult<UserDto>.Failure("用户创建失败");
-                }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync();
-                    throw;
-                }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -113,35 +120,42 @@ namespace LYBT.Module.Users.Helpers
                 var existingUser = await GetExistingUser(id);
                 var oldSnapshot = JsonSerializer.Serialize(existingUser);
 
-                // 开始事务
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
+                // 使用ExecutionStrategy处理事务以兼容重试策略
+                var strategy = _context.Database.CreateExecutionStrategy();
+                return await strategy.ExecuteAsync(async () =>
                 {
-                    UpdateUserFromDto(existingUser, dto);
-                    var result = await _userRepository.UpdateAsync(existingUser);
-
-                    if (result != null)
+                    using var transaction = await _context.Database.BeginTransactionAsync();
+                    try
                     {
-                        await LogUserOperation(
-                            existingUser.Id, ActionType.Update, Guid.Empty, "System",
-                            $"修改用户信息：{existingUser.Username}",
-                            oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
-                        );
+                        UpdateUserFromDto(existingUser, dto);
+                        // 更新实体但不保存，让事务统一处理保存
+                        _context.Users.Update(existingUser);
+                        await _context.SaveChangesAsync();
+                        var result = existingUser;
 
-                        await transaction.CommitAsync();
-                        var userDto = _mapper.Map<UserDto>(result);
-                        _logger.LogInformation("更新用户成功: {Username} (ID: {UserId})", result.Username, id);
-                        return ServiceResult<UserDto>.Success(userDto);
+                        if (result != null)
+                        {
+                            await LogUserOperation(
+                                existingUser.Id, ActionType.Update, Guid.Empty, "System",
+                                $"修改用户信息：{existingUser.Username}",
+                                oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
+                            );
+
+                            await transaction.CommitAsync();
+                            var userDto = _mapper.Map<UserDto>(result);
+                            _logger.LogInformation("更新用户成功: {Username} (ID: {UserId})", result.Username, id);
+                            return ServiceResult<UserDto>.Success(userDto);
+                        }
+
+                        await transaction.RollbackAsync();
+                        return ServiceResult<UserDto>.Failure("用户更新失败");
                     }
-
-                    await transaction.RollbackAsync();
-                    return ServiceResult<UserDto>.Failure("用户更新失败");
-                }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync();
-                    throw;
-                }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -453,6 +467,7 @@ namespace LYBT.Module.Users.Helpers
             user.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName);
             user.Status = dto.Status;
             user.PhoneNumber = dto.PhoneNumber;
+            user.Email = dto.Email; // 🎯 修复：添加邮箱字段更新
         }
 
         /// <summary>

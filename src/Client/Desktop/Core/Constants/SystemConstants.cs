@@ -26,9 +26,9 @@ namespace LYBT.Desktop.Core.Constants
         public const string AdminRole = "Admin";
 
         /// <summary>
-        /// 护士角色
+        /// 理疗师角色
         /// </summary>
-        public const string NurseRole = "Nurse";
+        public const string TherapistRole = "Therapist";
 
         /// <summary>
         /// 接待员角色
@@ -156,8 +156,10 @@ namespace LYBT.Desktop.Core.Constants
         {
             public const string Doctor = "医生";
             public const string Admin = "管理员";
-            public const string Nurse = "护士";
-            public const string Receptionist = "接待员";
+            public const string Pharmacist = "药师";
+            public const string Receptionist = "前台";
+            public const string Cashier = "收银员";
+            public const string Therapist = "理疗师";
             public const string SuperAdmin = "超级管理员";
         }
 

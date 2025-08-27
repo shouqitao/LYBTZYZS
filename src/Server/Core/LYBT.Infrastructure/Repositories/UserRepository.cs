@@ -205,10 +205,11 @@ namespace LYBT.Infrastructure.Repositories
                 ActiveCount = activeCount,
                 InactiveCount = totalCount - activeCount,
                 DoctorCount = stats.FirstOrDefault(s => s.Role == UserRole.Doctor)?.Count ?? 0,
-                NurseCount = stats.FirstOrDefault(s => s.Role == UserRole.Nurse)?.Count ?? 0,
                 AdminCount = stats.FirstOrDefault(s => s.Role == UserRole.Admin)?.Count ?? 0,
                 PharmacistCount = stats.FirstOrDefault(s => s.Role == UserRole.Pharmacist)?.Count ?? 0,
-                ReceptionistCount = stats.FirstOrDefault(s => s.Role == UserRole.Receptionist)?.Count ?? 0
+                ReceptionistCount = stats.FirstOrDefault(s => s.Role == UserRole.Receptionist)?.Count ?? 0,
+                CashierCount = stats.FirstOrDefault(s => s.Role == UserRole.Cashier)?.Count ?? 0,
+                TherapistCount = stats.FirstOrDefault(s => s.Role == UserRole.Therapist)?.Count ?? 0
             };
         }
 

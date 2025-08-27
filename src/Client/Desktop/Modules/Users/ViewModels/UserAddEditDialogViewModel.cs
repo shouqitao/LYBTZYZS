@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Users.ViewModels
     {
         private readonly UserModule _userService;
         private readonly IMapper _mapper;
-        private readonly UserDto? _originalUser;
+        private UserDto? _originalUser; // 🎯 修复：移除readonly，允许在OnDialogOpened中重新赋值
         private bool _isEditMode;
 
         private string _userName = string.Empty;
@@ -118,27 +118,34 @@ namespace LYBT.Desktop.Users.ViewModels
             _originalUser = user;
             _isEditMode = user != null;
 
-            // 角色列表 - 只允许创建普通用户
-            // 管理员只限sysadmin，不能通过用户管理创建
+            // 🎯 修复：角色列表 - 使用正确的UserRole枚举值，删除护士和User角色
             Roles = new List<RoleItem>
             {
-                new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" }
+                new RoleItem { Value = "Doctor", DisplayName = "医生" },
+                new RoleItem { Value = "Admin", DisplayName = "管理员" },
+                new RoleItem { Value = "Pharmacist", DisplayName = "药师" },
+                new RoleItem { Value = "Receptionist", DisplayName = "前台" },
+                new RoleItem { Value = "Cashier", DisplayName = "收银员" },
+                new RoleItem { Value = "Therapist", DisplayName = "理疗师" }
             };
 
             // 新建用户时角色选择禁用（固定为普通用户）
             // 编辑用户时也禁用（不允许修改角色）
             IsRoleSelectionEnabled = false;
 
-            // 如果是编辑模式，加载用户数据
+            // 🎯 修复：构造函数不直接初始化编辑数据，等待OnDialogOpened调用
+            // 这样可以避免数据被覆盖的问题
             if (_isEditMode && user != null)
             {
-                InitializeEditData(user);
+                DialogTitle = SystemConstants.EditUserDialogTitle;
+                System.Diagnostics.Debug.WriteLine($"🔧 构造函数: 编辑模式，用户: {user.Username}");
             }
             else
             {
                 DialogTitle = SystemConstants.AddUserDialogTitle;
-                // 新增模式固定为普通用户角色
-                SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
+                // 新增模式默认为医生角色
+                SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
+                System.Diagnostics.Debug.WriteLine("🔧 构造函数: 新增模式");
             }
 
             InitializeDialog();
@@ -159,22 +166,30 @@ namespace LYBT.Desktop.Users.ViewModels
             _originalUser = user;
             _isEditMode = user != null;
 
-            // 角色列表初始化
+            // 🎯 修复：角色列表 - 使用正确的UserRole枚举值（兼容构造函数）
             Roles = new List<RoleItem>
             {
-                new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" }
+                new RoleItem { Value = "Doctor", DisplayName = "医生" },
+                new RoleItem { Value = "Admin", DisplayName = "管理员" },
+                new RoleItem { Value = "Pharmacist", DisplayName = "药师" },
+                new RoleItem { Value = "Receptionist", DisplayName = "前台" },
+                new RoleItem { Value = "Cashier", DisplayName = "收银员" },
+                new RoleItem { Value = "Therapist", DisplayName = "理疗师" }
             };
 
             IsRoleSelectionEnabled = false;
 
+            // 🎯 修复：兼容性构造函数也使用相同的逻辑
             if (_isEditMode && user != null)
             {
-                InitializeEditData(user);
+                DialogTitle = SystemConstants.EditUserDialogTitle;
+                System.Diagnostics.Debug.WriteLine($"🔧 兼容构造函数: 编辑模式，用户: {user.Username}");
             }
             else
             {
                 DialogTitle = SystemConstants.AddUserDialogTitle;
-                SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
+                SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
+                System.Diagnostics.Debug.WriteLine("🔧 兼容构造函数: 新增模式");
             }
 
             InitializeDialog();
@@ -201,8 +216,10 @@ namespace LYBT.Desktop.Users.ViewModels
                         Id = _originalUser.Id,
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
-                        Role = "User", // 编辑时固定为普通用户角色
+                        Role = SelectedRole?.Value ?? _originalUser.Role, // 🎯 修复：使用选中的角色，如果未选择则保持原有角色
+                        Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(), // 🎯 修复：包含邮箱字段
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
+                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled, // 🎯 修复：包含状态字段
                         IsCreateOperation = false // 设置为更新操作
                     };
 
@@ -221,8 +238,10 @@ namespace LYBT.Desktop.Users.ViewModels
                     {
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
+                        Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(), // 🎯 修复：包含邮箱字段
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        Role = "User", // 新建用户固定为普通用户角色
+                        Role = SelectedRole?.Value ?? "Doctor", // 新建用户使用选中的角色，默认为医生
+                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled, // 🎯 修复：包含状态字段
                         Password = "ChangeMe123", // 默认密码
                         ConfirmPassword = "ChangeMe123", // 确认密码
                         IsCreateOperation = true // 设置为创建操作
@@ -277,13 +296,20 @@ namespace LYBT.Desktop.Users.ViewModels
             DialogTitle = SystemConstants.EditUserDialogTitle;
             UserName = user.Username;
             RealName = user.RealName;
-            Email = string.Empty; // Email字段已按优化标准移除
+            
+            // 🎯 修复：正确设置邮箱数据
+            Email = user.Email ?? string.Empty;
             PhoneNumber = user.PhoneNumber ?? string.Empty;
-            IsActive = user.Status == CommonStatus.Enabled; // 使用Status属性
+            
+            // 🎯 修复：正确设置启用状态
+            IsActive = user.Status == CommonStatus.Enabled;
 
-            // 角色固定：sysadmin是管理员（但不能修改），其他都是普通用户
-            // 编辑时角色不可更改，固定显示为普通用户
-            SelectedRole = new RoleItem { Value = "用户", DisplayName = "普通用户（医生）" };
+            // 🎯 修复：根据实际角色正确设置选中项
+            SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role) ?? 
+                          Roles.FirstOrDefault(r => r.Value == "Doctor") ?? 
+                          Roles.First();
+            
+            System.Diagnostics.Debug.WriteLine($"✅ InitializeEditData完成: UserName={UserName}, RealName={RealName}, Email={Email}, IsActive={IsActive}, Role={SelectedRole?.DisplayName}");
         }
 
         private bool ValidateInput()
@@ -367,17 +393,62 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <param name="parameters">传入的参数</param>
         public void OnDialogOpened(Dictionary<string, object> parameters)
         {
+            System.Diagnostics.Debug.WriteLine($"🔧 OnDialogOpened 被调用，参数数量: {parameters?.Count ?? 0}");
+            
+            // 🎯 修复：优先检查IsEditMode参数，确保模式设置正确
             if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode)
             {
+                System.Diagnostics.Debug.WriteLine($"🔧 参数设置编辑模式: {isEditMode}");
                 _isEditMode = isEditMode;
+                
+                // 触发IsNewUser属性变更通知
+                RaisePropertyChanged(nameof(IsNewUser));
+            }
+            
+            // 🎯 修复：只在编辑模式且有用户数据时才初始化编辑数据
+            if (_isEditMode && parameters?.ContainsKey("User") == true && parameters["User"] is UserDto user)
+            {
+                System.Diagnostics.Debug.WriteLine($"🔧 编辑模式 - 初始化用户数据: {user.Username} - {user.RealName}");
+                
+                // 重新设置编辑数据
+                _originalUser = user;
+                InitializeEditData(user);
+                
+                // 强制触发所有属性变更通知
+                RaisePropertyChanged(nameof(UserName));
+                RaisePropertyChanged(nameof(RealName));
+                RaisePropertyChanged(nameof(Email));
+                RaisePropertyChanged(nameof(PhoneNumber));
+                RaisePropertyChanged(nameof(IsActive));
+                RaisePropertyChanged(nameof(SelectedRole));
+                
+                System.Diagnostics.Debug.WriteLine($"✅ 编辑数据初始化完成: UserName={UserName}, RealName={RealName}, Email={Email}");
+            }
+            else if (!_isEditMode)
+            {
+                System.Diagnostics.Debug.WriteLine("🔧 新增模式 - 清空表单数据");
+                // 新增模式：确保表单为空白状态
+                UserName = string.Empty;
+                RealName = string.Empty; 
+                Email = string.Empty;
+                PhoneNumber = string.Empty;
+                IsActive = true; // 新用户默认启用
+                SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
+                
+                // 触发UI更新
+                RaisePropertyChanged(nameof(UserName));
+                RaisePropertyChanged(nameof(RealName));
+                RaisePropertyChanged(nameof(Email));
+                RaisePropertyChanged(nameof(PhoneNumber));
+                RaisePropertyChanged(nameof(IsActive));
+                RaisePropertyChanged(nameof(SelectedRole));
             }
 
-            if (parameters?.ContainsKey("User") == true && parameters["User"] is UserDto user)
-            {
-                InitializeEditData(user);
-            }
+            // 触发IsNewUser属性变更，确保用户名编辑状态正确
+            RaisePropertyChanged(nameof(IsNewUser));
 
             DialogTitle = _isEditMode ? "编辑用户" : "新增用户";
+            System.Diagnostics.Debug.WriteLine($"🔧 最终状态 - IsEditMode: {_isEditMode}, IsNewUser: {IsNewUser}, 标题: {DialogTitle}");
         }
 
         /// <summary>

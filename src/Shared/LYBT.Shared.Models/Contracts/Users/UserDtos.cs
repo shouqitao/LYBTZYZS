@@ -177,9 +177,13 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("医生数量")]
         public int DoctorCount { get; set; }
 
-        /// <summary>护士数量</summary>
-        [DisplayName("护士数量")]
-        public int NurseCount { get; set; }
+        /// <summary>收银员数量</summary>
+        [DisplayName("收银员数量")]
+        public int CashierCount { get; set; }
+
+        /// <summary>理疗师数量</summary>
+        [DisplayName("理疗师数量")]
+        public int TherapistCount { get; set; }
 
         /// <summary>管理员数量</summary>
         [DisplayName("管理员数量")]

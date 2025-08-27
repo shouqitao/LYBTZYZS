@@ -23,15 +23,10 @@ namespace LYBT.Desktop.Core.Converters
                 "ADMIN" => "管理员",
                 "ADMINISTRATOR" => "管理员",
                 "DOCTOR" => "医生",
-                "NURSE" => "护士",
                 "PHARMACIST" => "药师",
                 "RECEPTIONIST" => "前台",
                 "CASHIER" => "收银员",
-                "USER" => "普通用户",
-                "GUEST" => "访客",
-                "MANAGER" => "经理",
-                "SUPERVISOR" => "主管",
-                "STAFF" => "员工",
+                "THERAPIST" => "理疗师",
                 _ => role // 如果没有匹配的，返回原始值
             };
         }
@@ -40,22 +35,17 @@ namespace LYBT.Desktop.Core.Converters
         {
             if (value is not string displayName || string.IsNullOrEmpty(displayName))
             {
-                return "USER";
+                return "Doctor";
             }
 
             return displayName switch
             {
                 "管理员" => "Admin",
                 "医生" => "Doctor",
-                "护士" => "Nurse", 
                 "药师" => "Pharmacist",
                 "前台" => "Receptionist",
                 "收银员" => "Cashier",
-                "普通用户" => "User",
-                "访客" => "Guest",
-                "经理" => "Manager",
-                "主管" => "Supervisor",
-                "员工" => "Staff",
+                "理疗师" => "Therapist",
                 _ => displayName.ToUpper()
             };
         }

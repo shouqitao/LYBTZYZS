@@ -44,8 +44,10 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         {
             "admin" => "#FF9800",          // 橙色 - 管理员
             "doctor" => "#2196F3",         // 蓝色 - 医生
-            "nurse" => "#9C27B0",          // 紫色 - 护士
-            "user" => "#607D8B",           // 蓝灰色 - 普通用户
+            "pharmacist" => "#4CAF50",     // 绿色 - 药师
+            "receptionist" => "#FF5722",   // 红色 - 前台
+            "cashier" => "#795548",        // 棕色 - 收银员
+            "therapist" => "#9C27B0",      // 紫色 - 理疗师
             _ => "#9E9E9E"                 // 灰色 - 未知
         };
 
