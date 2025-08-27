@@ -156,7 +156,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             NavigateToFormulasCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
 
             // 管理员命令
-            EnterSystemManagementCommand = new DelegateCommand(() => NavigateTo("AdminMainView"));
+            EnterSystemManagementCommand = new DelegateCommand(() => NavigateTo("SystemWorkbenchMainView"));
             NavigateToUserManagementCommand = new DelegateCommand(EnterSystemManagementWithUserModule);
             NavigateToHerbManagementCommand = new DelegateCommand(EnterSystemManagementWithHerbModule);
             NavigateToFormulaManagementCommand = new DelegateCommand(EnterSystemManagementWithFormulaModule);
@@ -330,17 +330,17 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         private void EnterSystemManagementWithUserModule()
         {
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "AdminMainView?DefaultModule=UserManagement");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "SystemWorkbenchMainView?DefaultModule=UserManagement");
         }
 
         private void EnterSystemManagementWithHerbModule()
         {
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "AdminMainView?DefaultModule=HerbManagement");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "SystemWorkbenchMainView?DefaultModule=HerbManagement");
         }
 
         private void EnterSystemManagementWithFormulaModule()
         {
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "AdminMainView?DefaultModule=FormulaManagement");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "SystemWorkbenchMainView?DefaultModule=FormulaManagement");
         }
 
         private async Task LogoutAsync()
@@ -377,7 +377,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 "PatientManagementView" => "患者管理",
                 "HerbManagementView" => "药材管理",
                 "FormulaManagementView" => "验方管理",
-                "AdminMainView" => "系统管理中心",
+                "SystemWorkbenchMainView" => "系统管理中心",
                 "UserManagementView" => "用户管理",
                 _ => viewName
             };

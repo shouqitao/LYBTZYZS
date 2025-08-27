@@ -208,19 +208,15 @@ namespace LYBT.Desktop.Core.Services
                     {
                         var viewModel = _container.Resolve<ViewModels.Dialogs.HerbSelectionDialogViewModel>();
                         herbDialog.SetViewModel(viewModel);
-                        if (parameters != null)
-                        {
-                            viewModel.OnDialogOpened(parameters);
-                        }
+                        // 新的DialogViewModelBase架构不需要OnDialogOpened方法
+                        // 参数通过构造函数或其他方式处理
                     }
                     else if (dialogName == "FormulaSelectionDialog" && dialog is Views.Dialogs.FormulaSelectionDialog formulaDialog)
                     {
                         var viewModel = _container.Resolve<ViewModels.Dialogs.FormulaSelectionDialogViewModel>();
                         formulaDialog.SetViewModel(viewModel);
-                        if (parameters != null)
-                        {
-                            viewModel.OnDialogOpened(parameters);
-                        }
+                        // FormulaSelectionDialogViewModel现在继承DialogViewModelBase，不需要OnDialogOpened调用
+                        // 参数处理已经在DialogViewModelBase中标准化
                     }
                     else if (dialogName == "InputDialog" && dialog is Views.Dialogs.InputDialog inputDialog)
                     {

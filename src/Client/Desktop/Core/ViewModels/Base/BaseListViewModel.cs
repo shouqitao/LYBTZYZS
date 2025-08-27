@@ -376,10 +376,9 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 处理错误
         /// </summary>
-        protected virtual Task HandleErrorAsync(Exception ex)
+        protected virtual async Task HandleErrorAsync(Exception ex)
         {
-            MessageBox.Show($"操作失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            return Task.CompletedTask;
+            await base.HandleErrorAsync("操作", ex);
         }
 
         #endregion

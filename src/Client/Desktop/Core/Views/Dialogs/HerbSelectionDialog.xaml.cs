@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
             // 监听ViewModel的关闭请求
             viewModel.RequestClose += (result) =>
             {
-                DialogResult = result.Result;
+                DialogResult = result;
                 Close();
             };
         }

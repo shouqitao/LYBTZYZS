@@ -1,157 +1,127 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces;
-using LYBT.Desktop.Core.Models.Common;
-// UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
+using Prism.Commands;
+using Prism.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Desktop.Core.Mvvm;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Core.Extensions;
 
 namespace LYBT.Desktop.Core.ViewModels.Dialogs
 {
     /// <summary>
-    /// 验方选择对话框ViewModel
+    /// 验方选择对话框ViewModel - UltraThink优化版本
+    /// 继承DialogViewModelBase，使用标准化错误处理
     /// </summary>
-    public class FormulaSelectionDialogViewModel : ObservableObject, ICustomDialogAware
+    public class FormulaSelectionDialogViewModel : DialogViewModelBase
     {
         private readonly IFormulaService _formulaService;
-        private readonly ILogger<FormulaSelectionDialogViewModel> _logger;
+        private string _searchKeyword = string.Empty;
+        private FormulaDto? _selectedFormula;
 
         #region Properties
 
-        private string _title = "选择验方";
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
-
-        private string _searchKeyword = string.Empty;
+        /// <summary>
+        /// 搜索关键词
+        /// </summary>
         public string SearchKeyword
         {
             get => _searchKeyword;
-            set => SetProperty(ref _searchKeyword, value);
+            set
+            {
+                if (SetProperty(ref _searchKeyword, value))
+                {
+                    SearchCommand?.Execute();
+                }
+            }
         }
 
-        private bool _isLoading;
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        private ObservableCollection<FormulaDto> _formulas = new();
-        public ObservableCollection<FormulaDto> Formulas
-        {
-            get => _formulas;
-            set => SetProperty(ref _formulas, value);
-        }
-
-        private FormulaDto? _selectedFormula;
+        /// <summary>
+        /// 选中的验方
+        /// </summary>
         public FormulaDto? SelectedFormula
         {
             get => _selectedFormula;
             set
             {
-                SetProperty(ref _selectedFormula, value);
-                OnPropertyChanged(nameof(CanConfirm));
+                if (SetProperty(ref _selectedFormula, value))
+                {
+                    ConfirmCommand?.RaiseCanExecuteChanged();
+                }
             }
         }
 
-        public bool CanConfirm => SelectedFormula != null;
+        /// <summary>
+        /// 验方列表
+        /// </summary>
+        public ObservableCollection<FormulaDto> Formulas { get; } = new();
 
         #endregion
 
         #region Commands
 
-        public ICommand SearchCommand { get; }
-        public ICommand ConfirmCommand { get; }
-        public ICommand CancelCommand { get; }
-
-        #endregion
-
-        #region Events
-
         /// <summary>
-        /// 请求关闭对话框事件
+        /// 搜索命令
         /// </summary>
-        public event Action<CustomDialogResult>? RequestClose;
+        public DelegateCommand SearchCommand { get; }
 
         #endregion
 
         #region Constructor
 
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public FormulaSelectionDialogViewModel(
             IFormulaService formulaService,
-            ILogger<FormulaSelectionDialogViewModel> logger)
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, errorHandlingService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            Title = "选择验方";
 
-            // 初始化命令
-            SearchCommand = new AsyncRelayCommand(SearchFormulasAsync);
-            ConfirmCommand = new RelayCommand(ConfirmSelection, () => CanConfirm);
-            CancelCommand = new RelayCommand(CancelSelection);
+            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
+
+            // 初始化加载验方列表
+            _ = LoadFormulasAsync();
+        }
+
+        /// <summary>
+        /// 简化构造函数（使用ContainerLocator）
+        /// </summary>
+        public FormulaSelectionDialogViewModel(IFormulaService formulaService)
+            : base()
+        {
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            Title = "选择验方";
+
+            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
+
+            // 初始化加载验方列表
+            _ = LoadFormulasAsync();
         }
 
         #endregion
 
-        #region ICustomDialogAware Implementation
+        #region Protected Methods
 
         /// <summary>
-        /// 对话框打开时调用
+        /// 执行确认逻辑
         /// </summary>
-        /// <param name="parameters">对话框参数</param>
-        public void OnDialogOpened(Dictionary<string, object> parameters)
+        protected override Task<bool> ExecuteConfirmAsync()
         {
-            try
-            {
-                // 设置标题
-                if (parameters.ContainsKey("Title"))
-                {
-                    Title = parameters["Title"].ToString() ?? "选择验方";
-                }
-
-                // 设置搜索关键词
-                if (parameters.ContainsKey("SearchKeyword"))
-                {
-                    SearchKeyword = parameters["SearchKeyword"].ToString() ?? string.Empty;
-                }
-
-                // 加载验方列表
-                _ = LoadFormulasAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "打开验方选择对话框时发生错误");
-            }
+            return Task.FromResult(SelectedFormula != null);
         }
 
         /// <summary>
-        /// 对话框关闭时调用
+        /// 检查是否可以确认
         /// </summary>
-        public void OnDialogClosed()
+        protected override bool CanConfirm()
         {
-            // 清理资源
-            Formulas.Clear();
-            SelectedFormula = null;
-        }
-
-        /// <summary>
-        /// 检查是否可以关闭对话框
-        /// </summary>
-        /// <returns>true: 可以关闭, false: 不可以关闭</returns>
-        public bool CanCloseDialog()
-        {
-            // 对于验方选择对话框，总是允许关闭
-            return true;
+            return !IsLoading && SelectedFormula != null;
         }
 
         #endregion
@@ -166,32 +136,31 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             try
             {
                 IsLoading = true;
+                ClearError();
 
-                // 调用验方服务获取数据
                 var result = await _formulaService.GetFormulasAsync(SearchKeyword);
-
-                if (result.IsSuccess)
+                if (result.IsSuccess && result.Data != null)
                 {
-                    var formulaDtos = result.Data ?? new List<FormulaDto>();
-                    
-                    // UltraThink v2.0: 直接使用FormulaDto，无需转换
-                    Formulas.Clear();
-                    foreach (var formula in formulaDtos)
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        Formulas.Add(formula);
-                    }
+                        Formulas.Clear();
+                        foreach (var formula in result.Data)
+                        {
+                            Formulas.Add(formula);
+                        }
+                    });
 
-                    _logger.LogDebug("加载了 {Count} 个验方", Formulas.Count);
+                    StatusMessage = $"已加载 {Formulas.Count} 个验方";
                 }
                 else
                 {
-                    _logger.LogWarning("加载验方列表失败: {Message}", result.ErrorMessage);
+                    StatusMessage = result.ErrorMessage ?? "加载验方列表失败";
                     Formulas.Clear();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载验方列表时发生异常");
+                await HandleErrorAsync("加载验方列表", ex);
                 Formulas.Clear();
             }
             finally
@@ -201,66 +170,23 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         }
 
         /// <summary>
-        /// 搜索验方
+        /// 执行搜索
         /// </summary>
-        private async Task SearchFormulasAsync()
+        private async Task ExecuteSearchAsync()
         {
             await LoadFormulasAsync();
         }
 
-        /// <summary>
-        /// 确认选择
-        /// </summary>
-        private void ConfirmSelection()
-        {
-            if (SelectedFormula == null)
-                return;
+        #endregion
 
-            try
-            {
-                var result = new CustomDialogResult
-                {
-                    Result = true,
-                    Parameters = new Dictionary<string, object>
-                    {
-                        ["SelectedFormula"] = SelectedFormula,
-                        ["FormulaId"] = SelectedFormula.Id,
-                        ["FormulaName"] = SelectedFormula.Name,
-                        ["HerbNames"] = SelectedFormula.HerbNames ?? string.Empty
-                    },
-                    Data = SelectedFormula
-                };
-
-                RequestClose?.Invoke(result);
-                _logger.LogDebug("确认选择验方: {FormulaName} (ID: {FormulaId})", 
-                    SelectedFormula.Name, SelectedFormula.Id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "确认选择验方时发生错误");
-            }
-        }
+        #region Public Methods
 
         /// <summary>
-        /// 取消选择
+        /// 获取选择结果
         /// </summary>
-        private void CancelSelection()
+        public FormulaDto? GetSelectedFormula()
         {
-            try
-            {
-                var result = new CustomDialogResult
-                {
-                    Result = false,
-                    Parameters = new Dictionary<string, object>()
-                };
-
-                RequestClose?.Invoke(result);
-                _logger.LogDebug("取消验方选择");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "取消验方选择时发生错误");
-            }
+            return SelectedFormula;
         }
 
         #endregion

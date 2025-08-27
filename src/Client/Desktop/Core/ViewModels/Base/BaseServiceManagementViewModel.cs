@@ -325,20 +325,17 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual async Task ShowSuccessAsync(string message)
         {
-            try
+            StatusMessage = message;
+            if (ErrorHandlingService?.CustomDialogService != null)
             {
-                if (ErrorHandlingService?.CustomDialogService != null)
+                try
                 {
                     await ErrorHandlingService.CustomDialogService.ShowInformationAsync(ModuleName, message);
                 }
-                else
+                catch
                 {
-                    MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Information);
+                    // 静默处理，已经设置StatusMessage
                 }
-            }
-            catch
-            {
-                MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -355,21 +352,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual async Task ShowErrorAsync(string message)
         {
-            try
-            {
-                if (ErrorHandlingService?.CustomDialogService != null)
-                {
-                    await ErrorHandlingService.CustomDialogService.ShowErrorAsync(ModuleName, message);
-                }
-                else
-                {
-                    MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            catch
-            {
-                MessageBox.Show(message, ModuleName, MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            await base.HandleErrorAsync(ModuleName, new InvalidOperationException(message));
         }
 
         /// <summary>
@@ -385,23 +368,20 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual async Task<bool> ShowConfirmAsync(string message)
         {
-            try
+            if (ErrorHandlingService?.CustomDialogService != null)
             {
-                if (ErrorHandlingService?.CustomDialogService != null)
+                try
                 {
-                    return await ErrorHandlingService.CustomDialogService.ShowConfirmationAsync(ModuleName, message);
+                    return await ErrorHandlingService.CustomDialogService.ShowConfirmationAsync(message, ModuleName);
                 }
-                else
+                catch
                 {
-                    var result = MessageBox.Show(message, ModuleName, MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    return result == MessageBoxResult.Yes;
+                    // 对话框服务失败时默认返回false（取消操作）
+                    return false;
                 }
             }
-            catch
-            {
-                var result = MessageBox.Show(message, ModuleName, MessageBoxButton.YesNo, MessageBoxImage.Question);
-                return result == MessageBoxResult.Yes;
-            }
+            // 如果没有对话框服务，默认返回false（保守操作）
+            return false;
         }
 
         /// <summary>
@@ -415,8 +395,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             }
             catch
             {
-                var result = MessageBox.Show(message, ModuleName, MessageBoxButton.YesNo, MessageBoxImage.Question);
-                return result == MessageBoxResult.Yes;
+                // 同步调用失败时默认返回false（保守操作）
+                return false;
             }
         }
 

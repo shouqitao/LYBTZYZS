@@ -1,41 +1,26 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using LYBT.Desktop.Core.Interfaces;
+using Prism.Commands;
+using Prism.Events;
+using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Models.Common;
-// UltraThink v2.0: 直接使用HerbDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Desktop.Core.Mvvm;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Core.Extensions;
 
 namespace LYBT.Desktop.Core.ViewModels.Dialogs
 {
     /// <summary>
-    /// 中药材选择对话框ViewModel（兼容新对话框系统）
+    /// 中药材选择对话框ViewModel - UltraThink统一架构
     /// </summary>
-    public class HerbSelectionDialogViewModel : ObservableObject, ICustomDialogAware
+    public class HerbSelectionDialogViewModel : DialogViewModelBase
     {
-        private readonly LYBT.Shared.Interfaces.Services.IHerbService _herbService;
-        private string _title = "选择中药材";
+        private readonly IHerbService _herbService;
         private string _searchKeyword = string.Empty;
-        private bool _isLoading;
         private HerbDto? _selectedHerb;
         private decimal _quantity = 10;
         private string _unit = "g";
-
-        /// <summary>
-        /// 对话框标题
-        /// </summary>
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
 
         /// <summary>
         /// 搜索关键词
@@ -47,18 +32,9 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             {
                 if (SetProperty(ref _searchKeyword, value))
                 {
-                    SearchCommand?.Execute(null);
+                    SearchCommand?.Execute();
                 }
             }
-        }
-
-        /// <summary>
-        /// 是否正在加载
-        /// </summary>
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
         }
 
         /// <summary>
@@ -106,74 +82,46 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 搜索命令
         /// </summary>
-        public ICommand SearchCommand { get; }
-
-        /// <summary>
-        /// 确认命令
-        /// </summary>
-        public RelayCommand ConfirmCommand { get; }
-
-        /// <summary>
-        /// 取消命令
-        /// </summary>
-        public ICommand CancelCommand { get; }
+        public DelegateCommand SearchCommand { get; }
 
         /// <summary>
         /// 排序命令 - UltraThink Command绑定优化
         /// </summary>
-        public ICommand SortCommand { get; }
-
-        /// <summary>
-        /// 请求关闭事件
-        /// </summary>
-        public event Action<CustomDialogResult> RequestClose = delegate { };
+        public DelegateCommand<string> SortCommand { get; }
 
         /// <summary>
         /// 构造函数
         /// </summary>
-        public HerbSelectionDialogViewModel(LYBT.Shared.Interfaces.Services.IHerbService herbService)
+        public HerbSelectionDialogViewModel(
+            IHerbService herbService,
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService) 
+            : base(eventAggregator, errorHandlingService)
         {
-            _herbService = herbService;
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            Title = "选择中药材";
 
-            SearchCommand = new RelayCommand(async () => await ExecuteSearchAsync());
-            ConfirmCommand = new RelayCommand(ExecuteConfirm, CanConfirm);
-            CancelCommand = new RelayCommand(ExecuteCancel);
-            SortCommand = new RelayCommand<string>(ExecuteSort);
+            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
+            SortCommand = new DelegateCommand<string>(ExecuteSort);
+
+            // 初始化加载中药材列表
+            _ = LoadHerbsAsync();
         }
 
         /// <summary>
-        /// 检查是否可以关闭对话框
+        /// 简化构造函数（使用ContainerLocator）
         /// </summary>
-        public bool CanCloseDialog() => true;
-
-        /// <summary>
-        /// 对话框打开时调用
-        /// </summary>
-        public void OnDialogOpened(Dictionary<string, object> parameters)
+        public HerbSelectionDialogViewModel(IHerbService herbService) 
+            : base()
         {
-            if (parameters.ContainsKey("Title"))
-            {
-                Title = parameters["Title"]?.ToString() ?? "选择中药材";
-            }
+            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            Title = "选择中药材";
 
-            if (parameters.ContainsKey("DefaultQuantity"))
-            {
-                if (decimal.TryParse(parameters["DefaultQuantity"]?.ToString(), out var defaultQuantity))
-                {
-                    Quantity = defaultQuantity;
-                }
-            }
+            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
+            SortCommand = new DelegateCommand<string>(ExecuteSort);
 
-            // 加载中药材列表
-            Task.Run(async () => await LoadHerbsAsync());
-        }
-
-        /// <summary>
-        /// 对话框关闭时调用
-        /// </summary>
-        public void OnDialogClosed()
-        {
-            // 清理资源
+            // 初始化加载中药材列表
+            _ = LoadHerbsAsync();
         }
 
         /// <summary>
@@ -198,9 +146,9 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // 错误处理
+                await HandleErrorAsync("加载中药材列表", ex);
             }
             finally
             {
@@ -234,37 +182,14 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // 错误处理
+                await HandleErrorAsync("搜索中药材", ex);
             }
             finally
             {
                 IsLoading = false;
             }
-        }
-
-        /// <summary>
-        /// 检查是否可以确认
-        /// </summary>
-        private bool CanConfirm()
-        {
-            return SelectedHerb != null && Quantity > 0;
-        }
-
-        /// <summary>
-        /// 执行确认
-        /// </summary>
-        private void ExecuteConfirm()
-        {
-            if (SelectedHerb == null) return;
-
-            var result = CustomDialogResult.Success();
-            result.Parameters["SelectedHerb"] = SelectedHerb;
-            result.Parameters["Quantity"] = Quantity;
-            result.Parameters["Unit"] = Unit;
-
-            RequestClose?.Invoke(result);
         }
 
         /// <summary>
@@ -297,18 +222,35 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                     }
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // 排序失败时忽略错误
+                // 排序失败时记录错误但不中断用户操作
+                StatusMessage = "排序失败，请重试";
             }
         }
 
         /// <summary>
-        /// 执行取消
+        /// 执行确认逻辑
         /// </summary>
-        private void ExecuteCancel()
+        protected override Task<bool> ExecuteConfirmAsync()
         {
-            RequestClose?.Invoke(CustomDialogResult.Cancel());
+            return Task.FromResult(SelectedHerb != null && Quantity > 0);
+        }
+
+        /// <summary>
+        /// 检查是否可以确认
+        /// </summary>
+        protected override bool CanConfirm()
+        {
+            return !IsLoading && SelectedHerb != null && Quantity > 0;
+        }
+
+        /// <summary>
+        /// 获取选择结果
+        /// </summary>
+        public (HerbDto? Herb, decimal Quantity, string Unit) GetResult()
+        {
+            return (SelectedHerb, Quantity, Unit);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Core.Constants
         /// <summary>
         /// 诊疗工作台内容区域
         /// </summary>
-        public const string ConsultationWorkbenchContentRegion = "ConsultationWorkbenchContent";
+        public const string ConsultationWorkbenchContentRegion = "ConsultationWorkbenchContentRegion";
 
         /// <summary>
         /// 收银工作台内容区域

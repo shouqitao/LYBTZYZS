@@ -171,7 +171,6 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// </summary>
         private async Task CheckLoginStatusAsync()
         {
-            
             try
             {
                 if (_servicesFacade.AuthenticationService.IsLoggedIn)
@@ -226,141 +225,63 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// </summary>
         private void LoadMainContent()
         {
-            
             if (CurrentUser == null)
             {
                 throw new InvalidOperationException("当前用户信息为空，无法加载主界面");
             }
 
             // 简化角色判断逻辑：只区分管理员和医生
-            string userRole;
             string workbenchView;
             string roleDisplay;
             
             // 管理员判断（包括sysadmin用户名和Admin角色）
-            if (CurrentUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true ||
-                CurrentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true ||
-                CurrentUser.Role?.Equals("管理员", StringComparison.OrdinalIgnoreCase) == true)
+            bool isAdmin = CurrentUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true ||
+                          CurrentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+                          
+            if (isAdmin)
             {
-                userRole = "管理员";
                 workbenchView = "SystemWorkbenchMainView";
                 roleDisplay = "管理员";
             }
-            else if (CurrentUser.Role?.Equals("Doctor", StringComparison.OrdinalIgnoreCase) == true ||
-                     CurrentUser.Role?.Equals("医生", StringComparison.OrdinalIgnoreCase) == true)
+            else
             {
-                // 医生角色
-                userRole = "医生";
+                // 其他角色默认为医生工作台
                 workbenchView = "ConsultationWorkbenchMainView";
                 roleDisplay = "医生";
             }
-            else
-            {
-                // 其他角色默认为医生工作台，但显示欢迎页
-                userRole = "医生";
-                workbenchView = "ConsultationWorkbenchMainView";
-                roleDisplay = CurrentUser.Role ?? "访客";
-            }
 
-            // UltraThink 诊断日志 - 增强调试信息（同时输出到调试和文件）
-            var diagnosticInfo = $"""
-                === 导航诊断开始 ===
-                时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}
-                用户: {CurrentUser.Username}
-                角色: {CurrentUser.Role}
-                分配工作台: {workbenchView}
-                ContentRegion 是否存在: {_regionManager?.Regions?.ContainsRegionWithName(RegionNames.ContentRegion)}
-                所有区域: {string.Join(", ", _regionManager?.Regions?.Select(r => r.Name) ?? new string[0])}
-                """;
-            
-            System.Diagnostics.Debug.WriteLine(diagnosticInfo);
-            
-            // 同时输出到文件以便调试
-            try 
-            {
-                var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "LYBT_Navigation_Debug.txt");
-                File.AppendAllText(logPath, diagnosticInfo + Environment.NewLine);
-            }
-            catch { /* 忽略文件写入错误 */ }
-
-            if (_regionManager == null)
-            {
-                throw new InvalidOperationException("RegionManager为空");
-            }
-
-            try
-            {
-                // 更新标题和清理登录区域
+            // 更新标题和清理登录区域
                 Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
                 
-                // 修复: 不要清除ContentRegion，导航会自动替换内容
-                // 只清除登录区域，因为登录已完成
+                // 清除登录区域
                 if (_regionManager.Regions.ContainsRegionWithName(RegionNames.LoginRegion))
                 {
                     _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
-                    System.Diagnostics.Debug.WriteLine("✅ LoginRegion 已清理");
                 }
 
-                // 根据角色导航到对应的工作台主视图
-                System.Diagnostics.Debug.WriteLine($"🚀 开始导航到: {workbenchView}");
+                // 导航到对应的工作台
+                System.Diagnostics.Debug.WriteLine($"🚀 导航到: {workbenchView}");
                 _regionManager.RequestNavigate(RegionNames.ContentRegion, workbenchView, navigationResult =>
                 {
-                    string resultInfo;
                     if (navigationResult.Result != true)
                     {
-                        // 导航失败，记录详细错误信息
+                        // 导航失败时显示错误信息
                         var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
-                        var innerException = navigationResult.Error?.InnerException?.Message ?? "无内部异常";
+                        System.Diagnostics.Debug.WriteLine($"❌ 工作台导航失败: {errorMessage}");
                         
-                        resultInfo = $"""
-                            ❌ 工作台模块加载失败:
-                            错误消息: {errorMessage}
-                            内部异常: {innerException}
-                            目标视图: {workbenchView}
-                            目标区域: {RegionNames.ContentRegion}
-                            完整错误: {navigationResult.Error}
-                            === 导航诊断结束 ===
-                            """;
+                        // 异步显示错误对话框
+                        _ = Task.Run(async () =>
+                        {
+                            await _servicesFacade.CustomDialogService.ShowErrorAsync(
+                                $"无法加载工作台: {errorMessage}", "系统错误");
+                        });
                     }
                     else
                     {
-                        // 导航成功 - 开始预加载其他可能需要的数据
-                        resultInfo = $"""
-                            ✅ 成功导航到工作台：{workbenchView}
-                            导航URI: {navigationResult.Context?.Uri}
-                            === 导航诊断结束 ===
-                            """;
-                        StartDataPreloading(userRole);
+                        System.Diagnostics.Debug.WriteLine($"✅ 成功导航到: {workbenchView}");
                     }
-                    
-                    System.Diagnostics.Debug.WriteLine(resultInfo);
-                    
-                    // 同时输出到文件
-                    try 
-                    {
-                        var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "LYBT_Navigation_Debug.txt");
-                        File.AppendAllText(logPath, resultInfo + Environment.NewLine + Environment.NewLine);
-                    }
-                    catch { /* 忽略文件写入错误 */ }
                 });
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ 加载主界面内容时发生错误: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
-                throw new InvalidOperationException($"工作台模块加载失败：{ex.Message}", ex);
-            }
-        }
-
-
-        /// <summary>
-        /// 根据用户角色预加载相关数据
-        /// </summary>
-        private void StartDataPreloading(string userRole)
-        {
-            // 简化版本：目前不进行预加载，等待用户操作时再加载
-            System.Diagnostics.Debug.WriteLine($"用户角色: {userRole} - 已准备就绪");
-        }
 
         /// <summary>
         /// 执行API测试

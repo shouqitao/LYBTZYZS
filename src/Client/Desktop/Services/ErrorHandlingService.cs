@@ -86,29 +86,45 @@ namespace LYBT.Desktop.Services
                 {
                     try
                     {
-                        // 根据严重程度选择不同的显示方式
-                        switch (handledError.Severity)
+                        // UltraThink优化：使用统一的ICustomDialogService，移除MessageBox依赖
+                        if (_customDialogService != null)
                         {
-                            case ErrorSeverity.Info:
-                                // await _dialogService.ShowInformationAsync("提示", handledError.UserMessage); // 服务不存在
-                                MessageBox.Show(handledError.UserMessage, "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                                break;
-                            case ErrorSeverity.Warning:
-                                // await _dialogService.ShowWarningAsync("警告", handledError.UserMessage); // 服务不存在
-                                MessageBox.Show(handledError.UserMessage, "警告", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                break;
-                            case ErrorSeverity.Error:
-                            case ErrorSeverity.Critical:
-                            case ErrorSeverity.Fatal:
-                                await ShowDetailedErrorAsync(handledError);
-                                break;
+                            switch (handledError.Severity)
+                            {
+                                case ErrorSeverity.Info:
+                                    await _customDialogService.ShowInformationAsync(handledError.UserMessage, "提示");
+                                    break;
+                                case ErrorSeverity.Warning:
+                                    await _customDialogService.ShowWarningAsync(handledError.UserMessage, "警告");
+                                    break;
+                                case ErrorSeverity.Error:
+                                case ErrorSeverity.Critical:
+                                case ErrorSeverity.Fatal:
+                                    await ShowDetailedErrorAsync(handledError);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            // 降级处理：如果没有对话框服务，使用系统诊断输出
+                            Debug.WriteLine($"错误 ({handledError.Severity}): {handledError.UserMessage}");
+                            Console.WriteLine($"错误 ({handledError.Severity}): {handledError.UserMessage}");
                         }
                     }
                     catch (Exception ex)
                     {
-                        // 确保错误显示不会失败
+                        // 确保错误显示不会失败 - 最后手段才使用MessageBox
                         Debug.WriteLine($"显示错误对话框失败: {ex.Message}");
-                        MessageBox.Show(handledError.UserMessage, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        try
+                        {
+                            // 仅在极端情况下使用MessageBox
+                            MessageBox.Show(handledError.UserMessage, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                        catch
+                        {
+                            // 连MessageBox都失败了，只能输出到调试信息
+                            Debug.WriteLine($"致命错误: {handledError.UserMessage}");
+                        }
                     }
                 });
             }
@@ -340,11 +356,11 @@ namespace LYBT.Desktop.Services
 
         private async Task ShowDetailedErrorAsync(SharedCommon.HandledError handledError)
         {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            await Application.Current.Dispatcher.InvokeAsync(async () =>
             {
                 try
                 {
-                    // 暂时使用简单的错误对话框，之后可以扩展为详细对话框
+                    // 构建详细错误信息
                     var message = handledError.UserMessage;
                     
                     // 如果有建议操作，添加到消息中
@@ -367,12 +383,30 @@ namespace LYBT.Desktop.Services
                     message += $"\n\n错误ID: {handledError.Id}";
                     message += $"\n时间: {handledError.OccurredAt:yyyy-MM-dd HH:mm:ss}";
 
-                    MessageBox.Show(message, $"错误 - {handledError.Category}", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // UltraThink优化：使用统一的ICustomDialogService
+                    if (_customDialogService != null)
+                    {
+                        await _customDialogService.ShowErrorAsync(message, $"错误 - {handledError.Category}");
+                    }
+                    else
+                    {
+                        // 降级处理：输出到调试信息
+                        Debug.WriteLine($"详细错误信息: {message}");
+                        Console.WriteLine($"详细错误信息: {message}");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"显示错误对话框失败: {ex.Message}");
-                    MessageBox.Show(handledError.UserMessage, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Debug.WriteLine($"显示详细错误对话框失败: {ex.Message}");
+                    try
+                    {
+                        // 极端情况下使用MessageBox
+                        MessageBox.Show(handledError.UserMessage, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    catch
+                    {
+                        Debug.WriteLine($"致命错误: {handledError.UserMessage}");
+                    }
                 }
             });
         }
@@ -453,13 +487,26 @@ namespace LYBT.Desktop.Services
                 {
                     // 最后一道防线：确保异常处理器本身不会崩溃
                     Debug.WriteLine($"异常处理器失败: {ex.Message}");
+                    
+                    // UltraThink优化：首先尝试使用ICustomDialogService
                     try
                     {
-                        MessageBox.Show($"系统发生严重错误：{e.Exception.Message}", "系统错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        if (_customDialogService != null)
+                        {
+                            await _customDialogService.ShowErrorAsync(
+                                $"系统发生严重错误：{e.Exception.Message}", 
+                                "系统错误");
+                        }
+                        else
+                        {
+                            // 最后手段：使用MessageBox
+                            MessageBox.Show($"系统发生严重错误：{e.Exception.Message}", "系统错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     }
                     catch
                     {
                         // 静默失败，避免无限递归
+                        Debug.WriteLine($"致命全局异常: {e.Exception.Message}");
                     }
                 }
             });
@@ -526,16 +573,29 @@ namespace LYBT.Desktop.Services
                 {
                     // 最后一道防线：确保异常处理器本身不会崩溃
                     Debug.WriteLine($"应用程序域异常处理器失败: {ex.Message}");
+                    
+                    // UltraThink优化：首先尝试使用ICustomDialogService
                     try
                     {
                         if (e.ExceptionObject is Exception originalEx)
                         {
-                            MessageBox.Show($"系统发生致命错误：{originalEx.Message}", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                            if (_customDialogService != null)
+                            {
+                                await _customDialogService.ShowErrorAsync(
+                                    $"系统发生致命错误：{originalEx.Message}", 
+                                    "致命错误");
+                            }
+                            else
+                            {
+                                // 最后手段：使用MessageBox
+                                MessageBox.Show($"系统发生致命错误：{originalEx.Message}", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
                         }
                     }
                     catch
                     {
                         // 静默失败，避免无限递归
+                        Debug.WriteLine($"致命域异常: {e.ExceptionObject}");
                     }
                 }
             });

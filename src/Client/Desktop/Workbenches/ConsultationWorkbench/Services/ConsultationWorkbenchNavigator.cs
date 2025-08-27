@@ -1,6 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System;
 using Prism.Regions;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
 
 namespace LYBT.Desktop.Workbench.Consultation.Services
@@ -12,7 +13,7 @@ namespace LYBT.Desktop.Workbench.Consultation.Services
     public class ConsultationWorkbenchNavigator : IConsultationWorkbenchNavigator
     {
         private readonly IRegionManager _regionManager;
-        private const string ContentRegion = "ConsultationWorkbenchContent";
+        private const string ContentRegion = RegionNames.ConsultationWorkbenchContentRegion;
 
         public ConsultationWorkbenchNavigator(IRegionManager regionManager)
         {
@@ -46,7 +47,8 @@ namespace LYBT.Desktop.Workbench.Consultation.Services
 
         public void NavigateToPersonalSettings()
         {
-            NavigateToView("PersonalSettingsView");
+            // TODO: PersonalSettingsView 暂未实现，显示提示
+            System.Diagnostics.Debug.WriteLine("个人设置功能开发中");
         }
 
         public void NavigateToView(string viewName)

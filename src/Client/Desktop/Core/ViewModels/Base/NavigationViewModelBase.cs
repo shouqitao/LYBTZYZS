@@ -110,13 +110,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                 }
                 else
                 {
-                    // 同步版本使用MessageBox作为后备方案
-                    var result = System.Windows.MessageBox.Show(
-                        "当前页面有未保存的更改或正在进行的操作，确定要离开吗？",
-                        "确认导航",
-                        System.Windows.MessageBoxButton.YesNo,
-                        System.Windows.MessageBoxImage.Question);
-                    return result == System.Windows.MessageBoxResult.Yes;
+                    // 如果没有对话框服务，默认允许导航（保守操作）
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -217,22 +212,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                 }
                 else
                 {
-                    // 作为后备方案使用MessageBox
-                    var result = System.Windows.MessageBox.Show(
-                        message, title, 
-                        System.Windows.MessageBoxButton.YesNo, 
-                        System.Windows.MessageBoxImage.Question);
-                    return result == System.Windows.MessageBoxResult.Yes;
+                    // 没有对话框服务时默认返回false（保守操作）
+                    return false;
                 }
             }
             catch
             {
-                // 异常时使用MessageBox作为后备方案
-                var result = System.Windows.MessageBox.Show(
-                    message, title, 
-                    System.Windows.MessageBoxButton.YesNo, 
-                    System.Windows.MessageBoxImage.Question);
-                return result == System.Windows.MessageBoxResult.Yes;
+                // 异常时默认返回false（保守操作）
+                return false;
             }
         }
     }
