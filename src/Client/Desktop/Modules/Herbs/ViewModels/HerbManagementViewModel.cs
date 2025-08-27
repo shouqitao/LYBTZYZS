@@ -58,6 +58,24 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
+        // 暴露基类的搜索和分页属性供XAML绑定
+        public string SearchKeyword
+        {
+            get => SearchManager.SearchKeyword;
+            set => SearchManager.SearchKeyword = value;
+        }
+
+        public DelegateCommand SearchCommand { get; private set; }
+
+        public int CurrentPage => PaginationCoordinator.CurrentPage;
+        public int TotalPages => PaginationCoordinator.TotalPages;
+        public DelegateCommand FirstPageCommand { get; private set; }
+        public DelegateCommand PreviousPageCommand { get; private set; }
+        public DelegateCommand NextPageCommand { get; private set; }
+        public DelegateCommand LastPageCommand { get; private set; }
+
+        public string StatusText => $"共 {PaginationCoordinator.TotalCount} 条记录";
+
         // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
         // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
 
@@ -70,6 +88,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public DelegateCommand<HerbDto> DeleteCommand { get; private set; }
         public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; }
         public DelegateCommand<HerbDto> ViewDetailsCommand { get; private set; }
+        public DelegateCommand ImportHerbsCommand { get; private set; }
+        public DelegateCommand ExportTemplateCommand { get; private set; }
+        public DelegateCommand RefreshCommand { get; private set; }
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
@@ -114,6 +135,16 @@ namespace LYBT.Desktop.Herbs.ViewModels
             DeleteCommand = new DelegateCommand<HerbDto>(async herb => await DeleteHerbAsync(herb), CanExecuteHerbCommand);
             ToggleStatusCommand = new DelegateCommand<HerbDto>(async herb => await ToggleStatusAsync(herb), CanExecuteHerbCommand);
             ViewDetailsCommand = new DelegateCommand<HerbDto>(async herb => await ViewDetailsAsync(herb), CanExecuteHerbCommand);
+            ImportHerbsCommand = new DelegateCommand(async () => await ImportHerbsAsync());
+            ExportTemplateCommand = new DelegateCommand(async () => await ExportTemplateAsync());
+            RefreshCommand = new DelegateCommand(async () => await RefreshDataAsync());
+            
+            // 初始化搜索和分页命令
+            SearchCommand = new DelegateCommand(async () => await SearchManager.ExecuteSearchAsync());
+            FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
+            PreviousPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToPreviousPageAsync());
+            NextPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToNextPageAsync());
+            LastPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToLastPageAsync());
             
             // UltraThink v2.0: 删除批量操作命令初始化 - 20人以下小诊所不需要复杂的批量操作
         }
@@ -296,6 +327,50 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 LogError(ex, "查看药材详情失败: {HerbId}", herb.Id);
                 ShowError($"查看药材详情失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"查看药材详情失败: {ex.Message}", "错误");
+            }
+        }
+
+        private async Task ImportHerbsAsync()
+        {
+            try
+            {
+                var filePath = await _dialogService.ShowOpenFileDialogAsync("选择药材导入文件", "Excel文件|*.xlsx;*.xls|CSV文件|*.csv|所有文件|*.*");
+                
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    // 这里应该实现实际的导入逻辑
+                    await _dialogService.ShowInformationAsync(
+                        $"已选择导入文件：\n{filePath}\n\n药材批量导入功能将在后续版本中提供\n\n当前支持：\n• 手动创建药材\n• 编辑现有药材\n• 药材状态管理", 
+                        "导入功能说明");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "导入药材失败");
+                ShowError($"导入药材失败: {ex.Message}");
+                await _dialogService.ShowErrorAsync($"导入药材失败: {ex.Message}", "错误");
+            }
+        }
+
+        private async Task ExportTemplateAsync()
+        {
+            try
+            {
+                var filePath = await _dialogService.ShowSaveFileDialogAsync("导出药材模板", "Excel文件|*.xlsx|CSV文件|*.csv|所有文件|*.*", "药材导入模板.xlsx");
+                
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    // 这里应该实现实际的模板导出逻辑
+                    await _dialogService.ShowInformationAsync(
+                        $"模板导出路径：\n{filePath}\n\n药材导入模板生成功能将在后续版本中提供\n\n模板将包含：\n• 药材名称\n• 拼音码\n• 产地\n• 规格\n• 单位\n• 单价\n• 功效\n• 用法", 
+                        "模板导出说明");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "导出药材模板失败");
+                ShowError($"导出药材模板失败: {ex.Message}");
+                await _dialogService.ShowErrorAsync($"导出药材模板失败: {ex.Message}", "错误");
             }
         }
 

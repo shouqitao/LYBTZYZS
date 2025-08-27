@@ -61,6 +61,24 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
+        // 暴露基类的搜索和分页属性供XAML绑定
+        public string SearchKeyword
+        {
+            get => SearchManager.SearchKeyword;
+            set => SearchManager.SearchKeyword = value;
+        }
+
+        public DelegateCommand SearchCommand { get; private set; }
+
+        public int CurrentPage => PaginationCoordinator.CurrentPage;
+        public int TotalPages => PaginationCoordinator.TotalPages;
+        public DelegateCommand FirstPageCommand { get; private set; }
+        public DelegateCommand PreviousPageCommand { get; private set; }
+        public DelegateCommand NextPageCommand { get; private set; }
+        public DelegateCommand LastPageCommand { get; private set; }
+
+        public string StatusText => $"共 {PaginationCoordinator.TotalCount} 条记录";
+
         // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
         // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
 
@@ -117,6 +135,13 @@ namespace LYBT.Desktop.Patients.ViewModels
             DeleteCommand = new DelegateCommand<PatientDto>(async patient => await DeletePatientAsync(patient), CanExecutePatientCommand);
             ToggleStatusCommand = new DelegateCommand<PatientDto>(async patient => await ToggleStatusAsync(patient), CanExecutePatientCommand);
             ViewDetailsCommand = new DelegateCommand<PatientDto>(async patient => await ViewDetailsAsync(patient), CanExecutePatientCommand);
+            
+            // 初始化搜索和分页命令
+            SearchCommand = new DelegateCommand(async () => await SearchManager.ExecuteSearchAsync());
+            FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
+            PreviousPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToPreviousPageAsync());
+            NextPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToNextPageAsync());
+            LastPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToLastPageAsync());
             
             // UltraThink v2.0: 删除批量操作命令初始化 - 20人以下小诊所不需要复杂的批量操作
         }

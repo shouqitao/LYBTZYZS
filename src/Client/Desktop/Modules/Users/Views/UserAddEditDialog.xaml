@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="{Binding WindowTitle}" 
+        Title="{Binding Title}" 
         Height="450" Width="500"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
@@ -45,7 +45,7 @@
         </Grid.RowDefinitions>
 
         <!-- 标题 -->
-        <TextBlock Grid.Row="0" Text="{Binding WindowTitle}" 
+        <TextBlock Grid.Row="0" Text="{Binding Title}" 
                    FontSize="18" FontWeight="Bold" 
                    HorizontalAlignment="Center" 
                    Margin="0,0,0,20"/>
@@ -116,9 +116,9 @@
                       Margin="0,0,0,10"
                       Style="{StaticResource InvertedBooleanToVisibilityStyle}"/>
 
-            <!-- 验证消息 -->
+            <!-- 错误消息 -->
             <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
-                       Text="{Binding ValidationMessage}"
+                       Text="{Binding ErrorMessage}"
                        Foreground="Red"
                        TextWrapping="Wrap"
                        Margin="0,10,0,0">
@@ -126,10 +126,10 @@
                     <Style TargetType="TextBlock">
                         <Setter Property="Visibility" Value="Visible"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding ValidationMessage}" Value="">
+                            <DataTrigger Binding="{Binding ErrorMessage}" Value="">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding ValidationMessage}" Value="{x:Null}">
+                            <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
                         </Style.Triggers>

@@ -79,6 +79,9 @@ namespace LYBT.Desktop.Users.ViewModels
             set => SetProperty(ref _isActive, value);
         }
 
+        /// <summary>是否是新用户（用于界面显示控制）</summary>
+        public bool IsNewUser => !_isEditMode;
+
         /// <summary>选中的角色</summary>
         public RoleItem? SelectedRole
         {

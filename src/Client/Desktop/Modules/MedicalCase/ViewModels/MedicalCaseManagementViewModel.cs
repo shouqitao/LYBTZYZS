@@ -28,25 +28,50 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Properties
 
+        private string _searchKeyword = string.Empty;
         /// <summary>
         /// 搜索关键词（患者姓名或案例编号）
         /// </summary>
-        public string SearchKeyword { get; set; } = string.Empty;
+        public string SearchKeyword
+        {
+            get => _searchKeyword;
+            set => SetProperty(ref _searchKeyword, value);
+        }
 
+        private string _filterStatus = "全部状态";
         /// <summary>
         /// 过滤状态
         /// </summary>
-        public string FilterStatus { get; set; } = "全部状态";
+        public string FilterStatus
+        {
+            get => _filterStatus;
+            set => SetProperty(ref _filterStatus, value);
+        }
 
+        private DateTime? _startDate;
         /// <summary>
         /// 开始日期
         /// </summary>
-        public DateTime? StartDate { get; set; }
+        public DateTime? StartDate
+        {
+            get => _startDate;
+            set => SetProperty(ref _startDate, value);
+        }
 
+        private DateTime? _endDate;
         /// <summary>
         /// 结束日期
         /// </summary>
-        public DateTime? EndDate { get; set; }
+        public DateTime? EndDate
+        {
+            get => _endDate;
+            set => SetProperty(ref _endDate, value);
+        }
+
+        // 暴露基类的分页和搜索属性供XAML绑定
+        public int CurrentPage => PaginationCoordinator.CurrentPage;
+        public int TotalPages => PaginationCoordinator.TotalPages;
+        public string StatusText => $"共 {PaginationCoordinator.TotalCount} 条记录";
 
         #endregion
 
@@ -60,6 +85,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public DelegateCommand<MedicalCaseDto> ViewConsultationCommand { get; private set; }
         public DelegateCommand<MedicalCaseDto> PrintCommand { get; private set; }
         public DelegateCommand<MedicalCaseDto> DeleteCommand { get; private set; }
+
+        // 分页命令
+        public DelegateCommand FirstPageCommand { get; private set; }
+        public DelegateCommand PreviousPageCommand { get; private set; }
+        public DelegateCommand NextPageCommand { get; private set; }
+        public DelegateCommand LastPageCommand { get; private set; }
 
         #endregion
 
@@ -85,12 +116,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             base.InitializeCommands();
             
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
+            RefreshCommand = new DelegateCommand(async () => await RefreshDataAsync());
             AddCommand = new DelegateCommand(async () => await AddCaseAsync());
             ViewDetailsCommand = new DelegateCommand<MedicalCaseDto>(async dto => await ViewDetailsAsync(dto));
             EditCommand = new DelegateCommand<MedicalCaseDto>(async dto => await EditCaseAsync(dto));
             ViewConsultationCommand = new DelegateCommand<MedicalCaseDto>(async dto => await ViewConsultationAsync(dto));
             PrintCommand = new DelegateCommand<MedicalCaseDto>(async dto => await PrintCaseAsync(dto));
             DeleteCommand = new DelegateCommand<MedicalCaseDto>(async dto => await DeleteCaseAsync(dto));
+            
+            // 初始化分页命令
+            FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
+            PreviousPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToPreviousPageAsync());
+            NextPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToNextPageAsync());
+            LastPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToLastPageAsync());
         }
 
         private void InitializeData()
@@ -98,6 +136,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // 设置默认的日期范围
             EndDate = DateTime.Today;
             StartDate = DateTime.Today.AddMonths(-1);
+            FilterStatus = "全部状态";
             
             // 加载数据
             _ = Task.Run(async () => await RefreshDataAsync());

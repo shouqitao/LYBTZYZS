@@ -62,6 +62,22 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
+        // 暴露基类的搜索和分页属性供XAML绑定
+        public string SearchKeyword
+        {
+            get => SearchManager.SearchKeyword;
+            set => SearchManager.SearchKeyword = value;
+        }
+
+        public int CurrentPage => PaginationCoordinator.CurrentPage;
+        public int TotalPages => PaginationCoordinator.TotalPages;
+        public DelegateCommand FirstPageCommand { get; private set; }
+        public DelegateCommand PreviousPageCommand { get; private set; }
+        public DelegateCommand NextPageCommand { get; private set; }
+        public DelegateCommand LastPageCommand { get; private set; }
+
+        public string StatusText => $"共 {PaginationCoordinator.TotalCount} 条记录";
+
         // UltraThink v2.0: 删除分类筛选功能 - 20人以下小诊所不需要复杂的分类筛选
         // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
         // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
@@ -77,9 +93,16 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand<FormulaDto> ToggleStatusCommand { get; private set; } = null!;
         public DelegateCommand ExportCommand { get; private set; } = null!;
         public DelegateCommand ImportCommand { get; private set; } = null!;
+        
+        // XAML中的命令绑定别名 - 为了与XAML绑定名称一致
+        public DelegateCommand SearchCommand { get; private set; } = null!;
+        public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
+        public DelegateCommand ImportTemplatesCommand { get; private set; } = null!;
+        public DelegateCommand ExportTemplateCommand { get; private set; } = null!;
+        public DelegateCommand AddFormulaCommand { get; private set; } = null!;
+        public DelegateCommand<FormulaDto> CopyCommand { get; private set; } = null!;
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
-        // - CopyCommand: 复制验方功能过度设计，医生直接新建即可
         // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
         // - ClearSelectionCommand/SelectAllCommand: 多选功能过度设计
 
@@ -124,6 +147,20 @@ namespace LYBT.Desktop.Formula.ViewModels
             
             ExportCommand = new DelegateCommand(async () => await ExportFormulasAsync());
             ImportCommand = new DelegateCommand(async () => await ImportFormulasAsync());
+            
+            // XAML绑定别名命令初始化 - 指向相同的实现
+            SearchCommand = new DelegateCommand(async () => await SearchManager.ExecuteSearchAsync());
+            ClearFiltersCommand = new DelegateCommand(async () => await ClearFiltersAsync());
+            ImportTemplatesCommand = ImportCommand; // 指向同一个导入命令
+            ExportTemplateCommand = ExportCommand; // 指向同一个导出命令  
+            AddFormulaCommand = AddCommand; // 指向同一个添加命令
+            CopyCommand = new DelegateCommand<FormulaDto>(async formula => await CopyFormulaAsync(formula), CanExecuteFormulaCommand);
+            
+            // 初始化分页命令
+            FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
+            PreviousPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToPreviousPageAsync());
+            NextPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToNextPageAsync());
+            LastPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToLastPageAsync());
             
             // UltraThink v2.0: 删除过度设计功能的命令初始化
         }
@@ -355,6 +392,45 @@ namespace LYBT.Desktop.Formula.ViewModels
                 LogError(ex, "导出验方失败");
                 ShowError($"导出验方失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"导出验方失败: {ex.Message}", "错误");
+            }
+        }
+
+        private async Task ClearFiltersAsync()
+        {
+            try
+            {
+                // 清空搜索关键词
+                SearchManager.SearchKeyword = string.Empty;
+                
+                // 刷新数据
+                await RefreshDataAsync();
+                
+                await _dialogService.ShowSuccessAsync("筛选条件已清空", "成功");
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "清空筛选条件失败");
+                ShowError($"清空筛选条件失败: {ex.Message}");
+                await _dialogService.ShowErrorAsync($"清空筛选条件失败: {ex.Message}", "错误");
+            }
+        }
+
+        private async Task CopyFormulaAsync(FormulaDto formula)
+        {
+            if (formula == null) return;
+            
+            try
+            {
+                // 这里应该实现验方复制逻辑
+                await _dialogService.ShowInformationAsync(
+                    $"验方复制功能：\n\n将复制验方 '{formula.Name}'\n\n验方复制功能将在后续版本中提供\n\n当前建议：\n• 查看现有验方详情\n• 手动创建相似验方\n• 参考验方组成和配比", 
+                    "复制功能说明");
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "复制验方失败: {FormulaId}", formula.Id);
+                ShowError($"复制验方失败: {ex.Message}");
+                await _dialogService.ShowErrorAsync($"复制验方失败: {ex.Message}", "错误");
             }
         }
 
