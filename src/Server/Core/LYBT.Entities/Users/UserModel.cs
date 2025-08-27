@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Enums;
+﻿using LYBT.Shared.Models.Enums;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -89,6 +89,27 @@ namespace LYBT.Entities.Users
         [DisplayName("简介")]
         [StringLength(1000)]
         public string? Introduction { get; set; }
+
+        // ==== 基础时间字段 ====
+
+        /// <summary>创建时间</summary>
+        [DisplayName("创建时间")]
+        public DateTime CreatedTime { get; set; } = DateTime.Now;
+
+        /// <summary>最后更新时间</summary>
+        [DisplayName("更新时间")]
+        public DateTime? UpdateTime { get; set; }
+
+        /// <summary>最后登录时间</summary>
+        [DisplayName("最后登录时间")]
+        public DateTime? LastLoginTime { get; set; }
+
+        // ==== 扩展字段 ====
+
+        /// <summary>备注</summary>
+        [DisplayName("备注")]
+        [StringLength(500)]
+        public string? Remark { get; set; }
     }
 
 }

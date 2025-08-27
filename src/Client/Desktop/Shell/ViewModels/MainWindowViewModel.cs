@@ -171,13 +171,20 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// </summary>
         private async Task CheckLoginStatusAsync()
         {
+            System.Diagnostics.Debug.WriteLine("🔍 CheckLoginStatusAsync 开始");
             try
             {
-                if (_servicesFacade.AuthenticationService.IsLoggedIn)
+                var isLoggedIn = _servicesFacade.AuthenticationService.IsLoggedIn;
+                System.Diagnostics.Debug.WriteLine($"🔍 AuthenticationService.IsLoggedIn = {isLoggedIn}");
+                
+                if (isLoggedIn)
                 {
+                    System.Diagnostics.Debug.WriteLine("🔍 尝试获取当前用户...");
                     var user = await _servicesFacade.AuthenticationService.GetCurrentUserAsync();
+                    
                     if (user != null)
                     {
+                        System.Diagnostics.Debug.WriteLine($"✅ 获取到当前用户: {user.Username} - {user.RealName}");
                         CurrentUser = ConvertToUserDto(user);
                         IsLoggedIn = true;
                         
@@ -185,15 +192,25 @@ namespace LYBT.Desktop.Shell.ViewModels
                         TestApiCommand.RaiseCanExecuteChanged();
                         ShowControlExamplesCommand.RaiseCanExecuteChanged();
                         
+                        System.Diagnostics.Debug.WriteLine("🚀 准备加载主界面内容...");
                         LoadMainContent();
                         return;
                     }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("❌ GetCurrentUserAsync 返回null");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ 用户未登录，显示登录界面");
                 }
                 
                 ShowLoginDialog();
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"💥 CheckLoginStatusAsync 异常: {ex.Message}");
                 await _servicesFacade.CustomDialogService.ShowErrorAsync($"检查登录状态失败：{ex.Message}", "错误");
                 ShowLoginDialog();
             }

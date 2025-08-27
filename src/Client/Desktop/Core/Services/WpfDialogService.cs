@@ -33,6 +33,18 @@ namespace LYBT.Desktop.Core.Services
             
             // 初始化基础对话框注册
             InitializeDefaultDialogs();
+            
+            // UltraThink修复：调用业务对话框注册Action
+            try
+            {
+                var businessDialogRegistrar = _container.Resolve<Action<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService>>();
+                businessDialogRegistrar?.Invoke(this);
+                _logger.LogDebug("业务对话框注册完成，当前共注册 {Count} 个对话框", _dialogRegistry.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "注册业务对话框时发生警告，将使用基础对话框功能");
+            }
         }
 
         /// <summary>

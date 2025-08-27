@@ -42,14 +42,21 @@ namespace LYBT.Desktop.Users.Services
                     return ServiceResult<UserDto>.Failure("用户ID不能为空");
                 }
                 
-                // UltraThink v2.0: 调用Refit API客户端
+                // UltraThink v2.0: 调用Refit API客户端，处理ApiResponse包装格式
                 var apiResponse = await _apiService.GetUserByIdAsync(id);
                 if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
                     return ServiceResult<UserDto>.Failure("获取用户详情失败");
                 }
                 
-                return ServiceResult<UserDto>.Success(apiResponse.Content);
+                // 手动解包ApiResponse包装格式
+                var wrappedResponse = apiResponse.Content;
+                if (!wrappedResponse.Success || wrappedResponse.Data == null)
+                {
+                    return ServiceResult<UserDto>.Failure(wrappedResponse.Message ?? "获取用户详情失败");
+                }
+                
+                return ServiceResult<UserDto>.Success(wrappedResponse.Data);
             }
             catch (Exception ex)
             {
@@ -62,6 +69,8 @@ namespace LYBT.Desktop.Users.Services
         /// </summary>
         public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
         {
+            System.Diagnostics.Debug.WriteLine($"🔄 UserModule.GetPagedAsync 开始: PageIndex={query.PageIndex}, PageSize={query.PageSize}, Keyword='{query.Keyword}'");
+            
             try
             {
                 // 转换为基础查询DTO
@@ -72,25 +81,60 @@ namespace LYBT.Desktop.Users.Services
                     Keyword = query.Keyword
                 };
                 
-                // UltraThink v2.0: 调用Refit API客户端
+                System.Diagnostics.Debug.WriteLine($"🌐 准备调用API: page={baseQuery.PageIndex}, pageSize={baseQuery.PageSize}, keyword='{baseQuery.Keyword}'");
+                
+                // UltraThink v2.0: 调用Refit API客户端，处理ApiResponse包装格式
                 var apiResponse = await _apiService.GetUsersAsync(
                     page: baseQuery.PageIndex,
                     pageSize: baseQuery.PageSize,
                     keyword: baseQuery.Keyword);
                 
-                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                System.Diagnostics.Debug.WriteLine($"🌐 API响应: StatusCode={apiResponse.StatusCode}, IsSuccess={apiResponse.IsSuccessStatusCode}");
+                
+                if (!apiResponse.IsSuccessStatusCode)
                 {
-                    return ServiceResult<PagedResult<UserDto>>.Failure("获取用户列表失败");
+                    var errorMsg = $"API调用失败: {apiResponse.StatusCode} - {apiResponse.ReasonPhrase}";
+                    System.Diagnostics.Debug.WriteLine($"❌ {errorMsg}");
+                    return ServiceResult<PagedResult<UserDto>>.Failure(errorMsg);
                 }
                 
-                // UltraThink v2.0: API已返回标准PagedResult格式，直接使用
-                var result = apiResponse.Content;
+                if (apiResponse.Content == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ API响应内容为空");
+                    return ServiceResult<PagedResult<UserDto>>.Failure("API响应内容为空");
+                }
+                
+                // UltraThink v2.0: 手动解包ApiResponse包装格式
+                var wrappedResponse = apiResponse.Content;
+                System.Diagnostics.Debug.WriteLine($"🔍 解包响应: Success={wrappedResponse.Success}, Message='{wrappedResponse.Message}'");
+                
+                if (!wrappedResponse.Success || wrappedResponse.Data == null)
+                {
+                    var errorMsg = wrappedResponse.Message ?? "获取用户列表失败";
+                    System.Diagnostics.Debug.WriteLine($"❌ {errorMsg}");
+                    return ServiceResult<PagedResult<UserDto>>.Failure(errorMsg);
+                }
+                
+                var result = wrappedResponse.Data;
+                var totalCount = result?.TotalCount ?? 0;
+                var itemCount = result?.Items?.Count ?? 0;
+                
+                System.Diagnostics.Debug.WriteLine($"✅ UserModule.GetPagedAsync 成功: 总数={totalCount}, 当前页项目数={itemCount}");
+                
+                if (itemCount > 0 && result.Items != null)
+                {
+                    var firstUser = result.Items.First();
+                    System.Diagnostics.Debug.WriteLine($"📄 第一个用户: {firstUser.Username} - {firstUser.RealName}");
+                }
                 
                 return ServiceResult<PagedResult<UserDto>>.Success(result);
             }
             catch (Exception ex)
             {
-                return ServiceResult<PagedResult<UserDto>>.Failure($"获取用户列表异常: {ex.Message}");
+                var errorMsg = $"获取用户列表异常: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"💥 UserModule.GetPagedAsync 异常: {errorMsg}");
+                System.Diagnostics.Debug.WriteLine($"💥 异常堆栈: {ex}");
+                return ServiceResult<PagedResult<UserDto>>.Failure(errorMsg);
             }
         }
         
@@ -128,14 +172,21 @@ namespace LYBT.Desktop.Users.Services
                     }
                 }
                 
-                // UltraThink v2.0: 直接调用Refit API客户端使用UserMutationDto
+                // UltraThink v2.0: 调用Refit API客户端，处理ApiResponse包装格式
                 var apiResponse = await _apiService.CreateUserAsync(dto);
                 if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
                     return ServiceResult<UserDto>.Failure("创建用户失败");
                 }
                 
-                return ServiceResult<UserDto>.Success(apiResponse.Content);
+                // 手动解包ApiResponse包装格式
+                var wrappedResponse = apiResponse.Content;
+                if (!wrappedResponse.Success || wrappedResponse.Data == null)
+                {
+                    return ServiceResult<UserDto>.Failure(wrappedResponse.Message ?? "创建用户失败");
+                }
+                
+                return ServiceResult<UserDto>.Success(wrappedResponse.Data);
             }
             catch (Exception ex)
             {
@@ -182,14 +233,21 @@ namespace LYBT.Desktop.Users.Services
                     }
                 }
                 
-                // UltraThink v2.0: 直接调用Refit API客户端使用UserMutationDto
+                // UltraThink v2.0: 调用Refit API客户端，处理ApiResponse包装格式
                 var apiResponse = await _apiService.UpdateUserAsync(dto.Id, dto);
                 if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
                 {
                     return ServiceResult<UserDto>.Failure("更新用户失败");
                 }
                 
-                return ServiceResult<UserDto>.Success(apiResponse.Content);
+                // 手动解包ApiResponse包装格式
+                var wrappedResponse = apiResponse.Content;
+                if (!wrappedResponse.Success || wrappedResponse.Data == null)
+                {
+                    return ServiceResult<UserDto>.Failure(wrappedResponse.Message ?? "更新用户失败");
+                }
+                
+                return ServiceResult<UserDto>.Success(wrappedResponse.Data);
             }
             catch (Exception ex)
             {

@@ -59,9 +59,6 @@ namespace LYBT.Module.Users.Repositories
         {
             var dbSet = _context.Users.AsQueryable();
 
-            // 隐藏内置的sysadmin用户
-            dbSet = dbSet.Where(u => u.Username != "sysadmin");
-
             // 权限控制：非管理员只能看到启用的用户
             if (!includeDisabled)
             {

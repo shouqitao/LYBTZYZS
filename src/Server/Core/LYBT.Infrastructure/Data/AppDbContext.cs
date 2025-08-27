@@ -113,8 +113,9 @@ namespace LYBT.Infrastructure.Data
             entity.Property(u => u.PinYinCode).HasMaxLength(50);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
             // UltraThink v2.0: Remark字段已删除（简化用户管理）
-            // 配置Status枚举字段
+            // 配置枚举字段
             entity.Property(u => u.Status).HasConversion<int>();
+            entity.Property(u => u.Role).HasConversion<int>();
 
         }
 

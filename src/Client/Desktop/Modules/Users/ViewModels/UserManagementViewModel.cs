@@ -160,15 +160,46 @@ namespace LYBT.Desktop.Users.ViewModels
 
         protected override async Task<ServiceResult<PagedResult<UserDto>>> LoadDataAsync(PagedQueryBaseDto request)
         {
-            // 转换为用户查询DTO
-            var userQuery = new UserPagedQueryDto
+            System.Diagnostics.Debug.WriteLine($"🔄 LoadDataAsync 开始: CurrentPage={request.CurrentPage}, PageSize={request.PageSize}, SearchKeyword='{request.SearchKeyword}'");
+            
+            try
             {
-                PageIndex = request.CurrentPage,
-                PageSize = request.PageSize,
-                Keyword = request.SearchKeyword
-            };
+                // 转换为用户查询DTO
+                var userQuery = new UserPagedQueryDto
+                {
+                    PageIndex = request.CurrentPage,
+                    PageSize = request.PageSize,
+                    Keyword = request.SearchKeyword
+                };
 
-            return await _userService.GetPagedAsync(userQuery);
+                System.Diagnostics.Debug.WriteLine($"🔄 调用 _userService.GetPagedAsync...");
+                var result = await _userService.GetPagedAsync(userQuery);
+                
+                if (result.IsSuccess)
+                {
+                    var totalCount = result.Data?.TotalCount ?? 0;
+                    var itemCount = result.Data?.Items?.Count ?? 0;
+                    System.Diagnostics.Debug.WriteLine($"✅ LoadDataAsync 成功: 总数={totalCount}, 当前页项目数={itemCount}");
+                    
+                    if (itemCount > 0)
+                    {
+                        var firstUser = result.Data.Items.First();
+                        System.Diagnostics.Debug.WriteLine($"📄 第一个用户: {firstUser.Username} - {firstUser.RealName}");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ LoadDataAsync 失败: {result.ErrorMessage}");
+                }
+                
+                return result;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"💥 LoadDataAsync 异常: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"💥 异常详情: {ex}");
+                throw;
+            }
         }
 
         // UltraThink v2.0: 删除复杂的ViewModel转换和选择状态管理
