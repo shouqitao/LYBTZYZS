@@ -48,7 +48,7 @@ namespace LYBT.Entities.Users
 
         /// <summary>用户角色</summary>
         [DisplayName("角色")]
-        public UserRole Role { get; set; } = UserRole.Receptionist;
+        public UserRole Role { get; set; } = UserRole.Doctor;
 
         /// <summary>用户状态</summary>
         [DisplayName("状态")]
