@@ -22,8 +22,7 @@ namespace LYBT.Desktop.Services
     /// </summary>
     public class ErrorHandlingService : IErrorHandlingService
     {
-        // private readonly ICommonDialogService _dialogService; // 接口不存在：ICommonDialogService
-        // private readonly IUserSessionManager _sessionManager; // 接口不存在：IUserSessionManager
+        private readonly ICustomDialogService? _customDialogService;
         
         // 错误消息映射表
         private readonly Dictionary<Type, Func<Exception, string>> _messageMapping;
@@ -34,10 +33,14 @@ namespace LYBT.Desktop.Services
         public event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
         public event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
 
-        public ErrorHandlingService() // 简化构造函数，移除不存在的接口参数
+        /// <summary>
+        /// 自定义对话框服务
+        /// </summary>
+        public ICustomDialogService? CustomDialogService => _customDialogService;
+
+        public ErrorHandlingService(ICustomDialogService? customDialogService = null)
         {
-            // _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService)); // 接口不存在
-            // _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager)); // 接口不存在
+            _customDialogService = customDialogService;
 
             _messageMapping = InitializeMessageMapping();
             _categoryMapping = InitializeCategoryMapping();

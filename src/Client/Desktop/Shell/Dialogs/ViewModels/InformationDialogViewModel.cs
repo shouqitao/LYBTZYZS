@@ -1,8 +1,10 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System;
+using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Mvvm;
 using LYBT.Desktop.Core.Enums;
+using LYBT.Desktop.Core.ViewModels;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {

@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Core;
-using LYBT.Shared.Models.Contracts.Auth;
+using AuthContracts = LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Desktop.Core.Redux.States;
 using LYBT.Shared.Models.Contracts.Users;
 
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         /// <param name="request">登录请求</param>
         /// <returns>登录响应</returns>
-        Task<ServiceResult<LYBT.Shared.Models.Contracts.Auth.LoginResponse>> LoginAsync(LYBT.Shared.Models.Contracts.Auth.LoginRequest request);
+        Task<ServiceResult<AuthContracts.LoginResponse>> LoginAsync(AuthContracts.LoginRequest request);
 
         /// <summary>
         /// 用户登出

@@ -4,6 +4,8 @@ using LYBT.Desktop.Core.Redux.States;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {
@@ -152,34 +154,14 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         ICustomDialogService CustomDialogService { get; }
 
         /// <summary>
-        /// 工作台路由器
-        /// </summary>
-        IWorkbenchRouter WorkbenchRouter { get; }
-
-        /// <summary>
-        /// UI性能优化器
-        /// </summary>
-        Performance.IUIPerformanceOptimizer UIPerformanceOptimizer { get; }
-
-        /// <summary>
-        /// 模块加载协调器
-        /// </summary>
-        Performance.IModuleLoadingCoordinator ModuleLoadingCoordinator { get; }
-
-        /// <summary>
-        /// 用户服务（延迟加载）
+        /// 用户服务
         /// </summary>
         IUserService UserService { get; }
 
         /// <summary>
-        /// 患者服务（延迟加载）
+        /// 患者服务
         /// </summary>
         IPatientService PatientService { get; }
-
-        /// <summary>
-        /// API测试服务（可选，延迟加载）
-        /// </summary>
-        ApiTestService? ApiTestService { get; }
     }
 }
 }

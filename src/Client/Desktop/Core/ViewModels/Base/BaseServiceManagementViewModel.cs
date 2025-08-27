@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Common;
+using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using Prism.Events;
 
@@ -118,47 +119,47 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 搜索命令
         /// </summary>
-        public DelegateCommand SearchCommand { get; }
+        public DelegateCommand SearchCommand { get; set; }
 
         /// <summary>
         /// 刷新命令
         /// </summary>
-        public new DelegateCommand RefreshCommand { get; }
+        public new DelegateCommand RefreshCommand { get; set; }
 
         /// <summary>
         /// 添加命令
         /// </summary>
-        public DelegateCommand AddCommand { get; }
+        public DelegateCommand AddCommand { get; set; }
 
         /// <summary>
         /// 编辑命令
         /// </summary>
-        public DelegateCommand<TModel> EditCommand { get; }
+        public DelegateCommand<TModel> EditCommand { get; set; }
 
         /// <summary>
         /// 删除命令
         /// </summary>
-        public DelegateCommand<TModel> DeleteCommand { get; }
+        public DelegateCommand<TModel> DeleteCommand { get; set; }
 
         /// <summary>
         /// 第一页命令
         /// </summary>
-        public DelegateCommand FirstPageCommand { get; }
+        public DelegateCommand FirstPageCommand { get; set; }
 
         /// <summary>
         /// 上一页命令
         /// </summary>
-        public DelegateCommand PreviousPageCommand { get; }
+        public DelegateCommand PreviousPageCommand { get; set; }
 
         /// <summary>
         /// 下一页命令
         /// </summary>
-        public DelegateCommand NextPageCommand { get; }
+        public DelegateCommand NextPageCommand { get; set; }
 
         /// <summary>
         /// 最后一页命令
         /// </summary>
-        public DelegateCommand LastPageCommand { get; }
+        public DelegateCommand LastPageCommand { get; set; }
 
         #endregion
 

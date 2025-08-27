@@ -10,6 +10,7 @@ using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Core.ViewModels;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -85,7 +86,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 选中的中药材信息（用于返回结果）
         /// </summary>
-        public PrescriptionHerbItemDto? Result { get; private set; }
+        public PrescriptionItemDto? Result { get; private set; }
 
         public HerbSelectionDialogViewModel(IHerbService herbService) : base()
         {
@@ -165,7 +166,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             if (SelectedHerb == null)
                 return Task.FromResult(false);
 
-            Result = new PrescriptionHerbItemDto
+            Result = new PrescriptionItemDto
             {
                 HerbId = SelectedHerb.Id,
                 HerbName = SelectedHerb.Name,

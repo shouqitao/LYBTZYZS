@@ -107,5 +107,10 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// 严重错误发生事件
         /// </summary>
         event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
+
+        /// <summary>
+        /// 自定义对话框服务
+        /// </summary>
+        ICustomDialogService? CustomDialogService { get; }
     }
 }

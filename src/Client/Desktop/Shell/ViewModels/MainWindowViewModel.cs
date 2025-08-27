@@ -29,17 +29,8 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// </summary>
     public class MainWindowViewModel : ServiceViewModel
     {
-        private readonly LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService _commonDialogService;
-
-        private readonly LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService _authService;
+        private readonly IMainWindowServicesFacade _servicesFacade;
         private readonly IRegionManager _regionManager;
-        private readonly LYBT.Desktop.Core.Interfaces.Services.IPermissionService _permissionService;
-        private readonly IUserService _userService;
-        private readonly IPatientService _patientService;
-        private readonly IWorkbenchRouter _workbenchRouter;
-        private readonly ApiTestService _apiTestService;
-        private readonly LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer _uiOptimizer;
-        private readonly LYBT.Desktop.Core.Services.Performance.IModuleLoadingCoordinator _moduleLoadingCoordinator;
 
         private string _title = SystemConstants.SystemTitle;
         private UserDto? _currentUser;
@@ -91,17 +82,8 @@ namespace LYBT.Desktop.Shell.ViewModels
             IErrorHandlingService errorHandlingService)
             : base(eventAggregator, errorHandlingService)
         {
-            // 使用服务门面获取所有依赖服务
-            _commonDialogService = servicesFacade.CustomDialogService;
-            _regionManager = regionManager;
-            _authService = servicesFacade.AuthenticationService;
-            _permissionService = servicesFacade.PermissionService;
-            _userService = servicesFacade.UserService;
-            _patientService = servicesFacade.PatientService;
-            _workbenchRouter = servicesFacade.WorkbenchRouter;
-            _apiTestService = servicesFacade.ApiTestService ?? new ApiTestService(null!, null!); // 提供默认实例
-            _uiOptimizer = servicesFacade.UIPerformanceOptimizer;
-            _moduleLoadingCoordinator = servicesFacade.ModuleLoadingCoordinator;
+            _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
+            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
             // 初始化时钟计时器
             _clockTimer = new System.Windows.Threading.DispatcherTimer
@@ -139,7 +121,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// </summary>
         private async Task ExecuteLogoutAsync()
         {
-            var result = await _commonDialogService.ShowConfirmationAsync("确定要退出登录吗？", "退出确认");
+            var result = await _servicesFacade.CustomDialogService.ShowConfirmationAsync("确定要退出登录吗？", "退出确认");
             if (result)
             {
                 try
@@ -149,18 +131,15 @@ namespace LYBT.Desktop.Shell.ViewModels
                     IsLoggedIn = false;
                     Title = "凌隐宝堂中医诊所诊疗系统";
 
-                    // 批量UI更新 - 立即清理界面
-                    _uiOptimizer.BatchUIUpdates(() =>
+                    // 立即清理界面
+                    // 清除内容区域
+                    if (_regionManager.Regions.ContainsRegionWithName(RegionNames.ContentRegion))
                     {
-                        // 清除内容区域
-                        if (_regionManager.Regions.ContainsRegionWithName(RegionNames.ContentRegion))
-                        {
-                            _regionManager.Regions[RegionNames.ContentRegion].RemoveAll();
-                        }
-                        
-                        // 立即显示登录界面
-                        ShowLoginDialog();
-                    });
+                        _regionManager.Regions[RegionNames.ContentRegion].RemoveAll();
+                    }
+                    
+                    // 立即显示登录界面
+                    ShowLoginDialog();
 
                     // 后台异步处理网络请求和事件，不阻塞UI
                     _ = Task.Run(async () =>
@@ -168,7 +147,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                         try
                         {
                             // 网络登出请求
-                            await _authService.LogoutAsync();
+                            await _servicesFacade.AuthenticationService.LogoutAsync();
                             
                             // 发布登出事件以清除登录状态消息
                             EventAggregator.GetEvent<LogoutEvent>().Publish();
@@ -182,7 +161,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    await _commonDialogService.ShowErrorAsync($"退出登录失败：{ex.Message}", "错误");
+                    await _servicesFacade.CustomDialogService.ShowErrorAsync($"退出登录失败：{ex.Message}", "错误");
                 }
             }
         }
@@ -192,24 +171,20 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// </summary>
         private async Task CheckLoginStatusAsync()
         {
-            using var performanceSession = _uiOptimizer.StartUIPerformanceSession("启动登录检查");
             
             try
             {
-                if (_authService.IsLoggedIn)
+                if (_servicesFacade.AuthenticationService.IsLoggedIn)
                 {
-                    var user = await _authService.GetCurrentUserAsync();
+                    var user = await _servicesFacade.AuthenticationService.GetCurrentUserAsync();
                     if (user != null)
                     {
                         CurrentUser = ConvertToUserDto(user);
                         IsLoggedIn = true;
                         
-                        // 批量UI更新以提升性能
-                        _uiOptimizer.BatchUIUpdates(() =>
-                        {
-                            TestApiCommand.RaiseCanExecuteChanged();
-                            ShowControlExamplesCommand.RaiseCanExecuteChanged();
-                        });
+                        // 更新命令状态
+                        TestApiCommand.RaiseCanExecuteChanged();
+                        ShowControlExamplesCommand.RaiseCanExecuteChanged();
                         
                         LoadMainContent();
                         return;
@@ -220,7 +195,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"检查登录状态失败：{ex.Message}", "错误");
+                await _servicesFacade.CustomDialogService.ShowErrorAsync($"检查登录状态失败：{ex.Message}", "错误");
                 ShowLoginDialog();
             }
         }
@@ -251,7 +226,6 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// </summary>
         private void LoadMainContent()
         {
-            using var performanceSession = _uiOptimizer.StartUIPerformanceSession("主界面加载");
             
             if (CurrentUser == null)
             {
@@ -316,19 +290,16 @@ namespace LYBT.Desktop.Shell.ViewModels
 
             try
             {
-                // 批量UI更新 - 更新标题和清理登录区域
-                _uiOptimizer.BatchUIUpdates(() =>
+                // 更新标题和清理登录区域
+                Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
+                
+                // 修复: 不要清除ContentRegion，导航会自动替换内容
+                // 只清除登录区域，因为登录已完成
+                if (_regionManager.Regions.ContainsRegionWithName(RegionNames.LoginRegion))
                 {
-                    Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
-                    
-                    // 修复: 不要清除ContentRegion，导航会自动替换内容
-                    // 只清除登录区域，因为登录已完成
-                    if (_regionManager.Regions.ContainsRegionWithName(RegionNames.LoginRegion))
-                    {
-                        _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
-                        System.Diagnostics.Debug.WriteLine("✅ LoginRegion 已清理");
-                    }
-                });
+                    _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
+                    System.Diagnostics.Debug.WriteLine("✅ LoginRegion 已清理");
+                }
 
                 // 根据角色导航到对应的工作台主视图
                 System.Diagnostics.Debug.WriteLine($"🚀 开始导航到: {workbenchView}");
@@ -381,65 +352,14 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
         }
 
-        /// <summary>
-        /// UltraThink Phase 9: 启动智能模块预加载
-        /// </summary>
-        private async Task StartIntelligentModulePreloadingAsync(string userRole)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"UltraThink Phase 9: 开始为角色 {userRole} 预加载模块");
-                
-                // 使用模块加载协调器进行智能预加载
-                await _moduleLoadingCoordinator.PreloadModulesAsync(userRole);
-                
-                // 输出模块加载性能指标
-                var metrics = _moduleLoadingCoordinator.GetLoadingMetrics();
-                var loadedModules = metrics.Where(kvp => kvp.Value.LoadCount > 0).ToList();
-                
-                if (loadedModules.Any())
-                {
-                    System.Diagnostics.Debug.WriteLine($"UltraThink性能报告: 已加载 {loadedModules.Count} 个模块");
-                    foreach (var (moduleName, metric) in loadedModules)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"  - {moduleName}: {metric.InitializationTime.TotalMilliseconds:F0}ms");
-                    }
-                }
-
-                // 执行模块加载顺序优化
-                _moduleLoadingCoordinator.OptimizeModuleLoadingOrder();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"智能模块预加载失败: {ex.Message}");
-                // 不抛出异常，避免影响主界面加载
-            }
-        }
 
         /// <summary>
         /// 根据用户角色预加载相关数据
         /// </summary>
         private void StartDataPreloading(string userRole)
         {
-            // 根据用户角色预加载不同的数据
-            switch (userRole)
-            {
-                case "医生":
-                    // 医生角色预加载患者和验方数据
-                    _uiOptimizer.PreloadData(async () => 
-                    {
-                        return await _patientService.GetPagedAsync(new LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto { PageSize = 20 });
-                    }, "recent_patients", priority: 2);
-                    break;
-                    
-                case "管理员":
-                    // 管理员角色预加载用户和系统数据
-                    _uiOptimizer.PreloadData(async () => 
-                    {
-                        return await _userService.GetPagedAsync(new UserPagedQueryDto { PageSize = 50 });
-                    }, "all_users", priority: 2);
-                    break;
-            }
+            // 简化版本：目前不进行预加载，等待用户操作时再加载
+            System.Diagnostics.Debug.WriteLine($"用户角色: {userRole} - 已准备就绪");
         }
 
         /// <summary>
@@ -449,12 +369,11 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             try
             {
-                var result = await _apiTestService.RunFullApiTestAsync();
-                ApiTestService.ShowTestResult(result);
+                await _servicesFacade.CustomDialogService.ShowInformationAsync("API测试功能将在未来版本中实现", "提示");
             }
             catch (Exception ex)
             {
-                await _commonDialogService.ShowErrorAsync($"API测试失败: {ex.Message}", "错误");
+                await _servicesFacade.CustomDialogService.ShowErrorAsync($"API测试失败: {ex.Message}", "错误");
             }
         }
 

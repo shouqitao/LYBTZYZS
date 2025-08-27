@@ -123,7 +123,7 @@ namespace LYBT.Desktop.Core.ViewModels
         {
             try
             {
-                return Prism.Ioc.ContainerLocator.Container?.Resolve<IEventAggregator>() 
+                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator)) 
                     ?? new EventAggregator();
             }
             catch

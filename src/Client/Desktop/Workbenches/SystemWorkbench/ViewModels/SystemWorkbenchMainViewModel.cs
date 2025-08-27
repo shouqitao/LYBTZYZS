@@ -10,6 +10,8 @@ using Prism.Regions;
 using Prism.Events;
 using Prism.Commands;
 using Prism.Mvvm;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Workbench.Admin.ViewModels
 {

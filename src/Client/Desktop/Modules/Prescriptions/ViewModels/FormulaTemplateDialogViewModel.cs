@@ -12,6 +12,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 // // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility // Temporarily disabled due to Prism 9 compatibility
 using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Core.ViewModels;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -94,7 +95,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 IsLoading = true;
-                var result = await _formulaService.GetPagedAsync(new FormulaPagedQueryDto { PageSize = 100 });
+                var result = await _formulaService.GetPagedAsync(new FormulaQueryDto { PageSize = 100 });
                 if (result.IsSuccess && result.Data != null)
                 {
                     AvailableTemplates = new ObservableCollection<FormulaDto>(result.Data.Items);
@@ -124,7 +125,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 IsLoading = true;
-                var result = await _formulaService.GetPagedAsync(new FormulaPagedQueryDto 
+                var result = await _formulaService.GetPagedAsync(new FormulaQueryDto 
                 { 
                     Name = SearchText,
                     PageSize = 100 

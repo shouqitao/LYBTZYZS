@@ -32,6 +32,11 @@ namespace LYBT.Desktop.Core.Services
         public event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
         public event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
 
+        /// <summary>
+        /// 自定义对话框服务
+        /// </summary>
+        public ICustomDialogService? CustomDialogService => _baseService.CustomDialogService;
+
         public EnhancedErrorHandlingService(
             IErrorHandlingService baseService,
             ILogger<EnhancedErrorHandlingService> logger,

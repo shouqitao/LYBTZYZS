@@ -9,6 +9,8 @@ using Prism.Events;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
 using LYBT.Desktop.Workbench.Core;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Workbench.Consultation.ViewModels
 {
