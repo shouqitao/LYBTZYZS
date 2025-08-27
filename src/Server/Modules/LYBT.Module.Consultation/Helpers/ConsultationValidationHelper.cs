@@ -55,8 +55,8 @@ namespace LYBT.Module.Consultation.Helpers
                 AuscultationOlfaction = consultation.AuscultationOlfaction,
                 Inquiry = consultation.Inquiry,
                 Palpation = consultation.Palpation,
-                TCMDiagnosis = consultation.TCMDiagnosis,
-                TreatmentPrinciple = consultation.TreatmentPrinciple,
+                // 简化版：跳过复杂的中医诊断字段
+                // TCMDiagnosis 和 TreatmentPrinciple 已从DTO中移除
                 MedicalAdvice = consultation.MedicalAdvice,
                 StartTime = DateTime.Now, // 临时实现，ConsultationTime属性已删除
                 Remark = consultation.Remark
@@ -173,9 +173,9 @@ namespace LYBT.Module.Consultation.Helpers
             consultation.Inquiry = dto.Inquiry;
             consultation.Palpation = dto.Palpation;
 
-            // 更新诊断信息
-            consultation.TCMDiagnosis = dto.TCMDiagnosis;
-            consultation.TreatmentPrinciple = dto.TreatmentPrinciple;
+            // 简化版：跳过复杂诊断字段的更新
+            // 保留现有的中医诊断信息，不从前端更新
+            // consultation.TCMDiagnosis 和 consultation.TreatmentPrinciple 维持现有值
             consultation.MedicalAdvice = dto.MedicalAdvice;
             consultation.Remark = dto.Remark;
         }

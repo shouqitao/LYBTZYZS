@@ -1,190 +1,165 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Managers;
-using LYBT.Desktop.Core.Coordinators;
-using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
+using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Consultation;
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
     /// <summary>
-    /// 看诊记录管理视图模型 - UltraThink统一管理模块设计
-    /// 用于展示和管理所有的看诊记录
+    /// 看诊记录管理视图模型 - 简化版
+    /// 只负责显示和基本管理看诊记录，不包含复杂的流程控制
     /// </summary>
-    public class ConsultationManagementViewModel : NewBaseListViewModel<ConsultationDto>
+    public class ConsultationManagementViewModel : SessionAwareViewModel
     {
-        #region Fields
+        #region 服务依赖
 
-        private readonly ILogger<ConsultationManagementViewModel> _logger;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// 搜索关键词（患者姓名或病历号）
-        /// </summary>
-        public string SearchKeyword { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 过滤状态
-        /// </summary>
-        public string FilterStatus { get; set; } = "全部状态";
-
-        /// <summary>
-        /// 开始日期
-        /// </summary>
-        public DateTime? StartDate { get; set; }
-
-        /// <summary>
-        /// 结束日期
-        /// </summary>
-        public DateTime? EndDate { get; set; }
+        private readonly IConsultationService _consultationService;
 
         #endregion
 
-        #region Commands
+        #region 属性
 
-        public DelegateCommand SearchCommand { get; private set; }
-        public DelegateCommand RefreshCommand { get; private set; }
-        public DelegateCommand AddCommand { get; private set; }
-        public DelegateCommand<ConsultationDto> ViewDetailsCommand { get; private set; }
-        public DelegateCommand<ConsultationDto> EditCommand { get; private set; }
-        public DelegateCommand<ConsultationDto> ViewConsultationCommand { get; private set; }
-        public DelegateCommand<ConsultationDto> PrintCommand { get; private set; }
-        public DelegateCommand<ConsultationDto> DeleteCommand { get; private set; }
+        private ObservableCollection<ConsultationDto> _consultations = new();
+        public ObservableCollection<ConsultationDto> Consultations
+        {
+            get => _consultations;
+            set => SetProperty(ref _consultations, value);
+        }
+
+        private ConsultationDto? _selectedConsultation;
+        public ConsultationDto? SelectedConsultation
+        {
+            get => _selectedConsultation;
+            set => SetProperty(ref _selectedConsultation, value);
+        }
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
+        private string _searchKeyword = string.Empty;
+        public string SearchKeyword
+        {
+            get => _searchKeyword;
+            set => SetProperty(ref _searchKeyword, value);
+        }
 
         #endregion
 
-        #region Constructor
+        #region 命令
+
+        public ICommand LoadDataCommand { get; }
+        public ICommand SearchCommand { get; }
+        public ICommand RefreshCommand { get; }
+        public ICommand ViewDetailsCommand { get; }
+
+        #endregion
+
+        #region 构造函数
 
         public ConsultationManagementViewModel(
+            IConsultationService consultationService,
             ISessionManager sessionManager,
             INotificationService notificationService,
             ILogger<ConsultationManagementViewModel> logger)
             : base(sessionManager, notificationService, logger)
         {
-            _logger = logger;
-            
-            InitializeData();
+            _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
+
+            LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
+            SearchCommand = new DelegateCommand(async () => await SearchAsync());
+            RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
+            ViewDetailsCommand = new DelegateCommand(ViewDetails, () => SelectedConsultation != null)
+                .ObservesProperty(() => SelectedConsultation);
+
+            InitializeAsync();
         }
 
         #endregion
 
-        #region Methods
+        #region 初始化
 
-        protected override void InitializeCommands()
-        {
-            base.InitializeCommands();
-            
-            SearchCommand = new DelegateCommand(async () => await SearchAsync());
-            AddCommand = new DelegateCommand(async () => await AddConsultationAsync());
-            ViewDetailsCommand = new DelegateCommand<ConsultationDto>(async dto => await ViewDetailsAsync(dto));
-            EditCommand = new DelegateCommand<ConsultationDto>(async dto => await EditConsultationAsync(dto));
-            ViewConsultationCommand = new DelegateCommand<ConsultationDto>(async dto => await ViewConsultationAsync(dto));
-            PrintCommand = new DelegateCommand<ConsultationDto>(async dto => await PrintConsultationAsync(dto));
-            DeleteCommand = new DelegateCommand<ConsultationDto>(async dto => await DeleteConsultationAsync(dto));
-        }
-
-        private void InitializeData()
-        {
-            // 设置默认的日期范围
-            EndDate = DateTime.Today;
-            StartDate = DateTime.Today.AddMonths(-1);
-            
-            // 加载数据
-            _ = Task.Run(async () => await RefreshDataAsync());
-        }
-
-        protected override async Task<ServiceResult<PagedResult<ConsultationDto>>> LoadDataAsync(PagedQueryBaseDto request)
+        private async void InitializeAsync()
         {
             try
             {
-                _logger.LogInformation("加载看诊记录数据，页码: {CurrentPage}, 页大小: {PageSize}, 搜索关键词: {SearchKeyword}", 
-                    request.CurrentPage, request.PageSize, request.SearchKeyword);
-
-                // 模拟数据加载
-                await Task.Delay(500);
-                
-                // TODO: 从实际服务加载看诊记录数据
-                var items = new List<ConsultationDto>();
-                
-                var pagedResult = new PagedResult<ConsultationDto>(items, items.Count, request.CurrentPage, request.PageSize);
-
-                _logger.LogInformation("看诊记录管理数据加载完成，共 {Count} 条记录", items.Count);
-                return ServiceResult<PagedResult<ConsultationDto>>.Success(pagedResult);
+                await LoadDataAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载看诊记录数据失败");
-                return ServiceResult<PagedResult<ConsultationDto>>.Failure("加载数据失败", ex);
+                LogError(ex, "初始化看诊管理失败");
+            }
+        }
+
+        #endregion
+
+        #region 数据操作
+
+        private async Task LoadDataAsync()
+        {
+            try
+            {
+                IsLoading = true;
+                
+                var query = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto
+                {
+                    PageIndex = 1,
+                    PageSize = 100,
+                    Keyword = SearchKeyword
+                };
+
+                var result = await _consultationService.GetPagedAsync(query);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    Consultations.Clear();
+                    foreach (var consultation in result.Data.Items)
+                    {
+                        Consultations.Add(consultation);
+                    }
+                }
+                else
+                {
+                    ShowError($"加载数据失败: {result.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "加载看诊记录失败");
+                ShowError("加载数据失败，请重试");
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
         private async Task SearchAsync()
         {
-            _logger.LogInformation("搜索看诊记录: 关键词={SearchKeyword}, 状态={FilterStatus}", 
-                SearchKeyword, FilterStatus);
-            await RefreshDataAsync();
+            await LoadDataAsync();
         }
 
-        private async Task AddConsultationAsync()
+        private async Task RefreshAsync()
         {
-            _logger.LogInformation("新建看诊记录");
-            // TODO: 实现新建看诊记录逻辑
-            await Task.CompletedTask;
+            SearchKeyword = string.Empty;
+            await LoadDataAsync();
         }
 
-        private async Task ViewDetailsAsync(ConsultationDto consultation)
+        private void ViewDetails()
         {
-            if (consultation == null) return;
-            
-            _logger.LogInformation("查看看诊详情: {ConsultationId}", consultation.Id);
-            // TODO: 实现查看详情逻辑
-            await Task.CompletedTask;
-        }
-
-        private async Task EditConsultationAsync(ConsultationDto consultation)
-        {
-            if (consultation == null) return;
-            
-            _logger.LogInformation("编辑看诊记录: {ConsultationId}", consultation.Id);
-            // TODO: 实现编辑逻辑
-            await Task.CompletedTask;
-        }
-
-        private async Task ViewConsultationAsync(ConsultationDto consultation)
-        {
-            if (consultation == null) return;
-            
-            _logger.LogInformation("查看看诊记录: {ConsultationId}", consultation.Id);
-            // TODO: 实现查看看诊记录逻辑
-            await Task.CompletedTask;
-        }
-
-        private async Task PrintConsultationAsync(ConsultationDto consultation)
-        {
-            if (consultation == null) return;
-            
-            _logger.LogInformation("打印看诊记录: {ConsultationId}", consultation.Id);
-            // TODO: 实现打印逻辑
-            await Task.CompletedTask;
-        }
-
-        private async Task DeleteConsultationAsync(ConsultationDto consultation)
-        {
-            if (consultation == null) return;
-            
-            _logger.LogInformation("删除看诊记录: {ConsultationId}", consultation.Id);
-            // TODO: 实现删除确认和删除逻辑
-            await Task.CompletedTask;
+            if (SelectedConsultation != null)
+            {
+                // 简单的详情显示，不涉及复杂导航
+                ShowInfo($"看诊记录详情:\n患者ID: {SelectedConsultation.PatientId}\n看诊时间: {SelectedConsultation.ConsultationTime:yyyy-MM-dd HH:mm}\n诊断: {SelectedConsultation.Diagnosis ?? "暂无"}");
+            }
         }
 
         #endregion

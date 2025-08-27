@@ -100,9 +100,50 @@
                         </Border>
 
 
-                        <!-- 集成的中医四诊控件 -->
-                        <Border Background="White" CornerRadius="5" Padding="10" Margin="0,0,0,10">
-                            <local:TCMFourDiagnosisView DataContext="{Binding}" />
+                        <!-- 中医四诊信息（简化版） -->
+                        <Border Background="White" CornerRadius="5" Padding="15" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="四诊信息" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                                
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- 主诉 -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="主诉:" Margin="0,5"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Consultation.ChiefComplaint}" Margin="5"/>
+
+                                    <!-- 望诊 -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="望诊:" Margin="0,5"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Consultation.Inspection}" Margin="5"/>
+
+                                    <!-- 闻诊 -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="闻诊:" Margin="0,5"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Consultation.Auscultation}" Margin="5"/>
+
+                                    <!-- 问诊 -->
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="问诊:" Margin="0,5"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Consultation.Inquiry}" Margin="5"/>
+                                </Grid>
+                                
+                                <StackPanel Margin="0,10,0,0">
+                                    <!-- 切诊 -->
+                                    <TextBlock Text="切诊:" Margin="0,5"/>
+                                    <TextBox Text="{Binding Consultation.Palpation}" Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
+                                    
+                                    <!-- 诊断 -->
+                                    <TextBlock Text="中医诊断:" Margin="0,10,0,5"/>
+                                    <TextBox Text="{Binding Consultation.Diagnosis}" Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </StackPanel>
                         </Border>
 
                         <!-- 操作按钮 -->
@@ -180,11 +221,7 @@
                                  DisplayMemberPath="Name"
                                  Tag="选择验方一键应用..."
                                  Margin="0,0,0,10">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem">
-                                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnFormulaSelected"/>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
+                            <!-- 验方选择功能已简化，暂时移除事件处理 -->
                         </ComboBox>
                         
                         <!-- 分割线 -->
@@ -203,11 +240,7 @@
                                  DisplayMemberPath="Name"
                                  Tag="选择药材添加到处方..."
                                  MaxDropDownHeight="150">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem">
-                                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnHerbSelected"/>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
+                            <!-- 药材选择功能已简化，暂时移除事件处理 -->
                         </ComboBox>
                     </StackPanel>
                 </Border>

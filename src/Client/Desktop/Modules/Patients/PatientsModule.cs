@@ -1,9 +1,10 @@
-using Prism.Ioc;
+﻿using Prism.Ioc;
 using Prism.Modularity;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.Views;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.Coordinators;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Patients
 {
@@ -21,8 +22,9 @@ namespace LYBT.Desktop.Patients
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink模块化架构：注册模块核心业务服务
+            // UltraThink修复：模块自己注册服务接口实现
             containerRegistry.RegisterSingleton<PatientModule>();
+            containerRegistry.RegisterSingleton<IPatientService>(container => container.Resolve<PatientModule>());
             
             // UltraThink P1重构：注册模块业务协调器
             containerRegistry.RegisterSingleton<PatientCoordinator>();

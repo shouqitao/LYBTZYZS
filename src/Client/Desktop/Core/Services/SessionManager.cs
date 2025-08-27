@@ -178,15 +178,17 @@ namespace LYBT.Desktop.Core.Services
                 CurrentMedicalCaseId = medicalCaseId ?? Guid.NewGuid();
                 ConsultationStatus = ConsultationStatus.InProgress;
                 
-                // 创建新的诊疗记录
+                // 简化后的ConsultationDto创建
                 ActiveConsultation = new ConsultationDto
                 {
                     Id = Guid.NewGuid(),
                     PatientId = patient.Id,
-                    // PatientName属性在UltraThink v2.0简化中删除
                     MedicalCaseId = CurrentMedicalCaseId.Value,
-                    // ConsultationTime属性在UltraThink v2.0简化中删除
-                    Status = Shared.Models.Enums.CommonStatus.Enabled
+                    UserId = Guid.Empty, // 将在实际调用时设置
+                    ConsultationTime = DateTime.Now,
+                    Status = Shared.Models.Enums.CommonStatus.Enabled,
+                    CreateTime = DateTime.Now,
+                    UpdateTime = DateTime.Now
                 };
                 
                 PublishStatusMessage($"已开始诊疗会话：{patient.Name}", StatusMessageType.Success);

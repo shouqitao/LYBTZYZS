@@ -73,22 +73,18 @@ namespace LYBT.Desktop.Core.Mvvm
         /// <summary>
         /// 执行命令
         /// </summary>
-        public async void Execute(object? parameter)
+        public void Execute(object? parameter)
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // 修复：不使用async void，直接调用ExecuteAsync并处理异常
+            ExecuteAsync(parameter).ContinueWith(task =>
             {
-                try
+                if (task.IsFaulted && task.Exception != null)
                 {
-                    await ExecuteAsync(parameter);
-                }
-                catch (Exception ex)
-                {
-                    // 记录异常，防止async void异常逃逸
+                    var ex = task.Exception.GetBaseException();
                     System.Diagnostics.Debug.WriteLine($"AsyncRelayCommand Execute失败: {ex.Message}");
                     _errorHandler?.Invoke(ex);
                 }
-            });
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
         
         /// <summary>
@@ -221,22 +217,18 @@ namespace LYBT.Desktop.Core.Mvvm
             return !IsExecuting && (_canExecute?.Invoke((T?)parameter) ?? true);
         }
         
-        public async void Execute(object? parameter)
+        public void Execute(object? parameter)
         {
-            // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
+            // 修复：不使用async void，直接调用ExecuteAsync并处理异常
+            ExecuteAsync((T?)parameter).ContinueWith(task =>
             {
-                try
+                if (task.IsFaulted && task.Exception != null)
                 {
-                    await ExecuteAsync((T?)parameter);
-                }
-                catch (Exception ex)
-                {
-                    // 记录异常，防止async void异常逃逸
+                    var ex = task.Exception.GetBaseException();
                     System.Diagnostics.Debug.WriteLine($"AsyncRelayCommand<T> Execute失败: {ex.Message}");
                     _errorHandler?.Invoke(ex);
                 }
-            });
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
         
         public async Task ExecuteAsync(object? parameter)

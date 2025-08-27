@@ -171,8 +171,9 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ApiTestService>();
             
             // 模块业务服务注册 - 简化版
-            containerRegistry.RegisterSingleton<IUserService, LYBT.Desktop.Users.Services.UserModule>();
-            containerRegistry.RegisterSingleton<IPatientService, LYBT.Desktop.Patients.Services.PatientModule>();
+            // UltraThink修复：IUserService和IPatientService由各自模块注册，避免时序冲突
+            // containerRegistry.RegisterSingleton<IUserService, LYBT.Desktop.Users.Services.UserModule>();
+            // containerRegistry.RegisterSingleton<IPatientService, LYBT.Desktop.Patients.Services.PatientModule>();
             containerRegistry.RegisterSingleton<IPrescriptionService, LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
             containerRegistry.RegisterSingleton<IHerbService, LYBT.Desktop.Herbs.Services.HerbModule>();
             containerRegistry.RegisterSingleton<IFormulaService, LYBT.Desktop.Formula.Services.FormulaModule>();
