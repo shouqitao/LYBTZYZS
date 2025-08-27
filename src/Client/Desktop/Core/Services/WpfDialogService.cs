@@ -261,6 +261,116 @@ namespace LYBT.Desktop.Core.Services
                             _logger.LogWarning("无法找到PatientAddEditDialogViewModel类型");
                         }
                     }
+                    else if (dialogName == "UserAddEditDialog")
+                    {
+                        // 使用反射来设置ViewModel，避免直接引用模块类型
+                        var viewModelTypeName = "LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
+                        {
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
+                            {
+                                dialogAware.OnDialogOpened(parameters);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到UserAddEditDialogViewModel类型");
+                        }
+                    }
+                    else if (dialogName == "HerbAddEditDialog")
+                    {
+                        // 中药材新增/编辑对话框
+                        var viewModelTypeName = "LYBT.Desktop.Herbs.ViewModels.HerbAddEditDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
+                        {
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
+                            {
+                                dialogAware.OnDialogOpened(parameters);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到HerbAddEditDialogViewModel类型");
+                        }
+                    }
+                    else if (dialogName == "AddFormulaDialog")
+                    {
+                        // 验方新增对话框
+                        var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
+                        {
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
+                            {
+                                dialogAware.OnDialogOpened(parameters);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到AddFormulaDialogViewModel类型");
+                        }
+                    }
+                    else if (dialogName == "EditFormulaDialog")
+                    {
+                        // 验方编辑对话框
+                        var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.EditFormulaDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
+                        {
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
+                            {
+                                dialogAware.OnDialogOpened(parameters);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到EditFormulaDialogViewModel类型");
+                        }
+                    }
+                    else if (dialogName == "ViewFormulaDialog")
+                    {
+                        // 验方查看对话框
+                        var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.ViewFormulaDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
+                        {
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
+                            {
+                                dialogAware.OnDialogOpened(parameters);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到ViewFormulaDialogViewModel类型");
+                        }
+                    }
                     // 通用处理：如果DataContext已经是ICustomDialogAware
                     else if (dialog.DataContext is ICustomDialogAware dialogAware && parameters != null)
                     {
