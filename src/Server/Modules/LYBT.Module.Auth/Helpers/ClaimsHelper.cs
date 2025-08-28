@@ -3,13 +3,11 @@ using System.Security.Claims;
 
 namespace LYBT.Module.Auth.Helpers
 {
-
     /// <summary>
     /// 声明助手类
     /// </summary>
     public static class ClaimsHelper
     {
-
         /// <summary>
         /// 创建用户基本声明
         /// </summary>
@@ -18,7 +16,8 @@ namespace LYBT.Module.Auth.Helpers
         /// <returns>声明列表</returns>
         public static List<Claim> CreateBasicClaims(string userId, string userName)
         {
-            return new List<Claim> {
+            return new List<Claim>
+            {
                 new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.UniqueName, userName),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),

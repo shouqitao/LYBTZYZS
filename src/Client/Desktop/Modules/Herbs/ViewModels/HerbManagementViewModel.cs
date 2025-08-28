@@ -90,7 +90,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public DelegateCommand<HerbDto> ViewDetailsCommand { get; private set; }
         public DelegateCommand ImportHerbsCommand { get; private set; }
         public DelegateCommand ExportTemplateCommand { get; private set; }
-        public DelegateCommand RefreshCommand { get; private set; }
+        // 注意：RefreshCommand由基类NewBaseListViewModel提供，不需要重复定义
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
@@ -130,6 +130,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         protected override void InitializeCommands()
         {
+            // 重要：必须先调用基类的命令初始化 (包含RefreshCommand)
+            base.InitializeCommands();
+            
             AddCommand = new DelegateCommand(async () => await AddHerbAsync());
             EditCommand = new DelegateCommand<HerbDto>(async herb => await EditHerbAsync(herb), CanExecuteHerbCommand);
             DeleteCommand = new DelegateCommand<HerbDto>(async herb => await DeleteHerbAsync(herb), CanExecuteHerbCommand);
@@ -137,7 +140,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             ViewDetailsCommand = new DelegateCommand<HerbDto>(async herb => await ViewDetailsAsync(herb), CanExecuteHerbCommand);
             ImportHerbsCommand = new DelegateCommand(async () => await ImportHerbsAsync());
             ExportTemplateCommand = new DelegateCommand(async () => await ExportTemplateAsync());
-            RefreshCommand = new DelegateCommand(async () => await RefreshDataAsync());
+            // RefreshCommand由基类NewBaseListViewModel提供，已修复async void问题
             
             // 初始化搜索和分页命令
             SearchCommand = new DelegateCommand(async () => await SearchManager.ExecuteSearchAsync());

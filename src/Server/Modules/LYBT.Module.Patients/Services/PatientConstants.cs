@@ -1,4 +1,4 @@
-namespace LYBT.Module.Patients.Services
+﻿namespace LYBT.Module.Patients.Services
 {
     /// <summary>
     /// 患者服务常量定义
@@ -35,11 +35,7 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public static readonly (int Min, int Max, string Range)[] AgeRanges = new[]
         {
-            (0, 18, "0-18岁（儿童）"),
-            (19, 35, "19-35岁（青年）"),
-            (36, 50, "36-50岁（中年）"),
-            (51, 65, "51-65岁（中老年）"),
-            (66, int.MaxValue, "66岁以上（老年）")
+            (0, 18, "0-18岁（儿童）"),            (19, 35, "19-35岁（青年）"),            (36, 50, "36-50岁（中年）"),            (51, 65, "51-65岁（中老年）"),            (66, int.MaxValue, "66岁以上（老年）")
         };
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,9 +54,7 @@ namespace LYBT.Module.Patients.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证患者创建数据失败: {PatientName}", dto.Name);
-                return ServiceResult<bool>.Failure($"验证失败: {ex.Message}", ex);
-            }
+                _logger.LogError(ex, "验证患者创建数据失败: {PatientName}", dto.Name);                return ServiceResult<bool>.Failure($"验证失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -68,15 +66,10 @@ namespace LYBT.Module.Patients.Helpers
             {
                 // 转换为PatientDto进行验证
                 var detailDto = _mapper.Map<PatientDto>(dto);
-                await _validationService.ValidateForCreateAsync(detailDto);
-                var result = new { IsValid = true, Message = "验证通过" };
-                return ServiceResult<object>.Success(result);
+                await _validationService.ValidateForCreateAsync(detailDto);                var result = new { IsValid = true, Message = "验证通过" };                return ServiceResult<object>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证患者信息失败");
-                var result = new { IsValid = false, Message = $"验证失败: {ex.Message}" };
-                return ServiceResult<object>.Success(result);
+            {                _logger.LogError(ex, "验证患者信息失败");                var result = new { IsValid = false, Message = $"验证失败: {ex.Message}" };                return ServiceResult<object>.Success(result);
             }
         }
 
@@ -98,10 +91,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证患者更新数据失败: PatientId={PatientId}", id);
-                return ServiceResult<bool>.Failure($"验证失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "验证患者更新数据失败: PatientId={PatientId}", id);                return ServiceResult<bool>.Failure($"验证失败: {ex.Message}", ex);            }
         }
 
         #endregion
@@ -113,10 +103,7 @@ namespace LYBT.Module.Patients.Helpers
         /// </summary>
         public ServiceResult<bool> ValidatePatientId(Guid id)
         {
-            if (id == Guid.Empty)
-                return ServiceResult<bool>.Failure("患者ID不能为空");
-
-            return ServiceResult<bool>.Success(true);
+            if (id == Guid.Empty)                return ServiceResult<bool>.Failure("患者ID不能为空");            return ServiceResult<bool>.Success(true);
         }
 
         /// <summary>
@@ -124,13 +111,7 @@ namespace LYBT.Module.Patients.Helpers
         /// </summary>
         public ServiceResult<bool> ValidatePatientName(string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                return ServiceResult<bool>.Failure("患者姓名不能为空");
-
-            if (name.Length > 50)
-                return ServiceResult<bool>.Failure("患者姓名长度不能超过50个字符");
-
-            return ServiceResult<bool>.Success(true);
+            if (string.IsNullOrWhiteSpace(name))                return ServiceResult<bool>.Failure("患者姓名不能为空");            if (name.Length > 50)                return ServiceResult<bool>.Failure("患者姓名长度不能超过50个字符");            return ServiceResult<bool>.Success(true);
         }
 
         /// <summary>
@@ -142,10 +123,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<bool>.Success(true); // 手机号码可以为空
 
             // 简单的手机号验证
-            if (phoneNumber.Length != 11 || !phoneNumber.All(char.IsDigit))
-                return ServiceResult<bool>.Failure("手机号码格式不正确");
-
-            return ServiceResult<bool>.Success(true);
+            if (phoneNumber.Length != 11 || !phoneNumber.All(char.IsDigit))                return ServiceResult<bool>.Failure("手机号码格式不正确");            return ServiceResult<bool>.Success(true);
         }
 
         /// <summary>
@@ -159,16 +137,10 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var isValid = CommonHelper.CheckIdNumber(idNumber);
-                if (!isValid)
-                    return ServiceResult<bool>.Failure("身份证号码格式不正确");
-
-                return ServiceResult<bool>.Success(true);
+                if (!isValid)                    return ServiceResult<bool>.Failure("身份证号码格式不正确");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证身份证号码失败: {IdNumber}", idNumber);
-                return ServiceResult<bool>.Failure("验证身份证号码失败", ex);
-            }
+            {                _logger.LogError(ex, "验证身份证号码失败: {IdNumber}", idNumber);                return ServiceResult<bool>.Failure("验证身份证号码失败");            }
         }
 
         /// <summary>
@@ -179,10 +151,7 @@ namespace LYBT.Module.Patients.Helpers
             if (!age.HasValue)
                 return ServiceResult<bool>.Success(true); // 年龄可以为空
 
-            if (age.Value < 0 || age.Value > 150)
-                return ServiceResult<bool>.Failure("年龄必须在0-150之间");
-
-            return ServiceResult<bool>.Success(true);
+            if (age.Value < 0 || age.Value > 150)                return ServiceResult<bool>.Failure("年龄必须在0-150之间");            return ServiceResult<bool>.Success(true);
         }
 
         /// <summary>
@@ -193,10 +162,7 @@ namespace LYBT.Module.Patients.Helpers
             if (!gender.HasValue)
                 return ServiceResult<bool>.Success(true); // 性别可以为空
 
-            if (!Enum.IsDefined(typeof(Gender), gender.Value))
-                return ServiceResult<bool>.Failure("性别值无效");
-
-            return ServiceResult<bool>.Success(true);
+            if (!Enum.IsDefined(typeof(Gender), gender.Value))                return ServiceResult<bool>.Failure("性别值无效");            return ServiceResult<bool>.Success(true);
         }
 
         #endregion
@@ -214,10 +180,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<List<PatientDto>>.Success(duplicates);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "检查重复患者失败");
-                return ServiceResult<List<PatientDto>>.Failure("检查重复患者失败", ex);
-            }
+            {                _logger.LogError(ex, "检查重复患者失败");                return ServiceResult<List<PatientDto>>.Failure("检查重复患者失败", ex);            }
         }
 
         /// <summary>
@@ -228,18 +191,12 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var patient = await _patientRepository.GetByIdAsync(id, true);
-                if (patient == null)
-                    return ServiceResult<bool>.Failure("患者不存在");
-
-                // 这里可以添加业务规则检查，比如是否有未完成的就诊记录等
+                if (patient == null)                    return ServiceResult<bool>.Failure("患者不存在");                // 这里可以添加业务规则检查，比如是否有未完成的就诊记录等
                 // 目前简化为总是允许删除（软删除）
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证患者删除权限失败: {PatientId}", id);
-                return ServiceResult<bool>.Failure("验证删除权限失败", ex);
-            }
+            {                _logger.LogError(ex, "验证患者删除权限失败: {PatientId}", id);                return ServiceResult<bool>.Failure("验证删除权限失败");            }
         }
 
         /// <summary>
@@ -250,17 +207,11 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var patient = await _patientRepository.GetByIdAsync(id, true);
-                if (patient == null)
-                    return ServiceResult<bool>.Failure("患者不存在");
-
-                // 这里可以添加业务规则检查，比如患者状态是否允许更新等
+                if (patient == null)                    return ServiceResult<bool>.Failure("患者不存在");                // 这里可以添加业务规则检查，比如患者状态是否允许更新等
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证患者更新权限失败: {PatientId}", id);
-                return ServiceResult<bool>.Failure("验证更新权限失败", ex);
-            }
+            {                _logger.LogError(ex, "验证患者更新权限失败: {PatientId}", id);                return ServiceResult<bool>.Failure("验证更新权限失败");            }
         }
 
         /// <summary>
@@ -269,10 +220,7 @@ namespace LYBT.Module.Patients.Helpers
         public ServiceResult<bool> ValidateStatusChange(CommonStatus currentStatus, CommonStatus newStatus)
         {
             // 简化的状态变更验证
-            if (currentStatus == newStatus)
-                return ServiceResult<bool>.Failure("新状态与当前状态相同，无需更改");
-
-            // 这里可以添加更复杂的状态转换规则
+            if (currentStatus == newStatus)                return ServiceResult<bool>.Failure("新状态与当前状态相同，无需更改");            // 这里可以添加更复杂的状态转换规则
             return ServiceResult<bool>.Success(true);
         }
 
@@ -291,10 +239,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<Patient>.Success(model);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理身份证信息失败: {PatientId}", model.Id);
-                return ServiceResult<Patient>.Failure("处理身份证信息失败", ex);
-            }
+            {                _logger.LogError(ex, "处理身份证信息失败: {PatientId}", model.Id);                return ServiceResult<Patient>.Failure("处理身份证信息失败");            }
         }
 
         #endregion
@@ -306,13 +251,7 @@ namespace LYBT.Module.Patients.Helpers
         /// </summary>
         public ServiceResult<bool> ValidateStringLength(string value, string fieldName, int maxLength, bool required = false)
         {
-            if (required && string.IsNullOrWhiteSpace(value))
-                return ServiceResult<bool>.Failure($"{fieldName}不能为空");
-
-            if (!string.IsNullOrEmpty(value) && value.Length > maxLength)
-                return ServiceResult<bool>.Failure($"{fieldName}长度不能超过{maxLength}个字符");
-
-            return ServiceResult<bool>.Success(true);
+            if (required && string.IsNullOrWhiteSpace(value))                return ServiceResult<bool>.Failure($"{fieldName}不能为空");            if (!string.IsNullOrEmpty(value) && value.Length > maxLength)                return ServiceResult<bool>.Failure($"{fieldName}长度不能超过{maxLength}个字符");            return ServiceResult<bool>.Success(true);
         }
 
         /// <summary>
@@ -326,15 +265,10 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var addr = new System.Net.Mail.MailAddress(email);
-                if (addr.Address != email)
-                    return ServiceResult<bool>.Failure("邮箱格式不正确");
-
-                return ServiceResult<bool>.Success(true);
+                if (addr.Address != email)                    return ServiceResult<bool>.Failure("邮箱格式不正确");                return ServiceResult<bool>.Success(true);
             }
             catch
-            {
-                return ServiceResult<bool>.Failure("邮箱格式不正确");
-            }
+            {                return ServiceResult<bool>.Failure("邮箱格式不正确");            }
         }
 
         #endregion
@@ -373,25 +307,21 @@ namespace LYBT.Module.Patients.Helpers
                 if (!ageValidation.IsSuccess)
                     return ageValidation;
 
-                // 验证地址长度
-                var addressValidation = ValidateStringLength(dto.Address, "地址", 200);
-                if (!addressValidation.IsSuccess)
+                // 验证地址长度                var addressValidation = ValidateStringLength(dto.Address, "地址", 200);                if (!addressValidation.IsSuccess)
                     return addressValidation;
 
-                // 验证既往病史长度
-                var medicalHistoryValidation = ValidateStringLength(dto.MedicalHistory, "既往病史", 1000);
-                if (!medicalHistoryValidation.IsSuccess)
+                // 验证既往病史长度                var medicalHistoryValidation = ValidateStringLength(dto.MedicalHistory, "既往病史", 1000);                if (!medicalHistoryValidation.IsSuccess)
                     return medicalHistoryValidation;
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "综合验证患者基本信息失败");
-                return ServiceResult<bool>.Failure("验证患者基本信息失败", ex);
+            {                _logger.LogError(ex, "综合验证患者基本信息失败");                return ServiceResult<bool>.Failure("验证患者基本信息失败");
             }
         }
 
         #endregion
     }
 }
+
+

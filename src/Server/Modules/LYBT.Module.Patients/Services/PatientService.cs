@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,9 +31,7 @@ namespace LYBT.Module.Patients.Services
         private readonly PatientArchiveService _archiveService;
         private readonly PatientStatisticsService _statisticsService;
 
-        protected override string EntityName => "患者";
-
-        public PatientService(
+        protected override string EntityName => "患者";        public PatientService(
             AppDbContext context,
             IMapper mapper,
             ILogger<PatientService> logger,
@@ -59,9 +57,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
         {
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.CreateAsync(dto),
-                "创建患者", dto.Name);
-        }
+                async () => await _businessHelper.CreateAsync(dto),                "创建患者", dto.Name);        }
 
         /// <summary>
         /// 更新患者信息
@@ -69,9 +65,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto)
         {
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.UpdateAsync(id, dto),
-                "更新患者", id);
-        }
+                async () => await _businessHelper.UpdateAsync(id, dto),                "更新患者", id);        }
 
         /// <summary>
         /// 根据患者ID获取患者详情
@@ -79,9 +73,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
         {
             return await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetByIdAsync(id),
-                "获取患者详情", id);
-        }
+                async () => await _queryHelper.GetByIdAsync(id),                "获取患者详情", id);        }
 
         /// <summary>
         /// 获取所有患者列表
@@ -98,9 +90,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query)
         {
             return await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetPagedAsync(query),
-                "分页查询患者", query);
-        }
+                async () => await _queryHelper.GetPagedAsync(query),                "分页查询患者", query);        }
 
         /// <summary>
         /// 删除患者（软删除）
@@ -176,9 +166,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.DeleteAsync(id),
-                "删除患者", id);
-        }
+                async () => await _businessHelper.DeleteAsync(id),                "删除患者", id);        }
 
         /// <summary>
         /// 启用患者（实现Shared接口）
@@ -186,13 +174,9 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult> EnableAsync(Guid id)
         {
             var result = await ExecuteSafelyAsync(
-                async () => await _businessHelper.EnableAsync(id),
-                "启用患者", id);
-            
+                async () => await _businessHelper.EnableAsync(id),                "启用患者", id);            
             return result.IsSuccess 
-                ? ServiceResult.Success() 
-                : ServiceResult.Failure(result.ErrorMessage ?? "启用患者失败");
-        }
+                ? ServiceResult.Success()                 : ServiceResult.Failure(result.ErrorMessage ?? "启用患者失败");        }
 
         /// <summary>
         /// 禁用患者（实现Shared接口）
@@ -200,13 +184,9 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult> DisableAsync(Guid id)
         {
             var result = await ExecuteSafelyAsync(
-                async () => await _businessHelper.DisableAsync(id),
-                "禁用患者", id);
-            
+                async () => await _businessHelper.DisableAsync(id),                "禁用患者", id);            
             return result.IsSuccess 
-                ? ServiceResult.Success() 
-                : ServiceResult.Failure(result.ErrorMessage ?? "禁用患者失败");
-        }
+                ? ServiceResult.Success()                 : ServiceResult.Failure(result.ErrorMessage ?? "禁用患者失败");        }
 
         /// <summary>
         /// 根据身份证号查找患者（实现Shared接口）
@@ -214,9 +194,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard)
         {
             return await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetByIdCardAsync(idCard),
-                "根据身份证查找患者", idCard);
-        }
+                async () => await _queryHelper.GetByIdCardAsync(idCard),                "根据身份证查找患者", idCard);        }
 
         /// <summary>
         /// 根据电话号码查找患者（实现Shared接口）
@@ -224,9 +202,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone)
         {
             return await ExecuteSafelyAsync(
-                async () => await _queryHelper.GetByPhoneAsync(phone),
-                "根据电话查找患者", phone);
-        }
+                async () => await _queryHelper.GetByPhoneAsync(phone),                "根据电话查找患者", phone);        }
 
         /// <summary>
         /// 搜索患者（重构为Shared接口）
@@ -234,9 +210,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
         {
             return await ExecuteSafelyAsync(
-                async () => await _queryHelper.SearchAsync(keyword),
-                "搜索患者", keyword);
-        }
+                async () => await _queryHelper.SearchAsync(keyword),                "搜索患者", keyword);        }
 
         /// <summary>
         /// 获取统计信息（重构为Shared接口）
@@ -277,9 +251,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients)
         {
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.ImportPatientsAsync(patients),
-                "批量导入患者", patients.Count);
-        }
+                async () => await _businessHelper.ImportPatientsAsync(patients),                "批量导入患者", patients.Count);        }
 
         /// <summary>
         /// 导出患者数据（简化实现）
@@ -287,9 +259,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<byte[]>> ExportPatientsAsync(PagedQueryBaseDto query)
         {
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.ExportPatientsAsync(query),
-                "导出患者数据", query);
-        }
+                async () => await _businessHelper.ExportPatientsAsync(query),                "导出患者数据", query);        }
 
         /// <summary>
         /// 验证患者信息（简化实现）
@@ -297,9 +267,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<object>> ValidatePatientAsync(PatientCreateDto dto)
         {
             return await ExecuteSafelyAsync(
-                async () => await _validationHelper.ValidatePatientAsync(dto),
-                "验证患者信息", dto.Name);
-        }
+                async () => await _validationHelper.ValidatePatientAsync(dto),                "验证患者信息", dto.Name);        }
 
         /// <summary>
         /// 获取年龄统计（简化实现）
@@ -381,10 +349,7 @@ namespace LYBT.Module.Patients.Services
                 return ServiceResult<PatientStatisticsDto>.Success(emptyStats);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者统计失败");
-                return ServiceResult<PatientStatisticsDto>.Failure("获取患者统计失败", ex);
-            }
+            {                _logger.LogError(ex, "获取患者统计失败");                return ServiceResult<PatientStatisticsDto>.Failure("获取患者统计失败");            }
         }
 
         /// <summary>
@@ -395,15 +360,10 @@ namespace LYBT.Module.Patients.Services
         {
             try
             {
-                await Task.CompletedTask;
-                var emptyArchive = new { Message = "档案管理功能已废弃 - UltraThink精简", PatientId = id };
-                return ServiceResult<object>.Success(emptyArchive);
+                await Task.CompletedTask;                var emptyArchive = new { Message = "档案管理功能已废弃 - UltraThink精简", PatientId = id };                return ServiceResult<object>.Success(emptyArchive);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者档案失败: {Id}", id);
-                return ServiceResult<object>.Failure("获取患者档案失败", ex);
-            }
+            {                _logger.LogError(ex, "获取患者档案失败: {Id}", id);                return ServiceResult<object>.Failure("获取患者档案失败");            }
         }
 
         /// <summary>
@@ -418,10 +378,7 @@ namespace LYBT.Module.Patients.Services
                 return ServiceResult<bool>.Success(false); // 功能已废弃
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新患者档案失败: {Id}", id);
-                return ServiceResult<bool>.Failure("更新患者档案失败", ex);
-            }
+            {                _logger.LogError(ex, "更新患者档案失败: {Id}", id);                return ServiceResult<bool>.Failure("更新患者档案失败");            }
         }
 
         /// <summary>
@@ -436,10 +393,7 @@ namespace LYBT.Module.Patients.Services
                 return ServiceResult<List<object>>.Success(new List<object>());
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取年龄统计失败");
-                return ServiceResult<List<object>>.Failure("获取年龄统计失败", ex);
-            }
+            {                _logger.LogError(ex, "获取年龄统计失败");                return ServiceResult<List<object>>.Failure("获取年龄统计失败", ex);            }
         }
 
         public async Task<List<PatientDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
@@ -460,23 +414,16 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 // 需要传递操作员信息，暂时使用默认值
-                var operatorId = Guid.Empty; // TODO: 从当前用户上下文获取
-                var operatorName = "系统导入"; // TODO: 从当前用户上下文获取
-                
+                var operatorId = Guid.Empty; // TODO: 从当前用户上下文获取                var operatorName = "系统导入"; // TODO: 从当前用户上下文获取                
                 var result = await _businessHelper.ImportPatientsAsync(patients, operatorId, operatorName);
                 
                 if (result.IsSuccess && result.Data != null)
                 {
                     return ServiceResult<int>.Success(result.Data.SuccessCount);
                 }
-                
-                return ServiceResult<int>.Failure(result.ErrorMessage ?? "导入失败");
-            }
+                                return ServiceResult<int>.Failure(result.ErrorMessage ?? "导入失败");            }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量导入患者失败");
-                return ServiceResult<int>.Failure("批量导入患者失败", ex);
-            }
+            {                _logger.LogError(ex, "批量导入患者失败");                return ServiceResult<int>.Failure("批量导入患者失败");            }
         }
 
         /// <summary>
@@ -502,14 +449,9 @@ namespace LYBT.Module.Patients.Services
                     var emptyList = new List<PatientDto>();
                     return ServiceResult<List<PatientDto>>.Success(emptyList);
                 }
-                
-                return ServiceResult<List<PatientDto>>.Failure(result.ErrorMessage ?? "导出失败");
-            }
+                                return ServiceResult<List<PatientDto>>.Failure(result.ErrorMessage ?? "导出失败");            }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出患者数据失败");
-                return ServiceResult<List<PatientDto>>.Failure("导出患者数据失败", ex);
-            }
+            {                _logger.LogError(ex, "导出患者数据失败");                return ServiceResult<List<PatientDto>>.Failure("导出患者数据失败", ex);            }
         }
 
         /// <summary>
@@ -518,10 +460,7 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
         {
             try
-            {
-                _logger.LogInformation("获取患者导入模板");
-
-                var templateContent = @"患者导入模板 - UltraThink精简版
+            {                _logger.LogInformation("获取患者导入模板");                var templateContent = @"患者导入模板 - UltraThink精简版
 必填列：姓名, 性别(男/女), 出生日期(YYYY-MM-DD), 手机号码
 可选列：身份证号, 地址, 紧急联系人, 紧急联系人电话, 备注
 
@@ -531,15 +470,11 @@ namespace LYBT.Module.Patients.Services
 - 姓名和手机号码组合不能重复
 - 性别只能填写：男 或 女
 - 出生日期格式：YYYY-MM-DD (如：1990-01-01)
-- 手机号码格式：11位数字";
-
-                var content = System.Text.Encoding.UTF8.GetBytes(templateContent);
+- 手机号码格式：11位数字";                var content = System.Text.Encoding.UTF8.GetBytes(templateContent);
                 return ServiceResult<byte[]>.Success(content);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者导入模板异常");
-                return ServiceResult<byte[]>.Failure($"获取患者导入模板异常: {ex.Message}", ex);
+            {                _logger.LogError(ex, "获取患者导入模板异常");                return ServiceResult<byte[]>.Failure($"获取患者导入模板异常: {ex.Message}", ex);
             }
         }
 
@@ -558,3 +493,4 @@ namespace LYBT.Module.Patients.Services
         #endregion
     }
 }
+

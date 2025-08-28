@@ -1,4 +1,5 @@
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
+using LYBT.Entities.Formula;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
@@ -54,16 +55,11 @@ namespace LYBT.Module.Formula.Services
                     .FirstOrDefaultAsync(f => f.Id == id && f.Status == CommonStatus.Enabled);
 
                 if (formula == null)
-                    return ServiceResult<FormulaDto>.Failure("验方不存在");
-
-                var dto = _mapper.Map<FormulaDto>(formula);
+                    return ServiceResult<FormulaDto>.Failure("验方不存在");                var dto = _mapper.Map<FormulaDto>(formula);
                 return ServiceResult<FormulaDto>.Success(dto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取验方详情失败: {Id}", id);
-                return ServiceResult<FormulaDto>.Failure("获取验方详情失败", ex);
-            }
+            {                _logger.LogError(ex, "获取验方详情失败: {Id}", id);                return ServiceResult<FormulaDto>.Failure("获取验方详情失败");            }
         }
 
         /// <summary>
@@ -97,10 +93,7 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<FormulaDto>.Success(createdDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建验方失败");
-                return ServiceResult<FormulaDto>.Failure("创建验方失败", ex);
-            }
+            {                _logger.LogError(ex, "创建验方失败");                return ServiceResult<FormulaDto>.Failure("创建验方失败");            }
         }
 
         /// <summary>
@@ -116,27 +109,36 @@ namespace LYBT.Module.Formula.Services
                     return ServiceResult<FormulaDto>.Failure(validationResult.ErrorMessage!);
 
                 var formula = await _dbContext.Formulas.FindAsync(id);
-                if (formula == null)
-                    return ServiceResult<FormulaDto>.Failure("验方不存在");
+                if (formula == null)                    return ServiceResult<FormulaDto>.Failure("验方不存在");                _logger.LogInformation("更新验方: {FormulaId} - {FormulaName}", id, dto.Name);                // 🎯 UltraThink修复：使用AutoMapper全量映射，避免字段遗漏
+                var oldName = formula.Name;
+                _mapper.Map(dto, formula);
 
-                // 更新字段
-                formula.Name = dto.Name ?? formula.Name;
-                formula.Effect = dto.Effect ?? formula.Effect;
-                formula.Usage = dto.Usage ?? formula.Usage;
-                // Property不在UpdateDto中，保持原值
-                formula.Remark = dto.Remark ?? formula.Remark;
-                formula.IsShared = dto.IsShared;
+                // 记录重要变更日志
+                if (formula.Name != oldName)
+                {                    _logger.LogInformation("更新验方名称: {FormulaId} {OldName} -> {NewName}",                         id, oldName, formula.Name);
+                }
+
+                // 🚀 UltraThink增强：处理复杂的Herbs集合更新
+                if (dto.Herbs?.Any() == true)
+                {
+                    // 清除现有药材组合
+                    formula.Herbs.Clear();
+                    
+                    // 添加新的药材组合
+                    foreach (var herbDto in dto.Herbs)
+                    {
+                        var herbItem = _mapper.Map<FormulaHerbItem>(herbDto);
+                        formula.Herbs.Add(herbItem);
+                    }
+                                        _logger.LogInformation("更新验方药材组成: {FormulaId} 包含{HerbCount}味药材",                         id, dto.Herbs.Count);
+                }
 
                 await _dbContext.SaveChangesAsync();
 
-                var updatedDto = _mapper.Map<FormulaDto>(formula);
-                return ServiceResult<FormulaDto>.Success(updatedDto);
+                var updatedDto = _mapper.Map<FormulaDto>(formula);                _logger.LogInformation("验方更新成功: {FormulaId}", id);                return ServiceResult<FormulaDto>.Success(updatedDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新验方失败: {Id}", id);
-                return ServiceResult<FormulaDto>.Failure("更新验方失败", ex);
-            }
+            {                _logger.LogError(ex, "更新验方失败: {Id}", id);                return ServiceResult<FormulaDto>.Failure("更新验方失败");            }
         }
 
         /// <summary>
@@ -147,19 +149,13 @@ namespace LYBT.Module.Formula.Services
             try
             {
                 var formula = await _dbContext.Formulas.FindAsync(id);
-                if (formula == null)
-                    return ServiceResult<bool>.Failure("验方不存在");
-
-                formula.Status = CommonStatus.Disabled;
+                if (formula == null)                    return ServiceResult<bool>.Failure("验方不存在");                formula.Status = CommonStatus.Disabled;
                 await _dbContext.SaveChangesAsync();
                 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除验方失败: {Id}", id);
-                return ServiceResult<bool>.Failure("删除验方失败", ex);
-            }
+            {                _logger.LogError(ex, "删除验方失败: {Id}", id);                return ServiceResult<bool>.Failure("删除验方失败");            }
         }
 
         #endregion
@@ -267,10 +263,7 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<FormulaDto>.Success(dto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "从处方创建验方失败: {PrescriptionId}", prescriptionId);
-                return ServiceResult<FormulaDto>.Failure("从处方创建验方失败", ex);
-            }
+            {                _logger.LogError(ex, "从处方创建验方失败: {PrescriptionId}", prescriptionId);                return ServiceResult<FormulaDto>.Failure("从处方创建验方失败");            }
         }
 
         /*
@@ -340,19 +333,14 @@ namespace LYBT.Module.Formula.Services
                     return ServiceResult<FormulaDto>.Failure(validationResult.ErrorMessage!);
 
                 var original = await _dbContext.Formulas.FindAsync(id);
-                if (original == null)
-                    return ServiceResult<FormulaDto>.Failure("原验方不存在");
-
-                var copy = new LYBT.Entities.Formula.Formula
+                if (original == null)                    return ServiceResult<FormulaDto>.Failure("原验方不存在");                var copy = new LYBT.Entities.Formula.Formula
                 {
                     Id = Guid.NewGuid(),
                     Name = newName,
                     Effect = original.Effect,
                     Usage = original.Usage,
                     Property = original.Property,
-                    IsShared = false,
-                    Remark = $"复制自: {original.Name}",
-                    Status = CommonStatus.Enabled
+                    IsShared = false,                    Remark = $"复制自: {original.Name}",                    Status = CommonStatus.Enabled
                 };
 
                 _dbContext.Formulas.Add(copy);
@@ -362,10 +350,7 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<FormulaDto>.Success(dto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "复制验方失败: {Id}", id);
-                return ServiceResult<FormulaDto>.Failure("复制验方失败", ex);
-            }
+            {                _logger.LogError(ex, "复制验方失败: {Id}", id);                return ServiceResult<FormulaDto>.Failure("复制验方失败");            }
         }
 
         /// <summary>
@@ -376,10 +361,7 @@ namespace LYBT.Module.Formula.Services
             try
             {
                 var formula = await _dbContext.Formulas.FindAsync(id);
-                if (formula == null)
-                    return ServiceResult<bool>.Failure("验方不存在");
-
-                formula.Status = formula.Status == CommonStatus.Enabled 
+                if (formula == null)                    return ServiceResult<bool>.Failure("验方不存在");                formula.Status = formula.Status == CommonStatus.Enabled 
                     ? CommonStatus.Disabled 
                     : CommonStatus.Enabled;
 
@@ -387,10 +369,7 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "切换验方状态失败: {Id}", id);
-                return ServiceResult<bool>.Failure("切换验方状态失败", ex);
-            }
+            {                _logger.LogError(ex, "切换验方状态失败: {Id}", id);                return ServiceResult<bool>.Failure("切换验方状态失败");            }
         }
 
         /// <summary>
@@ -405,22 +384,14 @@ namespace LYBT.Module.Formula.Services
                     return ServiceResult<bool>.Failure(validationResult.ErrorMessage!);
 
                 var formula = await _dbContext.Formulas.FindAsync(id);
-                if (formula == null)
-                    return ServiceResult<bool>.Failure("验方不存在");
-
-                formula.IsShared = true;
+                if (formula == null)                    return ServiceResult<bool>.Failure("验方不存在");                formula.IsShared = true;
                 await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation("验方分享成功: {FormulaId} by {OperatorName}({OperatorId})", 
-                    id, operatorName, operatorId);
+                _logger.LogInformation("验方分享成功: {FormulaId} by {OperatorName}({OperatorId})",                     id, operatorName, operatorId);
                 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "分享验方失败: {Id}, {OperatorId}, {OperatorName}", id, operatorId, operatorName);
-                return ServiceResult<bool>.Failure("分享验方失败", ex);
-            }
+            {                _logger.LogError(ex, "分享验方失败: {Id}, {OperatorId}, {OperatorName}", id, operatorId, operatorName);                return ServiceResult<bool>.Failure("分享验方失败");            }
         }
 
         /// <summary>
@@ -431,22 +402,14 @@ namespace LYBT.Module.Formula.Services
             try
             {
                 var formula = await _dbContext.Formulas.FindAsync(id);
-                if (formula == null)
-                    return ServiceResult<bool>.Failure("验方不存在");
-
-                formula.IsShared = false;
+                if (formula == null)                    return ServiceResult<bool>.Failure("验方不存在");                formula.IsShared = false;
                 await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation("取消验方分享成功: {FormulaId} by {OperatorName}({OperatorId})", 
-                    id, operatorName, operatorId);
+                _logger.LogInformation("取消验方分享成功: {FormulaId} by {OperatorName}({OperatorId})",                     id, operatorName, operatorId);
                 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "取消分享验方失败: {Id}, {OperatorId}, {OperatorName}", id, operatorId, operatorName);
-                return ServiceResult<bool>.Failure("取消分享验方失败", ex);
-            }
+            {                _logger.LogError(ex, "取消分享验方失败: {Id}, {OperatorId}, {OperatorName}", id, operatorId, operatorName);                return ServiceResult<bool>.Failure("取消分享验方失败");            }
         }
 
         /// <summary>
@@ -494,10 +457,7 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<FormulaAnalysisResult>.Success(emptyResult);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验方分析失败: {FormulaId}", formulaId);
-                return ServiceResult<FormulaAnalysisResult>.Failure($"验方分析失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "验方分析失败: {FormulaId}", formulaId);                return ServiceResult<FormulaAnalysisResult>.Failure($"验方分析失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -512,10 +472,7 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>());
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取推荐验方失败: {Syndrome}", syndrome);
-                return ServiceResult<List<FormulaRecommendationDto>>.Failure($"获取推荐验方失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "获取推荐验方失败: {Syndrome}", syndrome);                return ServiceResult<List<FormulaRecommendationDto>>.Failure($"获取推荐验方失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -530,19 +487,13 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>());
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取推荐验方失败: {Symptoms}, {Diagnosis}, {DoctorId}", symptoms, diagnosis, doctorId);
-                return ServiceResult<List<FormulaRecommendationDto>>.Failure($"获取推荐验方失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "获取推荐验方失败: {Symptoms}, {Diagnosis}, {DoctorId}", symptoms, diagnosis, doctorId);                return ServiceResult<List<FormulaRecommendationDto>>.Failure($"获取推荐验方失败: {ex.Message}", ex);            }
         }
 
         public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
         {
             try
-            {
-                _logger.LogInformation("获取验方导入模板");
-
-                var templateContent = @"验方导入模板 - UltraThink精简版
+            {                _logger.LogInformation("获取验方导入模板");                var templateContent = @"验方导入模板 - UltraThink精简版
 必填列：验方名称, 功效, 用法
 可选列：性味归经, 是否共享(true/false), 备注
 
@@ -551,16 +502,11 @@ namespace LYBT.Module.Formula.Services
   规则：每个字拼音首字母大写组合（如：六味地黄丸 → LWDHW）
 - 验方名称不能重复
 - 功效和用法为必填项
-- 是否共享默认为false";
-
-                var content = System.Text.Encoding.UTF8.GetBytes(templateContent);
+- 是否共享默认为false";                var content = System.Text.Encoding.UTF8.GetBytes(templateContent);
                 return ServiceResult<byte[]>.Success(content);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取导入模板异常");
-                return ServiceResult<byte[]>.Failure($"获取导入模板异常: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "获取导入模板异常");                return ServiceResult<byte[]>.Failure($"获取导入模板异常: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -569,27 +515,17 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult> EnableAsync(Guid id)
         {
             try
-            {
-                _logger.LogInformation("启用验方: {FormulaId}", id);
-
-                var formula = await _dbContext.Formulas.FindAsync(id);
+            {                _logger.LogInformation("启用验方: {FormulaId}", id);                var formula = await _dbContext.Formulas.FindAsync(id);
                 if (formula == null)
-                {
-                    return ServiceResult.Failure("验方不存在");
-                }
+                {                    return ServiceResult.Failure("验方不存在");                }
 
                 formula.Status = CommonStatus.Enabled;
 
                 await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation("验方启用成功: {FormulaId}", id);
-                return ServiceResult.Success();
+                _logger.LogInformation("验方启用成功: {FormulaId}", id);                return ServiceResult.Success();
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "启用验方异常: {FormulaId}", id);
-                return ServiceResult.Failure($"启用验方异常: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "启用验方异常: {FormulaId}", id);                return ServiceResult.Failure($"启用验方异常: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -598,26 +534,17 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult> DisableAsync(Guid id)
         {
             try
-            {
-                _logger.LogInformation("禁用验方: {FormulaId}", id);
-
-                var formula = await _dbContext.Formulas.FindAsync(id);
+            {                _logger.LogInformation("禁用验方: {FormulaId}", id);                var formula = await _dbContext.Formulas.FindAsync(id);
                 if (formula == null)
-                {
-                    return ServiceResult.Failure("验方不存在");
-                }
+                {                    return ServiceResult.Failure("验方不存在");                }
 
                 formula.Status = CommonStatus.Disabled;
 
                 await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation("验方禁用成功: {FormulaId}", id);
-                return ServiceResult.Success();
+                _logger.LogInformation("验方禁用成功: {FormulaId}", id);                return ServiceResult.Success();
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "禁用验方异常: {FormulaId}", id);
-                return ServiceResult.Failure($"禁用验方异常: {ex.Message}", ex);
+            {                _logger.LogError(ex, "禁用验方异常: {FormulaId}", id);                return ServiceResult.Failure($"禁用验方异常: {ex.Message}", ex);
             }
         }
 
@@ -626,3 +553,5 @@ namespace LYBT.Module.Formula.Services
         #endregion
     }
 }
+
+

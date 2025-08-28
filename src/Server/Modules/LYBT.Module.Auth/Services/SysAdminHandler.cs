@@ -11,9 +11,7 @@ namespace LYBT.Module.Auth.Services
     public class SysAdminHandler
     {
         private readonly IAuthRepository _authRepository;
-        private const string SYSADMIN_USERNAME = "sysadmin";
-
-        public SysAdminHandler(IAuthRepository authRepository)
+        private const string SYSADMIN_USERNAME = "sysadmin";        public SysAdminHandler(IAuthRepository authRepository)
         {
             _authRepository = authRepository;
         }
@@ -65,15 +63,11 @@ namespace LYBT.Module.Auth.Services
         /// </summary>
         private User CreateTempSysAdminUser()
         {
-            // 使用固定的系统管理员GUID，确保每次登录ID一致
-            var sysadminId = new Guid("00000000-0000-0000-0000-000000000001");
-            
+            // 使用固定的系统管理员GUID，确保每次登录ID一致            var sysadminId = new Guid("00000000-0000-0000-0000-000000000001");            
             return new User
             {
                 Id = sysadminId,
-                Username = SYSADMIN_USERNAME,
-                RealName = "系统管理员",
-                PinYinCode = "XTGLY",
+                Username = SYSADMIN_USERNAME,                RealName = "系统管理员",                PinYinCode = "XTGLY",
                 Status = CommonStatus.Enabled,
                 // UltraThink v2.0简化：CreateTime字段已删除
                 PasswordHash = string.Empty // 密码从AdminSecrets表获取

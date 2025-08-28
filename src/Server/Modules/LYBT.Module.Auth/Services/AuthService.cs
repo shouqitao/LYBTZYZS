@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Options;
+﻿using LYBT.Infrastructure.Options;
 using AutoMapper;
 using LYBT.Shared.Models.Enums;
 using LYBT.Entities.Users;
@@ -67,15 +67,12 @@ namespace LYBT.Module.Auth.Services
                 var credentialsResult = await _validationHelper.VerifyCredentialsAsync(request);
                 if (!credentialsResult.IsSuccess)
                 {
-                    return ServiceResult<LoginResponse>.Failure(credentialsResult.ErrorMessage ?? "登录失败", credentialsResult.Exception);
-                }
+                    return ServiceResult<LoginResponse>.Failure(credentialsResult.ErrorMessage ?? "登录失败", credentialsResult.Exception);                }
 
                 // 获取用户信息用于创建LoginResponse
                 var user = await _validationHelper.GetUserForAuthentication(request.Username);
                 if (user == null)
-                {
-                    return ServiceResult<LoginResponse>.Failure("用户不存在");
-                }
+                {                    return ServiceResult<LoginResponse>.Failure("用户不存在");                }
 
                 // 处理登录成功，更新用户状态
                 var userDto = await HandleSuccessfulLoginAsync(user, request);
@@ -100,10 +97,7 @@ namespace LYBT.Module.Auth.Services
             }
             catch (Exception ex)
             {
-                await _loggingHelper.LogLoginExceptionAsync(request.Username, ex, request);
-                _logger.LogError(ex, "登录过程中发生异常: {Username}", request.Username);
-                return ServiceResult<LoginResponse>.Failure("登录过程中发生异常", ex);
-            }
+                await _loggingHelper.LogLoginExceptionAsync(request.Username, ex, request);                _logger.LogError(ex, "登录过程中发生异常: {Username}", request.Username);                return ServiceResult<LoginResponse>.Failure("登录过程中发生异常");            }
         }
 
         /// <summary>
@@ -116,10 +110,7 @@ namespace LYBT.Module.Auth.Services
                 return await _sessionHelper.LogoutAsync(request);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "登出失败: {Username}", request.Username);
-                return ServiceResult<bool>.Failure("登出失败", ex);
-            }
+            {                _logger.LogError(ex, "登出失败: {Username}", request.Username);                return ServiceResult<bool>.Failure("登出失败");            }
         }
 
         /// <summary>
@@ -129,16 +120,11 @@ namespace LYBT.Module.Auth.Services
         {
             try
             {
-                var result = await ChangeSysAdminPasswordInternalAsync(request.NewPassword);
-                await _loggingHelper.LogSysAdminPasswordChangeAsync(result, result ? null : "密码修改失败");
-                return ServiceResult<bool>.Success(result);
+                var result = await ChangeSysAdminPasswordInternalAsync(request.NewPassword);                await _loggingHelper.LogSysAdminPasswordChangeAsync(result, result ? null : "密码修改失败");                return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
             {
-                await _loggingHelper.LogSysAdminPasswordChangeAsync(false, ex.Message);
-                _logger.LogError(ex, "修改系统管理员密码失败");
-                return ServiceResult<bool>.Failure("修改系统管理员密码失败", ex);
-            }
+                await _loggingHelper.LogSysAdminPasswordChangeAsync(false, ex.Message);                _logger.LogError(ex, "修改系统管理员密码失败");                return ServiceResult<bool>.Failure("修改系统管理员密码失败");            }
         }
 
         /// <summary>
@@ -210,13 +196,10 @@ namespace LYBT.Module.Auth.Services
             try
             {
                 // UltraThink v2.0简化：直接使用Repository更新密码哈希
-                var passwordHash = PasswordHelper.Hash(newPassword);
-                await _authRepository.UpdateAdminPasswordHashAsync("sysadmin", passwordHash);
-                return true;
+                var passwordHash = PasswordHelper.Hash(newPassword);                await _authRepository.UpdateAdminPasswordHashAsync("sysadmin", passwordHash);                return true;
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新系统管理员密码失败");
+            {                _logger.LogError(ex, "更新系统管理员密码失败");
                 return false;
             }
         }
@@ -237,3 +220,5 @@ namespace LYBT.Module.Auth.Services
         #endregion
     }
 }
+
+

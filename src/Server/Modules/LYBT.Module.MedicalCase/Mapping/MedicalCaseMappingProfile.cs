@@ -25,8 +25,23 @@ namespace LYBT.Module.MedicalCase.Mapping
 
             CreateMap<MedicalCaseUpdateDto, LYBT.Entities.MedicalCase.MedicalCase>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 修复：使用单个Consultation对象
-                .ForMember(dest => dest.Prescription, opt => opt.Ignore())
+                .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 导航属性忽略
+                .ForMember(dest => dest.Prescription, opt => opt.Ignore()) // 导航属性忽略
+                // 🎯 UltraThink修复：明确忽略不属于MedicalCase实体的DTO字段
+                .ForMember(dest => dest.PatientName, opt => opt.Ignore()) // 显示字段，不更新
+                .ForMember(dest => dest.DoctorName, opt => opt.Ignore())  // 显示字段，不更新
+                // 以下字段属于Consultation模块，不映射到MedicalCase
+                .ForSourceMember(src => src.RegistrationId, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.DiagnosisSummary, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.ChiefComplaint, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.PresentIllness, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.PastHistory, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.DiagnosisResult, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.TreatmentPlan, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.PhysicalExamination, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.AuxiliaryExamination, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.PrescriptionInfo, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.FollowUpPlan, opt => opt.DoNotValidate())
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<MedicalCaseDto, LYBT.Entities.MedicalCase.MedicalCase>()

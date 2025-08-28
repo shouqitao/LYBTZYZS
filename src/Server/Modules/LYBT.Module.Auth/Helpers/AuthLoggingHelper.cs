@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -40,15 +40,10 @@ namespace LYBT.Module.Auth.Helpers
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
 
-            var content = "登录成功";
-            if (!string.IsNullOrEmpty(dto.ClientIp))
-            {
-                content += $" | IP: {dto.ClientIp}";
-            }
+            var content = "登录成功";            if (!string.IsNullOrEmpty(dto.ClientIp))
+            {                content += $" | IP: {dto.ClientIp}";            }
             if (!string.IsNullOrEmpty(dto.UserAgent))
-            {
-                content += $" | UA: {dto.UserAgent}";
-            }
+            {                content += $" | UA: {dto.UserAgent}";            }
 
             await LogUserActionAsync(user.Id, user.RealName, ActionType.Login, content);
         }
@@ -60,16 +55,10 @@ namespace LYBT.Module.Auth.Helpers
         {
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
-
-            var content = $"登录失败: {reason}";
-            if (!string.IsNullOrEmpty(dto.ClientIp))
-            {
-                content += $" | IP: {dto.ClientIp}";
-            }
+            var content = $"登录失败: {reason}";            if (!string.IsNullOrEmpty(dto.ClientIp))
+            {                content += $" | IP: {dto.ClientIp}";            }
             if (!string.IsNullOrEmpty(dto.UserAgent))
-            {
-                content += $" | UA: {dto.UserAgent}";
-            }
+            {                content += $" | UA: {dto.UserAgent}";            }
 
             await LogUserActionAsync(userId, operatorName, ActionType.Login, content);
         }
@@ -78,12 +67,8 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录登录异常日志
         /// </summary>
         public async Task LogLoginExceptionAsync(string username, Exception ex, LoginRequest dto)
-        {
-            var content = $"登录异常: {ex.Message}";
-            if (!string.IsNullOrEmpty(dto.ClientIp))
-            {
-                content += $" | IP: {dto.ClientIp}";
-            }
+        {            var content = $"登录异常: {ex.Message}";            if (!string.IsNullOrEmpty(dto.ClientIp))
+            {                content += $" | IP: {dto.ClientIp}";            }
 
             await LogUserActionAsync(Guid.Empty, username, ActionType.Login, content);
         }
@@ -99,9 +84,7 @@ namespace LYBT.Module.Auth.Helpers
         {
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
-
-            var content = "用户登出";
-            // UltraThink v2.0简化：LogoutRequest不包含ClientIp信息
+            var content = "用户登出";            // UltraThink v2.0简化：LogoutRequest不包含ClientIp信息
 
             var operatorName = GetOperatorName(user, dto.Username);
             await LogUserActionAsync(user?.Id ?? Guid.Empty, operatorName, ActionType.Logout, content);
@@ -111,12 +94,8 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录强制登出日志
         /// </summary>
         public async Task LogForceLogoutAsync(Guid userId, string username, string reason, Guid operatorId)
-        {
-            var content = $"强制登出: {reason}";
-            await LogUserActionAsync(userId, username, ActionType.Logout, content);
-            
-            _logger.LogWarning("管理员强制登出用户: {Username} ({UserId}), 原因: {Reason}, 操作者: {OperatorId}", 
-                username, userId, reason, operatorId);
+        {            var content = $"强制登出: {reason}";            await LogUserActionAsync(userId, username, ActionType.Logout, content);
+                        _logger.LogWarning("管理员强制登出用户: {Username} ({UserId}), 原因: {Reason}, 操作者: {OperatorId}",                 username, userId, reason, operatorId);
         }
 
         #endregion
@@ -127,19 +106,14 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录密码修改日志
         /// </summary>
         public async Task LogPasswordChangeAsync(Guid userId, string username, bool isSuccess, string? reason = null)
-        {
-            var content = isSuccess ? "密码修改成功" : $"密码修改失败: {reason}";
-            await LogUserActionAsync(userId, username, ActionType.Update, content);
+        {            var content = isSuccess ? "密码修改成功" : $"密码修改失败: {reason}";            await LogUserActionAsync(userId, username, ActionType.Update, content);
         }
 
         /// <summary>
         /// 记录系统管理员密码修改日志
         /// </summary>
         public async Task LogSysAdminPasswordChangeAsync(bool isSuccess, string? reason = null)
-        {
-            var content = isSuccess ? "系统管理员密码修改成功" : $"系统管理员密码修改失败: {reason}";
-            await LogUserActionAsync(Guid.Empty, "系统管理员", ActionType.Update, content);
-        }
+        {            var content = isSuccess ? "系统管理员密码修改成功" : $"系统管理员密码修改失败: {reason}";            await LogUserActionAsync(Guid.Empty, "系统管理员", ActionType.Update, content);        }
 
         #endregion
 
@@ -149,9 +123,7 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录令牌刷新日志
         /// </summary>
         public async Task LogTokenRefreshAsync(Guid userId, string username, bool isSuccess, string? reason = null)
-        {
-            var content = isSuccess ? "令牌刷新成功" : $"令牌刷新失败: {reason}";
-            await LogUserActionAsync(userId, username, ActionType.Login, content);
+        {            var content = isSuccess ? "令牌刷新成功" : $"令牌刷新失败: {reason}";            await LogUserActionAsync(userId, username, ActionType.Login, content);
         }
 
         /// <summary>
@@ -161,12 +133,7 @@ namespace LYBT.Module.Auth.Helpers
         {
             if (!_authOptions.EnableDetailedLoginLogging)
                 return;
-
-            var content = isValid ? "令牌验证成功" : $"令牌验证失败: {reason}";
-            var tokenPreview = string.IsNullOrEmpty(token) ? "空" : $"{token.Substring(0, Math.Min(10, token.Length))}...";
-            
-            _logger.LogInformation("令牌验证 - Token: {TokenPreview}, 结果: {Content}", tokenPreview, content);
-        }
+            var content = isValid ? "令牌验证成功" : $"令牌验证失败: {reason}";            var tokenPreview = string.IsNullOrEmpty(token) ? "空" : $"{token.Substring(0, Math.Min(10, token.Length))}...";                        _logger.LogInformation("令牌验证 - Token: {TokenPreview}, 结果: {Content}", tokenPreview, content);        }
 
         #endregion
 
@@ -176,34 +143,22 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录账户锁定日志
         /// </summary>
         public async Task LogAccountLockoutAsync(Guid userId, string username, string reason)
-        {
-            var content = $"账户锁定: {reason}";
-            await LogUserActionAsync(userId, username, ActionType.Update, content);
-            
-            _logger.LogWarning("账户锁定 - 用户: {Username} ({UserId}), 原因: {Reason}", username, userId, reason);
-        }
+        {            var content = $"账户锁定: {reason}";            await LogUserActionAsync(userId, username, ActionType.Update, content);
+                        _logger.LogWarning("账户锁定 - 用户: {Username} ({UserId}), 原因: {Reason}", username, userId, reason);        }
 
         /// <summary>
         /// 记录账户解锁日志
         /// </summary>
         public async Task LogAccountUnlockAsync(Guid userId, string username, Guid operatorId)
-        {
-            var content = "账户解锁";
-            await LogUserActionAsync(userId, username, ActionType.Update, content);
-            
-            _logger.LogInformation("账户解锁 - 用户: {Username} ({UserId}), 操作者: {OperatorId}", username, userId, operatorId);
-        }
+        {            var content = "账户解锁";            await LogUserActionAsync(userId, username, ActionType.Update, content);
+                        _logger.LogInformation("账户解锁 - 用户: {Username} ({UserId}), 操作者: {OperatorId}", username, userId, operatorId);        }
 
         /// <summary>
         /// 记录可疑登录尝试
         /// </summary>
         public async Task LogSuspiciousLoginAttemptAsync(string username, string clientIp, string reason)
-        {
-            var content = $"可疑登录尝试: {reason} | IP: {clientIp}";
-            await LogUserActionAsync(Guid.Empty, username, ActionType.Login, content);
-            
-            _logger.LogWarning("可疑登录尝试 - 用户: {Username}, IP: {ClientIp}, 原因: {Reason}", username, clientIp, reason);
-        }
+        {            var content = $"可疑登录尝试: {reason} | IP: {clientIp}";            await LogUserActionAsync(Guid.Empty, username, ActionType.Login, content);
+                        _logger.LogWarning("可疑登录尝试 - 用户: {Username}, IP: {ClientIp}, 原因: {Reason}", username, clientIp, reason);        }
 
         #endregion
 
@@ -213,24 +168,16 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录权限变更日志
         /// </summary>
         public async Task LogPermissionChangeAsync(Guid userId, string username, string permissionChange, Guid operatorId)
-        {
-            var content = $"权限变更: {permissionChange}";
-            await LogUserActionAsync(userId, username, ActionType.Update, content);
-            
-            _logger.LogInformation("权限变更 - 用户: {Username} ({UserId}), 变更: {PermissionChange}, 操作者: {OperatorId}", 
-                username, userId, permissionChange, operatorId);
+        {            var content = $"权限变更: {permissionChange}";            await LogUserActionAsync(userId, username, ActionType.Update, content);
+                        _logger.LogInformation("权限变更 - 用户: {Username} ({UserId}), 变更: {PermissionChange}, 操作者: {OperatorId}",                 username, userId, permissionChange, operatorId);
         }
 
         /// <summary>
         /// 记录角色变更日志
         /// </summary>
         public async Task LogRoleChangeAsync(Guid userId, string username, UserRole oldRole, UserRole newRole, Guid operatorId)
-        {
-            var content = $"角色变更: {oldRole} -> {newRole}";
-            await LogUserActionAsync(userId, username, ActionType.Update, content);
-            
-            _logger.LogInformation("角色变更 - 用户: {Username} ({UserId}), 从 {OldRole} 变更为 {NewRole}, 操作者: {OperatorId}", 
-                username, userId, oldRole, newRole, operatorId);
+        {            var content = $"角色变更: {oldRole} -> {newRole}";            await LogUserActionAsync(userId, username, ActionType.Update, content);
+                        _logger.LogInformation("角色变更 - 用户: {Username} ({UserId}), 从 {OldRole} 变更为 {NewRole}, 操作者: {OperatorId}",                 username, userId, oldRole, newRole, operatorId);
         }
 
         #endregion
@@ -241,9 +188,7 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录用户操作日志（核心方法）
         /// </summary>
         public async Task LogUserActionAsync(Guid userId, string operatorName, ActionType actionType, string content)
-        {
-            _logger.LogInformation("认证操作日志 - 操作者: {OperatorName} ({UserId}), 操作类型: {ActionType}, 内容: {Content}",
-                operatorName, userId, actionType, content);
+        {            _logger.LogInformation("认证操作日志 - 操作者: {OperatorName} ({UserId}), 操作类型: {ActionType}, 内容: {Content}",                operatorName, userId, actionType, content);
             
             await Task.CompletedTask;
             // 实际项目中可以在这里：
@@ -256,9 +201,7 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录系统事件日志
         /// </summary>
         public async Task LogSystemEventAsync(string eventType, string description, object? data = null)
-        {
-            _logger.LogInformation("认证系统事件 - 类型: {EventType}, 描述: {Description}, 数据: {Data}", 
-                eventType, description, data);
+        {            _logger.LogInformation("认证系统事件 - 类型: {EventType}, 描述: {Description}, 数据: {Data}",                 eventType, description, data);
             
             await Task.CompletedTask;
         }
@@ -267,9 +210,7 @@ namespace LYBT.Module.Auth.Helpers
         /// 记录安全告警
         /// </summary>
         public async Task LogSecurityAlertAsync(string alertType, string description, string? source = null)
-        {
-            _logger.LogWarning("安全告警 - 类型: {AlertType}, 描述: {Description}, 来源: {Source}", 
-                alertType, description, source);
+        {            _logger.LogWarning("安全告警 - 类型: {AlertType}, 描述: {Description}, 来源: {Source}",                 alertType, description, source);
             
             await Task.CompletedTask;
             // 实际项目中可以在这里：
@@ -294,9 +235,7 @@ namespace LYBT.Module.Auth.Helpers
 
             // 检查是否为系统管理员
             if (_sysAdminHandler.IsSysAdmin(username))
-            {
-                return "系统管理员";
-            }
+            {                return "系统管理员";            }
 
             return username;
         }
@@ -305,17 +244,10 @@ namespace LYBT.Module.Auth.Helpers
         /// 格式化客户端信息
         /// </summary>
         public string FormatClientInfo(string? clientIp, string? userAgent)
-        {
-            var info = "";
-            if (!string.IsNullOrEmpty(clientIp))
-            {
-                info += $"IP: {clientIp}";
-            }
+        {            var info = "";            if (!string.IsNullOrEmpty(clientIp))
+            {                info += $"IP: {clientIp}";            }
             if (!string.IsNullOrEmpty(userAgent))
-            {
-                if (!string.IsNullOrEmpty(info)) info += " | ";
-                info += $"UA: {userAgent}";
-            }
+            {                if (!string.IsNullOrEmpty(info)) info += " | ";                info += $"UA: {userAgent}";            }
             return info;
         }
 
@@ -326,8 +258,7 @@ namespace LYBT.Module.Auth.Helpers
         {
             if (string.IsNullOrEmpty(input) || input.Length <= visibleLength)
                 return input;
-
-            return input.Substring(0, visibleLength) + "***";
+            return input.Substring(0, visibleLength) + "***";
         }
 
         #endregion

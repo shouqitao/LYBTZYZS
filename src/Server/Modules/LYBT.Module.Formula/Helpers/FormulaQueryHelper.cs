@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
@@ -62,9 +62,7 @@ namespace LYBT.Module.Formula.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询验方失败");
-                return ServiceResult<PagedResult<FormulaDto>>.Failure("分页查询验方失败", ex);
-            }
+                _logger.LogError(ex, "分页查询验方失败");                return ServiceResult<PagedResult<FormulaDto>>.Failure("分页查询验方失败", ex);            }
         }
 
         /// <summary>
@@ -105,10 +103,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<PagedResult<FormulaDto>>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索验方失败");
-                return ServiceResult<PagedResult<FormulaDto>>.Failure("搜索验方失败", ex);
-            }
+            {                _logger.LogError(ex, "搜索验方失败");                return ServiceResult<PagedResult<FormulaDto>>.Failure("搜索验方失败", ex);            }
         }
 
         /// <summary>
@@ -137,10 +132,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取验方列表失败");
-                return ServiceResult<List<FormulaDto>>.Failure("获取验方列表失败", ex);
-            }
+            {                _logger.LogError(ex, "获取验方列表失败");                return ServiceResult<List<FormulaDto>>.Failure("获取验方列表失败", ex);            }
         }
 
         /// <summary>
@@ -159,10 +151,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取所有验方失败");
-                return ServiceResult<List<FormulaDto>>.Failure("获取所有验方失败", ex);
-            }
+            {                _logger.LogError(ex, "获取所有验方失败");                return ServiceResult<List<FormulaDto>>.Failure("获取所有验方失败", ex);            }
         }
 
         /// <summary>
@@ -181,10 +170,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取验方模板列表失败");
-                return ServiceResult<List<FormulaDto>>.Failure("获取验方模板列表失败", ex);
-            }
+            {                _logger.LogError(ex, "获取验方模板列表失败");                return ServiceResult<List<FormulaDto>>.Failure("获取验方模板列表失败", ex);            }
         }
 
         /// <summary>
@@ -205,10 +191,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据类型获取验方失败: {Type}", formulaType);
-                return ServiceResult<List<FormulaDto>>.Failure("根据类型获取验方失败", ex);
-            }
+            {                _logger.LogError(ex, "根据类型获取验方失败: {Type}", formulaType);                return ServiceResult<List<FormulaDto>>.Failure("根据类型获取验方失败", ex);            }
         }
 
         /// <summary>
@@ -229,33 +212,18 @@ namespace LYBT.Module.Formula.Helpers
                 var categories = new HashSet<string>();
                 
                 foreach (var effect in effectCategories)
-                {
-                    if (effect.Contains("清热")) categories.Add("清热类");
-                    if (effect.Contains("补气") || effect.Contains("补血")) categories.Add("补益类");
-                    if (effect.Contains("活血")) categories.Add("活血类");
-                    if (effect.Contains("健脾") || effect.Contains("化湿")) categories.Add("健脾类");
-                    if (effect.Contains("安神")) categories.Add("安神类");
-                    if (effect.Contains("解表")) categories.Add("解表类");
-                }
+                {                    if (effect.Contains("清热")) categories.Add("清热类");                    if (effect.Contains("补气") || effect.Contains("补血")) categories.Add("补益类");                    if (effect.Contains("活血")) categories.Add("活血类");                    if (effect.Contains("健脾") || effect.Contains("化湿")) categories.Add("健脾类");                    if (effect.Contains("安神")) categories.Add("安神类");                    if (effect.Contains("解表")) categories.Add("解表类");                }
 
                 // 添加默认分类
                 var defaultCategories = new List<string>
-                {
-                    "经典验方",
-                    "自制验方", 
-                    "常用验方",
-                    "特殊验方"
-                };
+                {                    "经典验方",                    "自制验方",                     "常用验方",                    "特殊验方"                };
 
                 categories.UnionWith(defaultCategories);
 
                 return ServiceResult<List<string>>.Success(categories.OrderBy(c => c).ToList());
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取分类列表失败");
-                return ServiceResult<List<string>>.Failure("获取分类列表失败", ex);
-            }
+            {                _logger.LogError(ex, "获取分类列表失败");                return ServiceResult<List<string>>.Failure("获取分类列表失败", ex);            }
         }
 
         /// <summary>
@@ -264,10 +232,7 @@ namespace LYBT.Module.Formula.Helpers
         public async Task<ServiceResult<List<FormulaExportDto>>> ExportFormulasAsync(List<Guid> formulaIds)
         {
             try
-            {
-                _logger.LogInformation("开始导出验方，数量: {Count}", formulaIds.Count);
-
-                var formulas = await _dbContext.Formulas
+            {                _logger.LogInformation("开始导出验方，数量: {Count}", formulaIds.Count);                var formulas = await _dbContext.Formulas
                     .Where(f => formulaIds.Contains(f.Id) && f.Status == CommonStatus.Enabled)
                     .Include(f => f.Herbs)
                     .ToListAsync();
@@ -287,9 +252,7 @@ namespace LYBT.Module.Formula.Helpers
                         HerbId = fh.HerbId,
                         HerbName = fh.HerbName,
                         Quantity = fh.Quantity,
-                        Unit = fh.Unit,
-                        Preparation = "",
-                        Usage = fh.Usage,
+                        Unit = fh.Unit,                        Preparation = "",                        Usage = fh.Usage,
                         Price = 0,
                         Subtotal = 0,
                         SortOrder = 0
@@ -302,10 +265,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaExportDto>>.Success(exportDtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出验方数据异常");
-                return ServiceResult<List<FormulaExportDto>>.Failure($"导出验方数据异常: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "导出验方数据异常");                return ServiceResult<List<FormulaExportDto>>.Failure($"导出验方数据异常: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -333,10 +293,7 @@ namespace LYBT.Module.Formula.Helpers
                 return await ExportFormulasAsync(formulaIds);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出所有验方数据异常");
-                return ServiceResult<List<FormulaExportDto>>.Failure($"导出所有验方数据异常: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "导出所有验方数据异常");                return ServiceResult<List<FormulaExportDto>>.Failure($"导出所有验方数据异常: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -364,10 +321,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<PagedResult<FormulaImportResultDto>>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取导入历史记录异常");
-                return ServiceResult<PagedResult<FormulaImportResultDto>>.Failure($"获取导入历史记录异常: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "获取导入历史记录异常");                return ServiceResult<PagedResult<FormulaImportResultDto>>.Failure($"获取导入历史记录异常: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -413,10 +367,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "高级搜索验方失败");
-                return ServiceResult<List<FormulaDto>>.Failure("高级搜索验方失败", ex);
-            }
+            {                _logger.LogError(ex, "高级搜索验方失败");                return ServiceResult<List<FormulaDto>>.Failure("高级搜索验方失败", ex);            }
         }
 
         /// <summary>
@@ -437,10 +388,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取热门验方失败");
-                return ServiceResult<List<FormulaDto>>.Failure("获取热门验方失败", ex);
-            }
+            {                _logger.LogError(ex, "获取热门验方失败");                return ServiceResult<List<FormulaDto>>.Failure("获取热门验方失败", ex);            }
         }
 
         /// <summary>
@@ -460,10 +408,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取最近添加的验方失败");
-                return ServiceResult<List<FormulaDto>>.Failure("获取最近添加的验方失败", ex);
-            }
+            {                _logger.LogError(ex, "获取最近添加的验方失败");                return ServiceResult<List<FormulaDto>>.Failure("获取最近添加的验方失败", ex);            }
         }
 
         #region 私有辅助方法
@@ -510,10 +455,7 @@ namespace LYBT.Module.Formula.Helpers
             }
 
             return sortBy.ToLower() switch
-            {
-                "name" => descending ? query.OrderByDescending(f => f.Name) : query.OrderBy(f => f.Name),
-                "effect" => descending ? query.OrderByDescending(f => f.Effect) : query.OrderBy(f => f.Effect),
-                "isshared" => descending ? query.OrderByDescending(f => f.IsShared) : query.OrderBy(f => f.IsShared),
+            {                "name" => descending ? query.OrderByDescending(f => f.Name) : query.OrderBy(f => f.Name),                "effect" => descending ? query.OrderByDescending(f => f.Effect) : query.OrderBy(f => f.Effect),                "isshared" => descending ? query.OrderByDescending(f => f.IsShared) : query.OrderBy(f => f.IsShared),
                 _ => query.OrderBy(f => f.Name)
             };
         }

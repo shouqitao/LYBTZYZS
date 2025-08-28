@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,9 +29,7 @@ namespace LYBT.Module.Herbs.Services
         private readonly HerbValidationHelper _validationHelper;
         private readonly HerbBusinessHelper _businessHelper;
 
-        protected override string EntityName => "药材";
-
-        /// <summary>
+        protected override string EntityName => "药材";        /// <summary>
         /// 构造方法，注入依赖服务和Helper类
         /// </summary>
         public HerbService(
@@ -73,8 +71,7 @@ namespace LYBT.Module.Herbs.Services
                     var items = await _repository.GetAllAsync();
                     return items.ToList();
                 }),
-                "获取药材列表");
-        }
+                "获取药材列表");        }
 
         /// <summary>
         /// 分页查询药材 - 委派给QueryHelper
@@ -83,8 +80,7 @@ namespace LYBT.Module.Herbs.Services
         {
             return await ExecuteSafelyAsync(
                 async () => await _queryHelper.GetPagedAsync(query),
-                "分页查询药材", query);
-        }
+                "分页查询药材", query);        }
 
         /// <summary>
         /// 新增药材 - 委派给BusinessHelper
@@ -93,8 +89,7 @@ namespace LYBT.Module.Herbs.Services
         {
             return await ExecuteSafelyAsync(
                 async () => await _businessHelper.CreateHerbWithAutoCodeAsync(dto),
-                "创建药材", dto);
-        }
+                "创建药材", dto);        }
 
         /// <summary>
         /// 编辑药材信息 - 使用BaseService核心方法
@@ -127,8 +122,7 @@ namespace LYBT.Module.Herbs.Services
         {
             return await ExecuteSafelyAsync(
                 async () => await _businessHelper.SoftDeleteAsync(id),
-                "删除药材", id);
-        }
+                "删除药材", id);        }
 
         #endregion
 
@@ -141,8 +135,7 @@ namespace LYBT.Module.Herbs.Services
         {
             return await ExecuteSafelyAsync(
                 async () => await _queryHelper.SearchAsync(keyword),
-                "搜索药材", keyword);
-        }
+                "搜索药材", keyword);        }
 
         /// <summary>
         /// 获取可用药材列表（状态为启用）- 委派给QueryHelper
@@ -151,8 +144,7 @@ namespace LYBT.Module.Herbs.Services
         {
             return await ExecuteSafelyAsync(
                 async () => await _queryHelper.GetAvailableHerbsAsync(),
-                "获取可用药材列表");
-        }
+                "获取可用药材列表");        }
 
         /// <summary>
         /// 根据ID列表获取药材 - 委派给QueryHelper
@@ -161,8 +153,7 @@ namespace LYBT.Module.Herbs.Services
         {
             return await ExecuteSafelyAsync(
                 async () => await _queryHelper.GetByIdsAsync(ids),
-                "批量获取药材", ids);
-        }
+                "批量获取药材", ids);        }
 
         /// <summary>
         /// 按价格区间查询药材 - 委派给QueryHelper
@@ -171,8 +162,7 @@ namespace LYBT.Module.Herbs.Services
         {
             return await ExecuteSafelyAsync(
                 async () => await _queryHelper.GetByPriceRangeAsync(minPrice, maxPrice),
-                "按价格区间查询药材", new { minPrice, maxPrice });
-        }
+                "按价格区间查询药材", new { minPrice, maxPrice });        }
 
         /// <summary>
         /// 获取药材列表（兼容方法）
@@ -197,9 +187,7 @@ namespace LYBT.Module.Herbs.Services
                 {
                     return ServiceResult<List<HerbDto>>.Success(pagedResult.Data.Items);
                 }
-                return ServiceResult<List<HerbDto>>.Failure(pagedResult.ErrorMessage ?? "查询失败");
-            }, "获取药材列表", query);
-        }
+                return ServiceResult<List<HerbDto>>.Failure(pagedResult.ErrorMessage ?? "查询失败");            }, "获取药材列表", query);        }
 
         /// <summary>
         /// 按名称搜索药材
@@ -229,8 +217,7 @@ namespace LYBT.Module.Herbs.Services
         {
             return await ExecuteSafelyAsync(
                 async () => await _businessHelper.ImportHerbsAsync(herbs),
-                "批量导入药材", herbs?.Count);
-        }
+                "批量导入药材", herbs?.Count);        }
 
         /// <summary>
         /// 导出药材数据 - 委派给BusinessHelper (基础数据功能保留)
@@ -238,9 +225,8 @@ namespace LYBT.Module.Herbs.Services
         public async Task<ServiceResult<List<HerbDto>>> ExportHerbsAsync()
         {
             return await ExecuteSafelyAsync(
-                async () => await _businessHelper.ExportHerbsAsync(),
-                "导出药材数据");
-        }
+                async () => await _queryHelper.GetAvailableHerbsAsync(),
+                "导出药材数据");        }
 
         /// <summary>
         /// 获取药材导入模板 - 基础数据功能 (拼音码自动生成)
@@ -249,9 +235,7 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                _logger.LogInformation("获取药材导入模板");
-
-                var templateContent = @"药材导入模板 - UltraThink精简版
+                _logger.LogInformation("获取药材导入模板");                var templateContent = @"药材导入模板 - UltraThink精简版
 必填列：药材名称, 产地, 规格, 单位, 价格
 可选列：功效, 用法, 备注, 状态(Enabled/Disabled)
 
@@ -261,16 +245,12 @@ namespace LYBT.Module.Herbs.Services
 - 药材名称不能重复
 - 价格必须为有效数字
 - 状态默认为Enabled(启用)
-- 单位推荐：g(克), kg(公斤), 包, 盒等";
-
-                var content = System.Text.Encoding.UTF8.GetBytes(templateContent);
+- 单位推荐：g(克), kg(公斤), 包, 盒等";                var content = System.Text.Encoding.UTF8.GetBytes(templateContent);
                 return ServiceResult<byte[]>.Success(content);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取药材导入模板异常");
-                return ServiceResult<byte[]>.Failure($"获取药材导入模板异常: {ex.Message}", ex);
-            }
+                _logger.LogError(ex, "获取药材导入模板异常");                return ServiceResult<byte[]>.Failure($"获取药材导入模板异常: {ex.Message}", ex);            }
         }
 
         /// <summary>

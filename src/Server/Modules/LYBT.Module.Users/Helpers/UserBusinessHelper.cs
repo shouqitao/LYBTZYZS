@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -77,20 +77,14 @@ namespace LYBT.Module.Users.Helpers
                         {
                             // 内部记录操作日志，使用系统用户ID
                             await LogUserOperation(
-                                user.Id, ActionType.Create, Guid.Empty, "System",
-                                $"新增用户：{user.Username}",
-                                newValue: user
+                                user.Id, ActionType.Create, Guid.Empty, "System",                                $"新增用户：{user.Username}",                                newValue: user
                             );
 
                             await transaction.CommitAsync();
-                            var userDto = _mapper.Map<UserDto>(user);
-                            _logger.LogInformation("创建用户成功: {Username} (ID: {UserId})", user.Username, user.Id);
-                            return ServiceResult<UserDto>.Success(userDto);
+                            var userDto = _mapper.Map<UserDto>(user);                            _logger.LogInformation("创建用户成功: {Username} (ID: {UserId})", user.Username, user.Id);                            return ServiceResult<UserDto>.Success(userDto);
                         }
 
-                        await transaction.RollbackAsync();
-                        return ServiceResult<UserDto>.Failure("用户创建失败");
-                    }
+                        await transaction.RollbackAsync();                        return ServiceResult<UserDto>.Failure("用户创建失败");                    }
                     catch (Exception)
                     {
                         await transaction.RollbackAsync();
@@ -99,10 +93,7 @@ namespace LYBT.Module.Users.Helpers
                 });
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建用户失败, Username: {Username}", dto.Username);
-                return ServiceResult<UserDto>.Failure($"创建用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "创建用户失败, Username: {Username}", dto.Username);                return ServiceResult<UserDto>.Failure($"创建用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -135,21 +126,14 @@ namespace LYBT.Module.Users.Helpers
 
                         if (result != null)
                         {
-                            await LogUserOperation(
-                                existingUser.Id, ActionType.Update, Guid.Empty, "System",
-                                $"修改用户信息：{existingUser.Username}",
-                                oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
+                            await LogUserOperation(                                existingUser.Id, ActionType.Update, Guid.Empty, "System",                                $"修改用户信息：{existingUser.Username}",                                oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
                             );
 
                             await transaction.CommitAsync();
-                            var userDto = _mapper.Map<UserDto>(result);
-                            _logger.LogInformation("更新用户成功: {Username} (ID: {UserId})", result.Username, id);
-                            return ServiceResult<UserDto>.Success(userDto);
+                            var userDto = _mapper.Map<UserDto>(result);                            _logger.LogInformation("更新用户成功: {Username} (ID: {UserId})", result.Username, id);                            return ServiceResult<UserDto>.Success(userDto);
                         }
 
-                        await transaction.RollbackAsync();
-                        return ServiceResult<UserDto>.Failure("用户更新失败");
-                    }
+                        await transaction.RollbackAsync();                        return ServiceResult<UserDto>.Failure("用户更新失败");                    }
                     catch (Exception)
                     {
                         await transaction.RollbackAsync();
@@ -158,10 +142,7 @@ namespace LYBT.Module.Users.Helpers
                 });
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新用户失败, ID: {UserId}", id);
-                return ServiceResult<UserDto>.Failure($"更新用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "更新用户失败, ID: {UserId}", id);                return ServiceResult<UserDto>.Failure($"更新用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -176,22 +157,14 @@ namespace LYBT.Module.Users.Helpers
 
                 if (result)
                 {
-                    await LogUserOperation(
-                        id, ActionType.Update, Guid.Empty, "System",
-                        $"禁用用户：{user.Username}",
-                        oldValue: JsonSerializer.Serialize(user)
+                    await LogUserOperation(                        id, ActionType.Update, Guid.Empty, "System",                        $"禁用用户：{user.Username}",                        oldValue: JsonSerializer.Serialize(user)
                     );
-
-                    _logger.LogInformation("禁用用户成功: {Username} (ID: {UserId})", user.Username, id);
-                }
+                    _logger.LogInformation("禁用用户成功: {Username} (ID: {UserId})", user.Username, id);                }
 
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "禁用用户失败, ID: {UserId}", id);
-                return ServiceResult<bool>.Failure($"禁用用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "禁用用户失败, ID: {UserId}", id);                return ServiceResult<bool>.Failure($"禁用用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -206,22 +179,14 @@ namespace LYBT.Module.Users.Helpers
 
                 if (result)
                 {
-                    await LogUserOperation(
-                        id, ActionType.Update, Guid.Empty, "System",
-                        $"启用用户：{user.Username}",
-                        oldValue: JsonSerializer.Serialize(user)
+                    await LogUserOperation(                        id, ActionType.Update, Guid.Empty, "System",                        $"启用用户：{user.Username}",                        oldValue: JsonSerializer.Serialize(user)
                     );
-
-                    _logger.LogInformation("启用用户成功: {Username} (ID: {UserId})", user.Username, id);
-                }
+                    _logger.LogInformation("启用用户成功: {Username} (ID: {UserId})", user.Username, id);                }
 
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "启用用户失败, ID: {UserId}", id);
-                return ServiceResult<bool>.Failure($"启用用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "启用用户失败, ID: {UserId}", id);                return ServiceResult<bool>.Failure($"启用用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -243,21 +208,13 @@ namespace LYBT.Module.Users.Helpers
 
                 if (affectedCount > 0)
                 {
-                    // 记录批量操作日志（简化版）
-                    _logger.LogInformation("批量禁用用户成功: 影响{Count}条记录", affectedCount);
-                    await LogBatchUserOperation(
-                        ids, ActionType.Update, Guid.Empty, "System",
-                        $"批量禁用 {affectedCount} 个用户"
-                    );
+                    // 记录批量操作日志（简化版）                    _logger.LogInformation("批量禁用用户成功: 影响{Count}条记录", affectedCount);                    await LogBatchUserOperation(                        ids, ActionType.Update, Guid.Empty, "System",                        $"批量禁用 {affectedCount} 个用户"                    );
                 }
 
                 return ServiceResult<int>.Success(affectedCount);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量禁用用户失败, IDs: {UserIds}", string.Join(",", ids));
-                return ServiceResult<int>.Failure($"批量禁用用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "批量禁用用户失败, IDs: {UserIds}", string.Join(",", ids));                return ServiceResult<int>.Failure($"批量禁用用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -279,21 +236,13 @@ namespace LYBT.Module.Users.Helpers
 
                 if (affectedCount > 0)
                 {
-                    // 记录批量操作日志（简化版）
-                    _logger.LogInformation("批量启用用户成功: 影响{Count}条记录", affectedCount);
-                    await LogBatchUserOperation(
-                        ids, ActionType.Update, Guid.Empty, "System",
-                        $"批量启用 {affectedCount} 个用户"
-                    );
+                    // 记录批量操作日志（简化版）                    _logger.LogInformation("批量启用用户成功: 影响{Count}条记录", affectedCount);                    await LogBatchUserOperation(                        ids, ActionType.Update, Guid.Empty, "System",                        $"批量启用 {affectedCount} 个用户"                    );
                 }
 
                 return ServiceResult<int>.Success(affectedCount);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量启用用户失败, IDs: {UserIds}", string.Join(",", ids));
-                return ServiceResult<int>.Failure($"批量启用用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "批量启用用户失败, IDs: {UserIds}", string.Join(",", ids));                return ServiceResult<int>.Failure($"批量启用用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -313,26 +262,18 @@ namespace LYBT.Module.Users.Helpers
 
                 if (result)
                 {
-                    await LogUserOperation(
-                        id, ActionType.Update, Guid.Empty, "System",
-                        $"重置用户密码：{user.Username}"
-                    );
+                    await LogUserOperation(                        id, ActionType.Update, Guid.Empty, "System",                        $"重置用户密码：{user.Username}"                    );
 
                     if (_options.SendPasswordResetNotification)
                     {
                         await SendPasswordResetNotification(user);
                     }
-
-                    _logger.LogInformation("重置用户密码成功: {Username} (ID: {UserId})", user.Username, id);
-                }
+                    _logger.LogInformation("重置用户密码成功: {Username} (ID: {UserId})", user.Username, id);                }
 
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "重置用户密码失败, ID: {UserId}", id);
-                return ServiceResult<bool>.Failure($"重置用户密码失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "重置用户密码失败, ID: {UserId}", id);                return ServiceResult<bool>.Failure($"重置用户密码失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -349,9 +290,7 @@ namespace LYBT.Module.Users.Helpers
                 var user = await GetExistingUser(id);
 
                 if (!PasswordHelper.Verify(user.PasswordHash, oldPassword))
-                {
-                    return ServiceResult<bool>.Failure("原密码错误");
-                }
+                {                    return ServiceResult<bool>.Failure("原密码错误");                }
 
                 var newPasswordHash = PasswordHelper.Hash(newPassword);
                 var result = await _userRepository.UpdatePasswordAsync(id, newPasswordHash);
@@ -359,20 +298,13 @@ namespace LYBT.Module.Users.Helpers
                 if (result)
                 {
                     await LogUserOperation(
-                        id, ActionType.Update, id, user.RealName,
-                        "用户修改个人密码"
-                    );
-
-                    _logger.LogInformation("用户修改密码成功: {Username} (ID: {UserId})", user.Username, id);
-                }
+                        id, ActionType.Update, id, user.RealName,                        "用户修改个人密码"                    );
+                    _logger.LogInformation("用户修改密码成功: {Username} (ID: {UserId})", user.Username, id);                }
 
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "修改用户密码失败, ID: {UserId}", id);
-                return ServiceResult<bool>.Failure($"修改用户密码失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "修改用户密码失败, ID: {UserId}", id);                return ServiceResult<bool>.Failure($"修改用户密码失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -398,22 +330,13 @@ namespace LYBT.Module.Users.Helpers
                 if (result != null)
                 {
                     await LogUserOperation(
-                        id, ActionType.Update, id, user.RealName,
-                        "用户修改个人信息",
-                        oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(user)
+                        id, ActionType.Update, id, user.RealName,                        "用户修改个人信息",                        oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(user)
                     );
-
-                    _logger.LogInformation("用户修改个人信息成功: {Username} (ID: {UserId})", user.Username, id);
-                    return ServiceResult<bool>.Success(true);
+                    _logger.LogInformation("用户修改个人信息成功: {Username} (ID: {UserId})", user.Username, id);                    return ServiceResult<bool>.Success(true);
                 }
-
-                return ServiceResult<bool>.Failure("修改个人信息失败");
-            }
+                return ServiceResult<bool>.Failure("修改个人信息失败");            }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "修改用户个人信息失败, ID: {UserId}", id);
-                return ServiceResult<bool>.Failure($"修改用户个人信息失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "修改用户个人信息失败, ID: {UserId}", id);                return ServiceResult<bool>.Failure($"修改用户个人信息失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -426,17 +349,12 @@ namespace LYBT.Module.Users.Helpers
                 // 使用禁用代替删除（软删除策略）
                 var result = await DisableUserAsync(id);
                 if (result.IsSuccess)
-                {
-                    _logger.LogInformation("软删除用户成功: ID {UserId}", id);
-                    return ServiceResult<bool>.Success(result.Data);
+                {                    _logger.LogInformation("软删除用户成功: ID {UserId}", id);                    return ServiceResult<bool>.Success(result.Data);
                 }
                 return ServiceResult<bool>.Failure(result.ErrorMessage);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除用户失败, ID: {UserId}", id);
-                return ServiceResult<bool>.Failure($"删除用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "删除用户失败, ID: {UserId}", id);                return ServiceResult<bool>.Failure($"删除用户失败: {ex.Message}", ex);            }
         }
 
         #region 私有辅助方法
@@ -478,9 +396,7 @@ namespace LYBT.Module.Users.Helpers
             // 内部方法总是包含禁用用户，确保操作能正常进行
             var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
             if (user == null)
-            {
-                throw new InvalidOperationException("用户不存在");
-            }
+            {                throw new InvalidOperationException("用户不存在");            }
             return user;
         }
 
@@ -495,9 +411,7 @@ namespace LYBT.Module.Users.Helpers
                 return;
 
             await Task.Run(() =>
-            {
-                _logger.LogInformation("用户操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
-                    operatorName, operatorId, actionType, content);
+            {                _logger.LogInformation("用户操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",                    operatorName, operatorId, actionType, content);
             });
         }
 
@@ -512,12 +426,7 @@ namespace LYBT.Module.Users.Helpers
                 return;
 
             await Task.Run(() =>
-            {
-                var userIdString = string.Join(", ", userIds);
-                var detailedContent = $"{content}: {userIdString}";
-
-                _logger.LogInformation("批量用户操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
-                    operatorName, operatorId, actionType, detailedContent);
+            {                var userIdString = string.Join(", ", userIds);                var detailedContent = $"{content}: {userIdString}";                _logger.LogInformation("批量用户操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",                    operatorName, operatorId, actionType, detailedContent);
             });
         }
 
@@ -527,10 +436,11 @@ namespace LYBT.Module.Users.Helpers
         private async Task SendPasswordResetNotification(User user)
         {
             // 可以发送邮件、短信或系统内通知
-            await Task.CompletedTask;
-            _logger.LogInformation("密码重置通知已发送: {Username}", user.Username);
+            await Task.CompletedTask;            _logger.LogInformation("密码重置通知已发送: {Username}", user.Username);
         }
 
         #endregion
     }
 }
+
+

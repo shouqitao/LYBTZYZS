@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Linq;
 using System;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -72,8 +72,7 @@ namespace LYBT.Module.Prescriptions.Services
             // 5. 组装结果
             result.Items = allHerbs.Values.Cast<object>().ToList();
             result.FormulaNames = formulaNames;
-            result.DuplicateHerbWarning = string.Join("；", duplicateWarnings);
-            result.IsAvailable = availabilityCheck.IsFullyAvailable;
+            result.DuplicateHerbWarning = string.Join("；", duplicateWarnings);            result.IsAvailable = availabilityCheck.IsFullyAvailable;
             result.MissingHerbs = availabilityCheck.MissingHerbs;
             // SingleDosePrice字段已删除（UltraThink v2.0简化）
             // result.SingleDosePrice = priceCalculation.SingleDosePrice;
@@ -98,8 +97,7 @@ namespace LYBT.Module.Prescriptions.Services
             {
                 // 处理重复药材，采用第一个遇到的剂量（逍遥散优先逻辑）
                 var existingItem = allHerbs[herbName];
-                duplicateWarnings.Add($"{herb.Name}在验方{templateName}中重复，已采用标准剂量：{existingItem.Quantity}{existingItem.Unit}");
-            }
+                duplicateWarnings.Add($"{herb.Name}在验方{templateName}中重复，已采用标准剂量：{existingItem.Quantity}{existingItem.Unit}");            }
             else
             {
                 // 创建新的处方项目
@@ -137,28 +135,21 @@ namespace LYBT.Module.Prescriptions.Services
                 // 记录重复警告信息
                 var conflictingQuantities = duplicateItems
                     .Where(item => item.Quantity != standardQuantity)
-                    .Select(item => $"{item.Quantity}{item.Unit}")
-                    .ToList();
+                    .Select(item => $"{item.Quantity}{item.Unit}")                    .ToList();
 
                 if (conflictingQuantities.Any())
                 {
-                    result.Warnings.Add($"{herbName}在多个验方中重复，剂量冲突：{string.Join(", ", conflictingQuantities)}，已采用标准剂量：{standardQuantity}{standardItem.Unit}");
-                }
+                    result.Warnings.Add($"{herbName}在多个验方中重复，剂量冲突：{string.Join(", ", conflictingQuantities)}，已采用标准剂量：{standardQuantity}{standardItem.Unit}");                }
                 else
                 {
-                    result.Warnings.Add($"{herbName}在多个验方中重复，剂量相同：{standardQuantity}{standardItem.Unit}");
-                }
+                    result.Warnings.Add($"{herbName}在多个验方中重复，剂量相同：{standardQuantity}{standardItem.Unit}");                }
 
-                result.DuplicateHerbs.Add(herbName ?? "");
-
-                // 移除重复项，保留标准剂量的项
+                result.DuplicateHerbs.Add(herbName ?? "");                // 移除重复项，保留标准剂量的项
                 items.RemoveAll(item => item.HerbName?.Trim().ToUpper() == herbName && item.Id != standardItem.Id);
             }
 
             result.HasDuplicates = result.DuplicateHerbs.Any();
-            result.WarningMessage = string.Join("；", result.Warnings);
-
-            return result;
+            result.WarningMessage = string.Join("；", result.Warnings);            return result;
         }
 
         /// <summary>
@@ -244,23 +235,14 @@ namespace LYBT.Module.Prescriptions.Services
             }
 
             // 生成用药建议
-            if (symptoms.Contains("失眠") || diagnosis.Contains("不寐"))
-            {
-                result.SuggestedAdvice.Add("建议睡前30分钟温服");
-                result.Precautions.Add("服药期间避免浓茶咖啡");
-            }
+            if (symptoms.Contains("失眠") || diagnosis.Contains("不寐"))            {
+                result.SuggestedAdvice.Add("建议睡前30分钟温服");                result.Precautions.Add("服药期间避免浓茶咖啡");            }
 
-            if (symptoms.Contains("腹泻") || diagnosis.Contains("泄泻"))
-            {
-                result.SuggestedAdvice.Add("温服，忌食生冷");
-                result.Precautions.Add("腹泻严重时及时就医");
-            }
+            if (symptoms.Contains("腹泻") || diagnosis.Contains("泄泻"))            {
+                result.SuggestedAdvice.Add("温服，忌食生冷");                result.Precautions.Add("腹泻严重时及时就医");            }
 
-            if (symptoms.Contains("感冒") || diagnosis.Contains("外感"))
-            {
-                result.SuggestedAdvice.Add("热服取汗");
-                result.Precautions.Add("服药后避风寒，适当休息");
-            }
+            if (symptoms.Contains("感冒") || diagnosis.Contains("外感"))            {
+                result.SuggestedAdvice.Add("热服取汗");                result.Precautions.Add("服药后避风寒，适当休息");            }
 
             return result;
         }

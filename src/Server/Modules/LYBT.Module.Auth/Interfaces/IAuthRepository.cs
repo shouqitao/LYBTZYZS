@@ -1,4 +1,4 @@
-using LYBT.Entities.Users;
+﻿using LYBT.Entities.Users;
 using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Auth.Interfaces
@@ -40,9 +40,7 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 更新用户安全状态 - UltraThink Phase 3 安全增强
         /// </summary>
-        /// <param name="userId">用户ID</param>
-        /// <param name="failedLoginCount">失败登录次数</param>
-        /// <param name="lockoutEnd">锁定结束时间</param>
+        /// <param name="userId">用户ID</param>        /// <param name="failedLoginCount">失败登录次数</param>        /// <param name="lockoutEnd">锁定结束时间</param>
         Task UpdateUserSecurityAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd);
     }
 }

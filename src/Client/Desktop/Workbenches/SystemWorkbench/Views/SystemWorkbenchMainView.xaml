@@ -144,22 +144,9 @@
                                VerticalAlignment="Center"
                                Foreground="#2C3E50"/>
 
-                    <!-- 工具按钮 -->
+                    <!-- 工具按钮区域：设置按钮已移除，保留空区域用于未来扩展 -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="刷新" 
-                                Command="{Binding RefreshCommand}"
-                                Margin="5,0"
-                                Padding="10,5"
-                                Background="#3498DB"
-                                Foreground="White"
-                                BorderThickness="0"/>
-                        <Button Content="设置" 
-                                Command="{Binding SettingsCommand}"
-                                Margin="5,0"
-                                Padding="10,5"
-                                Background="#95A5A6"
-                                Foreground="White"
-                                BorderThickness="0"/>
+                        <!-- 预留空间用于未来工具按钮 -->
                     </StackPanel>
                 </Grid>
             </Border>

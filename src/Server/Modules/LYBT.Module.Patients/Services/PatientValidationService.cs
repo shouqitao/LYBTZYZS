@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -69,25 +69,20 @@ namespace LYBT.Module.Patients.Services
             // 基础验证
             if (string.IsNullOrWhiteSpace(dto.Name))
             {
-                throw new ArgumentException("患者姓名不能为空");
-            }
+                throw new ArgumentException("患者姓名不能为空");            }
 
             // 检查身份证号重复
             if (!string.IsNullOrEmpty(dto.IdNumber))
             {
                 if (await _patientRepository.IsIdNumberExistsAsync(dto.IdNumber))
-                {
-                    throw new ArgumentException("身份证号已存在");
-                }
+                {                    throw new ArgumentException("身份证号已存在");                }
             }
 
             // 检查手机号重复
             if (!string.IsNullOrEmpty(dto.PhoneNumber))
             {
                 if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber))
-                {
-                    throw new ArgumentException("手机号已存在");
-                }
+                {                    throw new ArgumentException("手机号已存在");                }
             }
         }
 
@@ -98,25 +93,20 @@ namespace LYBT.Module.Patients.Services
         {
             // 基础验证
             if (string.IsNullOrWhiteSpace(dto.Name))
-            {
-                throw new ArgumentException("患者姓名不能为空");
-            }
+            {                throw new ArgumentException("患者姓名不能为空");            }
 
             // 检查身份证号重复（排除当前患者）
             if (!string.IsNullOrEmpty(dto.IdNumber))
             {
                 if (await _patientRepository.IsIdNumberExistsAsync(dto.IdNumber, id))
-                {
-                    throw new ArgumentException("身份证号已存在");
-                }
+                {                    throw new ArgumentException("身份证号已存在");                }
             }
 
             // 检查手机号重复（排除当前患者）
             if (!string.IsNullOrEmpty(dto.PhoneNumber))
             {
                 if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber, id))
-                {
-                    throw new ArgumentException("手机号已存在");
+                {                    throw new ArgumentException("手机号已存在");
                 }
             }
         }

@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +21,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// <summary>
         /// 执行GetByIdAsync操作。
         /// </summary>
-        /// <param name="id">参数id</param>
-        /// <returns>返回值</returns>
+        /// <param name="id">参数id</param>        /// <returns>返回值</returns>
         public async Task<Prescription?> GetByIdAsync(Guid id)
         {
             return await _context.Prescriptions
@@ -43,9 +42,7 @@ namespace LYBT.Module.Prescriptions.Repositories
 
         /// <summary>
         /// 执行AddAsync操作。
-        /// </summary>
-        /// <param name="model">参数model</param>
-        /// <returns>返回值</returns>
+        /// </summary>        /// <param name="model">参数model</param>        /// <returns>返回值</returns>
         public async Task<bool> AddAsync(Prescription model)
         {
             _context.Prescriptions.Add(model);
@@ -54,9 +51,7 @@ namespace LYBT.Module.Prescriptions.Repositories
 
         /// <summary>
         /// 执行UpdateAsync操作。
-        /// </summary>
-        /// <param name="model">参数model</param>
-        /// <returns>返回值</returns>
+        /// </summary>        /// <param name="model">参数model</param>        /// <returns>返回值</returns>
         public async Task<bool> UpdateAsync(Prescription model)
         {
             _context.Prescriptions.Update(model);
@@ -65,9 +60,7 @@ namespace LYBT.Module.Prescriptions.Repositories
 
         /// <summary>
         /// 执行DeleteAsync操作。
-        /// </summary>
-        /// <param name="id">参数id</param>
-        /// <returns>返回值</returns>
+        /// </summary>        /// <param name="id">参数id</param>        /// <returns>返回值</returns>
         public async Task<bool> DeleteAsync(Guid id)
         {
             var m = await _context.Prescriptions.FindAsync(id);
@@ -79,8 +72,7 @@ namespace LYBT.Module.Prescriptions.Repositories
 
         /// <summary>
         /// 执行CancelAsync操作。
-        /// </summary>
-        /// <param name="id">参数id</param>
+        /// </summary>        /// <param name="id">参数id</param>
         /// <returns>返回值</returns>
         public async Task<bool> CancelAsync(Guid id)
         {

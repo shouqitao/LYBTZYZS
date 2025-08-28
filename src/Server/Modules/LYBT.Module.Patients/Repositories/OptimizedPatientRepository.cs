@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -72,8 +72,7 @@ namespace LYBT.Module.Patients.Repositories
                 }
                 
                 return await query.ToListAsync(cancellationToken);
-            }, "SmartSearch");
-        }
+            }, "SmartSearch");        }
 
         /// <summary>
         /// 按电话查询（使用预编译查询）
@@ -81,9 +80,7 @@ namespace LYBT.Module.Patients.Repositories
         public async Task<Patient?> GetByPhoneAsync(
             string phone,
             CancellationToken cancellationToken = default)
-        {
-            var cacheKey = $"{CacheKeyPrefix}phone:{phone}";
-            
+        {            var cacheKey = $"{CacheKeyPrefix}phone:{phone}";            
             if (_cache.TryGetValue<Patient>(cacheKey, out var cached))
             {
                 return cached;
@@ -332,9 +329,7 @@ namespace LYBT.Module.Patients.Repositories
         {
             var startDate = DateTime.Now.AddDays(-days);
             var endDate = DateTime.Now;
-            
-            var cacheKey = $"{CacheKeyPrefix}recent:{days}:{limit}";
-            
+                        var cacheKey = $"{CacheKeyPrefix}recent:{days}:{limit}";            
             if (_cache.TryGetValue<List<Patient>>(cacheKey, out var cached))
             {
                 return cached!;
@@ -364,9 +359,7 @@ namespace LYBT.Module.Patients.Repositories
             // 先从缓存获取
             var uncachedPhones = new List<string>();
             foreach (var phone in phoneList)
-            {
-                var cacheKey = $"{CacheKeyPrefix}phone:{phone}";
-                if (_cache.TryGetValue<Patient>(cacheKey, out var cached))
+            {                var cacheKey = $"{CacheKeyPrefix}phone:{phone}";                if (_cache.TryGetValue<Patient>(cacheKey, out var cached))
                 {
                     result[phone] = cached!;
                 }
@@ -386,9 +379,7 @@ namespace LYBT.Module.Patients.Repositories
                 
                 foreach (var patient in patients)
                 {
-                    result[patient.PhoneNumber] = patient;
-                    _cache.Set($"{CacheKeyPrefix}phone:{patient.PhoneNumber}", patient, TimeSpan.FromMinutes(30));
-                }
+                    result[patient.PhoneNumber] = patient;                    _cache.Set($"{CacheKeyPrefix}phone:{patient.PhoneNumber}", patient, TimeSpan.FromMinutes(30));                }
             }
             
             return result;
@@ -405,9 +396,7 @@ namespace LYBT.Module.Patients.Repositories
             DateTime? startDate = null,
             DateTime? endDate = null,
             CancellationToken cancellationToken = default)
-        {
-            var cacheKey = $"{CacheKeyPrefix}stats:{startDate:yyyyMMdd}:{endDate:yyyyMMdd}";
-            
+        {            var cacheKey = $"{CacheKeyPrefix}stats:{startDate:yyyyMMdd}:{endDate:yyyyMMdd}";            
             if (_cache.TryGetValue<PatientStatistics>(cacheKey, out var cached))
             {
                 return cached!;
@@ -433,9 +422,7 @@ namespace LYBT.Module.Patients.Repositories
             // 年龄分布
             var ageDistributionTask = query
                 .GroupBy(p => EF.Functions.DateDiffYear(p.BirthDate, DateTime.Now) / 10 * 10)
-                .Select(g => new { AgeGroup = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => $"{x.AgeGroup}-{x.AgeGroup + 9}", x => x.Count, cancellationToken);
-            
+                .Select(g => new { AgeGroup = g.Key, Count = g.Count() })                .ToDictionaryAsync(x => $"{x.AgeGroup}-{x.AgeGroup + 9}", x => x.Count, cancellationToken);            
             // 性别分布
             var genderDistributionTask = query
                 .GroupBy(p => p.Gender)
@@ -511,15 +498,11 @@ namespace LYBT.Module.Patients.Repositories
                             results.Add(new ImportResult
                             {
                                 Patient = duplicate,
-                                Success = false,
-                                ErrorMessage = "电话号码已存在"
-                            });
+                                Success = false,                                ErrorMessage = "电话号码已存在"                            });
                         }
                     }
                     catch (Exception ex)
-                    {
-                        _typedLogger.LogError(ex, "批量导入批次失败");
-                        foreach (var patient in batch)
+                    {                        _typedLogger.LogError(ex, "批量导入批次失败");                        foreach (var patient in batch)
                         {
                             results.Add(new ImportResult
                             {
@@ -554,12 +537,10 @@ namespace LYBT.Module.Patients.Repositories
             
             var updated = 0;
             
-            // 使用原生SQL批量更新以获得最佳性能
-            var sql = @"
+            // 使用原生SQL批量更新以获得最佳性能            var sql = @"
                 UPDATE Patients 
                 SET LastVisitDate = @visitDate, UpdatedAt = @now 
-                WHERE Id = @id";
-            
+                WHERE Id = @id";            
             foreach (var batch in updates.Chunk(100))
             {
                 using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
@@ -568,18 +549,13 @@ namespace LYBT.Module.Patients.Repositories
                     foreach (var update in batch)
                     {
                         updated += await _context.Database.ExecuteSqlRawAsync(
-                            sql,
-                            new Microsoft.Data.SqlClient.SqlParameter("@id", update.Key),
-                            new Microsoft.Data.SqlClient.SqlParameter("@visitDate", update.Value),
-                            new Microsoft.Data.SqlClient.SqlParameter("@now", DateTime.Now));
-                    }
+                            sql,                            new Microsoft.Data.SqlClient.SqlParameter("@id", update.Key),                            new Microsoft.Data.SqlClient.SqlParameter("@visitDate", update.Value),                            new Microsoft.Data.SqlClient.SqlParameter("@now", DateTime.Now));                    }
                     
                     await transaction.CommitAsync(cancellationToken);
                     
                     // 清理缓存
                     foreach (var id in batch.Select(b => b.Key))
-                    {
-                        _cache.Remove($"{CacheKeyPrefix}{id}");
+                    {                        _cache.Remove($"{CacheKeyPrefix}{id}");
                     }
                 }
                 catch

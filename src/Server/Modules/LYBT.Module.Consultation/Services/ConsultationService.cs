@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Linq;
 using System;
 using AutoMapper;
@@ -62,9 +62,7 @@ namespace LYBT.Module.Consultation.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取看诊详情失败: {Id}", id);
-                return ServiceResult<ConsultationDetailDto>.Failure("获取看诊详情失败", ex);
-            }
+                _logger.LogError(ex, "获取看诊详情失败: {Id}", id);                return ServiceResult<ConsultationDetailDto>.Failure("获取看诊详情失败");            }
         }
 
         /// <summary>
@@ -158,14 +156,10 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
-                await Task.CompletedTask;
-                var emptyStats = new { Message = "统计功能已废弃 - UltraThink精简", TotalCount = 0 };
-                return ServiceResult<object>.Success(emptyStats);
+                await Task.CompletedTask;                var emptyStats = new { Message = "统计功能已废弃 - UltraThink精简", TotalCount = 0 };                return ServiceResult<object>.Success(emptyStats);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取看诊统计失败");
-                return ServiceResult<object>.Failure("获取看诊统计失败", ex);
+            {                _logger.LogError(ex, "获取看诊统计失败");                return ServiceResult<object>.Failure("获取看诊统计失败");
             }
         }
 
@@ -213,3 +207,4 @@ namespace LYBT.Module.Consultation.Services
         #endregion
     }
 }
+

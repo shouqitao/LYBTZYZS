@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Configuration.Options;
+﻿using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Options;
@@ -93,13 +93,11 @@ namespace LYBT.Module.Auth.Services
             var principal = ValidateToken(token);
             if (principal == null)
             {
-                throw new SecurityTokenException("Invalid token");
-            }
+                throw new SecurityTokenException("Invalid token");            }
 
             var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
             var userName = principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
-            var roleString = principal.FindFirst(ClaimTypes.Role)?.Value ?? "Doctor";
-            
+            var roleString = principal.FindFirst(ClaimTypes.Role)?.Value ?? "Doctor";            
             if (Enum.TryParse<UserRole>(roleString, out var role))
             {
                 return GenerateToken(userId, userName, role);

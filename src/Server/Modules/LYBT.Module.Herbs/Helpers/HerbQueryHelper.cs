@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -113,9 +113,7 @@ namespace LYBT.Module.Herbs.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询药材失败");
-                return ServiceResult<PagedResult<HerbDto>>.Failure("分页查询药材失败", ex);
-            }
+                _logger.LogError(ex, "分页查询药材失败");                return ServiceResult<PagedResult<HerbDto>>.Failure("分页查询药材失败", ex);            }
         }
 
         /// <summary>
@@ -144,10 +142,7 @@ namespace LYBT.Module.Herbs.Helpers
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索药材失败: {Keyword}", keyword);
-                return ServiceResult<List<HerbDto>>.Failure("搜索药材失败", ex);
-            }
+            {                _logger.LogError(ex, "搜索药材失败: {Keyword}", keyword);                return ServiceResult<List<HerbDto>>.Failure("搜索药材失败", ex);            }
         }
 
         /// <summary>
@@ -166,10 +161,7 @@ namespace LYBT.Module.Herbs.Helpers
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取可用药材列表失败");
-                return ServiceResult<List<HerbDto>>.Failure("获取可用药材列表失败", ex);
-            }
+            {                _logger.LogError(ex, "获取可用药材列表失败");                return ServiceResult<List<HerbDto>>.Failure("获取可用药材列表失败", ex);            }
         }
 
         /// <summary>
@@ -187,10 +179,7 @@ namespace LYBT.Module.Herbs.Helpers
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量获取药材失败");
-                return ServiceResult<List<HerbDto>>.Failure("批量获取药材失败", ex);
-            }
+            {                _logger.LogError(ex, "批量获取药材失败");                return ServiceResult<List<HerbDto>>.Failure("批量获取药材失败", ex);            }
         }
 
         /// <summary>
@@ -209,10 +198,7 @@ namespace LYBT.Module.Herbs.Helpers
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "按价格区间查询药材失败: {MinPrice}-{MaxPrice}", minPrice, maxPrice);
-                return ServiceResult<List<HerbDto>>.Failure("按价格区间查询药材失败", ex);
-            }
+            {                _logger.LogError(ex, "按价格区间查询药材失败: {MinPrice}-{MaxPrice}", minPrice, maxPrice);                return ServiceResult<List<HerbDto>>.Failure("按价格区间查询药材失败", ex);            }
         }
 
         /// <summary>
@@ -234,10 +220,7 @@ namespace LYBT.Module.Herbs.Helpers
                 return ServiceResult<Dictionary<int, int>>.Success(stats);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取药材统计数据失败");
-                return ServiceResult<Dictionary<int, int>>.Failure("获取统计数据失败", ex);
-            }
+            {                _logger.LogError(ex, "获取药材统计数据失败");                return ServiceResult<Dictionary<int, int>>.Failure("获取统计数据失败", ex);            }
         }
 
         /// <summary>
@@ -263,9 +246,7 @@ namespace LYBT.Module.Herbs.Helpers
                 return ServiceResult<HerbStockStatisticsDto>.Success(stats);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取库存统计失败");
-                return ServiceResult<HerbStockStatisticsDto>.Failure("获取库存统计失败", ex);
+            {                _logger.LogError(ex, "获取库存统计失败");                return ServiceResult<HerbStockStatisticsDto>.Failure("获取库存统计失败");
             }
         }
 
@@ -296,3 +277,4 @@ namespace LYBT.Module.Herbs.Helpers
         }
     }
 }
+

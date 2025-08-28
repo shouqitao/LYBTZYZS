@@ -78,7 +78,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region Commands
 
         public DelegateCommand SearchCommand { get; private set; }
-        public DelegateCommand RefreshCommand { get; private set; }
+        // 注意：RefreshCommand由基类NewBaseListViewModel提供，不需要重复定义
         public DelegateCommand AddCommand { get; private set; }
         public DelegateCommand<MedicalCaseDto> ViewDetailsCommand { get; private set; }
         public DelegateCommand<MedicalCaseDto> EditCommand { get; private set; }
@@ -116,7 +116,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             base.InitializeCommands();
             
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
-            RefreshCommand = new DelegateCommand(async () => await RefreshDataAsync());
+            // RefreshCommand由基类提供，已修复async void问题
             AddCommand = new DelegateCommand(async () => await AddCaseAsync());
             ViewDetailsCommand = new DelegateCommand<MedicalCaseDto>(async dto => await ViewDetailsAsync(dto));
             EditCommand = new DelegateCommand<MedicalCaseDto>(async dto => await EditCaseAsync(dto));

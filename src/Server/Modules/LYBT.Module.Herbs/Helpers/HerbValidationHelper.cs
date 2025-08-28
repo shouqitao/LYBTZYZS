@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,28 +41,18 @@ namespace LYBT.Module.Herbs.Helpers
             {
                 // 基础字段验证
                 if (string.IsNullOrWhiteSpace(dto.Name))
-                    return ServiceResult<bool>.Failure("药材名称不能为空");
-
-                if (dto.Price < 0)
-                    return ServiceResult<bool>.Failure("药材价格不能为负数");
-
-                if (string.IsNullOrWhiteSpace(dto.Unit))
-                    return ServiceResult<bool>.Failure("药材单位不能为空");
-
-                // 检查药材名称是否重复
+                    return ServiceResult<bool>.Failure("药材名称不能为空");                if (dto.Price < 0)
+                    return ServiceResult<bool>.Failure("药材价格不能为负数");                if (string.IsNullOrWhiteSpace(dto.Unit))
+                    return ServiceResult<bool>.Failure("药材单位不能为空");                // 检查药材名称是否重复
                 var exists = await _context.Herbs
                     .AnyAsync(h => h.Name == dto.Name && h.Status == CommonStatus.Enabled);
                 
                 if (exists)
-                    return ServiceResult<bool>.Failure($"药材'{dto.Name}'已存在");
-
-                return ServiceResult<bool>.Success(true);
+                    return ServiceResult<bool>.Failure($"药材'{dto.Name}'已存在");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证创建药材请求失败");
-                return ServiceResult<bool>.Failure("验证创建请求失败", ex);
-            }
+                _logger.LogError(ex, "验证创建药材请求失败");                return ServiceResult<bool>.Failure("验证创建请求失败");            }
         }
 
         /// <summary>
@@ -74,33 +64,21 @@ namespace LYBT.Module.Herbs.Helpers
             {
                 // 基础字段验证
                 if (string.IsNullOrWhiteSpace(dto.Name))
-                    return ServiceResult<bool>.Failure("药材名称不能为空");
-
-                if (dto.Price < 0)
-                    return ServiceResult<bool>.Failure("药材价格不能为负数");
-
-                if (string.IsNullOrWhiteSpace(dto.Unit))
-                    return ServiceResult<bool>.Failure("药材单位不能为空");
-
-                // 检查药材是否存在
+                    return ServiceResult<bool>.Failure("药材名称不能为空");                if (dto.Price < 0)
+                    return ServiceResult<bool>.Failure("药材价格不能为负数");                if (string.IsNullOrWhiteSpace(dto.Unit))
+                    return ServiceResult<bool>.Failure("药材单位不能为空");                // 检查药材是否存在
                 var exists = await _context.Herbs.AnyAsync(h => h.Id == id);
                 if (!exists)
-                    return ServiceResult<bool>.Failure("要更新的药材不存在");
-
-                // 检查名称是否与其他药材重复（排除自身）
+                    return ServiceResult<bool>.Failure("要更新的药材不存在");                // 检查名称是否与其他药材重复（排除自身）
                 var nameExists = await _context.Herbs
                     .AnyAsync(h => h.Name == dto.Name && h.Id != id && h.Status == CommonStatus.Enabled);
                 
                 if (nameExists)
-                    return ServiceResult<bool>.Failure($"药材名称'{dto.Name}'已被其他药材使用");
-
-                return ServiceResult<bool>.Success(true);
+                    return ServiceResult<bool>.Failure($"药材名称'{dto.Name}'已被其他药材使用");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证更新药材请求失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证更新请求失败", ex);
-            }
+                _logger.LogError(ex, "验证更新药材请求失败: {Id}", id);                return ServiceResult<bool>.Failure("验证更新请求失败");            }
         }
 
         /// <summary>
@@ -127,9 +105,7 @@ namespace LYBT.Module.Herbs.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证删除药材请求失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证删除请求失败", ex);
-            }
+                _logger.LogError(ex, "验证删除药材请求失败: {Id}", id);                return ServiceResult<bool>.Failure("验证删除请求失败");            }
         }
 
         /// <summary>
@@ -143,8 +119,7 @@ namespace LYBT.Module.Herbs.Helpers
 
                 if (herbs == null || herbs.Count == 0)
                 {
-                    errors.Add("导入的药材列表为空");
-                    return ServiceResult<List<string>>.Success(errors);
+                    errors.Add("导入的药材列表为空");                    return ServiceResult<List<string>>.Success(errors);
                 }
 
                 // 获取现有药材名称列表
@@ -161,31 +136,20 @@ namespace LYBT.Module.Herbs.Helpers
 
                     // 基础验证
                     if (string.IsNullOrWhiteSpace(herb.Name))
-                        errors.Add($"第{rowNumber}行：药材名称不能为空");
-
-                    if (herb.Price < 0)
-                        errors.Add($"第{rowNumber}行：药材价格不能为负数");
-
-                    if (string.IsNullOrWhiteSpace(herb.Unit))
-                        errors.Add($"第{rowNumber}行：药材单位不能为空");
-
-                    // 重复性检查
+                        errors.Add($"第{rowNumber}行：药材名称不能为空");                    if (herb.Price < 0)
+                        errors.Add($"第{rowNumber}行：药材价格不能为负数");                    if (string.IsNullOrWhiteSpace(herb.Unit))
+                        errors.Add($"第{rowNumber}行：药材单位不能为空");                    // 重复性检查
                     if (existingNames.Contains(herb.Name))
-                        errors.Add($"第{rowNumber}行：药材'{herb.Name}'已存在");
-
-                    // 导入列表内部重复检查
+                        errors.Add($"第{rowNumber}行：药材'{herb.Name}'已存在");                    // 导入列表内部重复检查
                     var duplicateInBatch = herbs.Take(i).Any(h => h.Name == herb.Name);
                     if (duplicateInBatch)
-                        errors.Add($"第{rowNumber}行：药材'{herb.Name}'在导入列表中重复");
-                }
+                        errors.Add($"第{rowNumber}行：药材'{herb.Name}'在导入列表中重复");                }
 
                 return ServiceResult<List<string>>.Success(errors);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证导入药材失败");
-                return ServiceResult<List<string>>.Failure("验证导入失败", ex);
-            }
+                _logger.LogError(ex, "验证导入药材失败");                return ServiceResult<List<string>>.Failure("验证导入失败", ex);            }
         }
 
         /// <summary>
@@ -198,26 +162,16 @@ namespace LYBT.Module.Herbs.Helpers
                 // 检查药材是否存在
                 var exists = await _context.Herbs.AnyAsync(h => h.Id == id);
                 if (!exists)
-                    return ServiceResult<bool>.Failure("要更新价格的药材不存在");
-
-                // 价格验证
+                    return ServiceResult<bool>.Failure("要更新价格的药材不存在");                // 价格验证
                 if (dto.CostPrice.HasValue && dto.CostPrice.Value < 0)
-                    return ServiceResult<bool>.Failure("成本价不能为负数");
-
-                if (dto.Price.HasValue && dto.Price.Value < 0)
-                    return ServiceResult<bool>.Failure("销售价不能为负数");
-
-                // 成本价不应高于销售价的业务规则验证
+                    return ServiceResult<bool>.Failure("成本价不能为负数");                if (dto.Price.HasValue && dto.Price.Value < 0)
+                    return ServiceResult<bool>.Failure("销售价不能为负数");                // 成本价不应高于销售价的业务规则验证
                 if (dto.CostPrice.HasValue && dto.Price.HasValue && dto.CostPrice.Value > dto.Price.Value)
-                    return ServiceResult<bool>.Failure("成本价不能高于销售价");
-
-                return ServiceResult<bool>.Success(true);
+                    return ServiceResult<bool>.Failure("成本价不能高于销售价");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证价格更新失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证价格更新失败", ex);
-            }
+                _logger.LogError(ex, "验证价格更新失败: {Id}", id);                return ServiceResult<bool>.Failure("验证价格更新失败");            }
         }
 
         /// <summary>
@@ -228,9 +182,7 @@ namespace LYBT.Module.Herbs.Helpers
             try
             {
                 if (dto.Ids == null || dto.Ids.Count == 0)
-                    return ServiceResult<bool>.Failure("要更新状态的药材ID列表为空");
-
-                // 检查所有ID是否有效
+                    return ServiceResult<bool>.Failure("要更新状态的药材ID列表为空");                // 检查所有ID是否有效
                 var existingIds = await _context.Herbs
                     .Where(h => dto.Ids.Contains(h.Id))
                     .Select(h => h.Id)
@@ -239,16 +191,13 @@ namespace LYBT.Module.Herbs.Helpers
                 var invalidIds = dto.Ids.Except(existingIds).ToList();
                 if (invalidIds.Any())
                 {
-                    return ServiceResult<bool>.Failure($"以下药材ID不存在: {string.Join(", ", invalidIds)}");
-                }
+                    return ServiceResult<bool>.Failure($"以下药材ID不存在: {string.Join(", ", invalidIds)}");                }
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证批量状态更新失败");
-                return ServiceResult<bool>.Failure("验证批量状态更新失败", ex);
-            }
+                _logger.LogError(ex, "验证批量状态更新失败");                return ServiceResult<bool>.Failure("验证批量状态更新失败");            }
         }
 
         /// <summary>
@@ -271,29 +220,16 @@ namespace LYBT.Module.Herbs.Helpers
             try
             {
                 if (query.PageIndex < 1)
-                    return ServiceResult<bool>.Failure("页码必须大于0");
-
-                if (query.PageSize < 1)
-                    return ServiceResult<bool>.Failure("页大小必须大于0");
-
-                if (query.PageSize > 100)
-                    return ServiceResult<bool>.Failure("页大小不能超过100");
-
-                if (query.MinPrice.HasValue && query.MinPrice.Value < 0)
-                    return ServiceResult<bool>.Failure("最低价格不能为负数");
-
-                if (query.MaxPrice.HasValue && query.MaxPrice.Value < 0)
-                    return ServiceResult<bool>.Failure("最高价格不能为负数");
-
-                if (query.MinPrice.HasValue && query.MaxPrice.HasValue && query.MinPrice.Value > query.MaxPrice.Value)
-                    return ServiceResult<bool>.Failure("最低价格不能高于最高价格");
-
-                return ServiceResult<bool>.Success(true);
+                    return ServiceResult<bool>.Failure("页码必须大于0");                if (query.PageSize < 1)
+                    return ServiceResult<bool>.Failure("页大小必须大于0");                if (query.PageSize > 100)
+                    return ServiceResult<bool>.Failure("页大小不能超过100");                if (query.MinPrice.HasValue && query.MinPrice.Value < 0)
+                    return ServiceResult<bool>.Failure("最低价格不能为负数");                if (query.MaxPrice.HasValue && query.MaxPrice.Value < 0)
+                    return ServiceResult<bool>.Failure("最高价格不能为负数");                if (query.MinPrice.HasValue && query.MaxPrice.HasValue && query.MinPrice.Value > query.MaxPrice.Value)
+                    return ServiceResult<bool>.Failure("最低价格不能高于最高价格");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证分页查询参数失败");
-                return ServiceResult<bool>.Failure("验证查询参数失败", ex);
+                _logger.LogError(ex, "验证分页查询参数失败");                return ServiceResult<bool>.Failure("验证查询参数失败");
             }
         }
 
@@ -314,3 +250,5 @@ namespace LYBT.Module.Herbs.Helpers
         }
     }
 }
+
+

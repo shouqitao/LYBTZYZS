@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -56,9 +56,7 @@ namespace LYBT.Module.Users.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取分页用户列表失败");
-                return ServiceResult<PagedResult<UserDto>>.Failure($"获取分页用户列表失败: {ex.Message}", ex);
-            }
+                _logger.LogError(ex, "获取分页用户列表失败");                return ServiceResult<PagedResult<UserDto>>.Failure($"获取分页用户列表失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -73,18 +71,13 @@ namespace LYBT.Module.Users.Helpers
 
                 var model = await _userRepository.GetByIdAsync(id, includeDisabled);
                 if (model == null)
-                {
-                    return ServiceResult<UserDto>.Failure("用户不存在");
-                }
+                {                    return ServiceResult<UserDto>.Failure("用户不存在");                }
 
                 var userDto = _mapper.Map<UserDto>(model);
                 return ServiceResult<UserDto>.Success(userDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据ID获取用户失败, ID: {UserId}", id);
-                return ServiceResult<UserDto>.Failure($"根据ID获取用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "根据ID获取用户失败, ID: {UserId}", id);                return ServiceResult<UserDto>.Failure($"根据ID获取用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -96,18 +89,13 @@ namespace LYBT.Module.Users.Helpers
             {
                 var model = await _userRepository.GetByUsernameAsync(username);
                 if (model == null)
-                {
-                    return ServiceResult<UserDto>.Failure("用户不存在");
-                }
+                {                    return ServiceResult<UserDto>.Failure("用户不存在");                }
 
                 var userDto = _mapper.Map<UserDto>(model);
                 return ServiceResult<UserDto>.Success(userDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据用户名获取用户失败, Username: {Username}", username);
-                return ServiceResult<UserDto>.Failure($"根据用户名获取用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "根据用户名获取用户失败, Username: {Username}", username);                return ServiceResult<UserDto>.Failure($"根据用户名获取用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -122,10 +110,7 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<List<UserDto>>.Success(userDtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取活跃用户列表失败");
-                return ServiceResult<List<UserDto>>.Failure($"获取活跃用户列表失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "获取活跃用户列表失败");                return ServiceResult<List<UserDto>>.Failure($"获取活跃用户列表失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -147,14 +132,9 @@ namespace LYBT.Module.Users.Helpers
                 {
                     return ServiceResult<List<UserDto>>.Success(result.Data.Items.ToList());
                 }
-
-                return ServiceResult<List<UserDto>>.Failure(result.ErrorMessage ?? "搜索用户失败");
-            }
+                return ServiceResult<List<UserDto>>.Failure(result.ErrorMessage ?? "搜索用户失败");            }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索用户失败, Keyword: {Keyword}", keyword);
-                return ServiceResult<List<UserDto>>.Failure($"搜索用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "搜索用户失败, Keyword: {Keyword}", keyword);                return ServiceResult<List<UserDto>>.Failure($"搜索用户失败: {ex.Message}", ex);            }
         }
 
         #region 已废弃功能 - 统计分析
@@ -176,10 +156,7 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<List<User>>.Success(users);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据ID列表获取用户失败");
-                return ServiceResult<List<User>>.Failure($"根据ID列表获取用户失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "根据ID列表获取用户失败");                return ServiceResult<List<User>>.Failure($"根据ID列表获取用户失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -188,16 +165,11 @@ namespace LYBT.Module.Users.Helpers
         public async Task<ServiceResult<List<object>>> GetRolesAsync()
         {
             try
-            {
-                var roles = new List<object> { new { Value = "Admin", DisplayName = "管理员" } };
-                await Task.CompletedTask; // 为了保持异步方法的一致性
+            {                var roles = new List<object> { new { Value = "Admin", DisplayName = "管理员" } };                await Task.CompletedTask; // 为了保持异步方法的一致性
                 return ServiceResult<List<object>>.Success(roles);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取角色列表失败");
-                return ServiceResult<List<object>>.Failure($"获取角色列表失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "获取角色列表失败");                return ServiceResult<List<object>>.Failure($"获取角色列表失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -220,10 +192,7 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<PagedResult<object>>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取用户操作日志失败, UserId: {UserId}", userId);
-                return ServiceResult<PagedResult<object>>.Failure($"获取用户操作日志失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "获取用户操作日志失败, UserId: {UserId}", userId);                return ServiceResult<PagedResult<object>>.Failure($"获取用户操作日志失败: {ex.Message}", ex);            }
         }
 
         #region 医生功能兼容接口
@@ -240,10 +209,7 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<List<UserDto>>.Success(userDtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医生列表失败");
-                return ServiceResult<List<UserDto>>.Failure($"获取医生列表失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "获取医生列表失败");                return ServiceResult<List<UserDto>>.Failure($"获取医生列表失败: {ex.Message}", ex);            }
         }
 
         #endregion
@@ -270,10 +236,7 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<bool>.Success(isAvailable);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "检查医生可用性失败, DoctorId: {DoctorId}", doctorId);
-                return ServiceResult<bool>.Failure($"检查医生可用性失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "检查医生可用性失败, DoctorId: {DoctorId}", doctorId);                return ServiceResult<bool>.Failure($"检查医生可用性失败: {ex.Message}", ex);            }
         }
 
         #endregion
@@ -289,10 +252,7 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<bool>.Success(exists);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "检查用户名是否存在失败, Username: {Username}", username);
-                return ServiceResult<bool>.Failure($"检查用户名是否存在失败: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "检查用户名是否存在失败, Username: {Username}", username);                return ServiceResult<bool>.Failure($"检查用户名是否存在失败: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -307,10 +267,10 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<User?>.Success(user);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取现有用户失败, ID: {UserId}", id);
-                return ServiceResult<User?>.Failure($"获取现有用户失败: {ex.Message}", ex);
+            {                _logger.LogError(ex, "获取现有用户失败, ID: {UserId}", id);                return ServiceResult<User?>.Failure($"获取现有用户失败: {ex.Message}", ex);
             }
         }
     }
 }
+
+

@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Linq;
 using System;
 using AutoMapper;
@@ -77,9 +77,7 @@ namespace LYBT.Module.Consultation.Helpers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "开始看诊失败");
-                return ServiceResult<ConsultationDto>.Failure("开始看诊失败", ex);
-            }
+                _logger.LogError(ex, "开始看诊失败");                return ServiceResult<ConsultationDto>.Failure("开始看诊失败");            }
         }
 
         /// <summary>
@@ -112,10 +110,7 @@ namespace LYBT.Module.Consultation.Helpers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "完成看诊失败: {Id}", id);
-                return ServiceResult<bool>.Failure("完成看诊失败", ex);
-            }
+                await transaction.RollbackAsync();                _logger.LogError(ex, "完成看诊失败: {Id}", id);                return ServiceResult<bool>.Failure("完成看诊失败");            }
         }
 
         /// <summary>
@@ -134,21 +129,14 @@ namespace LYBT.Module.Consultation.Helpers
                 var consultation = consultationResult.Data;
 
                 consultation.Status = CommonStatus.Disabled;
-                consultation.Remark = string.IsNullOrWhiteSpace(consultation.Remark)
-                    ? $"取消原因: {reason}"
-                    : $"{consultation.Remark}\n\n取消原因: {reason}";
-
-                // 更新医疗案例状态
+                consultation.Remark = string.IsNullOrWhiteSpace(consultation.Remark)                    ? $"取消原因: {reason}"                    : $"{consultation.Remark}\n\n取消原因: {reason}";                // 更新医疗案例状态
                 await UpdateMedicalCaseStatusByConsultationAsync(consultation.Id, MedicalCaseStatus.Cancelled);
 
                 await _context.SaveChangesAsync();
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "取消看诊失败: {Id}", id);
-                return ServiceResult<bool>.Failure("取消看诊失败", ex);
-            }
+            {                _logger.LogError(ex, "取消看诊失败: {Id}", id);                return ServiceResult<bool>.Failure("取消看诊失败");            }
         }
 
         /// <summary>
@@ -165,21 +153,22 @@ namespace LYBT.Module.Consultation.Helpers
                 }
 
                 var consultation = consultationResult.Data;
-
-                // 使用ValidationHelper更新基础信息
-                _validationHelper.UpdateConsultationBasicInfo(consultation, dto);
+                _logger.LogInformation("更新看诊记录: {ConsultationId}", id);                // 🎯 UltraThink修复：使用AutoMapper全量映射，避免字段遗漏
+                var oldTCMDiagnosis = consultation.TCMDiagnosis;
+                _mapper.Map(dto, consultation);
+                
+                // 记录诊断变更日志
+                if (consultation.TCMDiagnosis != oldTCMDiagnosis)
+                {                    _logger.LogInformation("更新诊断记录: {ConsultationId} {OldDiagnosis} -> {NewDiagnosis}",                         id, oldTCMDiagnosis, consultation.TCMDiagnosis);
+                }
 
                 await _context.SaveChangesAsync();
 
                 // 转换为DTO返回
-                var consultationDto = _validationHelper.ConvertToSimpleDto(consultation);
-                return ServiceResult<ConsultationDto>.Success(consultationDto);
+                var consultationDto = _validationHelper.ConvertToSimpleDto(consultation);                _logger.LogInformation("看诊记录更新成功: {ConsultationId}", id);                return ServiceResult<ConsultationDto>.Success(consultationDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新看诊信息失败: {Id}", id);
-                return ServiceResult<ConsultationDto>.Failure("更新看诊信息失败", ex);
-            }
+            {                _logger.LogError(ex, "更新看诊信息失败: {Id}", id);                return ServiceResult<ConsultationDto>.Failure("更新看诊信息失败");            }
         }
 
         /// <summary>
@@ -202,9 +191,7 @@ namespace LYBT.Module.Consultation.Helpers
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除看诊记录失败: {Id}", id);
-                return ServiceResult<bool>.Failure("删除看诊记录失败", ex);
+            {                _logger.LogError(ex, "删除看诊记录失败: {Id}", id);                return ServiceResult<bool>.Failure("删除看诊记录失败");
             }
         }
 
@@ -251,3 +238,4 @@ namespace LYBT.Module.Consultation.Helpers
         #endregion
     }
 }
+

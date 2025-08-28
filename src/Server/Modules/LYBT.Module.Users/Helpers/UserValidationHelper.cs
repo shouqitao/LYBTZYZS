@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -46,40 +46,17 @@ namespace LYBT.Module.Users.Helpers
             {
                 // 基础字段验证
                 if (string.IsNullOrWhiteSpace(dto.Username))
-                    return ServiceResult<bool>.Failure("用户名不能为空");
-
-                if (string.IsNullOrWhiteSpace(dto.RealName))
-                    return ServiceResult<bool>.Failure("真实姓名不能为空");
-
-                // 用户名长度验证
-                if (dto.Username.Length < 2)
-                    return ServiceResult<bool>.Failure("用户名长度不能少于2个字符");
-
-                if (dto.Username.Length > 50)
-                    return ServiceResult<bool>.Failure("用户名长度不能超过50个字符");
-
-                // 真实姓名长度验证
-                if (dto.RealName.Length > 50)
-                    return ServiceResult<bool>.Failure("真实姓名长度不能超过50个字符");
-
-                // 电话号码格式验证（如果提供）
-                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber) && !IsValidPhoneNumber(dto.PhoneNumber))
-                    return ServiceResult<bool>.Failure("电话号码格式不正确");
-
-                // 检查用户名是否已存在
+                    return ServiceResult<bool>.Failure("用户名不能为空");                if (string.IsNullOrWhiteSpace(dto.RealName))                    return ServiceResult<bool>.Failure("真实姓名不能为空");                // 用户名长度验证
+                if (dto.Username.Length < 2)                    return ServiceResult<bool>.Failure("用户名长度不能少于2个字符");                if (dto.Username.Length > 50)                    return ServiceResult<bool>.Failure("用户名长度不能超过50个字符");                // 真实姓名长度验证
+                if (dto.RealName.Length > 50)                    return ServiceResult<bool>.Failure("真实姓名长度不能超过50个字符");                // 电话号码格式验证（如果提供）
+                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber) && !IsValidPhoneNumber(dto.PhoneNumber))                    return ServiceResult<bool>.Failure("电话号码格式不正确");                // 检查用户名是否已存在
                 var usernameExists = await _userRepository.ExistsByUsernameAsync(dto.Username);
-                if (usernameExists)
-                    return ServiceResult<bool>.Failure("用户名已存在");
-
-                // 单一角色架构下，角色验证已通过Required特性和默认值处理
+                if (usernameExists)                    return ServiceResult<bool>.Failure("用户名已存在");                // 单一角色架构下，角色验证已通过Required特性和默认值处理
                 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证用户创建请求失败");
-                return ServiceResult<bool>.Failure("验证用户创建请求失败", ex);
-            }
+            {                _logger.LogError(ex, "验证用户创建请求失败");                return ServiceResult<bool>.Failure("验证用户创建请求失败");            }
         }
 
         /// <summary>
@@ -90,29 +67,14 @@ namespace LYBT.Module.Users.Helpers
             try
             {
                 // 基础字段验证
-                if (string.IsNullOrWhiteSpace(dto.RealName))
-                    return ServiceResult<bool>.Failure("真实姓名不能为空");
-
-                // 真实姓名长度验证
-                if (dto.RealName.Length > 50)
-                    return ServiceResult<bool>.Failure("真实姓名长度不能超过50个字符");
-
-                // 电话号码格式验证（如果提供）
-                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber) && !IsValidPhoneNumber(dto.PhoneNumber))
-                    return ServiceResult<bool>.Failure("电话号码格式不正确");
-
-                // 检查用户是否存在
+                if (string.IsNullOrWhiteSpace(dto.RealName))                    return ServiceResult<bool>.Failure("真实姓名不能为空");                // 真实姓名长度验证
+                if (dto.RealName.Length > 50)                    return ServiceResult<bool>.Failure("真实姓名长度不能超过50个字符");                // 电话号码格式验证（如果提供）
+                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber) && !IsValidPhoneNumber(dto.PhoneNumber))                    return ServiceResult<bool>.Failure("电话号码格式不正确");                // 检查用户是否存在
                 var userExists = await _userRepository.GetByIdAsync(id, includeDisabled: true);
-                if (userExists == null)
-                    return ServiceResult<bool>.Failure("要更新的用户不存在");
-
-                return ServiceResult<bool>.Success(true);
+                if (userExists == null)                    return ServiceResult<bool>.Failure("要更新的用户不存在");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证用户更新请求失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证用户更新请求失败", ex);
-            }
+            {                _logger.LogError(ex, "验证用户更新请求失败: {Id}", id);                return ServiceResult<bool>.Failure("验证用户更新请求失败");            }
         }
 
         /// <summary>
@@ -123,27 +85,12 @@ namespace LYBT.Module.Users.Helpers
             try
             {
                 // 基础验证
-                if (string.IsNullOrWhiteSpace(username))
-                    return ServiceResult<bool>.Failure("用户名不能为空");
-
-                if (username.Length < 2)
-                    return ServiceResult<bool>.Failure("用户名长度不能少于2个字符");
-
-                if (username.Length > 50)
-                    return ServiceResult<bool>.Failure("用户名长度不能超过50个字符");
-
-                // 检查是否已存在
+                if (string.IsNullOrWhiteSpace(username))                    return ServiceResult<bool>.Failure("用户名不能为空");                if (username.Length < 2)                    return ServiceResult<bool>.Failure("用户名长度不能少于2个字符");                if (username.Length > 50)                    return ServiceResult<bool>.Failure("用户名长度不能超过50个字符");                // 检查是否已存在
                 var exists = await _userRepository.ExistsByUsernameAsync(username);
-                if (exists)
-                    return ServiceResult<bool>.Failure("用户名已存在，不可用");
-
-                return ServiceResult<bool>.Success(true);
+                if (exists)                    return ServiceResult<bool>.Failure("用户名已存在，不可用");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证用户名失败, Username: {Username}", username);
-                return ServiceResult<bool>.Failure("验证用户名失败", ex);
-            }
+            {                _logger.LogError(ex, "验证用户名失败, Username: {Username}", username);                return ServiceResult<bool>.Failure("验证用户名失败");            }
         }
 
         /// <summary>
@@ -155,10 +102,7 @@ namespace LYBT.Module.Users.Helpers
             {
                 // 检查用户是否存在
                 var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
-                if (user == null)
-                    return ServiceResult<bool>.Failure("用户不存在");
-
-                // 密码强度验证
+                if (user == null)                    return ServiceResult<bool>.Failure("用户不存在");                // 密码强度验证
                 var passwordValidation = ValidatePasswordStrength(newPassword);
                 if (!passwordValidation.IsSuccess)
                     return passwordValidation;
@@ -166,10 +110,7 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证密码重置请求失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证密码重置请求失败", ex);
-            }
+            {                _logger.LogError(ex, "验证密码重置请求失败: {Id}", id);                return ServiceResult<bool>.Failure("验证密码重置请求失败");            }
         }
 
         /// <summary>
@@ -181,20 +122,8 @@ namespace LYBT.Module.Users.Helpers
             {
                 // 检查用户是否存在
                 var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
-                if (user == null)
-                    return ServiceResult<bool>.Failure("用户不存在");
-
-                // 基础参数验证
-                if (string.IsNullOrWhiteSpace(oldPassword))
-                    return ServiceResult<bool>.Failure("原密码不能为空");
-
-                if (string.IsNullOrWhiteSpace(newPassword))
-                    return ServiceResult<bool>.Failure("新密码不能为空");
-
-                if (oldPassword == newPassword)
-                    return ServiceResult<bool>.Failure("新密码不能与原密码相同");
-
-                // 新密码强度验证
+                if (user == null)                    return ServiceResult<bool>.Failure("用户不存在");                // 基础参数验证
+                if (string.IsNullOrWhiteSpace(oldPassword))                    return ServiceResult<bool>.Failure("原密码不能为空");                if (string.IsNullOrWhiteSpace(newPassword))                    return ServiceResult<bool>.Failure("新密码不能为空");                if (oldPassword == newPassword)                    return ServiceResult<bool>.Failure("新密码不能与原密码相同");                // 新密码强度验证
                 var passwordValidation = ValidatePasswordStrength(newPassword);
                 if (!passwordValidation.IsSuccess)
                     return passwordValidation;
@@ -202,10 +131,7 @@ namespace LYBT.Module.Users.Helpers
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证密码修改请求失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证密码修改请求失败", ex);
-            }
+            {                _logger.LogError(ex, "验证密码修改请求失败: {Id}", id);                return ServiceResult<bool>.Failure("验证密码修改请求失败");            }
         }
 
         /// <summary>
@@ -217,28 +143,13 @@ namespace LYBT.Module.Users.Helpers
             {
                 // 检查用户是否存在
                 var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
-                if (user == null)
-                    return ServiceResult<bool>.Failure("用户不存在");
-
-                // 基础字段验证
-                if (string.IsNullOrWhiteSpace(realName))
-                    return ServiceResult<bool>.Failure("真实姓名不能为空");
-
-                // 真实姓名长度验证
-                if (realName.Length > 50)
-                    return ServiceResult<bool>.Failure("真实姓名长度不能超过50个字符");
-
-                // 电话号码格式验证（如果提供）
-                if (!string.IsNullOrWhiteSpace(phoneNumber) && !IsValidPhoneNumber(phoneNumber))
-                    return ServiceResult<bool>.Failure("电话号码格式不正确");
-
-                return ServiceResult<bool>.Success(true);
+                if (user == null)                    return ServiceResult<bool>.Failure("用户不存在");                // 基础字段验证
+                if (string.IsNullOrWhiteSpace(realName))                    return ServiceResult<bool>.Failure("真实姓名不能为空");                // 真实姓名长度验证
+                if (realName.Length > 50)                    return ServiceResult<bool>.Failure("真实姓名长度不能超过50个字符");                // 电话号码格式验证（如果提供）
+                if (!string.IsNullOrWhiteSpace(phoneNumber) && !IsValidPhoneNumber(phoneNumber))                    return ServiceResult<bool>.Failure("电话号码格式不正确");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证个人信息修改请求失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证个人信息修改请求失败", ex);
-            }
+            {                _logger.LogError(ex, "验证个人信息修改请求失败: {Id}", id);                return ServiceResult<bool>.Failure("验证个人信息修改请求失败");            }
         }
 
         /// <summary>
@@ -248,30 +159,16 @@ namespace LYBT.Module.Users.Helpers
         {
             try
             {
-                if (ids == null || ids.Count == 0)
-                    return ServiceResult<bool>.Failure("批量操作的ID列表不能为空");
-
-                if (ids.Count > _options.MaxBatchOperationSize)
-                    return ServiceResult<bool>.Failure($"批量操作数量不能超过 {_options.MaxBatchOperationSize}");
-
-                // 检查是否有重复ID
-                if (ids.Count != ids.Distinct().Count())
-                    return ServiceResult<bool>.Failure("批量操作的ID列表中存在重复项");
-
-                // 检查是否有无效ID
+                if (ids == null || ids.Count == 0)                    return ServiceResult<bool>.Failure("批量操作的ID列表不能为空");                if (ids.Count > _options.MaxBatchOperationSize)                    return ServiceResult<bool>.Failure($"批量操作数量不能超过 {_options.MaxBatchOperationSize}");                // 检查是否有重复ID
+                if (ids.Count != ids.Distinct().Count())                    return ServiceResult<bool>.Failure("批量操作的ID列表中存在重复项");                // 检查是否有无效ID
                 foreach (var id in ids)
                 {
-                    if (id == Guid.Empty)
-                        return ServiceResult<bool>.Failure("批量操作的ID列表中包含无效ID");
-                }
+                    if (id == Guid.Empty)                        return ServiceResult<bool>.Failure("批量操作的ID列表中包含无效ID");                }
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证批量操作失败");
-                return ServiceResult<bool>.Failure("验证批量操作失败", ex);
-            }
+            {                _logger.LogError(ex, "验证批量操作失败");                return ServiceResult<bool>.Failure("验证批量操作失败");            }
         }
 
         /// <summary>
@@ -289,22 +186,10 @@ namespace LYBT.Module.Users.Helpers
         {
             try
             {
-                if (query.PageIndex < 1)
-                    return ServiceResult<bool>.Failure("页码必须大于0");
-
-                if (query.PageSize < 1)
-                    return ServiceResult<bool>.Failure("页大小必须大于0");
-
-                if (query.PageSize > 1000)
-                    return ServiceResult<bool>.Failure("页大小不能超过1000");
-
-                return ServiceResult<bool>.Success(true);
+                if (query.PageIndex < 1)                    return ServiceResult<bool>.Failure("页码必须大于0");                if (query.PageSize < 1)                    return ServiceResult<bool>.Failure("页大小必须大于0");                if (query.PageSize > 1000)                    return ServiceResult<bool>.Failure("页大小不能超过1000");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证分页查询参数失败");
-                return ServiceResult<bool>.Failure("验证分页查询参数失败", ex);
-            }
+            {                _logger.LogError(ex, "验证分页查询参数失败");                return ServiceResult<bool>.Failure("验证分页查询参数失败");            }
         }
 
         #region 私有辅助方法
@@ -339,20 +224,8 @@ namespace LYBT.Module.Users.Helpers
         /// </summary>
         private ServiceResult<bool> ValidatePasswordStrength(string password)
         {
-            if (string.IsNullOrWhiteSpace(password))
-                return ServiceResult<bool>.Failure("密码不能为空");
-
-            if (password.Length < 6)
-                return ServiceResult<bool>.Failure("密码长度不能少于6个字符");
-
-            if (password.Length > 100)
-                return ServiceResult<bool>.Failure("密码长度不能超过100个字符");
-
-            // 检查是否包含空格
-            if (password.Contains(' '))
-                return ServiceResult<bool>.Failure("密码不能包含空格");
-
-            // 简化的密码强度检查：至少包含一个字母和一个数字
+            if (string.IsNullOrWhiteSpace(password))                return ServiceResult<bool>.Failure("密码不能为空");            if (password.Length < 6)                return ServiceResult<bool>.Failure("密码长度不能少于6个字符");            if (password.Length > 100)                return ServiceResult<bool>.Failure("密码长度不能超过100个字符");            // 检查是否包含空格
+            if (password.Contains(' '))                return ServiceResult<bool>.Failure("密码不能包含空格");            // 简化的密码强度检查：至少包含一个字母和一个数字
             bool hasLetter = false;
             bool hasDigit = false;
 
@@ -364,8 +237,7 @@ namespace LYBT.Module.Users.Helpers
                     hasDigit = true;
             }
 
-            if (!hasLetter || !hasDigit)
-                return ServiceResult<bool>.Failure("密码必须同时包含字母和数字");
+            if (!hasLetter || !hasDigit)                return ServiceResult<bool>.Failure("密码必须同时包含字母和数字");
 
             return ServiceResult<bool>.Success(true);
         }
@@ -389,3 +261,5 @@ namespace LYBT.Module.Users.Helpers
         #endregion
     }
 }
+
+

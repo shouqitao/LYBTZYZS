@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
@@ -37,31 +37,18 @@ namespace LYBT.Module.Formula.Helpers
 
                 // 验证必填字段
                 if (string.IsNullOrWhiteSpace(dto.Name))
-                    errors.Add("验方名称不能为空");
-
-                if (dto.Name?.Length > 100)
-                    errors.Add("验方名称长度不能超过100个字符");
-
-                // 检查名称重复
+                    errors.Add("验方名称不能为空");                if (dto.Name?.Length > 100)                    errors.Add("验方名称长度不能超过100个字符");                // 检查名称重复
                 if (!string.IsNullOrWhiteSpace(dto.Name))
                 {
                     var exists = await _dbContext.Formulas
                         .AnyAsync(f => f.Name == dto.Name && f.Status == CommonStatus.Enabled);
                     
-                    if (exists)
-                        errors.Add("验方名称已存在");
-                }
+                    if (exists)                        errors.Add("验方名称已存在");                }
 
-                if (errors.Any())
-                    return ServiceResult<bool>.Failure(string.Join("; ", errors));
-
-                return ServiceResult<bool>.Success(true);
+                if (errors.Any())                    return ServiceResult<bool>.Failure(string.Join("; ", errors));                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证验方创建数据失败");
-                return ServiceResult<bool>.Failure("验证失败", ex);
-            }
+            {                _logger.LogError(ex, "验证验方创建数据失败");                return ServiceResult<bool>.Failure("验证失败");            }
         }
 
         /// <summary>
@@ -77,39 +64,19 @@ namespace LYBT.Module.Formula.Helpers
                 var exists = await _dbContext.Formulas
                     .AnyAsync(f => f.Id == id && f.Status == CommonStatus.Enabled);
                 
-                if (!exists)
-                    errors.Add("验方不存在");
-
-                // 验证更新字段
+                if (!exists)                    errors.Add("验方不存在");                // 验证更新字段
                 if (!string.IsNullOrWhiteSpace(dto.Name))
                 {
-                    if (dto.Name.Length > 100)
-                        errors.Add("验方名称长度不能超过100个字符");
-
-                    // 检查名称重复（排除自己）
+                    if (dto.Name.Length > 100)                        errors.Add("验方名称长度不能超过100个字符");                    // 检查名称重复（排除自己）
                     var nameExists = await _dbContext.Formulas
                         .AnyAsync(f => f.Name == dto.Name && f.Id != id && f.Status == CommonStatus.Enabled);
                     
-                    if (nameExists)
-                        errors.Add("验方名称已存在");
-                }
+                    if (nameExists)                        errors.Add("验方名称已存在");                }
 
-                if (dto.Effect?.Length > 200)
-                    errors.Add("功效描述长度不能超过200个字符");
-
-                if (dto.Usage?.Length > 200)
-                    errors.Add("用法描述长度不能超过200个字符");
-
-                if (errors.Any())
-                    return ServiceResult<bool>.Failure(string.Join("; ", errors));
-
-                return ServiceResult<bool>.Success(true);
+                if (dto.Effect?.Length > 200)                    errors.Add("功效描述长度不能超过200个字符");                if (dto.Usage?.Length > 200)                    errors.Add("用法描述长度不能超过200个字符");                if (errors.Any())                    return ServiceResult<bool>.Failure(string.Join("; ", errors));                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证验方更新数据失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证失败", ex);
-            }
+            {                _logger.LogError(ex, "验证验方更新数据失败: {Id}", id);                return ServiceResult<bool>.Failure("验证失败");            }
         }
 
         /// <summary>
@@ -122,9 +89,7 @@ namespace LYBT.Module.Formula.Helpers
             try
             {
                 var result = new FormulaImportResultDto
-                {
-                    ImportBatch = options.ImportBatch ?? "验证批次",
-                    TotalCount = formulas.Count,
+                {                    ImportBatch = options.ImportBatch ?? "验证批次",                    TotalCount = formulas.Count,
                     StartTime = DateTime.Now
                 };
 
@@ -139,10 +104,7 @@ namespace LYBT.Module.Formula.Helpers
                     {
                         failedItems.Add(new FormulaImportErrorDto
                         {
-                            RowIndex = i + 1,
-                            FormulaName = importDto.Name ?? $"第{i + 1}行",
-                            ErrorMessage = string.Join("; ", errors),
-                            OriginalData = JsonSerializer.Serialize(importDto)
+                            RowIndex = i + 1,                            FormulaName = importDto.Name ?? $"第{i + 1}行",                            ErrorMessage = string.Join("; ", errors),                            OriginalData = JsonSerializer.Serialize(importDto)
                         });
                         result.FailedCount++;
                     }
@@ -158,10 +120,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<FormulaImportResultDto>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证导入数据异常");
-                return ServiceResult<FormulaImportResultDto>.Failure($"验证导入数据异常: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "验证导入数据异常");                return ServiceResult<FormulaImportResultDto>.Failure($"验证导入数据异常: {ex.Message}", ex);            }
         }
 
         /// <summary>
@@ -172,36 +131,17 @@ namespace LYBT.Module.Formula.Helpers
             var errors = new List<string>();
 
             // 验证必填字段
-            if (string.IsNullOrWhiteSpace(importDto.Name))
-                errors.Add("验方名称不能为空");
-            
-            if (importDto.Name?.Length > 100)
-                errors.Add("验方名称长度不能超过100个字符");
-
-            if (importDto.Effect?.Length > 200)
-                errors.Add("功效描述长度不能超过200个字符");
-
-            if (importDto.Usage?.Length > 200)
-                errors.Add("用法描述长度不能超过200个字符");
-
-            // 验证药材信息
+            if (string.IsNullOrWhiteSpace(importDto.Name))                errors.Add("验方名称不能为空");            
+            if (importDto.Name?.Length > 100)                errors.Add("验方名称长度不能超过100个字符");            if (importDto.Effect?.Length > 200)                errors.Add("功效描述长度不能超过200个字符");            if (importDto.Usage?.Length > 200)                errors.Add("用法描述长度不能超过200个字符");            // 验证药材信息
             if (importDto.Herbs?.Any() != true)
-            {
-                errors.Add("必须包含至少一味中药材");
-            }
+            {                errors.Add("必须包含至少一味中药材");            }
             else
             {
                 foreach (var herb in importDto.Herbs)
                 {
-                    if (string.IsNullOrWhiteSpace(herb.HerbName))
-                        errors.Add($"中药材名称不能为空");
-                    
-                    if (herb.Quantity <= 0 || herb.Quantity > 1000)
-                        errors.Add($"用量必须在0.1-1000之间");
-                    
-                    if (string.IsNullOrWhiteSpace(herb.Unit))
-                        errors.Add($"用量单位不能为空");
-                }
+                    if (string.IsNullOrWhiteSpace(herb.HerbName))                        errors.Add($"中药材名称不能为空");                    
+                    if (herb.Quantity <= 0 || herb.Quantity > 1000)                        errors.Add($"用量必须在0.1-1000之间");                    
+                    if (string.IsNullOrWhiteSpace(herb.Unit))                        errors.Add($"用量单位不能为空");                }
             }
 
             // 检查重复名称
@@ -211,9 +151,7 @@ namespace LYBT.Module.Formula.Helpers
                     .AnyAsync(f => f.Name == importDto.Name && f.Status == CommonStatus.Enabled);
                 
                 if (existingFormula && !options.SkipDuplicates && !options.UpdateExisting)
-                {
-                    errors.Add("验方名称已存在");
-                }
+                {                    errors.Add("验方名称已存在");                }
             }
 
             return errors;
@@ -226,22 +164,13 @@ namespace LYBT.Module.Formula.Helpers
         {
             try
             {
-                if (id == Guid.Empty)
-                    return ServiceResult<bool>.Failure("验方ID不能为空");
-
-                var exists = await _dbContext.Formulas
+                if (id == Guid.Empty)                    return ServiceResult<bool>.Failure("验方ID不能为空");                var exists = await _dbContext.Formulas
                     .AnyAsync(f => f.Id == id && f.Status == CommonStatus.Enabled);
 
-                if (!exists)
-                    return ServiceResult<bool>.Failure("验方不存在");
-
-                return ServiceResult<bool>.Success(true);
+                if (!exists)                    return ServiceResult<bool>.Failure("验方不存在");                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证验方ID失败: {Id}", id);
-                return ServiceResult<bool>.Failure("验证失败", ex);
-            }
+            {                _logger.LogError(ex, "验证验方ID失败: {Id}", id);                return ServiceResult<bool>.Failure("验证失败");            }
         }
 
         /// <summary>
@@ -254,20 +183,14 @@ namespace LYBT.Module.Formula.Helpers
                 var formula = await _dbContext.Formulas
                     .FirstOrDefaultAsync(f => f.Id == formulaId && f.Status == CommonStatus.Enabled);
 
-                if (formula == null)
-                    return ServiceResult<bool>.Failure("验方不存在");
-
-                // TODO: 添加权限验证逻辑
+                if (formula == null)                    return ServiceResult<bool>.Failure("验方不存在");                // TODO: 添加权限验证逻辑
                 // 检查操作员是否有权限分享此验方
                 // 这里可以根据具体业务规则进行权限判断
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证分享权限失败: FormulaId={FormulaId}, OperatorId={OperatorId}", formulaId, operatorId);
-                return ServiceResult<bool>.Failure("验证失败", ex);
-            }
+            {                _logger.LogError(ex, "验证分享权限失败: FormulaId={FormulaId}, OperatorId={OperatorId}", formulaId, operatorId);                return ServiceResult<bool>.Failure("验证失败");            }
         }
 
         /// <summary>
@@ -283,36 +206,20 @@ namespace LYBT.Module.Formula.Helpers
                 var originalExists = await _dbContext.Formulas
                     .AnyAsync(f => f.Id == originalId && f.Status == CommonStatus.Enabled);
                 
-                if (!originalExists)
-                    errors.Add("原验方不存在");
-
-                // 验证新名称
-                if (string.IsNullOrWhiteSpace(newName))
-                    errors.Add("新验方名称不能为空");
-                
-                if (newName?.Length > 100)
-                    errors.Add("新验方名称长度不能超过100个字符");
-
-                // 检查新名称是否重复
+                if (!originalExists)                    errors.Add("原验方不存在");                // 验证新名称
+                if (string.IsNullOrWhiteSpace(newName))                    errors.Add("新验方名称不能为空");                
+                if (newName?.Length > 100)                    errors.Add("新验方名称长度不能超过100个字符");                // 检查新名称是否重复
                 if (!string.IsNullOrWhiteSpace(newName))
                 {
                     var nameExists = await _dbContext.Formulas
                         .AnyAsync(f => f.Name == newName && f.Status == CommonStatus.Enabled);
                     
-                    if (nameExists)
-                        errors.Add("新验方名称已存在");
-                }
+                    if (nameExists)                        errors.Add("新验方名称已存在");                }
 
-                if (errors.Any())
-                    return ServiceResult<bool>.Failure(string.Join("; ", errors));
-
-                return ServiceResult<bool>.Success(true);
+                if (errors.Any())                    return ServiceResult<bool>.Failure(string.Join("; ", errors));                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证复制操作失败: OriginalId={OriginalId}, NewName={NewName}", originalId, newName);
-                return ServiceResult<bool>.Failure("验证失败", ex);
-            }
+            {                _logger.LogError(ex, "验证复制操作失败: OriginalId={OriginalId}, NewName={NewName}", originalId, newName);                return ServiceResult<bool>.Failure("验证失败");            }
         }
 
         /// <summary>
@@ -322,13 +229,7 @@ namespace LYBT.Module.Formula.Helpers
         {
             try
             {
-                if (ids?.Any() != true)
-                    return ServiceResult<List<Guid>>.Failure("ID列表不能为空");
-
-                if (ids.Count > 100)
-                    return ServiceResult<List<Guid>>.Failure("批量操作最多支持100个验方");
-
-                // 检查所有ID是否有效
+                if (ids?.Any() != true)                    return ServiceResult<List<Guid>>.Failure("ID列表不能为空");                if (ids.Count > 100)                    return ServiceResult<List<Guid>>.Failure("批量操作最多支持100个验方");                // 检查所有ID是否有效
                 var validIds = await _dbContext.Formulas
                     .Where(f => ids.Contains(f.Id) && f.Status == CommonStatus.Enabled)
                     .Select(f => f.Id)
@@ -336,17 +237,15 @@ namespace LYBT.Module.Formula.Helpers
 
                 var invalidIds = ids.Except(validIds).ToList();
                 if (invalidIds.Any())
-                {
-                    _logger.LogWarning("发现无效的验方ID: {InvalidIds}", string.Join(", ", invalidIds));
-                }
+                {                    _logger.LogWarning("发现无效的验方ID: {InvalidIds}", string.Join(", ", invalidIds));                }
 
                 return ServiceResult<List<Guid>>.Success(validIds);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证批量ID列表失败");
-                return ServiceResult<List<Guid>>.Failure("验证失败", ex);
+            {                _logger.LogError(ex, "验证批量ID列表失败");                return ServiceResult<List<Guid>>.Failure("验证失败", ex);
             }
         }
     }
 }
+
+

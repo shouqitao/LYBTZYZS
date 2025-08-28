@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -67,19 +67,12 @@ namespace LYBT.Module.Patients.Helpers
 
                 if (result != null)
                 {
-                    _logger.LogInformation("新增患者档案成功: {PatientName} ({PatientId})", result.Name, result.Id);
-
-                    var patientDto = _mapper.Map<PatientDto>(result);
+                    _logger.LogInformation("新增患者档案成功: {PatientName} ({PatientId})", result.Name, result.Id);                    var patientDto = _mapper.Map<PatientDto>(result);
                     return ServiceResult<PatientDto>.Success(patientDto);
                 }
-
-                return ServiceResult<PatientDto>.Failure("新增患者档案失败");
-            }
+                return ServiceResult<PatientDto>.Failure("新增患者档案失败");            }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "新增患者档案失败: {PatientName}", dto.Name);
-                return ServiceResult<PatientDto>.Failure("新增患者档案失败", ex);
-            }
+            {                _logger.LogError(ex, "新增患者档案失败: {PatientName}", dto.Name);                return ServiceResult<PatientDto>.Failure("新增患者档案失败");            }
         }
 
         /// <summary>
@@ -90,10 +83,7 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var model = await _patientRepository.GetByIdAsync(id, true);
-                if (model == null)
-                    return ServiceResult<PatientDto>.Failure("患者不存在");
-
-                // 数据验证 - 转换为PatientDto进行验证
+                if (model == null)                    return ServiceResult<PatientDto>.Failure("患者不存在");                // 数据验证 - 转换为PatientDto进行验证
                 var detailDto = _mapper.Map<PatientDto>(dto);
                 detailDto.Id = id;  // 确保ID正确传递
                 await _validationService.ValidateForUpdateAsync(id, detailDto);
@@ -108,20 +98,12 @@ namespace LYBT.Module.Patients.Helpers
                 var result = await _patientRepository.UpdateAsync(model);
 
                 if (result != null)
-                {
-                    _logger.LogInformation("患者档案更新成功: {PatientName} ({PatientId})", result.Name, result.Id);
-
-                    var patientDto = _mapper.Map<PatientDto>(result);
+                {                    _logger.LogInformation("患者档案更新成功: {PatientName} ({PatientId})", result.Name, result.Id);                    var patientDto = _mapper.Map<PatientDto>(result);
                     return ServiceResult<PatientDto>.Success(patientDto);
                 }
-
-                return ServiceResult<PatientDto>.Failure("更新患者档案失败");
-            }
+                return ServiceResult<PatientDto>.Failure("更新患者档案失败");            }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新患者档案失败: PatientId={PatientId}", id);
-                return ServiceResult<PatientDto>.Failure("更新患者档案失败", ex);
-            }
+            {                _logger.LogError(ex, "更新患者档案失败: PatientId={PatientId}", id);                return ServiceResult<PatientDto>.Failure("更新患者档案失败");            }
         }
 
         /// <summary>
@@ -133,17 +115,12 @@ namespace LYBT.Module.Patients.Helpers
             {
                 var result = await _patientRepository.DisableAsync(id);
                 if (result)
-                {
-                    _logger.LogInformation("患者删除(软删除) - 操作者: {OperatorName} ({OperatorId}), 患者ID: {PatientId}",
-                        operatorName, operatorId, id);
+                {                    _logger.LogInformation("患者删除(软删除) - 操作者: {OperatorName} ({OperatorId}), 患者ID: {PatientId}",                        operatorName, operatorId, id);
                 }
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除患者失败: {PatientId}", id);
-                return ServiceResult<bool>.Failure("删除患者失败", ex);
-            }
+            {                _logger.LogError(ex, "删除患者失败: {PatientId}", id);                return ServiceResult<bool>.Failure("删除患者失败");            }
         }
 
         /// <summary>
@@ -154,21 +131,13 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var model = await _patientRepository.GetByIdAsync(id, true);
-                if (model == null)
-                    return ServiceResult<bool>.Failure("患者不存在");
-
-                model.Status = CommonStatus.Disabled;
+                if (model == null)                    return ServiceResult<bool>.Failure("患者不存在");                model.Status = CommonStatus.Disabled;
                 // UpdateTime字段已删除（UltraThink v2.0简化）
 
-                var result = await _patientRepository.UpdateAsync(model);
-                _logger.LogInformation("患者删除成功: {PatientId}", id);
-                return ServiceResult<bool>.Success(result != null);
+                var result = await _patientRepository.UpdateAsync(model);                _logger.LogInformation("患者删除成功: {PatientId}", id);                return ServiceResult<bool>.Success(result != null);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除患者失败: {PatientId}", id);
-                return ServiceResult<bool>.Failure("删除患者失败", ex);
-            }
+            {                _logger.LogError(ex, "删除患者失败: {PatientId}", id);                return ServiceResult<bool>.Failure("删除患者失败");            }
         }
 
         #endregion
@@ -187,27 +156,18 @@ namespace LYBT.Module.Patients.Helpers
 
                 if (isActive)
                 {
-                    result = await _patientRepository.EnableAsync(id);
-                    action = "启用";
-                }
+                    result = await _patientRepository.EnableAsync(id);                    action = "启用";                }
                 else
                 {
-                    result = await _patientRepository.DisableAsync(id);
-                    action = "禁用";
-                }
+                    result = await _patientRepository.DisableAsync(id);                    action = "禁用";                }
 
                 if (result)
-                {
-                    _logger.LogInformation("患者状态变更 - 操作者: {OperatorName} ({OperatorId}), 患者ID: {PatientId}, 操作: {Action}",
-                        operatorName, operatorId, id, action);
+                {                    _logger.LogInformation("患者状态变更 - 操作者: {OperatorName} ({OperatorId}), 患者ID: {PatientId}, 操作: {Action}",                        operatorName, operatorId, id, action);
                 }
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "设置患者状态失败: {PatientId}", id);
-                return ServiceResult<bool>.Failure("设置患者状态失败", ex);
-            }
+            {                _logger.LogError(ex, "设置患者状态失败: {PatientId}", id);                return ServiceResult<bool>.Failure("设置患者状态失败");            }
         }
 
         /// <summary>
@@ -218,21 +178,13 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var model = await _patientRepository.GetByIdAsync(id, true);
-                if (model == null)
-                    return ServiceResult<bool>.Failure("患者不存在");
-
-                model.Status = CommonStatus.Enabled;
+                if (model == null)                    return ServiceResult<bool>.Failure("患者不存在");                model.Status = CommonStatus.Enabled;
                 // UpdateTime字段已删除（UltraThink v2.0简化）
 
-                var result = await _patientRepository.UpdateAsync(model);
-                _logger.LogInformation("患者启用成功: {PatientId}", id);
-                return ServiceResult<bool>.Success(result != null);
+                var result = await _patientRepository.UpdateAsync(model);                _logger.LogInformation("患者启用成功: {PatientId}", id);                return ServiceResult<bool>.Success(result != null);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "启用患者失败: {PatientId}", id);
-                return ServiceResult<bool>.Failure("启用患者失败", ex);
-            }
+            {                _logger.LogError(ex, "启用患者失败: {PatientId}", id);                return ServiceResult<bool>.Failure("启用患者失败");            }
         }
 
         /// <summary>
@@ -243,21 +195,13 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var model = await _patientRepository.GetByIdAsync(id, true);
-                if (model == null)
-                    return ServiceResult<bool>.Failure("患者不存在");
-
-                model.Status = CommonStatus.Disabled;
+                if (model == null)                    return ServiceResult<bool>.Failure("患者不存在");                model.Status = CommonStatus.Disabled;
                 // UpdateTime字段已删除（UltraThink v2.0简化）
 
-                var result = await _patientRepository.UpdateAsync(model);
-                _logger.LogInformation("患者禁用成功: {PatientId}", id);
-                return ServiceResult<bool>.Success(result != null);
+                var result = await _patientRepository.UpdateAsync(model);                _logger.LogInformation("患者禁用成功: {PatientId}", id);                return ServiceResult<bool>.Success(result != null);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "禁用患者失败: {PatientId}", id);
-                return ServiceResult<bool>.Failure("禁用患者失败", ex);
-            }
+            {                _logger.LogError(ex, "禁用患者失败: {PatientId}", id);                return ServiceResult<bool>.Failure("禁用患者失败");            }
         }
 
         #endregion
@@ -271,15 +215,10 @@ namespace LYBT.Module.Patients.Helpers
         {
             try
             {
-                // 简化实现，直接返回成功
-                _logger.LogInformation("患者档案更新: {PatientId}", id);
-                return ServiceResult<bool>.Success(true);
+                // 简化实现，直接返回成功                _logger.LogInformation("患者档案更新: {PatientId}", id);                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新患者档案失败: {PatientId}", id);
-                return ServiceResult<bool>.Failure("更新患者档案失败", ex);
-            }
+            {                _logger.LogError(ex, "更新患者档案失败: {PatientId}", id);                return ServiceResult<bool>.Failure("更新患者档案失败");            }
         }
 
         /// <summary>
@@ -293,10 +232,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新过敏史失败: {PatientId}", patientId);
-                return ServiceResult<bool>.Failure("更新过敏史失败", ex);
-            }
+            {                _logger.LogError(ex, "更新过敏史失败: {PatientId}", patientId);                return ServiceResult<bool>.Failure("更新过敏史失败");            }
         }
 
         /// <summary>
@@ -310,10 +246,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<List<PatientTagDto>>.Success(tags);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者标签失败: {PatientId}", patientId);
-                return ServiceResult<List<PatientTagDto>>.Failure("获取患者标签失败", ex);
-            }
+            {                _logger.LogError(ex, "获取患者标签失败: {PatientId}", patientId);                return ServiceResult<List<PatientTagDto>>.Failure("获取患者标签失败", ex);            }
         }
 
         /// <summary>
@@ -327,10 +260,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "设置患者标签失败: {PatientId}", patientId);
-                return ServiceResult<bool>.Failure("设置患者标签失败", ex);
-            }
+            {                _logger.LogError(ex, "设置患者标签失败: {PatientId}", patientId);                return ServiceResult<bool>.Failure("设置患者标签失败");            }
         }
 
         #endregion
@@ -348,10 +278,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<PatientImportResultDto>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量导入患者失败");
-                return ServiceResult<PatientImportResultDto>.Failure("批量导入患者失败", ex);
-            }
+            {                _logger.LogError(ex, "批量导入患者失败");                return ServiceResult<PatientImportResultDto>.Failure("批量导入患者失败");            }
         }
 
         /// <summary>
@@ -365,10 +292,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<object>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量导入患者失败");
-                return ServiceResult<object>.Failure("批量导入患者失败", ex);
-            }
+            {                _logger.LogError(ex, "批量导入患者失败");                return ServiceResult<object>.Failure("批量导入患者失败");            }
         }
 
         /// <summary>
@@ -382,10 +306,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<List<PatientExportDto>>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出患者数据失败");
-                return ServiceResult<List<PatientExportDto>>.Failure("导出患者数据失败", ex);
-            }
+            {                _logger.LogError(ex, "导出患者数据失败");                return ServiceResult<List<PatientExportDto>>.Failure("导出患者数据失败", ex);            }
         }
 
         /// <summary>
@@ -395,15 +316,10 @@ namespace LYBT.Module.Patients.Helpers
         {
             try
             {
-                await Task.CompletedTask;
-                var data = Encoding.UTF8.GetBytes("导出数据");
-                return ServiceResult<byte[]>.Success(data);
+                await Task.CompletedTask;                var data = Encoding.UTF8.GetBytes("导出数据");                return ServiceResult<byte[]>.Success(data);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出患者数据失败");
-                return ServiceResult<byte[]>.Failure("导出患者数据失败", ex);
-            }
+            {                _logger.LogError(ex, "导出患者数据失败");                return ServiceResult<byte[]>.Failure("导出患者数据失败");            }
         }
 
         #endregion
@@ -421,10 +337,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "合并重复患者失败: Primary={PrimaryId}, Duplicate={DuplicateId}", primaryId, duplicateId);
-                return ServiceResult<bool>.Failure("合并重复患者失败", ex);
-            }
+            {                _logger.LogError(ex, "合并重复患者失败: Primary={PrimaryId}, Duplicate={DuplicateId}", primaryId, duplicateId);                return ServiceResult<bool>.Failure("合并重复患者失败");            }
         }
 
         /// <summary>
@@ -438,10 +351,7 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<PatientVisitHistoryDto>.Success(visitHistory);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取就诊历史失败: {PatientId}", patientId);
-                return ServiceResult<PatientVisitHistoryDto>.Failure("获取就诊历史失败", ex);
-            }
+            {                _logger.LogError(ex, "获取就诊历史失败: {PatientId}", patientId);                return ServiceResult<PatientVisitHistoryDto>.Failure("获取就诊历史失败");            }
         }
 
         #endregion
@@ -457,27 +367,18 @@ namespace LYBT.Module.Patients.Helpers
             object? logData = null)
         {
             try
-            {
-                _logger.LogInformation("开始执行患者操作: {OperationName}, 参数: {@LogData}", operationName, logData);
-                
+            {                _logger.LogInformation("开始执行患者操作: {OperationName}, 参数: {@LogData}", operationName, logData);                
                 var result = await operation();
                 
                 if (result.IsSuccess)
-                {
-                    _logger.LogInformation("患者操作成功: {OperationName}", operationName);
-                }
+                {                    _logger.LogInformation("患者操作成功: {OperationName}", operationName);                }
                 else
-                {
-                    _logger.LogWarning("患者操作失败: {OperationName}, 错误: {ErrorMessage}", operationName, result.ErrorMessage);
-                }
+                {                    _logger.LogWarning("患者操作失败: {OperationName}, 错误: {ErrorMessage}", operationName, result.ErrorMessage);                }
                 
                 return result;
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "患者操作异常: {OperationName}", operationName);
-                return ServiceResult<T>.Failure($"操作失败: {operationName}", ex);
-            }
+            {                _logger.LogError(ex, "患者操作异常: {OperationName}", operationName);                return ServiceResult<T>.Failure($"操作失败: {operationName}", ex);            }
         }
 
         /// <summary>
@@ -487,15 +388,11 @@ namespace LYBT.Module.Patients.Helpers
             string actionType, string content, string? parameters = null)
         {
             try
-            {
-                _logger.LogInformation("患者操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
-                    operatorName, operatorId, actionType, content);
+            {                _logger.LogInformation("患者操作日志 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",                    operatorName, operatorId, actionType, content);
                 await Task.CompletedTask;
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "记录患者操作日志失败");
-            }
+            {                _logger.LogError(ex, "记录患者操作日志失败");            }
         }
 
         /// <summary>
@@ -505,19 +402,16 @@ namespace LYBT.Module.Patients.Helpers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(name))
-                    return ServiceResult<string>.Failure("姓名不能为空");
-
-                var pinYinCode = CommonHelper.GetPinyinCode(name);
+                if (string.IsNullOrWhiteSpace(name))                    return ServiceResult<string>.Failure("姓名不能为空");                var pinYinCode = CommonHelper.GetPinyinCode(name);
                 return ServiceResult<string>.Success(pinYinCode);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "生成拼音码失败: {Name}", name);
-                return ServiceResult<string>.Failure("生成拼音码失败", ex);
+            {                _logger.LogError(ex, "生成拼音码失败: {Name}", name);                return ServiceResult<string>.Failure("生成拼音码失败");
             }
         }
 
         #endregion
     }
 }
+
+

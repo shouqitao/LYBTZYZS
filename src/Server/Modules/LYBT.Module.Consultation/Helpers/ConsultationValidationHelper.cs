@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Linq;
 using System;
 using AutoMapper;
@@ -48,10 +48,7 @@ namespace LYBT.Module.Consultation.Helpers
                 Id = consultation.Id,
                 MedicalCaseId = consultation.MedicalCaseId,
                 PatientId = consultation.PatientId,
-                PatientName = patient?.Name ?? "",
-                DoctorId = consultation.UserId,
-                DoctorName = doctor?.RealName ?? "",
-                Inspection = consultation.Inspection,
+                PatientName = patient?.Name ?? "",                DoctorId = consultation.UserId,                DoctorName = doctor?.RealName ?? "",                Inspection = consultation.Inspection,
                 AuscultationOlfaction = consultation.AuscultationOlfaction,
                 Inquiry = consultation.Inquiry,
                 Palpation = consultation.Palpation,
@@ -68,9 +65,7 @@ namespace LYBT.Module.Consultation.Helpers
         /// </summary>
         public static string GetConsultationStatus(LYBT.Entities.Consultation.Consultation consultation)
         {
-            // UltraThink v2.0 简化状态逻辑
-            return consultation.Status == CommonStatus.Enabled ? "正常" : "已禁用";
-        }
+            // UltraThink v2.0 简化状态逻辑            return consultation.Status == CommonStatus.Enabled ? "正常" : "已禁用";        }
 
         /// <summary>
         /// 验证看诊记录是否存在
@@ -82,16 +77,10 @@ namespace LYBT.Module.Consultation.Helpers
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == id && c.Status == CommonStatus.Enabled);
 
-                if (consultation == null)
-                    return ServiceResult<LYBT.Entities.Consultation.Consultation>.Failure("看诊记录不存在");
-
-                return ServiceResult<LYBT.Entities.Consultation.Consultation>.Success(consultation);
+                if (consultation == null)                    return ServiceResult<LYBT.Entities.Consultation.Consultation>.Failure("看诊记录不存在");                return ServiceResult<LYBT.Entities.Consultation.Consultation>.Success(consultation);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证看诊记录存在性失败: {Id}", id);
-                return ServiceResult<LYBT.Entities.Consultation.Consultation>.Failure("验证看诊记录失败", ex);
-            }
+            {                _logger.LogError(ex, "验证看诊记录存在性失败: {Id}", id);                return ServiceResult<LYBT.Entities.Consultation.Consultation>.Failure("验证看诊记录失败");            }
         }
 
         /// <summary>
@@ -105,17 +94,12 @@ namespace LYBT.Module.Consultation.Helpers
                     .FirstOrDefaultAsync(c => c.MedicalCaseId == medicalCaseId && c.Status == CommonStatus.Enabled);
 
                 if (existingConsultation != null)
-                {
-                    return ServiceResult<bool>.Failure("该医疗案例已存在看诊记录");
-                }
+                {                    return ServiceResult<bool>.Failure("该医疗案例已存在看诊记录");                }
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证医疗案例看诊记录失败: {MedicalCaseId}", medicalCaseId);
-                return ServiceResult<bool>.Failure("验证医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "验证医疗案例看诊记录失败: {MedicalCaseId}", medicalCaseId);                return ServiceResult<bool>.Failure("验证医疗案例失败");            }
         }
 
         /// <summary>
@@ -128,21 +112,12 @@ namespace LYBT.Module.Consultation.Helpers
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == consultationId && c.Status == CommonStatus.Enabled);
 
-                if (consultation == null)
-                    return ServiceResult<bool>.Failure("看诊记录不存在");
-
-                // UltraThink v2.0: 简化处理，将object转换为动态类型处理
+                if (consultation == null)                    return ServiceResult<bool>.Failure("看诊记录不存在");                // UltraThink v2.0: 简化处理，将object转换为动态类型处理
                 if (fourDiagnosisData != null)
                 {
                     var dataType = fourDiagnosisData.GetType();
                     
-                    // 尝试获取四诊数据属性
-                    var inspectionProp = dataType.GetProperty("Inspection");
-                    var auscultationProp = dataType.GetProperty("Auscultation");
-                    var inquiryProp = dataType.GetProperty("Inquiry");
-                    var palpationProp = dataType.GetProperty("Palpation");
-
-                    if (inspectionProp != null)
+                    // 尝试获取四诊数据属性                    var inspectionProp = dataType.GetProperty("Inspection");                    var auscultationProp = dataType.GetProperty("Auscultation");                    var inquiryProp = dataType.GetProperty("Inquiry");                    var palpationProp = dataType.GetProperty("Palpation");                    if (inspectionProp != null)
                         consultation.Inspection = inspectionProp.GetValue(fourDiagnosisData)?.ToString();
                     if (auscultationProp != null)
                         consultation.AuscultationOlfaction = auscultationProp.GetValue(fourDiagnosisData)?.ToString();
@@ -156,9 +131,7 @@ namespace LYBT.Module.Consultation.Helpers
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "保存四诊数据失败: {ConsultationId}", consultationId);
-                return ServiceResult<bool>.Failure("保存四诊数据失败", ex);
+            {                _logger.LogError(ex, "保存四诊数据失败: {ConsultationId}", consultationId);                return ServiceResult<bool>.Failure("保存四诊数据失败");
             }
         }
 
@@ -196,3 +169,5 @@ namespace LYBT.Module.Consultation.Helpers
         }
     }
 }
+
+

@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -9,26 +7,13 @@ using AutoMapper;
 using Prism.Ioc;
 using Refit;
 using LYBT.Desktop.Core.Configuration;
-using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Core.Interfaces;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Mapping;
-using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Infrastructure;
 using LYBT.Desktop.Services;
 using LYBT.Desktop.Services.Handlers;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Desktop.Users.Services;
-using LYBT.Desktop.Workbench.Core;
 using LYBT.Desktop.Modules.Users.Api;
 using LYBT.Desktop.Modules.Patients.Api;
-using LYBT.Desktop.Modules.Herbs.Api;
-using LYBT.Desktop.Modules.Formula.Api;
-using LYBT.Desktop.Modules.Consultation.Api;
-using LYBT.Desktop.Modules.Prescriptions.Api;
-using LYBT.Desktop.Modules.MedicalCase.Api;
 
 namespace LYBT.Desktop.Shell.Extensions
 {

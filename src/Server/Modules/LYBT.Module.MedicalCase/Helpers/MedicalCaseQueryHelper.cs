@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,16 +45,11 @@ namespace LYBT.Module.MedicalCase.Helpers
             {
                 var model = await _repository.GetByIdAsync(id);
                 if (model == null)
-                    return ServiceResult<MedicalCaseDetailDto>.Failure("医疗案例不存在");
-
-                var dto = _mapper.Map<MedicalCaseDetailDto>(model);
+                    return ServiceResult<MedicalCaseDetailDto>.Failure("医疗案例不存在");                var dto = _mapper.Map<MedicalCaseDetailDto>(model);
                 return ServiceResult<MedicalCaseDetailDto>.Success(dto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据ID获取医疗案例详情失败: {Id}", id);
-                return ServiceResult<MedicalCaseDetailDto>.Failure("获取医疗案例详情失败", ex);
-            }
+            {                _logger.LogError(ex, "根据ID获取医疗案例详情失败: {Id}", id);                return ServiceResult<MedicalCaseDetailDto>.Failure("获取医疗案例详情失败");            }
         }
 
         /// <summary>
@@ -63,9 +58,7 @@ namespace LYBT.Module.MedicalCase.Helpers
         public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query)
         {
             try
-            {
-                _logger.LogInformation("分页查询医疗案例: 页码={PageIndex}, 页大小={PageSize}", 
-                    query.PageIndex, query.PageSize);
+            {                _logger.LogInformation("分页查询医疗案例: 页码={PageIndex}, 页大小={PageSize}",                     query.PageIndex, query.PageSize);
 
                 var totalCount = await _repository.CountAsync();
                 var models = await _repository.GetPagedAsync(query.PageIndex, query.PageSize);
@@ -83,10 +76,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 return ServiceResult<PagedResult<MedicalCaseDto>>.Success(pagedResult);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "分页查询医疗案例失败");
-                return ServiceResult<PagedResult<MedicalCaseDto>>.Failure("分页查询医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "分页查询医疗案例失败");                return ServiceResult<PagedResult<MedicalCaseDto>>.Failure("分页查询医疗案例失败", ex);            }
         }
 
         #endregion
@@ -105,10 +95,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据患者ID获取医疗案例失败: {PatientId}", patientId);
-                return ServiceResult<List<MedicalCaseDto>>.Failure("获取患者医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "根据患者ID获取医疗案例失败: {PatientId}", patientId);                return ServiceResult<List<MedicalCaseDto>>.Failure("获取患者医疗案例失败", ex);            }
         }
 
         /// <summary>
@@ -123,17 +110,11 @@ namespace LYBT.Module.MedicalCase.Helpers
                 var activeModel = models?.FirstOrDefault(m => 
                     m.Status == MedicalCaseStatus.InConsultation);
 
-                if (activeModel == null)
-                    return ServiceResult<MedicalCaseDto>.Failure("患者没有活跃的医疗案例");
-
-                var dto = _mapper.Map<MedicalCaseDto>(activeModel);
+                if (activeModel == null)                    return ServiceResult<MedicalCaseDto>.Failure("患者没有活跃的医疗案例");                var dto = _mapper.Map<MedicalCaseDto>(activeModel);
                 return ServiceResult<MedicalCaseDto>.Success(dto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取患者活跃医疗案例失败: {PatientId}", patientId);
-                return ServiceResult<MedicalCaseDto>.Failure("获取患者活跃医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "获取患者活跃医疗案例失败: {PatientId}", patientId);                return ServiceResult<MedicalCaseDto>.Failure("获取患者活跃医疗案例失败");            }
         }
 
         #endregion
@@ -149,25 +130,17 @@ namespace LYBT.Module.MedicalCase.Helpers
             {
                 if (string.IsNullOrWhiteSpace(keyword))
                     return ServiceResult<List<MedicalCaseDto>>.Success(new List<MedicalCaseDto>());
-
-                _logger.LogInformation("搜索医疗案例: {Keyword}", keyword);
-
-                // UltraThink v2.0简化：使用内存过滤进行搜索
+                _logger.LogInformation("搜索医疗案例: {Keyword}", keyword);                // UltraThink v2.0简化：使用内存过滤进行搜索
                 var allModels = await _repository.GetAllAsync();
                 var models = allModels.Where(m => 
                     (!string.IsNullOrEmpty(m.Remark) && m.Remark.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                 ).ToList();
 
                 var dtos = _mapper.Map<List<MedicalCaseDto>>(models);
-
-                _logger.LogInformation("搜索到 {Count} 个医疗案例", dtos.Count);
-                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
+                _logger.LogInformation("搜索到 {Count} 个医疗案例", dtos.Count);                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索医疗案例失败: {Keyword}", keyword);
-                return ServiceResult<List<MedicalCaseDto>>.Failure("搜索医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "搜索医疗案例失败: {Keyword}", keyword);                return ServiceResult<List<MedicalCaseDto>>.Failure("搜索医疗案例失败", ex);            }
         }
 
         #endregion
@@ -183,18 +156,13 @@ namespace LYBT.Module.MedicalCase.Helpers
             {
                 // 检查案例是否存在
                 var medicalCase = await _repository.GetByIdAsync(id);
-                if (medicalCase == null)
-                    return ServiceResult<List<object>>.Failure("医疗案例不存在");
-
-                // 简化实现：返回案例基本信息作为历史记录
+                if (medicalCase == null)                    return ServiceResult<List<object>>.Failure("医疗案例不存在");                // 简化实现：返回案例基本信息作为历史记录
                 // 实际项目中应该有专门的历史记录表
                 var history = new List<object>
                 {
                     new
                     {
-                        Id = medicalCase.Id,
-                        Action = "创建案例",
-                        // CreateTime = medicalCase.CreateTime, // UltraThink v2.0简化：CreateTime字段已删除
+                        Id = medicalCase.Id,                        Action = "创建案例",                        // CreateTime = medicalCase.CreateTime, // UltraThink v2.0简化：CreateTime字段已删除
                         Status = medicalCase.Status.ToString(),
                         Remark = medicalCase.Remark
                     }
@@ -203,10 +171,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 return ServiceResult<List<object>>.Success(history);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医疗案例历史记录失败: {Id}", id);
-                return ServiceResult<List<object>>.Failure("获取历史记录失败", ex);
-            }
+            {                _logger.LogError(ex, "获取医疗案例历史记录失败: {Id}", id);                return ServiceResult<List<object>>.Failure("获取历史记录失败", ex);            }
         }
 
         #endregion
@@ -219,10 +184,7 @@ namespace LYBT.Module.MedicalCase.Helpers
         public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
             try
-            {
-                _logger.LogInformation("获取医疗案例统计数据: {StartDate} - {EndDate}", startDate, endDate);
-
-                // 获取总数统计
+            {                _logger.LogInformation("获取医疗案例统计数据: {StartDate} - {EndDate}", startDate, endDate);                // 获取总数统计
                 var totalCount = await _repository.CountAsync();
                 
                 // 按状态统计
@@ -247,10 +209,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 return ServiceResult<object>.Success(statistics);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医疗案例统计数据失败");
-                return ServiceResult<object>.Failure("获取统计数据失败", ex);
-            }
+            {                _logger.LogError(ex, "获取医疗案例统计数据失败");                return ServiceResult<object>.Failure("获取统计数据失败");            }
         }
 
         #endregion
@@ -268,10 +227,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 return ServiceResult<int>.Success((int)count); // long转int
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医疗案例数量失败");
-                return ServiceResult<int>.Failure("获取案例数量失败", ex);
-            }
+            {                _logger.LogError(ex, "获取医疗案例数量失败");                return ServiceResult<int>.Failure("获取案例数量失败");            }
         }
 
         /// <summary>
@@ -285,12 +241,12 @@ namespace LYBT.Module.MedicalCase.Helpers
                 return ServiceResult<bool>.Success(activeCaseResult.IsSuccess);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "检查患者活跃案例失败: {PatientId}", patientId);
-                return ServiceResult<bool>.Failure("检查患者活跃案例失败", ex);
+            {                _logger.LogError(ex, "检查患者活跃案例失败: {PatientId}", patientId);                return ServiceResult<bool>.Failure("检查患者活跃案例失败");
             }
         }
 
         #endregion
     }
 }
+
+

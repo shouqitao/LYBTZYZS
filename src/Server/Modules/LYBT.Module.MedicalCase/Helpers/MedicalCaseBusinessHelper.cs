@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
@@ -54,20 +54,13 @@ namespace LYBT.Module.MedicalCase.Helpers
                 model.Id = Guid.NewGuid();
                 model.Status = MedicalCaseStatus.InConsultation;
 
-                _logger.LogInformation("创建医疗案例: 患者ID={PatientId}, 案例ID={CaseId}", dto.PatientId, model.Id);
-
-                // 保存到数据库
+                _logger.LogInformation("创建医疗案例: 患者ID={PatientId}, 案例ID={CaseId}", dto.PatientId, model.Id);                // 保存到数据库
                 var created = await _repository.AddAsync(model);
                 var createdDto = _mapper.Map<MedicalCaseDto>(created);
-
-                _logger.LogInformation("医疗案例创建成功: {CaseId}", created.Id);
-                return ServiceResult<MedicalCaseDto>.Success(createdDto);
+                _logger.LogInformation("医疗案例创建成功: {CaseId}", created.Id);                return ServiceResult<MedicalCaseDto>.Success(createdDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建医疗案例失败");
-                return ServiceResult<MedicalCaseDto>.Failure("创建医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "创建医疗案例失败");                return ServiceResult<MedicalCaseDto>.Failure("创建医疗案例失败");            }
         }
 
         /// <summary>
@@ -84,39 +77,21 @@ namespace LYBT.Module.MedicalCase.Helpers
                     return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
                 }
 
-                var model = validation.MedicalCase!;
-                _logger.LogInformation("更新医疗案例: {CaseId}", id);
-
-                // 更新字段
-                if (!string.IsNullOrWhiteSpace(dto.Status))
-                {
-                    if (Enum.TryParse<MedicalCaseStatus>(dto.Status, out var status))
-                    {
-                        _logger.LogInformation("更新案例状态: {CaseId} {OldStatus} -> {NewStatus}", 
-                            id, model.Status, status);
-                        model.Status = status;
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(dto.Remark))
-                {
-                    model.Remark = dto.Remark;
+                var model = validation.MedicalCase!;                _logger.LogInformation("更新医疗案例: {CaseId}", id);                // 🎯 UltraThink修复：使用AutoMapper全量映射，避免字段遗漏
+                var oldStatus = model.Status;
+                _mapper.Map(dto, model);
+                
+                // 记录状态变更日志
+                if (model.Status != oldStatus)
+                {                    _logger.LogInformation("更新案例状态: {CaseId} {OldStatus} -> {NewStatus}",                         id, oldStatus, model.Status);
                 }
 
                 // 保存更新
                 var updated = await _repository.UpdateAsync(model);
-                if (updated == null)
-                    return ServiceResult<MedicalCaseDto>.Failure("更新医疗案例失败");
-
-                var updatedDto = _mapper.Map<MedicalCaseDto>(updated);
-                _logger.LogInformation("医疗案例更新成功: {CaseId}", updated.Id);
-                return ServiceResult<MedicalCaseDto>.Success(updatedDto);
+                if (updated == null)                    return ServiceResult<MedicalCaseDto>.Failure("更新医疗案例失败");                var updatedDto = _mapper.Map<MedicalCaseDto>(updated);                _logger.LogInformation("医疗案例更新成功: {CaseId}", updated.Id);                return ServiceResult<MedicalCaseDto>.Success(updatedDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新医疗案例失败: {Id}", id);
-                return ServiceResult<MedicalCaseDto>.Failure("更新医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "更新医疗案例失败: {Id}", id);                return ServiceResult<MedicalCaseDto>.Failure("更新医疗案例失败");            }
         }
 
         /// <summary>
@@ -141,26 +116,18 @@ namespace LYBT.Module.MedicalCase.Helpers
                 {
                     return ServiceResult<bool>.Failure(deleteValidation.ErrorMessage);
                 }
-
-                _logger.LogInformation("删除医疗案例: {CaseId} (软删除为Cancelled状态)", id);
-
-                // 软删除：将状态设为Cancelled
+                _logger.LogInformation("删除医疗案例: {CaseId} (软删除为Cancelled状态)", id);                // 软删除：将状态设为Cancelled
                 model.Status = MedicalCaseStatus.Cancelled;
                 var result = await _repository.UpdateAsync(model);
 
                 var success = result != null;
                 if (success)
-                {
-                    _logger.LogInformation("医疗案例删除成功: {CaseId}", id);
-                }
+                {                    _logger.LogInformation("医疗案例删除成功: {CaseId}", id);                }
 
                 return ServiceResult<bool>.Success(success);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除医疗案例失败: {Id}", id);
-                return ServiceResult<bool>.Failure("删除医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "删除医疗案例失败: {Id}", id);                return ServiceResult<bool>.Failure("删除医疗案例失败");            }
         }
 
         #endregion
@@ -189,10 +156,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 {
                     return ServiceResult<bool>.Failure(completeValidation.ErrorMessage);
                 }
-
-                _logger.LogInformation("完成医疗案例: {CaseId}, 原因: {Reason}", id, completionReason);
-
-                // 更新状态
+                _logger.LogInformation("完成医疗案例: {CaseId}, 原因: {Reason}", id, completionReason);                // 更新状态
                 model.Status = MedicalCaseStatus.Completed;
 
                 if (!string.IsNullOrWhiteSpace(completionReason))
@@ -202,17 +166,12 @@ namespace LYBT.Module.MedicalCase.Helpers
                 var success = result != null;
 
                 if (success)
-                {
-                    _logger.LogInformation("医疗案例完成成功: {CaseId}", id);
-                }
+                {                    _logger.LogInformation("医疗案例完成成功: {CaseId}", id);                }
 
                 return ServiceResult<bool>.Success(success);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "完成医疗案例失败: {Id}", id);
-                return ServiceResult<bool>.Failure("完成医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "完成医疗案例失败: {Id}", id);                return ServiceResult<bool>.Failure("完成医疗案例失败");            }
         }
 
         /// <summary>
@@ -237,10 +196,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 {
                     return ServiceResult<bool>.Failure(suspendValidation.ErrorMessage);
                 }
-
-                _logger.LogInformation("暂停医疗案例: {CaseId}, 原因: {Reason}", id, reason);
-
-                // 更新状态
+                _logger.LogInformation("暂停医疗案例: {CaseId}, 原因: {Reason}", id, reason);                // 更新状态
                 model.Status = MedicalCaseStatus.Suspended;
                 if (!string.IsNullOrWhiteSpace(reason))
                     model.Remark = reason;
@@ -249,17 +205,12 @@ namespace LYBT.Module.MedicalCase.Helpers
                 var success = result != null;
 
                 if (success)
-                {
-                    _logger.LogInformation("医疗案例暂停成功: {CaseId}", id);
-                }
+                {                    _logger.LogInformation("医疗案例暂停成功: {CaseId}", id);                }
 
                 return ServiceResult<bool>.Success(success);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "暂停医疗案例失败: {Id}", id);
-                return ServiceResult<bool>.Failure("暂停医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "暂停医疗案例失败: {Id}", id);                return ServiceResult<bool>.Failure("暂停医疗案例失败");            }
         }
 
         /// <summary>
@@ -284,26 +235,18 @@ namespace LYBT.Module.MedicalCase.Helpers
                 {
                     return ServiceResult<bool>.Failure(resumeValidation.ErrorMessage);
                 }
-
-                _logger.LogInformation("恢复医疗案例: {CaseId}", id);
-
-                // 更新状态
+                _logger.LogInformation("恢复医疗案例: {CaseId}", id);                // 更新状态
                 model.Status = MedicalCaseStatus.InConsultation;
                 var result = await _repository.UpdateAsync(model);
                 var success = result != null;
 
                 if (success)
-                {
-                    _logger.LogInformation("医疗案例恢复成功: {CaseId}", id);
-                }
+                {                    _logger.LogInformation("医疗案例恢复成功: {CaseId}", id);                }
 
                 return ServiceResult<bool>.Success(success);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "恢复医疗案例失败: {Id}", id);
-                return ServiceResult<bool>.Failure("恢复医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "恢复医疗案例失败: {Id}", id);                return ServiceResult<bool>.Failure("恢复医疗案例失败");            }
         }
 
         /// <summary>
@@ -328,10 +271,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 {
                     return ServiceResult<bool>.Failure(archiveValidation.ErrorMessage);
                 }
-
-                _logger.LogInformation("归档医疗案例: {CaseId}, 原因: {Reason}", id, archiveReason);
-
-                // 更新状态
+                _logger.LogInformation("归档医疗案例: {CaseId}, 原因: {Reason}", id, archiveReason);                // 更新状态
                 model.Status = MedicalCaseStatus.Archived;
                 if (!string.IsNullOrWhiteSpace(archiveReason))
                     model.Remark = archiveReason;
@@ -340,17 +280,12 @@ namespace LYBT.Module.MedicalCase.Helpers
                 var success = result != null;
 
                 if (success)
-                {
-                    _logger.LogInformation("医疗案例归档成功: {CaseId}", id);
-                }
+                {                    _logger.LogInformation("医疗案例归档成功: {CaseId}", id);                }
 
                 return ServiceResult<bool>.Success(success);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "归档医疗案例失败: {Id}", id);
-                return ServiceResult<bool>.Failure("归档医疗案例失败", ex);
-            }
+            {                _logger.LogError(ex, "归档医疗案例失败: {Id}", id);                return ServiceResult<bool>.Failure("归档医疗案例失败");            }
         }
 
         /// <summary>
@@ -371,9 +306,7 @@ namespace LYBT.Module.MedicalCase.Helpers
 
                 // 验证状态值有效性
                 if (!Enum.IsDefined(typeof(MedicalCaseStatus), status))
-                {
-                    return ServiceResult<bool>.Failure($"无效的状态值: {status}");
-                }
+                {                    return ServiceResult<bool>.Failure($"无效的状态值: {status}");                }
 
                 var newStatus = (MedicalCaseStatus)status;
 
@@ -383,9 +316,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 {
                     return ServiceResult<bool>.Failure(statusValidation.ErrorMessage);
                 }
-
-                _logger.LogInformation("更新医疗案例状态: {CaseId} {OldStatus} -> {NewStatus}", 
-                    id, model.Status, newStatus);
+                _logger.LogInformation("更新医疗案例状态: {CaseId} {OldStatus} -> {NewStatus}",                     id, model.Status, newStatus);
 
                 // 更新状态
                 model.Status = newStatus;
@@ -393,17 +324,12 @@ namespace LYBT.Module.MedicalCase.Helpers
                 var success = result != null;
 
                 if (success)
-                {
-                    _logger.LogInformation("医疗案例状态更新成功: {CaseId}", id);
-                }
+                {                    _logger.LogInformation("医疗案例状态更新成功: {CaseId}", id);                }
 
                 return ServiceResult<bool>.Success(success);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新医疗案例状态失败: {Id}", id);
-                return ServiceResult<bool>.Failure("更新案例状态失败", ex);
-            }
+            {                _logger.LogError(ex, "更新医疗案例状态失败: {Id}", id);                return ServiceResult<bool>.Failure("更新案例状态失败");            }
         }
 
         #endregion
@@ -418,13 +344,8 @@ namespace LYBT.Module.MedicalCase.Helpers
             try
             {
                 if (ids == null || ids.Length == 0)
-                {
-                    return ServiceResult<int>.Failure("案例ID列表不能为空");
-                }
-
-                _logger.LogInformation("批量更新医疗案例状态: {Count}个案例 -> {Status}", ids.Length, status);
-
-                int successCount = 0;
+                {                    return ServiceResult<int>.Failure("案例ID列表不能为空");                }
+                _logger.LogInformation("批量更新医疗案例状态: {Count}个案例 -> {Status}", ids.Length, status);                int successCount = 0;
                 foreach (var id in ids)
                 {
                     var result = await UpdateStatusAsync(id, (int)status);
@@ -433,15 +354,10 @@ namespace LYBT.Module.MedicalCase.Helpers
                         successCount++;
                     }
                 }
-
-                _logger.LogInformation("批量更新完成: 成功{SuccessCount}/{TotalCount}", successCount, ids.Length);
-                return ServiceResult<int>.Success(successCount);
+                _logger.LogInformation("批量更新完成: 成功{SuccessCount}/{TotalCount}", successCount, ids.Length);                return ServiceResult<int>.Success(successCount);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量更新医疗案例状态失败");
-                return ServiceResult<int>.Failure("批量更新失败", ex);
-            }
+            {                _logger.LogError(ex, "批量更新医疗案例状态失败");                return ServiceResult<int>.Failure("批量更新失败");            }
         }
 
         /// <summary>
@@ -458,33 +374,26 @@ namespace LYBT.Module.MedicalCase.Helpers
                     return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
                 }
 
-                var originalCase = validation.MedicalCase!;
-                _logger.LogInformation("复制医疗案例: {OriginalId}", id);
-
-                // 创建副本
+                var originalCase = validation.MedicalCase!;                _logger.LogInformation("复制医疗案例: {OriginalId}", id);                // 创建副本
                 var cloneCase = new LYBT.Entities.MedicalCase.MedicalCase
                 {
                     Id = Guid.NewGuid(),
                     PatientId = originalCase.PatientId,
                     DoctorId = originalCase.DoctorId,
-                    Status = MedicalCaseStatus.InConsultation, // 新案例从初始状态开始
-                    Remark = $"复制自案例 {originalCase.Id}: {originalCase.Remark}"
-                    // UltraThink v2.0简化：不包含CreateTime等字段
+                    Status = MedicalCaseStatus.InConsultation, // 新案例从初始状态开始                    Remark = $"复制自案例 {originalCase.Id}: {originalCase.Remark}"                    // UltraThink v2.0简化：不包含CreateTime等字段
                 };
 
                 var created = await _repository.AddAsync(cloneCase);
                 var createdDto = _mapper.Map<MedicalCaseDto>(created);
-
-                _logger.LogInformation("医疗案例复制成功: {OriginalId} -> {CloneId}", id, created.Id);
-                return ServiceResult<MedicalCaseDto>.Success(createdDto);
+                _logger.LogInformation("医疗案例复制成功: {OriginalId} -> {CloneId}", id, created.Id);                return ServiceResult<MedicalCaseDto>.Success(createdDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "复制医疗案例失败: {Id}", id);
-                return ServiceResult<MedicalCaseDto>.Failure("复制医疗案例失败", ex);
+            {                _logger.LogError(ex, "复制医疗案例失败: {Id}", id);                return ServiceResult<MedicalCaseDto>.Failure("复制医疗案例失败");
             }
         }
 
         #endregion
     }
 }
+
+

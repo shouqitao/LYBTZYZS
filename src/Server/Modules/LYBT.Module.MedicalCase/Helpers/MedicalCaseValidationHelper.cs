@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.Entities.MedicalCase;
@@ -38,16 +38,12 @@ namespace LYBT.Module.MedicalCase.Helpers
                 var medicalCase = await _repository.GetByIdAsync(id);
                 if (medicalCase == null)
                 {
-                    return (false, "医疗案例不存在", null);
-                }
+                    return (false, "医疗案例不存在", null);                }
 
                 return (true, string.Empty, medicalCase);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证医疗案例存在性失败: {Id}", id);
-                return (false, "验证医疗案例时发生错误", null);
-            }
+            {                _logger.LogError(ex, "验证医疗案例存在性失败: {Id}", id);                return (false, "验证医疗案例时发生错误", null);            }
         }
 
         /// <summary>
@@ -56,9 +52,7 @@ namespace LYBT.Module.MedicalCase.Helpers
         public (bool IsValid, string ErrorMessage) ValidateGuid(Guid id, string paramName)
         {
             if (id == Guid.Empty)
-            {
-                return (false, $"{paramName}不能为空");
-            }
+            {                return (false, $"{paramName}不能为空");            }
 
             return (true, string.Empty);
         }
@@ -76,33 +70,21 @@ namespace LYBT.Module.MedicalCase.Helpers
             {
                 // 验证基础字段
                 if (dto.PatientId == Guid.Empty)
-                {
-                    return (false, "患者ID不能为空");
-                }
+                {                    return (false, "患者ID不能为空");                }
 
                 // 检查患者是否已有活跃案例
                 var hasActiveCase = await HasActiveCaseAsync(dto.PatientId);
                 if (hasActiveCase)
-                {
-                    return (false, "该患者已有正在进行的医疗案例，无法创建新案例");
-                }
+                {                    return (false, "该患者已有正在进行的医疗案例，无法创建新案例");                }
 
                 // 验证医生ID
                 if (dto.DoctorId == Guid.Empty)
-                {
-                    return (false, "医生ID不能为空");
-                }
+                {                    return (false, "医生ID不能为空");                }
 
-                // 实际项目中应该验证医生是否存在
-                _logger.LogInformation("医疗案例指定医生: {DoctorId}", dto.DoctorId);
-
-                return (true, string.Empty);
+                // 实际项目中应该验证医生是否存在                _logger.LogInformation("医疗案例指定医生: {DoctorId}", dto.DoctorId);                return (true, string.Empty);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证创建医疗案例数据失败");
-                return (false, "验证数据时发生错误");
-            }
+            {                _logger.LogError(ex, "验证创建医疗案例数据失败");                return (false, "验证数据时发生错误");            }
         }
 
         #endregion
@@ -116,9 +98,7 @@ namespace LYBT.Module.MedicalCase.Helpers
         {
             try
             {
-                // 验证ID
-                var guidValidation = ValidateGuid(id, "医疗案例ID");
-                if (!guidValidation.IsValid)
+                // 验证ID                var guidValidation = ValidateGuid(id, "医疗案例ID");                if (!guidValidation.IsValid)
                 {
                     return (false, guidValidation.ErrorMessage, null);
                 }
@@ -144,18 +124,13 @@ namespace LYBT.Module.MedicalCase.Helpers
                         }
                     }
                     else
-                    {
-                        return (false, $"无效的状态值: {dto.Status}", null);
-                    }
+                    {                        return (false, $"无效的状态值: {dto.Status}", null);                    }
                 }
 
                 return (true, string.Empty, medicalCase);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证更新医疗案例数据失败: {Id}", id);
-                return (false, "验证数据时发生错误", null);
-            }
+            {                _logger.LogError(ex, "验证更新医疗案例数据失败: {Id}", id);                return (false, "验证数据时发生错误", null);            }
         }
 
         #endregion
@@ -193,9 +168,7 @@ namespace LYBT.Module.MedicalCase.Helpers
             };
 
             if (!isValidTransition)
-            {
-                return (false, $"不允许从 {currentStatus} 状态转换到 {newStatus} 状态");
-            }
+            {                return (false, $"不允许从 {currentStatus} 状态转换到 {newStatus} 状态");            }
 
             return (true, string.Empty);
         }
@@ -206,19 +179,13 @@ namespace LYBT.Module.MedicalCase.Helpers
         public (bool IsValid, string ErrorMessage) ValidateCanComplete(LYBT.Entities.MedicalCase.MedicalCase medicalCase)
         {
             if (medicalCase.Status == MedicalCaseStatus.Completed)
-            {
-                return (false, "医疗案例已经完成");
-            }
+            {                return (false, "医疗案例已经完成");            }
 
             if (medicalCase.Status == MedicalCaseStatus.Cancelled)
-            {
-                return (false, "已取消的医疗案例无法完成");
-            }
+            {                return (false, "已取消的医疗案例无法完成");            }
 
             if (medicalCase.Status == MedicalCaseStatus.Archived)
-            {
-                return (false, "已归档的医疗案例无法完成");
-            }
+            {                return (false, "已归档的医疗案例无法完成");            }
 
             return (true, string.Empty);
         }
@@ -229,24 +196,16 @@ namespace LYBT.Module.MedicalCase.Helpers
         public (bool IsValid, string ErrorMessage) ValidateCanSuspend(LYBT.Entities.MedicalCase.MedicalCase medicalCase)
         {
             if (medicalCase.Status == MedicalCaseStatus.Suspended)
-            {
-                return (false, "医疗案例已经暂停");
-            }
+            {                return (false, "医疗案例已经暂停");            }
 
             if (medicalCase.Status == MedicalCaseStatus.Completed)
-            {
-                return (false, "已完成的医疗案例无法暂停");
-            }
+            {                return (false, "已完成的医疗案例无法暂停");            }
 
             if (medicalCase.Status == MedicalCaseStatus.Cancelled)
-            {
-                return (false, "已取消的医疗案例无法暂停");
-            }
+            {                return (false, "已取消的医疗案例无法暂停");            }
 
             if (medicalCase.Status == MedicalCaseStatus.Archived)
-            {
-                return (false, "已归档的医疗案例无法暂停");
-            }
+            {                return (false, "已归档的医疗案例无法暂停");            }
 
             return (true, string.Empty);
         }
@@ -257,9 +216,7 @@ namespace LYBT.Module.MedicalCase.Helpers
         public (bool IsValid, string ErrorMessage) ValidateCanResume(LYBT.Entities.MedicalCase.MedicalCase medicalCase)
         {
             if (medicalCase.Status != MedicalCaseStatus.Suspended)
-            {
-                return (false, "只有暂停的医疗案例才能恢复");
-            }
+            {                return (false, "只有暂停的医疗案例才能恢复");            }
 
             return (true, string.Empty);
         }
@@ -270,9 +227,7 @@ namespace LYBT.Module.MedicalCase.Helpers
         public (bool IsValid, string ErrorMessage) ValidateCanArchive(LYBT.Entities.MedicalCase.MedicalCase medicalCase)
         {
             if (medicalCase.Status != MedicalCaseStatus.Completed)
-            {
-                return (false, "只有已完成的医疗案例才能归档");
-            }
+            {                return (false, "只有已完成的医疗案例才能归档");            }
 
             return (true, string.Empty);
         }
@@ -287,9 +242,7 @@ namespace LYBT.Module.MedicalCase.Helpers
         public (bool IsValid, string ErrorMessage) ValidateCanDelete(LYBT.Entities.MedicalCase.MedicalCase medicalCase)
         {
             if (medicalCase.Status == MedicalCaseStatus.Cancelled)
-            {
-                return (false, "医疗案例已经取消");
-            }
+            {                return (false, "医疗案例已经取消");            }
 
             // UltraThink v2.0简化：允许删除任何状态的案例（实际上是软删除为Cancelled状态）
             return (true, string.Empty);
@@ -310,9 +263,7 @@ namespace LYBT.Module.MedicalCase.Helpers
                 return cases?.Any(c => c.Status == MedicalCaseStatus.InConsultation) ?? false;
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "检查患者活跃案例失败: {PatientId}", patientId);
-                return false;
+            {                _logger.LogError(ex, "检查患者活跃案例失败: {PatientId}", patientId);                return false;
             }
         }
 
@@ -322,14 +273,10 @@ namespace LYBT.Module.MedicalCase.Helpers
         public (bool IsValid, string ErrorMessage) ValidatePagedQuery(PagedQueryBaseDto query)
         {
             if (query.PageIndex < 1)
-            {
-                return (false, "页码必须大于0");
-            }
+            {                return (false, "页码必须大于0");            }
 
             if (query.PageSize < 1 || query.PageSize > 100)
-            {
-                return (false, "页大小必须在1-100之间");
-            }
+            {                return (false, "页大小必须在1-100之间");            }
 
             return (true, string.Empty);
         }
@@ -340,18 +287,13 @@ namespace LYBT.Module.MedicalCase.Helpers
         public (bool IsValid, string ErrorMessage) ValidateSearchKeyword(string keyword)
         {
             if (string.IsNullOrWhiteSpace(keyword))
-            {
-                return (false, "搜索关键词不能为空");
-            }
+            {                return (false, "搜索关键词不能为空");            }
 
             if (keyword.Length < 2)
-            {
-                return (false, "搜索关键词至少需要2个字符");
-            }
+            {                return (false, "搜索关键词至少需要2个字符");            }
 
             if (keyword.Length > 50)
-            {
-                return (false, "搜索关键词不能超过50个字符");
+            {                return (false, "搜索关键词不能超过50个字符");
             }
 
             return (true, string.Empty);

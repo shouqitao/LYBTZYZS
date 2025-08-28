@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
@@ -42,9 +42,7 @@ namespace LYBT.Module.Formula.Helpers
                     .FirstOrDefaultAsync(f => f.Id == formulaId && f.Status == CommonStatus.Enabled);
 
                 if (formula == null)
-                    return ServiceResult<FormulaAnalysisResult>.Failure("验方不存在");
-
-                // 分析药材配伍
+                    return ServiceResult<FormulaAnalysisResult>.Failure("验方不存在");                // 分析药材配伍
                 var herbs = await _dbContext.Herbs
                     .Where(h => formula.Herbs.Select(fh => fh.HerbId).Contains(h.Id))
                     .ToListAsync();
@@ -60,10 +58,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<FormulaAnalysisResult>.Success(analysisResult);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "分析验方失败: {Id}", formulaId);
-                return ServiceResult<FormulaAnalysisResult>.Failure("分析验方失败", ex);
-            }
+            {                _logger.LogError(ex, "分析验方失败: {Id}", formulaId);                return ServiceResult<FormulaAnalysisResult>.Failure("分析验方失败");            }
         }
 
         /// <summary>
@@ -86,10 +81,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaRecommendationDto>>.Success(recommendations);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取推荐验方失败: {Syndrome}", syndrome);
-                return ServiceResult<List<FormulaRecommendationDto>>.Failure("获取推荐验方失败", ex);
-            }
+            {                _logger.LogError(ex, "获取推荐验方失败: {Syndrome}", syndrome);                return ServiceResult<List<FormulaRecommendationDto>>.Failure("获取推荐验方失败", ex);            }
         }
 
         /// <summary>
@@ -116,11 +108,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<List<FormulaRecommendationDto>>.Success(combinedRecommendations);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取智能推荐失败: Symptoms={Symptoms}, Diagnosis={Diagnosis}, DoctorId={DoctorId}", 
-                    symptoms, diagnosis, doctorId);
-                return ServiceResult<List<FormulaRecommendationDto>>.Failure("获取智能推荐失败", ex);
-            }
+            {                _logger.LogError(ex, "获取智能推荐失败: Symptoms={Symptoms}, Diagnosis={Diagnosis}, DoctorId={DoctorId}",                     symptoms, diagnosis, doctorId);                return ServiceResult<List<FormulaRecommendationDto>>.Failure("获取智能推荐失败", ex);            }
         }
 
         /// <summary>
@@ -137,20 +125,11 @@ namespace LYBT.Module.Formula.Helpers
                     // .Include(p => p.Herbs)
                     .FirstOrDefaultAsync(p => p.Id == prescriptionId);
 
-                if (prescription == null)
-                    return ServiceResult<LYBT.Entities.Formula.Formula>.Failure("处方不存在");
-
-                // 创建新验方
+                if (prescription == null)                    return ServiceResult<LYBT.Entities.Formula.Formula>.Failure("处方不存在");                // 创建新验方
                 var formula = new LYBT.Entities.Formula.Formula
                 {
                     Id = Guid.NewGuid(),
-                    Name = formulaName,
-                    Effect = "基于处方创建的验方",
-                    Usage = "按医嘱使用", // TODO: Prescription实体暂无Usage属性
-                    Property = "温",
-                    IsShared = false,
-                    Remark = $"从处方ID {prescriptionId} 创建",
-                    Status = CommonStatus.Enabled
+                    Name = formulaName,                    Effect = "基于处方创建的验方",                    Usage = "按医嘱使用", // TODO: Prescription实体暂无Usage属性                    Property = "温",                    IsShared = false,                    Remark = $"从处方ID {prescriptionId} 创建",                    Status = CommonStatus.Enabled
                 };
 
                 _dbContext.Formulas.Add(formula);
@@ -166,9 +145,7 @@ namespace LYBT.Module.Formula.Helpers
                 //             HerbName = prescriptionHerb.HerbName,
                 //             Quantity = prescriptionHerb.Quantity,
                 //             Unit = prescriptionHerb.Unit,
-                //             Usage = prescriptionHerb.Usage,
-                //             Remark = "从处方复制"
-                //         };
+                //             Usage = prescriptionHerb.Usage,                //             Remark = "从处方复制"                //         };
                 //
                 //         if (formula.Herbs == null)
                 //             formula.Herbs = new List<FormulaHerbItem>();
@@ -182,11 +159,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<LYBT.Entities.Formula.Formula>.Success(formula);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "从处方创建验方失败: PrescriptionId={PrescriptionId}, FormulaName={FormulaName}", 
-                    prescriptionId, formulaName);
-                return ServiceResult<LYBT.Entities.Formula.Formula>.Failure("从处方创建验方失败", ex);
-            }
+            {                _logger.LogError(ex, "从处方创建验方失败: PrescriptionId={PrescriptionId}, FormulaName={FormulaName}",                     prescriptionId, formulaName);                return ServiceResult<LYBT.Entities.Formula.Formula>.Failure("从处方创建验方失败");            }
         }
 
         /// <summary>
@@ -213,18 +186,13 @@ namespace LYBT.Module.Formula.Helpers
                         }
                     }
                     catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "处理药材失败: {HerbName}", herbImport.HerbName);
-                    }
+                    {                        _logger.LogWarning(ex, "处理药材失败: {HerbName}", herbImport.HerbName);                    }
                 }
 
                 return ServiceResult<List<FormulaHerbItem>>.Success(processedHerbs);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理验方药材组成失败: FormulaId={FormulaId}", formulaId);
-                return ServiceResult<List<FormulaHerbItem>>.Failure("处理验方药材组成失败", ex);
-            }
+            {                _logger.LogError(ex, "处理验方药材组成失败: FormulaId={FormulaId}", formulaId);                return ServiceResult<List<FormulaHerbItem>>.Failure("处理验方药材组成失败", ex);            }
         }
 
         /// <summary>
@@ -235,14 +203,10 @@ namespace LYBT.Module.Formula.Helpers
             FormulaImportOptionsDto options)
         {
             try
-            {
-                _logger.LogInformation("开始批量导入验方，数量: {Count}, 批次: {ImportBatch}", 
-                    formulas.Count, options.ImportBatch);
+            {                _logger.LogInformation("开始批量导入验方，数量: {Count}, 批次: {ImportBatch}",                     formulas.Count, options.ImportBatch);
 
                 var result = new FormulaImportResultDto
-                {
-                    ImportBatch = options.ImportBatch ?? Guid.NewGuid().ToString("N")[..8],
-                    TotalCount = formulas.Count,
+                {                    ImportBatch = options.ImportBatch ?? Guid.NewGuid().ToString("N")[..8],                    TotalCount = formulas.Count,
                     StartTime = DateTime.Now
                 };
 
@@ -272,9 +236,7 @@ namespace LYBT.Module.Formula.Helpers
                                 ErrorMessage = importResult.ErrorMessage!,
                                 OriginalData = System.Text.Json.JsonSerializer.Serialize(importDto)
                             });
-                            
-                            if (importResult.ErrorMessage!.Contains("跳过"))
-                                result.SkippedCount++;
+                                                        if (importResult.ErrorMessage!.Contains("跳过"))                                result.SkippedCount++;
                             else
                                 result.FailedCount++;
                         }
@@ -291,17 +253,12 @@ namespace LYBT.Module.Formula.Helpers
                 result.EndTime = DateTime.Now;
                 result.SuccessfulFormulas = successfulFormulas;
                 result.FailedItems = failedItems;
-
-                _logger.LogInformation("验方导入完成，成功: {Success}, 失败: {Failed}, 跳过: {Skipped}", 
-                    result.SuccessCount, result.FailedCount, result.SkippedCount);
+                _logger.LogInformation("验方导入完成，成功: {Success}, 失败: {Failed}, 跳过: {Skipped}",                     result.SuccessCount, result.FailedCount, result.SkippedCount);
 
                 return ServiceResult<FormulaImportResultDto>.Success(result);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量导入验方异常");
-                return ServiceResult<FormulaImportResultDto>.Failure($"批量导入验方异常: {ex.Message}", ex);
-            }
+            {                _logger.LogError(ex, "批量导入验方异常");                return ServiceResult<FormulaImportResultDto>.Failure($"批量导入验方异常: {ex.Message}", ex);            }
         }
 
         #region 私有辅助方法
@@ -313,10 +270,7 @@ namespace LYBT.Module.Formula.Helpers
         {
             var herbCount = herbs.Count;
             var mainHerbs = herbs.Take(3).Select(h => h.Name).ToList();
-            
-            return $"验方【{formula.Name}】包含{herbCount}味中药，主要药材：{string.Join("、", mainHerbs)}等。" +
-                   $"功效：{formula.Effect ?? "清热解毒"}。适用症状广泛，配伍合理。";
-        }
+                        return $"验方【{formula.Name}】包含{herbCount}味中药，主要药材：{string.Join("、", mainHerbs)}等。" +                   $"功效：{formula.Effect ?? "清热解毒"}。适用症状广泛，配伍合理。";        }
 
         /// <summary>
         /// 分析验方功效
@@ -327,21 +281,7 @@ namespace LYBT.Module.Formula.Helpers
             
             // 基于药材属性分析功效
             var herbNames = herbs.Select(h => h.Name.ToLower()).ToList();
-            
-            if (herbNames.Any(name => name.Contains("黄芩") || name.Contains("黄连") || name.Contains("板蓝根")))
-                effects.Add("清热解毒");
-            
-            if (herbNames.Any(name => name.Contains("人参") || name.Contains("党参") || name.Contains("黄芪")))
-                effects.Add("补气健脾");
-            
-            if (herbNames.Any(name => name.Contains("当归") || name.Contains("川芎") || name.Contains("丹参")))
-                effects.Add("活血化瘀");
-            
-            if (herbNames.Any(name => name.Contains("陈皮") || name.Contains("半夏") || name.Contains("茯苓")))
-                effects.Add("健脾化湿");
-
-            return effects.Any() ? effects : new List<string> { "调和诸药", "扶正祛邪" };
-        }
+                        if (herbNames.Any(name => name.Contains("黄芩") || name.Contains("黄连") || name.Contains("板蓝根")))                effects.Add("清热解毒");                        if (herbNames.Any(name => name.Contains("人参") || name.Contains("党参") || name.Contains("黄芪")))                effects.Add("补气健脾");                        if (herbNames.Any(name => name.Contains("当归") || name.Contains("川芎") || name.Contains("丹参")))                effects.Add("活血化瘀");                        if (herbNames.Any(name => name.Contains("陈皮") || name.Contains("半夏") || name.Contains("茯苓")))                effects.Add("健脾化湿");            return effects.Any() ? effects : new List<string> { "调和诸药", "扶正祛邪" };        }
 
         /// <summary>
         /// 分析禁忌症
@@ -351,18 +291,7 @@ namespace LYBT.Module.Formula.Helpers
             var contraindications = new List<string>();
             
             var herbNames = herbs.Select(h => h.Name.ToLower()).ToList();
-            
-            if (herbNames.Any(name => name.Contains("大黄") || name.Contains("芒硝")))
-                contraindications.Add("孕妇禁用");
-            
-            if (herbNames.Any(name => name.Contains("麻黄") || name.Contains("桂枝")))
-                contraindications.Add("高血压患者慎用");
-            
-            if (herbNames.Any(name => name.Contains("附子") || name.Contains("干姜")))
-                contraindications.Add("阴虚火旺者禁用");
-
-            return contraindications.Any() ? contraindications : new List<string> { "暂无特殊禁忌" };
-        }
+                        if (herbNames.Any(name => name.Contains("大黄") || name.Contains("芒硝")))                contraindications.Add("孕妇禁用");                        if (herbNames.Any(name => name.Contains("麻黄") || name.Contains("桂枝")))                contraindications.Add("高血压患者慎用");                        if (herbNames.Any(name => name.Contains("附子") || name.Contains("干姜")))                contraindications.Add("阴虚火旺者禁用");            return contraindications.Any() ? contraindications : new List<string> { "暂无特殊禁忌" };        }
 
         /// <summary>
         /// 检查药材配伍禁忌
@@ -373,16 +302,9 @@ namespace LYBT.Module.Formula.Helpers
             
             // 检查常见配伍禁忌
             var herbNames = herbs.Select(h => h.Name).ToList();
-            
-            if (herbNames.Contains("甘草") && herbNames.Contains("大戟"))
-            {
+                        if (herbNames.Contains("甘草") && herbNames.Contains("大戟"))            {
                 warnings.Add(new HerbCompatibilityWarning
-                {
-                    HerbName1 = "甘草",
-                    HerbName2 = "大戟", 
-                    WarningLevel = "相恶",
-                    Description = "甘草与大戟相恶，不宜同用"
-                });
+                {                    HerbName1 = "甘草",                    HerbName2 = "大戟",                     WarningLevel = "相恶",                    Description = "甘草与大戟相恶，不宜同用"                });
             }
 
             return warnings;
@@ -414,12 +336,8 @@ namespace LYBT.Module.Formula.Helpers
                 recommendations.Add(new FormulaRecommendationDto
                 {
                     Id = formula.Id,
-                    FormulaName = formula.Name,
-                    Effect = formula.Effect ?? "调和诸药",
-                    MatchScore = Math.Min(score, 100),
-                    UsageCount = usageCount,
-                    MatchReason = $"适用于{syndrome}症状，配伍合理"
-                });
+                    FormulaName = formula.Name,                    Effect = formula.Effect ?? "调和诸药",                    MatchScore = Math.Min(score, 100),
+                    UsageCount = usageCount,                    MatchReason = $"适用于{syndrome}症状，配伍合理"                });
             }
 
             return recommendations.OrderByDescending(r => r.MatchScore).Take(5).ToList();
@@ -490,12 +408,8 @@ namespace LYBT.Module.Formula.Helpers
                 recommendations.Add(new FormulaRecommendationDto
                 {
                     Id = formula.Id,
-                    FormulaName = formula.Name,
-                    Effect = formula.Effect ?? "调和诸药",
-                    MatchScore = Math.Min(score, 100),
-                    UsageCount = Random.Shared.Next(0, 100),
-                    MatchReason = $"符合{symptoms}症状和{diagnosis}诊断，医生常用验方"
-                });
+                    FormulaName = formula.Name,                    Effect = formula.Effect ?? "调和诸药",                    MatchScore = Math.Min(score, 100),
+                    UsageCount = Random.Shared.Next(0, 100),                    MatchReason = $"符合{symptoms}症状和{diagnosis}诊断，医生常用验方"                });
             }
 
             return recommendations.OrderByDescending(r => r.MatchScore).Take(8).ToList();
@@ -536,9 +450,7 @@ namespace LYBT.Module.Formula.Helpers
                     herbId = newHerb.Id;
                 }
                 else
-                {
-                    return ServiceResult<FormulaHerbItem>.Failure($"未找到药材且不允许自动创建: {herbImport.HerbName}");
-                }
+                {                    return ServiceResult<FormulaHerbItem>.Failure($"未找到药材且不允许自动创建: {herbImport.HerbName}");                }
 
                 var formulaHerb = new FormulaHerbItem
                 {
@@ -553,10 +465,7 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<FormulaHerbItem>.Success(formulaHerb);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理单个药材导入失败: {HerbName}", herbImport.HerbName);
-                return ServiceResult<FormulaHerbItem>.Failure($"处理药材失败: {ex.Message}");
-            }
+            {                _logger.LogError(ex, "处理单个药材导入失败: {HerbName}", herbImport.HerbName);                return ServiceResult<FormulaHerbItem>.Failure($"处理药材失败: {ex.Message}");            }
         }
 
         /// <summary>
@@ -574,9 +483,7 @@ namespace LYBT.Module.Formula.Helpers
                 if (existingFormula != null)
                 {
                     if (options.SkipDuplicates)
-                    {
-                        return ServiceResult<FormulaDto>.Failure("跳过重复验方");
-                    }
+                    {                        return ServiceResult<FormulaDto>.Failure("跳过重复验方");                    }
                     
                     if (options.UpdateExisting)
                     {
@@ -630,12 +537,12 @@ namespace LYBT.Module.Formula.Helpers
                 return ServiceResult<FormulaDto>.Success(formulaDto);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理单个验方导入失败，行: {RowIndex}, 名称: {Name}", rowIndex, importDto.Name);
-                return ServiceResult<FormulaDto>.Failure($"导入失败: {ex.Message}");
+            {                _logger.LogError(ex, "处理单个验方导入失败，行: {RowIndex}, 名称: {Name}", rowIndex, importDto.Name);                return ServiceResult<FormulaDto>.Failure($"导入失败: {ex.Message}");
             }
         }
 
         #endregion
     }
 }
+
+

@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services;
 using LYBT.Entities.Prescriptions;
-using LYBT.Module.Prescriptions.Helpers;
-using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Module.Prescriptions.Helpers;
+using LYBT.Module.Prescriptions.Services.Core;
 using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Services
 {
     /// <summary>
-    /// 处方服务实现类 - UltraThink Helper模式重构
-    /// 继承BaseService并委托给Helper类处理具体业务逻辑
+    /// 处方业务服务实现类 - UltraThink v2.0架构
+    /// 继承BaseService，使用Helper模式处理复杂逻辑
     /// </summary>
     public class PrescriptionService : BaseService<Prescription, PrescriptionDto, PrescriptionCreateDto, PrescriptionEditDto>, IPrescriptionService
     {
@@ -112,11 +114,11 @@ namespace LYBT.Module.Prescriptions.Services
             dto.Id = id; // 确保ID一致
             var operatorId = Guid.Empty; // TODO: 从认证上下文获取
             var operatorName = "System"; // TODO: 从认证上下文获取
-
+            
             var updateResult = await _businessHelper.UpdateAsync(dto, operatorId, operatorName);
             if (!updateResult.IsSuccess)
                 return ServiceResult<PrescriptionDto>.Failure(updateResult.ErrorMessage ?? "更新处方失败");
-
+            
             // 获取更新后的处方
             return await GetByIdAsync(id);
         }
@@ -128,7 +130,7 @@ namespace LYBT.Module.Prescriptions.Services
         {
             var operatorId = Guid.Empty; // TODO: 从认证上下文获取
             var operatorName = "System"; // TODO: 从认证上下文获取
-
+            
             return await ExecuteSafelyAsync(
                 async () => await _businessHelper.DeleteAsync(id, operatorId, operatorName),
                 "删除处方", id);
@@ -174,49 +176,6 @@ namespace LYBT.Module.Prescriptions.Services
                 async () => await _validationHelper.ValidateCreateAsync(dto),
                 "验证处方数据", dto);
         }
-
-        #region 已废弃功能 - UltraThink精简
-        /*
-        /// <summary>
-        /// [Shared] 导出处方为PDF (已废弃 - 功能迁移到MedicalCase模块)
-        /// </summary>
-        public async Task<ServiceResult<byte[]>> ExportToPdfAsync(Guid id)
-        {
-            // 功能已迁移到MedicalCase.PrintMedicalRecordAsync
-            // 小诊所统一在病历层面打印，避免功能分散
-        }
-        */
-        #endregion
-
-        /*
-        /// <summary>
-        /// [Shared] 获取处方统计信息 (已废弃)
-        /// </summary>
-        public async Task<ServiceResult<PrescriptionStatisticsDto>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
-        {
-            // 统计功能已删除 - 小诊所不需要复杂统计分析
-        }
-        */
-
-        /*
-        /// <summary>
-        /// [Shared] 批准处方 (已废弃)
-        /// </summary>
-        public async Task<ServiceResult<bool>> ApproveAsync(Guid id, string approvalNote)
-        {
-            // 审批功能已删除 - 小诊所无需复杂审批流程
-        }
-        */
-
-        /*
-        /// <summary>
-        /// [Shared] 拒绝处方 (已废弃)
-        /// </summary>
-        public async Task<ServiceResult<bool>> RejectAsync(Guid id, string reason)
-        {
-            // 拒绝功能已删除 - 小诊所无需复杂审批流程
-        }
-        */
 
         /// <summary>
         /// [Shared] 复制处方
@@ -301,16 +260,6 @@ namespace LYBT.Module.Prescriptions.Services
             var result = await _businessHelper.QuickSaveAsync(prescriptionId, dto, operatorId, operatorName);
             return result.IsSuccess && result.Data;
         }
-
-        /*
-        /// <summary>
-        /// 提交处方（从草稿变为待审核） (已废弃)
-        /// </summary>
-        public async Task<bool> SubmitPrescriptionAsync(Guid prescriptionId, Guid operatorId, string operatorName)
-        {
-            // 提交审批功能已删除 - 小诊所无需复杂审批流程
-        }
-        */
 
         /// <summary>
         /// 作废处方

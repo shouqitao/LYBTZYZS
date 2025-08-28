@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -57,14 +57,10 @@ namespace LYBT.Module.Prescriptions.Helpers
                 var validationResult = await _validationHelper.ValidateCreateAsync(dto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
-                }
+                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage ?? "验证失败");                }
 
                 if (!validationResult.Data.IsValid)
-                {
-                    var errors = string.Join("; ", validationResult.Data.Errors);
-                    return ServiceResult<PrescriptionDto>.Failure($"数据验证失败: {errors}");
-                }
+                {                    var errors = string.Join("; ", validationResult.Data.Errors);                    return ServiceResult<PrescriptionDto>.Failure($"数据验证失败: {errors}");                }
 
                 // 映射到实体
                 var model = _mapper.Map<LYBT.Entities.Prescriptions.Prescription>(dto);
@@ -77,22 +73,16 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 保存到数据库
                 var success = await _repository.AddAsync(model);
                 if (!success)
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("保存处方失败");
-                }
+                {                    return ServiceResult<PrescriptionDto>.Failure("保存处方失败");                }
 
                 // 如果处方关联医疗案例，更新案例状态
                 if (dto.ConsultationId.HasValue)
-                {
-                    await UpdateMedicalCaseStatusAsync(dto.ConsultationId.Value, "处方已创建");
-                }
+                {                    await UpdateMedicalCaseStatusAsync(dto.ConsultationId.Value, "处方已创建");                }
 
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // 记录操作日志
-                _logger.LogInformation("处方新增 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
-                    operatorName, operatorId, model.Id);
+                // 记录操作日志                _logger.LogInformation("处方新增 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}",                     operatorName, operatorId, model.Id);
 
                 // 返回创建的DTO
                 var resultDto = _mapper.Map<PrescriptionDto>(model);
@@ -100,10 +90,7 @@ namespace LYBT.Module.Prescriptions.Helpers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "创建处方失败 - 操作者: {OperatorName}", operatorName);
-                return ServiceResult<PrescriptionDto>.Failure("创建处方失败", ex);
-            }
+                await transaction.RollbackAsync();                _logger.LogError(ex, "创建处方失败 - 操作者: {OperatorName}", operatorName);                return ServiceResult<PrescriptionDto>.Failure("创建处方失败");            }
         }
 
         /// <summary>
@@ -116,29 +103,20 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 验证更新数据
                 var validationResult = await _validationHelper.ValidateUpdateAsync(dto);
                 if (!validationResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(validationResult.ErrorMessage ?? "验证失败");
-                }
+                {                    return ServiceResult<bool>.Failure(validationResult.ErrorMessage ?? "验证失败");                }
 
                 if (!validationResult.Data.IsValid)
-                {
-                    var errors = string.Join("; ", validationResult.Data.Errors);
-                    return ServiceResult<bool>.Failure($"数据验证失败: {errors}");
-                }
+                {                    var errors = string.Join("; ", validationResult.Data.Errors);                    return ServiceResult<bool>.Failure($"数据验证失败: {errors}");                }
 
                 // 获取现有处方
                 var existingPrescription = await _repository.GetByIdAsync(dto.Id);
                 if (existingPrescription == null)
-                {
-                    return ServiceResult<bool>.Failure("处方不存在");
-                }
+                {                    return ServiceResult<bool>.Failure("处方不存在");                }
 
                 // 验证是否可以编辑
                 var canEditResult = _validationHelper.ValidateCanEdit(existingPrescription.Status);
                 if (!canEditResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(canEditResult.ErrorMessage ?? "无法编辑");
-                }
+                {                    return ServiceResult<bool>.Failure(canEditResult.ErrorMessage ?? "无法编辑");                }
 
                 // 映射更新字段
                 var updatedModel = _mapper.Map(dto, existingPrescription);
@@ -146,21 +124,14 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 保存更新
                 var success = await _repository.UpdateAsync(updatedModel);
                 if (!success)
-                {
-                    return ServiceResult<bool>.Failure("更新处方失败");
-                }
+                {                    return ServiceResult<bool>.Failure("更新处方失败");                }
 
-                // 记录操作日志
-                _logger.LogInformation("处方编辑 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
-                    operatorName, operatorId, dto.Id);
+                // 记录操作日志                _logger.LogInformation("处方编辑 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}",                     operatorName, operatorId, dto.Id);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, dto.Id);
-                return ServiceResult<bool>.Failure("更新处方失败", ex);
-            }
+            {                _logger.LogError(ex, "更新处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, dto.Id);                return ServiceResult<bool>.Failure("更新处方失败");            }
         }
 
         /// <summary>
@@ -173,35 +144,24 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 获取处方
                 var prescription = await _repository.GetByIdAsync(id);
                 if (prescription == null)
-                {
-                    return ServiceResult<bool>.Failure("处方不存在");
-                }
+                {                    return ServiceResult<bool>.Failure("处方不存在");                }
 
                 // 验证是否可以删除
                 var canDeleteResult = _validationHelper.ValidateCanDelete(prescription.Status);
                 if (!canDeleteResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(canDeleteResult.ErrorMessage ?? "无法删除");
-                }
+                {                    return ServiceResult<bool>.Failure(canDeleteResult.ErrorMessage ?? "无法删除");                }
 
                 // 执行删除
                 var success = await _repository.DeleteAsync(id);
                 if (!success)
-                {
-                    return ServiceResult<bool>.Failure("删除处方失败");
-                }
+                {                    return ServiceResult<bool>.Failure("删除处方失败");                }
 
-                // 记录操作日志
-                _logger.LogInformation("处方删除 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
-                    operatorName, operatorId, id);
+                // 记录操作日志                _logger.LogInformation("处方删除 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}",                     operatorName, operatorId, id);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);
-                return ServiceResult<bool>.Failure("删除处方失败", ex);
-            }
+            {                _logger.LogError(ex, "删除处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);                return ServiceResult<bool>.Failure("删除处方失败");            }
         }
 
         #endregion
@@ -218,16 +178,12 @@ namespace LYBT.Module.Prescriptions.Helpers
             {
                 var prescription = await _repository.GetByIdAsync(id);
                 if (prescription == null)
-                {
-                    return ServiceResult<bool>.Failure("处方不存在");
-                }
+                {                    return ServiceResult<bool>.Failure("处方不存在");                }
 
                 // 验证是否可以批准
                 var canApproveResult = _validationHelper.ValidateCanApprove(prescription.Status);
                 if (!canApproveResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(canApproveResult.ErrorMessage ?? "无法批准");
-                }
+                {                    return ServiceResult<bool>.Failure(canApproveResult.ErrorMessage ?? "无法批准");                }
 
                 // 更新状态
                 prescription.Status = PrescriptionStatus.Completed;
@@ -235,31 +191,22 @@ namespace LYBT.Module.Prescriptions.Helpers
 
                 var success = await _repository.UpdateAsync(prescription);
                 if (!success)
-                {
-                    return ServiceResult<bool>.Failure("批准处方失败");
-                }
+                {                    return ServiceResult<bool>.Failure("批准处方失败");                }
 
                 // 如果处方关联医疗案例，更新案例状态
                 if (prescription.MedicalCaseId != Guid.Empty)
-                {
-                    await UpdateMedicalCaseStatusAsync(prescription.MedicalCaseId, "处方已批准");
-                }
+                {                    await UpdateMedicalCaseStatusAsync(prescription.MedicalCaseId, "处方已批准");                }
 
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // 记录操作日志
-                _logger.LogInformation("处方审批通过 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}, 备注: {Note}", 
-                    operatorName, operatorId, id, approvalNote);
+                // 记录操作日志                _logger.LogInformation("处方审批通过 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}, 备注: {Note}",                     operatorName, operatorId, id, approvalNote);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "批准处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);
-                return ServiceResult<bool>.Failure("批准处方失败", ex);
-            }
+                await transaction.RollbackAsync();                _logger.LogError(ex, "批准处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);                return ServiceResult<bool>.Failure("批准处方失败");            }
         }
 
         /// <summary>
@@ -271,16 +218,12 @@ namespace LYBT.Module.Prescriptions.Helpers
             {
                 var prescription = await _repository.GetByIdAsync(id);
                 if (prescription == null)
-                {
-                    return ServiceResult<bool>.Failure("处方不存在");
-                }
+                {                    return ServiceResult<bool>.Failure("处方不存在");                }
 
                 // 验证是否可以拒绝
                 var canRejectResult = _validationHelper.ValidateCanReject(prescription.Status);
                 if (!canRejectResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(canRejectResult.ErrorMessage ?? "无法拒绝");
-                }
+                {                    return ServiceResult<bool>.Failure(canRejectResult.ErrorMessage ?? "无法拒绝");                }
 
                 // 更新状态（退回草稿）
                 prescription.Status = PrescriptionStatus.Draft;
@@ -288,21 +231,14 @@ namespace LYBT.Module.Prescriptions.Helpers
 
                 var success = await _repository.UpdateAsync(prescription);
                 if (!success)
-                {
-                    return ServiceResult<bool>.Failure("拒绝处方失败");
-                }
+                {                    return ServiceResult<bool>.Failure("拒绝处方失败");                }
 
-                // 记录操作日志
-                _logger.LogInformation("处方审批拒绝 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}, 原因: {Reason}", 
-                    operatorName, operatorId, id, reason);
+                // 记录操作日志                _logger.LogInformation("处方审批拒绝 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}, 原因: {Reason}",                     operatorName, operatorId, id, reason);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "拒绝处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);
-                return ServiceResult<bool>.Failure("拒绝处方失败", ex);
-            }
+            {                _logger.LogError(ex, "拒绝处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);                return ServiceResult<bool>.Failure("拒绝处方失败");            }
         }
 
         /// <summary>
@@ -314,28 +250,19 @@ namespace LYBT.Module.Prescriptions.Helpers
             {
                 var prescription = await _repository.GetByIdAsync(id);
                 if (prescription == null)
-                {
-                    return ServiceResult<bool>.Failure("处方不存在");
-                }
+                {                    return ServiceResult<bool>.Failure("处方不存在");                }
 
                 // 执行作废操作
                 var success = await _repository.CancelAsync(id);
                 if (!success)
-                {
-                    return ServiceResult<bool>.Failure("作废处方失败");
-                }
+                {                    return ServiceResult<bool>.Failure("作废处方失败");                }
 
-                // 记录操作日志
-                _logger.LogInformation("处方作废 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
-                    operatorName, operatorId, id);
+                // 记录操作日志                _logger.LogInformation("处方作废 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}",                     operatorName, operatorId, id);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "作废处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);
-                return ServiceResult<bool>.Failure("作废处方失败", ex);
-            }
+            {                _logger.LogError(ex, "作废处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);                return ServiceResult<bool>.Failure("作废处方失败");            }
         }
 
         /// <summary>
@@ -348,22 +275,16 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 验证快速保存数据
                 var validationResult = _validationHelper.ValidateQuickSave(dto);
                 if (!validationResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(validationResult.ErrorMessage ?? "验证失败");
-                }
+                {                    return ServiceResult<bool>.Failure(validationResult.ErrorMessage ?? "验证失败");                }
 
                 var prescription = await _repository.GetByIdAsync(prescriptionId);
                 if (prescription == null)
-                {
-                    return ServiceResult<bool>.Failure("处方不存在");
-                }
+                {                    return ServiceResult<bool>.Failure("处方不存在");                }
 
                 // 验证是否可以编辑
                 var canEditResult = _validationHelper.ValidateCanEdit(prescription.Status);
                 if (!canEditResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(canEditResult.ErrorMessage ?? "无法编辑");
-                }
+                {                    return ServiceResult<bool>.Failure(canEditResult.ErrorMessage ?? "无法编辑");                }
 
                 // 更新处方信息
                 prescription.Remark = dto.Diagnosis; // UltraThink v2.0简化：使用DTO的Diagnosis字段作为Remark
@@ -372,21 +293,14 @@ namespace LYBT.Module.Prescriptions.Helpers
 
                 var success = await _repository.UpdateAsync(prescription);
                 if (!success)
-                {
-                    return ServiceResult<bool>.Failure("快速保存失败");
-                }
+                {                    return ServiceResult<bool>.Failure("快速保存失败");                }
 
-                // 记录操作日志
-                _logger.LogInformation("处方快速保存 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
-                    operatorName, operatorId, prescriptionId);
+                // 记录操作日志                _logger.LogInformation("处方快速保存 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}",                     operatorName, operatorId, prescriptionId);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "快速保存处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, prescriptionId);
-                return ServiceResult<bool>.Failure("快速保存处方失败", ex);
-            }
+            {                _logger.LogError(ex, "快速保存处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, prescriptionId);                return ServiceResult<bool>.Failure("快速保存处方失败");            }
         }
 
         /// <summary>
@@ -398,37 +312,26 @@ namespace LYBT.Module.Prescriptions.Helpers
             {
                 var prescription = await _repository.GetByIdAsync(prescriptionId);
                 if (prescription == null)
-                {
-                    return ServiceResult<bool>.Failure("处方不存在");
-                }
+                {                    return ServiceResult<bool>.Failure("处方不存在");                }
 
                 // 验证是否可以提交
                 var canSubmitResult = _validationHelper.ValidateCanSubmit(prescription);
                 if (!canSubmitResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(canSubmitResult.ErrorMessage ?? "无法提交");
-                }
+                {                    return ServiceResult<bool>.Failure(canSubmitResult.ErrorMessage ?? "无法提交");                }
 
                 // 更新状态（保持为Draft，等待审批）
                 prescription.Status = PrescriptionStatus.Draft;
 
                 var success = await _repository.UpdateAsync(prescription);
                 if (!success)
-                {
-                    return ServiceResult<bool>.Failure("提交处方失败");
-                }
+                {                    return ServiceResult<bool>.Failure("提交处方失败");                }
 
-                // 记录操作日志
-                _logger.LogInformation("处方提交 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}", 
-                    operatorName, operatorId, prescriptionId);
+                // 记录操作日志                _logger.LogInformation("处方提交 - 操作者: {OperatorName} ({OperatorId}), 处方ID: {PrescriptionId}",                     operatorName, operatorId, prescriptionId);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "提交处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, prescriptionId);
-                return ServiceResult<bool>.Failure("提交处方失败", ex);
-            }
+            {                _logger.LogError(ex, "提交处方失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, prescriptionId);                return ServiceResult<bool>.Failure("提交处方失败");            }
         }
 
         #endregion
@@ -444,9 +347,7 @@ namespace LYBT.Module.Prescriptions.Helpers
             {
                 var originalPrescription = await _repository.GetByIdAsync(originalId);
                 if (originalPrescription == null)
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("原处方不存在");
-                }
+                {                    return ServiceResult<PrescriptionDto>.Failure("原处方不存在");                }
 
                 var copyDto = new PrescriptionCreateDto
                 {
@@ -470,10 +371,7 @@ namespace LYBT.Module.Prescriptions.Helpers
                 return await CreateAsync(copyDto, operatorId, operatorName);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "复制处方失败 - 操作者: {OperatorName}, 原处方ID: {OriginalId}", operatorName, originalId);
-                return ServiceResult<PrescriptionDto>.Failure("复制处方失败", ex);
-            }
+            {                _logger.LogError(ex, "复制处方失败 - 操作者: {OperatorName}, 原处方ID: {OriginalId}", operatorName, originalId);                return ServiceResult<PrescriptionDto>.Failure("复制处方失败");            }
         }
 
         /// <summary>
@@ -491,9 +389,7 @@ namespace LYBT.Module.Prescriptions.Helpers
                     .FirstOrDefault();
 
                 if (lastPrescription == null)
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("患者没有历史处方记录");
-                }
+                {                    return ServiceResult<PrescriptionDto>.Failure("患者没有历史处方记录");                }
 
                 var copyDto = new PrescriptionCreateDto
                 {
@@ -517,10 +413,7 @@ namespace LYBT.Module.Prescriptions.Helpers
                 return await CreateAsync(copyDto, operatorId, operatorName);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "复制上次处方失败 - 操作者: {OperatorName}, 患者ID: {PatientId}", operatorName, patientId);
-                return ServiceResult<PrescriptionDto>.Failure("复制上次处方失败", ex);
-            }
+            {                _logger.LogError(ex, "复制上次处方失败 - 操作者: {OperatorName}, 患者ID: {PatientId}", operatorName, patientId);                return ServiceResult<PrescriptionDto>.Failure("复制上次处方失败");            }
         }
 
         /// <summary>
@@ -533,15 +426,9 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // TODO: 实现从验方模板创建处方的逻辑
                 // 需要与Formula模块集成
                 await Task.CompletedTask;
-                
-                _logger.LogWarning("从验方模板创建处方功能暂未实现 - 操作者: {OperatorName}, 模板ID: {TemplateId}", operatorName, templateId);
-                return ServiceResult<PrescriptionDto>.Failure("从验方模板创建处方功能暂未实现");
-            }
+                                _logger.LogWarning("从验方模板创建处方功能暂未实现 - 操作者: {OperatorName}, 模板ID: {TemplateId}", operatorName, templateId);                return ServiceResult<PrescriptionDto>.Failure("从验方模板创建处方功能暂未实现");            }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "从验方模板创建处方失败 - 操作者: {OperatorName}, 模板ID: {TemplateId}", operatorName, templateId);
-                return ServiceResult<PrescriptionDto>.Failure("从验方模板创建处方失败", ex);
-            }
+            {                _logger.LogError(ex, "从验方模板创建处方失败 - 操作者: {OperatorName}, 模板ID: {TemplateId}", operatorName, templateId);                return ServiceResult<PrescriptionDto>.Failure("从验方模板创建处方失败");            }
         }
 
         #endregion
@@ -557,22 +444,14 @@ namespace LYBT.Module.Prescriptions.Helpers
             {
                 var prescription = await _repository.GetByIdAsync(id);
                 if (prescription == null)
-                {
-                    return ServiceResult<byte[]>.Failure("处方不存在");
-                }
+                {                    return ServiceResult<byte[]>.Failure("处方不存在");                }
 
                 // TODO: 实现PDF导出功能
                 // 需要引入PDF生成库（如iTextSharp或PdfSharpCore）
                 await Task.CompletedTask;
-
-                _logger.LogWarning("PDF导出功能暂未实现 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);
-                return ServiceResult<byte[]>.Failure("PDF导出功能暂未实现");
-            }
+                _logger.LogWarning("PDF导出功能暂未实现 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);                return ServiceResult<byte[]>.Failure("PDF导出功能暂未实现");            }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "导出处方PDF失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);
-                return ServiceResult<byte[]>.Failure("导出处方PDF失败", ex);
-            }
+            {                _logger.LogError(ex, "导出处方PDF失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, id);                return ServiceResult<byte[]>.Failure("导出处方PDF失败");            }
         }
 
         #endregion
@@ -603,23 +482,15 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 检测重复药材
                 var duplicateResult = _intelligentService.DetectDuplicateHerbs(prescriptionItems);
                 if (duplicateResult.HasDuplicates && duplicateResult.DuplicateHerbs.Any())
-                {
-                    _logger.LogWarning("处方重复药材警告 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 重复药材: {DuplicateHerbs}", 
-                        operatorName, prescriptionId, string.Join(", ", duplicateResult.DuplicateHerbs));
-                }
+                {                    _logger.LogWarning("处方重复药材警告 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 重复药材: {DuplicateHerbs}",                         operatorName, prescriptionId, string.Join(", ", duplicateResult.DuplicateHerbs));                }
 
                 // 检查药材可用性
                 var availabilityResult = await _intelligentService.CheckHerbAvailabilityAsync(prescriptionItems);
                 if (!availabilityResult.IsAvailable && availabilityResult.UnavailableHerbs.Any())
-                {
-                    _logger.LogWarning("药材可用性警告 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 不可用药材: {UnavailableHerbs}", 
-                        operatorName, prescriptionId, string.Join(", ", availabilityResult.UnavailableHerbs));
-                }
+                {                    _logger.LogWarning("药材可用性警告 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 不可用药材: {UnavailableHerbs}",                         operatorName, prescriptionId, string.Join(", ", availabilityResult.UnavailableHerbs));                }
             }
             catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "执行智能检查失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, prescriptionId);
-            }
+            {                _logger.LogWarning(ex, "执行智能检查失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, prescriptionId);            }
         }
 
         /// <summary>
@@ -633,15 +504,12 @@ namespace LYBT.Module.Prescriptions.Helpers
                 if (medicalCase != null)
                 {
                     medicalCase.Remark = string.IsNullOrEmpty(medicalCase.Remark) 
-                        ? statusRemark 
-                        : $"{medicalCase.Remark}\n{statusRemark}";
-                    
+                        ? statusRemark                         : $"{medicalCase.Remark}\n{statusRemark}";                    
                     _dbContext.MedicalCases.Update(medicalCase);
                 }
             }
             catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "更新医疗案例状态失败 - 案例ID: {MedicalCaseId}, 状态: {Status}", 
+            {                _logger.LogWarning(ex, "更新医疗案例状态失败 - 案例ID: {MedicalCaseId}, 状态: {Status}", 
                     medicalCaseId, statusRemark);
             }
         }
@@ -649,3 +517,5 @@ namespace LYBT.Module.Prescriptions.Helpers
         #endregion
     }
 }
+
+

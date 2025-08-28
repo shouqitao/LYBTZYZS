@@ -26,10 +26,26 @@ namespace LYBT.Module.Formula.Mapping
             // FormulaCreateDto -> Formula
             CreateMap<FormulaCreateDto, LYBT.Entities.Formula.Formula>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
+                .ForMember(dest => dest.Property, opt => opt.Ignore()) // 实体特有字段，不从DTO更新
+                // 🎯 UltraThink修复：忽略实体中不存在的DTO字段
+                .ForSourceMember(src => src.Instructions, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.Indications, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.Contraindications, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.Preparation, opt => opt.DoNotValidate());
 
-            // FormulaUpdateDto -> Formula
-            CreateMap<FormulaUpdateDto, LYBT.Entities.Formula.Formula>();
+            // FormulaUpdateDto -> Formula - 🎯 UltraThink修复：处理字段不匹配问题
+            CreateMap<FormulaUpdateDto, LYBT.Entities.Formula.Formula>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) // 忽略ID
+                .ForMember(dest => dest.Status, opt => opt.Ignore()) // 状态不通过UpdateDto更新
+                .ForMember(dest => dest.Property, opt => opt.Ignore()) // 保持原有Property值
+                .ForMember(dest => dest.Herbs, opt => opt.Ignore()) // Herbs需要特殊处理，不直接映射
+                // 🎯 关键修复：忽略实体中不存在的DTO字段
+                .ForSourceMember(src => src.Instructions, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.Indications, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.Contraindications, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.Preparation, opt => opt.DoNotValidate())
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // FormulaHerbItem -> FormulaHerbItemDto
             CreateMap<FormulaHerbItem, FormulaHerbItemDto>()

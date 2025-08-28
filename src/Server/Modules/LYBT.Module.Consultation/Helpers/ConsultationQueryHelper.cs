@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Linq;
 using System;
 using AutoMapper;
@@ -84,9 +84,7 @@ namespace LYBT.Module.Consultation.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询看诊记录失败");
-                return ServiceResult<PagedResult<ConsultationDto>>.Failure("分页查询看诊记录失败", ex);
-            }
+                _logger.LogError(ex, "分页查询看诊记录失败");                return ServiceResult<PagedResult<ConsultationDto>>.Failure("分页查询看诊记录失败", ex);            }
         }
 
         /// <summary>
@@ -113,10 +111,7 @@ namespace LYBT.Module.Consultation.Helpers
                 return ServiceResult<List<ConsultationDto>>.Success(consultationDtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据患者ID获取看诊记录失败: {PatientId}", patientId);
-                return ServiceResult<List<ConsultationDto>>.Failure("获取患者看诊记录失败", ex);
-            }
+            {                _logger.LogError(ex, "根据患者ID获取看诊记录失败: {PatientId}", patientId);                return ServiceResult<List<ConsultationDto>>.Failure("获取患者看诊记录失败", ex);            }
         }
 
         /// <summary>
@@ -143,10 +138,7 @@ namespace LYBT.Module.Consultation.Helpers
                 return ServiceResult<List<ConsultationDto>>.Success(consultationDtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据医疗案例ID获取看诊记录失败: {MedicalCaseId}", medicalCaseId);
-                return ServiceResult<List<ConsultationDto>>.Failure("获取医疗案例看诊记录失败", ex);
-            }
+            {                _logger.LogError(ex, "根据医疗案例ID获取看诊记录失败: {MedicalCaseId}", medicalCaseId);                return ServiceResult<List<ConsultationDto>>.Failure("获取医疗案例看诊记录失败", ex);            }
         }
 
         /// <summary>
@@ -173,10 +165,7 @@ namespace LYBT.Module.Consultation.Helpers
                 return ServiceResult<List<ConsultationDto>>.Success(consultationDtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据医生ID获取看诊记录失败: {DoctorId}", doctorId);
-                return ServiceResult<List<ConsultationDto>>.Failure("获取医生看诊记录失败", ex);
-            }
+            {                _logger.LogError(ex, "根据医生ID获取看诊记录失败: {DoctorId}", doctorId);                return ServiceResult<List<ConsultationDto>>.Failure("获取医生看诊记录失败", ex);            }
         }
 
         /// <summary>
@@ -210,10 +199,7 @@ namespace LYBT.Module.Consultation.Helpers
                 return ServiceResult<List<ConsultationDto>>.Success(consultationDtos);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索看诊记录失败: {Keyword}", keyword);
-                return ServiceResult<List<ConsultationDto>>.Failure("搜索看诊记录失败", ex);
-            }
+            {                _logger.LogError(ex, "搜索看诊记录失败: {Keyword}", keyword);                return ServiceResult<List<ConsultationDto>>.Failure("搜索看诊记录失败", ex);            }
         }
 
         #region 已废弃功能 - 统计分析  
@@ -252,21 +238,14 @@ namespace LYBT.Module.Consultation.Helpers
 
                 // 返回四诊数据
                 var fourDiagnosisData = new
-                {
-                    Inspection = consultation.Inspection ?? "",
-                    Auscultation = consultation.AuscultationOlfaction ?? "",
-                    Inquiry = consultation.Inquiry ?? "",
-                    Palpation = consultation.Palpation ?? "",
-                    ImportSource = "来自看诊记录"
-                };
+                {                    Inspection = consultation.Inspection ?? "",                    Auscultation = consultation.AuscultationOlfaction ?? "",                    Inquiry = consultation.Inquiry ?? "",                    Palpation = consultation.Palpation ?? "",                    ImportSource = "来自看诊记录"                };
 
                 return ServiceResult<object>.Success(fourDiagnosisData);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取四诊数据失败: {MedicalCaseId}", medicalCaseId);
-                return ServiceResult<object>.Failure("获取四诊数据失败", ex);
+            {                _logger.LogError(ex, "获取四诊数据失败: {MedicalCaseId}", medicalCaseId);                return ServiceResult<object>.Failure("获取四诊数据失败");
             }
         }
     }
 }
+
