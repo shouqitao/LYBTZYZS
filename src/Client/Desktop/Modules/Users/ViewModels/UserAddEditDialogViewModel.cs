@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using LYBT.Desktop.Users.Services;
 using LYBT.Shared.Models.Enums;
@@ -203,10 +202,8 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             try
             {
-                if (!ValidateInput())
-                {
-                    return false;
-                }
+                // UltraThink v2.0: 移除前端验证逻辑，交由后端统一处理
+                // 前端只保留最基础的UI状态检查，具体业务验证由后端Service处理
 
                 if (_isEditMode && _originalUser != null)
                 {
@@ -312,58 +309,10 @@ namespace LYBT.Desktop.Users.ViewModels
             System.Diagnostics.Debug.WriteLine($"✅ InitializeEditData完成: UserName={UserName}, RealName={RealName}, Email={Email}, IsActive={IsActive}, Role={SelectedRole?.DisplayName}");
         }
 
-        private bool ValidateInput()
-        {
-            ClearError();
-
-            if (string.IsNullOrWhiteSpace(UserName))
-            {
-                ErrorMessage = "用户名不能为空";
-                return false;
-            }
-
-            if (UserName.Length > 32)
-            {
-                ErrorMessage = "用户名长度不能超过32个字符";
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(RealName))
-            {
-                ErrorMessage = "真实姓名不能为空";
-                return false;
-            }
-
-            if (RealName.Length > 50)
-            {
-                ErrorMessage = "真实姓名长度不能超过50个字符";
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(Email))
-            {
-                var emailAttribute = new EmailAddressAttribute();
-                if (!emailAttribute.IsValid(Email))
-                {
-                    ErrorMessage = "邮箱格式不正确";
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(PhoneNumber) && PhoneNumber.Length > 20)
-            {
-                ErrorMessage = "电话号码长度不能超过20个字符";
-                return false;
-            }
-
-            if (SelectedRole == null)
-            {
-                ErrorMessage = "请选择用户角色";
-                return false;
-            }
-
-            return true;
-        }
+        // UltraThink v2.0: 移除前端业务验证逻辑
+        // 所有业务验证统一由后端Service和ValidationHelper处理
+        // 前端专注UI交互，后端专注业务逻辑
+        // 验证错误由后端ServiceResult返回，前端只负责显示错误信息
 
         #endregion
 

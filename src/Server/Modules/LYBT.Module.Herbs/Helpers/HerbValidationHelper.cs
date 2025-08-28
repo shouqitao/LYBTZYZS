@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Base;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@ namespace LYBT.Module.Herbs.Helpers
     /// HerbService验证助手类 - UltraThink Helper模式
     /// 负责所有业务验证、规则检查和数据一致性逻辑
     /// </summary>
-    public class HerbValidationHelper
+    public class HerbValidationHelper : BaseValidationHelper
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
@@ -40,10 +41,16 @@ namespace LYBT.Module.Herbs.Helpers
             try
             {
                 // 基础字段验证
-                if (string.IsNullOrWhiteSpace(dto.Name))
-                    return ServiceResult<bool>.Failure("药材名称不能为空");                if (dto.Price < 0)
-                    return ServiceResult<bool>.Failure("药材价格不能为负数");                if (string.IsNullOrWhiteSpace(dto.Unit))
-                    return ServiceResult<bool>.Failure("药材单位不能为空");                // 检查药材名称是否重复
+                var nameValidation = ValidateRequiredString(dto.Name, "药材名称");
+                if (!nameValidation.IsSuccess) return nameValidation;
+                
+                var priceValidation = ValidatePositiveNumber(dto.Price, "药材价格", allowZero: true);
+                if (!priceValidation.IsSuccess) return priceValidation;
+                
+                var unitValidation = ValidateRequiredString(dto.Unit, "药材单位");
+                if (!unitValidation.IsSuccess) return unitValidation;
+                
+                // 检查药材名称是否重复
                 var exists = await _context.Herbs
                     .AnyAsync(h => h.Name == dto.Name && h.Status == CommonStatus.Enabled);
                 
@@ -63,10 +70,16 @@ namespace LYBT.Module.Herbs.Helpers
             try
             {
                 // 基础字段验证
-                if (string.IsNullOrWhiteSpace(dto.Name))
-                    return ServiceResult<bool>.Failure("药材名称不能为空");                if (dto.Price < 0)
-                    return ServiceResult<bool>.Failure("药材价格不能为负数");                if (string.IsNullOrWhiteSpace(dto.Unit))
-                    return ServiceResult<bool>.Failure("药材单位不能为空");                // 检查药材是否存在
+                var nameValidation = ValidateRequiredString(dto.Name, "药材名称");
+                if (!nameValidation.IsSuccess) return nameValidation;
+                
+                var priceValidation = ValidatePositiveNumber(dto.Price, "药材价格", allowZero: true);
+                if (!priceValidation.IsSuccess) return priceValidation;
+                
+                var unitValidation = ValidateRequiredString(dto.Unit, "药材单位");
+                if (!unitValidation.IsSuccess) return unitValidation;
+                
+                // 检查药材是否存在
                 var exists = await _context.Herbs.AnyAsync(h => h.Id == id);
                 if (!exists)
                     return ServiceResult<bool>.Failure("要更新的药材不存在");                // 检查名称是否与其他药材重复（排除自身）
@@ -163,9 +176,17 @@ namespace LYBT.Module.Herbs.Helpers
                 var exists = await _context.Herbs.AnyAsync(h => h.Id == id);
                 if (!exists)
                     return ServiceResult<bool>.Failure("要更新价格的药材不存在");                // 价格验证
-                if (dto.CostPrice.HasValue && dto.CostPrice.Value < 0)
-                    return ServiceResult<bool>.Failure("成本价不能为负数");                if (dto.Price.HasValue && dto.Price.Value < 0)
-                    return ServiceResult<bool>.Failure("销售价不能为负数");                // 成本价不应高于销售价的业务规则验证
+                if (dto.CostPrice.HasValue)
+                {
+                    var costPriceValidation = ValidatePositiveNumber(dto.CostPrice.Value, "成本价", allowZero: true);
+                    if (!costPriceValidation.IsSuccess) return costPriceValidation;
+                }
+                
+                if (dto.Price.HasValue)
+                {
+                    var priceValidation = ValidatePositiveNumber(dto.Price.Value, "销售价", allowZero: true);
+                    if (!priceValidation.IsSuccess) return priceValidation;
+                }                // 成本价不应高于销售价的业务规则验证
                 if (dto.CostPrice.HasValue && dto.Price.HasValue && dto.CostPrice.Value > dto.Price.Value)
                     return ServiceResult<bool>.Failure("成本价不能高于销售价");                return ServiceResult<bool>.Success(true);
             }
@@ -233,13 +254,7 @@ namespace LYBT.Module.Herbs.Helpers
             }
         }
 
-        /// <summary>
-        /// 验证GUID是否有效
-        /// </summary>
-        public bool IsValidGuid(Guid id)
-        {
-            return id != Guid.Empty;
-        }
+        // 基类已提供ValidateGuid方法，此处删除重复定义
 
         /// <summary>
         /// 验证字符串是否为有效搜索关键词

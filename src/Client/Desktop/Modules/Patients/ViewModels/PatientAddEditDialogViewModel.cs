@@ -320,6 +320,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         private void GeneratePinYinCode()
         {
+            // UltraThink v2.0: 拼音码生成属于纯工具类功能，可以在前端直接调用
+            // 这是无状态的字符串转换工具，不涉及业务逻辑，职责划分合理
             if (!string.IsNullOrWhiteSpace(PatientName))
             {
                 PinYinCode = CommonHelper.GetPinyinCode(PatientName);

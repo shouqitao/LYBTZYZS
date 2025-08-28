@@ -283,9 +283,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         /// <summary>
         /// 自动生成拼音码
+        /// UltraThink v2.0: 拼音码生成属于纯工具类功能，前端直接调用合理
         /// </summary>
         private void GenerateCodes()
         {
+            // 纯字符串转换工具，无状态、无业务逻辑，前端调用职责划分合理
             if (!string.IsNullOrWhiteSpace(HerbName))
             {
                 PinYinCode = CommonHelper.GetPinyinCode(HerbName);

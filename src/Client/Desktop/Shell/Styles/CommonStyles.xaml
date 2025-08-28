@@ -14,6 +14,15 @@
     <Color x:Key="TextPrimaryColor">#212121</Color>
     <Color x:Key="TextSecondaryColor">#757575</Color>
     
+    <!-- 扩展颜色定义 -->
+    <Color x:Key="SurfaceColor">#F8F9FA</Color>
+    <Color x:Key="StatusBarColor">#E9ECEF</Color>
+    <Color x:Key="AlternateBorderColor">#DDD</Color>
+    <Color x:Key="AlternateRowColor">#FAFAFA</Color>
+    <Color x:Key="HoverColor">#F0F0F0</Color>
+    <Color x:Key="PressedColor">#E0E0E0</Color>
+    <Color x:Key="OverlayColor">#40FFFFFF</Color>
+    
     <!-- 画刷定义 -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
@@ -26,6 +35,15 @@
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+    
+    <!-- 扩展画刷定义 -->
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+    <SolidColorBrush x:Key="StatusBarBrush" Color="{StaticResource StatusBarColor}"/>
+    <SolidColorBrush x:Key="AlternateBorderBrush" Color="{StaticResource AlternateBorderColor}"/>
+    <SolidColorBrush x:Key="AlternateRowBrush" Color="{StaticResource AlternateRowColor}"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="{StaticResource HoverColor}"/>
+    <SolidColorBrush x:Key="PressedBrush" Color="{StaticResource PressedColor}"/>
+    <SolidColorBrush x:Key="OverlayBrush" Color="{StaticResource OverlayColor}"/>
     
     <!-- 字体大小 -->
     <system:Double x:Key="FontSizeSmall" xmlns:system="clr-namespace:System;assembly=mscorlib">12</system:Double>
