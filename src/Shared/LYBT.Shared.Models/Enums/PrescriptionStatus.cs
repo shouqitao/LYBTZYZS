@@ -11,17 +11,12 @@ namespace LYBT.Shared.Models.Enums
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum PrescriptionStatus
     {
-
-        /// <summary>编辑中 - 处方正在编辑中</summary>
-        [Description("编辑中")]
+        /// <summary>草稿 - 处方正在编辑中</summary>
+        [Description("草稿")]
         Draft = 0,
 
         /// <summary>已完成 - 处方已完成</summary>
         [Description("已完成")]
-        Completed = 1,
-
-        /// <summary>已作废 - 处方已作废</summary>
-        [Description("已作废")]
-        Voided = 2
+        Completed = 1
     }
 }

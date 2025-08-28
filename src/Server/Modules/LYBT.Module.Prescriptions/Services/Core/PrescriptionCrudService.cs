@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
@@ -9,7 +10,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Helpers;
 using LYBT.Module.Prescriptions.Repositories;
-using LYBT.Module.Prescriptions.Services.Intelligence;
+using LYBT.Module.Prescriptions.Services;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Services.Core
@@ -23,7 +24,7 @@ namespace LYBT.Module.Prescriptions.Services.Core
         private readonly IPrescriptionRepository _repository;
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
-        private readonly IPrescriptionIntelligentService _intelligentService;
+        private readonly IIntelligentPrescriptionService _intelligentService;
         private readonly PrescriptionValidationHelper _validationHelper;
         private readonly ILogger<PrescriptionCrudService> _logger;
 
@@ -31,7 +32,7 @@ namespace LYBT.Module.Prescriptions.Services.Core
             IPrescriptionRepository repository,
             AppDbContext dbContext,
             IMapper mapper,
-            IPrescriptionIntelligentService intelligentService,
+            IIntelligentPrescriptionService intelligentService,
             PrescriptionValidationHelper validationHelper,
             ILogger<PrescriptionCrudService> logger)
         {
@@ -69,8 +70,27 @@ namespace LYBT.Module.Prescriptions.Services.Core
                 model.Id = Guid.NewGuid();
                 model.Status = PrescriptionStatus.Draft; // 默认为草稿状态
 
-                // 执行智能检查
-                await _intelligentService.PerformIntelligentChecksAsync(dto.Items, model.Id, operatorName);
+                // 执行智能检查 - 简化版本
+                if (dto.Items != null && dto.Items.Any())
+                {
+                    var itemDtos = dto.Items.Select(item => new PrescriptionItemDto
+                    {
+                        HerbId = item.HerbId,
+                        HerbName = item.HerbName,
+                        Quantity = item.Quantity,
+                        Unit = item.Unit,
+                        Price = item.UnitPrice,
+                        Usage = item.Usage,
+                        Remark = item.Remark ?? item.Note
+                    }).ToList();
+
+                    var duplicateResult = _intelligentService.DetectDuplicateHerbs(itemDtos);
+                    if (duplicateResult.IsSuccess && duplicateResult.Data.Count < itemDtos.Count)
+                    {
+                        _logger.LogWarning("处方重复药材警告 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 原始数量: {Original}, 去重后数量: {Deduplicated}",
+                            operatorName, model.Id, itemDtos.Count, duplicateResult.Data.Count);
+                    }
+                }
 
                 // 保存到数据库
                 var success = await _repository.AddAsync(model);
@@ -82,7 +102,21 @@ namespace LYBT.Module.Prescriptions.Services.Core
                 // 如果处方关联了医疗案例，更新案例状态
                 if (dto.ConsultationId.HasValue)
                 {
-                    await _intelligentService.UpdateMedicalCaseStatusAsync(dto.ConsultationId.Value, "处方已创建");
+                    try
+                    {
+                        var medicalCase = await _dbContext.MedicalCases.FindAsync(dto.ConsultationId.Value);
+                        if (medicalCase != null)
+                        {
+                            medicalCase.Remark = string.IsNullOrEmpty(medicalCase.Remark) 
+                                ? "处方已创建" 
+                                : $"{medicalCase.Remark}\n处方已创建";                    
+                            _dbContext.MedicalCases.Update(medicalCase);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "更新医疗案例状态失败 - 案例ID: {CaseId}", dto.ConsultationId.Value);
+                    }
                 }
 
                 await _dbContext.SaveChangesAsync();

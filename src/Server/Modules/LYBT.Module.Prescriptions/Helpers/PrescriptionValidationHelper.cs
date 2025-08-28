@@ -228,17 +228,19 @@ namespace LYBT.Module.Prescriptions.Helpers
                     Quantity = item.Quantity
                 }).ToList();
 
-                // 检测重复药材
-                var duplicateResult = _intelligentService.DetectDuplicateHerbs(prescriptionItems);
-                if (duplicateResult.HasDuplicates)
+                // 简化版重复药材检测
+                var herbIds = prescriptionItems.Select(x => x.HerbId).ToList();
+                var duplicateHerbIds = herbIds.GroupBy(x => x)
+                    .Where(g => g.Count() > 1)
+                    .Select(g => g.Key)
+                    .ToList();
+                
+                if (duplicateHerbIds.Any())
                 {
-                    result.Warnings.Add($"发现重复药材: {string.Join(", ", duplicateResult.DuplicateHerbs)}");                }
-
-                // 检查药材可用性
-                var availabilityResult = await _intelligentService.CheckHerbAvailabilityAsync(prescriptionItems);
-                if (!availabilityResult.IsAvailable)
-                {
-                    result.Warnings.Add($"部分药材不可用: {string.Join(", ", availabilityResult.UnavailableHerbs)}");                }
+                    var duplicateNames = prescriptionItems.Where(x => duplicateHerbIds.Contains(x.HerbId))
+                        .Select(x => x.HerbName).Distinct().ToList();
+                    result.Warnings.Add($"发现重复药材: {string.Join(", ", duplicateNames)}");
+                }
             }
             catch (Exception ex)
             {

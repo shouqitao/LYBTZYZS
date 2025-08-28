@@ -214,26 +214,6 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 作废处方 - 统一API响应格式
-        /// </summary>
-        [HttpPost("void/{id}")]
-        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> Cancel(Guid id)
-        {
-            try
-            {
-                var validationResult = ValidateGuid<PrescriptionDto>(id, "处方ID");
-                if (validationResult != null) return validationResult;
 
-                var (operatorId, operatorName, _) = GetOperator();
-                               
-                // 临时返回未实现错误
-                return BusinessFail<PrescriptionDto>("作废功能暂未实现", ApiErrorCodes.INTERNAL_ERROR);
-            }
-            catch (Exception ex)
-            {
-                return HandleException<PrescriptionDto>(ex, "作废处方", id);
-            }
-        }
     }
 }

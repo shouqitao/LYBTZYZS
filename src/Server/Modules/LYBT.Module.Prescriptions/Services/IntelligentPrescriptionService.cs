@@ -1,275 +1,124 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
-using System;
-using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Entities.Prescriptions;
-using LYBT.Shared.Models.Enums;
-// using LYBT.Module.Formulas.Interfaces; // Formulas已重命名为Formula
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Services
 {
-
     /// <summary>
-    /// 智能处方服务 - 处理验方组合、重复药材检测、缺药提醒等功能
+    /// 智能处方服务实现 - 核心配伍和验方组合功能
     /// </summary>
     public class IntelligentPrescriptionService : IIntelligentPrescriptionService
     {
-        // private readonly IFormulaService _formulaService; // 暂时注释，等待Formula模块重构
-        private readonly LYBT.Shared.Interfaces.Services.IHerbService _herbService;
+        private readonly ILogger<IntelligentPrescriptionService> _logger;
 
-        public IntelligentPrescriptionService(
-            // IFormulaService formulaService,
-            LYBT.Shared.Interfaces.Services.IHerbService herbService)
+        public IntelligentPrescriptionService(ILogger<IntelligentPrescriptionService> logger)
         {
-            // _formulaService = formulaService;
-            _herbService = herbService;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
         /// 智能组合多个验方模板生成处方
         /// </summary>
-        public async Task<PrescriptionCompositionResult> ComposeFromFormulasAsync(
-            List<Guid> formulaIds, int dosageCount = 7)
+        public async Task<ServiceResult<PrescriptionDto>> ComposeFromFormulasAsync(List<Guid> formulaIds, int dosageCount = 7)
         {
-            var result = new PrescriptionCompositionResult();
-            var allHerbs = new Dictionary<string, PrescriptionItemModel>();
-            var formulaNames = new List<string>();
-            var duplicateWarnings = new List<string>();
-
-            // 1. 获取所有验方模板 - 暂时禁用，等待Formula模块重构
-            var formulas = new List<FormulaDetailDto>();
-            //     var template = await _formulaService.GetByIdAsync(templateId);
-            //         formulas.Add(template);
-            //         formulaNames.Add(template.Name);
-            //     }
-            // }
-
-            // 2. 处理每个验方模板的药材
-            foreach (var template in formulas)
+            try
             {
-                foreach (var herb in template.Herbs)
+                if (formulaIds == null || !formulaIds.Any())
                 {
-                    var formulaItem = new FormulaIngredientDto
-                    {
-                        Name = herb.HerbName,
-                        Quantity = herb.Quantity,
-                        Unit = herb.Unit,
-                        Price = 0 // 价格在后续查询时获取
-                    };
-                    ProcessFormulaItem(formulaItem, allHerbs, duplicateWarnings, template.Name);
+                    return ServiceResult<PrescriptionDto>.Failure("请选择要组合的验方模板");
                 }
+
+                // TODO: 实现验方组合逻辑
+                // 1. 获取验方模板
+                // 2. 合并药材清单
+                // 3. 去重处理
+                // 4. 生成新处方
+                
+                _logger.LogInformation("验方组合功能待实现 - 验方数量: {Count}", formulaIds.Count);
+                return ServiceResult<PrescriptionDto>.Failure("验方组合功能开发中");
             }
-
-            // 3. 检查药材库存状态
-            var availabilityCheck = await CheckHerbAvailabilityAsync(allHerbs.Values.ToList());
-
-            // 4. 计算价格和重量
-            var priceCalculation = CalculatePrescriptionPrice(allHerbs.Values.ToList(), dosageCount);
-
-            // 5. 组装结果
-            result.Items = allHerbs.Values.Cast<object>().ToList();
-            result.FormulaNames = formulaNames;
-            result.DuplicateHerbWarning = string.Join("；", duplicateWarnings);            result.IsAvailable = availabilityCheck.IsFullyAvailable;
-            result.MissingHerbs = availabilityCheck.MissingHerbs;
-            // SingleDosePrice字段已删除（UltraThink v2.0简化）
-            // result.SingleDosePrice = priceCalculation.SingleDosePrice;
-            result.TotalPrice = priceCalculation.TotalPrice;
-            result.TotalWeight = priceCalculation.TotalWeight;
-            result.DosageCount = dosageCount;
-
-            return result;
-        }
-
-        /// <summary>
-        /// 处理验方模板中的单个药材项
-        /// </summary>
-        private void ProcessFormulaItem(FormulaIngredientDto herb, Dictionary<string, PrescriptionItemModel> allHerbs,
-            List<string> duplicateWarnings, string templateName)
-        {
-            var herbName = herb.Name?.Trim().ToUpper();
-            if (string.IsNullOrEmpty(herbName))
-                return;
-
-            if (allHerbs.ContainsKey(herbName))
+            catch (Exception ex)
             {
-                // 处理重复药材，采用第一个遇到的剂量（逍遥散优先逻辑）
-                var existingItem = allHerbs[herbName];
-                duplicateWarnings.Add($"{herb.Name}在验方{templateName}中重复，已采用标准剂量：{existingItem.Quantity}{existingItem.Unit}");            }
-            else
-            {
-                // 创建新的处方项目
-                var prescriptionItem = new PrescriptionItemModel
-                {
-                    Id = Guid.NewGuid(),
-                    HerbId = herb.HerbId,
-                    HerbName = herb.Name!,
-                    Quantity = 10, // 默认剂量，实际应从验方模板中获取
-                    Unit = herb.Unit ?? "g",
-                    Usage = "水煎服" // 默认用法
-                };
-
-                allHerbs[herbName] = prescriptionItem;
+                _logger.LogError(ex, "验方组合失败");
+                return ServiceResult<PrescriptionDto>.Failure("验方组合失败");
             }
         }
 
         /// <summary>
         /// 智能重复药材检测和处理
         /// </summary>
-        public PrescriptionDuplicateCheckResult DetectDuplicateHerbs(List<PrescriptionItemModel> items)
+        public ServiceResult<List<PrescriptionItemDto>> DetectDuplicateHerbs(List<PrescriptionItemDto> items)
         {
-            var result = new PrescriptionDuplicateCheckResult();
-            var herbGroups = items.GroupBy(item => item.HerbName?.Trim().ToUpper()).ToList();
-
-            foreach (var group in herbGroups.Where(g => g.Count() > 1))
+            try
             {
-                var duplicateItems = group.ToList();
-                var herbName = group.Key;
-
-                // 取第一个药材的剂量作为标准（按逍遥散优先的逻辑）
-                var standardItem = duplicateItems.OrderBy(item => item.Id).First(); // 使用Id排序而不是Sequence
-                var standardQuantity = standardItem.Quantity;
-
-                // 记录重复警告信息
-                var conflictingQuantities = duplicateItems
-                    .Where(item => item.Quantity != standardQuantity)
-                    .Select(item => $"{item.Quantity}{item.Unit}")                    .ToList();
-
-                if (conflictingQuantities.Any())
+                if (items == null || !items.Any())
                 {
-                    result.Warnings.Add($"{herbName}在多个验方中重复，剂量冲突：{string.Join(", ", conflictingQuantities)}，已采用标准剂量：{standardQuantity}{standardItem.Unit}");                }
-                else
-                {
-                    result.Warnings.Add($"{herbName}在多个验方中重复，剂量相同：{standardQuantity}{standardItem.Unit}");                }
-
-                result.DuplicateHerbs.Add(herbName ?? "");                // 移除重复项，保留标准剂量的项
-                items.RemoveAll(item => item.HerbName?.Trim().ToUpper() == herbName && item.Id != standardItem.Id);
-            }
-
-            result.HasDuplicates = result.DuplicateHerbs.Any();
-            result.WarningMessage = string.Join("；", result.Warnings);            return result;
-        }
-
-        /// <summary>
-        /// 检查药材库存状态
-        /// </summary>
-        public async Task<HerbAvailabilityCheckResult> CheckHerbAvailabilityAsync(List<PrescriptionItemModel> items)
-        {
-            var result = new HerbAvailabilityCheckResult();
-            var herbsResponse = await _herbService.GetAvailableHerbsAsync();
-            var allHerbs = herbsResponse.IsSuccess ? herbsResponse.Data! : new List<HerbDto>();
-            var availableHerbNames = allHerbs.Select(h => h.Name?.Trim().ToUpper()).ToHashSet();
-
-            foreach (var item in items)
-            {
-                var herbName = item.HerbName?.Trim().ToUpper();
-                if (!string.IsNullOrEmpty(herbName) && !availableHerbNames.Contains(herbName))
-                {
-                    result.MissingHerbs.Add(item.HerbName!);
+                    return ServiceResult<List<PrescriptionItemDto>>.Success(new List<PrescriptionItemDto>());
                 }
+
+                // 按药材ID分组，合并重复药材
+                var mergedItems = items
+                    .GroupBy(item => item.HerbId)
+                    .Select(group => new PrescriptionItemDto
+                    {
+                        HerbId = group.Key,
+                        HerbName = group.First().HerbName,
+                        Quantity = group.Sum(x => x.Quantity),
+                        Unit = group.First().Unit,
+                        Price = group.First().Price,
+                        Usage = group.First().Usage,
+                        Remark = string.Join("; ", group.Select(x => x.Remark).Where(r => !string.IsNullOrEmpty(r)))
+                    })
+                    .ToList();
+
+                return ServiceResult<List<PrescriptionItemDto>>.Success(mergedItems);
             }
-
-            // 确定整体供应状态(简化为布尔值)
-            result.IsFullyAvailable = !result.MissingHerbs.Any();
-            result.IsAvailable = result.MissingHerbs.Count < items.Count;
-
-            return result;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "重复药材检测失败");
+                return ServiceResult<List<PrescriptionItemDto>>.Failure("重复药材检测失败");
+            }
         }
 
         /// <summary>
         /// 计算处方价格和重量
         /// </summary>
-        public PrescriptionPriceCalculationResult CalculatePrescriptionPrice(List<PrescriptionItemModel> items, int dosageCount)
+        public ServiceResult<PrescriptionCalculationDto> CalculatePrescriptionPrice(List<PrescriptionItemDto> items, int dosageCount)
         {
-            var result = new PrescriptionPriceCalculationResult();
-
-            decimal singleDosePrice = 0;
-            decimal totalWeight = 0;
-
-            foreach (var item in items)
+            try
             {
-                // 单帖价格 = 药材单价 × 用量 (注意：这里需要获取实际单价，暂时使用0)
-                var itemPrice = 0 * item.Quantity; // 需要从药材信息中获取单价
-                singleDosePrice += itemPrice;
-
-                // 单帖重量
-                totalWeight += item.Quantity;
-            }
-
-            // SingleDosePrice字段已删除（UltraThink v2.0简化）
-            // result.SingleDosePrice = singleDosePrice;
-            result.TotalPrice = singleDosePrice * dosageCount;
-            result.TotalWeight = totalWeight * dosageCount;
-            result.DosageCount = dosageCount;
-
-            return result;
-        }
-
-        /// <summary>
-        /// 生成处方智能建议
-        /// </summary>
-        public async Task<PrescriptionSuggestionResult> GeneratePrescriptionSuggestionsAsync(
-            string diagnosis, List<string> symptoms, Guid? doctorId = null)
-        {
-            await Task.CompletedTask; // 异步占位
-            var result = new PrescriptionSuggestionResult();
-
-            // 根据医生权限获取可见的验方模板 - 暂时禁用，等待Formula模块重构
-            List<FormulaDetailDto> allFormulas = new List<FormulaDetailDto>();
-            //     // 获取该医生可见的验方（包括共享验方和自己创建的验方）
-            //     allFormulas = await _formulaService.GetVisibleFormulasForDoctorAsync(doctorId.Value);
-            // } else {
-            //     // 获取所有活动状态的验方模板（管理员权限）
-            //     allFormulas = await _formulaService.GetAllActiveFormulasAsync();
-            // }
-
-            foreach (var formula in allFormulas)
-            {
-                // 基于验方名称和备注进行关键词匹配
-                if (ContainsRelevantKeywords(formula, diagnosis, symptoms))
+                if (items == null || !items.Any())
                 {
-                    result.SuggestedFormulas.Add(formula.Name);
+                    return ServiceResult<PrescriptionCalculationDto>.Success(new PrescriptionCalculationDto
+                    {
+                        TotalPrice = 0,
+                        SingleDosagePrice = 0,
+                        TotalWeight = 0,
+                        SingleDosageWeight = 0
+                    });
                 }
-            }
 
-            // 生成用药建议
-            if (symptoms.Contains("失眠") || diagnosis.Contains("不寐"))            {
-                result.SuggestedAdvice.Add("建议睡前30分钟温服");                result.Precautions.Add("服药期间避免浓茶咖啡");            }
+                var singleDosagePrice = items.Sum(item => item.Price * item.Quantity);
+                var totalPrice = singleDosagePrice * dosageCount;
+                var singleDosageWeight = items.Sum(item => item.Quantity);
+                var totalWeight = singleDosageWeight * dosageCount;
 
-            if (symptoms.Contains("腹泻") || diagnosis.Contains("泄泻"))            {
-                result.SuggestedAdvice.Add("温服，忌食生冷");                result.Precautions.Add("腹泻严重时及时就医");            }
-
-            if (symptoms.Contains("感冒") || diagnosis.Contains("外感"))            {
-                result.SuggestedAdvice.Add("热服取汗");                result.Precautions.Add("服药后避风寒，适当休息");            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// 检查验方是否包含相关关键词
-        /// </summary>
-        private bool ContainsRelevantKeywords(FormulaDetailDto formula, string diagnosis, List<string> symptoms)
-        {
-            var searchText = $"{formula.Name} {formula.Remark}".ToLower();
-
-            // 诊断关键词匹配
-            if (!string.IsNullOrEmpty(diagnosis) && searchText.Contains(diagnosis.ToLower()))
-            {
-                return true;
-            }
-
-            // 症状关键词匹配
-            foreach (var symptom in symptoms)
-            {
-                if (!string.IsNullOrEmpty(symptom) && searchText.Contains(symptom.ToLower()))
+                var result = new PrescriptionCalculationDto
                 {
-                    return true;
-                }
-            }
+                    TotalPrice = totalPrice,
+                    SingleDosagePrice = singleDosagePrice,
+                    TotalWeight = totalWeight,
+                    SingleDosageWeight = singleDosageWeight
+                };
 
-            return false;
+                return ServiceResult<PrescriptionCalculationDto>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处方价格计算失败");
+                return ServiceResult<PrescriptionCalculationDto>.Failure("处方价格计算失败");
+            }
         }
     }
 }
