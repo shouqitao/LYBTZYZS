@@ -43,7 +43,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="性别 *" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <ComboBox Grid.Column="1" SelectedValue="{Binding Gender}" Height="30" Padding="5" Margin="0,0,10,0">
+                            <ComboBox Grid.Column="1" SelectedValue="{Binding Gender}" SelectedValuePath="Tag" Height="30" Padding="5" Margin="0,0,10,0">
                                 <ComboBoxItem Tag="0" Content="未知"/>
                                 <ComboBoxItem Tag="1" Content="男"/>
                                 <ComboBoxItem Tag="2" Content="女"/>

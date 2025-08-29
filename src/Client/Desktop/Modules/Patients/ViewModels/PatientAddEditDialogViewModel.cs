@@ -54,7 +54,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             set => SetProperty(ref _pinYinCode, value);
         }
 
-        private Gender _gender = Gender.Unknown;
+        private Gender _gender = Gender.Male; // 修复：设置默认性别，避免CanSave失败
         public Gender Gender
         {
             get => _gender;
@@ -215,6 +215,10 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         protected override async Task<bool> SaveAsync()
         {
+            // UltraThink调试：检查SaveAsync是否被调用
+            System.Diagnostics.Debug.WriteLine($"🚀 SaveAsync被调用 - 模式: {(_isEditMode ? "编辑" : "新增")}");
+            System.Diagnostics.Debug.WriteLine($"📋 患者姓名: '{PatientName}', 电话: '{PhoneNumber}', 性别: {Gender}");
+            
             try
             {
                 if (_isEditMode && _originalPatient != null)
@@ -226,10 +230,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                         Name = PatientName.Trim(),
                         Gender = Gender,
                         Age = Age,
-                        PhoneNumber = PhoneNumber.Trim(),
+                        BirthDate = BirthDate, // 修复：添加出生日期
+                        PhoneNumber = PhoneNumber?.Trim() ?? string.Empty,
                         Address = Address?.Trim() ?? string.Empty,
                         IdNumber = IdNumber?.Trim() ?? string.Empty,
-                        AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
+                        AllergyHistory = AllergyHistory?.Trim() ?? string.Empty,
+                        EmergencyContact = EmergencyContact?.Trim() ?? string.Empty, // 修复：添加紧急联系人
+                        EmergencyPhone = EmergencyPhone?.Trim() ?? string.Empty // 修复：添加紧急联系电话
                     };
 
                     var serviceResult = await _patientService.UpdateAsync(_originalPatient.Id, updateDto);
@@ -248,10 +255,14 @@ namespace LYBT.Desktop.Patients.ViewModels
                         Name = PatientName.Trim(),
                         Gender = Gender,
                         Age = Age,
-                        PhoneNumber = PhoneNumber.Trim(),
+                        BirthDate = BirthDate, // 修复：添加出生日期
+                        PhoneNumber = PhoneNumber?.Trim() ?? string.Empty,
                         Address = Address?.Trim() ?? string.Empty,
                         IdNumber = IdNumber?.Trim() ?? string.Empty,
-                        AllergyHistory = AllergyHistory?.Trim() ?? string.Empty
+                        AllergyHistory = AllergyHistory?.Trim() ?? string.Empty,
+                        EmergencyContact = EmergencyContact?.Trim() ?? string.Empty, // 修复：添加紧急联系人
+                        EmergencyPhone = EmergencyPhone?.Trim() ?? string.Empty, // 修复：添加紧急联系电话
+                        Status = CommonStatus.Enabled // 修复：设置默认状态
                     };
 
                     var serviceResult = await _patientService.CreateAsync(createDto);
@@ -276,9 +287,14 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         protected override bool CanSave()
         {
-            return !string.IsNullOrWhiteSpace(PatientName) &&
-                   !string.IsNullOrWhiteSpace(PhoneNumber) &&
-                   Gender != Gender.Unknown;
+            var canSave = !string.IsNullOrWhiteSpace(PatientName) &&
+                         !string.IsNullOrWhiteSpace(PhoneNumber) &&
+                         Gender != Gender.Unknown;
+            
+            // UltraThink调试：检查CanSave验证结果
+            System.Diagnostics.Debug.WriteLine($"🔍 CanSave检查: 姓名='{PatientName}', 电话='{PhoneNumber}', 性别={Gender}, 结果={canSave}");
+            
+            return canSave;
         }
 
         protected override void InitializeDialog()

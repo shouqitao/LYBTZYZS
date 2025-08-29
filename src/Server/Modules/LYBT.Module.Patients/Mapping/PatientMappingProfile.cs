@@ -43,8 +43,21 @@ namespace LYBT.Module.Patients.Mapping
         .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
         .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber));
 
-    // 患者实体转PatientDto（列表显示）- Age字段在DTO中为计算属性
-    CreateMap<Patient, PatientDto>();
+    // 🔧 UltraThink修复：添加缺失的DTO间映射配置
+    // PatientCreateDto -> PatientDto（用于验证服务）
+    CreateMap<PatientCreateDto, PatientDto>()
+        .ForMember(dest => dest.Id, opt => opt.Ignore())
+        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+        .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
+        .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
+
+    // PatientUpdateDto -> PatientDto（用于验证服务）
+    CreateMap<PatientUpdateDto, PatientDto>()
+        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+        .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
+        .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
 
 }
     }
