@@ -21,12 +21,12 @@ namespace LYBT.Infrastructure.Repositories.Base
         /// <summary>
         /// 根据ID获取实体
         /// </summary>
-        Task<TEntity> GetByIdAsync(TKey id);
+        Task<TEntity?> GetByIdAsync(TKey id);
 
         /// <summary>
         /// 根据ID获取实体（只读）
         /// </summary>
-        Task<TEntity> GetByIdAsNoTrackingAsync(TKey id);
+        Task<TEntity?> GetByIdAsNoTrackingAsync(TKey id);
 
         /// <summary>
         /// 获取所有实体
@@ -41,21 +41,21 @@ namespace LYBT.Infrastructure.Repositories.Base
         /// <summary>
         /// 获取第一个匹配的实体
         /// </summary>
-        Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
+        Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
 
         /// <summary>
         /// 分页查询
         /// </summary>
         Task<PagedResult<TEntity>> GetPagedAsync<TDto>(
             IPagedQuery<TDto> query,
-            Expression<Func<TEntity, bool>> predicate = null,
-            Expression<Func<TEntity, object>> orderBy = null,
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, object>>? orderBy = null,
             bool isDescending = false) where TDto : class;
 
         /// <summary>
         /// 获取数量
         /// </summary>
-        Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate = null);
+        Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null);
 
         /// <summary>
         /// 检查是否存在

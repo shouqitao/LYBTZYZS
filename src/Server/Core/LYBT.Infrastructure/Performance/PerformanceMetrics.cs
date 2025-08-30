@@ -11,9 +11,9 @@ namespace LYBT.Infrastructure.Performance
     /// </summary>
     public class PerformanceMetric
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public double Value { get; set; }
-        public string Unit { get; set; }
+        public string Unit { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public Dictionary<string, object> Tags { get; set; } = new();
     }
@@ -28,7 +28,7 @@ namespace LYBT.Infrastructure.Performance
         private readonly IPerformanceCollector _collector;
         private readonly Dictionary<string, object> _metadata;
 
-        public OperationPerformanceContext(string operationName, IPerformanceCollector collector, Dictionary<string, object> metadata = null)
+        public OperationPerformanceContext(string operationName, IPerformanceCollector collector, Dictionary<string, object>? metadata = null)
         {
             _operationName = operationName;
             _collector = collector;
@@ -67,10 +67,10 @@ namespace LYBT.Infrastructure.Performance
     public interface IPerformanceCollector
     {
         void Record(PerformanceMetric metric);
-        void Counter(string name, int value = 1, Dictionary<string, object> tags = null);
-        void Gauge(string name, double value, Dictionary<string, object> tags = null);
-        void Histogram(string name, double value, Dictionary<string, object> tags = null);
-        IDisposable StartTimer(string name, Dictionary<string, object> tags = null);
+        void Counter(string name, int value = 1, Dictionary<string, object>? tags = null);
+        void Gauge(string name, double value, Dictionary<string, object>? tags = null);
+        void Histogram(string name, double value, Dictionary<string, object>? tags = null);
+        IDisposable StartTimer(string name, Dictionary<string, object>? tags = null);
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ namespace LYBT.Infrastructure.Performance
             }
         }
 
-        public void Counter(string name, int value = 1, Dictionary<string, object> tags = null)
+        public void Counter(string name, int value = 1, Dictionary<string, object>? tags = null)
         {
             Record(new PerformanceMetric
             {
@@ -111,7 +111,7 @@ namespace LYBT.Infrastructure.Performance
             });
         }
 
-        public void Gauge(string name, double value, Dictionary<string, object> tags = null)
+        public void Gauge(string name, double value, Dictionary<string, object>? tags = null)
         {
             Record(new PerformanceMetric
             {
@@ -122,7 +122,7 @@ namespace LYBT.Infrastructure.Performance
             });
         }
 
-        public void Histogram(string name, double value, Dictionary<string, object> tags = null)
+        public void Histogram(string name, double value, Dictionary<string, object>? tags = null)
         {
             Record(new PerformanceMetric
             {
@@ -133,7 +133,7 @@ namespace LYBT.Infrastructure.Performance
             });
         }
 
-        public IDisposable StartTimer(string name, Dictionary<string, object> tags = null)
+        public IDisposable StartTimer(string name, Dictionary<string, object>? tags = null)
         {
             return new OperationPerformanceContext(name, this, tags);
         }

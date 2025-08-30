@@ -24,7 +24,7 @@ namespace LYBT.Infrastructure.Repositories.Base
         protected readonly AppDbContext Context;
         protected readonly DbSet<TEntity> DbSet;
         protected readonly ILogger Logger;
-        private IDbContextTransaction _transaction;
+        private IDbContextTransaction? _transaction;
 
         protected RepositoryBase(AppDbContext context, ILogger logger)
         {
@@ -35,13 +35,13 @@ namespace LYBT.Infrastructure.Repositories.Base
 
         #region Query Operations (优化的查询操作)
 
-        public virtual async Task<TEntity> GetByIdAsync(TKey id)
+        public virtual async Task<TEntity?> GetByIdAsync(TKey id)
         {
             Logger.LogDebug("Getting entity {EntityType} with ID: {Id}", typeof(TEntity).Name, id);
             return await DbSet.FindAsync(id);
         }
 
-        public virtual async Task<TEntity> GetByIdAsNoTrackingAsync(TKey id)
+        public virtual async Task<TEntity?> GetByIdAsNoTrackingAsync(TKey id)
         {
             Logger.LogDebug("Getting entity {EntityType} as no tracking with ID: {Id}", typeof(TEntity).Name, id);
             
@@ -67,7 +67,7 @@ namespace LYBT.Infrastructure.Repositories.Base
             return await DbSet.AsNoTracking().Where(predicate).ToListAsync();
         }
 
-        public virtual async Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
         {
             Logger.LogDebug("Getting first entity of type {EntityType} with predicate", typeof(TEntity).Name);
             return await DbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
@@ -75,8 +75,8 @@ namespace LYBT.Infrastructure.Repositories.Base
 
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync<TDto>(
             IPagedQuery<TDto> query,
-            Expression<Func<TEntity, bool>> predicate = null,
-            Expression<Func<TEntity, object>> orderBy = null,
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, object>>? orderBy = null,
             bool isDescending = false) where TDto : class
         {
             Logger.LogDebug("Getting paged entities of type {EntityType}, Page: {Page}, Size: {Size}", 

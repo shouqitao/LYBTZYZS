@@ -21,10 +21,10 @@ namespace LYBT.Infrastructure.Repositories
     /// </summary>
     public interface IUserRepository : IRepository<User>
     {
-        Task<User> GetByUserNameAsync(string userName);
-        Task<User> GetByEmailAsync(string email);
+        Task<User?> GetByUserNameAsync(string userName);
+        Task<User?> GetByEmailAsync(string email);
         Task<List<User>> GetDoctorsAsync();
-        Task<bool> ExistsAsync(string userName, string email = null);
+        Task<bool> ExistsAsync(string userName, string? email = null);
         Task<PagedResult<User>> GetPagedAsync(UserPagedQueryDto query);
         Task<List<User>> SearchAsync(string keyword);
         Task<UserStatisticsDto> GetStatisticsAsync(DateTime? startDate, DateTime? endDate);
@@ -42,7 +42,7 @@ namespace LYBT.Infrastructure.Repositories
 
         #region Specific Query Methods
 
-        public async Task<User> GetByUserNameAsync(string userName)
+        public async Task<User?> GetByUserNameAsync(string userName)
         {
             Logger.LogDebug("Getting user by username: {UserName}", userName);
             
@@ -51,7 +51,7 @@ namespace LYBT.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Username == userName);
         }
 
-        public async Task<User> GetByEmailAsync(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
             Logger.LogDebug("Getting user by email: {Email}", email);
             
@@ -71,7 +71,7 @@ namespace LYBT.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> ExistsAsync(string userName, string email = null)
+        public async Task<bool> ExistsAsync(string userName, string? email = null)
         {
             Logger.LogDebug("Checking user existence: {UserName}, {Email}", userName, email);
             

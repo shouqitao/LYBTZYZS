@@ -311,7 +311,7 @@ namespace LYBT.Infrastructure.Security
         /// <summary>
         /// 记录令牌生成审计日志
         /// </summary>
-        private async Task LogTokenGenerationAsync(TokenRequest request, string tokenId, string tokenHash)
+        private Task LogTokenGenerationAsync(TokenRequest request, string tokenId, string tokenHash)
         {
             try
             {
@@ -321,12 +321,13 @@ namespace LYBT.Infrastructure.Security
             {
                 _logger.LogError(ex, "记录令牌生成审计失败");
             }
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 记录可疑活动
         /// </summary>
-        private async Task LogSuspiciousActivityAsync(string activity, string? token = null, 
+        private Task LogSuspiciousActivityAsync(string activity, string? token = null, 
             string? clientIP = null, string? additionalInfo = null)
         {
             try
@@ -338,6 +339,7 @@ namespace LYBT.Infrastructure.Security
             {
                 _logger.LogError(ex, "记录可疑令牌活动失败");
             }
+            return Task.CompletedTask;
         }
 
         // 以下方法需要根据实际的存储实现
