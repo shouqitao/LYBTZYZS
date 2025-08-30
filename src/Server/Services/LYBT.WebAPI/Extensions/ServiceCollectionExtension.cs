@@ -51,6 +51,10 @@ public static class ServiceCollectionExtension
         services.AddScoped<PatientValidationService>();
         services.AddScoped<PatientArchiveService>();
         services.AddScoped<PatientStatisticsService>();
+        // 注册UltraThink三层服务
+        services.AddScoped<LYBT.Module.Patients.Services.PatientServiceCore>();
+        services.AddScoped<LYBT.Module.Patients.Services.PatientQueryService>();
+        services.AddScoped<LYBT.Module.Patients.Services.PatientBusinessService>();
         // 注册Helper类
         services.AddScoped<PatientQueryHelper>();
         services.AddScoped<PatientValidationHelper>();
@@ -59,6 +63,10 @@ public static class ServiceCollectionExtension
         // 看诊模块 - 已启用
         services.AddScoped<IConsultationRepository, ConsultationRepository>();
         services.AddScoped<IConsultationService, ConsultationService>();
+        // 注册UltraThink三层服务
+        services.AddScoped<LYBT.Module.Consultation.Services.Core.ConsultationServiceCore>();
+        services.AddScoped<LYBT.Module.Consultation.Services.ConsultationQueryService>();
+        services.AddScoped<LYBT.Module.Consultation.Services.ConsultationBusinessService>();
         // 注册Helper类
         services.AddScoped<ConsultationQueryHelper>();
         services.AddScoped<ConsultationValidationHelper>();
@@ -74,6 +82,10 @@ public static class ServiceCollectionExtension
         // 药材模块
         services.AddScoped<IHerbService, HerbService>();
         services.AddScoped<IHerbRepository, HerbRepository>();
+        // 注册UltraThink三层服务
+        services.AddScoped<LYBT.Module.Herbs.Services.Core.HerbServiceCore>();
+        services.AddScoped<LYBT.Module.Herbs.Services.HerbQueryService>();
+        services.AddScoped<LYBT.Module.Herbs.Services.HerbBusinessService>();
         // 注册Helper类
         services.AddScoped<HerbQueryHelper>();
         services.AddScoped<HerbValidationHelper>();
