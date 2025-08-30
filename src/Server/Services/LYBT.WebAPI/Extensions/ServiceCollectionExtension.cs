@@ -63,13 +63,13 @@ public static class ServiceCollectionExtension
         services.AddScoped<ConsultationQueryHelper>();
         services.AddScoped<ConsultationValidationHelper>();
         services.AddScoped<ConsultationWorkflowHelper>();
-        // 医疗案例模块 - 已启用
+        // 医疗案例模块 - UltraThink三层架构
         services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
         services.AddScoped<IMedicalCaseService, MedicalCaseService>();
-        // 注册Helper类
-        services.AddScoped<MedicalCaseQueryHelper>();
-        services.AddScoped<MedicalCaseValidationHelper>();
-        services.AddScoped<MedicalCaseBusinessHelper>();
+        // 注册三层服务
+        services.AddScoped<Core.MedicalCaseServiceCore>();
+        services.AddScoped<MedicalCaseQueryService>();
+        services.AddScoped<MedicalCaseBusinessService>();
 
         // 药材模块
         services.AddScoped<IHerbService, HerbService>();

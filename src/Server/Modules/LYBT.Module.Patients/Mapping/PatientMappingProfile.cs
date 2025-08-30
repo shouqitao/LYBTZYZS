@@ -47,16 +47,10 @@ namespace LYBT.Module.Patients.Mapping
     // PatientCreateDto -> PatientDto（用于验证服务）
     CreateMap<PatientCreateDto, PatientDto>()
         .ForMember(dest => dest.Id, opt => opt.Ignore())
-        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
-        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
-        .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
         .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
 
     // PatientUpdateDto -> PatientDto（用于验证服务）
     CreateMap<PatientUpdateDto, PatientDto>()
-        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
-        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
-        .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
         .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
 
 }

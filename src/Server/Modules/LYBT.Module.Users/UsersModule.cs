@@ -16,19 +16,19 @@ namespace LYBT.Module.Users
 
         /// <summary>
         /// 注册本模块所有服务到 DI 容器（使用统一数据库上下文）
-        /// UltraThink Helper模式：注册Helper类进行业务逻辑分离
+        /// UltraThink三层架构：Core(CRUD) + Query(查询) + Business(业务逻辑)
         /// </summary>
         public static IServiceCollection AddUsersModuleServices(this IServiceCollection services)
         {
             // 仓储层
             services.AddScoped<IUserRepository, UserRepository>();
             
-            // Helper类 - UltraThink分层架构
-            services.AddScoped<UserQueryHelper>();
-            services.AddScoped<UserValidationHelper>();
-            services.AddScoped<UserBusinessHelper>();
+            // UltraThink三层架构服务
+            services.AddScoped<Services.Core.UserServiceCore>();
+            services.AddScoped<UserQueryService>();
+            services.AddScoped<UserBusinessService>();
             
-            // 业务层 - UltraThink重构：现在继承BaseService并委托给Helper类
+            // 业务层 - UltraThink重构：纯委托主服务，委托给三层专业服务
             services.AddScoped<IUserService, UserService>();
             
             return services;
@@ -44,12 +44,12 @@ namespace LYBT.Module.Users
             // 仓储层
             services.AddScoped<IUserRepository, UserRepository>();
             
-            // Helper类 - UltraThink分层架构
-            services.AddScoped<UserQueryHelper>();
-            services.AddScoped<UserValidationHelper>();
-            services.AddScoped<UserBusinessHelper>();
+            // UltraThink三层架构服务
+            services.AddScoped<Services.Core.UserServiceCore>();
+            services.AddScoped<UserQueryService>();
+            services.AddScoped<UserBusinessService>();
             
-            // 业务层 - UltraThink重构：现在继承BaseService并委托给Helper类
+            // 业务层 - UltraThink重构：纯委托主服务，委托给三层专业服务
             services.AddScoped<IUserService, UserService>();
             
             return services;

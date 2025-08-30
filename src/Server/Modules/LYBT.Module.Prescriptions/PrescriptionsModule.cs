@@ -17,27 +17,30 @@ namespace LYBT.Module.Prescriptions
         /// <summary>
         /// 注册处方模块服务
         /// </summary>
-        public static IServiceCollection AddPrescriptionsModule(this IServiceCollection services)
-        {
-            // 注册仓储服务
-            services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+        /// <summary>
+/// 注册处方模块服务
+/// </summary>
+public static IServiceCollection AddPrescriptionsModule(this IServiceCollection services)
+{
+    // 注册仓储服务
+    services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 
-            // 注册业务服务 - UltraThink Phase 7: 使用Shared接口
-            services.AddScoped<LYBT.Shared.Interfaces.Services.IPrescriptionService, PrescriptionService>();
-            services.AddScoped<IIntelligentPrescriptionService, IntelligentPrescriptionService>();
+    // 注册业务服务 - UltraThink Phase 7: 使用Shared接口
+    services.AddScoped<LYBT.Shared.Interfaces.Services.IPrescriptionService, PrescriptionService>();
+    services.AddScoped<IIntelligentPrescriptionService, IntelligentPrescriptionService>();
 
-            // Helper类 - UltraThink分层架构
-            services.AddScoped<PrescriptionQueryHelper>();
-            services.AddScoped<PrescriptionValidationHelper>();
-            services.AddScoped<PrescriptionBusinessHelper>();
+    // UltraThink三层架构服务 - 替代Helper模式
+    services.AddScoped<Services.Core.PrescriptionServiceCore>();
+    services.AddScoped<PrescriptionQueryService>();
+    services.AddScoped<PrescriptionBusinessService>();
 
-            // 注册AutoMapper配置  
-            services.AddAutoMapper(cfg =>
-            {
-                cfg.AddProfile<PrescriptionMappingProfile>();
-            });
+    // 注册AutoMapper配置  
+    services.AddAutoMapper(cfg =>
+    {
+        cfg.AddProfile<PrescriptionMappingProfile>();
+    });
 
-            return services;
-        }
+    return services;
+}
     }
 }

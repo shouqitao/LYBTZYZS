@@ -2,6 +2,132 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🎯 核心开发理念与标准
+
+### 开发哲学
+
+#### 核心信念
+- **渐进式改进胜过大爆炸式变更** - 小幅度修改，确保编译通过和测试成功
+- **从现有代码中学习** - 研究并规划后再实施
+- **实用主义胜过教条主义** - 适应项目实际情况
+- **清晰意图胜过聪明代码** - 选择直白明显的解决方案
+
+#### 简洁性原则
+- 每个函数/类单一职责
+- 避免过早抽象
+- 不使用技巧性代码 - 选择直白解决方案
+- 如果需要解释，就说明太复杂了
+
+### 开发流程
+
+#### 1. 规划与分阶段
+将复杂工作分解为3-5个阶段，记录在 `IMPLEMENTATION_PLAN.md`:
+
+```markdown
+## 阶段 N: [名称]
+**目标**: [具体交付物]
+**成功标准**: [可测试的结果]
+**测试**: [具体测试用例]
+**状态**: [未开始|进行中|已完成]
+```
+- 进展时更新状态
+- 所有阶段完成后删除文件
+
+#### 2. 实施流程
+1. **理解** - 研究代码库中的现有模式
+2. **测试** - 先编写测试（红）
+3. **实施** - 最少代码通过测试（绿）
+4. **重构** - 在测试通过的前提下清理代码
+5. **提交** - 清晰的提交信息链接到计划
+
+#### 3. 遇到困难时（最多3次尝试）
+**关键规则**: 每个问题最多尝试3次，然后停止。
+
+1. **记录失败内容**:
+   - 尝试了什么
+   - 具体错误信息
+   - 失败原因分析
+
+2. **研究替代方案**:
+   - 找到2-3个类似实现
+   - 注意使用的不同方法
+
+3. **质疑基本假设**:
+   - 这是正确的抽象级别吗？
+   - 能否拆分成更小的问题？
+   - 是否有完全更简单的方法？
+
+4. **尝试不同角度**:
+   - 不同的库/框架特性？
+   - 不同的架构模式？
+   - 移除抽象而不是增加？
+
+### 技术标准
+
+#### 架构原则
+- **组合优于继承** - 使用依赖注入
+- **接口优于单例** - 支持测试和灵活性
+- **显式优于隐式** - 清晰的数据流和依赖关系
+- **可能时优先测试驱动** - 永不禁用测试，而是修复它们
+
+#### 代码质量
+- **每次提交必须**:
+  - 编译成功
+  - 通过所有现有测试
+  - 包含新功能的测试
+  - 遵循项目格式化/代码检查
+
+- **提交前**:
+  - 运行格式化器/检查器
+  - 自我审查更改
+  - 确保提交信息解释"为什么"
+
+#### 错误处理
+- 快速失败并给出描述性信息
+- 包含调试上下文
+- 在适当层级处理错误
+- 永不静默吞噬异常
+
+### 决策框架
+当存在多个有效方法时，基于以下标准选择：
+
+1. **可测试性** - 我能轻松测试这个吗？
+2. **可读性** - 6个月后有人能理解这个吗？
+3. **一致性** - 这与项目模式匹配吗？
+4. **简洁性** - 这是最简单的可行方案吗？
+5. **可逆性** - 以后修改有多困难？
+
+### 质量门禁
+
+#### 完成定义
+- [ ] 编写并通过测试
+- [ ] 代码遵循项目约定
+- [ ] 无格式化器/检查器警告
+- [ ] 提交信息清晰
+- [ ] 实施符合计划
+- [ ] 无TODO项（除非有问题编号）
+
+#### 测试指导原则
+- 测试行为而非实现
+- 尽可能每个测试一个断言
+- 清晰的测试名称描述场景
+- 使用现有的测试工具/助手
+- 测试应该是确定性的
+
+### 重要提醒
+
+**永远不要**:
+- 使用 `--no-verify` 绕过提交钩子
+- 禁用测试而不是修复它们
+- 提交无法编译的代码
+- 做假设 - 用现有代码验证
+
+**总是**:
+- 增量提交可工作的代码
+- 进行时更新计划文档
+- 从现有实现中学习
+- 3次尝试失败后停止并重新评估
+
 ## 🔄 项目感知与上下文
 
 ### 项目概述
@@ -28,6 +154,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **数据库**: SQL Server + 统一AppDbContext (所有模块共享)
 - **缓存**: IMemoryCache智能缓存系统 (适合小型部署)
 - **监控**: 8个健康检查端点 (生产就绪)
+- **架构模式**: 扩展友好的组合式架构 (2025-08-30重构完成)
 
 ### 开始新对话时必须
 
@@ -179,7 +306,7 @@ temp/               # 临时文件（gitignored）
 ### 资源目录结构
 
 ```
-src/Frontend/Desktop/
+src/Client/Desktop/
 ├── Assets/           # 静态资源（图片、图标等）
 │   ├── Images/      # 图片文件
 │   ├── Icons/       # 图标文件
@@ -200,7 +327,7 @@ src/Frontend/Desktop/
 4. 更新ResourcePaths.cs添加路径常量
 5. 测试资源加载是否正常
 
-> 📌 **重要**: 详细规范请查看 [资源管理指南](src/Frontend/Desktop/Assets/RESOURCE_MANAGEMENT.md)
+> 📌 **重要**: 详细规范请查看 [资源管理指南](src/Client/Desktop/Assets/RESOURCE_MANAGEMENT.md)
 
 ## 常用开发命令
 
@@ -214,14 +341,14 @@ scripts\dev-manager.bat
 scripts\start-dev.bat
 
 # 手动启动（开发时通常使用 Visual Studio）
-dotnet run --project src/Backend/Services/LYBT.WebAPI
+dotnet run --project src/Server/Services/LYBT.WebAPI
 ```
 
 ### 构建命令
 
 ```bash
 # 构建解决方案
-dotnet build LYBT.Backend.sln    # 后端
+dotnet build LYBT.Server.sln     # 后端
 dotnet build LYBT.Desktop.sln    # 前端
 dotnet build LYBT.All.sln        # 完整方案
 
@@ -236,10 +363,10 @@ scripts\publish-production.bat
 scripts\database-manager.bat
 
 # 添加迁移 - 必须使用 Infrastructure 项目
-dotnet ef migrations add [迁移名称] --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
+dotnet ef migrations add [迁移名称] --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
 
 # 更新数据库
-dotnet ef database update --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
+dotnet ef database update --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
 ```
 
 ### 测试
@@ -304,13 +431,13 @@ python api_test_automation.py
 
 ```
 src/
-├── Backend/
+├── Server/
 │   ├── Core/
 │   │   ├── LYBT.Infrastructure/     # 统一 AppDbContext，所有迁移在此
-│   │   └── LYBT.Models/            # 领域模型
-│   ├── Modules/                    # 15个业务模块
+│   │   └── LYBT.Entities/          # 实体模型
+│   ├── Modules/                    # 8个业务模块
 │   └── Services/LYBT.WebAPI/       # Web API 入口
-├── Frontend/Desktop/               # WPF 客户端
+├── Client/Desktop/                 # WPF 客户端
 └── Shared/                        # 前后端共享模型
 ```
 
