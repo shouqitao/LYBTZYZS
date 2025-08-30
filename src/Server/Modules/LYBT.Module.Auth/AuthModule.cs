@@ -17,7 +17,7 @@ namespace LYBT.Module.Auth
     {
 
         /// <summary>
-        /// 注册登录验证相关服务 - UltraThink v2.0简化版
+        /// 注册登录验证相关服务 - UltraThink三层架构版
         /// </summary>
         public static IServiceCollection AddAuthModule(this IServiceCollection services)
         {
@@ -30,7 +30,12 @@ namespace LYBT.Module.Auth
 
             // 注册原有服务
             services.AddScoped<SysAdminHandler>();
-            services.AddScoped<IAuthService, AuthService>();
+
+            // 注册UltraThink三层架构服务
+            services.AddScoped<AuthServiceCore>();        // Core层：基础CRUD和认证
+            services.AddScoped<AuthQueryService>();       // Query层：查询和Token验证
+            services.AddScoped<AuthBusinessService>();    // Business层：复杂业务逻辑
+            services.AddScoped<IAuthService, AuthService>(); // 主服务：纯委托模式
 
             // 注册UltraThink Auth服务（简化版）
             services.AddScoped<IAuthSessionService, AuthSessionService>();
@@ -40,10 +45,10 @@ namespace LYBT.Module.Auth
             services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
             services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthorizationService, LYBT.Module.Auth.Services.AuthorizationService>();
 
-            // Helper类 - UltraThink Helper模式
-            services.AddScoped<AuthValidationHelper>();
-            services.AddScoped<AuthSessionHelper>();
-            services.AddScoped<AuthLoggingHelper>();
+            // UltraThink三层架构：移除Helper模式，Helper功能分解到三层服务中
+            // services.AddScoped<AuthValidationHelper>();  // 功能迁移到AuthServiceCore
+            // services.AddScoped<AuthSessionHelper>();     // 功能迁移到AuthQueryService
+            // services.AddScoped<AuthLoggingHelper>();     // 功能迁移到AuthBusinessService
 
             // 注册配置选项
             services.AddOptions<AuthOptions>();

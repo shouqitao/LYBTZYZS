@@ -14,7 +14,7 @@ public static class PatientsModule
 {
 
     /// <summary>
-    /// Register patients module services (使用统一的 AppDbContext).
+    /// Register patients module services - UltraThink三层架构
     /// </summary>
     public static IServiceCollection AddPatientsModule(this IServiceCollection services, string connectionString)
     {
@@ -22,12 +22,17 @@ public static class PatientsModule
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IPatientService, PatientService>();
         
-        // 注册拆分后的专门服务
+        // UltraThink三层架构服务 - 核心重构
+        services.AddScoped<PatientServiceCore>();
+        services.AddScoped<PatientQueryService>();
+        services.AddScoped<PatientBusinessService>();
+        
+        // 兼容性服务 - 逐步迁移
         services.AddScoped<PatientValidationService>();
         services.AddScoped<PatientArchiveService>();
         services.AddScoped<PatientStatisticsService>();
         
-        // Helper类 - UltraThink Helper模式
+        // Helper类 - 保留以兼容现有代码（逐步废弃）
         services.AddScoped<PatientQueryHelper>();
         services.AddScoped<PatientValidationHelper>();
         services.AddScoped<PatientBusinessHelper>();

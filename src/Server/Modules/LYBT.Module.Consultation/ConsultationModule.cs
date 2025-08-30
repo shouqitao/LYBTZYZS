@@ -15,17 +15,17 @@ namespace LYBT.Module.Consultation
     public static class ConsultationModule
     {
         /// <summary>
-        /// 注册看诊模块服务 - UltraThink Helper模式
+        /// 注册看诊模块服务 - UltraThink三层架构
         /// </summary>
         public static IServiceCollection AddConsultationModule(this IServiceCollection services)
         {
             // 注册仓储服务
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
 
-            // 注册Helper服务 (UltraThink Helper模式)
-            services.AddScoped<ConsultationQueryHelper>();
-            services.AddScoped<ConsultationValidationHelper>();
-            services.AddScoped<ConsultationWorkflowHelper>();
+            // UltraThink三层架构服务 - 替代Helper模式
+            services.AddScoped<Services.Core.ConsultationServiceCore>();
+            services.AddScoped<ConsultationQueryService>();
+            services.AddScoped<ConsultationBusinessService>();
 
             // 注册业务服务
             services.AddScoped<IConsultationService, ConsultationService>();
